@@ -9,7 +9,7 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
-import { getTestFolder, getUniqueAppName } from "../commonUtils";
+import { getTestFolder, getUniqueAppName, removeTeamsAppExtendToM365 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../utils/cleaner";
 import { TemplateProject } from "../../commonlib/constants";
@@ -19,10 +19,13 @@ describe("teamsfx new template", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`${TemplateProject.AssistDashboard}`, { testPlanCaseId: "XXXXXX" }, async function () {
+  it(`${TemplateProject.AssistDashboard}`, { testPlanCaseId: 24132124 }, async function () {
     await Executor.openTemplateProject(appName, testFolder, TemplateProject.AssistDashboard);
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+
+    // remove teamsApp/extendToM365 in case it fails
+    removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
     // Provision
     {

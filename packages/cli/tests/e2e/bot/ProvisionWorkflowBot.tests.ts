@@ -7,5 +7,14 @@
 
 import { Runtime } from "../../commonlib/constants";
 import { happyPathTest } from "./WorkflowBotHappyPathCommon";
+import { it } from "@microsoft/extra-shot-mocha";
 
-happyPathTest(Runtime.Node);
+describe("Provision for Node", () => {
+  it(
+    "Provision Resource: func hosted notification",
+    { testPlanCaseId: 24137416 },
+    async function () {
+      await happyPathTest(Runtime.Node);
+    }
+  );
+});

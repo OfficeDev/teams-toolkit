@@ -2,16 +2,9 @@
 // Licensed under the MIT license.
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import {
-  err,
-  FxError,
-  Inputs,
-  MaybePromise,
-  QTreeNode,
-  Result,
-  traverse,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, MaybePromise, QTreeNode, Result } from "@microsoft/teamsfx-api";
 import { TOOLS } from "../../core/globalVars";
+import { traverse } from "../../ui/visitor";
 
 export function QuestionMW(
   question: (inputs: Inputs) => MaybePromise<Result<QTreeNode | undefined, FxError>>

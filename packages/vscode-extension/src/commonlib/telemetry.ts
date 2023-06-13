@@ -9,6 +9,7 @@ import {
   getPackageVersion,
   isFeatureFlagEnabled,
   FeatureFlags,
+  anonymizeFilePaths,
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
@@ -99,6 +100,12 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
+    if (TelemetryProperty.ErrorMessage in properties) {
+      properties[TelemetryProperty.ErrorMessage] = anonymizeFilePaths(
+        properties[TelemetryProperty.ErrorMessage]
+      );
+    }
+
     if (this.testFeatureFlag) {
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     } else {
@@ -162,10 +169,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage]
-    ) {
+    if (!properties[TelemetryProperty.ProjectId]) {
       const fixedProjectSettings = getFixedCommonProjectSettings(
         globalVariables.workspaceUri?.fsPath
       );
@@ -173,13 +177,6 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
         this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
       }
     }
   }

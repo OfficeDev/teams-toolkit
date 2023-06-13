@@ -19,6 +19,7 @@ import {
   deleteResourceGroupByName,
   customizeBicepFilesToCustomizedRg,
   readContextMultiEnvV3,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
@@ -40,17 +41,24 @@ describe("Deploy to customized resource group", function () {
 
   it(
     `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
-    { testPlanCaseId: 9863660 },
+    { testPlanCaseId: 17449539 },
     async function () {
       if (isV3Enabled()) {
         // Create new tab project
-        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+        await CliHelper.createProjectWithCapability(
+          appName,
+          testFolder,
+          Capability.M365SsoLaunchPage
+        );
+
+        // remove teamsApp/extendToM365 in case it fails
+        removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
         // Create empty resource group
         const customizedRgName = `${appName}-customized-rg`;
         await createResourceGroup(customizedRgName, "eastus");
 
-        await CliHelper.provisionProject(projectPath, undefined, {
+        await CliHelper.provisionProject(projectPath, undefined, "dev", {
           ...process.env,
           AZURE_RESOURCE_GROUP_NAME: customizedRgName,
         });
@@ -73,7 +81,7 @@ describe("Deploy to customized resource group", function () {
         await deleteResourceGroupByName(customizedRgName);
       } else {
         // Create new tab project
-        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabSso);
 
         // Create empty resource group
         const customizedRgName = `${appName}-customized-rg`;

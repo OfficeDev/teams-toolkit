@@ -2,27 +2,18 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  err,
-  FxError,
-  Inputs,
-  ok,
-  Platform,
-  Result,
-  SystemError,
-  UserCancelError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, Platform, Result, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import { ErrorHandlerMW } from "../../../src/core/middleware/errorHandler";
+import { UnhandledError, UserCancelError } from "../../../src/error/common";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
   it("return FxError", async () => {
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        return err(UserCancelError);
+        return err(new UserCancelError());
       }
     }
     hooks(MyClass, {
@@ -30,7 +21,7 @@ describe("Middleware - ErrorHandlerMW", () => {
     });
     const my = new MyClass();
     const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr() && res.error === UserCancelError);
+    assert.isTrue(res.isErr() && res.error instanceof UserCancelError);
   });
 
   it("return ok", async () => {
@@ -52,7 +43,7 @@ describe("Middleware - ErrorHandlerMW", () => {
   it("throw known error", async () => {
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        throw UserCancelError;
+        throw new UserCancelError();
       }
     }
 
@@ -61,7 +52,7 @@ describe("Middleware - ErrorHandlerMW", () => {
     });
     const my = new MyClass();
     const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr() && res.error === UserCancelError);
+    assert.isTrue(res.isErr() && res.error instanceof UserCancelError);
   });
 
   it("throw unknown error", async () => {
@@ -75,9 +66,7 @@ describe("Middleware - ErrorHandlerMW", () => {
     });
     const my = new MyClass();
     const res = await my.myMethod(inputs);
-    assert.isTrue(
-      res.isErr() && res.error instanceof SystemError && res.error.message === "unknown"
-    );
+    assert.isTrue(res.isErr() && res.error instanceof UnhandledError);
   });
 
   it("convert system error to user error: The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action", async () => {
@@ -97,7 +86,6 @@ describe("Middleware - ErrorHandlerMW", () => {
     if (res.isErr()) {
       const error = res.error;
       assert.isTrue(error instanceof UserError);
-      assert.equal(error.message, msg);
     }
   });
   it("convert system error to user error: no space left on device", async () => {
@@ -116,7 +104,6 @@ describe("Middleware - ErrorHandlerMW", () => {
     if (res.isErr()) {
       const error = res.error;
       assert.isTrue(error instanceof UserError);
-      assert.equal(error.message, msg);
     }
   });
 });

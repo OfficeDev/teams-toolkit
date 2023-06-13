@@ -33,10 +33,11 @@ import {
 } from "./feature/bot/question";
 import {
   frameworkQuestion,
-  loadPackageVersions,
+  spfxImportFolderQuestion,
   spfxPackageSelectQuestion,
+  spfxSolutionQuestion,
   webpartNameQuestion,
-} from "./resource/spfx/utils/questions";
+} from "./generator/spfx/utils/questions";
 
 export async function getNotificationTriggerQuestionNode(
   inputs: Inputs
@@ -220,22 +221,24 @@ export function getSPFxScaffoldQuestion(platform: Platform): QTreeNode {
     type: "group",
   });
 
+  const spfx_solution = new QTreeNode(spfxSolutionQuestion);
+  const spfx_solution_new = new QTreeNode({ type: "group" });
+  spfx_solution_new.condition = { equals: "new" };
+  const spfx_solution_import = new QTreeNode({ type: "group" });
+  spfx_solution_import.condition = { equals: "import" };
+  spfx_solution.addChild(spfx_solution_new);
+  spfx_solution.addChild(spfx_solution_import);
+  spfx_frontend_host.addChild(spfx_solution);
+
   const spfx_select_package_question = new QTreeNode(spfxPackageSelectQuestion);
   const spfx_framework_type = new QTreeNode(frameworkQuestion);
   const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
 
-  if (platform !== Platform.CLI_HELP) {
-    const spfx_load_package_versions = new QTreeNode(loadPackageVersions);
-    spfx_load_package_versions.addChild(spfx_select_package_question);
-    spfx_select_package_question.addChild(spfx_framework_type);
-    spfx_select_package_question.addChild(spfx_webpart_name);
+  spfx_solution_new.addChild(spfx_select_package_question);
+  spfx_solution_new.addChild(spfx_framework_type);
+  spfx_solution_new.addChild(spfx_webpart_name);
 
-    spfx_frontend_host.addChild(spfx_load_package_versions);
-  } else {
-    spfx_frontend_host.addChild(spfx_select_package_question);
-    spfx_frontend_host.addChild(spfx_framework_type);
-    spfx_frontend_host.addChild(spfx_webpart_name);
-  }
+  spfx_solution_import.addChild(new QTreeNode(spfxImportFolderQuestion()));
 
   return spfx_frontend_host;
 }

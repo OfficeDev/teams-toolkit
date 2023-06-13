@@ -19,7 +19,7 @@ import {
 import * as featureFlags from "../../src/common/featureFlags";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import {
-  BotNewUIOptionItem,
+  BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
   M365SearchAppOptionItem,
@@ -31,7 +31,7 @@ import {
   NewProjectTypeTabOptionItem,
   NotificationOptionItem,
   TabNonSsoItem,
-  TabSPFxNewUIItem,
+  TabSPFxItem,
   WorkflowOptionItem,
 } from "../../src/component/constants";
 import {
@@ -95,9 +95,9 @@ describe("createCapabilityQuestionPreview()", () => {
       CommandAndResponseOptionItem(),
       WorkflowOptionItem(),
       DashboardOptionItem(),
-      TabSPFxNewUIItem(),
+      TabSPFxItem(),
       TabNonSsoItem(),
-      BotNewUIOptionItem(),
+      BotOptionItem(),
       MessageExtensionNewUIItem(),
       M365SsoLaunchPageOptionItem(),
       M365SearchAppOptionItem(),
@@ -157,7 +157,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
       getLocalizedString("core.createProjectQuestion.projectType.bot.title")
     );
     chai.assert.deepEqual(question.staticOptions, [
-      BotNewUIOptionItem(),
+      BotOptionItem(),
       NotificationOptionItem(),
       CommandAndResponseOptionItem(),
       WorkflowOptionItem(),
@@ -191,7 +191,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
       TabNonSsoItem(),
       M365SsoLaunchPageOptionItem(),
       DashboardOptionItem(),
-      TabSPFxNewUIItem(),
+      TabSPFxItem(),
     ]);
   });
 
@@ -338,21 +338,10 @@ describe("addOfficeAddinQuestions()", () => {
   });
 
   it("should show in scratch option when feature flag is on", () => {
-    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(true);
-
     const officeAddinOption = ScratchOptionYesVSC();
     chai.assert.equal(
       officeAddinOption.label,
       `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")}`
-    );
-  });
-
-  it("should not show in scratch option when feature flag is off", () => {
-    sinon.stub(featureFlags, "isOfficeAddinEnabled").returns(false);
-    const originOption = ScratchOptionYesVSC();
-    chai.assert.equal(
-      originOption.label,
-      `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`
     );
   });
 });

@@ -204,7 +204,7 @@ export class AadManifestHelper {
 
   public static processRequiredResourceAccessInManifest(manifest: AADManifest): void {
     const map = getPermissionMap();
-    manifest.requiredResourceAccess.forEach((requiredResourceAccessItem) => {
+    manifest.requiredResourceAccess?.forEach((requiredResourceAccessItem) => {
       const resourceIdOrName = requiredResourceAccessItem.resourceAppId;
       let resourceId = resourceIdOrName;
       if (!isUUID(resourceIdOrName)) {

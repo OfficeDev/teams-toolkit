@@ -38,16 +38,10 @@ import {
   errorNames,
 } from "../../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
-import {
-  Metadata,
-  MetadataV3,
-  VersionSource,
-  VersionState,
-} from "../../../../src/common/versionMetadata";
+import { NotAllowedMigrationError } from "../../../../src/core/error";
+import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
 import {
   buildEnvUserFileName,
-  getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
@@ -1141,11 +1135,6 @@ describe("Migration utils", () => {
     assert.equal(state.state, VersionState.unsupported);
   });
 
-  it("UpgradeCanceledError", () => {
-    const err = UpgradeCanceledError();
-    assert.isNotNull(err);
-  });
-
   it("getTrackingIdFromPath: V2 ", async () => {
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
       if (path === getProjectSettingPathV3(projectPath)) {
@@ -1212,21 +1201,6 @@ describe("Migration utils", () => {
         source: VersionSource.unknown,
       }),
       VersionState.unsupported
-    );
-  });
-
-  it("getDownloadLinkByVersionAndPlatform", () => {
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VS),
-      `${Metadata.versionMatchLink}#visual-studio`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.CLI),
-      `${Metadata.versionMatchLink}#cli`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
-      `${Metadata.versionMatchLink}#vscode`
     );
   });
 

@@ -3,6 +3,7 @@
 import * as path from "path";
 import fs from "fs-extra";
 import { globalVars } from "../core/globalVars";
+import { getLocalizedString } from "./localizeUtils";
 
 export async function getProjectTemplatesFolderPath(projectPath: string): Promise<string> {
   if (globalVars.isVS) {
@@ -22,4 +23,8 @@ export async function getProjectTemplatesFolderPath(projectPath: string): Promis
 
 export function convertToAlphanumericOnly(appName: string): string {
   return appName.replace(/[^\da-zA-Z]/g, "");
+}
+
+export function loadingOptionsPlaceholder() {
+  return getLocalizedString("ui.select.LoadingOptionsPlaceholder");
 }

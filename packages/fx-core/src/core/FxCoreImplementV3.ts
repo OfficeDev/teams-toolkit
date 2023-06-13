@@ -12,11 +12,9 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettingsV3,
   Result,
   Stage,
   Tools,
-  UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -24,14 +22,12 @@ import * as os from "os";
 import * as path from "path";
 import { Container } from "typedi";
 
-import { DotenvParseOutput } from "dotenv";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
-import { isV3Enabled } from "../common/tools";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
@@ -41,7 +37,6 @@ import {
   ViewAadAppHelpLinkV5,
 } from "../component/constants";
 import { coordinator } from "../component/coordinator";
-import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
@@ -56,6 +51,18 @@ import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/Va
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
+import { DotenvParseOutput } from "dotenv";
+import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import {
+  containsUnsupportedFeature,
+  getFeaturesFromAppDefinition,
+} from "../component/resource/appManifest/utils/utils";
+import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import {
+  getVersionState,
+  getProjectVersionFromPath,
+  getTrackingIdFromPath,
+} from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import {
   getQuestionsForAddWebpart,
@@ -66,15 +73,11 @@ import {
   getQuestionsForValidateManifest,
 } from "../component/question";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import {
-  containsUnsupportedFeature,
-  getFeaturesFromAppDefinition,
-} from "../component/resource/appManifest/utils/utils";
-import { SPFxVersionOptionIds } from "../component/resource/spfx/utils/question-helper";
+import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";
-import { FileNotFoundError, InvalidProjectError } from "../error/common";
+import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
@@ -84,15 +87,8 @@ import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
-import {
-  getProjectVersionFromPath,
-  getTrackingIdFromPath,
-  getVersionState,
-} from "./middleware/utils/v3MigrationUtils";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 
 export class FxCoreV3Implement {
@@ -152,7 +148,6 @@ export class FxCoreV3Implement {
     }
     const res = await coordinator.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
-    ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
     return ok(inputs.projectPath!);
   }
@@ -243,13 +238,6 @@ export class FxCoreV3Implement {
     const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);
     if (res.isErr()) {
-      if (res.error instanceof MissingEnvInFileUserError) {
-        res.error.message += " " + getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
-        if (res.error.displayMessage) {
-          res.error.displayMessage +=
-            " " + getLocalizedString("error.UpdateAadManifest.MissingEnvHint");
-        }
-      }
       return err(res.error);
     }
     if (contextV3.platform === Platform.CLI) {
@@ -303,7 +291,7 @@ export class FxCoreV3Implement {
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    const context = createContextV3();
     const component = Container.get("app-manifest") as any;
     const res = await component.deployV3(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
@@ -395,18 +383,6 @@ export class FxCoreV3Implement {
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
     return listCollaboratorFunc(inputs);
   }
-
-  /**
-   * @deprecated
-   */
-  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
-  async getDotEnv(
-    inputs: InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
-    return ok(ctx?.envVars);
-  }
-
   /**
    * get all dot envs
    */
@@ -463,20 +439,11 @@ export class FxCoreV3Implement {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      let isSupport: VersionState;
-      if (!isV3Enabled()) {
-        if (versionInfo.source === VersionSource.projectSettings) {
-          isSupport = VersionState.compatible;
-        } else {
-          isSupport = VersionState.unsupported;
-        }
-      } else {
-        isSupport = getVersionState(versionInfo);
-        // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
-        if (isSupport === VersionState.upgradeable) {
-          if (!(await checkActiveResourcePlugins(projectPath))) {
-            return err(new InvalidProjectError());
-          }
+      const isSupport = getVersionState(versionInfo);
+      // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+      if (isSupport === VersionState.upgradeable) {
+        if (!(await checkActiveResourcePlugins(projectPath))) {
+          return err(new InvalidProjectError());
         }
       }
       return ok({
@@ -516,7 +483,7 @@ export class FxCoreV3Implement {
       !createEnvCopyInput.targetEnvName ||
       !createEnvCopyInput.sourceEnvName
     ) {
-      return err(UserCancelError);
+      return err(new UserCancelError("core"));
     }
 
     return this.createEnvCopyV3(

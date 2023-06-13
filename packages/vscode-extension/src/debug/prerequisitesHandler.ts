@@ -5,7 +5,6 @@
  * @author Qianhao Dong <qidon@microsoft.com>
  */
 import {
-  assembleError,
   err,
   FxError,
   ok,
@@ -18,7 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { LocalEnvManager, TelemetryContext } from "@microsoft/teamsfx-core/build/common/local";
 import { Prerequisite } from "@microsoft/teamsfx-core/build/common/local/constants";
-
+import { assembleError } from "@microsoft/teamsfx-core";
 import {
   DependencyStatus,
   DepsCheckerError,
@@ -517,7 +516,9 @@ async function checkNode(
             ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
             : nodeStatus.name,
           failureMsg: nodeStatus.name,
-          error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
+          error: nodeStatus.error
+            ? handleDepsCheckerError(nodeStatus.error, nodeStatus)
+            : undefined,
         };
       } catch (error: unknown) {
         return {

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { Argv } from "yargs";
-import { isRemoteCollaborationEnabled } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import Add from "./add";
@@ -39,9 +38,7 @@ export const commands: YargsCommand[] = [
  * @param yargs
  */
 export function registerCommands(yargs: Argv): void {
-  if (isRemoteCollaborationEnabled()) {
-    commands.push(new Permission());
-  }
+  commands.push(new Permission());
   commands.push(new Update());
   commands.push(new Upgrade());
 

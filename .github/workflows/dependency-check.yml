@@ -1,9 +1,9 @@
 name: SDK Dependency Auto Upgrade
 on:
-  # schedule:
-  #   # The "*" (#42, asterisk) character has special semantics in YAML, so this
-  #   # string has to be quoted.
-  #   - cron: '0 * * * *'
+#   schedule:
+#     # The "*" (#42, asterisk) character has special semantics in YAML, so this
+#     # string has to be quoted.
+#     - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions: read-all
@@ -21,12 +21,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-      
+
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: 14
-          
+
       - name: Setup project
         uses: nick-invision/retry@v2
         with:
@@ -36,8 +36,8 @@ jobs:
           command: |
             npm run setup
 
-      # - name: Self-hosted Renovate
-      #   uses: renovatebot/github-action@v36.0.0
-      #   with:
-      #     token: 'x-access-token:${{ steps.teamsfx-renovate.outputs.token }}'
-      #     configurationFile: renovate.json
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v36.0.0
+        with:
+          token: "x-access-token:${{ steps.teamsfx-renovate.outputs.token }}"
+          configurationFile: .github/renovate.json

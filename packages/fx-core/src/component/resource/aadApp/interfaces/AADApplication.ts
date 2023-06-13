@@ -36,7 +36,7 @@ export interface AADApplication {
   // serviceManagementReference: any; // no reference
 }
 
-export interface Api {
+interface Api {
   acceptMappedClaims?: boolean | null;
   knownClientApplications: string[];
   requestedAccessTokenVersion?: number | null;
@@ -44,7 +44,7 @@ export interface Api {
   preAuthorizedApplications: PreAuthorizedApplication[];
 }
 
-export interface Oauth2PermissionScope {
+interface Oauth2PermissionScope {
   adminConsentDescription: string;
   adminConsentDisplayName: string;
   id: string;
@@ -55,82 +55,78 @@ export interface Oauth2PermissionScope {
   value: string;
 }
 
-export interface PreAuthorizedApplication {
+interface PreAuthorizedApplication {
   appId: string;
   delegatedPermissionIds: string[];
 }
 
-export interface Info {
+interface Info {
   marketingUrl?: string | null;
   privacyStatementUrl?: string | null;
   supportUrl?: string | null;
   termsOfServiceUrl?: string | null;
 }
 
-export interface OptionalClaims {
+interface OptionalClaims {
   accessToken: Token[];
   idToken: Token[];
   saml2Token: Token[];
 }
 
-export interface Token {
+interface Token {
   additionalProperties: string[];
   essential: boolean;
   name: string;
   source?: string | null;
 }
 
-export interface ParentalControlSettings {
+interface ParentalControlSettings {
   countriesBlockedForMinors: string[];
   legalAgeGroupRule?: string | null;
 }
 
-export interface PasswordCredential {
-  displayName: string;
-}
-
-export interface PublicClient {
+interface PublicClient {
   redirectUris: string[];
 }
 
-export interface RequiredResourceAccess {
+interface RequiredResourceAccess {
   resourceAppId: string;
   resourceAccess: ResourceAccess[];
 }
 
-export interface ResourceAccess {
+interface ResourceAccess {
   id: string;
   type: string;
 }
 
-export interface Web {
+interface Web {
   homePageUrl?: string | null;
   logoutUrl?: string | null;
   redirectUris: string[];
   implicitGrantSettings: ImplicitGrantSettings;
 }
 
-export interface ImplicitGrantSettings {
+interface ImplicitGrantSettings {
   enableAccessTokenIssuance: boolean;
   enableIdTokenIssuance: boolean;
 }
 
-export interface Spa {
+interface Spa {
   redirectUris: string[];
 }
 
-export interface KeyValuePair {
+interface KeyValuePair {
   key: string;
   value: string;
 }
 
-export interface AddIn {
+interface AddIn {
   id: string;
   properties: KeyValuePair[];
   type: string;
 }
 
-export interface AppRole {
+interface AppRole {
   allowedMemberTypes: string[];
   description: string;
   displayName: string;
@@ -140,7 +136,7 @@ export interface AppRole {
   // origin: string; not exist in manifest
 }
 
-export interface KeyCredential {
+interface KeyCredential {
   customKeyIdentifier: string;
   displayName: string;
   endDateTime: string;
@@ -150,3 +146,8 @@ export interface KeyCredential {
   type: string;
   usage: string;
 }
+
+// Microsoft Graph API does not support updating PasswordCredential using manifest
+// interface PasswordCredential {
+//   displayName: string;
+// }

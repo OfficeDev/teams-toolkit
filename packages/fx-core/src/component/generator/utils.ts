@@ -30,10 +30,10 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
+  const useLocal = templateConfig.useLocalTemplate;
   const versionPattern = preRelease || templateVersion;
 
-  // To avoid incompatible, alpha release does not download latest template.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
+  if (useLocal.toString() === "true") {
     throw new CancelDownloading();
   }
 
@@ -310,7 +310,7 @@ export async function runWithLimitedConcurrency<T>(
   items: T[],
   callback: (arg: T) => any,
   concurrencyLimit: number
-) {
+): Promise<void> {
   const queue: any[] = [];
   for (const item of items) {
     // fire the async function, add its promise to the queue, and remove
@@ -331,4 +331,19 @@ export async function runWithLimitedConcurrency<T>(
   }
   // wait for the rest of the calls to finish
   await Promise.all(queue);
+}
+
+export function convertToLangKey(programmingLanguage: string): string {
+  switch (programmingLanguage) {
+    case "javascript": {
+      return "js";
+    }
+    case "typescript": {
+      return "ts";
+    }
+    case "csharp": {
+      return "csharp";
+    }
+  }
+  return programmingLanguage;
 }

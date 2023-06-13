@@ -12,7 +12,7 @@ import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Provision for Node", () => {
   it(
     "Provision Resource: func hosted notification",
-    { testPlanCaseId: 15685881 },
+    { testPlanCaseId: 24132570 },
     async function () {
       await happyPathTest(Runtime.Node, "notification", ["http-functions"]);
     }

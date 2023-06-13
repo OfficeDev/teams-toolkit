@@ -3,79 +3,46 @@
 import {
   AppPackageFolderName,
   AzureAccountProvider,
+  AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
-  err,
   FxError,
   Json,
-  ok,
+  M365TokenProvider,
   OptionItem,
+  ProjectSettings,
   Result,
   SubscriptionInfo,
   SystemError,
-  UserInteraction,
-  ProjectSettings,
-  AzureSolutionSettings,
-  v2,
   UserError,
-  TelemetryReporter,
-  Void,
-  Inputs,
-  Platform,
-  M365TokenProvider,
-  ProjectSettingsV3,
-  InputConfigsFolderName,
-  ProjectSettingsFileName,
-  SettingsFileName,
-  SettingsFolderName,
-  assembleError,
+  UserInteraction,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { exec, ExecOptions } from "child_process";
+import { ExecOptions, exec } from "child_process";
+import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
+import _ from "lodash";
+import Mustache from "mustache";
+import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
-import {
-  ConstantString,
-  FeatureFlagName,
-  TeamsClientId,
-  OfficeClientId,
-  OutlookClientId,
-  ResourcePlugins,
-} from "./constants";
-import * as crypto from "crypto";
-import { FailedToParseResourceIdError } from "../core/error";
-import { PluginNames, SolutionError, SolutionSource } from "../component/constants";
-import Mustache from "mustache";
-import {
-  HostTypeOptionAzure,
-  TabSsoItem,
-  BotSsoItem,
-  BotOptionItem,
-  TabOptionItem,
-  MessageExtensionItem,
-} from "../component/constants";
-import { TOOLS } from "../core/globalVars";
-import { LocalCrypto } from "../core/crypto";
-import { getDefaultString, getLocalizedString } from "./localizeUtils";
-import { isFeatureFlagEnabled } from "./featureFlags";
-import _ from "lodash";
-import { BotHostTypeName, BotHostTypes } from "./local/constants";
-import { isExistingTabApp } from "./projectSettingsHelper";
-import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
-import { environmentManager } from "../core/environment";
-import { NoProjectOpenedError } from "../component/feature/cicd/errors";
-import { getProjectTemplatesFolderPath } from "./utils";
-import * as path from "path";
-import { isMiniApp } from "./projectSettingsHelperV3";
+import { parse } from "yaml";
+import { SolutionError } from "../component/constants";
+import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
+import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
 import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
-import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
+import { FailedToParseResourceIdError } from "../core/error";
 import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
-import { parse } from "yaml";
+import { assembleError } from "../error/common";
+import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
+import { isFeatureFlagEnabled } from "./featureFlags";
+import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { getProjectTemplatesFolderPath } from "./utils";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -392,10 +359,6 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
-export function isExistingTabAppEnabled(): boolean {
-  return false;
-}
-
 export function isAadManifestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
 }
@@ -416,124 +379,12 @@ export function isV3Enabled(): boolean {
   return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
 }
 
-export function isDownloadDirectoryEnabled(): boolean {
-  return process.env.DOWNLOAD_DIRECTORY === "true";
-}
-
 export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }
 
-// This method is for deciding whether AAD should be activated.
-// Currently AAD plugin will always be activated when scaffold.
-// This part will be updated when we support adding aad separately.
-export function isAADEnabled(solutionSettings: AzureSolutionSettings | undefined): boolean {
-  if (!solutionSettings) {
-    return false;
-  }
-
-  if (isAadManifestEnabled()) {
-    return (
-      solutionSettings.hostType === HostTypeOptionAzure().id &&
-      (solutionSettings.capabilities.includes(TabSsoItem().id) ||
-        solutionSettings.capabilities.includes(BotSsoItem().id))
-    );
-  } else {
-    return (
-      solutionSettings.hostType === HostTypeOptionAzure().id &&
-      // For scaffold, activeResourecPlugins is undefined
-      (!solutionSettings.activeResourcePlugins ||
-        solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
-    );
-  }
-}
-
-export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): boolean {
-  const activePlugins = solutionSettings?.activeResourcePlugins;
-  if (!activePlugins) {
-    return false;
-  }
-  return (
-    activePlugins.includes(ResourcePlugins.Bot) || activePlugins.includes(ResourcePlugins.Function)
-  );
-}
-
-// Conditions required to be met:
-// 1. Not (All templates were existing env x provider x templates)
-// 2. Not minimal app
-export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
-  // Not include `Add CICD Workflows` in minimal app case.
-  const isExistingApp =
-    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure().id &&
-    isMiniApp(ctx.projectSetting as ProjectSettingsV3);
-  if (isExistingApp) {
-    return false;
-  }
-
-  if (!inputs.projectPath) {
-    throw new NoProjectOpenedError();
-  }
-
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
-  if (envProfilesResult.isErr()) {
-    throw new SystemError(
-      "Core",
-      "ListMultiEnvError",
-      getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
-      getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message)
-    );
-  }
-
-  const existingInstance = ExistingTemplatesStat.getInstance(
-    inputs.projectPath,
-    envProfilesResult.value
-  );
-  await existingInstance.scan();
-
-  // If at least one env are not all-existing, return true.
-  for (const envName of envProfilesResult.value) {
-    if (existingInstance.notExisting(envName)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-export async function getAppSPFxVersion(root: string): Promise<string | undefined> {
-  let projectSPFxVersion = undefined;
-  const yoInfoPath = path.join(root, "SPFx", ".yo-rc.json");
-  if (await fs.pathExists(yoInfoPath)) {
-    const yoInfo = await fs.readJson(yoInfoPath);
-    projectSPFxVersion = yoInfo["@microsoft/generator-sharepoint"]?.version;
-  }
-
-  if (!projectSPFxVersion || projectSPFxVersion === "") {
-    const packagePath = path.join(root, "SPFx", "package.json");
-    if (await fs.pathExists(packagePath)) {
-      const packageInfo = await fs.readJson(packagePath);
-      projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
-    }
-  }
-  return projectSPFxVersion;
-}
-
-export async function generateBicepFromFile(
-  templateFilePath: string,
-  context: any
-): Promise<string> {
-  try {
-    const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
-    const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
-    return updatedBicepFile;
-  } catch (error) {
-    throw new SystemError(
-      "Core",
-      "BicepGenerationError",
-      getDefaultString("error.BicepGenerationError", templateFilePath, error.message),
-      getLocalizedString("error.BicepGenerationError", templateFilePath, error.message)
-    );
-  }
+export function isImportSPFxEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
 }
 
 export function compileHandlebarsTemplateString(templateString: string, context: any): string {
@@ -556,17 +407,6 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
   } else {
     return appDirOldLoc;
   }
-}
-
-export function getStorageAccountNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(
-    /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
-    resourceId
-  );
-  if (!result) {
-    throw FailedToParseResourceIdError("storage accounts name", resourceId);
-  }
-  return result;
 }
 
 export function getSiteNameFromResourceId(resourceId: string): string {
@@ -635,96 +475,6 @@ export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
 }
 
-export function IsSimpleAuthEnabled(projectSettings: ProjectSettings | undefined): boolean {
-  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
-  return solutionSettings?.activeResourcePlugins?.includes(ResourcePlugins.SimpleAuth);
-}
-
-interface BasicJsonSchema {
-  type: string;
-  properties?: {
-    [k: string]: unknown;
-  };
-}
-function isBasicJsonSchema(jsonSchema: unknown): jsonSchema is BasicJsonSchema {
-  if (!jsonSchema || typeof jsonSchema !== "object") {
-    return false;
-  }
-  return typeof (jsonSchema as { type: unknown })["type"] === "string";
-}
-
-function _redactObject(
-  obj: unknown,
-  jsonSchema: unknown,
-  maxRecursionDepth = 8,
-  depth = 0
-): unknown {
-  if (depth >= maxRecursionDepth) {
-    // prevent stack overflow if anything bad happens
-    return null;
-  }
-  if (!obj || !isBasicJsonSchema(jsonSchema)) {
-    return null;
-  }
-
-  if (
-    !(
-      jsonSchema.type === "object" &&
-      jsonSchema.properties &&
-      typeof jsonSchema.properties === "object"
-    )
-  ) {
-    // non-object types including unsupported types
-    return null;
-  }
-
-  const newObj: { [key: string]: any } = {};
-  const objAny = obj as any;
-  for (const key in jsonSchema.properties) {
-    if (key in objAny && objAny[key] !== undefined) {
-      const filteredObj = _redactObject(
-        objAny[key],
-        jsonSchema.properties[key],
-        maxRecursionDepth,
-        depth + 1
-      );
-      newObj[key] = filteredObj;
-    }
-  }
-  return newObj;
-}
-
-/** Redact user content in "obj";
- *
- * DFS "obj" and "jsonSchema" together to redact the following things:
- * - properties that is not defined in jsonSchema
- * - the value of properties that is defined in jsonSchema, but the keys will remain
- *
- * Example:
- * Input:
- * ```
- *  obj = {
- *    "name": "some name",
- *    "user defined property": {
- *      "key1": "value1"
- *    }
- *  }
- *  jsonSchema = {
- *    "type": "object",
- *    "properties": {
- *      "name": { "type": "string" }
- *    }
- *  }
- * ```
- * Output:
- * ```
- *  {"name": null}
- * ```
- **/
-export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
-  return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
-}
-
 export function getAllowedAppIds(): string[] {
   return [
     TeamsClientId.MobileDesktop,
@@ -753,27 +503,6 @@ export function getAllowedAppMaps(): Record<string, string> {
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   return AppStudioClient.getSideloadingStatus(token);
-}
-
-export function createV2Context(projectSettings: ProjectSettings): v2.Context {
-  const context: v2.Context = {
-    userInteraction: TOOLS.ui,
-    logProvider: TOOLS.logProvider,
-    telemetryReporter: TOOLS.telemetryReporter!,
-    cryptoProvider: new LocalCrypto(projectSettings.projectId),
-    permissionRequestProvider: TOOLS.permissionRequest,
-    projectSetting: projectSettings,
-  };
-  return context;
-}
-
-export function undefinedName(objs: any[], names: string[]) {
-  for (let i = 0; i < objs.length; ++i) {
-    if (objs[i] === undefined) {
-      return names[i];
-    }
-  }
-  return undefined;
 }
 
 export function getPropertyByPath(obj: any, path: string, defaultValue?: string) {
@@ -837,41 +566,18 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
   if (!rootPath) {
     return undefined;
   }
-
   try {
-    if (isV3Enabled()) {
-      const settingsPath = getProjectSettingPathV3(rootPath);
+    const settingsPath = getProjectSettingPathV3(rootPath);
 
-      if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-        return undefined;
-      }
-
-      const settingsContent = fs.readFileSync(settingsPath, "utf-8");
-      const settings = parse(settingsContent);
-      return {
-        projectId: settings?.projectId ?? undefined,
-      };
-    } else {
-      const projectSettingsPath = path.join(
-        rootPath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName,
-        ProjectSettingsFileName
-      );
-
-      if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
-        return undefined;
-      }
-
-      const projectSettings = fs.readJsonSync(projectSettingsPath);
-      return {
-        projectId: projectSettings?.projectId ?? undefined,
-        isFromSample: projectSettings?.isFromSample ?? undefined,
-        programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
-        hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
-        isM365: projectSettings?.isM365 ?? false,
-      };
+    if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
+      return undefined;
     }
+
+    const settingsContent = fs.readFileSync(settingsPath, "utf-8");
+    const settings = parse(settingsContent);
+    return {
+      projectId: settings?.projectId ?? undefined,
+    };
   } catch {
     return undefined;
   }

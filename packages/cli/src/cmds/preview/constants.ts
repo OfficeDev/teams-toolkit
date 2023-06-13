@@ -100,9 +100,6 @@ export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
 
-export const automaticNpmInstallHintMessage =
-  'Automatically installing packages required for your project. You can disable this by setting the global config "automatic-npm-install" to "off".';
-
 export const doctorResult = {
   NodeNotFound: `Cannot find Node.js.`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions). Your project may continue to work but we recommend to install the supported version.`,
@@ -120,43 +117,6 @@ export const doctorResult = {
     "This software downloads npm package ngrok@4.3.3 which contains NGROK(https://ngrok.com/) v2.3.40. Customer must have a valid license to use NGROK software. Microsoft does not license use of the NGROK.",
 };
 
-export const installApp = {
-  description:
-    "To continue to preview your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.",
-  finish: "Once you have finished the installation, please come back and click 'Continue'.",
-  guide: "Click 'Install in Teams' will pop up Teams web client for you to install the app.",
-  installInTeams: "Install in Teams",
-  installInTeamsDescription: "Pop up Teams web client for you to install the app.",
-  continue: "Continue",
-  continueDescription: "Continue to preview in Outlook or the Microsoft 365 app.",
-  cancel: "Cancel",
-  cancelDescription: "Stop preview.",
-  installAppTitle: "Install app in Teams or continue to Outlook or the Microsoft 365 app",
-  nonInteractive: {
-    notInstalled:
-      "We detected that you have not yet installed the app in Teams first, please run 'teamsfx preview %s --m365-host teams' to install app.",
-    manifestChanges:
-      "If you changed the manifest file, please run 'teamsfx preview %s --m365-host teams' to install app again.",
-    manifestChangesV3:
-      "If you changed the manifest file, please run 'teamsfx provision %s' to install app again.",
-  },
-  bot: {
-    description:
-      "To continue to preview your application in Outlook, you need to follow two steps:",
-    guide1: "First, please click 'Install in Teams' to install the app in Teams.",
-    guide2:
-      "Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.",
-    remoteGuide2:
-      "Second, please click 'Configure Outlook', sign in to the portal with the same Azure 365 account you used in Teams Toolkit. Select 'Outlook' in the portal and click the 'Apply' button to connect your bot to the Outlook channel.",
-    finish: "Once you have finished the above two steps, please come back and click 'Continue'.",
-    configureOutlook: "Configure Outlook",
-    configureOutlookDescription:
-      "Pop up Bot Framework Portal for you to connect your bot to Outlook channel.",
-    remoteConfigureOutlookDescription:
-      "Pop up Azure Portal for you to connect your bot to Outlook channel.",
-  },
-};
-
 export const runCommand = {
   detectRunCommand: "Option 'run-command' is not provided, set to: ",
   showCommand: "Executing command - ",
@@ -164,6 +124,8 @@ export const runCommand = {
   showWorkingFolder: "Working folder - ",
 };
 
+export const manifestChangesHintMessage =
+  "If you changed the manifest file, please run 'teamsfx provision %s' to install app again.";
 export const m365TenantHintMessage =
   "WARN: Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect. Please click https://aka.ms/teamsfx-m365-apps-prerequisites for more information about setting up dev environment for extending Teams apps across Microsoft 365.";
 export const m365SwitchedMessage =

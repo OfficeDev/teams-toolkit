@@ -11,10 +11,9 @@ import {
   Result,
   err,
   ok,
-  traverse,
 } from "@microsoft/teamsfx-api";
 
-import { isCLIDotNetEnabled, isOfficeAddinEnabled } from "../../common/featureFlags";
+import { isCLIDotNetEnabled } from "../../common/featureFlags";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import {
   NewProjectTypeBotOptionItem,
@@ -63,6 +62,8 @@ import {
   tabsWebsitetUrlQuestion,
 } from "../question";
 import { CoreHookContext } from "../types";
+import { traverse } from "../../ui/visitor";
+import { skipAppName } from "../../component/generator/spfx/utils/questions";
 
 /**
  * This middleware will help to collect input from question flow
@@ -156,9 +157,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   sampleNode.condition = { equals: ScratchOptionNo().id };
   sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
 
-  if (isOfficeAddinEnabled()) {
-    addOfficeAddinQuestions(node);
-  }
+  addOfficeAddinQuestions(node);
 
   return ok(node.trim());
 }
@@ -293,6 +292,7 @@ async function getQuestionsForCreateProjectInVSC(
   const defaultName = !inputs.teamsAppFromTdp?.appName
     ? undefined
     : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  root.addChild(new QTreeNode(skipAppName));
   root.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (isFromDevPortal(inputs)) {

@@ -6,11 +6,9 @@ import {
   BuildFolderName,
   ConfigFolderName,
   CoreCallbackEvent,
-  CoreCallbackFunc,
   CryptoProvider,
   err,
   Func,
-  FunctionRouter,
   FxError,
   InputConfigsFolderName,
   Inputs,
@@ -24,7 +22,6 @@ import {
   StatesFolderName,
   Tools,
   v2,
-  v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
@@ -48,11 +45,12 @@ import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
+import { WriteFileError } from "../error";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
-import { CopyFileError, InvalidInputError, ObjectIsUndefinedError, WriteFileError } from "./error";
+import { CopyFileError, InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -60,7 +58,9 @@ import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 
-export class FxCore implements v3.ICore {
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
+
+export class FxCore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
@@ -86,20 +86,6 @@ export class FxCore implements v3.ICore {
    */
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     return this.v3Implement.dispatch(this.createProject, inputs);
-  }
-
-  /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return ok(undefined);
-  }
-
-  /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return ok(undefined);
   }
 
   /**
@@ -253,49 +239,12 @@ export class FxCore implements v3.ICore {
   }
 
   /**
-   * @deprecated for V3
-   */
-  @hooks([ErrorHandlerMW])
-  async getQuestionsForUserTask(
-    func: FunctionRouter,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(undefined);
-  }
-
-  /**
-   * @deprecated
-   */
-  async getDotEnv(
-    inputs: InputsWithProjectPath
-  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
-    return this.v3Implement.dispatch(this.getDotEnv, inputs);
-  }
-
-  /**
    * get all dot envs
    */
   async getDotEnvs(
     inputs: InputsWithProjectPath
   ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
     return this.v3Implement.dispatch(this.getDotEnvs, inputs);
-  }
-
-  /**
-   * @deprecated in V3
-   */
-  async getProjectConfig(inputs: Inputs): Promise<Result<any | undefined, FxError>> {
-    return ok({
-      settings: {},
-      config: {},
-    });
-  }
-
-  /**
-   * @deprecated in V3
-   */
-  async getProjectConfigV3(inputs: Inputs): Promise<Result<any | undefined, FxError>> {
-    return ok({});
   }
 
   async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -571,7 +520,7 @@ export async function ensureBasicFolderStructure(
       await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
     }
   } catch (e) {
-    return err(WriteFileError(e));
+    return err(new WriteFileError(e as Error, "core"));
   }
   return ok(null);
 }

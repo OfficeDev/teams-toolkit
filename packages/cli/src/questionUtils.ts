@@ -8,9 +8,9 @@ import {
   Question,
   SingleSelectQuestion,
   StaticOptions,
-  isAutoSkipSelect,
   validate,
 } from "@microsoft/teamsfx-api";
+import { isAutoSkipSelect } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
 import { getSingleOptionString, toYargsOptions } from "./utils";
 

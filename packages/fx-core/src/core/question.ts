@@ -29,12 +29,11 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ConstantString } from "../common/constants";
-import { isOfficeAddinEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { sampleProvider } from "../common/samples";
 import {
-  BotNewUIOptionItem,
+  BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
   M365SearchAppOptionItem,
@@ -49,7 +48,6 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../component/constants";
 import {
@@ -250,9 +248,9 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const staticOptions: StaticOptions = [
     ...newBots,
     ...newTabs,
-    TabSPFxNewUIItem(),
+    TabSPFxItem(),
     TabNonSsoItem(),
-    BotNewUIOptionItem(),
+    BotOptionItem(),
     MessageExtensionNewUIItem(),
     M365SsoLaunchPageOptionItem(),
     M365SearchAppOptionItem(),
@@ -291,7 +289,7 @@ export function createNewProjectQuestionWith2Layers(inputs?: Inputs): SingleSele
 
 export function getBotProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
-    BotNewUIOptionItem(),
+    BotOptionItem(),
     NotificationOptionItem(),
     CommandAndResponseOptionItem(),
     WorkflowOptionItem(),
@@ -324,7 +322,7 @@ export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQues
     TabNonSsoItem(),
     M365SsoLaunchPageOptionItem(),
     DashboardOptionItem(),
-    TabSPFxNewUIItem(),
+    TabSPFxItem(),
   ];
 
   return {
@@ -498,9 +496,7 @@ export function QuestionNewResourceGroupLocation(): SingleSelectQuestion {
 }
 
 export function ScratchOptionYesVSC(): OptionItem {
-  const label = isOfficeAddinEnabled()
-    ? getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")
-    : getLocalizedString("core.ScratchOptionYesVSC.label");
+  const label = getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label");
   return {
     id: "yes",
     label: `$(new-folder) ${label}`,
@@ -563,9 +559,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC());
-    if (isOfficeAddinEnabled()) {
-      staticOptions.push(CreateNewOfficeAddinOption());
-    }
+    staticOptions.push(CreateNewOfficeAddinOption());
     staticOptions.push(ScratchOptionNoVSC());
   } else {
     staticOptions.push(ScratchOptionYes());

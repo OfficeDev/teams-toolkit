@@ -10,120 +10,12 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { createSandbox } from "sinon";
 import Container from "typedi";
 import { FeatureFlagName } from "../../../src/common/constants";
-import * as templateUtils from "../../../src/common/template-utils/templatesUtils";
+import * as templateUtils from "../../../src/component/generator/utils";
 import { ComponentNames } from "../../../src/component/constants";
-import { canAddSso } from "../../../src/component/feature/sso";
 import * as utils from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
-
-describe("SSO can add in project", () => {
-  const sandbox = createSandbox();
-  const tools = new MockTools();
-  setTools(tools);
-  const appName = `unittest${randomAppName()}`;
-  const context = utils.createContextV3();
-  const basicProjectSetting: ProjectSettingsV3 = {
-    appName: "",
-    projectId: "",
-    programmingLanguage: "typescript",
-    components: [],
-  };
-  context.projectSetting = basicProjectSetting;
-  beforeEach(() => {});
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should AddSso in tab-sso project without sso component", async () => {
-    const projectSetting: ProjectSettingsV3 = {
-      ...basicProjectSetting,
-      components: [
-        {
-          name: "teams-tab",
-          hosting: "azure-storage",
-          deploy: true,
-          provision: true,
-          build: true,
-          folder: "tabs",
-        },
-      ],
-    };
-    const res = await canAddSso(projectSetting);
-    assert.isTrue(res);
-  });
-
-  it("shouldn't AddSso in tab-sso project with sso", async () => {
-    const projectSetting: ProjectSettingsV3 = {
-      ...basicProjectSetting,
-      components: [
-        {
-          name: "teams-tab",
-          hosting: "azure-storage",
-          deploy: true,
-          provision: true,
-          build: true,
-          folder: "tabs",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-          deploy: true,
-        },
-      ],
-    };
-    const res = await canAddSso(projectSetting);
-    assert.isFalse(res);
-  });
-
-  it("should AddSso in me project", async () => {
-    const projectSetting: ProjectSettingsV3 = {
-      ...basicProjectSetting,
-      components: [
-        {
-          name: "teams-bot",
-          hosting: "azure-web-app",
-          deploy: true,
-          capabilities: ["message-extension"],
-          build: true,
-          folder: "bot",
-        },
-        {
-          name: "aad-app",
-          provision: true,
-          deploy: true,
-        },
-      ],
-    };
-    const res = await canAddSso(projectSetting);
-    assert.isTrue(res);
-  });
-
-  it("shouldn't AddSso in bot project with function", async () => {
-    const projectSetting: ProjectSettingsV3 = {
-      ...basicProjectSetting,
-      components: [
-        {
-          name: "teams-bot",
-          hosting: "azure-function",
-          deploy: true,
-          capabilities: ["message-extension"],
-          build: true,
-          folder: "bot",
-        },
-        {
-          name: "aad-app",
-          provision: true,
-          deploy: true,
-        },
-      ],
-    };
-    const res = await canAddSso(projectSetting);
-    assert.isFalse(res);
-  });
-});
+import "../../../src/component/feature/sso";
 
 describe("SSO can add in VS V3 project", () => {
   let mockedEnvRestore: RestoreFn;

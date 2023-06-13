@@ -20,15 +20,15 @@ import {
 import { ConstantString } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
-import { executeCommand } from "../../../common/cpUtils";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
-import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
+import { ensureBicepForDriver } from "./util/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { DeployContext, handleArmDeploymentError } from "../../arm";
+import { ArmErrorHandle, DeployContext } from "./util/handleError";
 import { InvalidActionInputError } from "../../../error/common";
 import { InvalidAzureCredentialError } from "../../../error/azure";
 import { CompileBicepError, DeployArmError } from "../../../error/arm";
+import { cpUtils } from "../../utils/depsChecker/cpUtils";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -141,7 +141,7 @@ export class ArmDeployImpl {
     try {
       return await this.innerExecuteDeployment(templateArg, deploymentParameters);
     } catch (error) {
-      const errRes = handleArmDeploymentError(error, deployCtx);
+      const errRes = ArmErrorHandle.handleArmDeploymentError(error, deployCtx);
       return errRes;
     }
   }
@@ -183,11 +183,12 @@ export class ArmDeployImpl {
 
   async compileBicepToJson(filePath: string): Promise<JSON> {
     try {
-      const result = await executeCommand(
-        this.bicepCommand!,
-        ["build", filePath, "--stdout"],
+      const result = await cpUtils.executeCommand(
+        undefined,
         this.context.logProvider,
-        { shell: false }
+        { shell: false },
+        this.bicepCommand!,
+        ...["build", filePath, "--stdout"]
       );
       return JSON.parse(result);
     } catch (err) {

@@ -6,7 +6,7 @@ import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result, Platform } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";

@@ -10,6 +10,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { PackageService } from "../../../src/common/m365/packageService";
 import { MockLogProvider } from "../../core/utils";
+import { UnhandledError } from "../../../src/error/common";
 
 chai.use(chaiAsPromised);
 
@@ -128,7 +129,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.equal(actualError?.message, "test-post");
+    chai.assert.isTrue(actualError?.message.includes("test-post"));
 
     packageService = new PackageService("test-endpoint", logger);
     try {
@@ -138,7 +139,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.equal(actualError?.message, "test-post");
+    chai.assert.isTrue(actualError?.message.includes("test-post"));
   });
 
   it("sideLoading throws expected reponse error", async () => {
@@ -167,7 +168,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError.innerError, expectedError);
+    chai.assert.isTrue(actualError.message.includes("test-post"));
 
     packageService = new PackageService("test-endpoint", logger);
     try {
@@ -177,7 +178,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError.innerError, expectedError);
+    chai.assert.isTrue(actualError.message.includes("test-post"));
   });
 
   it("retrieveTitleId happy path", async () => {
@@ -217,7 +218,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.equal(actualError?.message, "test-post");
+    chai.assert.isTrue(actualError?.message.includes("test-post"));
   });
 
   it("retrieveTitleId throws expected response error", async () => {
@@ -241,7 +242,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError.innerError, expectedError);
+    chai.assert.isTrue(actualError.message.includes("test-post"));
   });
 
   it("retrieveAppId happy path", async () => {
@@ -291,7 +292,7 @@ describe("Package Service", () => {
       }
 
       chai.assert.isDefined(actualError);
-      chai.assert.equal(actualError?.message, "test-post");
+      chai.assert.isTrue(actualError?.message.includes("test-post"));
     }
 
     {
@@ -304,7 +305,7 @@ describe("Package Service", () => {
       }
 
       chai.assert.isDefined(actualError);
-      chai.assert.equal(actualError?.message, "test-post");
+      chai.assert.isTrue(actualError?.message.includes("test-post"));
     }
   });
 
@@ -330,7 +331,7 @@ describe("Package Service", () => {
       }
 
       chai.assert.isDefined(actualError);
-      chai.assert.deepEqual(actualError.innerError, expectedError);
+      chai.assert.isTrue(actualError.message.includes("test-post"));
     }
 
     {
@@ -343,7 +344,7 @@ describe("Package Service", () => {
       }
 
       chai.assert.isDefined(actualError);
-      chai.assert.deepEqual(actualError.innerError, expectedError);
+      chai.assert.isTrue(actualError instanceof UnhandledError);
     }
   });
 
@@ -383,7 +384,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.equal(actualError?.message, "test-delete");
+    chai.assert.isTrue(actualError?.message.includes("test-delete"));
   });
 
   it("unacquire throws expected response error", async () => {
@@ -407,7 +408,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError.innerError, expectedError);
+    chai.assert.isTrue(actualError instanceof UnhandledError);
   });
 
   it("getLaunchInfoByTitleId happy path", async () => {
@@ -445,7 +446,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.equal(actualError?.message, "test-get");
+    chai.assert.isTrue(actualError?.message.includes("test-get"));
   });
 
   it("getLaunchInfoByTitleId throws expected response error", async () => {
@@ -469,7 +470,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError.innerError, expectedError);
+    chai.assert.isTrue(actualError instanceof UnhandledError);
   });
 
   it("getTitleServiceUrl throws expected error", async () => {
@@ -484,6 +485,6 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.equal(actualError?.message, "test-service-url-error");
+    chai.assert.isTrue(actualError?.message.includes("test-service-url-error"));
   });
 });

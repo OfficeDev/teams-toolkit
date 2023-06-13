@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, Inputs, ok } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 import "mocha";
 import sinon from "sinon";
@@ -10,7 +10,6 @@ import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import Permission, { PermissionGrant, PermissionStatus } from "../../../src/cmds/permission";
 import * as constants from "../../../src/constants";
-import { NotSupportedProjectType } from "../../../src/error";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { mockLogProvider, mockTelemetry, mockYargs } from "../utils";
 import CLIUserInteraction from "../../../src/userInteraction";
@@ -27,7 +26,7 @@ describe("Permission Command Tests", function () {
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "checkPermission").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
-      else return err(NotSupportedProjectType());
+      else return err(new InvalidProjectError());
     });
     sandbox.stub(FxCore.prototype, "grantPermission").resolves(ok(""));
     sandbox.stub(FxCore.prototype, "listCollaborator").resolves(ok([]));

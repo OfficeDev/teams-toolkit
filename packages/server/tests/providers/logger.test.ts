@@ -9,7 +9,7 @@ import fs from "fs-extra";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { Namespaces, NotificationTypes } from "../../src/apis";
 import ServerLogProvider from "../../src/providers/logger";
-import { Colors, LogLevel, NotImplementedError } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel } from "@microsoft/teamsfx-api";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {

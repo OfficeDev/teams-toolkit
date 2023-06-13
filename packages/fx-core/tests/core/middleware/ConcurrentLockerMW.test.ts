@@ -3,7 +3,6 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ConcurrentError,
   ConfigFolderName,
   CoreCallbackEvent,
   FxError,
@@ -13,7 +12,6 @@ import {
   Platform,
   Result,
   SettingsFolderName,
-  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import fs from "fs-extra";
@@ -27,7 +25,12 @@ import { CoreSource, NoProjectOpenedError } from "../../../src/core/error";
 import { randomAppName } from "../utils";
 import * as tools from "../../../src/common/tools";
 import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
-import { FileNotFoundError, InvalidProjectError } from "../../../src/error/common";
+import {
+  ConcurrentError,
+  FileNotFoundError,
+  InvalidProjectError,
+  UserCancelError,
+} from "../../../src/error/common";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {
@@ -71,7 +74,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     }
     async methodThrowError(inputs: Inputs): Promise<Result<any, FxError>> {
       this.count++;
-      throw UserCancelError;
+      throw new UserCancelError();
     }
     async methodCallSelf(inputs: Inputs): Promise<Result<any, FxError>> {
       this.count++;
@@ -117,7 +120,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       const my = new MyClass();
       await my.methodThrowError(inputs);
     } catch (e) {
-      assert.isTrue(e === UserCancelError);
+      assert.isTrue(e instanceof UserCancelError);
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }

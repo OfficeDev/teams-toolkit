@@ -10,7 +10,6 @@ import * as xml2js from "xml2js";
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
-  assembleError,
   Colors,
   ContextV3,
   err,
@@ -23,13 +22,11 @@ import {
   Result,
   Void,
 } from "@microsoft/teamsfx-api";
-
-import { globalStateUpdate } from "../../common/globalState";
+import { assembleError } from "../../error/common";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { downloadSampleHook } from "../../core/downloadSample";
 import { ObjectIsUndefinedError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
 import {
@@ -45,7 +42,7 @@ import {
   MissingRequiredInputError,
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
-import { convertToLangKey } from "../code/utils";
+import { convertToLangKey } from "../generator/utils";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
 import {
@@ -62,7 +59,7 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
   TabOptionItem,
-  TabSPFxNewUIItem,
+  TabSPFxItem,
   WorkflowOptionItem,
 } from "../constants";
 import { deployUtils } from "../deployUtils";
@@ -78,7 +75,7 @@ import {
 } from "../feature/bot/question";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { SPFxGenerator } from "../generator/spfxGenerator";
+import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
@@ -89,6 +86,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
+import { glob } from "glob";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -170,7 +168,6 @@ export class Coordinator {
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath = "";
-    const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo().id) {
       // create from sample
       const sampleId = inputs[CoreQuestionNames.Samples] as string;
@@ -219,7 +216,7 @@ export class Coordinator {
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
 
-      if (feature === TabSPFxNewUIItem().id) {
+      if (feature === TabSPFxItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
       } else if (
@@ -258,9 +255,6 @@ export class Coordinator {
       inputs.projectId = ensureRes.value;
     }
 
-    if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(automaticNpmInstall, true);
-    }
     context.projectPath = projectPath;
 
     if (inputs.teamsAppFromTdp) {
@@ -661,7 +655,15 @@ export class Coordinator {
         }
       }
     } else {
-      ctx.ui?.showMessage("info", msg, false);
+      if (ctx.platform === Platform.VS) {
+        ctx.ui!.showMessage(
+          "info",
+          getLocalizedString("core.common.LifecycleComplete.prepareTeamsApp"),
+          false
+        );
+      } else {
+        ctx.ui!.showMessage("info", msg, false);
+      }
     }
     ctx.logProvider.info(msg);
 
@@ -910,4 +912,22 @@ export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessag
     textForMsgBox: botTroubleShootDesc,
     textForActionButton: botTroubleShootLearnMore,
   } as BotTroubleShootMessage;
+}
+
+export async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
+  // A temporary solution to avoid duplicate componentId
+  if (sampleId === "todo-list-SPFx") {
+    const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+    const componentId = uuid.v4();
+    glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
+      await Promise.all(
+        files.map(async (file) => {
+          let content = (await fs.readFile(file)).toString();
+          const reg = new RegExp(originalId, "g");
+          content = content.replace(reg, componentId);
+          await fs.writeFile(file, content);
+        })
+      );
+    });
+  }
 }

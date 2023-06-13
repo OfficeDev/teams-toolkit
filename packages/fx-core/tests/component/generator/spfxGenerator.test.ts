@@ -11,16 +11,16 @@ import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { Generator } from "../../../src/component/generator/generator";
-import { SPFxGenerator } from "../../../src/component/generator/spfxGenerator";
-import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
+import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
+import { GeneratorChecker } from "../../../src/component/generator/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../../../src/component/generator/spfx/depsChecker/yoChecker";
 import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
-} from "../../../src/component/resource/spfx/utils/question-helper";
-import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
-import { Utils } from "../../../src/component/resource/spfx/utils/utils";
-import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
+} from "../../../src/component/generator/spfx/utils/question-helper";
+import { SPFXQuestionNames } from "../../../src/component/generator/spfx/utils/questions";
+import { Utils } from "../../../src/component/generator/spfx/utils/utils";
+import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 
@@ -32,13 +32,11 @@ describe("SPFxGenerator", function () {
   beforeEach(async () => {
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3(newProjectSettingsV3());
+    context = createContextV3();
 
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
     sinon.stub(fs, "stat").resolves();
-    sinon.stub(YoChecker.prototype, "isInstalled").resolves(true);
-    sinon.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
 
     const manifestId = uuid.v4();
     sinon.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));
@@ -288,6 +286,27 @@ describe("SPFxGenerator", function () {
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
     chai.expect(result.isErr()).to.eq(true);
+  });
+
+  it("Yeoman Generator scaffolding error with unknown", async function () {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+    };
+    sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
+    sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
+    sinon.stub(cpUtils, "executeCommand").throws(new Error("errorMessage"));
+    sinon.stub(Generator, "generateTemplate" as any).resolves(ok(undefined));
+    sinon.stub(YoChecker.prototype, "ensureLatestDependency").throws(new Error("unknown"));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).equal("SPFxScaffoldError");
+    }
   });
 
   it("install locally and use path", async function () {

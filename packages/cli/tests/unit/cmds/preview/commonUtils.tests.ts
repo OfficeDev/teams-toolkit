@@ -1,25 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  IProgressHandler,
-  err,
-  ok,
-  UserError,
-  ProjectConfig,
-  ConfigMap,
-} from "@microsoft/teamsfx-api";
+import { IProgressHandler, ok, ProjectConfig, ConfigMap } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import {
   createTaskStartCb,
   createTaskStopCb,
-  getAutomaticNpmInstallSetting,
   generateAccountHint,
   getBotOutlookChannelLink,
 } from "../../../../src/cmds/preview/commonUtils";
 import { expect } from "../../utils";
-import { UserSettings } from "../../../../src/userSetttings";
-import { cliSource } from "../../../../src/constants";
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import fs from "fs-extra";
@@ -51,53 +41,6 @@ describe("commonUtils", () => {
         exitCode: null,
       });
       expect(progressHandler.end.calledOnce).to.be.true;
-    });
-  });
-
-  describe("getAutomaticNpmInstallSetting", () => {
-    const automaticNpmInstallOption = "automatic-npm-install";
-
-    it("on", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(
-        ok({
-          [automaticNpmInstallOption]: "on",
-        })
-      );
-      expect(getAutomaticNpmInstallSetting()).to.be.true;
-    });
-
-    it("off", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(
-        ok({
-          [automaticNpmInstallOption]: "off",
-        })
-      );
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("others", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(
-        ok({
-          [automaticNpmInstallOption]: "others",
-        })
-      );
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("none", () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(ok({}));
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("getConfigSync error", () => {
-      const error = new UserError(cliSource, "Test", "Test");
-      sandbox.stub(UserSettings, "getConfigSync").returns(err(error));
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
-    });
-
-    it("getConfigSync exception", () => {
-      sandbox.stub(UserSettings, "getConfigSync").throws("Test");
-      expect(getAutomaticNpmInstallSetting()).to.be.false;
     });
   });
 

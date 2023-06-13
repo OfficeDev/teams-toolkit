@@ -11,10 +11,9 @@ import { performance } from "perf_hooks";
 import axios from "axios";
 import { wrapRun } from "../../utils/common";
 import {
-  BotRegistration,
+  createBotAadApp,
   BotAadCredentials,
-} from "../../resource/botService/botRegistration/botRegistration";
-import { RemoteBotRegistration } from "../../resource/botService/botRegistration/remoteBotRegistration";
+} from "../../resource/botService/botRegistration/botAadApp";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { logMessageKeys } from "./utility/constants";
@@ -107,12 +106,10 @@ export class CreateBotAadAppDriver implements StepDriver {
         botId: botAadAppState.botId ?? "",
         botPassword: botAadAppState.botPassword ?? "",
       };
-      const botRegistration: BotRegistration = new RemoteBotRegistration();
 
       const startTime = performance.now();
-      const createRes = await botRegistration.createBotRegistration(
+      const createRes = await createBotAadApp(
         context.m365TokenProvider,
-        args.name,
         args.name,
         botConfig,
         context.logProvider

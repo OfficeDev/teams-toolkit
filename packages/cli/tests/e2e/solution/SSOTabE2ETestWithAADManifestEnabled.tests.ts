@@ -43,9 +43,14 @@ describe("SSO Tab with aad manifest enabled", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("SSO Tab E2E test with aad manifest enabled", { testPlanCaseId: 15687261 }, async () => {
+  it("SSO Tab E2E test with aad manifest enabled", { testPlanCaseId: 24137775 }, async () => {
     // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
+    await CliHelper.createProjectWithCapability(
+      appName,
+      testFolder,
+      Capability.M365SsoLaunchPage,
+      env
+    );
     if (!isV3Enabled()) {
       // Assert
       const projectSettings = await fs.readJSON(
@@ -80,7 +85,7 @@ describe("SSO Tab with aad manifest enabled", () => {
       expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.json"))).to.be.true;
     }
 
-    await CliHelper.provisionProject(projectPath, "", env);
+    await CliHelper.provisionProject(projectPath, "", "dev", env);
 
     const context = isV3Enabled()
       ? await readContextMultiEnvV3(projectPath, "dev")
@@ -102,14 +107,14 @@ describe("SSO Tab with aad manifest enabled", () => {
     }
 
     // Deploy all resources without aad manifest
-    await CliHelper.deployAll(projectPath, "", env);
+    await CliHelper.deployAll(projectPath, "", "dev", env);
     await AadValidator.validate(aad);
 
     // Deploy all resources include aad manifest
     if (isV3Enabled()) {
       await CliHelper.updateAadManifest(projectPath, "--env dev", env);
     } else {
-      await CliHelper.deployAll(projectPath, "--include-aad-manifest", env);
+      await CliHelper.deployAll(projectPath, "--include-aad-manifest", "dev", env);
     }
     await AadValidator.validate(aad, firstIdentifierUri);
 

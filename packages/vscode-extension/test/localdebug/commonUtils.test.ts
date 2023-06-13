@@ -22,47 +22,6 @@ describe("[debug > commonUtils]", () => {
     await fs.emptyDir(testDataFolder);
   });
 
-  describe("loadPackageJson()", () => {
-    it("happy path", async () => {
-      const content = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          }\n\
-        }`;
-      const packageJsonPath = path.join(testDataFolder, "package.json");
-      await fs.writeFile(packageJsonPath, content);
-
-      const packageJson = await commonUtils.loadPackageJson(packageJsonPath);
-      chai.expect(packageJson).not.to.be.undefined;
-      chai.expect(packageJson!.name).equals("test");
-      chai.expect(packageJson!.version).equals("1.0.0");
-      chai.expect(packageJson!.scripts).eql({ build: "tsc --build" });
-    });
-
-    it("file not found", async () => {
-      const packageJsonPath = path.join(testDataFolder, "package.json");
-      await fs.remove(packageJsonPath);
-
-      const packageJson = await commonUtils.loadPackageJson(packageJsonPath);
-      chai.expect(packageJson).to.be.undefined;
-    });
-
-    it("bad format", async () => {
-      const content = `\
-        {\n\
-          "name": "test",,,,\n\
-        }`;
-      const packageJsonPath = path.join(testDataFolder, "package.json");
-      await fs.writeFile(packageJsonPath, content);
-
-      const packageJson = await commonUtils.loadPackageJson(packageJsonPath);
-      chai.expect(packageJson).to.be.undefined;
-    });
-  });
-
   describe("getV3TeamsAppId", () => {
     const sandbox = sinon.createSandbox();
 

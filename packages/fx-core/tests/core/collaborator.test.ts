@@ -159,7 +159,7 @@ describe("Collaborator APIs for V3", () => {
           err(
             new UserError(
               "AppStudioPlugin",
-              SolutionError.FailedToListCollaborator,
+              "FailedToListCollaborator",
               "List collaborator failed."
             )
           )
@@ -174,7 +174,7 @@ describe("Collaborator APIs for V3", () => {
       };
       inputs.platform = Platform.CLI;
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToListCollaborator);
+      assert.isTrue(result.isErr() && result.error.name === "FailedToListCollaborator");
     });
 
     it("happy path", async () => {
@@ -356,11 +356,7 @@ describe("Collaborator APIs for V3", () => {
         .stub(appStudio, "checkPermission")
         .resolves(
           err(
-            new UserError(
-              "AppStudioPlugin",
-              SolutionError.FailedToCheckPermission,
-              "List collaborator failed."
-            )
+            new UserError("AppStudioPlugin", "FailedToCheckPermission", "List collaborator failed.")
           )
         );
       const envInfo: v3.EnvInfoV3 = {
@@ -372,7 +368,7 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToCheckPermission);
+      assert.isTrue(result.isErr() && result.error.name === "FailedToCheckPermission");
     });
     it("happy path", async () => {
       ctx.projectSetting.components = [
@@ -599,16 +595,12 @@ describe("Collaborator APIs for V3", () => {
         .stub(appStudio, "grantPermission")
         .resolves(
           err(
-            new UserError(
-              "AppStudioPlugin",
-              SolutionError.FailedToGrantPermission,
-              "Grant permission failed."
-            )
+            new UserError("AppStudioPlugin", "FailedToGrantPermission", "Grant permission failed.")
           )
         );
       inputs.email = "your_collaborator@yourcompany.com";
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToGrantPermission);
+      assert.isTrue(result.isErr() && result.error.name === "FailedToGrantPermission");
     });
     it("happy path", async () => {
       ctx.projectSetting.components = [

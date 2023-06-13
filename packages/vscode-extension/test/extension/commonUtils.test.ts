@@ -17,6 +17,9 @@ import * as commonUtils from "../../src/utils/commonUtils";
 
 import path = require("path");
 import { MockCore } from "../mocks/mockCore";
+
+import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
     it("alpha version", () => {
@@ -164,6 +167,54 @@ describe("CommonUtils", () => {
     it("throw error", async () => {
       sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
       const result = await commonUtils.getAppName();
+      chai.expect(result).equals(undefined);
+    });
+  });
+
+  describe("getTeamsAppTelemetryInfoByEnv", async () => {
+    const sandbox = sinon.createSandbox();
+    const core = new MockCore();
+
+    beforeEach(() => {
+      sandbox.stub(handlers, "core").value(core);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      const info = {
+        projectId: "mock-project-id",
+        teamsAppId: "mock-app-id",
+        teamsAppName: "mock-app-name",
+        m365TenantId: "mock-tenant-id",
+      };
+      sandbox.stub(core, "getProjectInfo").resolves(ok(info));
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      chai.expect(result).deep.equals({
+        appId: "mock-app-id",
+        tenantId: "mock-tenant-id",
+      });
+    });
+    it("isValidProject is false", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(coreUtils, "isValidProject").returns(false);
+      const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      chai.expect(result).equals(undefined);
+    });
+    it("return error", async () => {
+      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      sandbox.stub(core, "getProjectInfo").resolves(err(new UserError({})));
+      const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      chai.expect(result).equals(undefined);
+    });
+    it("throw error", async () => {
+      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
+      const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).equals(undefined);
     });
   });

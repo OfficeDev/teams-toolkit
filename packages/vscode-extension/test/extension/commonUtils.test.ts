@@ -2,25 +2,21 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as sinon from "sinon";
-import * as tmp from "tmp";
 import { Uri } from "vscode";
 
-import {
-  ConfigFolderName,
-  InputConfigsFolderName,
-  ok,
-  ProjectSettingsFileName,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 
 import * as extensionPackage from "../../package.json";
 import * as globalVariables from "../../src/globalVariables";
+import * as handlers from "../../src/handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import * as commonUtils from "../../src/utils/commonUtils";
 
 import path = require("path");
+import { MockCore } from "../mocks/mockCore";
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
     it("alpha version", () => {
@@ -104,89 +100,70 @@ describe("CommonUtils", () => {
 
   describe("getProjectId", async () => {
     const sandbox = sinon.createSandbox();
-
-    let workspacePath: string;
-    let cleanupCallback: (() => void) | undefined;
-
-    function createOldProjectSettings() {
-      const filePath = path.join(workspacePath, `.${ConfigFolderName}`, "settings.json");
-      fs.ensureDirSync(path.dirname(filePath));
-      fs.writeJsonSync(filePath, {
-        solutionSettings: {
-          hostType: "azure",
-        },
-        projectId: "old",
-      });
-    }
-    function createNewProjectSettings() {
-      const filePath = path.join(
-        workspacePath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName,
-        ProjectSettingsFileName
-      );
-      fs.ensureDirSync(path.dirname(filePath));
-      fs.writeJsonSync(filePath, {
-        solutionSettings: {
-          hostType: "azure",
-        },
-        projectId: "new",
-      });
-    }
+    const core = new MockCore();
 
     beforeEach(() => {
-      // Use real file system instead of stub because of cross-package stub issues of ES6 import
-      // https://github.com/sinonjs/sinon/issues/1711
-      const { name, removeCallback } = tmp.dirSync({ unsafeCleanup: true });
-      cleanupCallback = removeCallback;
-      workspacePath = name;
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file(workspacePath));
+      sandbox.stub(handlers, "core").value(core);
     });
 
     afterEach(() => {
-      if (cleanupCallback) {
-        cleanupCallback();
-      }
-    });
-
-    before(() => {
-      // stub existsSync for other project files besides project settings file
-      sandbox.stub(fs, "existsSync").callsFake((pathLike: fs.PathLike) => {
-        const _path = pathLike.toString();
-        return _path.includes("real");
-      });
-    });
-
-    after(() => {
       sandbox.restore();
     });
 
-    it("Multi env enabled and both new files and old files exist", async () => {
-      createOldProjectSettings();
-      createNewProjectSettings();
-      const result = commonUtils.getProjectId();
-      chai.expect(result).equals("new");
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(core, "getProjectId").resolves(ok("mock-project-id"));
+      const result = await commonUtils.getProjectId();
+      chai.expect(result).equals("mock-project-id");
     });
-    it("Multi env enabled and only new files exist", async () => {
-      createNewProjectSettings();
-      const result = commonUtils.getProjectId();
-      chai.expect(result).equals("new");
-    });
-    it("Multi env enabled and only old files exist", async () => {
-      createOldProjectSettings();
-      const result = commonUtils.getProjectId();
-      chai.expect(result).equals("old");
-    });
-    it("Multi env enabled and neither new nor old files exist", async () => {
-      const result = commonUtils.getProjectId();
+    it("workspaceUri is undefined", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+      const result = await commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
+    it("return error", async () => {
+      sandbox.stub(core, "getProjectId").resolves(err(new UserError({})));
+      const result = await commonUtils.getProjectId();
+      chai.expect(result).equals(undefined);
+    });
+    it("throw error", async () => {
+      sandbox.stub(core, "getProjectId").rejects(new UserError({}));
+      const result = await commonUtils.getProjectId();
+      chai.expect(result).equals(undefined);
+    });
+  });
 
-    it("undefined workspace uri", () => {
+  describe("getAppName", async () => {
+    const sandbox = sinon.createSandbox();
+    const core = new MockCore();
+
+    beforeEach(() => {
+      sandbox.stub(handlers, "core").value(core);
+    });
+
+    afterEach(() => {
       sandbox.restore();
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file(workspacePath));
+    });
 
-      const result = commonUtils.getProjectId();
+    it("happy path", async () => {
+      sandbox.stub(core, "getTeamsAppName").resolves(ok("mock-app-name"));
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      const result = await commonUtils.getAppName();
+      chai.expect(result).equals("mock-app-name");
+    });
+    it("workspaceUri is undefined", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+      const result = await commonUtils.getAppName();
+      chai.expect(result).equals(undefined);
+    });
+    it("return error", async () => {
+      sandbox.stub(core, "getTeamsAppName").resolves(err(new UserError({})));
+      const result = await commonUtils.getAppName();
+      chai.expect(result).equals(undefined);
+    });
+    it("throw error", async () => {
+      sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
+      const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });
   });
@@ -266,47 +243,6 @@ describe("CommonUtils", () => {
         });
       });
     }
-  });
-
-  describe("get app name", () => {
-    const sandbox = sinon.createSandbox();
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("get app name successfully", async () => {
-      const ymlData = `# Triggered when 'teamsfx provision' is executed
-      provision:
-        - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
-          with:
-            name: appNameTest-aad
-      
-        - uses: teamsApp/create # Creates a Teams app
-          with:
-            name: appNameTest-\${{TEAMSFX_ENV}} # Teams app name
-      `;
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
-      sandbox.stub(fs, "readFileSync").returns(ymlData);
-
-      const res = await commonUtils.getAppName();
-      chai.expect(res).equal("appNameTest");
-    });
-
-    it("empty yml file", () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
-      sandbox.stub(fs, "readFileSync").returns("");
-
-      const res = commonUtils.getAppName();
-      chai.expect(res).equal(undefined);
-    });
-
-    it("throw exception", () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
-      sandbox.stub(fs, "readFileSync").throws();
-
-      const res = commonUtils.getAppName();
-      chai.expect(res).equal(undefined);
-    });
   });
 
   describe("getProvisionSucceedFromEnv", () => {

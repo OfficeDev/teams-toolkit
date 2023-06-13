@@ -116,4 +116,31 @@ export class MockCore {
   async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok("");
   }
+  async getProjectId(projectPath: string): Promise<Result<string, FxError>> {
+    return ok("");
+  }
+  async getTeamsAppName(projectPath: string): Promise<Result<string, FxError>> {
+    return ok("");
+  }
+  async getProjectInfo(
+    projectPath: string,
+    env: string
+  ): Promise<
+    Result<
+      {
+        projectId: string;
+        teamsAppId: string;
+        teamsAppName: string;
+        m365TenantId: string;
+      },
+      FxError
+    >
+  > {
+    return ok({
+      projectId: "",
+      teamsAppId: "",
+      teamsAppName: "",
+      m365TenantId: "",
+    });
+  }
 }

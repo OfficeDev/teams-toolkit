@@ -444,8 +444,8 @@ export class FxCore {
     return this.v3Implement.dispatch(this.preProvisionForVS, inputs);
   }
 
-  async preCheckForVSLocal(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return this.v3Implement.dispatch(this.preCheckForVSLocal, inputs);
+  async preCheckYmlAndEnvForVS(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.preCheckYmlAndEnvForVS, inputs);
   }
 
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {

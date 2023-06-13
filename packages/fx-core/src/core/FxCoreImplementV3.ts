@@ -479,20 +479,16 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async preCheckForVSLocal(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async preCheckYmlAndEnvForVS(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     const context = createDriverContext(inputs);
-    const checkLocalYmlAndEnv = await coordinator.preCheckForVSLocalYmlAndEnv(
+    const result = await coordinator.preCheckYmlAndEnvForVS(
       context,
       inputs as InputsWithProjectPath
     );
-    if (checkLocalYmlAndEnv.isErr()) {
-      return err(checkLocalYmlAndEnv.error);
-    }
-    const checkLocalManifestAndEnv = await this.validateManifest(inputs, ctx);
-    if (checkLocalManifestAndEnv.isErr()) {
-      return err(checkLocalManifestAndEnv.error);
-    }
-    return ok(Void);
+    return result;
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
@@ -589,7 +585,7 @@ export class FxCoreV3Implement {
     const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
-      showMessage: true,
+      showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const result = await driver.run(args, context);

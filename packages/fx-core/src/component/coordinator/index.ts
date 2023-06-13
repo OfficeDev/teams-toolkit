@@ -387,7 +387,7 @@ export class Coordinator {
     return ok(res);
   }
 
-  async preCheckForVSLocalYmlAndEnv(
+  async preCheckYmlAndEnvForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
   ): Promise<Result<Void, FxError>> {

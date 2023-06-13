@@ -119,10 +119,10 @@ describe("Core basic APIs for v3", () => {
       [SPFXQuestionNames.spfx_solution]: "import",
       [SPFXQuestionNames.spfx_import_folder]: "c:\\test",
     };
-    sinon
+    sandbox
       .stub(fs, "readJson")
       .resolves({ "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } });
-    sinon.stub(fs, "pathExists").callsFake((directory: string) => {
+    sandbox.stub(fs, "pathExists").callsFake((directory: string) => {
       if (directory.includes(".yo-rc.json")) return true;
       else return false;
     });

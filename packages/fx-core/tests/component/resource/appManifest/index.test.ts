@@ -22,9 +22,8 @@ import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../src/component/constants";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { Constants } from "../../../../src/component/resource/appManifest/constants";
-import { autoPublishOption } from "../../../../src/component/resource/appManifest/questions";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import * as uuid from "uuid";
@@ -66,12 +65,6 @@ describe("App-manifest Component", () => {
         unique_name: "fakename",
       })
     );
-
-    const res: SingleSelectResult = {
-      type: "success",
-      result: autoPublishOption(),
-    };
-    sandbox.stub(context.userInteraction, "selectOption").resolves(ok(res));
 
     context.logProvider = new MockLogProvider();
   });
@@ -464,12 +457,6 @@ describe("App-manifest Component - v3", () => {
         unique_name: "fakename",
       })
     );
-
-    const res: SingleSelectResult = {
-      type: "success",
-      result: autoPublishOption(),
-    };
-    sandbox.stub(context.userInteraction, "selectOption").resolves(ok(res));
 
     context.logProvider = new MockLogProvider();
     context.tokenProvider = {

@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { PluginContext, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
-import { AppStudioClient } from "../../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "../../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { AppDefinition } from "../../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";

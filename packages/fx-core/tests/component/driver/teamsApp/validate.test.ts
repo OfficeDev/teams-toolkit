@@ -11,7 +11,7 @@ import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/
 import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
 import { ValidateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import {
   MockedLogProvider,
   MockedM365Provider,

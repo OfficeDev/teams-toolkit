@@ -39,4 +39,4 @@ jobs:
       - name: publish release to npm org
         working-directory: packages/api2teams/
         run: |
-          npm publish --dist-tag alpha
+          npm publish --tag alpha

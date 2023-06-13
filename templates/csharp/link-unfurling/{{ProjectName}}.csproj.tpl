@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.18.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.18.1" />
-	  <PackageReference Include="AdaptiveCards" Version="2.7.3" />
+    <PackageReference Include="AdaptiveCards" Version="2.7.3" />
   </ItemGroup>
 
 </Project>

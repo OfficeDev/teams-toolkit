@@ -1,4 +1,3 @@
-.fx
 .deployment
 .vscode
 *.js.map
@@ -12,6 +11,3 @@ local.settings.json
 test
 tsconfig.json
 .DS_Store
-node_modules/.bin
-node_modules/ts-node
-node_modules/typescript

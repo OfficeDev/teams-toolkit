@@ -18,7 +18,6 @@ describe("Manifest codelens", () => {
   });
 
   it("Template codelens - V3", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     const url =
       "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json";
     const document = {
@@ -51,7 +50,6 @@ describe("Manifest codelens", () => {
   });
 
   it("ResolveEnvironmentVariableCodelens", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
@@ -70,7 +68,6 @@ describe("Manifest codelens", () => {
   });
 
   it("ResolveEnvironmentVariableCodelens for AAD manifest", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
@@ -89,7 +86,6 @@ describe("Manifest codelens", () => {
   });
 
   it("ComputeTemplateCodeLenses for AAD manifest", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
     const document = <vscode.TextDocument>{
       fileName: "./aad.manifest.json",

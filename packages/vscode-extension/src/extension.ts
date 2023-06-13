@@ -16,7 +16,6 @@ import {
   ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
@@ -496,12 +495,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createAccountCmd);
 
-  const updateAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
-    "fx-extension.updateAadAppManifestFromCtxMenu",
-    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
-  );
-  context.subscriptions.push(updateAadAppManifestFromCtxMenu);
-
   const manageCollaborator = vscode.commands.registerCommand(
     "fx-extension.manageCollaborator",
     (node) => {
@@ -578,12 +571,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.openPreviewAadFile, args)
   );
   context.subscriptions.push(aadManifestTemplateCodeLensCmd);
-
-  const manifestTemplateCodeLensCmd = vscode.commands.registerCommand(
-    "fx-extension.openPreviewFile",
-    (...args) => Correlator.run(handlers.openPreviewManifest, args)
-  );
-  context.subscriptions.push(manifestTemplateCodeLensCmd);
 
   const openResourceGroupInPortal = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
@@ -667,7 +654,6 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
   });
 
   await setAadManifestEnabledContext();
-  await setApiV3EnabledContext();
   await setTDPIntegrationEnabledContext();
 
   const upgradeable = await checkProjectUpgradable();
@@ -679,10 +665,6 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
 
 async function setAadManifestEnabledContext() {
   vscode.commands.executeCommand("setContext", "fx-extension.isAadManifestEnabled", true);
-}
-
-async function setApiV3EnabledContext() {
-  await vscode.commands.executeCommand("setContext", "fx-extension.isV3Enabled", isV3Enabled());
 }
 
 async function setTDPIntegrationEnabledContext() {

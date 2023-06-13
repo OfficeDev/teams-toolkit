@@ -141,7 +141,6 @@ describe("handlers", () => {
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const isV3Enabled = sandbox.stub(commonTools, "isV3Enabled").returns(true);
 
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
@@ -212,7 +211,6 @@ describe("handlers", () => {
     });
 
     it("createNewProjectHandler()", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const clock = sinon.useFakeTimers();
 
       sinon.stub(handlers, "core").value(new MockCore());
@@ -274,7 +272,6 @@ describe("handlers", () => {
     });
 
     it("buildPackageHandler()", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -287,7 +284,6 @@ describe("handlers", () => {
     });
 
     it("validateManifestHandler() - app package", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -359,7 +355,6 @@ describe("handlers", () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
       sinon.stub(globalVariables, "isSPFxProject").value(true);
       let tutorialOptions: OptionItem[] = [];
@@ -489,7 +484,6 @@ describe("handlers", () => {
     });
 
     it("deployAadManifest happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const sandbox = sinon.createSandbox();
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -504,7 +498,6 @@ describe("handlers", () => {
     });
 
     it("localDebug", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -531,7 +524,6 @@ describe("handlers", () => {
     });
 
     it("publishApplication", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -544,7 +536,6 @@ describe("handlers", () => {
     });
 
     it("createEnv", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -788,10 +779,6 @@ describe("handlers", () => {
   describe("permission v3", function () {
     const sandbox = sinon.createSandbox();
 
-    this.beforeEach(() => {
-      sandbox.stub(commonTools, "isV3Enabled").returns(true);
-    });
-
     this.afterEach(() => {
       sandbox.restore();
     });
@@ -901,7 +888,6 @@ describe("handlers", () => {
     });
     it("edit manifest template: local", async () => {
       sinon.restore();
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
         .stub(vscode.workspace, "openTextDocument")
@@ -921,7 +907,6 @@ describe("handlers", () => {
 
     it("edit manifest template: remote", async () => {
       sinon.restore();
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
         .stub(vscode.workspace, "openTextDocument")
@@ -1038,19 +1023,7 @@ describe("handlers", () => {
     chai.assert.isTrue(createProject.calledOnceWith(inputs));
   });
 
-  it("deployAadAppManifest", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    sandbox.stub(handlers, "core").value(new MockCore());
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployArtifacts = sandbox.spy(handlers.core, "deployArtifacts");
-    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sandbox.assert.calledOnce(deployArtifacts);
-    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
-  });
-
-  it("deployAadAppmanifest for v3", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+  it("deployAadAppmanifest", async () => {
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1058,18 +1031,6 @@ describe("handlers", () => {
     await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }]);
     sandbox.assert.calledOnce(deployAadManifest);
     deployAadManifest.restore();
-  });
-
-  it("deployAadAppManifest on codelens only for v2", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    sandbox.stub(handlers, "core").value(new MockCore());
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployArtifacts = sandbox.spy(handlers.core, "deployArtifacts");
-    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sandbox.assert.calledOnce(deployArtifacts);
-    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
-    deployArtifacts.restore();
   });
 
   it("showError", async () => {
@@ -1314,7 +1275,6 @@ describe("handlers", () => {
     });
 
     it("publish in developer portal - success", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon
@@ -1339,7 +1299,6 @@ describe("handlers", () => {
     });
 
     it("publish in developer portal - cancelled", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon
@@ -1384,7 +1343,6 @@ describe("handlers", () => {
     });
 
     it("open link with loginHint", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(M365TokenInstance, "getStatus").resolves(
@@ -1407,7 +1365,6 @@ describe("handlers", () => {
     });
 
     it("open link without loginHint", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon.stub(M365TokenInstance, "getStatus").resolves(
         ok({
@@ -1434,15 +1391,13 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("v3: happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("happy path", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.installAppInTeams();
       chai.assert.equal(result, undefined);
     });
 
-    it("v3: migration error", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("migration error", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
       sinon.stub(handlers, "showError").resolves();
       const result = await handlers.installAppInTeams();
@@ -1486,15 +1441,13 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("v3: happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("happy path", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, undefined);
     });
 
-    it("v3: migration error", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("migration error", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
       sinon.stub(handlers, "showError").resolves();
       const result = await handlers.validateAzureDependenciesHandler();
@@ -1507,15 +1460,13 @@ describe("handlers", () => {
       sinon.restore();
     });
 
-    it("v3: happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("happy path", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.validateLocalPrerequisitesHandler();
       chai.assert.equal(result, undefined);
     });
 
-    it("v3: migration error", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("migration error", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
       sinon.stub(handlers, "showError").resolves();
       const result = await handlers.validateLocalPrerequisitesHandler();
@@ -1524,16 +1475,14 @@ describe("handlers", () => {
   });
 
   describe("backendExtensionsInstallHandler", () => {
-    it("v3: happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("happy path", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.backendExtensionsInstallHandler();
       chai.assert.equal(result, undefined);
       sinon.restore();
     });
 
-    it("v3: migration error", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("migration error", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
       sinon.stub(handlers, "showError").resolves();
       const result = await handlers.backendExtensionsInstallHandler();
@@ -1543,16 +1492,14 @@ describe("handlers", () => {
   });
 
   describe("preDebugCheckHandler", () => {
-    it("v3: happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("happy path", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").resolves();
       const result = await handlers.preDebugCheckHandler();
       chai.assert.equal(result, undefined);
       sinon.restore();
     });
 
-    it("v3: happy path", async () => {
-      sinon.stub(commonTools, "isV3Enabled").returns(true);
+    it("happy path", async () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
       sinon.stub(handlers, "showError").resolves();
       const result = await handlers.preDebugCheckHandler();
@@ -1584,7 +1531,6 @@ describe("handlers", () => {
   });
 
   it("refreshSPFxTreeOnFileChanged", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
     const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
     const updateTreeViewsOnSPFxChanged = sandbox
       .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
@@ -1613,7 +1559,6 @@ describe("openPreviewAadFile", () => {
     const core = new MockCore();
     sandbox.stub(handlers, "core").value(core);
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(fs, "existsSync").returns(false);
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(extension.VS_CODE_UI, "selectOption").resolves(

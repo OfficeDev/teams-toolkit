@@ -9,7 +9,6 @@ import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSett
 
 import { UserState } from "./constants";
 import { UriHandler } from "./uriHandler";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 /**
  * Common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -39,7 +38,7 @@ export async function initializeGlobalVariables(ctx: vscode.ExtensionContext): P
   if (!(await fs.pathExists(defaultExtensionLogPath))) {
     await fs.mkdir(defaultExtensionLogPath);
   }
-  if (isV3Enabled() && isTeamsFxProject && workspaceUri?.fsPath) {
+  if (isTeamsFxProject && workspaceUri?.fsPath) {
     isSPFxProject = checkIsSPFx(workspaceUri?.fsPath);
   } else {
     isSPFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", "SPFx"));

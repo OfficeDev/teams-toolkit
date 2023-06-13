@@ -108,7 +108,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         });
 
         if (tokenRes.isErr()) {
-          return null;
+          throw tokenRes.error;
         }
         const res = `Bearer ${tokenRes.value}`;
         return res;

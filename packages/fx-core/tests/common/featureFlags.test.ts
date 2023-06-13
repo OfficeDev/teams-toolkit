@@ -26,7 +26,7 @@ describe("featureFlags", () => {
 
     it("successfully open all feature flags", async () => {
       initializePreviewFeatureFlags();
-      chai.assert.isTrue((process.env[FeatureFlagName.BotNotification] = "true"));
+      chai.assert.isTrue(process.env[FeatureFlagName.BotNotification] === "true");
     });
   });
 });

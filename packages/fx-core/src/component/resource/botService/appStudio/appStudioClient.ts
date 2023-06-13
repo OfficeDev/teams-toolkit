@@ -21,7 +21,6 @@ import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
 import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../appManifest/constants";
 import { ResourceContextV3, SystemError } from "@microsoft/teamsfx-api";
-import { FxBotPluginResultFactory } from "../result";
 import { AppStudioClient as AppStudio } from "../../appManifest/appStudioClient";
 import { isHappyResponse } from "../common";
 import { HttpStatusCode } from "../../../constant/commonConstant";

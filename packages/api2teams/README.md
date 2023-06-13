@@ -16,7 +16,7 @@ To run this CLI and run generated Teams APP in your local dev machine or deploy 
   npm install @microsoft/api2teams@latest -g
   ```
 
-- Download [sample-open-api-spec.yml](./sample-spec/sample-open-api-spec.yml) to current working directory
+- Download [sample-open-api-spec.yml](https://raw.githubusercontent.com/OfficeDev/TeamsFx/api2teams/packages/api2teams/sample-spec/sample-open-api-spec.yml) to current working directory
 
 - Run the command below to convert `sample-open-api-spec.yml` file to Teams App, it will generate teams project to `generated-teams-app` folder
   ```

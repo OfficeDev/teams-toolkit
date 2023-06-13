@@ -7,13 +7,16 @@
   "license": "MIT",
   "scripts": {
     "build": "rimraf lib && tsc -p ./ && copyfiles -u 1 -a src/resources/**/* lib",
-    "package": "rimraf lib && webpack --mode production --config ./webpack.config.js",
+    "package": "npm run build",
     "lint": "eslint . --ext .ts",
     "test": "npm run unit-test && npm run e2e-test",
     "unit-test": "mocha -r ts-node/register tests/unit/**/*.test.ts",
     "e2e-test": "mocha -r ts-node/register tests/e2e/**/*.test.ts",
     "prettier": "prettier --write \"src/**/*.ts\""
   },
+  "files": [
+    "lib/**/*"
+  ],
   "bin": {
     "api2teams": "./cli.js"
   },

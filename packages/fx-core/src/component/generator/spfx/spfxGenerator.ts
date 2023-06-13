@@ -193,7 +193,7 @@ export class SPFxGenerator {
         importDetails.push(
           `(.) Processing: There're multiple web parts in the SPFx solution, exposing each of them in Teams manifest...`
         );
-        for (let i = 1; i < webparts.length - 1; i++) {
+        for (let i = 1; i < webparts.length; i++) {
           const webpart = webparts[i];
           const webpartManifestPath = path.join(
             webpartsDir,

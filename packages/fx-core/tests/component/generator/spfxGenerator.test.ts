@@ -24,6 +24,7 @@ import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { ManifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { EnvUtil } from "../../../src/component/utils/envUtil";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -43,7 +44,7 @@ describe("SPFxGenerator", function () {
       .stub(fs, "readFile")
       .resolves(
         new Buffer(
-          `{"id": "${manifestId}", "preconfiguredEntries": ["title" {"default": "helloworld"}]}`
+          `{"id": "${manifestId}", "preconfiguredEntries": [{"title": {"default": "helloworld"}}]}`
         )
       );
     sinon.stub(fs, "writeFile").resolves();
@@ -407,6 +408,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
     };
 
     sinon.stub(fs, "pathExists").resolves(true);
@@ -426,6 +428,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
     };
 
     sinon.stub(fs, "pathExists").resolves(true);
@@ -467,15 +470,18 @@ describe("SPFxGenerator", function () {
     const fakedManifest = { staticTabs: [{ name: "default" }] };
     const readAppManifestStub = sinon
       .stub(ManifestUtils.prototype, "_readAppManifest")
-      .resolves(fakedManifest as any);
+      .resolves(ok(fakedManifest as any));
     const writeAppManifestStub = sinon
       .stub(ManifestUtils.prototype, "_writeAppManifest")
       .resolves();
+    const writeEnvStub = sinon.stub(EnvUtil.prototype, "writeEnv");
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);
+    chai.expect(fakedManifest.staticTabs.length).to.eq(3);
     chai.expect(generateTemplateStub.calledOnce).to.eq(true);
+    chai.expect(writeEnvStub.calledOnce).to.eq(true);
     chai.expect(readAppManifestStub.calledTwice).to.eq(true);
     chai.expect(writeAppManifestStub.calledTwice).to.eq(true);
   });

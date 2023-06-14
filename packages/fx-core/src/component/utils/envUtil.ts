@@ -336,4 +336,4 @@ class DotenvUtil {
   }
 }
 
-const dotenvUtil = new DotenvUtil();
+export const dotenvUtil = new DotenvUtil();

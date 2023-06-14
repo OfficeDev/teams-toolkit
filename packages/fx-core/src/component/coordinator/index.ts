@@ -88,7 +88,7 @@ import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { glob } from "glob";
 
-enum TemplateNames {
+export enum TemplateNames {
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   M365Tab = "m365-tab",

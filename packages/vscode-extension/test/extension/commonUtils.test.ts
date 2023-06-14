@@ -1,24 +1,16 @@
 import * as chai from "chai";
-import * as fs from "fs-extra";
 import * as os from "os";
 import * as sinon from "sinon";
 import { Uri } from "vscode";
-
-import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
-import { envUtil } from "@microsoft/teamsfx-core";
-import { metadataUtil } from "@microsoft/teamsfx-core";
-import { pathUtils } from "@microsoft/teamsfx-core";
-
+import { err, ok, UserError } from "@microsoft/teamsfx-api";
+import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import * as commonUtils from "../../src/utils/commonUtils";
-
-import path = require("path");
 import { MockCore } from "../mocks/mockCore";
-
-import * as coreUtils from "@microsoft/teamsfx-core";
+import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {

@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import * as tools from "@microsoft/teamsfx-core";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 import { errorIcon, passIcon, warningIcon } from "../../../../src/treeview/account/common";
 import { SideloadingNode } from "../../../../src/treeview/account/sideloadingNode";

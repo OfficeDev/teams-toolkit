@@ -25,9 +25,9 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "@microsoft/teamsfx-core";
-import * as globalState from "@microsoft/teamsfx-core";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AppDefinition,
   AppStudioClient,

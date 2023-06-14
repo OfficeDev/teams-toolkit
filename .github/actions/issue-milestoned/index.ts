@@ -6,6 +6,8 @@ import { context } from '@actions/github';
 import { getInput } from '@actions/core';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as WorkItemTrackingInterfaces from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
+
 
 const githubToken = getRequiredInput('token');
 const milestonePrefix = getRequiredInput('milestone-prefix');
@@ -31,25 +33,31 @@ class Milestoned extends Action {
 			let client = await this.createClient();
 			const users = getAccounts;
 			let asignee = undefined;
-			if (content.assignee && users[content.assignee]) {
-				asignee = users[content.assignee];
-				asignee += '@microsoft.com';
+			if (content.assignee) {
+				if (users[content.assignee]) {
+					asignee = users[content.assignee];
+					asignee += '@microsoft.com';
+				} else {
+					safeLog(`the issue ${content.number} assignee:${content.assignee} is not associated with email address, ignore.`);
+				}
 			}
 			const url = this.issueUrl(content.number);
 			const title = titlePreix + `[${milestoneTitle}]` + content.title;
+			let workItem: WorkItemTrackingInterfaces.WorkItem;
 			if (featureLabel && content.labels.includes(featureLabel)) {
 				safeLog(`issue labeled with ${featureLabel}. Feature work item will be created.`);
-				await client.createFeatureItem(title, asignee, undefined, url);
+				workItem = await client.createFeatureItem(title, asignee, undefined, url);
 			} else if (content.labels.includes(bugLabel)) {
 				safeLog(`issue labeled with ${bugLabel}. Bug work item will be created.`);
-				await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url);
 			} else {
 				safeLog(
 					`issue labeled without feature label(${featureLabel}) and bug label(${bugLabel}). Default bug work item will be created.`,
 				);
-				await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url);
 			}
 			safeLog(`finished to create work item.`);
+			await issue.postComment(`work item created: ${workItem.url}`);
 		} else {
 			safeLog(`the issue ${content.number} is not milestoned with prefix ${milestonePrefix}, ignore.`);
 		}

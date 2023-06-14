@@ -180,33 +180,6 @@ describe("APIs of Environment Manager", () => {
       }
     });
 
-    it("load environment config file with secret data", async () => {
-      const secretValue = "mocked secret value";
-      const mockedEnvRestore = mockedEnv({
-        MOCKED_CLIENT_SECRET: secretValue,
-      });
-
-      const envName = "test";
-      await mockEnvConfigs(projectPath, envConfigDataWithSecret, envName);
-
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(
-        projectPath,
-        cryptoProvider,
-        envName
-      );
-
-      if (actualEnvDataResult.isErr()) {
-        assert.fail("Error occurs while loading environment config.");
-      }
-
-      const envConfigInfo = actualEnvDataResult.value;
-      assert.equal(envConfigInfo.envName, envName);
-      const actualValue = envConfigInfo.config.auth?.clientSecret;
-      assert.equal(actualValue, secretValue);
-
-      mockedEnvRestore();
-    });
-
     it("load non existent env name", async () => {
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,

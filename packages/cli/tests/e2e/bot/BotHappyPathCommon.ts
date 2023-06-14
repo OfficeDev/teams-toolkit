@@ -19,8 +19,7 @@ import {
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { Runtime, CliCapabilities, CliTriggerType } from "../../commonlib/constants";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { CliHelper } from "../../commonlib/cliHelper";
+
 export async function happyPathTest(
   runtime: Runtime,
   capabilities: CliCapabilities,
@@ -33,7 +32,6 @@ export async function happyPathTest(
   const envName = environmentManager.getDefaultEnvName();
 
   const env = Object.assign({}, process.env);
-  env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
   if (runtime === Runtime.Dotnet) {
     env["TEAMSFX_CLI_DOTNET"] = "true";
   }
@@ -69,9 +67,7 @@ export async function happyPathTest(
   {
     // Validate provision
     // Get context
-    const context = isV3Enabled()
-      ? await readContextMultiEnvV3(projectPath, envName)
-      : await readContextMultiEnv(projectPath, envName);
+    const context = await readContextMultiEnvV3(projectPath, envName);
 
     // Validate Bot Provision
     const bot = new BotValidator(context, projectPath, envName);
@@ -79,7 +75,7 @@ export async function happyPathTest(
   }
 
   // deploy
-  const cmdStr = isV3Enabled() ? "teamsfx deploy" : "teamsfx deploy bot";
+  const cmdStr = "teamsfx deploy";
   await execAsyncWithRetry(cmdStr, {
     cwd: projectPath,
     env: env,
@@ -91,9 +87,7 @@ export async function happyPathTest(
     // Validate deployment
 
     // Get context
-    const context = isV3Enabled()
-      ? await readContextMultiEnvV3(projectPath, envName)
-      : await readContextMultiEnv(projectPath, envName);
+    const context = await readContextMultiEnvV3(projectPath, envName);
 
     // Validate Bot Deploy
     const bot = new BotValidator(context, projectPath, envName);

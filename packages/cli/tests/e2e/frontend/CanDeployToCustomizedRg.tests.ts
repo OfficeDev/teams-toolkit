@@ -7,30 +7,26 @@
 
 import path from "path";
 
+import { it } from "@microsoft/extra-shot-mocha";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import { describe } from "mocha";
+import M365Login from "../../../src/commonlib/m365Login";
 import { AadValidator, FrontendValidator } from "../../commonlib";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability } from "../../commonlib/constants";
 import {
+  cleanUp,
+  createResourceGroup,
+  deleteResourceGroupByName,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
-  readContextMultiEnv,
-  createResourceGroup,
-  deleteResourceGroupByName,
-  customizeBicepFilesToCustomizedRg,
   readContextMultiEnvV3,
   removeTeamsAppExtendToM365,
 } from "../commonUtils";
-import M365Login from "../../../src/commonlib/m365Login";
-import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
-import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, ResourceToDeploy } from "../../commonlib/constants";
-import { describe } from "mocha";
-import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
-  const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
@@ -43,81 +39,41 @@ describe("Deploy to customized resource group", function () {
     `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
     { testPlanCaseId: 17449539 },
     async function () {
-      if (isV3Enabled()) {
-        // Create new tab project
-        await CliHelper.createProjectWithCapability(
-          appName,
-          testFolder,
-          Capability.M365SsoLaunchPage
-        );
+      // Create new tab project
+      await CliHelper.createProjectWithCapability(
+        appName,
+        testFolder,
+        Capability.M365SsoLaunchPage
+      );
 
-        // remove teamsApp/extendToM365 in case it fails
-        removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
+      // remove teamsApp/extendToM365 in case it fails
+      removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
-        // Create empty resource group
-        const customizedRgName = `${appName}-customized-rg`;
-        await createResourceGroup(customizedRgName, "eastus");
+      // Create empty resource group
+      const customizedRgName = `${appName}-customized-rg`;
+      await createResourceGroup(customizedRgName, "eastus");
 
-        await CliHelper.provisionProject(projectPath, undefined, "dev", {
-          ...process.env,
-          AZURE_RESOURCE_GROUP_NAME: customizedRgName,
-        });
-        await CliHelper.deployAll(projectPath);
+      await CliHelper.provisionProject(projectPath, undefined, "dev", {
+        ...process.env,
+        AZURE_RESOURCE_GROUP_NAME: customizedRgName,
+      });
+      await CliHelper.deployAll(projectPath);
 
-        // Assert
-        {
-          const context = await readContextMultiEnvV3(projectPath, env);
+      // Assert
+      {
+        const context = await readContextMultiEnvV3(projectPath, env);
 
-          // Validate Aad App
-          const aad = AadValidator.init(context, false, M365Login);
-          await AadValidator.validate(aad);
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, M365Login);
+        await AadValidator.validate(aad);
 
-          // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context);
-          await FrontendValidator.validateProvision(frontend);
-          await FrontendValidator.validateDeploy(frontend);
-        }
-
-        await deleteResourceGroupByName(customizedRgName);
-      } else {
-        // Create new tab project
-        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabSso);
-
-        // Create empty resource group
-        const customizedRgName = `${appName}-customized-rg`;
-        await createResourceGroup(customizedRgName, "eastus");
-
-        // Customize simple auth bicep files
-        await customizeBicepFilesToCustomizedRg(
-          customizedRgName,
-          projectPath,
-          `name: 'azureStorageTabProvision'`
-        );
-
-        // Provision
-        await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-        await CliHelper.setSubscription(subscription, projectPath);
-        await CliHelper.provisionProject(projectPath);
-
-        // deploy
-        await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
-
-        // Assert
-        {
-          const context = await readContextMultiEnv(projectPath, env);
-
-          // Validate Aad App
-          const aad = AadValidator.init(context, false, M365Login);
-          await AadValidator.validate(aad);
-
-          // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context);
-          await FrontendValidator.validateProvision(frontend);
-          await FrontendValidator.validateDeploy(frontend);
-        }
-
-        await deleteResourceGroupByName(customizedRgName);
+        // Validate Tab Frontend
+        const frontend = FrontendValidator.init(context);
+        await FrontendValidator.validateProvision(frontend);
+        await FrontendValidator.validateDeploy(frontend);
       }
+
+      await deleteResourceGroupByName(customizedRgName);
     }
   );
 });

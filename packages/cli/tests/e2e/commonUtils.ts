@@ -37,7 +37,7 @@ import {
   TestFilePath,
   ProjectSettingKey,
 } from "../commonlib/constants";
-import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
@@ -66,7 +66,7 @@ export async function execAsyncWithRetry(
     try {
       const result = await execAsync(command, options);
       return result;
-    } catch (e) {
+    } catch (e: any) {
       console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
       if (e.killed && e.signal == "SIGTERM") {
         console.log(`Command ${command} killed due to timeout`);
@@ -168,9 +168,7 @@ export async function setSimpleAuthSkuNameToB1Bicep(
   envName: string
 ): Promise<void> {
   const parameters = { key: "simpleAuthSku", value: "B1" };
-  return isV3Enabled()
-    ? setProvisionParameterValueV3(projectPath, envName, parameters)
-    : setProvisionParameterValue(projectPath, envName, parameters);
+  return setProvisionParameterValueV3(projectPath, envName, parameters);
 }
 
 export async function getProvisionParameterValueByKey(
@@ -259,7 +257,7 @@ export async function cleanupSharePointPackage(appId: string) {
       SharepointManager.init();
       await SharepointManager.deleteApp(appId);
       console.log(`[Successfully] clean up sharepoint package ${appId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.log(`[Failed] clean up sharepoint package ${appId}, Error: ${error.message}`);
     }
   } else {
@@ -565,9 +563,7 @@ export async function customizeBicepFilesToCustomizedRg(
 }
 
 export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
-  const context = isV3Enabled()
-    ? await readContextMultiEnvV3(projectPath, env)
-    : await readContextMultiEnv(projectPath, env);
+  const context = await readContextMultiEnvV3(projectPath, env);
   // Validate Aad App
   const aad = AadValidator.init(context, false, m365Login);
   await AadValidator.validate(aad);
@@ -578,11 +574,7 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
 
   // Validate Bot Provision
   const bot = new BotValidator(context, projectPath, env);
-  if (isV3Enabled()) {
-    await bot.validateProvisionV3();
-  } else {
-    await bot.validateProvision();
-  }
+  await bot.validateProvisionV3();
 }
 
 export async function getRGAfterProvision(
@@ -709,7 +701,7 @@ export function removeTeamsAppExtendToM365(filePath: string) {
     }
 
     fs.writeFileSync(filePath, appYaml.toString());
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Failed to remove teamsApp/extendToM365 action due to: ${error.message}`);
   }
 }

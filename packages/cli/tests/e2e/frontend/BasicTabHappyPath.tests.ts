@@ -19,7 +19,7 @@ import {
 } from "../commonUtils";
 import { Capability, EnvConstants } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { AzureScopes, environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { AzureScopes, environmentManager } from "@microsoft/teamsfx-core";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
@@ -47,10 +47,6 @@ describe("Basic Tab", function () {
       `Create & Provision & Deploy Basic Tab (${language})`,
       { testPlanCaseId: language === "javascript" ? 9426074 : 24137515 },
       async function () {
-        if (!isV3Enabled()) {
-          this.skip();
-        }
-
         // Scaffold
         await CliHelper.createProjectWithCapability(
           appName,

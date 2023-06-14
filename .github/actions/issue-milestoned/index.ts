@@ -57,7 +57,12 @@ class Milestoned extends Action {
 				workItem = await client.createBugItem(title, asignee, undefined, url);
 			}
 			safeLog(`finished to create work item.`);
-			await issue.postComment(`work item created: ${workItem.url}`);
+			const workItemUrl = workItem._links?.html?.href;
+			if (workItemUrl) {
+				await issue.postComment(`work item created: ${workItemUrl}`);
+			} else {
+				safeLog(`no work item url found, ignore to post comment.`);
+			}
 		} else {
 			safeLog(`the issue ${content.number} is not milestoned with prefix ${milestonePrefix}, ignore.`);
 		}

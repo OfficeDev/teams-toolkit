@@ -126,9 +126,7 @@ export class AppManifest implements CloudResource {
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
     TelemetryUtils.init(ctx);
     try {
-      const teamsAppId = isV3Enabled()
-        ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo!);
+      const teamsAppId = teamsAppIdV3;
       if (!teamsAppId) {
         return err(
           new UserError(
@@ -207,9 +205,7 @@ export class AppManifest implements CloudResource {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const teamsAppId = isV3Enabled()
-        ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo!);
+      const teamsAppId = teamsAppIdV3;
       if (!teamsAppId) {
         return err(
           new UserError(
@@ -280,9 +276,7 @@ export class AppManifest implements CloudResource {
     try {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      const teamsAppId = isV3Enabled()
-        ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo!);
+      const teamsAppId = teamsAppIdV3;
       if (!teamsAppId) {
         return err(
           new UserError(

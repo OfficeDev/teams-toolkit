@@ -5,14 +5,20 @@
 
 `api2teams` is the best way to start integrating your APIs with Teams conversational experience.
 
-## Quick start
+## Prerequisite
+Before running this CLI and deploying your generated Teams App to Azure or your local development machine, please ensure that you have the following prerequisites in place:
 
+- [Node.js](https://nodejs.org/), supported versions: 14, 16, 18
+- An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
+- [Option] If you want to deploy this APP to Azure, you also need an Azure subscription. If you don't have an Azure subscription, [create a free account](https://azure.microsoft.com/en-us/free/) before you begin
+
+## Quick start
 - Install `api2teams` with npm: `npm install @microsoft/api2teams@latest -g`
 - Prepare the Open API specification. If you don't currently have one, start with a sample we provided by saving a copy of the [sample-open-api-spec.yml](https://raw.githubusercontent.com/OfficeDev/TeamsFx/api2teams/packages/api2teams/sample-spec/sample-open-api-spec.yml) to your local disk.
 - Convert the Open API spec to a Teams app, assuming you are using the `sample-open-api-spec.yml`: `api2teams sample-open-api-spec.yml`
 
 ## Available commands and options
-
 The CLI name is `api2teams`. Usage is as below:
 
 ```

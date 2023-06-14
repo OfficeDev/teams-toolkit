@@ -5,8 +5,8 @@ import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
 import { FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { isValidProject } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 import * as globalVariables from "../globalVariables";
 import { DynamicNode } from "./dynamicNode";

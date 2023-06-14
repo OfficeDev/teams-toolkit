@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
-import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { sampleProvider, CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
 
 export type OptionsMap = { [_: string]: Options };

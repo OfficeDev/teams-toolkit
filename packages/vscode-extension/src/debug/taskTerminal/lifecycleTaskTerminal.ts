@@ -9,7 +9,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import * as globalVariables from "../../globalVariables";
 import { getSystemInputs, runCommand } from "../../handlers";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";

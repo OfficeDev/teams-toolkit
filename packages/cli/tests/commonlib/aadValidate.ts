@@ -10,7 +10,7 @@ import { M365TokenProvider } from "@microsoft/teamsfx-api";
 
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 import { IAADDefinition, IAadObject, IAadObjectLocal } from "./interfaces/IAADDefinition";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core";
 import { EnvConstants } from "../commonlib/constants";
 
 const aadPluginName = "fx-resource-aad-app-for-teams";

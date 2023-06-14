@@ -26,7 +26,6 @@ import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
-import { expect } from "../../utils";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();

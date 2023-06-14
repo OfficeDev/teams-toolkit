@@ -10,7 +10,7 @@ import * as chai from "chai";
 import * as path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";

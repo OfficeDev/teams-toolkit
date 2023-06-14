@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, LogLevel, ok } from "@microsoft/teamsfx-api";
-import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
+import { PackageService } from "@microsoft/teamsfx-core";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 

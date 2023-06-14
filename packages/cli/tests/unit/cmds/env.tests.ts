@@ -24,8 +24,8 @@ import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import * as Utils from "../../../src/utils";
 import { YargsCommand } from "../../../src/yargsCommand";
-import { CoreHookContext, VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { CoreHookContext, VersionCheckRes } from "@microsoft/teamsfx-core";
+import { VersionState } from "@microsoft/teamsfx-core";
 
 enum CommandName {
   Add = "add",

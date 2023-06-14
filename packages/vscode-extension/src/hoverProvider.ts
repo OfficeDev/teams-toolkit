@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { envUtil } from "@microsoft/teamsfx-core";
 import { environmentVariableRegex } from "./constants";
 import { getSystemInputs } from "./handlers";

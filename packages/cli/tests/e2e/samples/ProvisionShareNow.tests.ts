@@ -18,7 +18,7 @@ import {
 } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../utils/cleaner";
 

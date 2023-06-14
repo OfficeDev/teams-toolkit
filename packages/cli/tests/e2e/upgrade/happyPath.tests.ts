@@ -6,7 +6,7 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";

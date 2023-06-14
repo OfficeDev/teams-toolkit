@@ -10,8 +10,8 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
-import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,

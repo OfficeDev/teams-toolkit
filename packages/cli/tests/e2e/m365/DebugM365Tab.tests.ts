@@ -7,7 +7,7 @@
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { environmentManager, ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import { expect } from "chai";
 import * as fs from "fs-extra";

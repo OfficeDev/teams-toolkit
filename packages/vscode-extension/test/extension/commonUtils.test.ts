@@ -5,9 +5,9 @@ import * as sinon from "sinon";
 import { Uri } from "vscode";
 
 import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
+import { envUtil } from "@microsoft/teamsfx-core";
+import { metadataUtil } from "@microsoft/teamsfx-core";
+import { pathUtils } from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
 import * as globalVariables from "../../src/globalVariables";
@@ -18,7 +18,7 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import path = require("path");
 import { MockCore } from "../mocks/mockCore";
 
-import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as coreUtils from "@microsoft/teamsfx-core";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {

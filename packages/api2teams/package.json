@@ -1,12 +1,12 @@
 {
   "name": "@microsoft/api2teams",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "description": "openapi spec to teams app",
   "main": "index.js",
   "author": "Microsoft Corporation",
   "license": "MIT",
   "scripts": {
-    "build": "rimraf lib && tsc -p ./ && copyfiles -u 1 -a src/resources/**/* lib",
+    "build": "rimraf lib && tsc -p ./ && copyfiles -u 1 -a \"src/resources/**/*\" lib",
     "package": "npm run build",
     "lint": "eslint . --ext .ts",
     "test": "npm run unit-test && npm run e2e-test",

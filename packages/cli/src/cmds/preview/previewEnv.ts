@@ -16,7 +16,7 @@ import {
   loadTeamsFxDevScript,
   TelemetryContext,
 } from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import { Argv } from "yargs";

@@ -76,7 +76,7 @@ export async function createBlobServiceClient(
   return await getBlobServiceClient(blobUri, sasToken);
 }
 
-async function generateSasToken(
+export async function generateSasToken(
   client: StorageAccounts,
   resourceGroupName: string,
   storageName: string

@@ -25,6 +25,6 @@ export function convertToAlphanumericOnly(appName: string): string {
   return appName.replace(/[^\da-zA-Z]/g, "");
 }
 
-export function loadingOptionsPlaceholder() {
+export function loadingOptionsPlaceholder(): string {
   return getLocalizedString("ui.select.LoadingOptionsPlaceholder");
 }

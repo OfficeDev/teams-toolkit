@@ -3,11 +3,9 @@
 
 import {
   ConfigFolderName,
-  ConfigMap,
   CryptoProvider,
   EnvConfig,
   EnvConfigFileNameTemplate,
-  EnvInfo,
   EnvNamePlaceholder,
   EnvStateFileNameTemplate,
   FxError,
@@ -36,7 +34,6 @@ import {
   dataNeedEncryption,
   replaceTemplateWithUserData,
 } from "../common/tools";
-import { GLOBAL_CONFIG } from "../component/constants";
 import { convertEnvStateV2ToV3 } from "../component/migrate";
 import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
 import { envUtil } from "../component/utils/envUtil";
@@ -44,7 +41,7 @@ import { FileNotFoundError, NoEnvFilesError, WriteFileError } from "../error/com
 import { InvalidEnvConfigError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 
-export interface EnvStateFiles {
+interface EnvStateFiles {
   envState: string;
   userDataFile: string;
 }

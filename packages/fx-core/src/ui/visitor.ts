@@ -53,14 +53,14 @@ export function getSingleOption(
   else return [returnResult];
 }
 
-export async function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown> {
+async function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown> {
   if (raw && typeof raw === "function") {
     return await raw(inputs);
   }
   return raw;
 }
 
-export type QuestionTreeVisitor = (
+type QuestionTreeVisitor = (
   question: Question,
   ui: UserInteraction,
   inputs: Inputs,
@@ -241,7 +241,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
   );
 };
 
-export async function traverse(
+async function traverse(
   root: QTreeNode,
   inputs: Inputs,
   ui: UserInteraction,

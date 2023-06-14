@@ -362,7 +362,7 @@ export async function getQuestionsForCreateProjectV2(
   }
 }
 
-export function addOfficeAddinQuestions(node: QTreeNode): void {
+function addOfficeAddinQuestions(node: QTreeNode): void {
   const createNewAddin = new QTreeNode({ type: "group" });
   createNewAddin.condition = { equals: CreateNewOfficeAddinOption().id };
   node.addChild(createNewAddin);

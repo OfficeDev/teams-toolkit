@@ -113,20 +113,6 @@ export async function wrapSummary(
   }
 }
 
-export async function wrapSummaryWithArgs(
-  exec: () => Promise<Result<Map<string, string>, FxError>>,
-  summary: string[][]
-): Promise<ExecutionResult> {
-  const result = await exec();
-  if (result.isOk()) {
-    const summaries = summary.map((s) => getLocalizedString(s[0], ...s.splice(1)));
-    return { result, summaries };
-  } else {
-    const summaries: string[] = [];
-    return { result, summaries };
-  }
-}
-
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
 export function expandEnvironmentVariable(content: string): string {
   const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;

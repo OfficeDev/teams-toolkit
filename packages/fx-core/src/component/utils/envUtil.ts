@@ -29,7 +29,7 @@ const EligibleKeys: EligibleKeySettings = {
   TEAMS_APP_TENANT_ID: false,
 };
 
-export class EnvUtil {
+class EnvUtil {
   /**
    * read .env file and set to process.env (if loadToProcessEnv = true)
    * if silent = true, no error will return if .env file is not available, this function returns ok({ TEAMSFX_ENV: env })
@@ -248,12 +248,12 @@ const NEW_LINE_SPLITTER = /\r?\n/;
 type DotenvParsedLine =
   | string
   | { key: string; value: string; comment?: string; quote?: '"' | "'" };
-export interface DotenvParseResult {
+interface DotenvParseResult {
   lines?: DotenvParsedLine[];
   obj: DotenvOutput;
 }
 
-export class DotenvUtil {
+class DotenvUtil {
   deserialize(src: string | Buffer): DotenvParseResult {
     const lines: DotenvParsedLine[] = [];
     const obj: DotenvOutput = {};
@@ -336,4 +336,4 @@ export class DotenvUtil {
   }
 }
 
-export const dotenvUtil = new DotenvUtil();
+const dotenvUtil = new DotenvUtil();

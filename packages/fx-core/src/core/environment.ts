@@ -48,9 +48,6 @@ export interface EnvStateFiles {
   envState: string;
   userDataFile: string;
 }
-
-export const envPrefix = "$env.";
-
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
   public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
@@ -400,31 +397,7 @@ class EnvironmentManager {
 }
 
 export const environmentManager = new EnvironmentManager();
-export function newEnvInfo(
-  envName?: string,
-  config?: EnvConfig,
-  state?: Map<string, any>
-): EnvInfo {
-  return {
-    envName: envName ?? environmentManager.getDefaultEnvName(),
-    config: config ?? {
-      manifest: {
-        appName: {
-          short: "teamsfx_app",
-        },
-        description: {
-          short: `Short description of teamsfx_app`,
-          full: `Full description of teamsfx_app`,
-        },
-        icons: {
-          color: "resources/color.png",
-          outline: "resources/outline.png",
-        },
-      },
-    },
-    state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
-  };
-}
+
 export function newEnvInfoV3(
   envName?: string,
   config?: EnvConfig,

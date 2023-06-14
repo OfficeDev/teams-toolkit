@@ -189,7 +189,7 @@ const appleLanguageToEncoding: Record<string, string> = {
   fa: "UTF-8",
 };
 
-export const DefaultEncoding = "utf-8";
+const DefaultEncoding = "utf-8";
 
 export async function getSystemEncoding(): Promise<string> {
   if (os.platform() === "win32") {

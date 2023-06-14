@@ -71,7 +71,7 @@ function getKeyNotFoundInMapErrorMsg(key: any) {
   return `The key ${key} is not found in map.`;
 }
 
-export function getPlatformRuntime(platform: Platform): Runtime {
+function getPlatformRuntime(platform: Platform): Runtime {
   const runtime = PlatformRuntimeMap.get(platform);
   if (runtime) {
     return runtime;
@@ -122,7 +122,7 @@ export function SelectEnvQuestion(): SingleSelectQuestion {
   };
 }
 
-export function spfxFolderQuestion(): FolderQuestion {
+function spfxFolderQuestion(): FolderQuestion {
   return {
     type: "folder",
     name: SPFxQuestionNames.SPFxFolder,

@@ -36,7 +36,7 @@ export function EnvLoaderMW(withLocalEnv: boolean, skipLoadIfNoEnvInput = false)
   };
 }
 
-export const envLoaderMWImpl = async (
+const envLoaderMWImpl = async (
   withLocalEnv: boolean,
   ctx: CoreHookContext,
   next: NextFunction,

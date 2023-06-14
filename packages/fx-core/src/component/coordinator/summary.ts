@@ -26,10 +26,7 @@ function getDriverDescription(log: LogProvider, lifecycle: ILifecycle): Result<s
   });
 }
 
-export function getLifecycleDescription(
-  log: LogProvider,
-  lifecycle: ILifecycle
-): Result<string, FxError> {
+function getLifecycleDescription(log: LogProvider, lifecycle: ILifecycle): Result<string, FxError> {
   const n = lifecycle.driverDefs.length;
   return getDriverDescription(log, lifecycle).map((descriptions) => {
     return getLocalizedString(

@@ -10,9 +10,9 @@ import { CoreHookContext } from "../types";
 import { traverse } from "../../ui/visitor";
 
 const lastUsedMark = " (last used)";
-export let lastUsedEnv: string | undefined;
+let lastUsedEnv: string | undefined;
 
-export type CreateEnvCopyInput = {
+type CreateEnvCopyInput = {
   targetEnvName: string;
   sourceEnvName: string;
 };

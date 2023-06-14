@@ -88,6 +88,14 @@ export interface IServerConnection {
       FxError
     >
   >;
+  preCheckYmlAndEnvForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>>;
+  validateManifestForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>>;
   deployArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken

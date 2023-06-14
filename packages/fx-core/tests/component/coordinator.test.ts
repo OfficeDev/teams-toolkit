@@ -3124,6 +3124,109 @@ describe("component coordinator test", () => {
       assert.equal(value.resolvedAzureResourceGroupName, "mockRG");
     }
   });
+  it("preCheckYmlAndEnvForVS", async () => {
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+      provision: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "local",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.preCheckYmlAndEnvForVS(inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("fail to get project model in preCheckYmlAndEnvForVS", async () => {
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(err(new UserError({})));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "local",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.preCheckYmlAndEnvForVS(inputs);
+    assert.isTrue(res.isErr());
+  });
+
+  it("unresolvePlaceholders in preCheckYmlAndEnvForVS", async () => {
+    const mockProjectModel: ProjectModel = {
+      version: "1.0.0",
+      provision: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "botFramework/create",
+            with: {
+              botId: "${{BOT_ID}}",
+            },
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["BotId"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["BotId"];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "local",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.preCheckYmlAndEnvForVS(inputs);
+    assert.isTrue(res.isErr());
+  });
+
   it("provision select subscription cancel", async () => {
     const mockProjectModel: ProjectModel = {
       version: "1.0.0",

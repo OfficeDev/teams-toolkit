@@ -10,10 +10,9 @@ import { M365TokenProvider } from "@microsoft/teamsfx-api";
 
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 import { IAADDefinition, IAadObject, IAadObjectLocal } from "./interfaces/IAADDefinition";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { EnvConstants } from "../commonlib/constants";
 
-const aadPluginName = "fx-resource-aad-app-for-teams";
 const baseUrl = "https://dev.teams.microsoft.com/api/aadapp/v2";
 
 function delay(ms: number) {
@@ -64,16 +63,7 @@ export class AadValidator {
   }
 
   private static parseConfig(ctx: any, isLocalDebug: boolean): IAadObject | undefined {
-    if (isV3Enabled()) {
-      return AadValidator.objectTransformV3(ctx);
-    }
-    const aad = ctx[aadPluginName];
-    if (!isLocalDebug) {
-      return <IAadObject>aad;
-    } else {
-      const localObject = <IAadObjectLocal>aad;
-      return AadValidator.objectTransform(localObject);
-    }
+    return AadValidator.objectTransformV3(ctx);
   }
 
   private static async getAadApp(objectId: string) {

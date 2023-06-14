@@ -6,7 +6,7 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 import { expect } from "chai";
 import fs from "fs-extra";
@@ -46,11 +46,7 @@ describe("Create single tab", function () {
       );
       {
         // Validate scaffold
-        if (isV3Enabled()) {
-          await FrontendValidator.validateScaffoldV3(projectPath, "javascript");
-        } else {
-          await FrontendValidator.validateScaffold(projectPath, "javascript");
-        }
+        await FrontendValidator.validateScaffoldV3(projectPath, "javascript");
       }
     });
 
@@ -64,18 +60,13 @@ describe("Create single tab", function () {
 
       // Validate provision
       // Get context
-      let context: any = null;
-      if (isV3Enabled()) {
-        const envFilePath = path.join(projectPath, "env", `.env.${env}`);
-        expect(fs.pathExistsSync(envFilePath)).to.be.true;
-        const parseResult = dotenvUtil.deserialize(
-          await fs.readFile(envFilePath, { encoding: "utf8" })
-        );
-        context = parseResult.obj;
-        expect(context).to.be.not.null;
-      } else {
-        context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-      }
+      const envFilePath = path.join(projectPath, "env", `.env.${env}`);
+      expect(fs.pathExistsSync(envFilePath)).to.be.true;
+      const parseResult = dotenvUtil.deserialize(
+        await fs.readFile(envFilePath, { encoding: "utf8" })
+      );
+      const context = parseResult.obj;
+      expect(context).to.be.not.null;
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, M365Login);
@@ -98,17 +89,12 @@ describe("Create single tab", function () {
         });
 
         // Validate deployment
-        let context: any = null;
-        if (isV3Enabled()) {
-          const envFilePath = path.join(projectPath, "env", `.env.${env}`);
-          expect(fs.pathExistsSync(envFilePath)).to.be.true;
-          const parseResult = dotenvUtil.deserialize(
-            await fs.readFile(envFilePath, { encoding: "utf8" })
-          );
-          context = parseResult.obj;
-        } else {
-          context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-        }
+        const envFilePath = path.join(projectPath, "env", `.env.${env}`);
+        expect(fs.pathExistsSync(envFilePath)).to.be.true;
+        const parseResult = dotenvUtil.deserialize(
+          await fs.readFile(envFilePath, { encoding: "utf8" })
+        );
+        const context = parseResult.obj;
 
         // Validate Tab Frontend
         const frontend = FrontendValidator.init(context);

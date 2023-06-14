@@ -6,6 +6,15 @@ import { FxCore } from "@microsoft/teamsfx-core";
 import { DotenvParseOutput } from "dotenv";
 
 export class ProjectEnvReader {
+  static async readEnvFile(workspace: string, env: string): Promise<DotenvParseOutput | undefined> {
+    const core = new FxCore({} as Tools);
+    const res = await core.getDotEnvs({ projectPath: workspace } as InputsWithProjectPath);
+    if (res.isOk()) {
+      return res.value[env];
+    }
+    return undefined;
+  }
+
   static async readAllEnvFiles(workspace: string): Promise<DotenvParseOutput[]> {
     const core = new FxCore({} as Tools);
     const res = await core.getDotEnvs({ projectPath: workspace } as InputsWithProjectPath);

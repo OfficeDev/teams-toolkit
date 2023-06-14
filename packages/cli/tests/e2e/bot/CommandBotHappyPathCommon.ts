@@ -7,22 +7,19 @@
 
 import * as path from "path";
 
-import { BotValidator, AppStudioValidator } from "../../commonlib";
-import { CliHelper } from "../../commonlib/cliHelper";
+import { it } from "@microsoft/extra-shot-mocha";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { AppStudioValidator, BotValidator } from "../../commonlib";
+import { Runtime } from "../../commonlib/constants";
 import {
+  cleanUp,
   execAsync,
   execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  cleanUp,
-  readContextMultiEnv,
   readContextMultiEnvV3,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { it } from "@microsoft/extra-shot-mocha";
-import { Runtime } from "../../commonlib/constants";
 
 export function happyPathTest(runtime: Runtime): void {
   describe("Provision", function () {
@@ -68,29 +65,17 @@ export function happyPathTest(runtime: Runtime): void {
       {
         // Validate provision
         // Get context
-        const context = isV3Enabled()
-          ? await readContextMultiEnvV3(projectPath, envName)
-          : await readContextMultiEnv(projectPath, envName);
-        if (isV3Enabled()) {
-          teamsAppId = context.TEAMS_APP_ID;
-          AppStudioValidator.setE2ETestProvider();
-        } else {
-          const appStudio = AppStudioValidator.init(context);
-          AppStudioValidator.validateTeamsAppExist(appStudio);
-          teamsAppId = appStudio.teamsAppId;
-        }
+        const context = await readContextMultiEnvV3(projectPath, envName);
+        teamsAppId = context.TEAMS_APP_ID;
+        AppStudioValidator.setE2ETestProvider();
 
         // Validate Bot Provision
         const bot = new BotValidator(context, projectPath, envName);
-        if (isV3Enabled()) {
-          await bot.validateProvisionV3(false);
-        } else {
-          await bot.validateProvision(false);
-        }
+        await bot.validateProvisionV3(false);
       }
 
       // deploy
-      const cmdStr = isV3Enabled() ? "teamsfx deploy" : "teamsfx deploy bot";
+      const cmdStr = "teamsfx deploy";
       await execAsyncWithRetry(cmdStr, {
         cwd: projectPath,
         env: env,
@@ -102,9 +87,7 @@ export function happyPathTest(runtime: Runtime): void {
         // Validate deployment
 
         // Get context
-        const context = isV3Enabled()
-          ? await readContextMultiEnvV3(projectPath, envName)
-          : await readContextMultiEnv(projectPath, envName);
+        const context = await readContextMultiEnvV3(projectPath, envName);
 
         // Validate Bot Deploy
         const bot = new BotValidator(context, projectPath, envName);

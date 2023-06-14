@@ -6,36 +6,29 @@
  */
 
 import { expect } from "chai";
-import path from "path";
 import * as fs from "fs-extra";
-import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import path from "path";
 import {
   cleanUp,
   execAsync,
   execAsyncWithRetry,
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   removeTeamsAppExtendToM365,
-  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
   let appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
   let projectPath = path.resolve(testFolder, appName);
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
 
   let mockedEnvRestore: RestoreFn;
 
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
-  });
   afterEach(() => {
     mockedEnvRestore();
   });
@@ -62,10 +55,6 @@ describe("Collaboration", function () {
       const filePath = path.join(projectPath, "teamsapp.yml");
       removeTeamsAppExtendToM365(filePath);
 
-      if (!isV3Enabled()) {
-        await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-      }
-
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {
         cwd: projectPath,
@@ -75,23 +64,14 @@ describe("Collaboration", function () {
       console.log("[Successfully] provision");
 
       // Check Permission
-      let checkPermissionResult;
-      if (isV3Enabled()) {
-        checkPermissionResult = await execAsyncWithRetry(
-          `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      } else {
-        checkPermissionResult = await execAsyncWithRetry(`teamsfx permission status`, {
+      const checkPermissionResult = await execAsyncWithRetry(
+        `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json`,
+        {
           cwd: projectPath,
           env: process.env,
           timeout: 0,
-        });
-      }
+        }
+      );
 
       expect(checkPermissionResult.stdout).to.contains(
         "Resource Name: Azure AD App, Permission: Owner"
@@ -102,26 +82,14 @@ describe("Collaboration", function () {
       console.log("[Successfully] check permission");
 
       // Grant Permission
-      let grantCollaboratorResult;
-      if (isV3Enabled()) {
-        grantCollaboratorResult = await execAsyncWithRetry(
-          `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      } else {
-        grantCollaboratorResult = await execAsyncWithRetry(
-          `teamsfx permission grant --email ${collaborator}`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      }
+      const grantCollaboratorResult = await execAsyncWithRetry(
+        `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        }
+      );
 
       expect(grantCollaboratorResult.stdout).to.contains(
         "Owner permission has been granted to Azure AD App"
@@ -131,26 +99,14 @@ describe("Collaboration", function () {
       );
       console.log("[Successfully] grant permission");
 
-      let listCollaboratorResult;
-      if (isV3Enabled()) {
-        listCollaboratorResult = await execAsync(
-          `teamsfx permission status --list-all-collaborators --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      } else {
-        listCollaboratorResult = await execAsync(
-          `teamsfx permission status --list-all-collaborators`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      }
+      const listCollaboratorResult = await execAsync(
+        `teamsfx permission status --list-all-collaborators --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        }
+      );
 
       // Check collaborator.
       // When collaborator account is guest account in the tenant. Account name pattern will change.

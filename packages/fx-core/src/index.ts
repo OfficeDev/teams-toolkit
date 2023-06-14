@@ -21,7 +21,7 @@ export * from "./component/constants";
 export * from "./component/migrate";
 export * from "./component/question";
 export { TelemetryUtils } from "./component/resource/appManifest/utils/telemetry";
-export { envUtil } from "./component/utils/envUtil";
+export { envUtil, DotenvOutput } from "./component/utils/envUtil";
 export { metadataUtil } from "./component/utils/metadataUtil";
 export { pathUtils } from "./component/utils/pathUtils";
 export { CoreCallbackFunc, FxCore } from "./core/FxCore";

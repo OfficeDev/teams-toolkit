@@ -162,11 +162,7 @@ export class FxCore {
   /**
    * most commands will be deprecated in V3
    */
-  async executeUserTask(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
+  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
     return await this.v3Implement.dispatchUserTask(this.executeUserTask, func, inputs);
   }
 

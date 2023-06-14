@@ -146,6 +146,8 @@ export enum TelemetryEvent {
   LaunchWebClientTask = "launch-web-client",
   DebugDevTunnelCleanNotificationStart = "debug-dev-tunnel-clean-notification-start",
   DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
+  DebugDevTunnelOperationStart = "debug-dev-tunnel-operation-start",
+  DebugDevTunnelOperation = "debug-dev-tunnel-operation",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -293,6 +295,7 @@ export enum TelemetryProperty {
   DebugTaskArgs = "debug-task-args",
   DebugLifecycle = "debug-lifecycle",
   DebugPrelaunchTaskInfo = "debug-prelaunch-task-info",
+  DebugDevTunnelOperationName = "debug-dev-tunnel-operation-name",
   DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",
   DebugDevTunnelNum = "debug-dev-tunnel-num",

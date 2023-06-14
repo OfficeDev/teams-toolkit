@@ -137,6 +137,7 @@ describe("metadata util", () => {
         "manifest.version": "",
         "manifest.manifestVersion": "",
         "manifest.bots": "",
+        "manifest.composeExtensions": "",
         "manifest.staticTabs.contentUrl": "",
         "manifest.configurableTabs.configurationUrl": "",
         "manifest.webApplicationInfo.id": "",
@@ -150,6 +151,7 @@ describe("metadata util", () => {
       version: "1.0",
       manifestVersion: "1.0",
       bots: [{ botId: "bot1" }, { botId: "bot2" }],
+      composeExtensions: [{ botId: "bot1" }, { botId: "bot2" }],
       staticTabs: [
         { contentUrl: "https://example.com/tab1" },
         { contentUrl: "https://example.com/tab2" },
@@ -168,6 +170,7 @@ describe("metadata util", () => {
         "manifest.version": "1.0",
         "manifest.manifestVersion": "1.0",
         "manifest.bots": "bot1,bot2",
+        "manifest.composeExtensions": "bot1,bot2",
         "manifest.staticTabs.contentUrl": `${[
           createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
           createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),

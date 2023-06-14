@@ -3150,7 +3150,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
@@ -3167,7 +3167,7 @@ describe("component coordinator test", () => {
   });
 
   it("fail to get project model in preCheckYmlAndEnvForVS", async () => {
-    sandbox.stub(MetadataUtil.prototype, "parse").resolves(err(new UserError({})));
+    sandbox.stub(metadataUtil, "parse").resolves(err(new UserError({})));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
@@ -3211,7 +3211,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(MetadataUtil.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));

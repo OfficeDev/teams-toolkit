@@ -275,7 +275,6 @@ export interface ProjectSettingsV3 extends ProjectSettings {
   components: Component[];
 }
 export interface ContextV3 extends Context {
-  manifestProvider: AppManifestProvider;
   projectSetting: ProjectSettingsV3;
   envInfo?: EnvInfoV3;
   tokenProvider?: TokenProvider;

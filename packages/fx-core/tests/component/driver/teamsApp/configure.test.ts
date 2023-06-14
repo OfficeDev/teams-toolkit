@@ -16,7 +16,7 @@ import {
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { AppDefinition } from "./../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { Constants } from "./../../../../src/component/resource/appManifest/constants";
 

@@ -37,8 +37,8 @@ export enum TelemetryEvent {
   UpdateTeamsAppStart = "update-teams-app-start",
   UpdateTeamsApp = "update-teams-app",
 
-  UpdateAadAppStart = "update-aad-app-start",
-  UpdateAadApp = "update-aad-app",
+  deployAadAppStart = "deploy-aad-manifest-start",
+  deployAadApp = "deploy-aad-manifest",
 
   BuildStart = "build-start",
   Build = "build",

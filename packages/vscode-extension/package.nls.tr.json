@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Microsoft 365 oturumunu kapatın: ",
   "teamstoolkit.handlers.stateFileNotFound": "Durum dosyası %s ortamında bulunamadı. İlgili durum dosyasını oluşturmak için önce 'Provision' komutunu çalıştırmanız gerekiyor.",
   "teamstoolkit.handlers.localStateFileNotFound": "Durum dosyası %s ortamında bulunamadı. İlgili durum dosyasını oluşturmak için önce `hata ayıkla` komutunu çalıştırmanız gerekiyor.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "'state.%s.json' içinde 'fx-resource-appstudio.teamsAppId' bulunamadı.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Bildirim şablon dosyası %s konumunda bulunamadı. CLI'ı kendi şablon dosyanız ile birlikte kullanabilirsiniz.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Uygulama paketi dosyası %s konumunda bulunamadı. CLI'ı kendi uygulama paketi dosyanız ile birlikte kullanabilirsiniz.",
   "teamstoolkit.localDebug.failedCheckers": "Denetlenemedi: [%s]. ",

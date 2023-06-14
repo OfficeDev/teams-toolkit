@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Odhlásit se z Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "Soubor stavu nebyl v prostředí %s nalezen. Pokud chcete vygenerovat související soubor stavu, musíte nejprve spustit příkaz „Provision“.",
   "teamstoolkit.handlers.localStateFileNotFound": "Stavový soubor se v prostředí %s nenašel. Pokud chcete vygenerovat související stavový soubor, musíte nejdřív spustit ladění.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "Nepovedlo se najít fx-resource-appstudio.teamsAppId v state.%s.json.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Soubor šablony manifestu se v %s nenašel. Rozhraní příkazového řádku můžete použít s vlastním souborem šablony.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Soubor balíčku aplikace nebyl v %s nalezen. Rozhraní příkazového řádku můžete použít s vlastním souborem balíčku aplikace.",
   "teamstoolkit.localDebug.failedCheckers": "Nepovedlo se zkontrolovat stav.: [%s]. ",

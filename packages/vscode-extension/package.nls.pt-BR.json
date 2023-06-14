@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Sair do Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "O arquivo de estado não foi encontrado no ambiente %s. Execute ''Provisionar'' primeiro para gerar o arquivo de estado relacionado.",
   "teamstoolkit.handlers.localStateFileNotFound": "O arquivo de estado não foi encontrado no ambiente %s. Execute `debug` primeiro para gerar o arquivo de estado relacionado.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "Falha ao localizar 'fx-resource-appstudio.teamsAppId' em 'state.%s.json'.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Arquivo de modelo de manifesto não encontrado %s. Você pode usar a CLI com seu próprio arquivo de modelo.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Arquivo de pacote do aplicativo não encontrado em %s. Você pode usar a CLI com seu próprio arquivo de pacote do aplicativo.",
   "teamstoolkit.localDebug.failedCheckers": "Falha ao verificar: [%s]. ",

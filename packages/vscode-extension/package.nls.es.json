@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Cerrar sesión en Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "No se encontró el archivo de estado en el entorno %s. Primero debe ejecutar \"Provision\" para generar el archivo de estado relacionado.",
   "teamstoolkit.handlers.localStateFileNotFound": "No se encontró el archivo de estado en el entorno %s. Primero debe ejecutar \"debug\" para generar el archivo de estado relacionado.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "No se pudo encontrar \"fx-resource-appstudio.teamsAppId\" en \"state.%s.json\".",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "No se encontró el archivo de plantilla de manifiesto en %s. Puede usar la CLI con su propio archivo de plantilla.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Archivo de paquete de aplicación no encontrado en %s. Puede usar la CLI con su propio archivo de paquete de aplicaciones.",
   "teamstoolkit.localDebug.failedCheckers": "Error al comprobar: [%s]. ",

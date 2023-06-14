@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Von Microsoft 365 abmelden: ",
   "teamstoolkit.handlers.stateFileNotFound": "Statusdatei in Umgebung %s nicht gefunden. Sie müssen zuerst „Provision“ ausführen, um die zugehörige Statusdatei zu generieren.",
   "teamstoolkit.handlers.localStateFileNotFound": "Zustandsdatei in Umgebung %s nicht gefunden. Sie müssen zuerst „debug“ ausführen, um die zugehörige Statusdatei zu generieren.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "\"fx-resource-appstudio.teamsAppId\" wurde in \"state.%s.json\" nicht gefunden.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Die Manifestvorlagendatei wurde in %s nicht gefunden. Sie können die CLI mit Ihrer eigenen Vorlagendatei verwenden.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Die App-Paketdatei wurde in %s nicht gefunden. Sie können die CLI mit Ihrer eigenen App-Paketdatei verwenden.",
   "teamstoolkit.localDebug.failedCheckers": "Fehler beim Überprüfen: [%s]. ",

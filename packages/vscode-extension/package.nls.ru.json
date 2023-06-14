@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Выйти из Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "Файл состояния не найден в среде %s. Необходимо создать связанный файл состояния, сначала запустив \"Подготовку\".",
   "teamstoolkit.handlers.localStateFileNotFound": "Файл состояния не найден в среде %s. Необходимо сначала запустить отладку, чтобы создать соответствующий файл состояния.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "Не удалось найти «fx-resource-appstudio.teamsAppId» в «state.%s.json».",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Файл шаблона манифеста не найден в %s. Вы можете использовать CLI с собственным файлом шаблона.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Файл пакета приложения не найден в %s. Вы можете использовать CLI с собственным файлом пакета приложения.",
   "teamstoolkit.localDebug.failedCheckers": "Не удалось проверить: [%s]. ",

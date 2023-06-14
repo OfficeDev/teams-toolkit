@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "注销 Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "在环境 %s 中找不到状态文件。必须先运行“预配”才能生成相关状态文件。",
   "teamstoolkit.handlers.localStateFileNotFound": "在环境 %s 中找不到状态文件。必须先运行 `调试` 才能生成相关状态文件。",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "未能在 \"state.%s.json\" 中找到 \"fx-resource-appstudio.teamsAppId\"。",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "在 %s 中找不到清单模板文件。可以将 CLI 与自己的模板文件一起使用。",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "在 %s 中找不到应用包文件。可以将 CLI 与你自己的应用包文件一起使用。",
   "teamstoolkit.localDebug.failedCheckers": "未能检查: [%s]。 ",

@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Microsoft 365 からサインアウトする: ",
   "teamstoolkit.handlers.stateFileNotFound": "状態ファイルが環境 %s に見つかりません。関連する状態ファイルを生成するには、まず 'プロビジョニング' を実行する必要があります。",
   "teamstoolkit.handlers.localStateFileNotFound": "状態ファイルが環境 %s に見つかりません。関連する状態ファイルを生成するには、まず 'デバッグ' を実行する必要があります。",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "'state.%s.json' で 'fx-resource-appstudio.teamsAppId' が見つかりませんでした。",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "マニフェスト テンプレート ファイルが %s で見つかりません。独自のテンプレート ファイルで CLI を使用できます。",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "%s にアプリ パッケージ ファイルが見つかりません。独自のアプリ パッケージ ファイルで CLI を使用できます。",
   "teamstoolkit.localDebug.failedCheckers": "[%s] を確認できませんでした。 ",

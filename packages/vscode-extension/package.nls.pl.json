@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Wyloguj się z platformy Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "Nie znaleziono pliku stanu w środowisku %s. Aby wygenerować powiązany plik stanu, należy najpierw uruchomić polecenie inicjowania obsługi.",
   "teamstoolkit.handlers.localStateFileNotFound": "Nie znaleziono pliku stanu w środowisku %s. Aby wygenerować powiązany plik stanu, należy najpierw uruchomić polecenie „debug”.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "Nie można odnaleźć elementu 'fx-resource-appstudio.teamsAppId' w lokalizacji 'state.%s.json'.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Nie znaleziono pliku szablonu manifestu w lokalizacji %s. Możesz użyć interfejsu wiersza polecenia z własnym plikiem szablonu.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Nie znaleziono pliku pakietu aplikacji w %s. Możesz użyć interfejsu wiersza polecenia z własnym plikiem pakietu aplikacji.",
   "teamstoolkit.localDebug.failedCheckers": "Nie można sprawdzić: [%s]. ",

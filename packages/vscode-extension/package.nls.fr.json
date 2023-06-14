@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Se déconnecter de Microsoft 365 : ",
   "teamstoolkit.handlers.stateFileNotFound": "Fichier d’état introuvable dans l’environnement %s. Vous devez d’abord exécuter ’Provision’ pour générer le fichier d’état associé.",
   "teamstoolkit.handlers.localStateFileNotFound": "Fichier d’état introuvable dans l’environnement %s. Vous devez d’abord exécuter `debug` pour générer le fichier d’état associé.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "Impossible de trouver 'fx-resource-appstudio.teamsAppId' dans 'state.%s.json'.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Fichier de modèle de manifeste introuvable dans %s. Vous pouvez utiliser l’interface CLI avec votre propre fichier de modèle.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Fichier du package de l’application introuvable dans %s. Vous pouvez utiliser l’interface CLI avec votre propre fichier de package de l’application.",
   "teamstoolkit.localDebug.failedCheckers": "Échec de la vérification : [%s]. ",

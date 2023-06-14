@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "登出 Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "在環境 %s 中找不到狀態檔案。您必須先執行 [佈建] 以產生相關的狀態檔案。",
   "teamstoolkit.handlers.localStateFileNotFound": "在環境 %s 中找不到狀態檔案。您必須先執行 [偵錯] 以產生相關的狀態檔案。",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "在 'state.%s.json' 中找不到 'fx-resource-appstudio.teamsAppId'。",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "在 %s 中找不到資訊清單範本檔案。您可以在自己的範本檔案中使用 CLI。",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "在 %s 中找不到應用程式套件檔案。您可以將 CLI 與自己的應用程式套件檔案一起使用。",
   "teamstoolkit.localDebug.failedCheckers": "無法檢查狀: [%s]。",

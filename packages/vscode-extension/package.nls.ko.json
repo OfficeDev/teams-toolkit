@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Microsoft 365에서 로그아웃: ",
   "teamstoolkit.handlers.stateFileNotFound": "%s 환경에서 상태 파일을 찾을 수 없습니다. 관련 상태 파일을 생성하려면 먼저 `프로비전`을 실행해야 합니다.",
   "teamstoolkit.handlers.localStateFileNotFound": "%s 환경에서 상태 파일을 찾을 수 없습니다. 관련 상태 파일을 생성하려면 먼저 `디버그`를 실행해야 합니다.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "'state.%s.json'에서 'fx-resource-appstudio.teamsAppId'를 찾지 못했습니다.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "%s에서 매니페스트 템플릿 파일을 찾을 수 없습니다. 고유한 템플릿 파일과 함께 CLI를 사용할 수 있습니다.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "%s에서 앱 패키지 파일을 찾을 수 없습니다. 자체 앱 패키지 파일과 함께 CLI를 사용할 수 있습니다.",
   "teamstoolkit.localDebug.failedCheckers": "[%s]을(를) 확인하지 못했습니다. ",

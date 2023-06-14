@@ -204,7 +204,6 @@
   "teamstoolkit.handlers.signOutOfM365": "Disconnetti da Microsoft 365: ",
   "teamstoolkit.handlers.stateFileNotFound": "File di stato non trovato nell'ambiente %s. È necessario eseguire prima 'Effettua il provisioning' per generare il file di stato correlato.",
   "teamstoolkit.handlers.localStateFileNotFound": "File di stato non trovato nell'ambiente %s. È necessario eseguire prima 'Debug' per generare il file di stato correlato.",
-  "teamstoolkit.handlers.teamsAppIdNotFound": "Non è stato possibile trovare 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
   "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Il file del modello di manifesto non è stato trovato in %s. È possibile usare l'interfaccia della riga di comando con il proprio file modello.",
   "teamstoolkit.handlers.defaultAppPackageNotExists": "Il file del pacchetto dell'app non è stato trovato in %s. È possibile usare l'interfaccia della riga di comando con il proprio file di pacchetto dell'app.",
   "teamstoolkit.localDebug.failedCheckers": "Impossibile controllare: [%s]. ",

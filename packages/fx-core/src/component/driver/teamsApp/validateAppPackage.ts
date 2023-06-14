@@ -29,7 +29,7 @@ import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
-import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
+import { AppStudioClient } from "./clients/appStudioClient";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { AppStudioScopes } from "../../../common/tools";
 import AdmZip from "adm-zip";

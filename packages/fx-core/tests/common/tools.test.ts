@@ -22,7 +22,7 @@ import {
   isVideoFilterProject,
   setRegion,
 } from "../../src/common/tools";
-import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
+import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);

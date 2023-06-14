@@ -21,7 +21,6 @@ import {
   SolutionTelemetryProperty,
 } from "./constants";
 import { DriverContext } from "./driver/interface/commonArgs";
-import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 import { getComponent, getComponentByScenario } from "./workflow";
 
 export function newProjectSettingsV3(): ProjectSettingsV3 {
@@ -42,7 +41,6 @@ export function createContextV3(): ContextV3 {
     cryptoProvider: new LocalCrypto(""),
     permissionRequestProvider: TOOLS.permissionRequest,
     projectSetting: newProjectSettingsV3(),
-    manifestProvider: new DefaultManifestProvider(),
     tokenProvider: TOOLS.tokenProvider,
   };
   return context;

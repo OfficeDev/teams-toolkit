@@ -49,11 +49,11 @@ api2teams -v # show version information
     ![response](https://github.com/OfficeDev/TeamsFx/wiki/api2teams/workflow1.png)
     
 ## Current limitations
-1. The `api2teams` doesn't support Open API schema version < 3.0.0
-1. The `api2teams` doesn't support Authorization property in Open API specification
-1. The `api2teams` doesn't support `webhooks` property and it would be ignored during convert
-1. The `api2teams` doesn't support `oneOf`, `anyOf`, `not`keyword (It only supports `allOf` keyword currently)
-1. The `api2teams` doesn't support `POST`, `PUT`, `PATCH` or `DELETE` operations (It only supports `GET` operation currently)
+1. The `api2teams` doesn't support Open API schema version < 3.0.0.
+1. The `api2teams` doesn't support Authorization property in Open API specification.
+1. The `api2teams` doesn't support `webhooks` property and it would be ignored during convert.
+1. The `api2teams` doesn't support `oneOf`, `anyOf`, `not`keyword (It only support `allOf` keyword currently).
+1. The `api2teams` doesn't support `POST`, `PUT`, `PATCH` or `DELETE` operations (It only supports `GET` operation currently).
 1. The generated Adaptive Card doesn't support array type. 
 1. The generated Adaptive Card doesn't support file upload.
 1. The generated Teams app can only contain up to 10 items in the command menu.

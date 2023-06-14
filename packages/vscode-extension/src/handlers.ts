@@ -13,16 +13,6 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import {
-  commands,
-  window,
-  workspace,
-  Uri,
-  QuickPickItem,
-  env,
-  debug,
-  ExtensionContext,
-} from "vscode";
-import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
@@ -30,16 +20,13 @@ import {
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
   EnvStateFileNameTemplate,
-  err,
   Func,
   FxError,
   InputConfigsFolderName,
   Inputs,
   M365TokenProvider,
-  ok,
   OptionItem,
   Platform,
-  ProjectConfigV3,
   ProjectSettingsFileName,
   Result,
   SelectFileConfig,
@@ -55,20 +42,22 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
+  AuthSvcScopes,
+  ConcurrentError,
   FxCore,
   askSubscription,
+  assembleError,
   getFixedCommonProjectSettings,
   getHashedEnv,
+  isImportSPFxEnabled,
   isUserCancelError,
   isV3Enabled,
-  assembleError,
-  ConcurrentError,
   setRegion,
-  AuthSvcScopes,
-  isImportSPFxEnabled,
 } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
@@ -77,7 +66,6 @@ import {
   globalStateUpdate,
 } from "@microsoft/teamsfx-core/build/common/globalState";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
@@ -86,6 +74,7 @@ import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUti
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
+import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -94,14 +83,10 @@ import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
   AadManifestDeployConstants,
-  AzureAssignRoleHelpUrl,
   AzurePortalUrl,
-  CLI_FOR_M365,
   DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
-  SpfxManageSiteAdminUrl,
-  SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
@@ -138,8 +123,6 @@ import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   anonymizeFilePaths,
   getAppName,
-  getM365TenantFromEnv,
-  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
@@ -150,7 +133,6 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { compare } from "./utils/versionUtil";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -916,7 +898,7 @@ async function processResult(
 
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.env);
+    const appInfo = await getTeamsAppTelemetryInfoByEnv(inputs.env);
     if (appInfo) {
       envProperty[TelemetryProperty.AppId] = appInfo.appId;
       envProperty[TelemetryProperty.TenantId] = appInfo.tenantId;
@@ -1459,7 +1441,7 @@ async function showLocalDebugMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
-  const appName = getAppName() ?? "Teams App";
+  const appName = (await getAppName()) ?? "Teams App";
   const isWindows = process.platform === "win32";
   let message = util.format(
     localize("teamstoolkit.handlers.localDebugDescription.fallback"),
@@ -1500,7 +1482,7 @@ async function showLocalPreviewMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
-  const appName = getAppName() ?? "Teams App";
+  const appName = (await getAppName()) ?? "Teams App";
   const isWindows = process.platform === "win32";
   let message = util.format(
     localize("teamstoolkit.handlers.localPreviewDescription.fallback"),

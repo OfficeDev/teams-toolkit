@@ -1,32 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
+import * as packageJson from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import fs from "fs-extra";
-import * as path from "path";
 import { RestoreFn } from "mocked-env";
+import * as path from "path";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
-import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { expect } from "../../utils";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import * as constants from "../../../../src/cmds/preview/constants";
 import * as launch from "../../../../src/cmds/preview/launch";
 import PreviewEnv from "../../../../src/cmds/preview/previewEnv";
 import { ServiceLogWriter } from "../../../../src/cmds/preview/serviceLogWriter";
 import { Task } from "../../../../src/cmds/preview/task";
-import cliLogger from "../../../../src/commonlib/log";
 import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
+import cliLogger from "../../../../src/commonlib/log";
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
-import { FxCore } from "@microsoft/teamsfx-core";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { expect } from "../../utils";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();

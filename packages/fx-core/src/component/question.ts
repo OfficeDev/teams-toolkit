@@ -122,7 +122,7 @@ export function SelectEnvQuestion(): SingleSelectQuestion {
   };
 }
 
-function spfxFolderQuestion(): FolderQuestion {
+export function spfxFolderQuestion(): FolderQuestion {
   return {
     type: "folder",
     name: SPFxQuestionNames.SPFxFolder,

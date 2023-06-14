@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 import { cleanUpLocalProject, getTestFolder } from "../commonUtils";
-import { isV3Enabled, ProgrammingLanguage } from "@microsoft/teamsfx-core";
+import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
 import { Executor } from "../../utils/executor";
 import { Capability } from "../../utils/constants";
@@ -62,7 +62,7 @@ describe("Start a new project", function () {
           "tsconfig.json",
         ];
         for (const file of files) {
-          const filePath = path.join(testFolder, appName, isV3Enabled() ? `src` : `SPFx`, file);
+          const filePath = path.join(testFolder, appName, `src`, file);
           expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
         }
         expect(result.success).to.be.true;

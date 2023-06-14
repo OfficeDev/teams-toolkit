@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
 import { registerCommands } from "../../../src/cmds/index";
@@ -11,7 +11,7 @@ import { expect } from "../utils";
 describe("Register Commands Tests", function () {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
-  let restoreFn: RestoreFn = () => {};
+  const restoreFn: RestoreFn = () => {};
 
   before(() => {
     sandbox
@@ -36,9 +36,6 @@ describe("Register Commands Tests", function () {
   });
 
   it("Register Commands Check V3", () => {
-    restoreFn = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     registerCommands(yargs);
     expect(registeredCommands).includes("account");
     expect(registeredCommands).includes("new");

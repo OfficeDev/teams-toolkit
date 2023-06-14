@@ -11,7 +11,6 @@ import { describe } from "mocha";
 import * as path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
@@ -30,10 +29,6 @@ describe("Debug V3 tab-non-sso template", () => {
   const projectPath = path.resolve(testFolder, appName);
 
   afterEach(async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     // clean up
     const context = await readContextMultiEnvV3(projectPath, "local");
     if (context?.TEAMS_APP_ID) {
@@ -43,10 +38,6 @@ describe("Debug V3 tab-non-sso template", () => {
   });
 
   it("happy path: provision and deploy", { testPlanCaseId: 9426074 }, async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     // create
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso);
     console.log(`[Successfully] scaffold to ${projectPath}`);

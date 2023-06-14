@@ -145,25 +145,6 @@ async function updateManifest(
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
 
-  // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
-  // This is a short-term solution to convert the value to what TTK expects.
-  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-    if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = updateScope(
-          manifest.configurableTabs[0].scopes
-        ) as any;
-      }
-    }
-  }
-  if (!!manifest.bots && manifest.bots.length > 0) {
-    if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = updateScope(manifest.bots[0].scopes) as any;
-      }
-    }
-  }
-
   // manifest: tab
   const tabs = manifest.staticTabs;
   let needUpdateStaticTabUrls = false;
@@ -364,10 +345,6 @@ export function getTemplateId(
   }
 
   return undefined;
-}
-
-export function updateScope(scopes: string[]): string[] {
-  return scopes.map((o) => o.toLowerCase());
 }
 
 export function isFromDevPortal(inputs: Inputs | undefined): boolean {

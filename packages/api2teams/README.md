@@ -1,7 +1,7 @@
 # Welcome to `api2teams`
 > The `api2teams` and its generated project template is currently under active development. Report any issues to us [here](https://github.com/OfficeDev/TeamsFx/issues/new/choose)
 
-`api2teams` is a command line tool to generated a complete conversational style command and response [Teams application](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/conversations/command-bot-in-teams) based on your Open API specification file and represent the API response in the form of [Adaptive Cards](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#adaptive-card).
+`api2teams` is a command line tool to generate a complete conversational style command and response [Teams application](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/conversations/command-bot-in-teams) based on your Open API specification file and represent the API response in the form of [Adaptive Cards](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#adaptive-card).
 
 `api2teams` is the best way to start integrating your APIs with Teams conversational experience.
 
@@ -52,7 +52,8 @@ api2teams -v # show version information
 1. The `api2teams` doesn't support Open API schema version < 3.0.0
 1. The `api2teams` doesn't support Authorization property in Open API specification
 1. The `api2teams` doesn't support `webhooks` property and it would be ignored during convert
-1. The `api2teams` doesn't support `oneOf`, `anyOf`, `not`keyword (It only support `allOf` keyword currently)
+1. The `api2teams` doesn't support `oneOf`, `anyOf`, `not`keyword (It only supports `allOf` keyword currently)
+1. The `api2teams` doesn't support `POST`, `PUT`, `PATCH` or `DELETE` operations (It only supports `GET` operation currently)
 1. The generated Adaptive Card doesn't support array type. 
 1. The generated Adaptive Card doesn't support file upload.
 1. The generated Teams app can only contain up to 10 items in the command menu.

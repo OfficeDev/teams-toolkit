@@ -241,7 +241,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
   );
 };
 
-async function traverse(
+export async function traverse(
   root: QTreeNode,
   inputs: Inputs,
   ui: UserInteraction,

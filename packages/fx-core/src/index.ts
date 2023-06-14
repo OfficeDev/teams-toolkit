@@ -3,7 +3,7 @@
 "use strict";
 
 import "reflect-metadata";
-export { FxCore } from "./core/FxCore";
+export { FxCore, CoreCallbackFunc } from "./core/FxCore";
 export * from "./common/tools";
 export * from "./common/correlator";
 export * from "./common/local";

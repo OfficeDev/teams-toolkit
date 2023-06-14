@@ -250,7 +250,6 @@ export enum TelemetryProperty {
   DebugPort = "port",
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
-  DebugProjectComponents = "debug-project-components",
   DebugDevCertStatus = "debug-dev-cert-status",
   DebugCheckResults = "debug-check-results",
   DebugCheckResultsSafe = "debug-check-results-safe",

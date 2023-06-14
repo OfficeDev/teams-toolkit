@@ -191,13 +191,6 @@
       ]
     },
     "menus": {
-      "explorer/context": [
-        {
-          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isV3Enabled",
-          "group": "deploy@0"
-        }
-      ],
       "view/title": [
         {
           "command": "fx-extension.addEnvironmentWithIcon",
@@ -621,11 +614,6 @@
         "command": "fx-extension.createAccount",
         "title": "%teamstoolkit.commands.createAccount.title%",
         "icon": "$(add)"
-      },
-      {
-        "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%",
-        "enablement": "!fx-extension.isV3Enabled"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",

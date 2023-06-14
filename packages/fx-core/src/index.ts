@@ -23,7 +23,7 @@ export { envUtil } from "./component/utils/envUtil";
 export { environmentManager, EnvStateFiles } from "./core/environment";
 export { isValidProject, isExistingTabApp } from "./common/projectSettingsHelper";
 export { getPermissionMap } from "./component/resource/aadApp/permissions/index";
-export { AppStudioClient } from "./component/resource/appManifest/appStudioClient";
+export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioClient";
 export { AppDefinition } from "./component/resource/appManifest/interfaces/appDefinition";
 export { CollaborationConstants } from "./core/collaborator";
 export * from "./error/index";

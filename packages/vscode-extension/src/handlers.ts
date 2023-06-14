@@ -68,7 +68,7 @@ import {
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/clients/appStudioClient";
 import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";

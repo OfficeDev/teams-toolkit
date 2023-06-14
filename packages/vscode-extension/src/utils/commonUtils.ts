@@ -18,21 +18,19 @@ import {
   StatesFolderName,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import {
+  PluginNames,
+  initializePreviewFeatureFlags,
   isExistingTabApp as isExistingTabAppCore,
   isValidProject,
-} from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
+} from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
-import { CONFIGURATION_PREFIX, ConfigurationKey, YmlEnvNamePlaceholder } from "../constants";
+import { CONFIGURATION_PREFIX, ConfigurationKey } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
-import * as globalVariables from "../globalVariables";
-import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import * as yaml from "yaml";
 import { getV3TeamsAppId } from "../debug/commonUtils";
+import * as globalVariables from "../globalVariables";
 import { core } from "../handlers";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {

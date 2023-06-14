@@ -3,39 +3,25 @@
 
 "use strict";
 
+import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
 import * as path from "path";
-import * as fs from "fs-extra";
-import {
-  Colors,
-  ConfigFolderName,
-  FxError,
-  InputConfigsFolderName,
-  IProgressHandler,
-  LogLevel,
-  ProjectConfig,
-} from "@microsoft/teamsfx-api";
 
-import * as constants from "./constants";
-import { TaskResult } from "./task";
+import { AppStudioScopes, LocalEnvManager } from "@microsoft/teamsfx-core";
+import open from "open";
 import cliLogger from "../../commonlib/log";
-import { TaskFailed } from "./errors";
-import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import M365TokenInstance from "../../commonlib/m365Login";
+import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
-import { ServiceLogWriter } from "./serviceLogWriter";
-import open from "open";
 import { getColorizedString } from "../../utils";
+import * as constants from "./constants";
 import { isWindows } from "./depsChecker/cliUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import {
-  AppStudioScopes,
-  getResourceGroupInPortal,
-} from "@microsoft/teamsfx-core/build/common/tools";
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
+import { TaskFailed } from "./errors";
+import { ServiceLogWriter } from "./serviceLogWriter";
+import { TaskResult } from "./task";
 export async function openBrowser(
   browser: constants.Browser,
   url: string,

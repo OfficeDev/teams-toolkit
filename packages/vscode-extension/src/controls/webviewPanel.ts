@@ -1,23 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as AdmZip from "adm-zip";
-import axios from "axios";
-import { execSync } from "child_process";
-import * as fs from "fs-extra";
-import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
-import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes, Correlator, sampleProvider } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "../commonlib/azureLogin";
 import M365TokenInstance from "../commonlib/m365Login";

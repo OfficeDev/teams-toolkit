@@ -8,11 +8,11 @@ import * as path from "path";
 import * as util from "util";
 import { Argv } from "yargs";
 import { Colors, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
-import { TelemetryContext } from "@microsoft/teamsfx-core/build/common/local/localTelemetryReporter";
-import { loadTeamsFxDevScript } from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
-import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { TelemetryContext } from "@microsoft/teamsfx-core/localTelemetryReporter";
+import { loadTeamsFxDevScript } from "@microsoft/teamsfx-core/packageJsonHelper";
+import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core";
+import { envUtil } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
@@ -31,7 +31,7 @@ import { getColorizedString, getSystemInputs, isWorkspaceSupported } from "../..
 import { YargsCommand } from "../../yargsCommand";
 import activate from "../../activate";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
+import { Hub } from "@microsoft/teamsfx-core";
 import { FxCore, assembleError } from "@microsoft/teamsfx-core";
 enum Progress {
   M365Account = "Microsoft 365 Account",

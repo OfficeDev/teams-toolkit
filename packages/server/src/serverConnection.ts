@@ -21,7 +21,7 @@ import {
   environmentManager,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
-import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
+import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import path from "path";

@@ -1,8 +1,8 @@
-import { Result, FxError, err, ok, UserError } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import * as globalVariables from "../globalVariables";
-import { ExtensionErrors, ExtensionSource } from "../error";
+import { FxError, Result, UserError, err, ok } from "@microsoft/teamsfx-api";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
+import { ExtensionErrors, ExtensionSource } from "../error";
+import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export async function selectAndDebug(): Promise<Result<null, FxError>> {

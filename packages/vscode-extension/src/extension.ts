@@ -13,14 +13,15 @@ import {
   FxError,
   InputConfigsFolderName,
   ProjectSettingsFileName,
-  ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
-import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import {
+  AuthSvcScopes,
+  Correlator,
+  VersionState,
+  isV3Enabled,
+  setRegion,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -41,7 +42,7 @@ import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
-import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
+import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
   initializeGlobalVariables,
   isExistingUser,

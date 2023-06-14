@@ -6,16 +6,16 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
+import { MetadataV3 } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
+import fs from "fs-extra";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Cleaner } from "../../utils/cleaner";
 import { TemplateProject } from "../../commonlib/constants";
+import { Cleaner } from "../../utils/cleaner";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
-import fs from "fs-extra";
-import { MetadataV3 } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("upgrade", () => {
   const testFolder = getTestFolder();

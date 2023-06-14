@@ -6,11 +6,7 @@ import { performance } from "perf_hooks";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
-import {
-  DepsTelemetry,
-  DepsCheckerEvent,
-  TelemetryMessurement,
-} from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { DepsTelemetry, DepsCheckerEvent, TelemetryMessurement } from "@microsoft/teamsfx-core";
 
 export class VSCodeTelemetry implements DepsTelemetry {
   private readonly _telemetryComponentType = "extension:debug:envchecker";

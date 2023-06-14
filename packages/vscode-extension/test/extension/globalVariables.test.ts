@@ -6,8 +6,8 @@ import { ExtensionContext } from "vscode";
 import * as globalVariables from "../../src/globalVariables";
 import { UriHandler } from "../../src/uriHandler";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as commonTools from "@microsoft/teamsfx-core";
+import * as projectSettingHelper from "@microsoft/teamsfx-core";
 
 describe("Global Variables", () => {
   describe("isSPFxProject", () => {

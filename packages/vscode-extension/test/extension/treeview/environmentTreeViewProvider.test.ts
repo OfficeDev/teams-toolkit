@@ -2,8 +2,8 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 
 import { ok } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core";
 
 import * as globalVariables from "../../../src/globalVariables";
 import EnvironmentTreeViewProvider from "../../../src/treeview/environmentTreeViewProvider";

@@ -14,7 +14,7 @@ import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../utils/cleaner";
 import { BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();

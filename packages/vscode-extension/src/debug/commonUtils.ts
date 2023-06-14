@@ -1,25 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as uuid from "uuid";
 import { Stage, UserError } from "@microsoft/teamsfx-api";
-import VsCodeLogInstance from "../commonlib/log";
-import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { core, getSystemInputs } from "../handlers";
-import * as globalVariables from "../globalVariables";
+import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
 import {
   LocalEnvManager,
   getProjectComponents as coreGetProjectComponents,
-} from "@microsoft/teamsfx-core/build/common/local";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { metadataUtil } from "@microsoft/teamsfx-core/build/component/utils/metadataUtil";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { allRunningDebugSessions } from "./teamsfxTaskHandler";
+} from "@microsoft/teamsfx-core";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as uuid from "uuid";
+import * as vscode from "vscode";
+import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { VS_CODE_UI } from "../extension";
-import * as vscode from "vscode";
+import * as globalVariables from "../globalVariables";
+import { core, getSystemInputs } from "../handlers";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 export async function getProjectRoot(
   folderPath: string,

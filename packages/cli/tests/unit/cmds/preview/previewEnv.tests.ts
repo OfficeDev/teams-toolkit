@@ -7,10 +7,10 @@ import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
-import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import * as tools from "@microsoft/teamsfx-core";
+import * as packageJson from "@microsoft/teamsfx-core/packageJsonHelper";
+import { Hub } from "@microsoft/teamsfx-core";
+import { envUtil } from "@microsoft/teamsfx-core";
 import { expect } from "../../utils";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import * as constants from "../../../../src/cmds/preview/constants";
@@ -26,7 +26,7 @@ import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import { VersionState } from "@microsoft/teamsfx-core";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();

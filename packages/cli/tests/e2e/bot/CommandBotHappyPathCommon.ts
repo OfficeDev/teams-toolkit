@@ -19,8 +19,8 @@ import {
   readContextMultiEnv,
   readContextMultiEnvV3,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime } from "../../commonlib/constants";
 

@@ -51,7 +51,7 @@ import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import { CopyFileError, InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
-import { setCurrentStage, setTools, TOOLS } from "./globalVars";
+import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
@@ -132,11 +132,7 @@ export class FxCore {
   /**
    * most commands will be deprecated in V3
    */
-  async executeUserTask(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
+  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
     return await this.v3Implement.dispatchUserTask(this.executeUserTask, func, inputs);
   }
 
@@ -203,7 +199,6 @@ export class FxCore {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     inputs.stage = Stage.getQuestions;
-    setCurrentStage(Stage.getQuestions);
     if (stage === Stage.create) {
       return await getQuestionsForCreateProjectV2(inputs);
     }
@@ -593,7 +588,6 @@ export async function ensureBasicFolderStructure(
 }
 
 export async function listCollaboratorFunc(inputs: Inputs): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.listCollaborator);
   inputs.stage = Stage.listCollaborator;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -613,7 +607,6 @@ export async function checkPermissionFunc(
   inputs: Inputs,
   ctx?: CoreHookContext
 ): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.checkPermission);
   inputs.stage = Stage.checkPermission;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -633,7 +626,6 @@ export async function grantPermissionFunc(
   inputs: Inputs,
   ctx?: CoreHookContext
 ): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.grantPermission);
   inputs.stage = Stage.grantPermission;
   const projectPath = inputs.projectPath;
   if (!projectPath) {

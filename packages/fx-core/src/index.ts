@@ -3,24 +3,27 @@
 "use strict";
 
 import "reflect-metadata";
-export * from "./core/FxCore";
+export { FxCore, CoreCallbackFunc } from "./core/FxCore";
 export * from "./common/tools";
 export * from "./common/correlator";
 export * from "./common/local";
 export * from "./common/deps-checker";
-export * from "./common/samples";
-export * from "./common/utils";
+export { sampleProvider } from "./common/samples";
+export { loadingOptionsPlaceholder } from "./common/utils";
 export * from "./core/error";
+export * from "./core/types";
 export * from "./common/globalState";
 export * from "./common/permissionInterface";
 export * from "./common/featureFlags";
-export * from "./common/jsonUtils";
+export { jsonUtils } from "./common/jsonUtils";
 export * from "./component/migrate";
 export * from "./common/projectSettingsHelperV3";
+export { VersionState } from "./common/versionMetadata";
 export * from "./component/constants";
+export * from "./component/question";
 export * from "./component/resource/appManifest/utils/utils";
 export { envUtil } from "./component/utils/envUtil";
-export { environmentManager, EnvStateFiles } from "./core/environment";
+export { environmentManager } from "./core/environment";
 export { isValidProject, isExistingTabApp } from "./common/projectSettingsHelper";
 export { getPermissionMap } from "./component/resource/aadApp/permissions/index";
 export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioClient";
@@ -28,3 +31,4 @@ export { AppDefinition } from "./component/resource/appManifest/interfaces/appDe
 export { CollaborationConstants } from "./core/collaborator";
 export * from "./error/index";
 export * from "./ui/visitor";
+export { CoreQuestionNames } from "./core/question";

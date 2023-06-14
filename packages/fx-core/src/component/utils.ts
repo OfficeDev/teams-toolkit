@@ -23,7 +23,7 @@ import {
 import { DriverContext } from "./driver/interface/commonArgs";
 import { getComponent, getComponentByScenario } from "./workflow";
 
-export function newProjectSettingsV3(): ProjectSettingsV3 {
+function newProjectSettingsV3(): ProjectSettingsV3 {
   const projectSettings: ProjectSettingsV3 = {
     appName: "test",
     projectId: uuid.v4(),
@@ -58,12 +58,8 @@ export function createDriverContext(inputs: Inputs): DriverContext {
   };
   return driverContext;
 }
-export function normalizeName(appName: string): string {
-  const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  return normalizedAppName;
-}
 
-export const ComponentConnections = {
+const ComponentConnections = {
   [ComponentNames.AzureWebApp]: [
     ComponentNames.Identity,
     ComponentNames.AzureSQL,

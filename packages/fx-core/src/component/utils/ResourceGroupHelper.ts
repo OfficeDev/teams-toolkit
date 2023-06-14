@@ -36,12 +36,6 @@ import { traverse } from "../../ui/visitor";
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
 
-export type AzureSubscription = {
-  displayName: string;
-  subscriptionId: string;
-};
-
-export const DefaultResourceGroupLocation = "East US";
 export type ResourceGroupInfo = {
   createNewResourceGroup: boolean;
   name: string;
@@ -51,7 +45,7 @@ export type ResourceGroupInfo = {
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 
-export class ResourceGroupHelper {
+class ResourceGroupHelper {
   async createNewResourceGroup(
     resourceGroupName: string,
     azureAccountProvider: AzureAccountProvider,

@@ -23,7 +23,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { ManifestVariables } from "../../src/common/constants";
 import * as tools from "../../src/common/tools";
-import { envPrefix, environmentManager } from "../../src/core/environment";
+import { environmentManager } from "../../src/core/environment";
 import { WriteFileError } from "../../src/error/common";
 import { deleteFolder, randomAppName } from "./utils";
 
@@ -72,20 +72,10 @@ describe("APIs of Environment Manager", () => {
     auth: {
       accessAsUserScopeId: "test-scope-id",
       clientId: "test-client-id",
-      clientSecret: `{{${envPrefix}MOCKED_CLIENT_SECRET}}`,
+      clientSecret: `{{env-MOCKED_CLIENT_SECRET}}`,
       objectId: "test-object-id",
     },
   };
-
-  const envStateDataObj = new Map([
-    [
-      "solution",
-      {
-        teamsAppTenantId: decryptedValue,
-        key: "value",
-      },
-    ],
-  ]);
 
   const envStateDataWithoutCredential = {
     solution: {
@@ -188,33 +178,6 @@ describe("APIs of Environment Manager", () => {
       } else {
         assert.fail("Failed to get expected error.");
       }
-    });
-
-    it("load environment config file with secret data", async () => {
-      const secretValue = "mocked secret value";
-      const mockedEnvRestore = mockedEnv({
-        MOCKED_CLIENT_SECRET: secretValue,
-      });
-
-      const envName = "test";
-      await mockEnvConfigs(projectPath, envConfigDataWithSecret, envName);
-
-      const actualEnvDataResult = await environmentManager.loadEnvInfo(
-        projectPath,
-        cryptoProvider,
-        envName
-      );
-
-      if (actualEnvDataResult.isErr()) {
-        assert.fail("Error occurs while loading environment config.");
-      }
-
-      const envConfigInfo = actualEnvDataResult.value;
-      assert.equal(envConfigInfo.envName, envName);
-      const actualValue = envConfigInfo.config.auth?.clientSecret;
-      assert.equal(actualValue, secretValue);
-
-      mockedEnvRestore();
     });
 
     it("load non existent env name", async () => {

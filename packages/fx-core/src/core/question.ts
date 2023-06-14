@@ -386,11 +386,6 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
           return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
         }
 
-        const envFilePath = environmentManager.getEnvConfigPath(targetEnvName, projectPath);
-        if (os.type() === "Windows_NT" && envFilePath.length >= WINDOWS_MAX_PATH_LENGTH) {
-          return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation2");
-        }
-
         if (targetEnvName === LocalEnvironmentName) {
           return getLocalizedString(
             "core.getQuestionNewTargetEnvironmentName.validation3",

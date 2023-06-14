@@ -49,6 +49,8 @@ import {
   needTabCode,
 } from "./resource/appManifest/utils/utils";
 import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
+import { envUtil } from "./utils/envUtil";
+import { pathUtils } from "./utils/pathUtils";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -258,28 +260,9 @@ async function updateManifest(
 }
 
 async function updateEnv(appId: string, projectPath: string): Promise<Result<undefined, FxError>> {
-  const dotEnvFile = environmentManager.getDotEnvPath("local", projectPath);
-  const source = await fs.readFile(dotEnvFile);
-  const writeStream = fs.createWriteStream(dotEnvFile);
-  source
-    .toString()
-    .split(/\r?\n/)
-    .forEach((line) => {
-      const reg = /^([a-zA-Z_][a-zA-Z0-9_]*=)/g;
-      const match = reg.exec(line);
-      if (match) {
-        if (match[1].startsWith("TEAMS_APP_ID=")) {
-          writeStream.write(`TEAMS_APP_ID=${appId}${os.EOL}`);
-        } else {
-          writeStream.write(`${line.trim()}${os.EOL}`);
-        }
-      } else {
-        writeStream.write(`${line.trim()}${os.EOL}`);
-      }
-    });
-
-  writeStream.end();
-  return ok(undefined);
+  return await envUtil.writeEnv(projectPath, "local", {
+    TEAMS_APP_ID: appId,
+  });
 }
 
 function updateTabUrl(

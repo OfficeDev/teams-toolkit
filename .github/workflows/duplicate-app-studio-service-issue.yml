@@ -2,6 +2,11 @@ name: duplicate issue check for app-studio-service
 on:
   issues:
     types: [opened]
+  workflow_dispatch: # allows to run manually for testing
+    inputs:
+      issueNumber:
+        description: 'specific issue number to test duplicate issue check for app-studio-service action'
+        required: true  
 
 jobs:
   main:
@@ -32,4 +37,6 @@ jobs:
           adding-tags: close-wait,*duplicate
           matching-reg: 'API call to Developer Portal failed. Error, Request failed with status code (.*), API name. (.*), X-Correlation-ID'
           status-codes-ignore-api: 503
+        env:
+          ISSUE_NUMBER: ${{github.event.inputs.issueNumber}}
           

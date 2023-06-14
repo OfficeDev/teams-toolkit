@@ -1,9 +1,11 @@
-import { OctoKitIssue } from '../api/octokit';
+import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { Action } from '../common/Action';
 import { context } from '@actions/github';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { Octokit } from '@octokit/rest';
 import { Issue } from '../api/api';
+
+const githubToken = getRequiredInput('token');
 
 class DuplicateHandler extends Action {
 	id = 'DuplicateHandlerForAppStudio';
@@ -13,11 +15,10 @@ class DuplicateHandler extends Action {
 	issue!: Issue;
 	statusCodeIgnoreApiName: string[];
 
-	gitToken = getRequiredInput('token');
 	owner = context.repo.owner;
 	repo = context.repo.repo;
 	kit = new Octokit({
-		auth: this.gitToken,
+		auth: githubToken,
 	});
 
 	constructor() {
@@ -54,6 +55,13 @@ class DuplicateHandler extends Action {
 		await this.addTags(issueHandler);
 
 		safeLog(`Executed duplicate progress for Issue ${firstIssueNumber}`);
+	}
+	
+	async onTriggered(_: OctoKit) {
+		const issueNumber = process.env.ISSUE_NUMBER;
+		safeLog(`start manually trigger issue ${issueNumber}`);
+		const issue = new OctoKitIssue(githubToken, context.repo, { number: issueNumber });
+		await this.onOpened(issue);
 	}
 
 	matchAppStudioIssueError(): ErrorInfo | undefined {

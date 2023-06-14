@@ -30,7 +30,6 @@ import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
@@ -563,7 +562,7 @@ export async function ensureBasicFolderStructure(
       const gitIgnoreContent = [
         "\n# TeamsFx files",
         "node_modules",
-        `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+        `.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`,
         `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
         ".DS_Store",
         ".env.teamsfx.local",

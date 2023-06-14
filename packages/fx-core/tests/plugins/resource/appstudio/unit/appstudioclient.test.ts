@@ -13,11 +13,18 @@ import { AppUser } from "../../../../../src/component/resource/appManifest/inter
 import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../../src/component/resource/appManifest/utils/telemetry";
 import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
-import { newEnvInfo } from "../../../../../src/core/environment";
 import { PublishingState } from "../../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
 import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../../../../src/component/resource/appManifest/results";
 import { Constants } from "../../../../../src/component/resource/appManifest/constants";
+
+function newEnvInfo() {
+  return {
+    envName: "default",
+    config: {},
+    state: new Map(),
+  };
+}
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";

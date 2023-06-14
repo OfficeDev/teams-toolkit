@@ -24,7 +24,6 @@ import { execPowerShell, execShell } from "../../src/common/local/process";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
-import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { createAppNameQuestion } from "../../src/core/question";
 import { MyTokenCredential } from "../plugins/solution/util";
@@ -181,15 +180,6 @@ describe("Other test case", () => {
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
     restore();
-  });
-
-  it("parseTeamsAppTenantId", async () => {
-    const res1 = parseTeamsAppTenantId({ tid: "123" });
-    assert.isTrue(res1.isOk());
-    const res2 = parseTeamsAppTenantId();
-    assert.isTrue(res2.isErr());
-    const res3 = parseTeamsAppTenantId({ abd: "123" });
-    assert.isTrue(res3.isErr());
   });
 
   it("executeCommand", async () => {

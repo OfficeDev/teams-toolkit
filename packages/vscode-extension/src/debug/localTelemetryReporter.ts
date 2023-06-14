@@ -20,7 +20,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
-import { getLocalDebugSession, getProjectComponents } from "./commonUtils";
+import { getLocalDebugSession } from "./commonUtils";
 import { TeamsfxTaskProvider } from "./teamsfxTaskProvider";
 
 function saveEventTime(eventName: string, time: number) {
@@ -56,8 +56,6 @@ export async function sendDebugAllStartEvent(additionalProperties: {
   [key: string]: string;
 }): Promise<void> {
   const session = getLocalDebugSession();
-  const components = await getProjectComponents();
-  session.properties[TelemetryProperty.DebugProjectComponents] = components + "";
   Object.assign(session.properties, additionalProperties);
 
   const properties = Object.assign(

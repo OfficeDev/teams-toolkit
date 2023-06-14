@@ -5,11 +5,9 @@
 
 import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
 import * as path from "path";
-
-import { AppStudioScopes, LocalEnvManager } from "@microsoft/teamsfx-core";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import open from "open";
 import cliLogger from "../../commonlib/log";
-import M365TokenInstance from "../../commonlib/m365Login";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -172,82 +170,6 @@ export function createTaskStopCb(
   };
 }
 
-export async function getLocalEnv(
-  workspaceFolder: string
-): Promise<{ [key: string]: string } | undefined> {
-  const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
-  const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
-  const localSettings = await localEnvManager.getLocalSettings(workspaceFolder, {
-    projectId: projectSettings.projectId,
-  });
-  const localEnvInfo = await localEnvManager.getLocalEnvInfo(workspaceFolder, {
-    projectId: projectSettings.projectId,
-  });
-  return await localEnvManager.getLocalDebugEnvs(
-    workspaceFolder,
-    projectSettings,
-    localSettings,
-    localEnvInfo
-  );
-}
-
-function getLocalEnvWithPrefix(
-  env: { [key: string]: string } | undefined,
-  prefix: string
-): { [key: string]: string } | undefined {
-  if (env === undefined) {
-    return undefined;
-  }
-  const result: { [key: string]: string } = {};
-  for (const key of Object.keys(env)) {
-    if (key.startsWith(prefix) && env[key]) {
-      result[key.slice(prefix.length)] = env[key];
-    }
-  }
-  return Object.keys(result).length > 0 ? result : undefined;
-}
-
-export function getFrontendLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.frontendLocalEnvPrefix);
-}
-
-export function getBackendLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.backendLocalEnvPrefix);
-}
-
-export function getAuthLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  // SERVICE_PATH will also be included, but it has no side effect
-  return getLocalEnvWithPrefix(env, constants.authLocalEnvPrefix);
-}
-
-export function getAuthServicePath(env: { [key: string]: string } | undefined): string | undefined {
-  return env ? env[constants.authServicePathEnvKey] : undefined;
-}
-
-export function getBotLocalEnv(
-  env: { [key: string]: string } | undefined
-): { [key: string]: string } | undefined {
-  return getLocalEnvWithPrefix(env, constants.botLocalEnvPrefix);
-}
-
-export async function getPortsInUse(workspaceFolder: string): Promise<number[]> {
-  try {
-    const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
-    const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
-    const ports = await localEnvManager.getPortsFromProject(workspaceFolder, projectSettings);
-    return await localEnvManager.getPortsInUse(ports);
-  } catch (error: any) {
-    cliLogger.warning(`Failed to check used ports. Error: ${error}`);
-    return [];
-  }
-}
-
 export function mergeProcessEnv(
   env: { [key: string]: string | undefined } | undefined
 ): { [key: string]: string | undefined } | undefined {
@@ -267,32 +189,4 @@ export function mergeProcessEnv(
     }
   }
   return result;
-}
-
-export async function generateAccountHint(
-  tenantIdFromConfig: string,
-  includeTenantId = true
-): Promise<string> {
-  let tenantId = undefined,
-    loginHint = undefined;
-  try {
-    const tokenObjectRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-    const tokenObject = tokenObjectRes.isOk() ? tokenObjectRes.value.accountInfo : undefined;
-    if (tokenObject) {
-      // user signed in
-      tenantId = tokenObject.tid;
-      loginHint = tokenObject.upn;
-    } else {
-      // no signed user
-      tenantId = tenantIdFromConfig;
-      loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
-    }
-  } catch {
-    // ignore error
-  }
-  if (includeTenantId) {
-    return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
-  } else {
-    return loginHint ? `login_hint=${loginHint}` : "";
-  }
 }

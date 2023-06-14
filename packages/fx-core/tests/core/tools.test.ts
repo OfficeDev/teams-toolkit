@@ -7,16 +7,7 @@ import * as dotenv from "dotenv";
 import "mocha";
 import { isValidProject, validateProjectSettings } from "../../src/common/projectSettingsHelper";
 import { convertDotenvToEmbeddedJson, replaceTemplateWithUserData } from "../../src/common/tools";
-import { newEnvInfo } from "../../src/core/environment";
 describe("tools", () => {
-  it("newEnvInfo should return valid object", () => {
-    const result = newEnvInfo();
-    expect(result).to.be.not.null;
-    expect(result.envName).to.be.not.empty;
-    expect(result.config).to.be.not.null;
-    expect(result.state).to.be.not.null;
-  });
-
   it("is not valid project", () => {
     expect(isValidProject()).is.false;
   });

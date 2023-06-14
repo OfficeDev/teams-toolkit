@@ -2,22 +2,21 @@
 // Licensed under the MIT license.
 
 import { Stage, UserError } from "@microsoft/teamsfx-api";
-import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
-import {
-  LocalEnvManager,
-  getProjectComponents as coreGetProjectComponents,
-} from "@microsoft/teamsfx-core";
+
+import { LocalEnvManager, envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 import VsCodeLogInstance from "../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../error";
-import { VS_CODE_UI } from "../extension";
+
 import * as globalVariables from "../globalVariables";
 import { core, getSystemInputs } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
+
+import { ExtensionErrors, ExtensionSource } from "../error";
+import { VS_CODE_UI } from "../extension";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -89,12 +88,6 @@ export function checkAndSkipDebugging(): boolean {
     return true;
   }
   return false;
-}
-
-// for telemetry use only
-export async function getProjectComponents(): Promise<string | undefined> {
-  const projectPath = globalVariables.workspaceUri!.fsPath;
-  return coreGetProjectComponents(projectPath, VsCodeLogInstance, ExtTelemetry.reporter);
 }
 
 export class Step {

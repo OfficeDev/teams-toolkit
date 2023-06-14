@@ -6,16 +6,14 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Cleaner } from "../../utils/cleaner";
 import { Capability } from "../../commonlib/constants";
+import { Cleaner } from "../../utils/cleaner";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
-import fs from "fs-extra";
 import { checkYmlHeader } from "./utils";
 
 describe("upgrade", () => {

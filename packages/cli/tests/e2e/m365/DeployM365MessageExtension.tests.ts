@@ -10,7 +10,6 @@ import * as chai from "chai";
 import * as path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
@@ -37,10 +36,6 @@ describe("Deploy V3 m365-message-extension template", () => {
   const resourceGroupName = `${appName}-rg`;
 
   afterEach(async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     // clean up
     const context = await readContextMultiEnvV3(projectPath, "dev");
     if (context?.TEAMS_APP_ID) {
@@ -54,10 +49,6 @@ describe("Deploy V3 m365-message-extension template", () => {
   });
 
   it("happy path: provision and deploy", { testPlanCaseId: 17449554 }, async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     // create
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SearchApp);
     console.log(`[Successfully] scaffold to ${projectPath}`);

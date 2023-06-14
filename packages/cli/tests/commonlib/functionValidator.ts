@@ -95,8 +95,6 @@ export class FunctionValidator {
     const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
-    const activeResourcePlugins = [];
-    chai.assert.isArray(activeResourcePlugins);
     // Validating app settings
     console.log("validating app settings.");
     const webappSettingsResponse = await getWebappSettings(
@@ -110,33 +108,6 @@ export class FunctionValidator {
       (this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string) ??
       (this.ctx[EnvConstants.FUNCTION_ENDPOINT_2] as string);
     chai.assert.equal(webappSettingsResponse[BaseConfig.API_ENDPOINT], endpoint);
-
-    if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
-      chai.assert.equal(
-        webappSettingsResponse[SQLConfig.SQL_ENDPOINT],
-        this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
-      );
-      chai.assert.equal(
-        webappSettingsResponse[SQLConfig.SQL_DATABASE_NAME],
-        this.ctx[PluginId.AzureSQL][StateConfigKey.databaseName] as string
-      );
-    }
-
-    // validate app config with allowedOrigins
-    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
-      console.log("validating app config.");
-      const webAppConfigResponse = await getWebappConfigs(
-        this.subscriptionId,
-        this.rg,
-        this.functionAppName,
-        token as string
-      );
-      chai.assert.exists(webAppConfigResponse!.cors!.allowedOrigins);
-      chai.assert.isArray(webAppConfigResponse!.cors!.allowedOrigins);
-      chai
-        .expect(webAppConfigResponse!.cors!.allowedOrigins)
-        .to.includes(this.ctx[PluginId.FrontendHosting][StateConfigKey.endpoint]);
-    }
 
     console.log("Successfully validate Function Provision.");
   }

@@ -10,7 +10,6 @@ import * as path from "path";
 import { expect } from "chai";
 import { cleanUpLocalProject, execAsync, getTestFolder, getUniqueAppName } from "../commonUtils";
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
@@ -47,7 +46,7 @@ describe("Start a new project", function () {
       "tsconfig.json",
     ];
     for (const file of files) {
-      const filePath = path.join(testFolder, appName, isV3Enabled() ? `src` : `SPFx`, file);
+      const filePath = path.join(testFolder, appName, `src`, file);
       expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
     }
     expect(result.stderr).to.eq("");

@@ -21,7 +21,6 @@ import {
   environmentManager,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
-import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
@@ -312,10 +311,8 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<string | undefined, FxError>> {
-    if (!inputs.projectPath) {
-      return ok(undefined);
-    }
-    return ok(await coreGetProjectComponents(inputs.projectPath));
+    // No components for V5
+    return ok("");
   }
 
   public async getProjectMigrationStatusRequest(

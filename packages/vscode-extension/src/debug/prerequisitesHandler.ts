@@ -221,11 +221,9 @@ export async function checkAndInstallForTask(
   telemetryProperties: { [key: string]: string }
 ): Promise<Result<Void, FxError>> {
   const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
-  const projectComponents = await commonUtils.getProjectComponents();
 
   const additionalTelemetryProperties = Object.assign(
     {
-      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
       [TelemetryProperty.DebugIsTransparentTask]: "true",
     },
     telemetryProperties

@@ -23,7 +23,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { ManifestVariables } from "../../src/common/constants";
 import * as tools from "../../src/common/tools";
-import { envPrefix, environmentManager } from "../../src/core/environment";
+import { environmentManager } from "../../src/core/environment";
 import { WriteFileError } from "../../src/error/common";
 import { deleteFolder, randomAppName } from "./utils";
 
@@ -72,20 +72,10 @@ describe("APIs of Environment Manager", () => {
     auth: {
       accessAsUserScopeId: "test-scope-id",
       clientId: "test-client-id",
-      clientSecret: `{{${envPrefix}MOCKED_CLIENT_SECRET}}`,
+      clientSecret: `{{env-MOCKED_CLIENT_SECRET}}`,
       objectId: "test-object-id",
     },
   };
-
-  const envStateDataObj = new Map([
-    [
-      "solution",
-      {
-        teamsAppTenantId: decryptedValue,
-        key: "value",
-      },
-    ],
-  ]);
 
   const envStateDataWithoutCredential = {
     solution: {

@@ -52,7 +52,7 @@ import { getProjectSettingPathV3 } from "../../../../src/core/middleware/project
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { settingsUtil, SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import { settingsUtil } from "../../../../src/component/utils/settingsUtil";
 import {
   copyTestProject,
   mockMigrationContext,
@@ -1149,7 +1149,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 ", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(SettingsUtils.prototype, "readSettings").resolves(
+    sandbox.stub(settingsUtil, "readSettings").resolves(
       ok({
         version: MetadataV3.projectVersion,
         trackingId: mockedId,
@@ -1161,9 +1161,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 failed", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox
-      .stub(SettingsUtils.prototype, "readSettings")
-      .resolves(err(new Error("mocked error") as FxError));
+    sandbox.stub(settingsUtil, "readSettings").resolves(err(new Error("mocked error") as FxError));
     const trackingId = await getTrackingIdFromPath(projectPath);
     assert.equal(trackingId, "");
   });

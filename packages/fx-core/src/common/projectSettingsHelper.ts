@@ -18,7 +18,7 @@ import {
 } from "../component/constants";
 import { MetadataV3 } from "./versionMetadata";
 
-function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
+export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
   if (!projectSettings.solutionSettings) return undefined;
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;

@@ -110,7 +110,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   }
 };
 
-function getLockFolder(projectPath: string): string {
+export function getLockFolder(projectPath: string): string {
   return path.join(
     os.tmpdir(),
     `${ProductName}-${crypto.createHash("md5").update(projectPath).digest("hex")}`

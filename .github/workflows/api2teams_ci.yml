@@ -17,12 +17,12 @@ defaults:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [14.x, 16.x, 18.x]
+        version: [14, 16, 18]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
@@ -31,7 +31,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: ${{ matrix.version }}
 
       - name: Install
         run: |

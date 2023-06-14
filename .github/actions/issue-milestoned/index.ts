@@ -59,7 +59,7 @@ class Milestoned extends Action {
 			safeLog(`finished to create work item.`);
 			const workItemUrl = workItem._links?.html?.href;
 			if (workItemUrl) {
-				await issue.postComment(`work item created: ${workItemUrl}`);
+				await issue.postComment(`The issue is milestoned with sprint milestone ${milestoneTitle} and a work item created: ${workItemUrl}`);
 			} else {
 				safeLog(`no work item url found, ignore to post comment.`);
 			}

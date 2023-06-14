@@ -30,7 +30,7 @@ import CLIUIInstance from "../../userInteraction";
 import { getColorizedString, getSystemInputs, isWorkspaceSupported } from "../../utils";
 import { YargsCommand } from "../../yargsCommand";
 import activate from "../../activate";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 import { FxCore, assembleError } from "@microsoft/teamsfx-core";
 enum Progress {

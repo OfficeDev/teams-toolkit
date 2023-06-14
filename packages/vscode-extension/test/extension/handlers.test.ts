@@ -30,7 +30,7 @@ import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
+import { CoreHookContext } from "@microsoft/teamsfx-core";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import M365TokenInstance from "../../src/commonlib/m365Login";
 import { DeveloperPortalHomeLink, SUPPORTED_SPFX_VERSION } from "../../src/constants";

@@ -22,8 +22,8 @@ import {
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
 import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
+import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import path from "path";
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
 import { IServerConnection, Namespaces } from "./apis";

@@ -7,7 +7,7 @@
 import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";

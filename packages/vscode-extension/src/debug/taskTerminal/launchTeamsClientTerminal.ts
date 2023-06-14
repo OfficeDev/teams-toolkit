@@ -22,7 +22,7 @@ import {
   openTerminalMessage,
 } from "../constants";
 import { core, getSystemInputs } from "../../handlers";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 
 export interface LaunchTeamsClientArgs {

@@ -3,7 +3,6 @@
 
 import {
   ConfigFolderName,
-  CryptoProvider,
   EnvConfig,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
@@ -11,11 +10,9 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
-  Json,
   Platform,
   Result,
   StatesFolderName,
-  SystemError,
   Void,
   err,
   ok,
@@ -24,17 +21,10 @@ import {
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
-import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import path, { basename } from "path";
+import path from "path";
 import { ConstantString, ManifestVariables } from "../common/constants";
-import { Component, TelemetryEvent, sendTelemetryErrorEvent } from "../common/telemetry";
-import {
-  compileHandlebarsTemplateString,
-  dataNeedEncryption,
-  replaceTemplateWithUserData,
-} from "../common/tools";
-import { convertEnvStateV2ToV3 } from "../component/migrate";
+import { compileHandlebarsTemplateString } from "../common/tools";
 import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { FileNotFoundError, NoEnvFilesError, WriteFileError } from "../error/common";
@@ -63,32 +53,6 @@ class EnvironmentManager {
     this.ajv = new Ajv();
     this.ajv.addMetaSchema(draft6MetaSchema);
   }
-
-  public async loadEnvInfo(
-    projectPath: string,
-    cryptoProvider: CryptoProvider,
-    envName?: string,
-    v3 = false
-  ): Promise<Result<v3.EnvInfoV3, FxError>> {
-    if (!(await fs.pathExists(projectPath))) {
-      return err(new FileNotFoundError("EnvironmentManager", projectPath));
-    }
-    envName = envName ?? this.getDefaultEnvName();
-    const configResult = await this.loadEnvConfig(projectPath, envName);
-    if (configResult.isErr()) {
-      return err(configResult.error);
-    }
-    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider);
-    if (stateResult.isErr()) {
-      return err(stateResult.error);
-    }
-    return ok({
-      envName,
-      config: configResult.value as Json,
-      state: stateResult.value as v3.ResourceStates,
-    });
-  }
-
   public async writeEnvConfig(
     projectPath: string,
     envConfig: EnvConfig,
@@ -261,42 +225,12 @@ class EnvironmentManager {
     return err(InvalidEnvConfigError(envName, JSON.stringify(validate.errors)));
   }
 
-  private async loadEnvState(
-    projectPath: string,
-    envName: string,
-    cryptoProvider: CryptoProvider
-  ): Promise<Result<Map<string, any> | v3.ResourceStates, FxError>> {
-    const envFiles = this.getEnvStateFilesPath(envName, projectPath);
-    const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
-    if (userDataResult.isErr()) {
-      return err(userDataResult.error);
-    }
-    const userData = userDataResult.value;
-    if (!(await fs.pathExists(envFiles.envState))) {
-      return ok({ solution: {} });
-    }
-    const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
-    const result = replaceTemplateWithUserData(template, userData);
-    let resultJson: Json = JSON.parse(result);
-    resultJson = convertEnvStateV2ToV3(resultJson);
-    return ok(resultJson as v3.ResourceStates);
-  }
-
   private expandEnvironmentVariables(templateContent: string): string {
     if (!templateContent) {
       return templateContent;
     }
 
     return compileHandlebarsTemplateString(templateContent, { $env: process.env });
-  }
-
-  private getEnvNameFromPath(filePath: string): string | null {
-    const match = this.envConfigNameRegex.exec(filePath);
-    if (match != null && match.groups != null) {
-      return match.groups.envName;
-    }
-
-    return null;
   }
 
   private getConfigFolder(projectPath: string): string {
@@ -313,75 +247,6 @@ class EnvironmentManager {
 
   public getEnvConfigsFolder(projectPath: string): string {
     return path.resolve(this.getConfigFolder(projectPath), InputConfigsFolderName);
-  }
-
-  private async loadUserData(
-    userDataPath: string,
-    cryptoProvider: CryptoProvider
-  ): Promise<Result<Record<string, string>, FxError>> {
-    if (!(await fs.pathExists(userDataPath))) {
-      return ok({});
-    }
-
-    const content = await fs.readFile(userDataPath, "UTF-8");
-    const secrets = dotenv.parse(content);
-
-    const res = this.decrypt(secrets, cryptoProvider);
-    if (res.isErr()) {
-      const fxError: SystemError = res.error;
-      const fileName = basename(userDataPath);
-      fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
-      fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
-      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
-    }
-    return res;
-  }
-
-  private encrypt(
-    secrets: Record<string, string>,
-    cryptoProvider: CryptoProvider
-  ): Result<Record<string, string>, FxError> {
-    for (const secretKey of Object.keys(secrets)) {
-      if (!dataNeedEncryption(secretKey)) {
-        continue;
-      }
-      if (!secrets[secretKey]) {
-        delete secrets[secretKey];
-        continue;
-      }
-      const encryptedSecret = cryptoProvider.encrypt(secrets[secretKey]);
-      // always success
-      if (encryptedSecret.isOk()) {
-        secrets[secretKey] = encryptedSecret.value;
-      }
-    }
-
-    return ok(secrets);
-  }
-
-  private decrypt(
-    secrets: Record<string, string>,
-    cryptoProvider: CryptoProvider
-  ): Result<Record<string, string>, FxError> {
-    for (const secretKey of Object.keys(secrets)) {
-      if (!dataNeedEncryption(secretKey)) {
-        continue;
-      }
-
-      const secretValue = secrets[secretKey];
-      const plaintext = cryptoProvider.decrypt(secretValue);
-      if (plaintext.isErr()) {
-        return err(plaintext.error);
-      }
-
-      secrets[secretKey] = plaintext.value;
-    }
-
-    return ok(secrets);
-  }
-
-  private isEmptyRecord(data: Record<any, any>): boolean {
-    return Object.keys(data).length === 0;
   }
 
   public getDefaultEnvName() {

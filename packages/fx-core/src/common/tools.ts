@@ -56,26 +56,7 @@ Handlebars.registerHelper("equals", (value, target) => {
   return value === target ? this : "";
 });
 
-const CryptoDataMatchers = new Set([
-  "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientSecret",
-  "fx-resource-simple-auth.environmentVariableParams",
-  "fx-resource-bot.botPassword",
-  "fx-resource-bot.localBotPassword",
-  "fx-resource-apim.apimClientAADClientSecret",
-  "fx-resource-azure-sql.adminPassword",
-]);
-
 const AzurePortalUrl = "https://portal.azure.com";
-
-/**
- * Only data related to secrets need encryption.
- * @param key - the key name of data in user data file
- * @returns whether it needs encryption
- */
-export function dataNeedEncryption(key: string): boolean {
-  return CryptoDataMatchers.has(key);
-}
 
 export function convertDotenvToEmbeddedJson(dict: Record<string, string>): Json {
   const result: Json = {};

@@ -1,19 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IProgressHandler, ok, ProjectConfig, ConfigMap } from "@microsoft/teamsfx-api";
+import { IProgressHandler, ok } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import {
   createTaskStartCb,
   createTaskStopCb,
   generateAccountHint,
-  getBotOutlookChannelLink,
 } from "../../../../src/cmds/preview/commonUtils";
-import { expect } from "../../utils";
-import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
-import fs from "fs-extra";
-import * as chai from "chai";
+import M365TokenInstance from "../../../../src/commonlib/m365Login";
+import { expect } from "../../utils";
 
 describe("commonUtils", () => {
   const sandbox = sinon.createSandbox();
@@ -84,61 +81,6 @@ describe("commonUtils", () => {
       expect(await generateAccountHint(tenantIdFromConfig, false)).to.deep.equals(
         `login_hint=${upn}`
       );
-    });
-
-    it("getBotOutlookChannelLink", async () => {
-      const s = await getBotOutlookChannelLink("folder", "local", undefined, "abc");
-      chai.assert.isNotEmpty(s);
-
-      sinon
-        .stub(fs, "readFileSync")
-        .onFirstCall()
-        .returns(
-          `{
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-          "contentVersion": "1.0.0.0",
-          "parameters": {
-            "provisionParameters": {
-              "value": {
-                "resourceBaseName": "{{state.solution.resourceNameSuffix}}",
-                "m365ClientId": "{{state.fx-resource-aad-app-for-teams.clientId}}",
-                "m365ClientSecret": "{{state.fx-resource-aad-app-for-teams.clientSecret}}",
-                "m365TenantId": "{{state.fx-resource-aad-app-for-teams.tenantId}}",
-                "m365OauthAuthorityHost": "{{state.fx-resource-aad-app-for-teams.oauthHost}}"
-              }
-            }
-          }
-        }`
-        )
-        .onSecondCall().returns(`{
-          "solution": {
-              "teamsAppTenantId": "teamsAppTenantId",
-              "subscriptionId": "subscriptionId",
-              "subscriptionName": "subscriptionName",
-              "tenantId": "tenantId",
-              "needCreateResourceGroup": true,
-              "resourceGroupName": "resourceGroupName",
-              "location": "Central US",
-              "resourceNameSuffix": "2c1fcd",
-              "provisionSucceeded": true
-          }
-      }`);
-      const solutionConfig = new Map<string, ConfigMap>();
-      const jsonString = `{
-        "subscriptionId": "subscriptionId",
-        "tenantId": "tenantId",
-        "resourceGroupName": "resourceGroupName"
-      }`;
-      const map = ConfigMap.fromJSON(JSON.parse(jsonString));
-      if (map) {
-        solutionConfig.set("solution", map);
-      }
-      const projectConfig: ProjectConfig = {
-        config: solutionConfig,
-      };
-      const s2 = await getBotOutlookChannelLink("folder", "abc", projectConfig, "abc");
-      chai.assert.isNotEmpty(s2);
-      sinon.restore();
     });
   });
 });

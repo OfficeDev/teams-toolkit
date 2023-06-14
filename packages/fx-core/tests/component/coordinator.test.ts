@@ -96,7 +96,7 @@ import {
 } from "../core/utils";
 import { MockedUserInteraction } from "../plugins/solution/util";
 
-function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
+export function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
     {
       uses: "arm/deploy",

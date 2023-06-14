@@ -187,7 +187,7 @@ export namespace ExtTelemetry {
       eventName: eventName,
       properties: {
         [TelemetryProperty.CorrelationId]: lastCorrelationId,
-        [TelemetryProperty.ProjectId]: getProjectId(),
+        [TelemetryProperty.ProjectId]: await getProjectId(),
         [TelemetryProperty.Timestamp]: new Date().toISOString(),
         ...properties,
       },

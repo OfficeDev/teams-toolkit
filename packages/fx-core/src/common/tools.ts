@@ -354,27 +354,6 @@ export function getResourceGroupInPortal(
   }
 }
 
-// TODO: move other feature flags to featureFlags.ts to prevent import loop
-export function isBicepEnvCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
-}
-
-export function isAadManifestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
-}
-
-export function isDeployManifestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.DeployManifest, false);
-}
-
-export function isM365AppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
-}
-
-export function isApiConnectEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
-}
-
 export function isV3Enabled(): boolean {
   return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
 }
@@ -503,10 +482,6 @@ export function getAllowedAppMaps(): Record<string, string> {
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   return AppStudioClient.getSideloadingStatus(token);
-}
-
-export function getPropertyByPath(obj: any, path: string, defaultValue?: string) {
-  return _.get(obj, path, defaultValue);
 }
 
 export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];

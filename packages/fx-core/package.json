@@ -16,7 +16,6 @@
     "test:cicd": "nyc mocha \"tests/component/feature/cicd/**/*.test.ts\"",
     "test:dotnet": "nyc mocha \"tests/plugins/resource/dotnet/**/*.test.ts\"",
     "test:function": "nyc mocha \"tests/plugins/resource/function/**/*.test.ts\"",
-    "test:localdebug": "nyc mocha \"tests/plugins/resource/localdebug/**/*.test.ts\"",
     "test:frontend": "nyc mocha \"tests/plugins/resource/frontend/**/*.test.ts\"",
     "test:aad": "nyc mocha \"tests/component/resource/aadApp/**/*.test.ts\"",
     "test:appmanifest": "nyc mocha \"tests/component/resource/appManifest/**/*.test.ts\"",

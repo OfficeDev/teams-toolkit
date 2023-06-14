@@ -32,7 +32,6 @@ export async function happyPathTest(
   const envName = environmentManager.getDefaultEnvName();
 
   const env = Object.assign({}, process.env);
-  env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
   if (runtime === Runtime.Dotnet) {
     env["TEAMSFX_CLI_DOTNET"] = "true";
   }

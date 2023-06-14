@@ -19,7 +19,6 @@ import {
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { RestoreFn } from "mocked-env";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
@@ -28,12 +27,6 @@ describe("Collaboration", function () {
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
   let appId: string;
-
-  let mockedEnvRestore: RestoreFn;
-
-  afterEach(() => {
-    mockedEnvRestore();
-  });
 
   it(
     "Collaboration: CLI with permission status and permission grant - spfx",

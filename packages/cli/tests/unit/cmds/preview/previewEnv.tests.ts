@@ -22,7 +22,7 @@ import * as launch from "../../../../src/cmds/preview/launch";
 import { ServiceLogWriter } from "../../../../src/cmds/preview/serviceLogWriter";
 import { Task } from "../../../../src/cmds/preview/task";
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
-import { signedIn } from "../../../../src/commonlib/common/constant";
+import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("Preview --env", () => {

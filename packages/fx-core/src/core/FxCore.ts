@@ -379,35 +379,6 @@ export class FxCore {
     return this.v3Implement.dispatch(this.projectVersionCheck, inputs);
   }
 
-  async createEnvCopy(
-    targetEnvName: string,
-    sourceEnvName: string,
-    inputs: Inputs,
-    core: FxCore
-  ): Promise<Result<Void, FxError>> {
-    // copy env config file
-    const targetEnvConfigFilePath = environmentManager.getEnvConfigPath(
-      targetEnvName,
-      inputs.projectPath!
-    );
-    const sourceEnvConfigFilePath = environmentManager.getEnvConfigPath(
-      sourceEnvName,
-      inputs.projectPath!
-    );
-
-    try {
-      await fs.copy(sourceEnvConfigFilePath, targetEnvConfigFilePath);
-    } catch (e) {
-      return err(CopyFileError(e as Error));
-    }
-
-    TOOLS.logProvider.debug(
-      `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
-    );
-
-    return ok(Void);
-  }
-
   async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return ok(Void);
   }

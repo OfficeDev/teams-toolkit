@@ -10,11 +10,11 @@ on:
   schedule:
     - cron: "0 22 * * *"
 
-  pull_request:
+  pull_request_target:
 
 jobs:
   setup:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
     runs-on: ubuntu-latest
     outputs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
@@ -87,7 +87,7 @@ jobs:
 
       - name: List cases for pull request
         id: pr-cases
-        if: ${{  github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         working-directory: packages/cli/tests/e2e
         run: |
           cases=`find ./bot ./frontend -path "*.tests.ts" -and \
@@ -169,7 +169,7 @@ jobs:
           npm link --force
 
       - name: Update CLI and legacy-peer-deps for PR cases
-        if: ${{  github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         run: |
           npm install -g @microsoft/teamsfx-cli@latest
           npm config set legacy-peer-deps false
@@ -232,7 +232,7 @@ jobs:
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
     needs: execute-case
     runs-on: ubuntu-latest
     env:
@@ -275,7 +275,7 @@ jobs:
 
   rerun:
     needs: tear-down
-    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
+    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
     steps:
       - name: rerun

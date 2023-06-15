@@ -17,7 +17,7 @@ import {
   TelemetryMeasurements,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { getHashedEnv, isV3Enabled } from "@microsoft/teamsfx-core";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
 import { TaskCommand } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core";
@@ -132,7 +132,7 @@ function isTeamsfxTask(task: vscode.Task): boolean {
       if (/(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine)) {
         return true;
       }
-      if (isV3Enabled() && /teamsfx\/script\/.*\.js/i.test(commandLine)) {
+      if (/teamsfx\/script\/.*\.js/i.test(commandLine)) {
         return true;
       }
     }

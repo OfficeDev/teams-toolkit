@@ -341,10 +341,6 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.deployManifestFromCtxMenu",
           "when": "false"
         },
@@ -398,10 +394,6 @@
         },
         {
           "command": "fx-extension.openPreviewAadFile",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.openPreviewFile",
           "when": "false"
         },
         {
@@ -570,12 +562,6 @@
         "category": "Teams"
       },
       {
-        "command": "fx-extension.openManifest",
-        "title": "%teamstoolkit.commands.editManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled && !fx-extension.commandLocked",
-        "category": "Teams"
-      },
-      {
         "command": "fx-extension.openReportIssues",
         "title": "%teamstoolkit.commands.reportIssue.title%",
         "enablement": "fx-extension.isTeamsFx",
@@ -687,12 +673,6 @@
         "icon": "$(file-code)"
       },
       {
-        "command": "fx-extension.openPreviewFile",
-        "title": "%teamstoolkit.commands.previewManifest.title%",
-        "icon": "$(file-code)",
-        "enablement": "!fx-extension.isV3Enabled"
-      },
-      {
         "command": "fx-extension.openResourceGroupInPortal",
         "title": "%teamstoolkit.commands.openInPortal.title%",
         "icon": "$(ports-open-browser-icon)"
@@ -738,7 +718,7 @@
       {
         "command": "fx-extension.addWebpart",
         "title": "%teamstoolkit.commmands.addWebpart.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isV3Enabled && !fx-extension.commandLocked",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
       }
     ],

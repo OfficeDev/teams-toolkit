@@ -29,10 +29,6 @@ export enum GlobalKey {
   ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
 }
 
-export enum AadManifestDeployConstants {
-  INCLUDE_AAD_MANIFEST = "include-aad-manifest",
-}
-
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;
 
 export const SUPPORTED_SPFX_VERSION = "1.16.1";

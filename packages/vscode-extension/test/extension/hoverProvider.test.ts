@@ -38,7 +38,6 @@ describe("Manifest template hover - V3", async () => {
   } as any;
 
   beforeEach(() => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(envUtil, "listEnv").resolves(ok(["local", "dev"]));
   });

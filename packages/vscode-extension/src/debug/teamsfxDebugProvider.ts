@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 
 import { Correlator } from "@microsoft/teamsfx-core";
 import { isValidProject, isValidProjectV3 } from "@microsoft/teamsfx-core";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import { envUtil } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { MissingEnvironmentVariablesError } from "@microsoft/teamsfx-core";
@@ -56,10 +56,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
 
       if (typeof debugConfiguration.url !== "string") {
-        return debugConfiguration;
-      }
-
-      if (!isV3Enabled()) {
         return debugConfiguration;
       }
 

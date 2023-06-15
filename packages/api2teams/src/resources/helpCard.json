@@ -17,7 +17,7 @@
     {
       "type": "Action.OpenUrl",
       "title": "Read Doc",
-      "url": "https://github.com/OfficeDev/TeamsFx"
+      "url": "https://github.com/OfficeDev/TeamsFx/wiki/OpenAPI-spec-to-Teams-App"
     },
     {
       "type": "Action.OpenUrl",

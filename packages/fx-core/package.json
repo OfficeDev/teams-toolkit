@@ -121,7 +121,10 @@
     "validator": "^13.7.0",
     "xml2js": "^0.5.0",
     "yaml": "^2.2.2",
-    "yaml-language-server": "1.7.0"
+    "yaml-language-server": "1.7.0",
+    "@microsoft/dev-tunnels-connections": "~1.0.7360",
+    "@microsoft/dev-tunnels-contracts": "~1.0.7360",
+    "@microsoft/dev-tunnels-management": "~1.0.7360"
   },
   "devDependencies": {
     "@azure/storage-blob": "^12.5.0",

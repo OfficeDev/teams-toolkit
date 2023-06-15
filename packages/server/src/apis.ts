@@ -34,6 +34,7 @@ import {
   RequestType1,
   RequestType4,
 } from "vscode-jsonrpc";
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 
 export enum Namespaces {
   /**
@@ -148,6 +149,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  listDevTunnelsRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Tunnel[], FxError>>;
 }
 
 /**

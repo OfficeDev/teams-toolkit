@@ -6,8 +6,8 @@ import { FxCore, envUtil, VersionCheckRes, VersionState } from "@microsoft/teams
 import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 import fs from "fs-extra";
-import { RestoreFn } from "mocked-env";
 import * as path from "path";
+import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 import * as constants from "../../../../src/cmds/preview/constants";

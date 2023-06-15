@@ -4,19 +4,19 @@ on:
   push:
     paths:
       - "packages/api2teams/**"
-    branches: [main, dev, prerelease]
+    branches: [main, dev, prerelease, api2teams]
   pull_request:
     paths:
       - "packages/api2teams/**"
     branches: [main, dev, prerelease, api2teams]
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: packages/api2teams/
-
 jobs:
   test:
+    strategy:
+      matrix:
+        version: [14, 16, 18]
+
     runs-on: ubuntu-latest
 
     steps:
@@ -26,12 +26,14 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: ${{ matrix.version }}
 
       - name: Install
+        working-directory: packages/api2teams/
         run: |
           npm install
 
       - name: Test
+        working-directory: packages/api2teams/
         run: |
           npm run test

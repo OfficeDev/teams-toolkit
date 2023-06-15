@@ -2803,6 +2803,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
               ],
             },
             {
+              id: "multiTenant",
+              label: `${localize("teamstoolkit.guides.multiTenant.label")}`,
+              detail: localize("teamstoolkit.guides.multiTenant.detail"),
+              groupName: localize("teamstoolkit.guide.development"),
+              data: "https://aka.ms/teamsfx-multi-tenant",
+              buttons: [
+                {
+                  iconPath: "file-symlink-file",
+                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                  command: "fx-extension.openTutorial",
+                },
+              ],
+            },
+            {
               id: "addAzureFunction",
               label: localize("teamstoolkit.guides.addAzureFunction.label"),
               detail: localize("teamstoolkit.guides.addAzureFunction.detail"),

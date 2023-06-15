@@ -322,6 +322,8 @@
     "teamstoolkit.guides.cicdPipeline.label": "Automate CI/CD Pipelines",
     "teamstoolkit.guides.mobilePreview.detail": "Run and debug your Teams application on iOS or Android client.",
     "teamstoolkit.guides.mobilePreview.label": "Run and Debug on Mobile Client",
+    "teamstoolkit.guides.multiTenant.detail": "Enable multi-Tenant support for Teams app.",
+    "teamstoolkit.guides.multiTenant.label": "Multi-Tenant Support",
     "teamstoolkit.guides.commandAndResponse.detail": "Automate repetitive tasks with a simple command and response in conversation.",
     "teamstoolkit.guides.commandAndResponse.label": "Respond to Chat Commands in Teams",
     "teamstoolkit.guides.connectApi.detail": "Connect to an API with authentication support using TeamsFx SDK.",

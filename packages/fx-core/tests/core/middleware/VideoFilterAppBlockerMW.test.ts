@@ -52,13 +52,11 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   });
 
   it("blocks video filter project", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const mock = createMock();
     mockFs({
-      [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-        JSON.stringify({
-          meetingExtensionDefinition: { videoFiltersConfigurationUrl: "https://a.b.c" },
-        }),
+      [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify({
+        meetingExtensionDefinition: { videoFiltersConfigurationUrl: "https://a.b.c" },
+      }),
     });
 
     const result = await mock.instance.myMethod(mock.inputs);
@@ -71,10 +69,9 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   it("ignores non-video project", async () => {
     const mock = createMock();
     mockFs({
-      [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-        JSON.stringify({
-          meetingExtensionDefinition: {},
-        }),
+      [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify({
+        meetingExtensionDefinition: {},
+      }),
     });
 
     const result = await mock.instance.myMethod(mock.inputs);
@@ -87,8 +84,7 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   it("ignores project with incorrect manifest", async () => {
     const mock = createMock();
     mockFs({
-      [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-        "invalid json",
+      [path.join(mockProjectRoot, "appPackage", "manifest.json")]: "invalid json",
     });
 
     const result = await mock.instance.myMethod(mock.inputs);
@@ -121,8 +117,7 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
         executeUserTask: [VideoFilterAppBlockerMW, TestMW],
       });
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          "invalid json",
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: "invalid json",
       });
 
       const func = {
@@ -157,8 +152,7 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
         executeUserTask: [VideoFilterAppBlockerMW, TestMW],
       });
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          "invalid json",
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: "invalid json",
       });
 
       const func = {

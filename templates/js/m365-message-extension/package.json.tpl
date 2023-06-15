@@ -18,7 +18,7 @@
     "watch": "nodemon ./index.js"
   },
   "dependencies": {
-    "botbuilder": "^4.18.0",
+    "botbuilder": "^4.20.0",
     "restify": "^10.0.0"
   },
   "devDependencies": {

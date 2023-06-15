@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@microsoft/adaptivecards-tools": "^1.0.0",
-    "botbuilder": "^4.17.0",
+    "botbuilder": "^4.20.0",
     "restify": "^10.0.0"
   },
   "devDependencies": {

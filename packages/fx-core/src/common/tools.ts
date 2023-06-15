@@ -452,7 +452,10 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
       }
     );
 
-    const tunnels = await tunnelManagementClientImpl.listTunnels();
+    const options = {
+      includeAccessControl: true,
+    };
+    const tunnels = await tunnelManagementClientImpl.listTunnels(undefined, undefined, options);
     return ok(tunnels);
   } catch (error) {
     return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", (error as any).message));

@@ -8,7 +8,7 @@ import {
   ManifestTemplateCodeLensProvider,
   PlaceholderCodeLens,
 } from "../../src/codeLensProvider";
-import * as commonTools from "@microsoft/teamsfx-core";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
 

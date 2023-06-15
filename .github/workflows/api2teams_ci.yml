@@ -8,7 +8,6 @@ on:
   pull_request:
     paths:
       - "packages/api2teams/**"
-    branches: [main, dev, prerelease, api2teams]
   workflow_dispatch:
 
 jobs:

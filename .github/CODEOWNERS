@@ -111,7 +111,10 @@
 /templates/ts/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/js/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/ts/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/js/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/ts/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/csharp/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/csharp/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /packages/fx-core/src/common/template-utils @hund030 @huimiu @eriolchan
 /packages/fx-core/tests/common/templateFetch.test.ts @hund030 @huimiu @eriolchan
 

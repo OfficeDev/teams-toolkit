@@ -25,9 +25,9 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "@microsoft/teamsfx-core";
-import * as globalState from "@microsoft/teamsfx-core";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AppDefinition,
   AppStudioClient,
@@ -1034,19 +1034,7 @@ describe("handlers", () => {
     chai.assert.isTrue(createProject.calledOnceWith(inputs));
   });
 
-  it("deployAadAppManifest", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    sandbox.stub(handlers, "core").value(new MockCore());
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployArtifacts = sandbox.spy(handlers.core, "deployArtifacts");
-    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sandbox.assert.calledOnce(deployArtifacts);
-    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
-  });
-
   it("deployAadAppmanifest for v3", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1054,18 +1042,6 @@ describe("handlers", () => {
     await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }]);
     sandbox.assert.calledOnce(deployAadManifest);
     deployAadManifest.restore();
-  });
-
-  it("deployAadAppManifest on codelens only for v2", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    sandbox.stub(handlers, "core").value(new MockCore());
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployArtifacts = sandbox.spy(handlers.core, "deployArtifacts");
-    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sandbox.assert.calledOnce(deployArtifacts);
-    chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
-    deployArtifacts.restore();
   });
 
   it("showError", async () => {

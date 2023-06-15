@@ -2,30 +2,28 @@
 // Licensed under the MIT license.
 
 import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
-import * as packageJson from "@microsoft/teamsfx-core";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, envUtil, VersionCheckRes, VersionState } from "@microsoft/teamsfx-core";
+import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import fs from "fs-extra";
 import { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import * as constants from "../../../../src/cmds/preview/constants";
-import * as launch from "../../../../src/cmds/preview/launch";
 import PreviewEnv from "../../../../src/cmds/preview/previewEnv";
-import { ServiceLogWriter } from "../../../../src/cmds/preview/serviceLogWriter";
-import { Task } from "../../../../src/cmds/preview/task";
-import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import cliLogger from "../../../../src/commonlib/log";
-import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
+import { expect } from "../../utils";
+import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
+import * as launch from "../../../../src/cmds/preview/launch";
+import { ServiceLogWriter } from "../../../../src/cmds/preview/serviceLogWriter";
+import { Task } from "../../../../src/cmds/preview/task";
+import M365TokenInstance from "../../../../src/commonlib/m365Login";
+import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();
@@ -301,7 +299,7 @@ describe("PreviewEnv Steps", () => {
       return super.checkM365Account(appTenantId);
     }
 
-    public detectRunCommand(projectPath: string): Promise<
+    public async detectRunCommand(projectPath: string): Promise<
       Result<
         {
           runCommand: string;
@@ -309,7 +307,7 @@ describe("PreviewEnv Steps", () => {
         FxError
       >
     > {
-      return super.detectRunCommand(projectPath);
+      return await super.detectRunCommand(projectPath);
     }
 
     public previewWithManifest(
@@ -471,15 +469,15 @@ describe("PreviewEnv Steps", () => {
     sandbox.stub(fs, "readFile").resolves(
       Buffer.from(
         `
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectCapability Include="TeamsFx" />
-  </ItemGroup>
-</Project>
-`
+  <Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+      <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProjectCapability Include="TeamsFx" />
+    </ItemGroup>
+  </Project>
+  `
       )
     );
 
@@ -497,18 +495,18 @@ describe("PreviewEnv Steps", () => {
       Buffer.from(
         // eslint-disable-next-line no-secrets/no-secrets
         `
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectCapability Include="TeamsFx" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.3" />
-  </ItemGroup>
-</Project>
-`
+  <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProjectCapability Include="TeamsFx" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.3" />
+    </ItemGroup>
+  </Project>
+  `
       )
     );
 

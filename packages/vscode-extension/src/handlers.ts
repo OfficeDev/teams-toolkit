@@ -2605,26 +2605,7 @@ export async function openLifecycleTreeview(args?: any[]) {
 export async function updateAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
-  if (isV3Enabled()) {
-    return await runCommand(Stage.deployAad, inputs);
-  }
-  inputs[AadManifestDeployConstants.INCLUDE_AAD_MANIFEST] = "yes";
-
-  if (args && args.length > 1 && args[1] === "CodeLens") {
-    const segments = args[0].fsPath.split(".");
-    const env = segments[segments.length - 2];
-    inputs.env = env;
-  } else {
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DeployAadManifest, selectedEnv.error);
-      return err(selectedEnv.error);
-    }
-    const envName = selectedEnv.value;
-    inputs.env = envName;
-  }
-
-  return await runCommand(Stage.deploy, inputs);
+  return await runCommand(Stage.deployAad, inputs);
 }
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {

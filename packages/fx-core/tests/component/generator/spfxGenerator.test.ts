@@ -24,7 +24,7 @@ import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { ManifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
-import { EnvUtil } from "../../../src/component/utils/envUtil";
+import { envUtil } from "../../../src/component/utils/envUtil";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -480,7 +480,7 @@ describe("SPFxGenerator", function () {
     const writeAppManifestStub = sinon
       .stub(ManifestUtils.prototype, "_writeAppManifest")
       .resolves();
-    const writeEnvStub = sinon.stub(EnvUtil.prototype, "writeEnv");
+    const writeEnvStub = sinon.stub(envUtil, "writeEnv");
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 

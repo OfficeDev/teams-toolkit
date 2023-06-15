@@ -13,7 +13,6 @@ import {
   ResourceContextV3,
   TeamsAppManifest,
   ok,
-  SingleSelectResult,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
@@ -23,12 +22,13 @@ import { setTools } from "../../../../src/core/globalVars";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../src/component/constants";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { Constants } from "../../../../src/component/resource/appManifest/constants";
+import { updateManifestV3 } from "../../../../src/component/driver/teamsApp/appStudio";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import * as uuid from "uuid";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
-import { AppDefinition } from "../../../../src/component/resource/appManifest/interfaces/appDefinition";
+import { AppDefinition } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../../src/common/constants";
 import * as commonTools from "../../../../src/common/tools";
@@ -491,7 +491,7 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
     sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
 
-    const deployAction = await component.deployV3(context as ResourceContextV3, inputs);
+    await updateManifestV3(context as ResourceContextV3, inputs);
   });
 
   it("deploy - rebuild", async function () {
@@ -508,6 +508,6 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
     sandbox.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
 
-    const deployAction = await component.deployV3(context as ResourceContextV3, inputs);
+    await updateManifestV3(context as ResourceContextV3, inputs);
   });
 });

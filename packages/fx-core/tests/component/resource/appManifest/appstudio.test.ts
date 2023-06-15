@@ -19,17 +19,17 @@ import {
   getAppPackage,
   updateManifestV3,
   updateTeamsAppV3ForPublish,
-} from "../../../../src/component/resource/appManifest/appStudio";
+} from "../../../../src/component/driver/teamsApp/appStudio";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import AdmZip from "adm-zip";
-import { RetryHandler } from "../../../../src/component/resource/appManifest/utils/utils";
+import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { RestoreFn } from "mocked-env";
 import { CoreQuestionNames } from "../../../../src/core/question";
 import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
-import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { setTools } from "../../../../src/core/globalVars";
 

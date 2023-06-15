@@ -6,9 +6,8 @@ import "mocha";
 import "reflect-metadata";
 import sinon from "sinon";
 import * as uuid from "uuid";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
-import "../../../../src/component/resource/appManifest/appManifest";
 import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
 
 describe("getManifest V3", () => {

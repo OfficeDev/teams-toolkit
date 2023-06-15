@@ -20,7 +20,7 @@ import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
 import { UnhandledError } from "./errors";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { AppUser } from "../appManifest/interfaces/appUser";
+import { AppUser } from "../../driver/teamsApp/interfaces/appdefinitions/appUser";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../driver/middleware/addStartAndEndTelemetry";
 

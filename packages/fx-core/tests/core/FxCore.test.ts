@@ -52,7 +52,7 @@ import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/crea
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import "../../src/component/feature/sso";
-import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";

@@ -28,8 +28,8 @@ import {
   getNotificationTriggerQuestionNode,
   getSPFxScaffoldQuestion,
 } from "../../component/question";
-import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
-import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
+import { AppDefinition } from "../../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { isPersonalApp, needBotCode } from "../../component/driver/teamsApp/utils/utils";
 import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {

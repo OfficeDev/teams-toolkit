@@ -59,7 +59,7 @@ import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
-import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
+import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {

@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 
 import axios, { AxiosInstance } from "axios";
-import { RetryHandler } from "../../../resource/appManifest/utils/utils";
-import { AppStudioResultFactory } from "../../../resource/appManifest/results";
-import { AppStudioError } from "../../../resource/appManifest/errors";
-import { TelemetryEventName, TelemetryUtils } from "../../../resource/appManifest/utils/telemetry";
+import { RetryHandler } from "../utils/utils";
+import { AppStudioResultFactory } from ".././results";
+import { AppStudioError } from ".././errors";
+import { TelemetryEventName, TelemetryUtils } from "../utils/telemetry";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AuthSvcClient {

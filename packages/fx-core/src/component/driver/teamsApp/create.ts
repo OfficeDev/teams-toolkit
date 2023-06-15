@@ -22,17 +22,17 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "./clients/appStudioClient";
-import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
-import { AppStudioResultFactory } from "../../resource/appManifest/results";
-import { AppStudioError } from "../../resource/appManifest/errors";
+import { TelemetryUtils } from "./utils/telemetry";
+import { AppStudioResultFactory } from "./results";
+import { AppStudioError } from "./errors";
 import {
   Constants,
   DEFAULT_COLOR_PNG_FILENAME,
   DEFAULT_OUTLINE_PNG_FILENAME,
   COLOR_TEMPLATE,
   OUTLINE_TEMPLATE,
-} from "../../resource/appManifest/constants";
-import { AppDefinition } from "../../resource/appManifest/interfaces/appDefinition";
+} from "./constants";
+import { AppDefinition } from "../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { getTemplatesFolder } from "../../../folder";

@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/component/constants";
-import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
+import { AppUser } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { MockUserInteraction } from "../../../core/utils";
 
 const mockPermissionRequestProvider: PermissionRequestProvider = {

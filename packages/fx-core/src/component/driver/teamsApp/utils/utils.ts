@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import { includes } from "lodash";
 import Mustache from "mustache";
-import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
-import { AppDefinition } from "../interfaces/appDefinition";
-import { ConfigurableTab } from "../interfaces/configurableTab";
+import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from ".././constants";
+import { AppDefinition } from "../interfaces/appdefinitions/appDefinition";
+import { ConfigurableTab } from "../interfaces/appdefinitions/configurableTab";
 
 export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   let keys: string[] = [];

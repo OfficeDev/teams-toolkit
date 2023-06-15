@@ -6,7 +6,6 @@ import { Func, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-
 import { assert } from "chai";
 import "mocha";
 import mockFs from "mock-fs";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import { VideoFilterAppRemoteNotSupportedError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
@@ -44,11 +43,9 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   }
 
   const mockProjectRoot = "video-filter";
-  let mockedEnvRestore: RestoreFn;
 
   afterEach(function () {
     mockFs.restore();
-    mockedEnvRestore();
   });
 
   it("blocks video filter project", async () => {

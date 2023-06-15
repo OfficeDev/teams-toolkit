@@ -3,11 +3,12 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { DevEnvironmentSetupError } from "../error";
+import { DevEnvironmentSetupError, PathAlreadyExistsError, RetrieveSPFxInfoError } from "../error";
 import { Constants } from "./constants";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
 import { SPFxQuestionNames } from "../../../constants";
 import { CoreQuestionNames } from "../../../../core/question";
+import { SPFxGenerator } from "../spfxGenerator";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -140,7 +141,16 @@ export const skipAppName: Question = {
   title: "Set app name to skip",
   func: async (inputs: Inputs) => {
     if (inputs[SPFXQuestionNames.spfx_solution] == "import") {
-      inputs[CoreQuestionNames.AppName] = "appnamePlaceholder";
+      const solutionName = await SPFxGenerator.getSolutionName(
+        inputs[SPFXQuestionNames.spfx_import_folder]
+      );
+      if (solutionName) {
+        inputs[CoreQuestionNames.AppName] = solutionName;
+        if (await fs.pathExists(path.join(inputs.folder, solutionName)))
+          throw PathAlreadyExistsError(path.join(inputs.folder, solutionName));
+      } else {
+        throw RetrieveSPFxInfoError();
+      }
     }
   },
 };

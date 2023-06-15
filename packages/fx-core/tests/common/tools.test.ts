@@ -189,17 +189,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     it("Can recognize normal video filter project", async () => {
       // Arrange
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
       const manifest = {
         meetingExtensionDefinition: {
           videoFiltersConfigurationUrl: "https://a.b.c/",
         },
       };
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          JSON.stringify(manifest),
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify(manifest),
       });
 
       // Act
@@ -208,13 +204,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.true;
-      restore();
     });
 
     it("Should not recognize tab project as video filter", async () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
       // Arrange
       const manifest = {
         $schema:
@@ -267,8 +259,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
         validDomains: ["{{state.fx-resource-frontend-hosting.domain}}"],
       };
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          JSON.stringify(manifest),
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify(manifest),
       });
 
       // Act
@@ -277,7 +268,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
-      restore();
     });
   });
 

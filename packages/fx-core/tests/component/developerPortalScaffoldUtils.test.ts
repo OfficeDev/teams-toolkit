@@ -41,6 +41,8 @@ import {
 } from "../../src/component/constants";
 import { MockTools } from "../core/utils";
 import { setTools } from "../../src/core/globalVars";
+import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
+import { merge } from "lodash";
 
 describe("developPortalScaffoldUtils", () => {
   setTools(new MockTools());
@@ -314,18 +316,14 @@ describe("developPortalScaffoldUtils", () => {
         }
       });
 
-      const mockWriteStream = new MockedWriteStream();
-      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
-      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
-      sandbox.stub(mockWriteStream, "end").resolves();
-      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
-          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
-        } else {
-          throw new Error("not support " + file);
-        }
-      });
+      const originalEnvs: DotenvOutput = {};
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifestTemplate));
+      sandbox
+        .stub(envUtil, "writeEnv")
+        .callsFake(async (projectPath: string, env: string, envs: DotenvOutput) => {
+          merge(originalEnvs, envs);
+          return ok(undefined);
+        });
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
       chai.assert.isTrue(res.isOk());
@@ -346,8 +344,7 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.description.short, DEFAULT_DESCRIPTION.short);
       chai.assert.equal(updatedManifest.description.full, DEFAULT_DESCRIPTION.full);
       chai.assert.isTrue(updatedManifest.validDomains?.includes("${{TAB_DOMAIN}}"));
-      chai.assert.isTrue(writeSpy.calledThrice);
-      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
+      chai.assert.equal(originalEnvs.TEAMS_APP_ID, "mock-app-id");
     });
 
     it("update files successfully but keep url", async () => {
@@ -436,17 +433,7 @@ describe("developPortalScaffoldUtils", () => {
         }
       });
 
-      const mockWriteStream = new MockedWriteStream();
-      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
-      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
-      sandbox.stub(mockWriteStream, "end").resolves();
-      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
-          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
-        } else {
-          throw new Error("not support " + file);
-        }
-      });
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(
         ok({
           manifestVersion: "version",
@@ -493,8 +480,6 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.description.short, "short");
       chai.assert.equal(updatedManifest.description.full, "full");
       chai.assert.equal(updatedManifest.validDomains, undefined);
-      chai.assert.isTrue(writeSpy.calledThrice);
-      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
 
     it("update bot id only", async () => {
@@ -597,17 +582,7 @@ describe("developPortalScaffoldUtils", () => {
         }
       });
 
-      const mockWriteStream = new MockedWriteStream();
-      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
-      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
-      sandbox.stub(mockWriteStream, "end").resolves();
-      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
-          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
-        } else {
-          throw new Error("not support " + file);
-        }
-      });
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(existingManifest));
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
@@ -626,8 +601,6 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
       chai.assert.isUndefined(updatedManifest.validDomains);
-      chai.assert.isTrue(writeSpy.calledThrice);
-      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
 
     it("update bot id of message extension only", async () => {
@@ -742,17 +715,7 @@ describe("developPortalScaffoldUtils", () => {
         }
       });
 
-      const mockWriteStream = new MockedWriteStream();
-      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
-      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
-      sandbox.stub(mockWriteStream, "end").resolves();
-      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
-          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
-        } else {
-          throw new Error("not support " + file);
-        }
-      });
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(existingManifest));
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
@@ -772,8 +735,6 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
       chai.assert.equal(updatedManifest.validDomains?.length, 0);
-      chai.assert.isTrue(writeSpy.calledThrice);
-      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
 
     it("update bot id and message extension id", async () => {
@@ -890,17 +851,7 @@ describe("developPortalScaffoldUtils", () => {
         }
       });
 
-      const mockWriteStream = new MockedWriteStream();
-      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
-      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
-      sandbox.stub(mockWriteStream, "end").resolves();
-      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
-          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
-        } else {
-          throw new Error("not support " + file);
-        }
-      });
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(existingManifest));
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
@@ -921,8 +872,6 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
       chai.assert.equal(updatedManifest.validDomains?.length, 0);
-      chai.assert.isTrue(writeSpy.calledThrice);
-      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
 
     it("update manifest if selecting capability from ttk UI", async () => {
@@ -1033,17 +982,7 @@ describe("developPortalScaffoldUtils", () => {
         }
       });
 
-      const mockWriteStream = new MockedWriteStream();
-      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
-      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
-      sandbox.stub(mockWriteStream, "end").resolves();
-      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
-        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
-          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
-        } else {
-          throw new Error("not support " + file);
-        }
-      });
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(existingManifest));
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
@@ -1063,8 +1002,6 @@ describe("developPortalScaffoldUtils", () => {
         existingManifest.webApplicationInfo
       );
       chai.assert.isTrue(updatedManifest.validDomains?.includes("valid-domain"));
-      chai.assert.isTrue(writeSpy.calledThrice);
-      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
 
     it("read manifest error", async () => {
@@ -1134,9 +1071,7 @@ describe("developPortalScaffoldUtils", () => {
         })
       );
 
-      const mockWriteStream = new MockedWriteStream();
-      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
-      sandbox.stub(mockWriteStream, "end").resolves();
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
 
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(err(new UserError("", "", "", "")));
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);

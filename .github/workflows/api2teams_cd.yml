@@ -3,6 +3,11 @@ run-name: Api2teams-${{ github.run_id }}-${{ github.ref_name }}
 
 on:
   workflow_dispatch:
+    inputs:
+      preid:
+        description: "preid name(alpha, stable)"
+        required: true
+        default: "alpha"
 
 jobs:
   cd:
@@ -36,7 +41,14 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
-      - name: publish release to npm org
+      - name: publish alpha release to npm org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha' }}
         working-directory: packages/api2teams/
         run: |
           npm publish --tag alpha
+
+      - name: publish stable release to npm org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        working-directory: packages/api2teams/
+        run: |
+          npm publish

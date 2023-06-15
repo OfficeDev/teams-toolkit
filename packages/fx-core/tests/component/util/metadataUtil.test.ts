@@ -18,7 +18,7 @@ import {
 } from "../../../src/component/configManager/interface";
 import { yamlParser } from "../../../src/component/configManager/parser";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { MetadataUtil } from "../../../src/component/utils/metadataUtil";
+import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { createHash } from "crypto";
@@ -86,16 +86,14 @@ describe("metadata util", () => {
 
   it("should return YamlParsingError", async () => {
     sandbox.stub(yamlParser, "parse").resolves(err(mockedError));
-    const util = new MetadataUtil();
-    const result = await util.parse(".", "dev");
+    const result = await metadataUtil.parse(".", "dev");
     assert(result.isErr() && result.error.name === "mockedError");
   });
 
   it("local config file", async () => {
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
-    const util = new MetadataUtil();
-    const result = await util.parse(".", "local");
+    const result = await metadataUtil.parse(".", "local");
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
         [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
@@ -113,8 +111,7 @@ describe("metadata util", () => {
   it("dev config file", async () => {
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
-    const util = new MetadataUtil();
-    const result = await util.parse(".", "dev");
+    const result = await metadataUtil.parse(".", "dev");
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
         [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
@@ -130,9 +127,8 @@ describe("metadata util", () => {
   });
 
   it("parseManifest with empty manifest", () => {
-    const util = new MetadataUtil();
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
-    util.parseManifest({} as TeamsAppManifest);
+    metadataUtil.parseManifest({} as TeamsAppManifest);
 
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
@@ -162,10 +158,9 @@ describe("metadata util", () => {
       configurableTabs: [{ configurationUrl: "https://example.com/config1" }],
       webApplicationInfo: { id: "web-app-id" },
     };
-    const util = new MetadataUtil();
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
 
-    util.parseManifest(manifest as TeamsAppManifest);
+    metadataUtil.parseManifest(manifest as TeamsAppManifest);
 
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {

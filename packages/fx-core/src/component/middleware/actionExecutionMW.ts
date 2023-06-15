@@ -30,7 +30,7 @@ import {
 } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
 
-export interface ActionOption {
+interface ActionOption {
   componentName?: string;
   errorSource?: string;
   errorHelpLink?: string;

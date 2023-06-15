@@ -11,7 +11,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
-import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
+import { AppStudioClient } from "./clients/appStudioClient";
 import { Constants } from "../../resource/appManifest/constants";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";

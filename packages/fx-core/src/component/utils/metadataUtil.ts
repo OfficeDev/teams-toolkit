@@ -6,7 +6,7 @@ import { LifecycleNames, ProjectModel } from "../configManager/interface";
 import { yamlParser } from "../configManager/parser";
 import { createHash } from "crypto";
 
-export class MetadataUtil {
+class MetadataUtil {
   async parse(path: string, env: string | undefined): Promise<Result<ProjectModel, FxError>> {
     const res = await yamlParser.parse(path, true);
     const props: { [key: string]: string } = {};

@@ -6,9 +6,9 @@ import {
   IncompatibleProjectError,
   UnhandledError,
   isUserCancelError,
+  Correlator,
+  VersionState,
 } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 import { readFileSync } from "fs";
 import path from "path";
 import { Argv, Options, exit } from "yargs";

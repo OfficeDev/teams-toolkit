@@ -21,7 +21,6 @@ import {
   environmentManager,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
-import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
@@ -55,6 +54,8 @@ export default class ServerConnection implements IServerConnection {
       this.createProjectRequest.bind(this),
       this.localDebugRequest.bind(this),
       this.preProvisionResourcesRequest.bind(this),
+      this.preCheckYmlAndEnvForVSRequest.bind(this),
+      this.validateManifestForVSRequest.bind(this),
       this.provisionResourcesRequest.bind(this),
       this.deployArtifactsRequest.bind(this),
       this.buildArtifactsRequest.bind(this),
@@ -140,6 +141,32 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.preProvisionForVS(params),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async preCheckYmlAndEnvForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.preCheckYmlAndEnvForVS(params),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async validateManifestForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.validateManifest(params),
       inputs
     );
     return standardizeResult(res);
@@ -312,10 +339,8 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<string | undefined, FxError>> {
-    if (!inputs.projectPath) {
-      return ok(undefined);
-    }
-    return ok(await coreGetProjectComponents(inputs.projectPath));
+    // No components for V5
+    return ok("");
   }
 
   public async getProjectMigrationStatusRequest(

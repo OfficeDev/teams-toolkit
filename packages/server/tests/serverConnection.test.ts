@@ -126,6 +126,40 @@ describe("serverConnections", () => {
     });
   });
 
+  it("preCheckYmlAndEnvForVSRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "preCheckYmlAndEnvForVS", fake);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.preCheckYmlAndEnvForVSRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(data, ok("test"));
+    });
+  });
+
+  it("validateManifestForVSRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "validateManifest", fake);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.validateManifestForVSRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(data, ok("test"));
+    });
+  });
+
   it("deployArtifactsRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
@@ -283,6 +317,18 @@ describe("serverConnections", () => {
     const res = connection.addSsoRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
       assert.equal(data, ok("test"));
+    });
+  });
+
+  it("getProjectComponents", () => {
+    const connection = new ServerConnection(msgConn);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.getProjectComponents(inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok(""));
     });
   });
 

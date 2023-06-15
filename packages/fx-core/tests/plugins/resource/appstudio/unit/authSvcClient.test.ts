@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
 import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
-import { AuthSvcClient } from "../../../../../src/component/resource/appManifest/authSvcClient";
+import { AuthSvcClient } from "../../../../../src/component/driver/teamsApp/clients/authSvcClient";
 import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";
 
 describe("Auth Service API Test", () => {

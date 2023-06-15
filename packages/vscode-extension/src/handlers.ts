@@ -45,34 +45,33 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import * as commonTools from "@microsoft/teamsfx-core";
 import {
+  TelemetryUtils as AppManifestUtils,
+  AppStudioClient,
   AppStudioScopes,
   AuthSvcScopes,
   ConcurrentError,
+  CoreQuestionNames,
+  Correlator,
+  DepsManager,
+  DepsType,
   FxCore,
+  Hub,
+  InvalidProjectError,
   askSubscription,
   assembleError,
+  environmentManager,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  isImportSPFxEnabled,
-  isUserCancelError,
-  setRegion,
-} from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import {
   globalStateGet,
   globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
-import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
-import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
+  isImportSPFxEnabled,
+  isUserCancelError,
+  isValidProject,
+  pathUtils,
+  setRegion,
+} from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
 import commandController from "./commandController";

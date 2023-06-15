@@ -38,7 +38,7 @@ import {
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AccessToken, GetTokenOptions, useIdentityPlugin } from "@azure/identity";

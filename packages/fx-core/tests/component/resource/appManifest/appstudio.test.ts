@@ -20,7 +20,7 @@ import {
   updateManifestV3,
   updateTeamsAppV3ForPublish,
 } from "../../../../src/component/resource/appManifest/appStudio";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import AdmZip from "adm-zip";
 import { RetryHandler } from "../../../../src/component/resource/appManifest/utils/utils";
 import { createContextV3 } from "../../../../src/component/utils";

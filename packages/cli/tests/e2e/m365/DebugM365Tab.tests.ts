@@ -7,7 +7,6 @@
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { environmentManager, ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import * as chai from "chai";
 import { expect } from "chai";
 import * as fs from "fs-extra";
@@ -27,17 +26,10 @@ describe("Debug V3 m365-tab template", () => {
   const projectPath = path.resolve(testFolder, appName);
 
   afterEach(async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
     await Cleaner.clean(projectPath);
   });
 
   it("happy path: provision and deploy", { testPlanCaseId: 17449535 }, async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     {
       const result = await Executor.createProject(
         testFolder,
@@ -60,21 +52,21 @@ describe("Debug V3 m365-tab template", () => {
       chai.assert.isDefined(context);
 
       // validate aad
-      chai.assert.isDefined(context.AAD_APP_OBJECT_ID);
-      chai.assert.isNotEmpty(context.AAD_APP_OBJECT_ID);
+      chai.assert.isDefined(context!.AAD_APP_OBJECT_ID);
+      chai.assert.isNotEmpty(context!.AAD_APP_OBJECT_ID);
       const aad = AadValidator.init(context, false);
       await AadValidator.validate(aad);
 
       // validate teams app
-      chai.assert.isDefined(context.TEAMS_APP_ID);
-      const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
-      chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
+      chai.assert.isDefined(context!.TEAMS_APP_ID);
+      const teamsApp = await getTeamsApp(context!.TEAMS_APP_ID);
+      chai.assert.equal(teamsApp?.teamsAppId, context!.TEAMS_APP_ID);
 
       // validate m365
-      chai.assert.isDefined(context.M365_TITLE_ID);
-      chai.assert.isNotEmpty(context.M365_TITLE_ID);
-      chai.assert.isDefined(context.M365_APP_ID);
-      chai.assert.isNotEmpty(context.M365_APP_ID);
+      chai.assert.isDefined(context!.M365_TITLE_ID);
+      chai.assert.isNotEmpty(context!.M365_TITLE_ID);
+      chai.assert.isDefined(context!.M365_APP_ID);
+      chai.assert.isNotEmpty(context!.M365_APP_ID);
     }
 
     {
@@ -89,10 +81,10 @@ describe("Debug V3 m365-tab template", () => {
       chai.assert.isDefined(context);
 
       // validate ssl cert
-      chai.assert.isDefined(context.SSL_CRT_FILE);
-      chai.assert.isNotEmpty(context.SSL_CRT_FILE);
-      chai.assert.isDefined(context.SSL_KEY_FILE);
-      chai.assert.isNotEmpty(context.SSL_KEY_FILE);
+      chai.assert.isDefined(context!.SSL_CRT_FILE);
+      chai.assert.isNotEmpty(context!.SSL_CRT_FILE);
+      chai.assert.isDefined(context!.SSL_KEY_FILE);
+      chai.assert.isNotEmpty(context!.SSL_KEY_FILE);
 
       // validate .localConfigs
       chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));

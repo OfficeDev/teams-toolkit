@@ -37,7 +37,6 @@ inputs:
   feature-iteration-path: 
     description: the iteration path to create feature item.  
     default: ''
-
     
 runs:
   using: 'node16'

@@ -107,7 +107,7 @@ export enum TemplateNames {
   BotAndMessageExtension = "default-bot-message-extension",
 }
 
-export const Feature2TemplateName: any = {
+const Feature2TemplateName: any = {
   [`${NotificationOptionItem().id}:${AppServiceOptionItem().id}`]:
     TemplateNames.NotificationRestify,
   [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS().id}`]:
@@ -148,7 +148,7 @@ const AzureDeployActions = [
 ];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
-export class Coordinator {
+class Coordinator {
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -385,6 +385,32 @@ export class Coordinator {
       }
     }
     return ok(res);
+  }
+
+  async preCheckYmlAndEnvForVS(
+    ctx: DriverContext,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<Void, FxError>> {
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const cycles: ILifecycle[] = [projectModel.provision].filter(
+      (c) => c !== undefined
+    ) as ILifecycle[];
+
+    let unresolvedPlaceholders: string[] = [];
+    // 2. check each cycle
+    for (const cycle of cycles) {
+      unresolvedPlaceholders = unresolvedPlaceholders.concat(cycle.resolvePlaceholders());
+    }
+    if (unresolvedPlaceholders.length > 0) {
+      return err(new LifeCycleUndefinedError(unresolvedPlaceholders.join(",")));
+    }
+    return ok(Void);
   }
 
   @hooks([
@@ -892,14 +918,14 @@ export class Coordinator {
 
 export const coordinator = new Coordinator();
 
-export interface BotTroubleShootMessage {
+interface BotTroubleShootMessage {
   troubleShootLink: string;
   textForLogging: string;
   textForMsgBox: string;
   textForActionButton: string;
 }
 
-export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
+function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
   const botTroubleShootLink =
     "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
   const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
@@ -914,7 +940,7 @@ export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessag
   } as BotTroubleShootMessage;
 }
 
-export async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
+async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
   // A temporary solution to avoid duplicate componentId
   if (sampleId === "todo-list-SPFx") {
     const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";

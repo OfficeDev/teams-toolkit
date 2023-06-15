@@ -15,7 +15,7 @@ import {
 import { FileNotFoundError } from "../../error/common";
 import { pathUtils } from "./pathUtils";
 
-export class SettingsUtils {
+class SettingsUtils {
   async readSettings(
     projectPath: string,
     ensureTrackingId = true

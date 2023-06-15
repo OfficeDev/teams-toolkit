@@ -361,7 +361,7 @@ export function getOutlookAddinTypeProjectQuestionNode(inputs?: Inputs): SingleS
   };
 }
 
-export function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
+function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: CoreQuestionNames.TargetEnvName,
@@ -475,7 +475,7 @@ export function newResourceGroupNameQuestion(
   };
   return question;
 }
-export function QuestionNewResourceGroupName(): TextInputQuestion {
+function QuestionNewResourceGroupName(): TextInputQuestion {
   return {
     type: "text",
     name: CoreQuestionNames.NewResourceGroupName,
@@ -602,7 +602,7 @@ export function SampleSelect(): SingleSelectQuestion {
   };
 }
 
-export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
+const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
 
 export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
   return {
@@ -628,7 +628,7 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
   };
 };
 
-export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
+const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
     id: tab.name,
     label: tab.name,
@@ -640,7 +640,7 @@ export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   };
 };
 
-export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
+const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
     id: tab.name,
     label: tab.name,
@@ -677,7 +677,7 @@ export const BotIdsQuestion = (
   };
 };
 
-export const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
+const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
   return {
     id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,
     label: isMessageExtension
@@ -813,7 +813,7 @@ export async function selectEnvNode(
   return envNode;
 }
 
-export function confirmManifestNode(
+function confirmManifestNode(
   defaultManifestFilePath: string,
   isTeamsApp = true,
   isLocal = false

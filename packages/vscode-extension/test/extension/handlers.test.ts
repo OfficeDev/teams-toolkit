@@ -10,38 +10,51 @@ import * as vscode from "vscode";
 
 import {
   ConfigFolderName,
-  err,
   FxError,
   Inputs,
-  ok,
+  OptionItem,
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
   Stage,
+  SystemError,
   UserError,
   Void,
   VsCodeEnv,
-  OptionItem,
-  SystemError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { UserCancelError, UnhandledError } from "@microsoft/teamsfx-core";
-import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
-import * as StringResources from "../../package.nls.json";
+import {
+  AppDefinition,
+  AppStudioClient,
+  CollaborationState,
+  DepsManager,
+  DepsType,
+  FxCore,
+  UnhandledError,
+  UserCancelError,
+  environmentManager,
+} from "@microsoft/teamsfx-core";
+import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
+import { signedIn, signedOut } from "../../src/commonlib/common/constant";
+import { VsCodeLogProvider } from "../../src/commonlib/log";
 import M365TokenInstance from "../../src/commonlib/m365Login";
-import { DeveloperPortalHomeLink, SUPPORTED_SPFX_VERSION } from "../../src/constants";
+import { DeveloperPortalHomeLink } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
+import * as launch from "../../src/debug/launch";
 import { ExtensionErrors } from "../../src/error";
+import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
+import { ProgressHandler } from "../../src/progressHandler";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
@@ -50,20 +63,8 @@ import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvi
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
-import { MockCore } from "../mocks/mockCore";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { VsCodeLogProvider } from "../../src/commonlib/log";
-import { ProgressHandler } from "../../src/progressHandler";
-import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
-import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
-import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
-import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { ExtensionSurvey } from "../../src/utils/survey";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
-import * as launch from "../../src/debug/launch";
-import { FxCore, environmentManager } from "../../../fx-core/build";
-import commandController from "../../src/commandController";
+import { MockCore } from "../mocks/mockCore";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -346,7 +347,7 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 16);
+      chai.assert.equal(tutorialOptions.length, 17);
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(tutorialOptions[1].data, "https://aka.ms/teamsfx-notification-new");
     });
@@ -505,16 +506,11 @@ describe("handlers", () => {
       let localDebugCalled = 0;
       sinon
         .stub(handlers.core, "localDebug")
-        .callsFake(
-          async (
-            inputs: Inputs,
-            ctx?: CoreHookContext | undefined
-          ): Promise<Result<Void, FxError>> => {
-            ignoreEnvInfo = inputs.ignoreEnvInfo;
-            localDebugCalled += 1;
-            return ok({});
-          }
-        );
+        .callsFake(async (inputs: Inputs): Promise<Result<Void, FxError>> => {
+          ignoreEnvInfo = inputs.ignoreEnvInfo;
+          localDebugCalled += 1;
+          return ok({});
+        });
 
       await handlers.runCommand(Stage.debug);
 

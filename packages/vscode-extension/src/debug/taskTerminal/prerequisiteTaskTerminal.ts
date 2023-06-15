@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";

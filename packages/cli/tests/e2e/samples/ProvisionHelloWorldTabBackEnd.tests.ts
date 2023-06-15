@@ -13,7 +13,7 @@ import { getTestFolder, readContextMultiEnvV3, getUniqueAppName } from "../commo
 import { FrontendValidator, FunctionValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { Cleaner } from "../../utils/cleaner";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { Executor } from "../../utils/executor";
 
 describe("teamsfx new template", function () {

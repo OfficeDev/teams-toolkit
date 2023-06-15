@@ -5,10 +5,7 @@ import { MetadataV3 } from "../../common/versionMetadata";
 import { MissingRequiredFileError, MissingRequiredInputError } from "../../error/common";
 import { yamlParser } from "../configManager/parser";
 
-export const YmlFileNameOld = "app.yml";
-export const LocalYmlFileNameOld = "app.local.yml";
-
-export class PathUtils {
+class PathUtils {
   getYmlFilePath(projectPath: string, env?: string): string {
     const envName = env || process.env.TEAMSFX_ENV;
     if (!envName) throw new MissingRequiredInputError("env", "PathUtils");

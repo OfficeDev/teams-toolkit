@@ -6,28 +6,32 @@
  */
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { AppDefinition } from "./interfaces/appDefinition";
-import { AppUser } from "./interfaces/appUser";
-import { AppStudioError } from "./errors";
-import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
-import { AppStudioResultFactory } from "./results";
-import { Constants, ErrorMessages, APP_STUDIO_API_NAMES } from "./constants";
-import { RetryHandler } from "./utils/utils";
-import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
-import { getAppStudioEndpoint } from "./constants";
-import { HelpLinks } from "../../../common/constants";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { AppDefinition } from "../../../resource/appManifest/interfaces/appDefinition";
+import { AppUser } from "../../../resource/appManifest/interfaces/appUser";
+import { AppStudioError } from "../../../resource/appManifest/errors";
+import { IPublishingAppDenition } from "../../../resource/appManifest/interfaces/IPublishingAppDefinition";
+import { AppStudioResultFactory } from "../../../resource/appManifest/results";
+import {
+  Constants,
+  ErrorMessages,
+  APP_STUDIO_API_NAMES,
+} from "../../../resource/appManifest/constants";
+import { RetryHandler } from "../../../resource/appManifest/utils/utils";
+import { TelemetryEventName, TelemetryUtils } from "../../../resource/appManifest/utils/telemetry";
+import { getAppStudioEndpoint } from "../../../resource/appManifest/constants";
+import { HelpLinks } from "../../../../common/constants";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   Component,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
-} from "../../../common/telemetry";
-import { waitSeconds } from "../../../common/tools";
-import { IValidationResult } from "./interfaces/IValidationResult";
-import { HttpStatusCode } from "../../constant/commonConstant";
-import { manifestUtils } from "./utils/ManifestUtils";
+} from "../../../../common/telemetry";
+import { waitSeconds } from "../../../../common/tools";
+import { IValidationResult } from "../../../resource/appManifest/interfaces/IValidationResult";
+import { HttpStatusCode } from "../../../constant/commonConstant";
+import { manifestUtils } from "../../../resource/appManifest/utils/ManifestUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {

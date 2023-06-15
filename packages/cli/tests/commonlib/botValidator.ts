@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
@@ -59,7 +59,7 @@ export class BotValidator {
     this.projectPath = projectPath;
     this.env = env;
 
-    const resourceId = isV3Enabled() ? this.getResourceIdV3(ctx) : this.getResourceId(ctx);
+    const resourceId = this.getResourceIdV3(ctx);
     chai.assert.exists(resourceId);
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);
@@ -79,12 +79,6 @@ export class BotValidator {
     return resourceId;
   }
 
-  private getResourceId(ctx: any): string {
-    const botWebAppResourceId = ctx[PluginId.Bot][StateConfigKey.botWebAppResourceId];
-    const botFunctionAppResourceId = ctx[PluginId.Bot][StateConfigKey.functionAppResourceId];
-    const botResourceId = ctx[PluginId.Bot][StateConfigKey.botResourceId];
-    return botResourceId || botWebAppResourceId || botFunctionAppResourceId;
-  }
   public static async validateScaffold(
     projectPath: string,
     programmingLanguage: string,

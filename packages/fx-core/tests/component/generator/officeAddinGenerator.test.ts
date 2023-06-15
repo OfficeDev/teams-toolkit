@@ -38,7 +38,7 @@ import {
   OfficeHostQuestion,
 } from "../../../src/component/generator/officeAddin/question";
 import * as childProcess from "child_process";
-import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
+import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";

@@ -4,11 +4,9 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-
 import { UserState } from "./constants";
 import { UriHandler } from "./uriHandler";
+import { isValidProject } from "@microsoft/teamsfx-core";
 
 /**
  * Common variables used throughout the extension. They must be initialized in the activate() method of extension.ts

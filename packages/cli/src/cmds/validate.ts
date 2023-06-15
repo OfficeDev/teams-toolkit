@@ -3,7 +3,7 @@
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { validateAppPackageOption, validateSchemaOption } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";

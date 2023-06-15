@@ -7,17 +7,24 @@ import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { PluginContext, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
-import { AppStudioClient } from "../../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioClient } from "../../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { AppDefinition } from "../../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../../src/component/resource/appManifest/utils/telemetry";
 import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
-import { newEnvInfo } from "../../../../../src/core/environment";
 import { PublishingState } from "../../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
 import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../../../../src/component/resource/appManifest/results";
 import { Constants } from "../../../../../src/component/resource/appManifest/constants";
+
+function newEnvInfo() {
+  return {
+    envName: "default",
+    config: {},
+    state: new Map(),
+  };
+}
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";

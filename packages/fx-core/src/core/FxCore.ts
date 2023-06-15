@@ -30,7 +30,6 @@ import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
@@ -52,7 +51,7 @@ import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import { CopyFileError, InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
-import { setCurrentStage, setTools, TOOLS } from "./globalVars";
+import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
@@ -98,35 +97,6 @@ export class FxCore {
   }
 
   /**
-   * Only used to provision Teams app with user provided app package in CLI
-   * @returns teamsAppId on provision success
-   */
-  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<string, FxError>> {
-    if (!inputs.appPackagePath) {
-      return err(InvalidInputError("appPackagePath is not defined", inputs));
-    }
-    const projectSettings: ProjectSettings = {
-      appName: "fake",
-      projectId: uuid.v4(),
-    };
-    const context: v2.Context = {
-      userInteraction: TOOLS.ui,
-      logProvider: TOOLS.logProvider,
-      telemetryReporter: TOOLS.telemetryReporter!,
-      cryptoProvider: new LocalCrypto(projectSettings.projectId),
-      permissionRequestProvider: TOOLS.permissionRequest,
-      projectSetting: projectSettings,
-    };
-    const appStudioV3 = Container.get<AppManifest>(ComponentNames.AppManifest);
-    return appStudioV3.provisionForCLI(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      newEnvInfoV3(),
-      TOOLS.tokenProvider
-    );
-  }
-
-  /**
    * lifecycle commands: deploy
    */
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -162,11 +132,7 @@ export class FxCore {
   /**
    * most commands will be deprecated in V3
    */
-  async executeUserTask(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
+  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
     return await this.v3Implement.dispatchUserTask(this.executeUserTask, func, inputs);
   }
 
@@ -233,7 +199,6 @@ export class FxCore {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     inputs.stage = Stage.getQuestions;
-    setCurrentStage(Stage.getQuestions);
     if (stage === Stage.create) {
       return await getQuestionsForCreateProjectV2(inputs);
     }
@@ -541,6 +506,10 @@ export class FxCore {
     return this.v3Implement.dispatch(this.preProvisionForVS, inputs);
   }
 
+  async preCheckYmlAndEnvForVS(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.preCheckYmlAndEnvForVS, inputs);
+  }
+
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }
@@ -597,7 +566,7 @@ export async function ensureBasicFolderStructure(
       const gitIgnoreContent = [
         "\n# TeamsFx files",
         "node_modules",
-        `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+        `.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`,
         `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
         ".DS_Store",
         ".env.teamsfx.local",
@@ -623,7 +592,6 @@ export async function ensureBasicFolderStructure(
 }
 
 export async function listCollaboratorFunc(inputs: Inputs): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.listCollaborator);
   inputs.stage = Stage.listCollaborator;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -643,7 +611,6 @@ export async function checkPermissionFunc(
   inputs: Inputs,
   ctx?: CoreHookContext
 ): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.checkPermission);
   inputs.stage = Stage.checkPermission;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -663,7 +630,6 @@ export async function grantPermissionFunc(
   inputs: Inputs,
   ctx?: CoreHookContext
 ): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.grantPermission);
   inputs.stage = Stage.grantPermission;
   const projectPath = inputs.projectPath;
   if (!projectPath) {

@@ -50,7 +50,6 @@ import {
 } from "./resource/appManifest/utils/utils";
 import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
 import { envUtil } from "./utils/envUtil";
-import { pathUtils } from "./utils/pathUtils";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";

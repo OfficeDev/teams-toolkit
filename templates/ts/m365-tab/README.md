@@ -4,6 +4,8 @@ Personal tabs provide a great way to enhance the Microsoft Teams experience. Usi
 
 ![Personal tab demo](https://user-images.githubusercontent.com/11220663/167839153-0aef6adc-450e-4b8c-a28f-7d27005d1093.png)
 
+> Note: This sample will only provision [single tenant](https://learn.microsoft.com/azure/active-directory/develop/single-and-multi-tenant-apps#who-can-sign-in-to-your-app) Azure Active Directory app. For multi-tenant support, please refer to this [wiki](https://aka.ms/teamsfx-multi-tenant).
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/), supported versions: 16, 18

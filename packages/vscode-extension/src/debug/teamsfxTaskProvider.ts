@@ -5,9 +5,9 @@ import * as vscode from "vscode";
 
 import { ProductName, Stage, ok } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { ITaskDefinition, TaskCommand } from "@microsoft/teamsfx-core/build/common/local";
-import { isValidProjectV3 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { ITaskDefinition, TaskCommand } from "@microsoft/teamsfx-core";
+import { isValidProjectV3 } from "@microsoft/teamsfx-core";
 
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as commonUtils from "./commonUtils";

@@ -12,8 +12,8 @@ import {
   anonymizeFilePaths,
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import * as os from "os";
 import * as path from "path";

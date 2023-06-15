@@ -7,7 +7,7 @@ import "./console/screen";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
 initializePreviewFeatureFlags();
 
 import { registerCommands } from "./cmds";

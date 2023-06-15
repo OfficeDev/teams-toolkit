@@ -17,9 +17,8 @@ import {
   readContextMultiEnv,
   readContextMultiEnvV3,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { Runtime, CliCapabilities, CliTriggerType } from "../../commonlib/constants";
-
 export async function happyPathTest(
   runtime: Runtime,
   capabilities: CliCapabilities,

@@ -3,24 +3,23 @@
 
 "use strict";
 
-import * as path from "path";
 import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
-
-import * as constants from "./constants";
-import { TaskResult } from "./task";
+import * as path from "path";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import open from "open";
 import cliLogger from "../../commonlib/log";
-import { TaskFailed } from "./errors";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
-import { ServiceLogWriter } from "./serviceLogWriter";
-import open from "open";
 import { getColorizedString } from "../../utils";
+import * as constants from "./constants";
 import { isWindows } from "./depsChecker/cliUtils";
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
+import { TaskFailed } from "./errors";
+import { ServiceLogWriter } from "./serviceLogWriter";
+import { TaskResult } from "./task";
 export async function openBrowser(
   browser: constants.Browser,
   url: string,

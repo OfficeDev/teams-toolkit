@@ -24,7 +24,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   NotificationType2,

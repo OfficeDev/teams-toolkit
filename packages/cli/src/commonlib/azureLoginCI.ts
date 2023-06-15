@@ -17,7 +17,7 @@ import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import { ConvertTokenToJson } from "@microsoft/teamsfx-core/build/common/tools";
+import { ConvertTokenToJson } from "@microsoft/teamsfx-core";
 import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
 
 /**

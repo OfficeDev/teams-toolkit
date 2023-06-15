@@ -18,7 +18,7 @@ import { sendDebugAllEvent } from "../localTelemetryReporter";
 import * as commonUtils from "../commonUtils";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { performance } from "perf_hooks";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 const ControlCodes = {
   CtrlC: "\u0003",

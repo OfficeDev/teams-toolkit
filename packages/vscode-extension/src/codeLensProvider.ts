@@ -6,11 +6,13 @@ import {
   ProjectConfigV3,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { envUtil } from "@microsoft/teamsfx-core";
-import { getAllowedAppMaps } from "@microsoft/teamsfx-core/build/common/tools";
-import { MetadataV3 } from "@microsoft/teamsfx-core/build/common/versionMetadata";
-import { getPermissionMap } from "@microsoft/teamsfx-core/build/component/resource/aadApp/permissions";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import {
+  MetadataV3,
+  envUtil,
+  environmentManager,
+  getAllowedAppMaps,
+  getPermissionMap,
+} from "@microsoft/teamsfx-core";
 import { Mutex } from "async-mutex";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";

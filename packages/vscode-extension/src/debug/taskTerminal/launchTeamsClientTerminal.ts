@@ -8,12 +8,12 @@ import * as util from "util";
 import * as globalVariables from "../../globalVariables";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { getLocalDebugSession } from "../commonUtils";
 import VsCodeLogInstance from "../../commonlib/log";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { SolutionSource } from "@microsoft/teamsfx-core/build/component/constants";
+import { SolutionSource } from "@microsoft/teamsfx-core";
 import { ExtensionErrors } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import {
@@ -22,8 +22,8 @@ import {
   openTerminalMessage,
 } from "../constants";
 import { core, getSystemInputs } from "../../handlers";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
+import { Hub } from "@microsoft/teamsfx-core";
 
 export interface LaunchTeamsClientArgs {
   env?: string;

@@ -17,7 +17,7 @@ import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 import { FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
+import { pathUtils } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../src/commonlib/log";
 import { localTelemetryReporter } from "../../src/debug/localTelemetryReporter";

@@ -32,14 +32,11 @@
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon
-/packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen @formulahendry
-/packages/cli/tests/e2e/sql @xzf0587 @adashen @blackchoey
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @huimiu
 /packages/cli/tests/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /packages/cli/tests/e2e/scaffold @hund030 @eriolchan @huimiu
 /packages/cli/tests/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
-/packages/cli/tests/e2e/keyvault @adashen @formulahendry @xzf0587
 /packages/cli/tests/e2e/m365 @kimizhu @swatDong @kuojianlu
 /packages/cli/tests/e2e/debug @kimizhu @swatDong @kuojianlu
 /packages/cli/tests/e2e/samples @LongOddCode @ayachensiyuan
@@ -141,11 +138,6 @@
 /templates/csharp/notification-timer-trigger @kimizhu @dooriya @swatDong
 /templates/csharp/workflow @kimizhu @dooriya @swatDong
 
-/packages/fx-core/src/component/resource/azureSql @xzf0587 @adashen @blackchoey
-/packages/fx-core/tests/component/resource/azureSql @xzf0587 @adashen @blackchoey
-
-/packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @wenytang-ms @adashen
-
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/src/common/m365 @kimizhu @swatDong @kuojianlu
@@ -160,15 +152,11 @@
 /packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
 /.github/workflows/cd.yml @adashen @LongOddCode @Siglud @qinezh @wenytang-ms
+/.github/actions @xzf0587 @wenytang-ms @blackchoey @adashen
 /.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
 /packages/server @chagong @Alive-Fish @jayzhang
 
 /Localize @HuihuiWu-Microsoft @tecton
-
-/packages/fx-core/templates/bicep @jayzhang @xzf0587 @hund030 @LongOddCode
-
-/packages/fx-core/src/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
-/packages/fx-core/tests/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
 
 /packages/sdk-react @tecton @yiqing-zhao
 
@@ -187,6 +175,16 @@
 
 /packages/fx-core/src/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/arm @xzf0587 @blackchoey @adashen
+/packages/fx-core/tests/component/driver/arm @xzf0587 @blackchoey @adashen
+
+/packages/fx-core/src/core/middleware/projectMigrationV3 @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/core/middleware/migration @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/core/middleware/testAssets @xzf0587 @frankqianms @blackchoey @adashen
+
+/packages/fx-core/src/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
+/packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 

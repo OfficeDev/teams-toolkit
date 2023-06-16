@@ -21,6 +21,7 @@ import {
   environmentManager,
   getSideloadingStatus,
   isV3Enabled,
+  listDevTunnels,
 } from "@microsoft/teamsfx-core";
 import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
@@ -34,6 +35,7 @@ import TelemetryReporter from "./providers/telemetry";
 import TokenProvider from "./providers/tokenProvider";
 import UserInteraction from "./providers/userInteraction";
 import { standardizeResult } from "./utils";
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -74,6 +76,7 @@ export default class ServerConnection implements IServerConnection {
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
       this.publishInDeveloperPortalRequest.bind(this),
+      this.listDevTunnelsRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -416,6 +419,19 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (inputs) => this.core.publishInDeveloperPortal(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async listDevTunnelsRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Tunnel[], FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => listDevTunnels(inputs.devTunnelToken),
       inputs
     );
     return standardizeResult(res);

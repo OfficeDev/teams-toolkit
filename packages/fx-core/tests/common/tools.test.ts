@@ -16,6 +16,7 @@ import {
   canAddCICDWorkflows,
   getAppSPFxVersion,
   isVideoFilterProject,
+  listDevTunnels,
   setRegion,
   ConvertTokenToJson,
   getSPFxToken,
@@ -617,6 +618,20 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
       const res = isApiConnectEnabled();
       chai.expect(res).true;
+    });
+  });
+
+  describe("listDevTunnels", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should return an error when the API call fails", async () => {
+      const token = "test-token";
+
+      const result = await listDevTunnels(token);
+      chai.assert.isTrue(result.isErr());
     });
   });
 });

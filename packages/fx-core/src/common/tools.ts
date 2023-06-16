@@ -79,6 +79,8 @@ import {
   getProjectSettingPathV3,
 } from "../core/middleware/projectSettingsLoader";
 import { parse } from "yaml";
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
+import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -1001,5 +1003,27 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
     }
   } catch {
     return undefined;
+  }
+}
+
+// this function will be deleted after VS has added get dev tunnel and list dev tunnels API
+const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
+export async function listDevTunnels(token: string): Promise<Result<Tunnel[], FxError>> {
+  try {
+    const tunnelManagementClientImpl = new TunnelManagementHttpClient(
+      TunnelManagementUserAgent,
+      async () => {
+        const res = `Bearer ${token}`;
+        return res;
+      }
+    );
+
+    const options = {
+      includeAccessControl: true,
+    };
+    const tunnels = await tunnelManagementClientImpl.listTunnels(undefined, undefined, options);
+    return ok(tunnels);
+  } catch (error) {
+    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", (error as any).message));
   }
 }

@@ -6,7 +6,6 @@ import {
   ConfigFolderName,
   CoreCallbackEvent,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   ok,
   Platform,
@@ -96,11 +95,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     sinon.stub(projectSettingsHelper, "isValidProjectV2").resolves(true);
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     try {
-      const settingDir = path.join(
-        inputs.projectPath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName
-      );
+      const settingDir = path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs");
       await fs.ensureDir(settingDir);
       const my = new MyClass();
       await my.methodReturnOK(inputs);

@@ -10,7 +10,6 @@ import {
   Context,
   InputsWithProjectPath,
   Platform,
-  ResourceContextV3,
   TeamsAppManifest,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -52,13 +51,6 @@ describe("App-manifest Component", () => {
 
   beforeEach(() => {
     context = createContextV3();
-    context.envInfo = newEnvInfoV3();
-    context.envInfo!.state["solution"] = {
-      ["provisionSucceed"]: true,
-    };
-    context.envInfo!.state[ComponentNames.AppManifest] = {
-      ["teamsAppUpdatedAt"]: undefined,
-    };
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
       ok({
@@ -431,7 +423,6 @@ describe("App-manifest Component", () => {
 
 describe("App-manifest Component - v3", () => {
   const sandbox = sinon.createSandbox();
-  const component = new AppManifest();
   const tools = new MockTools();
   const appName = randomAppName();
   const inputs: InputsWithProjectPath = {
@@ -440,17 +431,11 @@ describe("App-manifest Component - v3", () => {
     "app-name": appName,
     appPackagePath: "fakePath",
   };
-  const appDef: AppDefinition = {
-    appName: "fake",
-    teamsAppId: uuid.v4(),
-    userList: [],
-  };
   let context: Context;
   setTools(tools);
 
   beforeEach(() => {
     context = createContextV3();
-    context.envInfo = newEnvInfoV3();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
       ok({
@@ -491,7 +476,7 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
     sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
 
-    await updateManifestV3(context as ResourceContextV3, inputs);
+    await updateManifestV3(context, inputs);
   });
 
   it("deploy - rebuild", async function () {
@@ -508,6 +493,6 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
     sandbox.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
 
-    await updateManifestV3(context as ResourceContextV3, inputs);
+    await updateManifestV3(context, inputs);
   });
 });

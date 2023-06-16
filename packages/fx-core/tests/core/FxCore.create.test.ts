@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, ok, Platform, Stage, v3 } from "@microsoft/teamsfx-api";
+import { Inputs, ok, Platform, Stage } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";

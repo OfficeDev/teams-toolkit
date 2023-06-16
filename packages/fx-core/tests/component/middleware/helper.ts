@@ -1,16 +1,8 @@
-import "mocha";
-import {
-  Context,
-  Effect,
-  FxError,
-  InputsWithProjectPath,
-  IProgressHandler,
-  ok,
-  Result,
-} from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
-import { StepDriver } from "../../../src/component/driver/interface/stepDriver";
+import { FxError, ok, Result } from "@microsoft/teamsfx-api";
+import "mocha";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
+import { StepDriver } from "../../../src/component/driver/interface/stepDriver";
 import { addStartAndEndTelemetry } from "../../../src/component/driver/middleware/addStartAndEndTelemetry";
 
 export class MockDriver implements StepDriver {

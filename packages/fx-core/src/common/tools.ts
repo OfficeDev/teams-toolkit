@@ -3,9 +3,7 @@
 import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 import {
-  AppPackageFolderName,
   AzureAccountProvider,
-  ConfigFolderName,
   FxError,
   M365TokenProvider,
   OptionItem,
@@ -21,8 +19,6 @@ import axios from "axios";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
-import Mustache from "mustache";
-import * as path from "path";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { SolutionError } from "../component/constants";
@@ -37,7 +33,6 @@ import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
-import { getProjectTemplatesFolderPath } from "./utils";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -182,43 +177,10 @@ export function compileHandlebarsTemplateString(templateString: string, context:
   return template(context);
 }
 
-export async function getAppDirectory(projectRoot: string): Promise<string> {
-  const REMOTE_MANIFEST = "manifest.source.json";
-  const appDirNewLocForMultiEnv = path.resolve(
-    await getProjectTemplatesFolderPath(projectRoot),
-    AppPackageFolderName
-  );
-  const appDirNewLoc = path.join(projectRoot, AppPackageFolderName);
-  const appDirOldLoc = path.join(projectRoot, `.${ConfigFolderName}`);
-  if (await fs.pathExists(appDirNewLocForMultiEnv)) {
-    return appDirNewLocForMultiEnv;
-  } else if (await fs.pathExists(path.join(appDirNewLoc, REMOTE_MANIFEST))) {
-    return appDirNewLoc;
-  } else {
-    return appDirOldLoc;
-  }
-}
-
-export function getSiteNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
-  if (!result) {
-    throw FailedToParseResourceIdError("site name", resourceId);
-  }
-  return result;
-}
-
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
     throw FailedToParseResourceIdError("resource group name", resourceId);
-  }
-  return result;
-}
-
-export function getSubscriptionIdFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
-  if (!result) {
-    throw FailedToParseResourceIdError("subscription id", resourceId);
   }
   return result;
 }
@@ -263,19 +225,6 @@ export async function isVideoFilterProject(projectPath: string): Promise<Result<
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
-}
-
-export function getAllowedAppIds(): string[] {
-  return [
-    TeamsClientId.MobileDesktop,
-    TeamsClientId.Web,
-    OfficeClientId.Desktop,
-    OfficeClientId.Web1,
-    OfficeClientId.Web2,
-    OutlookClientId.Desktop,
-    OutlookClientId.Web1,
-    OutlookClientId.Web2,
-  ];
 }
 
 export function getAllowedAppMaps(): Record<string, string> {

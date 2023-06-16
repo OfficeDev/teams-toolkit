@@ -24,7 +24,7 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FxCore, getUuid } from "../../src";
+import { FxCore, ObjectIsUndefinedError, getUuid } from "../../src";
 import { Hub } from "../../src/common/m365/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
 import {
@@ -473,38 +473,52 @@ describe("Core basic APIs", () => {
   });
 
   it("permission v3", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      let res;
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        stage: Stage.listCollaborator,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
-      sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
-      sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
-      sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
-      sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));
+    let res;
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.listCollaborator,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
+    sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
+    sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
+    sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
+    sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));
 
-      res = await core.listCollaborator(inputs);
-      assert.isTrue(res.isOk());
-      res = await core.checkPermission(inputs);
-      assert.isTrue(res.isOk());
-      res = await core.grantPermission(inputs);
-      assert.isTrue(res.isOk());
-    } finally {
-      restore();
-    }
+    res = await core.listCollaborator(inputs);
+    assert.isTrue(res.isOk());
+    res = await core.checkPermission(inputs);
+    assert.isTrue(res.isOk());
+    res = await core.grantPermission(inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("permission v3 fail for project path", async () => {
+    let res;
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.listCollaborator,
+    };
+    res = await core.listCollaborator(inputs);
+    assert.isTrue(res.isErr());
+    res = await core.checkPermission(inputs);
+    assert.isTrue(res.isErr());
+    res = await core.grantPermission(inputs);
+    assert.isTrue(res.isErr());
   });
 
   it("not implement method", async () => {

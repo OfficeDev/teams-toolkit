@@ -11,6 +11,7 @@ This template showcases how Microsoft Teams supports the ability to run web-base
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
+> Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
@@ -30,7 +31,7 @@ This template showcases how Microsoft Teams supports the ability to run web-base
 | `appPackage` | Templates for the Teams application manifest        |
 | `env`        | Environment files                                   |
 | `infra`      | Templates for provisioning Azure resources          |
-| `src`        | The source code for the dashboard Teams application |
+| `src`        | The source code for the Teams application |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 

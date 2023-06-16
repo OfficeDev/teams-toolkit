@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as extensionPackage from "./../../package.json";
-import { extensions } from "vscode";
 
 declare type VersionComparisonResult = -1 | 0 | 1;
 const PrereleaseVersionMajor = 4;

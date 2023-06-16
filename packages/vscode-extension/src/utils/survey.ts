@@ -7,7 +7,6 @@ import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "./localizeUtils";
 import * as extensionPackage from "../../package.json";
 
-const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 const SURVEY_URL_V3 = "https://aka.ms/ttk-feedback";
 
 enum ExtensionSurveyStateKeys {

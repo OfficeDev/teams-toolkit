@@ -186,57 +186,6 @@ export async function runTask(task: vscode.Task): Promise<number | undefined> {
   });
 }
 
-// TODO: move to local debug prerequisites checker
-async function checkCustomizedPort(component: string, componentRoot: string, checklist: RegExp[]) {
-  /*
-  const devScript = await loadTeamsFxDevScript(componentRoot);
-  if (devScript) {
-    let showWarning = false;
-    for (const check of checklist) {
-      if (!check.test(devScript)) {
-        showWarning = true;
-        break;
-      }
-    }
-
-    if (showWarning) {
-      VsCodeLogInstance.info(`Customized port detected in ${component}.`);
-      if (!globalStateGet(constants.PortWarningStateKeys.DoNotShowAgain, false)) {
-        const doNotShowAgain = "Don't Show Again";
-        const editPackageJson = "Edit package.json";
-        const learnMore = "Learn More";
-        vscode.window
-          .showWarningMessage(
-            util.format(
-              localize("teamstoolkit.localDebug.portWarning"),
-              component,
-              path.join(componentRoot, "package.json")
-            ),
-            doNotShowAgain,
-            editPackageJson,
-            learnMore
-          )
-          .then(async (selected) => {
-            if (selected === doNotShowAgain) {
-              await globalStateUpdate(constants.PortWarningStateKeys.DoNotShowAgain, true);
-            } else if (selected === editPackageJson) {
-              vscode.commands.executeCommand(
-                "vscode.open",
-                vscode.Uri.file(path.join(componentRoot, "package.json"))
-              );
-            } else if (selected === learnMore) {
-              vscode.commands.executeCommand(
-                "vscode.open",
-                vscode.Uri.parse(constants.localDebugHelpDoc)
-              );
-            }
-          });
-      }
-    }
-  }
-  */
-}
-
 function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {
   const taskId = event.execution.task?.definition?.teamsfxTaskId;
   if (taskId !== undefined) {

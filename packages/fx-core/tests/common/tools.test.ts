@@ -343,7 +343,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.restore();
     });
 
-    it("hould return an error when the API call fails", async () => {
+    it("should return an error when the API call fails", async () => {
       const token = "test-token";
 
       const result = await listDevTunnels(token);

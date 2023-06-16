@@ -4,7 +4,7 @@
 
 "use strict";
 
-import { TokenCredential } from "@azure/core-auth";
+import type { TokenCredential } from "@azure/core-auth";
 import {
   AzureAccountProvider,
   UserError,

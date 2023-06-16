@@ -541,14 +541,14 @@ export async function checkIsOnline(): Promise<boolean> {
     method: "head",
   };
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const req = http.request(options, (res) => {
       res.on("data", () => {});
       res.on("end", () => {
         resolve(true);
       });
     });
-    req.on("error", (e) => resolve(false));
+    req.on("error", () => resolve(false));
     req.end();
   });
 }

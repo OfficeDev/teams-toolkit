@@ -51,7 +51,6 @@ describe("Blazor App", function () {
   });
 
   it(`Provision Resource`, { testPlanCaseId: 15686030 }, async () => {
-    await CliHelper.setSubscription(subscription, projectPath);
     await setProvisionParameterValueV3(projectPath, "dev", {
       key: "webAppSKU",
       value: "B1",

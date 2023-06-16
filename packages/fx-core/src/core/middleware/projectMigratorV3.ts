@@ -34,7 +34,7 @@ import {
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/driver/teamsApp/constants";
 import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
 import {
   readAndConvertUserdata,
@@ -100,7 +100,7 @@ import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
-import { manifestUtils } from "../../component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",

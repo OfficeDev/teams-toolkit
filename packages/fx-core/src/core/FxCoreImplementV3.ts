@@ -12,6 +12,7 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
+  ResourceContextV3,
   Result,
   Stage,
   Tools,
@@ -56,7 +57,7 @@ import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/pr
 import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
-} from "../component/resource/appManifest/utils/utils";
+} from "../component/driver/teamsApp/utils/utils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import {
   getVersionState,
@@ -72,7 +73,8 @@ import {
   getQuestionsForValidateAppPackage,
   getQuestionsForValidateManifest,
 } from "../component/question";
-import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { updateManifestV3 } from "../component/driver/teamsApp/appStudio";
 import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
@@ -289,9 +291,8 @@ export class FxCoreV3Implement {
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
-    const context = createContextV3();
-    const component = Container.get("app-manifest") as any;
-    const res = await component.deployV3(context, inputs as InputsWithProjectPath);
+    const context = createContextV3() as ResourceContextV3;
+    const res = await updateManifestV3(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
       ctx!.envVars = envUtil.map2object(res.value);
     }

@@ -115,15 +115,6 @@ function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
   }
 }
 
-function toIdSet(items: ({ id: string } | string)[]): Set<string> {
-  const set = new Set<string>();
-  for (const i of items) {
-    if (typeof i === "string") set.add(i);
-    else set.add(i.id);
-  }
-  return set;
-}
-
 export function cloneSet(set: Set<string>): Set<string> {
   const res = new Set<string>();
   for (const e of set) res.add(e);

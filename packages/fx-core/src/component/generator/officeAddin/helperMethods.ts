@@ -7,7 +7,7 @@ import * as fse from "fs-extra";
 import * as path from "path";
 import * as unzip from "unzipper";
 import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 
 const zipFile = "project.zip";
 

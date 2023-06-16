@@ -25,28 +25,24 @@ import * as util from "util";
 import isUUID from "validator/lib/isUUID";
 import { Container } from "typedi";
 import { AppStudioScopes } from "../../../common/tools";
-import { AppStudioClient } from "../../driver/teamsApp/clients/appStudioClient";
+import { AppStudioClient } from "./clients/appStudioClient";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "./utils/ManifestUtils";
 import { Constants, supportedLanguageCodes } from "./constants";
-import {
-  CreateAppPackageDriver,
-  actionName as createAppPackageActionName,
-} from "../../driver/teamsApp/createAppPackage";
-import {
-  ConfigureTeamsAppDriver,
-  actionName as configureTeamsAppActionName,
-} from "../../driver/teamsApp/configure";
-import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
-import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
-import { DriverContext } from "../../driver/interface/commonArgs";
+import { CreateAppPackageDriver } from "./createAppPackage";
+import { ConfigureTeamsAppDriver } from "./configure";
+import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
+import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
+import { DriverContext } from "../interface/commonArgs";
 import { envUtil } from "../../utils/envUtil";
-import { AppPackage } from "./interfaces/appPackage";
+import { AppPackage } from "./interfaces/appdefinitions/appPackage";
 import { basename, extname } from "path";
 import set from "lodash/set";
 import { CoreQuestionNames } from "../../../core/question";
+import { actionName as createAppPackageActionName } from "./createAppPackage";
+import { actionName as configureTeamsAppActionName } from "./configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
 
 export async function checkIfAppInDifferentAcountSameTenant(

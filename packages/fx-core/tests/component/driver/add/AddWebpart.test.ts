@@ -20,8 +20,8 @@ import { AddWebPartArgs } from "../../../../src/component/driver/add/interface/A
 import { Constants } from "../../../../src/component/driver/add/utility/constants";
 import { NoConfigurationError } from "../../../../src/component/driver/add/error/noConfigurationError";
 import { SPFxGenerator } from "../../../../src/component/generator/spfx/spfxGenerator";
-import { ManifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
-import { AppStudioResultFactory } from "../../../../src/component/resource/appManifest/results";
+import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { AppStudioResultFactory } from "../../../../src/component/driver/teamsApp/results";
 import { setTools } from "../../../../src/core/globalVars";
 import { InstallSoftwareError } from "../../../../src/error/common";
 

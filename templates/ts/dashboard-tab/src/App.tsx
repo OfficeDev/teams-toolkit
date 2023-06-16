@@ -1,15 +1,14 @@
 import "./App.css";
 
-import { useEffect } from "react";
 import { HashRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 
 import {
   FluentProvider,
+  Spinner,
   teamsDarkTheme,
   teamsHighContrastTheme,
   teamsLightTheme,
 } from "@fluentui/react-components";
-import { app } from "@microsoft/teams-js";
 import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 
 import SampleDashboard from "./dashboards/SampleDashboard";
@@ -27,13 +26,6 @@ export default function App() {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL!,
     clientId: process.env.REACT_APP_CLIENT_ID!,
   });
-  useEffect(() => {
-    loading &&
-      app.initialize().then(() => {
-        // Hide the loading indicator.
-        app.notifySuccess();
-      });
-  }, [loading]);
   return (
     <TeamsFxContext.Provider value={{ themeString, teamsUserCredential }}>
       <FluentProvider
@@ -47,7 +39,9 @@ export default function App() {
         }
       >
         <Router>
-          {!loading && (
+          {loading ? (
+            <Spinner id="spinner" />
+          ) : (
             <Routes>
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/termsofuse" element={<TermsOfUse />} />

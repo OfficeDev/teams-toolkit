@@ -10,7 +10,7 @@ import { ValidateManifestDriver } from "../../../../src/component/driver/teamsAp
 import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
 import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
 import { ValidateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import {
   MockedLogProvider,
@@ -20,7 +20,7 @@ import {
 import * as tools from "../../../../src/common/tools";
 import { Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import { Constants } from "../../../../src/component/resource/appManifest/constants";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
 import { InvalidActionInputError } from "../../../../src/error/common";
 

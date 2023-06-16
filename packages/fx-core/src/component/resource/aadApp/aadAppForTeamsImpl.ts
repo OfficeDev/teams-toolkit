@@ -3,13 +3,13 @@
 
 import { Context, FxError, Result } from "@microsoft/teamsfx-api";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { AppUser } from "../appManifest/interfaces/appUser";
 import { AadAppClient } from "./aadAppClient";
 import { ConfigKeys, Constants, Messages, Plugins } from "./constants";
 import { ConfigErrorMessages, GetConfigError } from "./errors";
 import { ResultFactory } from "./results";
 import { getPermissionErrorMessage } from "./utils/configs";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
+import { AppUser } from "../../driver/teamsApp/interfaces/appdefinitions/appUser";
 
 export class AadAppForTeamsImpl {
   public async checkPermission(

@@ -43,7 +43,7 @@ import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
-import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import EventEmitter from "events";
 import proxyquire from "proxyquire";

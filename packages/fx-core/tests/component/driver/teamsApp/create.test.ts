@@ -17,8 +17,8 @@ import {
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { AppDefinition } from "./../../../../src/component/resource/appManifest/interfaces/appDefinition";
-import { Constants } from "./../../../../src/component/resource/appManifest/constants";
+import { AppDefinition } from "./../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { Constants } from "./../../../../src/component/driver/teamsApp/constants";
 
 describe("teamsApp/create", async () => {
   const teamsAppDriver = new CreateTeamsAppDriver();

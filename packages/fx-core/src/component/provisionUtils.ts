@@ -31,7 +31,7 @@ import {
 } from "../error/m365";
 import { SolutionTelemetryProperty } from "./constants";
 import { DriverContext } from "./driver/interface/commonArgs";
-import { AppStudioScopes } from "./resource/appManifest/constants";
+import { AppStudioScopes } from "./driver/teamsApp/constants";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
 export interface M365TenantRes {
   tenantIdInToken: string;

@@ -7,12 +7,12 @@ import chai from "chai";
 import * as sinon from "sinon";
 import { createContextV3 } from "../../src/component/utils";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
-import * as appStudio from "../../src/component/resource/appManifest/appStudio";
+import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
 import {
   developerPortalScaffoldUtils,
   getTemplateId,
 } from "../../src/component/developerPortalScaffoldUtils";
-import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
+import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { ObjectIsUndefinedError } from "../../src/core/error";
 import fs from "fs-extra";
 import path from "path";
@@ -22,16 +22,13 @@ import {
   COMPOSE_EXTENSIONS_TPL_V3,
   DEFAULT_DESCRIPTION,
   DEFAULT_DEVELOPER,
-} from "../../src/component/resource/appManifest/constants";
-import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { Bot } from "../../src/component/resource/appManifest/interfaces/bot";
-import { ConfigurableTab } from "../../src/component/resource/appManifest/interfaces/configurableTab";
-import {
-  CommandScope,
-  MeetingsContext,
-} from "../../src/component/resource/appManifest/utils/utils";
-import { StaticTab } from "../../src/component/resource/appManifest/interfaces/staticTab";
-import { MessagingExtension } from "../../src/component/resource/appManifest/interfaces/messagingExtension";
+} from "../../src/component/driver/teamsApp/constants";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { Bot } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/bot";
+import { ConfigurableTab } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/configurableTab";
+import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsApp/utils/utils";
+import { StaticTab } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { MessagingExtension } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/messagingExtension";
 import {
   BotOptionItem,
   DefaultBotAndMessageExtensionItem,

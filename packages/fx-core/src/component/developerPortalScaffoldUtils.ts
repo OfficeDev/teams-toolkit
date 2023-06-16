@@ -17,7 +17,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import path from "path";
+import * as path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
 import { CoreQuestionNames } from "../core/question";
@@ -29,23 +29,23 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
 } from "./constants";
-import * as appStudio from "./resource/appManifest/appStudio";
+import * as appStudio from "./driver/teamsApp/appStudio";
 import {
   BOTS_TPL_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
   DEFAULT_DESCRIPTION,
   DEFAULT_DEVELOPER,
-} from "./resource/appManifest/constants";
-import { AppDefinition } from "./resource/appManifest/interfaces/appDefinition";
-import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
-import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
+} from "./driver/teamsApp/constants";
+import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
+import { TelemetryUtils } from "./driver/teamsApp/utils/telemetry";
 import {
   isBot,
   isBotAndMessageExtension,
   isMessageExtension,
   needTabAndBotCode,
   needTabCode,
-} from "./resource/appManifest/utils/utils";
+} from "./driver/teamsApp/utils/utils";
 import { envUtil } from "./utils/envUtil";
 
 const appPackageFolderName = "appPackage";

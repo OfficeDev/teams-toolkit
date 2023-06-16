@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Context, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { DriverContext } from "../../../driver/interface/commonArgs";
+import { DriverContext } from "../../interface/commonArgs";
 import { Constants } from "../constants";
 
 export enum TelemetryPropertyKey {

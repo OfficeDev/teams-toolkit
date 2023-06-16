@@ -6,25 +6,25 @@
  */
 import { BotChannelType, IBotRegistration } from "./interfaces/IBotRegistration";
 
+import { Context, SystemError } from "@microsoft/teamsfx-api";
 import { AxiosInstance, default as axios } from "axios";
+import { HttpStatusCode } from "../../../constant/commonConstant";
+import { AppStudioClient as AppStudio } from "../../../driver/teamsApp/clients/appStudioClient";
+import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../../driver/teamsApp/constants";
+import { isHappyResponse } from "../common";
+import { TeamsFxUrlNames } from "../constants";
 import {
+  BotFrameworkConflictResultError,
+  BotFrameworkForbiddenResultError,
+  BotFrameworkNotAllowedToAcquireTokenError,
   BotRegistrationNotFoundError,
+  CheckThrowSomethingMissing,
   ConfigUpdatingError,
   ProvisionError,
-  BotFrameworkNotAllowedToAcquireTokenError,
-  BotFrameworkForbiddenResultError,
-  BotFrameworkConflictResultError,
-  CheckThrowSomethingMissing,
 } from "../errors";
-import { CommonStrings, ConfigNames } from "../strings";
-import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
-import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../appManifest/constants";
-import { Context, SystemError } from "@microsoft/teamsfx-api";
-import { AppStudioClient as AppStudio } from "../../../driver/teamsApp/clients/appStudioClient";
-import { isHappyResponse } from "../common";
-import { HttpStatusCode } from "../../../constant/commonConstant";
-import { TeamsFxUrlNames } from "../constants";
+import { RetryHandler } from "../retryHandler";
+import { CommonStrings, ConfigNames } from "../strings";
 
 export function handleBotFrameworkError(e: any, apiName: string): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {

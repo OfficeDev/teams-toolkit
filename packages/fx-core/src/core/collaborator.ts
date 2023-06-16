@@ -43,11 +43,7 @@ import {
   SolutionSource,
   SolutionTelemetryProperty,
 } from "../component/constants";
-import { getUserEmailQuestion } from "../component/question";
-import { AadApp } from "../component/resource/aadApp/aadApp";
-import { AppManifest } from "../component/resource/appManifest/appManifest";
-import { AppUser } from "../component/resource/appManifest/interfaces/appUser";
-import { FileNotFoundError } from "../error/common";
+import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import {
@@ -56,6 +52,9 @@ import {
   selectEnvNode,
   selectTeamsAppManifestQuestion,
 } from "./question";
+import { FileNotFoundError } from "../error/common";
+import { AppManifest } from "../component/resource/appManifest/appManifest";
+import { AadApp } from "../component/resource/aadApp/aadApp";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters

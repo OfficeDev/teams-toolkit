@@ -11,31 +11,22 @@ import {
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import isUUID from "validator/lib/isUUID";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
-import { AppStudioScopes, isV3Enabled } from "../../../common/tools";
+import { AppStudioScopes } from "../../../common/tools";
 import { AppStudioClient } from "../../driver/teamsApp/clients/appStudioClient";
-import {
-  Constants,
-  DEFAULT_COLOR_PNG_FILENAME,
-  DEFAULT_OUTLINE_PNG_FILENAME,
-  ErrorMessages,
-  MANIFEST_RESOURCES,
-} from "./constants";
-import { AppStudioError } from "./errors";
-import { AppUser } from "./interfaces/appUser";
-import { AppStudioResultFactory } from "./results";
-import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
-import { ComponentNames } from "../../constants";
+import { Constants, ErrorMessages } from "../../driver/teamsApp/constants";
+import { AppStudioError } from "../../driver/teamsApp/errors";
+import { AppUser } from "../../driver/teamsApp/interfaces/appdefinitions/appUser";
+import { AppStudioResultFactory } from "../../driver/teamsApp/results";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { updateManifestV3 } from "./appStudio";
-import { manifestUtils } from "./utils/ManifestUtils";
+import { TelemetryEventName, TelemetryUtils } from "../../driver/teamsApp/utils/telemetry";
 
+/**
+ * @deprecated Collaboration methods will be moved.
+ */
 @Service("app-manifest")
 export class AppManifest {
   name = "app-manifest";
@@ -50,44 +41,6 @@ export class AppManifest {
 
   finalOutputKeys = ["teamsAppId", "tenantId"];
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.deploy,
-    }),
-  ])
-  async deployV3(
-    context: Context,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
-    return await updateManifestV3(context, inputs);
-  }
-
-  /**
-   * Check if manifest templates already exist.
-   */
-  async preCheck(projectPath: string): Promise<string[]> {
-    const existFiles = new Array<string>();
-    for (const templates of ["Templates", "templates"]) {
-      const appPackageDir = path.join(projectPath, templates, "appPackage");
-      const manifestPath = path.resolve(appPackageDir, "manifest.template.json");
-      if (await fs.pathExists(manifestPath)) {
-        existFiles.push(manifestPath);
-      }
-      const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
-      const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
-      if (await fs.pathExists(defaultColorPath)) {
-        existFiles.push(defaultColorPath);
-      }
-      const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
-      if (await fs.pathExists(defaultOutlinePath)) {
-        existFiles.push(defaultOutlinePath);
-      }
-    }
-    return existFiles;
-  }
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,

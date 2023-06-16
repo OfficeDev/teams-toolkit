@@ -23,7 +23,7 @@ import { Utils } from "../../../src/component/generator/spfx/utils/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
-import { ManifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { ManifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../../src/component/utils/envUtil";
 
 describe("SPFxGenerator", function () {

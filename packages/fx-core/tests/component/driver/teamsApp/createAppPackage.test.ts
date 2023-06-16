@@ -7,10 +7,10 @@ import chai from "chai";
 import fs from "fs-extra";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 import { FileNotFoundError } from "../../../../src/error/common";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 

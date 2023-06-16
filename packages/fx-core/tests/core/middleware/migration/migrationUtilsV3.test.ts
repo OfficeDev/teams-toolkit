@@ -24,7 +24,7 @@ import { mockMigrationContext } from "./utils";
 import sinon from "sinon";
 import { getPlaceholderMappings } from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { setTools, TOOLS } from "../../../../src/core/globalVars";
-import { ManifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {

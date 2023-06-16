@@ -8,7 +8,7 @@ import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../teamsApp/utils/ManifestUtils";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { wrapRun } from "../../utils/common";
 import { AddWebPartArgs } from "./interface/AddWebPartArgs";

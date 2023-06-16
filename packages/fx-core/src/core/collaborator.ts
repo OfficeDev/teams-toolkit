@@ -40,7 +40,7 @@ import {
   SolutionTelemetryProperty,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../component/constants";
-import { AppUser } from "../component/resource/appManifest/interfaces/appUser";
+import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../component/question";

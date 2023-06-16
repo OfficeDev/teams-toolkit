@@ -30,7 +30,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
 import * as dotenv from "dotenv";
-import { manifestUtils } from "../../../component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../component/driver/teamsApp/utils/ManifestUtils";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {

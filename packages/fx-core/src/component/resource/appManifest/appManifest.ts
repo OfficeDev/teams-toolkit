@@ -5,40 +5,29 @@ import {
   CloudResource,
   err,
   FxError,
-  InputsWithProjectPath,
   M365TokenProvider,
   ok,
-  ResourceContextV3,
   Result,
   UserError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import isUUID from "validator/lib/isUUID";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
-import { AppStudioScopes, isV3Enabled } from "../../../common/tools";
+import { AppStudioScopes } from "../../../common/tools";
 import { AppStudioClient } from "../../driver/teamsApp/clients/appStudioClient";
-import {
-  Constants,
-  DEFAULT_COLOR_PNG_FILENAME,
-  DEFAULT_OUTLINE_PNG_FILENAME,
-  ErrorMessages,
-  MANIFEST_RESOURCES,
-} from "./constants";
-import { AppStudioError } from "./errors";
-import { AppUser } from "./interfaces/appUser";
-import { AppStudioResultFactory } from "./results";
-import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
-import { ComponentNames } from "../../constants";
+import { Constants, ErrorMessages } from "../../driver/teamsApp/constants";
+import { AppStudioError } from "../../driver/teamsApp/errors";
+import { AppUser } from "../../driver/teamsApp/interfaces/appdefinitions/appUser";
+import { AppStudioResultFactory } from "../../driver/teamsApp/results";
+import { TelemetryEventName, TelemetryUtils } from "../../driver/teamsApp/utils/telemetry";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { updateManifestV3 } from "./appStudio";
-import { manifestUtils } from "./utils/ManifestUtils";
 
+/**
+ * @deprecated Collaboration methods will be moved.
+ */
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
   name = "app-manifest";
@@ -52,62 +41,6 @@ export class AppManifest implements CloudResource {
   };
 
   finalOutputKeys = ["teamsAppId", "tenantId"];
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.deploy,
-    }),
-  ])
-  async deployV3(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
-    return await updateManifestV3(context, inputs);
-  }
-
-  /**
-   * Check if manifest templates already exist.
-   */
-  async preCheck(projectPath: string): Promise<string[]> {
-    const existFiles = new Array<string>();
-    for (const templates of ["Templates", "templates"]) {
-      const appPackageDir = path.join(projectPath, templates, "appPackage");
-      const manifestPath = path.resolve(appPackageDir, "manifest.template.json");
-      if (await fs.pathExists(manifestPath)) {
-        existFiles.push(manifestPath);
-      }
-      const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
-      const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
-      if (await fs.pathExists(defaultColorPath)) {
-        existFiles.push(defaultColorPath);
-      }
-      const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
-      if (await fs.pathExists(defaultOutlinePath)) {
-        existFiles.push(defaultOutlinePath);
-      }
-    }
-    return existFiles;
-  }
-  private async getTeamsAppId(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
-  ): Promise<string> {
-    let teamsAppId = "";
-    // User may manually update id in manifest template file, rather than configuration file
-    // The id in manifest template file should override configurations
-    const manifestResult = await manifestUtils.getManifest(inputs.projectPath, envInfo, false);
-    if (manifestResult.isOk()) {
-      teamsAppId = manifestResult.value.id;
-    }
-    if (!isUUID(teamsAppId)) {
-      teamsAppId = (envInfo.state[ComponentNames.AppManifest] as v3.TeamsAppResource).teamsAppId;
-    }
-    return teamsAppId;
-  }
 
   @hooks([
     ActionExecutionMW({

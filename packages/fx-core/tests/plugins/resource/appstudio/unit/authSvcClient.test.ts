@@ -5,9 +5,9 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
-import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
+import { RetryHandler } from "../../../../../src/component/driver/teamsApp/utils/utils";
 import { AuthSvcClient } from "../../../../../src/component/driver/teamsApp/clients/authSvcClient";
-import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";
+import { AppStudioError } from "../../../../../src/component/driver/teamsApp/errors";
 
 describe("Auth Service API Test", () => {
   beforeEach(() => {

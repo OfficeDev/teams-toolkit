@@ -7,10 +7,10 @@ import chai from "chai";
 import fs from "fs-extra";
 import { copyAppPackageToSPFxDriver } from "../../../../src/component/driver/teamsApp/copyAppPackageToSPFx";
 import { copyAppPackageToSPFxArgs } from "../../../../src/component/driver/teamsApp/interfaces/CopyAppPackageToSPFxArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import chaiAsPromised from "chai-as-promised";
 import AdmZip from "adm-zip";
-import { Constants } from "../../../../src/component/resource/appManifest/constants";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

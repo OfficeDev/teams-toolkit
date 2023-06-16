@@ -19,7 +19,7 @@ import {
 import { CommonStrings, ConfigNames } from "../strings";
 import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
-import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../appManifest/constants";
+import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../../driver/teamsApp/constants";
 import { ResourceContextV3, SystemError } from "@microsoft/teamsfx-api";
 import { AppStudioClient as AppStudio } from "../../../driver/teamsApp/clients/appStudioClient";
 import { isHappyResponse } from "../common";

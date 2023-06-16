@@ -9,7 +9,7 @@ import { AadAppClient } from "./aadAppClient";
 import { GetConfigError, ConfigErrorMessages } from "./errors";
 import { ConfigKeys, Constants, Messages, Plugins } from "./constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { AppUser } from "../appManifest/interfaces/appUser";
+import { AppUser } from "../../driver/teamsApp/interfaces/appdefinitions/appUser";
 import { isV3Enabled } from "../../../common/tools";
 import { ComponentNames } from "../../constants";
 

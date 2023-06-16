@@ -43,7 +43,7 @@ import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./utils/questi
 import { SPFxQuestionNames } from "../../constants";
 import * as util from "util";
 import { envUtil } from "../../utils/envUtil";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { EOL } from "os";
 import { FileNotFoundError } from "../../../error";
 

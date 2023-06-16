@@ -10,7 +10,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Constants } from "../constants";
 import { PluginNames, REMOTE_TEAMS_APP_TENANT_ID, ComponentNames } from "../../../constants";
-import { DriverContext } from "../../../driver/interface/commonArgs";
+import { DriverContext } from "../../interface/commonArgs";
 
 export enum TelemetryPropertyKey {
   component = "component",

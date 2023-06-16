@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { APP_STUDIO_API_NAMES } from "../appManifest/constants";
+import { APP_STUDIO_API_NAMES } from "../../driver/teamsApp/constants";
 
 /**
  * @author zhijie <zhihuan@microsoft.com>

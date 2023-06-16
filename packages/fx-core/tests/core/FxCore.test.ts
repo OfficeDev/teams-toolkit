@@ -492,9 +492,10 @@ describe("Core basic APIs", () => {
       };
       sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
       sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "listCollaboratorFunc").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "checkPermissionFunc").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "grantPermissionFunc").resolves(ok(undefined));
+      sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
+      sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
+      sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));
+
       res = await core.listCollaborator(inputs);
       assert.isTrue(res.isOk());
       res = await core.checkPermission(inputs);

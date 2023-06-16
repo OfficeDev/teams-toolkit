@@ -13,7 +13,8 @@ This template showcases an app that embeds a canvas containing multiple cards th
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
+> - [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -59,7 +60,14 @@ The following are project-related files. You generally will not need to customiz
 | `src/internal/login.js`            | Implementation of login                                      |
 | `src/internal/singletonContext.js` | Implementation of the TeamsUserCredential instance singleton |
 
-## Extend the dashboard template to add a new widget
+The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
+
+| File                                 | Contents                                           |
+| - | - |
+|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
+|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+
+## Extend the Dashboard template to add a new widget
 
 Follow the steps below to add a new widget to the dashboard:
 

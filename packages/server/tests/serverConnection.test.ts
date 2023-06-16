@@ -402,4 +402,19 @@ describe("serverConnections", () => {
       assert.equal(data.isOk(), true);
     });
   });
+
+  it("listDevTunnelsRequest fail with wrong token", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    const inputs = {
+      platform: "vs",
+      devTunnelToken: "token",
+    };
+    const token = {};
+    const res = await connection.listDevTunnelsRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    assert.isTrue(res.isErr());
+  });
 });

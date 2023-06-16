@@ -20,6 +20,7 @@ import {
   getSideloadingStatus,
   isV3Enabled,
   isVideoFilterProject,
+  listDevTunnels,
   setRegion,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
@@ -323,6 +324,20 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" }, { clear: true });
       const res = isV3Enabled();
       chai.expect(res).false;
+    });
+  });
+
+  describe("listDevTunnels", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should return an error when the API call fails", async () => {
+      const token = "test-token";
+
+      const result = await listDevTunnels(token);
+      chai.assert.isTrue(result.isErr());
     });
   });
 });

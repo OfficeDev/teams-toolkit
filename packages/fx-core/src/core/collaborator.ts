@@ -55,6 +55,7 @@ import {
 import { FileNotFoundError } from "../error/common";
 import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { AadApp } from "../component/resource/aadApp/aadApp";
+import { getUserEmailQuestion } from "../component/question";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters

@@ -12,7 +12,7 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ResourceContextV3,
+  Context,
   Result,
   Stage,
   Tools,
@@ -291,7 +291,7 @@ export class FxCoreV3Implement {
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
-    const context = createContextV3() as ResourceContextV3;
+    const context = createContextV3();
     const res = await updateManifestV3(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
       ctx!.envVars = envUtil.map2object(res.value);

@@ -1,45 +1,43 @@
-# Dashboard Tab
+# Overview of the Dashboard template
 
-## Introduction
+This template showcases an app that embeds a canvas containing multiple cards that provide an overview of content in Microsoft Teams. Start with this template you can:
 
-This is a dashboard tab app that embed a canvas containing multiple cards that provide an overview of data or content in Microsoft Teams.
+- Use widgets to display content from apps and services within your dashboard tab.
+- Integrate your app with Graph API to visualize details about the implementation of the selected data.
+- Create customizable dashboards that allow your business to set specific goals that help you track the information you need to view in multiple areas and across departments
 
-![Default theme](./public/dashboard.png)
+## Get started with the Dashboard template
 
-This app also supported teams different themes, including dark theme and high contrast theme.
+> **Prerequisites**
+> To run the dashboard template in your local dev machine, you will need:
+>
+> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
-|            Dark theme            |      High contrast theme       |
-| :------------------------------: | :----------------------------: |
-| ![](./public/dashboard-dark.png) | ![](./public/dashboard-hc.png) |
+1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 
-## Prerequisites
+**Congratulations**! You are running an application that can now show a dashboard in Teams:
 
-- [Node.js](https://nodejs.org/), supported versions: 16, 18
-- A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
+![Dashboard](https://github.com/OfficeDev/TeamsFx/assets/11220663/326e4f55-43a6-4c40-81e7-f5a9ea719169)
 
-## Getting Started
-
-Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)`.
-
-**Congratulations**! You are running an application that can now show a dashboard in Teams.
-
-## Understanding the code
-
-This section walks through the generated code. The project folder contains the following:
+## What's included in the template
 
 | Folder       | Contents                                            |
-| ------------ | --------------------------------------------------- |
+| - | - |
 | `.vscode`    | VSCode files for debugging                          |
 | `appPackage` | Templates for the Teams application manifest        |
 | `env`        | Environment files                                   |
 | `infra`      | Templates for provisioning Azure resources          |
 | `src`        | The source code for the dashboard Teams application |
 
-The following files provide the business logic for the dashboard tab. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
+The following files can be customized and demonstrate an example implementation to get you started.
 
 | File                                 | Contents                                           |
-| ------------------------------------ | -------------------------------------------------- |
+| - | - |
 | `src/services/chartService.js`       | A data retrive implementation for the chart widget |
 | `src/services/listService.js`        | A data retrive implementation for the list widget  |
 | `src/dashboards/SampleDashboard.jsx` | A sample dashboard layout implementation           |
@@ -50,10 +48,10 @@ The following files provide the business logic for the dashboard tab. These file
 | `src/App.css`                        | The style of application route                     |
 | `src/App.jsx`                        | Application route                                  |
 
-The following files are project-related files. You generally will not need to customize these files.
+The following are project-related files. You generally will not need to customize these files.
 
 | File                               | Contents                                                     |
-| ---------------------------------- | ------------------------------------------------------------ |
+| - | -|
 | `src/index.css`                    | The style of application entry point                         |
 | `src/index.jsx`                    | Application entry point                                      |
 | `src/internal/addNewScopes.js`     | Implementation of new scopes add                             |
@@ -61,9 +59,9 @@ The following files are project-related files. You generally will not need to cu
 | `src/internal/login.js`            | Implementation of login                                      |
 | `src/internal/singletonContext.js` | Implementation of the TeamsUserCredential instance singleton |
 
-## How to add a new widget
+## Extend the dashboard template to add a new widget
 
-You can use the following steps to add a new widget to the dashboard:
+Follow the steps below to add a new widget to the dashboard:
 
 1. [Step 1: Create a data retrive service](#step-1-create-a-data-retrive-service)
 2. [Step 2: Create a widget file](#step-2-create-a-widget-file)
@@ -73,7 +71,7 @@ You can use the following steps to add a new widget to the dashboard:
 
 Typically, a widget requires a service to retrieve the necessary data for displaying its content. This service can either fetch static data from a predefined source or retrieve dynamic data from a backend service or API.
 
-For instance, we will implement a service that returns static data and place under the `src/services` directory.
+For instance, we will implement a service that returns static data and place it under the `src/services` directory.
 
 Here is a sample service for retrieving static data:
 
@@ -86,10 +84,10 @@ export const getSampleData = () => {
 
 ### Step 2: Create a widget file
 
-Create a widget file in `src/widgets` folder. Inherit the `BaseWidget` class from `@microsoft/teamsfx-react`. The following table lists the methods that you can override to customize your widget.
+Create a widget file in the `src/widgets` folder. Inherit the `BaseWidget` class from `@microsoft/teamsfx-react`. The following table lists the methods that you can override to customize your widget.
 
-| Methods     | Function                                                                                                                                      |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Methods     | Function |
+| - | - |
 | `getData()` | This method is used to get the data for the widget. You can implement it to get data from the backend service or from the Microsoft Graph API |
 | `header()`  | Customize the content of the widget header                                                                                                    |
 | `body()`    | Customize the content of the widget body                                                                                                      |
@@ -127,7 +125,7 @@ export class SampleWidget extends BaseWidget {
 
 ### Step 3: Add the widget to the dashboard
 
-Open the `src/dashboards/SampleDashboard.jsx` file and add the widget to the implementation of the `layout` method. If you want create a new dashboard, please refer to [How to add a new dashboard](#how-to-add-a-new-dashboard).
+Open the `src/dashboards/SampleDashboard.jsx` file and add the widget to the implementation of the `layout` method. If you want to create a new dashboard, please refer to [How to add a new dashboard](https://aka.ms/teamsfx-dashboard-new#how-to-add-a-new-dashboard).
 
 ```jsx
 layout() {
@@ -165,98 +163,19 @@ layout() {
 }
 ```
 
-## How to add a new dashboard
+Congratulations, you've just added your own widget! To learn more about the dashboard template, [visit the documentation](https://aka.ms/teamsfx-dashboard-new). You can find more scenarios like:
 
-You can use the following steps to add a new dashboard:
-
-1. [Step 1: Create a dashboard class](#step-1-create-a-dashboard-class)
-2. [Step 2: Override methods to customize dashboard layout](#step-2-override-methods-to-customize-dashboard-layout)
-3. [Step 3: Add a route for the new dashboard](#step-3-add-a-route-for-the-new-dashboard)
-4. [Step 4: Modify manifest to add a new dashboard tab](#step-4-modify-manifest-to-add-a-new-dashboard-tab)
-
-### Step 1: Create a dashboard class
-
-Create a file with the extension `.jsx` for your dashboard in the `src/dashboards` directory, for example, `YourDashboard.jsx`. Then, define a class that inherits the `BaseDashboard` class from `@microsoft/teamsfx-react`.
-
-```javascript
-//YourDashboard.jsx
-import { BaseDashboard } from "@microsoft/teamsfx-react";
-
-export default class YourDashboard extends BaseDashboard {}
-```
-
-### Step 2: Override methods to customize dashboard layout
-
-The `BaseDashboard` class provides some methods that you can override to customize the dashboard layout. The following table lists the methods that you can override.
-
-| Methods     | Function                             |
-| ----------- | ------------------------------------ |
-| `styling()` | Customize the style of the dashboard |
-| `layout()`  | Define widgets layout                |
-
-Here is an example to customize the dashboard layout.
-
-```css
-.your-dashboard-layout {
-  grid-template-columns: 6fr 4fr;
-}
-```
-
-```tsx
-import { BaseDashboard } from "@microsoft/teamsfx-react";
-import ListWidget from "../widgets/ListWidget";
-import ChartWidget from "../widgets/ChartWidget";
-
-export default class YourDashboard extends BaseDashboard {
-  styling() {
-    return "your-dashboard-layout";
-  }
-
-  layout() {
-    return (
-      <>
-        <ListWidget />
-        <ChartWidget />
-      </>
-    );
-  }
-}
-```
-
-### Step 3: Add a route for the new dashboard
-
-Open the `src/App.jsx` file, and add a route for the new dashboard. Here is an example:
-
-```jsx
-import YourDashboard from "./dashboards/YourDashboard";
-
-export default function App() {
-  ...
-   <Route path="/yourdashboard" element={<YourDashboard />} />
-  ...
-}
-```
-
-### Step 4: Modify manifest to add a new dashboard tab
-
-Open the [`appPackage/manifest.json`](appPackage/manifest.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
-
-```json
-{
-  "entityId": "index1",
-  "name": "Your Dashboard",
-  "contentUrl": "${{TAB_ENDPOINT}}/index.html#/yourdashboard",
-  "websiteUrl": "${{TAB_ENDPOINT}}/index.html#/yourdashboard",
-  "scopes": ["personal"]
-}
-```
-
-## How to add a new Graph API call
-
-Please follow these two steps:
-
-1. Add SSO: Refer to How-to guides in Teams Toolkit by clicking Teams Toolkit in the side bar > `View how-to guides` > `Develop single sign-on experience in Teams`.
-2. Refer to [this document](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-sdk#microsoft-graph-scenarios:~:text=caught%20and%20transformed.-,Microsoft%20Graph%20Scenarios,-This%20section%20provides) to call a Graph API via TeamsFx SDK.
+- [Customize the widget](https://aka.ms/teamsfx-dashboard-new#customize-the-widget)
+- [Customize the dashboard layout](https://aka.ms/teamsfx-dashboard-new#customize-the-dashboard-layout)
+- [Create a data loader](https://aka.ms/teamsfx-dashboard-new#how-to-include-a-data-loader)
+- [Refresh data based on the schedule](https://aka.ms/teamsfx-dashboard-new#how-to-refresh-data-as-scheduled)
+- [Handle empty state](https://aka.ms/teamsfx-dashboard-new#how-to-handle-empty-state)
+- [Add a new dashboard](https://aka.ms/teamsfx-dashboard-new#how-to-add-a-new-dashboard)
+- [Use Microsoft Graph Toolkit as widget content](https://aka.ms/teamsfx-dashboard-new#how-to-use-microsoft-graph-toolkit-as-widget-content)
+- [Embed Power BI to dashboard](https://aka.ms/teamsfx-dashboard-new#how-to-embed-power-bi-to-dashboard)
+- [How to add a new Graph API call](https://aka.ms/teamsfx-dashboard-new#how-to-add-a-new-graph-api-call)
+- [Enable the app for multi-tenant](https://github.com/OfficeDev/TeamsFx/wiki/Multi-tenancy-Support-for-Azure-AD-app)
+- [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)
 
 ## Additional resources
 

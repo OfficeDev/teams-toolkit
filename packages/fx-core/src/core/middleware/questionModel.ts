@@ -13,7 +13,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 
-import { isCLIDotNetEnabled, isOfficeAddinEnabled } from "../../common/featureFlags";
+import { isCLIDotNetEnabled } from "../../common/featureFlags";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import {
   NewProjectTypeBotOptionItem,
@@ -157,9 +157,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   sampleNode.condition = { equals: ScratchOptionNo().id };
   sampleNode.addChild(new QTreeNode(QuestionRootFolder()));
 
-  if (isOfficeAddinEnabled()) {
-    addOfficeAddinQuestions(node);
-  }
+  addOfficeAddinQuestions(node);
 
   return ok(node.trim());
 }

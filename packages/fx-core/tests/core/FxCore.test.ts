@@ -2,48 +2,31 @@
 // Licensed under the MIT license.
 
 import {
-  Inputs,
-  Platform,
-  Stage,
-  Ok,
+  Func,
   FxError,
-  UserError,
+  Inputs,
+  LogProvider,
+  Ok,
+  Platform,
+  Result,
+  Stage,
   SystemError,
+  TeamsAppManifest,
+  UserError,
+  Void,
   err,
   ok,
-  Result,
-  Void,
-  LogProvider,
-  Func,
-  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
-import * as featureFlags from "../../src/common/featureFlags";
-import { environmentManager } from "../../src/core/environment";
-import { setTools } from "../../src/core/globalVars";
-import {
-  CoreQuestionNames,
-  ProgrammingLanguageQuestion,
-  ScratchOptionYesVSC,
-} from "../../src/core/question";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../../src/component/constants";
-import { deleteFolder, MockTools, randomAppName } from "./utils";
-import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
-import "../../src/component/driver/aad/update";
-import { envUtil } from "../../src/component/utils/envUtil";
-import { YamlParser } from "../../src/component/configManager/parser";
+import { Hub } from "../../src/common/m365/constants";
+import { LaunchHelper } from "../../src/common/m365/launchHelper";
 import {
   DriverDefinition,
   DriverInstance,
@@ -53,37 +36,54 @@ import {
   Output,
   UnresolvedPlaceholders,
 } from "../../src/component/configManager/interface";
-import { DriverContext } from "../../src/component/driver/interface/commonArgs";
+import { YamlParser } from "../../src/component/configManager/parser";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../src/component/constants";
 import { coordinator } from "../../src/component/coordinator";
-import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
-import * as coreImplement from "../../src/core/FxCore";
-import { pathUtils } from "../../src/component/utils/pathUtils";
+import "../../src/component/driver/aad/update";
+import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
-import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
+import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import "../../src/component/feature/sso";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
+import { envUtil } from "../../src/component/utils/envUtil";
+import { metadataUtil } from "../../src/component/utils/metadataUtil";
+import { pathUtils } from "../../src/component/utils/pathUtils";
+import * as coreImplement from "../../src/core/FxCore";
+import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import * as collaborator from "../../src/core/collaborator";
+import { environmentManager } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
+import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
+import {
+  CoreQuestionNames,
+  ProgrammingLanguageQuestion,
+  ScratchOptionYesVSC,
+} from "../../src/core/question";
 import {
   FileNotFoundError,
   InvalidProjectError,
   MissingEnvironmentVariablesError,
 } from "../../src/error/common";
-import * as collaborator from "../../src/core/collaborator";
-import { CollaborationUtil } from "../../src/core/collaborator";
-import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
-import { Hub } from "../../src/common/m365/constants";
-import { LaunchHelper } from "../../src/common/m365/launchHelper";
-import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
+import { MockTools, deleteFolder, randomAppName } from "./utils";
+
+const tools = new MockTools();
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
-  const tools = new MockTools();
+
   const appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
-    sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
   });
   afterEach(async () => {
     sandbox.restore();
@@ -1125,5 +1125,157 @@ describe("previewWithManifest", () => {
     const result = await core.previewWithManifest(inputs);
     assert.isTrue(result.isOk());
     assert.deepEqual((result as any).value, "test-url");
+  });
+});
+
+describe("getProjectId", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    const mockProjectModel: any = {
+      projectId: "12345",
+      provision: {
+        name: "provision",
+        driverDefs: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "huajie052602-${{TEAMSFX_ENV}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+        ],
+      },
+    };
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    const core = new FxCore(tools);
+    const res = await core.getProjectId(".");
+    assert.isTrue(res.isOk() && res.value === "12345");
+  });
+  it("return empty value", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    const mockProjectModel: any = {};
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    const core = new FxCore(tools);
+    const res = await core.getProjectId(".");
+    assert.isTrue(res.isOk() && res.value === "");
+  });
+  it("parse yml error", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    sandbox.stub(metadataUtil, "parse").resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.getProjectId(".");
+    assert.isTrue(res.isErr());
+  });
+});
+
+describe("getTeamsAppName", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    const mockProjectModel: any = {
+      projectId: "12345",
+      provision: {
+        name: "provision",
+        driverDefs: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "testappname-${{TEAMSFX_ENV}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+        ],
+      },
+    };
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    const core = new FxCore(tools);
+    const res = await core.getTeamsAppName(".");
+    assert.isTrue(res.isOk() && res.value === "testappname");
+  });
+  it("return empty value", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    const mockProjectModel: any = {};
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    const core = new FxCore(tools);
+    const res = await core.getTeamsAppName(".");
+    assert.isTrue(res.isOk() && res.value === "");
+  });
+  it("parse yml error", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    sandbox.stub(metadataUtil, "parse").resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.getTeamsAppName(".");
+    assert.isTrue(res.isErr());
+  });
+});
+
+describe("getProjectInfo", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    const mockProjectModel: any = {
+      projectId: "mock-project-id",
+      provision: {
+        name: "provision",
+        driverDefs: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "testappname-${{TEAMSFX_ENV}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+        ],
+      },
+    };
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "readEnv").resolves(
+      ok({
+        TEAMS_APP_ID: "mock-team-app-id",
+        TEAMS_APP_TENANT_ID: "mock-tenant-id",
+      })
+    );
+    const core = new FxCore(tools);
+    const res = await core.getProjectInfo(".", "dev");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {
+        projectId: "mock-project-id",
+        teamsAppId: "mock-team-app-id",
+        m365TenantId: "mock-tenant-id",
+        teamsAppName: "testappname",
+      });
+    }
+  });
+  it("parse yml error", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    sandbox.stub(metadataUtil, "parse").resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.getProjectInfo(".", "dev");
+    assert.isTrue(res.isErr());
+  });
+  it("read env error", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    sandbox.stub(metadataUtil, "parse").resolves(ok({} as any));
+    sandbox.stub(envUtil, "readEnv").resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.getProjectInfo(".", "dev");
+    assert.isTrue(res.isErr());
   });
 });

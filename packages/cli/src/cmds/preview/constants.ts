@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
+import { FolderName } from "@microsoft/teamsfx-core";
 
 export enum Browser {
   chrome = "chrome",

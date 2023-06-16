@@ -21,7 +21,7 @@
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
         "@microsoft/teamsfx": "^2.2.2-alpha",
-        "botbuilder": "^4.18.0"
+        "botbuilder": "^4.20.0"
     },
     "devDependencies": {
         "azurite": "^3.16.0",

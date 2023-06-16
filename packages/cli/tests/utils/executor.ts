@@ -5,7 +5,6 @@ import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "../e2e/commonUtils";
 import { Capability } from "./constants";
 import { TemplateProject } from "../commonlib/constants";
-import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
 import path from "path";
 
 export class Executor {
@@ -28,7 +27,7 @@ export class Executor {
         console.log(`[Success] "${command}" in ${cwd}.`);
       }
       return { ...result, success: true };
-    } catch (e) {
+    } catch (e: any) {
       if (e.killed && e.signal == "SIGTERM") {
         console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
       } else {
@@ -190,7 +189,7 @@ export class Executor {
         appName
       )} with template ${template}`;
       console.log(message);
-    } catch (e) {
+    } catch (e: any) {
       console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
       if (e.killed && e.signal == "SIGTERM") {
         console.log(`Command ${command} killed due to timeout ${timeout}`);
@@ -216,19 +215,10 @@ export class Executor {
       console.log(error);
       throw new Error(`Failed to open project: ${newPath}`);
     }
-    if (isV3Enabled()) {
-      const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
-      const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
-      editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
-      editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
-    } else {
-      await this.execute(
-        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/env.default.json `,
-        testFolder,
-        processEnv ? processEnv : process.env,
-        timeout
-      );
-    }
+    const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+    const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+    editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+    editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
   }
 
   static async setSubscription(

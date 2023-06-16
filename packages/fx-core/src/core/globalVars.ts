@@ -1,24 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogProvider, Stage, Tools } from "@microsoft/teamsfx-api";
+import { Tools } from "@microsoft/teamsfx-api";
 
-export let Logger: LogProvider;
-export let currentStage: Stage;
 export let TOOLS: Tools;
 export let Locale: string | undefined;
-export const isVS = false;
 export function setTools(tools: Tools): void {
   TOOLS = tools;
-  Logger = tools?.logProvider;
 }
 export function setLocale(locale?: string): void {
   Locale = locale;
 }
-export function setCurrentStage(stage: Stage): void {
-  currentStage = stage;
-}
-export class GlobalVars {
+
+class GlobalVars {
   isVS?: boolean = false;
   teamsAppId = "";
   m365TenantId = "";

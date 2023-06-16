@@ -6,19 +6,12 @@ import {
   AzureAccountProvider,
   err,
   FxError,
-  InputsWithProjectPath,
   M365TokenProvider,
   ok,
-  ResourceContextV3,
   Result,
   SubscriptionInfo,
-  SystemError,
   UserError,
-  v3,
-  Void,
 } from "@microsoft/teamsfx-api";
-import { assembleError } from "../error/common";
-import fs from "fs-extra";
 import { HelpLinks } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
@@ -30,12 +23,13 @@ import {
   ResourceGroupNotExistError,
   SelectSubscriptionError,
 } from "../error/azure";
+import { assembleError } from "../error/common";
 import {
   M365TenantIdNotFoundInTokenError,
   M365TenantIdNotMatchError,
   M365TokenJSONNotFoundError,
 } from "../error/m365";
-import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "./constants";
+import { SolutionTelemetryProperty } from "./constants";
 import { DriverContext } from "./driver/interface/commonArgs";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
@@ -44,7 +38,7 @@ export interface M365TenantRes {
   tenantUserName: string;
 }
 
-export class ProvisionUtils {
+class ProvisionUtils {
   /**
    * make sure subscription is correct before provision for V3
    * subscriptionId is provided from .env.xxx file
@@ -236,121 +230,11 @@ export class ProvisionUtils {
   }
 }
 
-export function findSubscriptionFromList(
+function findSubscriptionFromList(
   subscriptionId: string,
   subscriptions: SubscriptionInfo[]
 ): SubscriptionInfo | undefined {
   return subscriptions.find((item) => item.subscriptionId === subscriptionId);
-}
-
-export async function checkWhetherLocalDebugM365TenantMatches(
-  envInfo: v3.EnvInfoV3 | undefined,
-  ctx: ResourceContextV3,
-  isCSharpProject: boolean,
-  localDebugTenantId: string | undefined,
-  m365TokenProvider: M365TokenProvider,
-  inputs: InputsWithProjectPath
-): Promise<Result<Void, FxError>> {
-  if (localDebugTenantId) {
-    const projectPath = inputs.projectPath;
-    const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({
-      scopes: AppStudioScopes,
-    });
-    const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
-      ? appStudioTokenJsonRes.value
-      : undefined;
-    const maybeM365TenantId = parseTeamsAppTenantId(appStudioTokenJson);
-    if (maybeM365TenantId.isErr()) {
-      return maybeM365TenantId;
-    }
-
-    const maybeM365UserAccount = parseUserName(appStudioTokenJson);
-    if (maybeM365UserAccount.isErr()) {
-      return maybeM365UserAccount;
-    }
-
-    if (maybeM365TenantId.value !== localDebugTenantId) {
-      if (
-        projectPath !== undefined &&
-        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
-      ) {
-        const errorMessage = getLocalizedString(
-          "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount",
-          localDebugTenantId,
-          maybeM365UserAccount.value,
-          "bot/.notification.localstore.json"
-        );
-        return err(
-          new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
-        );
-      } else if (envInfo) {
-        ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
-          [TelemetryProperty.HasSwitchedM365Tenant]: "true",
-          [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
-          [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
-        });
-
-        const keys = Object.keys(envInfo.state);
-        for (const key of keys) {
-          if (key !== "solution") {
-            delete (envInfo as v3.EnvInfoV3).state[key];
-          }
-        }
-      }
-    } else {
-      ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
-        [TelemetryProperty.HasSwitchedM365Tenant]: "false",
-        [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
-        [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
-      });
-    }
-  }
-
-  return ok(Void);
-}
-
-export function parseTeamsAppTenantId(
-  appStudioToken?: Record<string, unknown>
-): Result<string, FxError> {
-  if (appStudioToken === undefined) {
-    return err(
-      new SystemError(
-        SolutionSource,
-        SolutionError.NoAppStudioToken,
-        "Graph token json is undefined"
-      )
-    );
-  }
-
-  const teamsAppTenantId = appStudioToken["tid"];
-  if (
-    teamsAppTenantId === undefined ||
-    !(typeof teamsAppTenantId === "string") ||
-    teamsAppTenantId.length === 0
-  ) {
-    return err(new M365TenantIdNotFoundInTokenError());
-  }
-  return ok(teamsAppTenantId);
-}
-
-export function parseUserName(appStudioToken?: Record<string, unknown>): Result<string, FxError> {
-  if (appStudioToken === undefined) {
-    return err(
-      new SystemError("Solution", SolutionError.NoAppStudioToken, "Graph token json is undefined")
-    );
-  }
-
-  const userName = appStudioToken["upn"];
-  if (userName === undefined || !(typeof userName === "string") || userName.length === 0) {
-    return err(
-      new SystemError(
-        "Solution",
-        SolutionError.NoUserName,
-        "Cannot find user name from App Studio token."
-      )
-    );
-  }
-  return ok(userName);
 }
 
 export const provisionUtils = new ProvisionUtils();

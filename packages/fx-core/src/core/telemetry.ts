@@ -3,7 +3,7 @@
 
 import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
 
-export const CoreTelemetryComponentName = "core";
+const CoreTelemetryComponentName = "core";
 
 export enum CoreTelemetryEvent {
   CreateStart = "create-start",
@@ -21,7 +21,7 @@ export enum CoreTelemetryProperty {
   TdpTeamsAppFeatures = "tdp-teams-app-features",
 }
 
-export enum CoreTelemetrySuccess {
+enum CoreTelemetrySuccess {
   Yes = "yes",
   No = "no",
 }

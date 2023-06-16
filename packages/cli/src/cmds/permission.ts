@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";

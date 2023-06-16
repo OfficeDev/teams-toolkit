@@ -16,8 +16,8 @@ import { PluginNames } from "./constants";
 import { ComponentNames, Scenarios, TelemetryConstants } from "./constants";
 import { TelemetryHelper } from "./resource/botService/telemetryHelper";
 
-export type TelemetryProps = { [key: string]: string };
-export function getCommonProperties(): TelemetryProps {
+type TelemetryProps = { [key: string]: string };
+function getCommonProperties(): TelemetryProps {
   const props = {
     [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
     [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,

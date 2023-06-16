@@ -49,6 +49,7 @@ import {
   needTabCode,
 } from "./resource/appManifest/utils/utils";
 import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
+import { envUtil } from "./utils/envUtil";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -144,25 +145,6 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
-
-  // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
-  // This is a short-term solution to convert the value to what TTK expects.
-  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-    if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = updateScope(
-          manifest.configurableTabs[0].scopes
-        ) as any;
-      }
-    }
-  }
-  if (!!manifest.bots && manifest.bots.length > 0) {
-    if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = updateScope(manifest.bots[0].scopes) as any;
-      }
-    }
-  }
 
   // manifest: tab
   const tabs = manifest.staticTabs;
@@ -277,28 +259,9 @@ async function updateManifest(
 }
 
 async function updateEnv(appId: string, projectPath: string): Promise<Result<undefined, FxError>> {
-  const dotEnvFile = environmentManager.getDotEnvPath("local", projectPath);
-  const source = await fs.readFile(dotEnvFile);
-  const writeStream = fs.createWriteStream(dotEnvFile);
-  source
-    .toString()
-    .split(/\r?\n/)
-    .forEach((line) => {
-      const reg = /^([a-zA-Z_][a-zA-Z0-9_]*=)/g;
-      const match = reg.exec(line);
-      if (match) {
-        if (match[1].startsWith("TEAMS_APP_ID=")) {
-          writeStream.write(`TEAMS_APP_ID=${appId}${os.EOL}`);
-        } else {
-          writeStream.write(`${line.trim()}${os.EOL}`);
-        }
-      } else {
-        writeStream.write(`${line.trim()}${os.EOL}`);
-      }
-    });
-
-  writeStream.end();
-  return ok(undefined);
+  return await envUtil.writeEnv(projectPath, "local", {
+    TEAMS_APP_ID: appId,
+  });
 }
 
 function updateTabUrl(
@@ -364,10 +327,6 @@ export function getTemplateId(
   }
 
   return undefined;
-}
-
-export function updateScope(scopes: string[]): string[] {
-  return scopes.map((o) => o.toLowerCase());
 }
 
 export function isFromDevPortal(inputs: Inputs | undefined): boolean {

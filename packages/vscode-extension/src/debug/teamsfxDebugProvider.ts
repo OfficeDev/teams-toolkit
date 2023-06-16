@@ -4,15 +4,12 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import {
-  isValidProject,
-  isValidProjectV3,
-} from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { MissingEnvironmentVariablesError } from "@microsoft/teamsfx-core/build/error/common";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { isValidProject, isValidProjectV3 } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { envUtil } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import { MissingEnvironmentVariablesError } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
@@ -59,10 +56,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
 
       if (typeof debugConfiguration.url !== "string") {
-        return debugConfiguration;
-      }
-
-      if (!isV3Enabled()) {
         return debugConfiguration;
       }
 

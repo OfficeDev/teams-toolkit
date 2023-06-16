@@ -2,20 +2,14 @@
 // Licensed under the MIT license.
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ActionContext,
   CloudResource,
   err,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   M365TokenProvider,
   ok,
-  Platform,
-  ProjectSettingsV3,
-  QTreeNode,
   ResourceContextV3,
   Result,
-  TokenProvider,
   UserError,
   v2,
   v3,
@@ -27,30 +21,22 @@ import { Service } from "typedi";
 import isUUID from "validator/lib/isUUID";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
-import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { AppStudioScopes, isV3Enabled } from "../../../common/tools";
-import { getProjectTemplatesFolderPath } from "../../../common/utils";
-import { getTemplatesFolder } from "../../../folder";
-import { AppStudioClient } from "./appStudioClient";
+import { AppStudioClient } from "../../driver/teamsApp/clients/appStudioClient";
 import {
-  COLOR_TEMPLATE,
   Constants,
   DEFAULT_COLOR_PNG_FILENAME,
-  DEFAULT_DEVELOPER,
   DEFAULT_OUTLINE_PNG_FILENAME,
   ErrorMessages,
   MANIFEST_RESOURCES,
-  OUTLINE_TEMPLATE,
 } from "./constants";
 import { AppStudioError } from "./errors";
 import { AppUser } from "./interfaces/appUser";
-import { autoPublishOption, manuallySubmitOption } from "./questions";
 import { AppStudioResultFactory } from "./results";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { createTeamsApp, updateManifestV3 } from "./appStudio";
-import { TEAMS_APP_MANIFEST_TEMPLATE } from "./constants";
+import { updateManifestV3 } from "./appStudio";
 import { manifestUtils } from "./utils/ManifestUtils";
 
 @Service("app-manifest")
@@ -66,125 +52,6 @@ export class AppManifest implements CloudResource {
   };
 
   finalOutputKeys = ["teamsAppId", "tenantId"];
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.init,
-    }),
-  ])
-  async init(
-    context: v2.Context,
-    inputs: InputsWithProjectPath,
-    existingApp = false
-  ): Promise<Result<undefined, FxError>> {
-    let manifest;
-    const sourceTemplatesFolder = getTemplatesFolder();
-    if (inputs.capabilities === "TabSPFx") {
-      const templateManifestFolder = path.join(
-        sourceTemplatesFolder,
-        "plugins",
-        "resource",
-        "spfx"
-      );
-      const manifestFile = path.resolve(
-        templateManifestFolder,
-        "./solution/manifest_multi_env.json"
-      );
-      const manifestString = (await fs.readFile(manifestFile)).toString();
-      manifest = JSON.parse(manifestString);
-    } else {
-      const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-      manifest = JSON.parse(manifestString);
-      if (existingApp || !hasTab(context.projectSetting as ProjectSettingsV3)) {
-        manifest.developer = DEFAULT_DEVELOPER;
-      }
-    }
-    const targetTemplateFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
-    await fs.ensureDir(targetTemplateFolder);
-    const appPackageFolder = path.join(targetTemplateFolder, "appPackage");
-    await fs.ensureDir(appPackageFolder);
-    const resourcesFolder = path.resolve(appPackageFolder, "resources");
-    await fs.ensureDir(resourcesFolder);
-    const targetManifestPath = path.join(appPackageFolder, "manifest.template.json");
-    await fs.writeFile(targetManifestPath, JSON.stringify(manifest, null, 4));
-    const defaultColorPath = path.join(sourceTemplatesFolder, COLOR_TEMPLATE);
-    const defaultOutlinePath = path.join(sourceTemplatesFolder, OUTLINE_TEMPLATE);
-    await fs.copy(defaultColorPath, path.join(resourcesFolder, DEFAULT_COLOR_PNG_FILENAME));
-    await fs.copy(defaultOutlinePath, path.join(resourcesFolder, DEFAULT_OUTLINE_PNG_FILENAME));
-    return ok(undefined);
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.addCapability,
-    }),
-  ])
-  async addCapability(
-    inputs: InputsWithProjectPath,
-    capabilities: v3.ManifestCapability[],
-    isM365 = false
-  ): Promise<Result<undefined, FxError>> {
-    return manifestUtils.addCapabilities(inputs, capabilities, isM365);
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: "update-capability",
-    }),
-  ])
-  async updateCapability(
-    inputs: InputsWithProjectPath,
-    capability: v3.ManifestCapability
-  ): Promise<Result<undefined, FxError>> {
-    return manifestUtils.updateCapability(inputs.projectPath, capability);
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: "delete-capability",
-    }),
-  ])
-  async deleteCapability(
-    inputs: InputsWithProjectPath,
-    capability: v3.ManifestCapability
-  ): Promise<Result<undefined, FxError>> {
-    return manifestUtils.deleteCapability(inputs.projectPath, capability);
-  }
-  async capabilityExceedLimit(
-    inputs: InputsWithProjectPath,
-    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
-  ): Promise<Result<boolean, FxError>> {
-    return manifestUtils.capabilityExceedLimit(inputs.projectPath, capability);
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableProgressBar: true,
-      progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
-      progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.provisionManifest,
-    }),
-  ])
-  async provisionForCLI(
-    ctx: v2.Context,
-    inputs: InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProvider,
-    actionContext?: ActionContext
-  ): Promise<Result<string, FxError>> {
-    await actionContext?.progressBar?.next(
-      getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSetting.appName)
-    );
-    const res = await createTeamsApp(ctx, inputs, envInfo, tokenProvider);
-    return res;
-  }
 
   @hooks([
     ActionExecutionMW({
@@ -259,9 +126,7 @@ export class AppManifest implements CloudResource {
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
     TelemetryUtils.init(ctx);
     try {
-      const teamsAppId = isV3Enabled()
-        ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo!);
+      const teamsAppId = teamsAppIdV3;
       if (!teamsAppId) {
         return err(
           new UserError(
@@ -340,9 +205,7 @@ export class AppManifest implements CloudResource {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const teamsAppId = isV3Enabled()
-        ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo!);
+      const teamsAppId = teamsAppIdV3;
       if (!teamsAppId) {
         return err(
           new UserError(
@@ -413,9 +276,7 @@ export class AppManifest implements CloudResource {
     try {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      const teamsAppId = isV3Enabled()
-        ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo!);
+      const teamsAppId = teamsAppIdV3;
       if (!teamsAppId) {
         return err(
           new UserError(
@@ -457,20 +318,4 @@ export class AppManifest implements CloudResource {
       return err(fxError);
     }
   }
-}
-
-export async function publishQuestion(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.platform === Platform.VSCode) {
-    const buildOrPublish = new QTreeNode({
-      name: Constants.BUILD_OR_PUBLISH_QUESTION,
-      type: "singleSelect",
-      staticOptions: [manuallySubmitOption(), autoPublishOption()],
-      title: getLocalizedString("plugins.appstudio.publishTip"),
-      default: autoPublishOption().id,
-    });
-    return ok(buildOrPublish);
-  }
-  return ok(undefined);
 }

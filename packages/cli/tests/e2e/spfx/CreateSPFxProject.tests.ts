@@ -5,22 +5,21 @@
  * @author Huihui Wu <huihuiwu@microsoft.com>
  */
 
+import { it } from "@microsoft/extra-shot-mocha";
+import { ProgrammingLanguage, environmentManager } from "@microsoft/teamsfx-core";
+import { assert, expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { expect, assert } from "chai";
+import { AppStudioValidator, SharepointValidator } from "../../commonlib";
+import { Capability } from "../../utils/constants";
+import { Executor } from "../../utils/executor";
 import {
   cleanUpLocalProject,
   cleanupSharePointPackage,
   getTestFolder,
   getUniqueAppName,
-  readContextMultiEnv,
   readContextMultiEnvV3,
 } from "../commonUtils";
-import { AppStudioValidator, SharepointValidator } from "../../commonlib";
-import { environmentManager, isV3Enabled, ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { it } from "@microsoft/extra-shot-mocha";
-import { Executor } from "../../utils/executor";
-import { Capability } from "../../utils/constants";
 
 describe("Start a new project", function () {
   let appId: string;
@@ -72,7 +71,7 @@ describe("Start a new project", function () {
           "tsconfig.json",
         ];
         for (const file of files) {
-          const filePath = path.join(testFolder, appName, isV3Enabled() ? `src` : `SPFx`, file);
+          const filePath = path.join(testFolder, appName, `src`, file);
           expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
         }
         expect(result.success).to.be.true;
@@ -101,20 +100,14 @@ describe("Start a new project", function () {
 
       {
         // Get context
-        const context = isV3Enabled()
-          ? await readContextMultiEnvV3(projectPath, environmentManager.getDefaultEnvName())
-          : await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+        const context = await readContextMultiEnvV3(
+          projectPath,
+          environmentManager.getDefaultEnvName()
+        );
 
-        if (isV3Enabled()) {
-          assert.exists(context.TEAMS_APP_ID);
-          teamsAppId = context.TEAMS_APP_ID;
-          AppStudioValidator.setE2ETestProvider();
-        } else {
-          // Only check Teams App existence
-          const appStudio = AppStudioValidator.init(context);
-          AppStudioValidator.validateTeamsAppExist(appStudio);
-          teamsAppId = appStudio.teamsAppId;
-        }
+        assert.exists(context.TEAMS_APP_ID);
+        teamsAppId = context.TEAMS_APP_ID;
+        AppStudioValidator.setE2ETestProvider();
       }
 
       {
@@ -125,12 +118,8 @@ describe("Start a new project", function () {
 
       {
         // Validate sharepoint package
-        const solutionConfig = await fs.readJson(
-          `${projectPath}/${isV3Enabled() ? `src` : `SPFx`}/config/package-solution.json`
-        );
-        const sharepointPackage = `${projectPath}/${isV3Enabled() ? `src` : `SPFx`}/sharepoint/${
-          solutionConfig.paths.zippedPackage
-        }`;
+        const solutionConfig = await fs.readJson(`${projectPath}/src/config/package-solution.json`);
+        const sharepointPackage = `${projectPath}/src/sharepoint/${solutionConfig.paths.zippedPackage}`;
         appId = solutionConfig["solution"]["id"];
         expect(appId).to.not.be.empty;
         expect(await fs.pathExists(sharepointPackage)).to.be.true;

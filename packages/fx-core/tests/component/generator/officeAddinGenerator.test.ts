@@ -38,7 +38,7 @@ import {
   OfficeHostQuestion,
 } from "../../../src/component/generator/officeAddin/question";
 import * as childProcess from "child_process";
-import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
+import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
@@ -59,7 +59,7 @@ describe("OfficeAddinGenerator", function () {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3(newProjectSettingsV3());
+    context = createContextV3();
 
     await fse.ensureDir(testFolder);
     sinon.stub(fs, "stat").resolves();

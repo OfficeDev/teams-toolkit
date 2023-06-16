@@ -2,25 +2,30 @@
 // Licensed under the MIT license.
 
 import { InputsWithProjectPath, Tools } from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 import { DotenvParseOutput } from "dotenv";
 
 export class ProjectEnvReader {
-  static async readEnvFile(workspace: string, env = "dev"): Promise<DotenvParseOutput> {
+  static async readEnvFile(workspace: string, env: string): Promise<DotenvParseOutput | undefined> {
     const core = new FxCore({} as Tools);
-    const res = await core.getDotEnv({ projectPath: workspace, env: env } as InputsWithProjectPath);
-    if (res.isOk()) return res.value ?? {};
-    else return {};
+    const res = await core.getDotEnvs({ projectPath: workspace } as InputsWithProjectPath);
+    if (res.isOk()) {
+      return res.value[env];
+    }
+    return undefined;
   }
 
   static async readAllEnvFiles(workspace: string): Promise<DotenvParseOutput[]> {
-    const res = await environmentManager.listAllEnvConfigs(workspace);
+    const core = new FxCore({} as Tools);
+    const res = await core.getDotEnvs({ projectPath: workspace } as InputsWithProjectPath);
     if (res.isOk()) {
-      const envs = res.value;
-      const promises = envs.map(async (env) => {
-        return await this.readEnvFile(workspace, env);
-      });
-      return await Promise.all(promises);
+      const envs: DotenvParseOutput[] = [];
+      const value = res.value;
+      for (const key of Object.keys(value)) {
+        const env = value[key];
+        envs.push(env);
+      }
+      return envs;
     }
     return [];
   }

@@ -15,16 +15,14 @@ import * as path from "path";
 import * as telemetry from "../../src/common/telemetry";
 import {
   ConvertTokenToJson,
-  getAppSPFxVersion,
   getFixedCommonProjectSettings,
   getSPFxToken,
   getSideloadingStatus,
-  isApiConnectEnabled,
   isV3Enabled,
   isVideoFilterProject,
   setRegion,
 } from "../../src/common/tools";
-import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
+import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
@@ -178,43 +176,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
   });
 
-  describe("getAppSPFxVersion", async () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("Returns version from .yo-rc.json", async () => {
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": {
-          version: "1.15.0",
-        },
-      });
-
-      const version = await getAppSPFxVersion("");
-
-      chai.expect(version).equals("1.15.0");
-    });
-
-    it("Returns version from package.json when .yo-rc.json not exist", async () => {
-      sinon.stub(fs, "pathExists").callsFake((directory) => {
-        if (directory.includes(".yo-rc.json")) {
-          return false;
-        }
-        return true;
-      });
-      sinon.stub(fs, "readJson").resolves({
-        dependencies: {
-          "@microsoft/sp-webpart-base": "1.14.0",
-        },
-      });
-
-      const version = await getAppSPFxVersion("");
-
-      chai.expect(version).equals("1.14.0");
-    });
-  });
-
   describe("isVideoFilterProject", async () => {
     let sandbox: Sinon.SinonSandbox;
     const mockProjectRoot = "video-filter";
@@ -228,17 +189,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     it("Can recognize normal video filter project", async () => {
       // Arrange
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
       const manifest = {
         meetingExtensionDefinition: {
           videoFiltersConfigurationUrl: "https://a.b.c/",
         },
       };
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          JSON.stringify(manifest),
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify(manifest),
       });
 
       // Act
@@ -247,13 +204,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.true;
-      restore();
     });
 
     it("Should not recognize tab project as video filter", async () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
       // Arrange
       const manifest = {
         $schema:
@@ -306,8 +259,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
         validDomains: ["{{state.fx-resource-frontend-hosting.domain}}"],
       };
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          JSON.stringify(manifest),
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify(manifest),
       });
 
       // Act
@@ -316,7 +268,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
-      restore();
     });
   });
 
@@ -372,16 +323,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" }, { clear: true });
       const res = isV3Enabled();
       chai.expect(res).false;
-    });
-    it("should return false if no TEAMSFX_API_CONNECT_ENABLE set", () => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-      const res = isApiConnectEnabled();
-      chai.expect(res).false;
-    });
-    it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
-      const res = isApiConnectEnabled();
-      chai.expect(res).true;
     });
   });
 });

@@ -105,7 +105,7 @@ export class TeamsFxTelemetryReporter {
   }
 }
 
-export interface TeamsFxTelemetryDefaultConfig {
+interface TeamsFxTelemetryDefaultConfig {
   baseEventName?: string;
   componentName?: string;
 }

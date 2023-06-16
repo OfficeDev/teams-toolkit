@@ -17,8 +17,7 @@ import {
   CreateOrUpdateBotFrameworkBotArgs,
   MicrosoftTeamsChannelSettings,
 } from "./interface/createOrUpdateBotFrameworkBotArgs";
-import { BotRegistration } from "../../resource/botService/botRegistration/botRegistration";
-import { LocalBotRegistration } from "../../resource/botService/botRegistration/localBotRegistration";
+import { createOrUpdateBotRegistration } from "../../resource/botService/botRegistration/botFrameworkRegistration";
 import {
   BotChannelType,
   IBotRegistration,
@@ -101,8 +100,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
         configuredChannels,
       };
 
-      const botRegistration: BotRegistration = new LocalBotRegistration();
-      const result = await botRegistration.createOrUpdateBotRegistration(
+      const result = await createOrUpdateBotRegistration(
         context.m365TokenProvider,
         botRegistrationData
       );

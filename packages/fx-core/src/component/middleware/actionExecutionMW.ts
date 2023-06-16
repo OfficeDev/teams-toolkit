@@ -5,9 +5,6 @@ import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
   ContextV3,
-  Effect,
-  err,
-  ErrorHandler,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
@@ -15,9 +12,12 @@ import {
   Result,
   SystemError,
   UserError,
+  err,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
-import { globalVars, TOOLS } from "../../core/globalVars";
+import { TOOLS, globalVars } from "../../core/globalVars";
+import { assembleError } from "../../error/common";
+import { traverse } from "../../ui/visitor";
 import { TelemetryConstants } from "../constants";
 import { DriverContext } from "../driver/interface/commonArgs";
 import {
@@ -29,15 +29,12 @@ import {
   sendSuccessEvent,
 } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
-import { assembleError } from "../../error/common";
-import { traverse } from "../../ui/visitor";
 
-export interface ActionOption {
+interface ActionOption {
   componentName?: string;
   errorSource?: string;
   errorHelpLink?: string;
   errorIssueLink?: string;
-  errorHandler?: ErrorHandler;
   enableTelemetry?: boolean;
   telemetryComponentName?: string;
   telemetryEventName?: string;
@@ -45,10 +42,6 @@ export interface ActionOption {
   enableProgressBar?: boolean;
   progressTitle?: string;
   progressSteps?: number;
-  plan?: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Effect[], FxError>>;
   question?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -139,19 +132,14 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       await progressBar?.end(true);
     } catch (e) {
       await progressBar?.end(false);
-      let fxError;
-      if (action.errorHandler) {
-        fxError = action.errorHandler(e, telemetryProps);
-      } else {
-        fxError = assembleError(e);
-        if (fxError.source === "unknown") {
-          fxError.source = action.errorSource || fxError.source;
-          if (fxError instanceof UserError) {
-            fxError.helpLink = fxError.helpLink || action.errorHelpLink;
-          }
-          if (fxError instanceof SystemError) {
-            fxError.issueLink = fxError.issueLink || action.errorIssueLink;
-          }
+      const fxError = assembleError(e);
+      if (fxError.source === "unknown") {
+        fxError.source = action.errorSource || fxError.source;
+        if (fxError instanceof UserError) {
+          fxError.helpLink = fxError.helpLink || action.errorHelpLink;
+        }
+        if (fxError instanceof SystemError) {
+          fxError.issueLink = fxError.issueLink || action.errorIssueLink;
         }
       }
       // send error telemetry

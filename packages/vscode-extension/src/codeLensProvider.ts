@@ -1,75 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as vscode from "vscode";
-import { environmentVariableRegex } from "./constants";
-import * as fs from "fs-extra";
-import * as parser from "jsonc-parser";
-import { Mutex } from "async-mutex";
 import {
   AdaptiveCardsFolderName,
+  AppPackageFolderName,
   ProjectConfigV3,
   TemplateFolderName,
-  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
-import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
-import { getPermissionMap } from "@microsoft/teamsfx-core/build/component/resource/aadApp/permissions";
-import { getAllowedAppMaps, getPropertyByPath } from "@microsoft/teamsfx-core/build/common/tools";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core/build/component/migrate";
-import { localize } from "./utils/localizeUtils";
-import { core, getSystemInputs } from "./handlers";
+import {
+  MetadataV3,
+  envUtil,
+  environmentManager,
+  getAllowedAppMaps,
+  getPermissionMap,
+} from "@microsoft/teamsfx-core";
+import { Mutex } from "async-mutex";
+import * as fs from "fs-extra";
+import * as parser from "jsonc-parser";
 import isUUID from "validator/lib/isUUID";
-import { envUtil } from "@microsoft/teamsfx-core";
-import { MetadataV3 } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import * as vscode from "vscode";
+import { environmentVariableRegex } from "./constants";
 import { commandIsRunning } from "./globalVariables";
-
-async function resolveStateAndConfigCodeLens(
-  lens: vscode.CodeLens,
-  projectConfigs: ProjectConfigV3 | undefined,
-  mutex: Mutex,
-  from: string
-) {
-  if (lens instanceof PlaceholderCodeLens) {
-    const key = lens.placeholder.replace(/{/g, "").replace(/}/g, "");
-    if (!projectConfigs) {
-      const release = await mutex.acquire();
-      try {
-        if (!projectConfigs) {
-          const inputs = getSystemInputs();
-          inputs.loglevel = "Debug";
-          const getConfigRes = await core.getProjectConfigV3(inputs);
-          if (getConfigRes.isErr()) throw getConfigRes.error;
-          projectConfigs = getConfigRes.value;
-        }
-      } finally {
-        release();
-      }
-    }
-
-    if (projectConfigs) {
-      let title = "👉";
-      const localEnvInfo = projectConfigs.envInfos[environmentManager.getLocalEnvName()];
-      const defaultEnvInfo = projectConfigs.envInfos[environmentManager.getDefaultEnvName()];
-
-      const keyV3 = convertManifestTemplateToV3(key);
-
-      const localValue = getPropertyByPath(localEnvInfo, keyV3);
-      title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
-
-      const defaultValue = getPropertyByPath(defaultEnvInfo, keyV3);
-      title = `${title}, ${defaultEnvInfo.envName}: ${defaultValue}`;
-
-      lens.command = {
-        title: title,
-        command: "fx-extension.openConfigState",
-        arguments: [{ type: key.startsWith("state") ? "state" : "config", from: from }],
-      };
-      return lens;
-    }
-  }
-
-  return lens;
-}
+import { getSystemInputs } from "./handlers";
+import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import { localize } from "./utils/localizeUtils";
 
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables

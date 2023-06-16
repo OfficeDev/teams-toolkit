@@ -46,10 +46,11 @@ export async function zipFolderAsync(
     sourceDir,
     (itemPath: string, stats: fs.Stats) => {
       const relativePath: string = path.relative(sourceDir, itemPath);
+      const zipPath = path.normalize(relativePath).split("\\").join("/");
       if (relativePath && !stats.isDirectory()) {
-        zipFiles.add(relativePath);
+        zipFiles.add(zipPath);
 
-        const entry = zip.getEntry(relativePath);
+        const entry = zip.getEntry(zipPath);
         if (entry) {
           // The header is an object, the ts declare of adm-zip is wrong.
           const header = entry.header;
@@ -65,12 +66,13 @@ export async function zipFolderAsync(
           }
 
           // Delete the entry because the file has been updated.
-          zip.deleteFile(relativePath);
+          zip.deleteFile(zipPath);
         }
 
         // If fail to reuse cached entry, load it from disk.
+        // path doesn't work properly under windows
         const fullPath = path.join(sourceDir, relativePath);
-        const task = addFileIntoZip(zip, fullPath, relativePath, stats);
+        const task = addFileIntoZip(zip, fullPath, zipPath, stats);
         tasks.push(task);
       }
     },

@@ -2,65 +2,56 @@
 // Licensed under the MIT license.
 import {
   FxError,
-  ok,
+  InputsWithProjectPath,
   Result,
   TeamsAppManifest,
   err,
-  InputsWithProjectPath,
+  ok,
   v3,
-  IStaticTab,
-  ContextV3,
 } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
 import fs from "fs-extra";
+import { cloneDeep } from "lodash";
+import Mustache from "mustache";
 import * as path from "path";
-import isUUID from "validator/lib/isUUID";
-import { v4 } from "uuid";
 import "reflect-metadata";
 import stripBom from "strip-bom";
-import AdmZip from "adm-zip";
-import { getProjectTemplatesFolderPath } from "../../../../common/utils";
-import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
-import { AppStudioError } from "../errors";
-import { AppStudioResultFactory } from "../results";
-import { cloneDeep } from "lodash";
-import {
-  BOTS_TPL_EXISTING_APP,
-  COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
-  CONFIGURABLE_TABS_TPL_EXISTING_APP,
-  DEFAULT_DEVELOPER,
-  MANIFEST_TEMPLATE_CONSOLIDATE,
-  STATIC_TABS_MAX_ITEMS,
-  STATIC_TABS_TPL_EXISTING_APP,
-  BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
-  BOTS_TPL_FOR_NOTIFICATION_V3,
-  BOTS_TPL_V3,
-  COMPOSE_EXTENSIONS_TPL_M365_V3,
-  COMPOSE_EXTENSIONS_TPL_V3,
-  CONFIGURABLE_TABS_TPL_V3,
-  STATIC_TABS_TPL_V3,
-  WEB_APPLICATION_INFO_V3,
-  manifestStateDataRegex,
-  Constants,
-} from "../constants";
+import { v4 } from "uuid";
+import isUUID from "validator/lib/isUUID";
+import { compileHandlebarsTemplateString } from "../../../../common/tools";
+import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
 import {
   BotScenario,
   CommandAndResponseOptionItem,
+  ComponentNames,
   DashboardOptionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
 } from "../../../constants";
-import { getCustomizedKeys } from "./utils";
-import { TelemetryPropertyKey } from "./telemetry";
-import Mustache from "mustache";
-import { ComponentNames } from "../../../constants";
-import {
-  compileHandlebarsTemplateString,
-  getAppDirectory,
-  isV3Enabled,
-} from "../../../../common/tools";
-import { hasTab } from "../../../../common/projectSettingsHelperV3";
+import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
-import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
+import {
+  BOTS_TPL_EXISTING_APP,
+  BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
+  BOTS_TPL_FOR_NOTIFICATION_V3,
+  BOTS_TPL_V3,
+  COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
+  COMPOSE_EXTENSIONS_TPL_M365_V3,
+  COMPOSE_EXTENSIONS_TPL_V3,
+  CONFIGURABLE_TABS_TPL_EXISTING_APP,
+  CONFIGURABLE_TABS_TPL_V3,
+  Constants,
+  DEFAULT_DEVELOPER,
+  STATIC_TABS_MAX_ITEMS,
+  STATIC_TABS_TPL_EXISTING_APP,
+  STATIC_TABS_TPL_V3,
+  WEB_APPLICATION_INFO_V3,
+  manifestStateDataRegex,
+} from "../constants";
+import { AppStudioError } from "../errors";
+import { AppStudioResultFactory } from "../results";
+import { TelemetryPropertyKey } from "./telemetry";
+import { getCustomizedKeys } from "./utils";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -81,14 +72,6 @@ export class ManifestUtils {
     return ok(manifest);
   }
 
-  async writeAppManifest(
-    appManifest: TeamsAppManifest,
-    projectPath: string
-  ): Promise<Result<undefined, FxError>> {
-    const filePath = await this.getTeamsAppManifestPath(projectPath);
-    return await this._writeAppManifest(appManifest, filePath);
-  }
-
   async _writeAppManifest(
     appManifest: TeamsAppManifest,
     manifestTemplatePath: string
@@ -100,10 +83,7 @@ export class ManifestUtils {
   }
 
   async getTeamsAppManifestPath(projectPath: string): Promise<string> {
-    const templateFolder = await getProjectTemplatesFolderPath(projectPath);
-    const filePath = isV3Enabled()
-      ? path.join(projectPath, "appPackage", "manifest.json")
-      : path.join(templateFolder, "appPackage", "manifest.template.json");
+    const filePath = path.join(projectPath, "appPackage", "manifest.json");
     return filePath;
   }
 
@@ -112,12 +92,7 @@ export class ManifestUtils {
     capabilities: v3.ManifestCapability[],
     isM365 = false
   ): Promise<Result<undefined, FxError>> {
-    let appManifestRes;
-    if (isV3Enabled()) {
-      appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
-    } else {
-      appManifestRes = await this.readAppManifest(inputs.projectPath);
-    }
+    const appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
     if (appManifestRes.isErr()) return err(appManifestRes.error);
     const appManifest = appManifestRes.value;
     for (const capability of capabilities) {
@@ -244,161 +219,13 @@ export class ManifestUtils {
       appManifest.validDomains?.push(inputs.validDomain);
     }
 
-    if (isV3Enabled()) {
-      const content = JSON.stringify(appManifest, undefined, 4);
-      const contentV2 = convertManifestTemplateToV2(content);
-      await fs.writeFile(inputs["addManifestPath"], contentV2);
-    } else {
-      const writeRes = await this.writeAppManifest(appManifest, inputs.projectPath);
-      if (writeRes.isErr()) return err(writeRes.error);
-    }
+    const content = JSON.stringify(appManifest, undefined, 4);
+    const contentV2 = convertManifestTemplateToV2(content);
+    await fs.writeFile(inputs["addManifestPath"], contentV2);
 
     return ok(undefined);
   }
 
-  async updateCapability(
-    projectPath: string,
-    capability: v3.ManifestCapability
-  ): Promise<Result<undefined, FxError>> {
-    const appManifestRes = await this.readAppManifest(projectPath);
-    if (appManifestRes.isErr()) return err(appManifestRes.error);
-    const manifest = appManifestRes.value;
-    switch (capability.name) {
-      case "staticTab":
-        // find the corresponding static Tab with entity id
-        const entityId = (capability.snippet as IStaticTab).entityId;
-        const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
-        if (index !== undefined && index !== -1) {
-          manifest.staticTabs![index] = capability.snippet!;
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.StaticTabNotExistError.name,
-              AppStudioError.StaticTabNotExistError.message(entityId)
-            )
-          );
-        }
-        break;
-      case "configurableTab":
-        if (manifest.configurableTabs && manifest.configurableTabs.length) {
-          manifest.configurableTabs[0] = capability.snippet!;
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.CapabilityNotExistError.name,
-              AppStudioError.CapabilityNotExistError.message(capability.name)
-            )
-          );
-        }
-        break;
-      case "Bot":
-        if (manifest.bots && manifest.bots.length > 0) {
-          manifest.bots[0] = capability.snippet!;
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.CapabilityNotExistError.name,
-              AppStudioError.CapabilityNotExistError.message(capability.name)
-            )
-          );
-        }
-        break;
-      case "MessageExtension":
-        if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
-          manifest.composeExtensions[0] = capability.snippet!;
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.CapabilityNotExistError.name,
-              AppStudioError.CapabilityNotExistError.message(capability.name)
-            )
-          );
-        }
-        break;
-      case "WebApplicationInfo":
-        manifest.webApplicationInfo = capability.snippet;
-        break;
-    }
-    const writeRes = await this.writeAppManifest(manifest, projectPath);
-    if (writeRes.isErr()) return err(writeRes.error);
-    return ok(undefined);
-  }
-
-  async deleteCapability(
-    projectPath: string,
-    capability: v3.ManifestCapability
-  ): Promise<Result<undefined, FxError>> {
-    const appManifestRes = await this.readAppManifest(projectPath);
-    if (appManifestRes.isErr()) return err(appManifestRes.error);
-    const manifest = appManifestRes.value;
-    switch (capability.name) {
-      case "staticTab":
-        // find the corresponding static Tab with entity id
-        const entityId = (capability.snippet! as IStaticTab).entityId;
-        const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
-        if (index !== undefined && index !== -1) {
-          manifest.staticTabs!.slice(index, 1);
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.StaticTabNotExistError.name,
-              AppStudioError.StaticTabNotExistError.message(entityId)
-            )
-          );
-        }
-        break;
-      case "configurableTab":
-        if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-          manifest.configurableTabs = [];
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.CapabilityNotExistError.name,
-              AppStudioError.CapabilityNotExistError.message(capability.name)
-            )
-          );
-        }
-        break;
-      case "Bot":
-        if (manifest.bots && manifest.bots.length > 0) {
-          manifest.bots = [];
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.CapabilityNotExistError.name,
-              AppStudioError.CapabilityNotExistError.message(capability.name)
-            )
-          );
-        }
-        break;
-      case "MessageExtension":
-        if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
-          manifest.composeExtensions = [];
-        } else {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.CapabilityNotExistError.name,
-              AppStudioError.CapabilityNotExistError.message(capability.name)
-            )
-          );
-        }
-        break;
-      case "WebApplicationInfo":
-        manifest.webApplicationInfo = undefined;
-        break;
-    }
-    const writeRes = await this.writeAppManifest(manifest, projectPath);
-    if (writeRes.isErr()) return err(writeRes.error);
-    return ok(undefined);
-  }
-  async capabilityExceedLimit(
-    projectPath: string,
-    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
-  ): Promise<Result<boolean, FxError>> {
-    const manifestRes = await this.readAppManifest(projectPath);
-    if (manifestRes.isErr()) return err(manifestRes.error);
-    return ok(this._capabilityExceedLimit(manifestRes.value, capability));
-  }
   _capabilityExceedLimit(
     manifest: TeamsAppManifest,
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
@@ -435,18 +262,6 @@ export class ManifestUtils {
       capabilities.push("MessageExtension");
     }
     return capabilities;
-  }
-  /**
-   * Only works for manifest.template.json
-   * @param projectRoot
-   * @returns
-   */
-  async getCapabilities(projectRoot: string): Promise<Result<string[], FxError>> {
-    const manifestRes = await this.readAppManifest(projectRoot);
-    if (manifestRes.isErr()) {
-      return err(manifestRes.error);
-    }
-    return ok(this._getCapabilities(manifestRes.value));
   }
 
   async getManifest(
@@ -582,22 +397,6 @@ export class ManifestUtils {
 
     return ok(manifest);
   }
-
-  async isExistingTab(
-    inputs: InputsWithProjectPath,
-    context: ContextV3
-  ): Promise<Result<boolean, FxError>> {
-    const manifestTemplateRes = await this.readAppManifest(inputs.projectPath);
-    if (manifestTemplateRes.isErr()) return err(manifestTemplateRes.error);
-    const manifest = manifestTemplateRes.value;
-    const hasTabInProjectSettings = hasTab(context.projectSetting);
-    const hasExistingTabInManifest =
-      manifest.staticTabs !== undefined &&
-      manifest.staticTabs.filter((tab) => tab.contentUrl && !tab.contentUrl.includes("{{state."))
-        .length > 0;
-    return ok(hasExistingTabInManifest && !hasTabInProjectSettings);
-  }
-
   extractManifestFromArchivedFile(archivedFile: Buffer): Result<TeamsAppManifest, FxError> {
     const zipEntries = new AdmZip(archivedFile).getEntries();
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
@@ -643,11 +442,6 @@ export function resolveManifestTemplate(
   }
   const result = compileHandlebarsTemplateString(templateString, view);
   return result;
-}
-
-export async function getManifestTemplatePath(projectRoot: string): Promise<string> {
-  const appDir = await getAppDirectory(projectRoot);
-  return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
 }
 
 export const manifestUtils = new ManifestUtils();

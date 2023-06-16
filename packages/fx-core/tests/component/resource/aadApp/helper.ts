@@ -15,18 +15,9 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import faker from "faker";
-import {
-  LocalSettingsBotKeys,
-  LocalSettingsFrontendKeys,
-} from "../../../../src/common/localSettingsConstants";
 import { DEFAULT_PERMISSION_REQUEST } from "../../../../src/component/constants";
 import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
-import { newEnvInfo } from "../../../../src/core/environment";
 import { MockUserInteraction } from "../../../core/utils";
-
-const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
-const permissionsWrong =
-  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
 
 const mockPermissionRequestProvider: PermissionRequestProvider = {
   async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
@@ -150,7 +141,25 @@ export class TestHelper {
       ui: mockUI,
       telemetryReporter: mockTelemetryReporter,
       config: config,
-      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
+      envInfo: {
+        envName: "dev",
+        config: {
+          manifest: {
+            appName: {
+              short: "teamsfx_app",
+            },
+            description: {
+              short: `Short description of teamsfx_app`,
+              full: `Full description of teamsfx_app`,
+            },
+            icons: {
+              color: "resources/color.png",
+              outline: "resources/outline.png",
+            },
+          },
+        },
+        state: configOfOtherPlugins,
+      },
       projectSettings: {
         appName: "aad-plugin-unit-test",
         solutionSettings: {
@@ -170,14 +179,14 @@ export class TestHelper {
     };
     if (frontend) {
       localSettings.frontend = new ConfigMap([
-        [LocalSettingsFrontendKeys.TabDomain, domain],
-        [LocalSettingsFrontendKeys.TabEndpoint, endpoint],
+        ["tabDomain", domain],
+        ["tabEndpoint", endpoint],
       ]);
     }
     if (bot) {
       localSettings.bot = new ConfigMap([
-        [LocalSettingsBotKeys.BotEndpoint, botEndpoint],
-        [LocalSettingsBotKeys.BotId, botId],
+        ["botEndpoint", botEndpoint],
+        ["botId", botId],
       ]);
     }
     pluginContext.localSettings = localSettings;

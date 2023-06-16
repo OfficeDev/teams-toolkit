@@ -5,57 +5,59 @@
  * @author Qianhao Dong <qidon@microsoft.com>
  */
 import {
-  err,
   FxError,
-  ok,
+  M365TokenProvider,
   Result,
   SystemError,
   UserError,
   UserErrorOptions,
   Void,
-  M365TokenProvider,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { LocalEnvManager, TelemetryContext } from "@microsoft/teamsfx-core/build/common/local";
-import { Prerequisite } from "@microsoft/teamsfx-core/build/common/local/constants";
-import { assembleError } from "@microsoft/teamsfx-core";
 import {
+  AppStudioScopes,
   DependencyStatus,
   DepsCheckerError,
   DepsManager,
   DepsType,
+  LocalEnvManager,
   NodeNotFoundError,
-  V3NodeNotSupportedError,
   NodeNotLtsError,
-} from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
+  Prerequisite,
+  TelemetryContext,
+  V3NodeNotSupportedError,
+  assembleError,
+  getSideloadingStatus,
+} from "@microsoft/teamsfx-core";
 import * as os from "os";
 import * as util from "util";
 import * as vscode from "vscode";
 
+import { signedOut } from "../commonlib/common/constant";
 import VsCodeLogInstance from "../commonlib/log";
-import { ExtensionSource, ExtensionErrors } from "../error";
+import M365TokenInstance from "../commonlib/m365Login";
+import { ExtensionErrors, ExtensionSource } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools, openAccountHelpHandler } from "../handlers";
+import { openAccountHelpHandler, tools } from "../handlers";
+import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
-import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { doctorConstant } from "./depsChecker/doctorConstant";
-import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
+import { getDefaultString, localize } from "../utils/localizeUtils";
+import * as commonUtils from "./commonUtils";
+import { Step } from "./commonUtils";
 import {
   DisplayMessages,
   prerequisiteCheckForGetStartedDisplayMessages,
   v3PrerequisiteCheckTaskDisplayMessages,
 } from "./constants";
-import M365TokenInstance from "../commonlib/m365Login";
-import { signedOut } from "../commonlib/common/constant";
-import { ProgressHandler } from "../progressHandler";
-import { ProgressHelper } from "./progressHelper";
-import { getDefaultString, localize } from "../utils/localizeUtils";
-import * as commonUtils from "./commonUtils";
+import { doctorConstant } from "./depsChecker/doctorConstant";
+import { vscodeLogger } from "./depsChecker/vscodeLogger";
+import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import { Step } from "./commonUtils";
+import { ProgressHelper } from "./progressHelper";
+import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
@@ -221,11 +223,9 @@ export async function checkAndInstallForTask(
   telemetryProperties: { [key: string]: string }
 ): Promise<Result<Void, FxError>> {
   const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
-  const projectComponents = await commonUtils.getProjectComponents();
 
   const additionalTelemetryProperties = Object.assign(
     {
-      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
       [TelemetryProperty.DebugIsTransparentTask]: "true",
     },
     telemetryProperties

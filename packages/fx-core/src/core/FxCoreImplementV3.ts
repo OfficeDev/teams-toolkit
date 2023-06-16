@@ -82,7 +82,7 @@ import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
-import { setCurrentStage, TOOLS } from "./globalVars";
+import { TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
@@ -130,7 +130,6 @@ export class FxCoreV3Implement {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
-    setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
     if (inputs.teamsAppFromTdp) {
@@ -161,7 +160,6 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
     try {
@@ -191,7 +189,6 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
     const context = createDriverContext(inputs);
     const res = await coordinator.deploy(context, inputs as InputsWithProjectPath);
@@ -214,7 +211,6 @@ export class FxCoreV3Implement {
     ContextInjectorMW,
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.deployAad);
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
@@ -266,7 +262,6 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createDriverContext(inputs);
     const res = await coordinator.publish(context, inputs as InputsWithProjectPath);
@@ -342,7 +337,6 @@ export class FxCoreV3Implement {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.publishInDeveloperPortal);
     inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
@@ -383,18 +377,6 @@ export class FxCoreV3Implement {
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
     return listCollaboratorFunc(inputs);
   }
-
-  /**
-   * @deprecated
-   */
-  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
-  async getDotEnv(
-    inputs: InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
-    return ok(ctx?.envVars);
-  }
-
   /**
    * get all dot envs
    */
@@ -484,6 +466,25 @@ export class FxCoreV3Implement {
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+  ])
+  async preCheckYmlAndEnvForVS(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    const context = createDriverContext(inputs);
+    const result = await coordinator.preCheckYmlAndEnvForVS(
+      context,
+      inputs as InputsWithProjectPath
+    );
+    return result;
+  }
+
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
@@ -570,7 +571,6 @@ export class FxCoreV3Implement {
     EnvLoaderMW(true),
   ])
   async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.validateApplication);
     inputs.stage = Stage.validateApplication;
 
     const context: DriverContext = createDriverContext(inputs);
@@ -578,7 +578,7 @@ export class FxCoreV3Implement {
     const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
-      showMessage: true,
+      showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const result = await driver.run(args, context);
@@ -587,7 +587,6 @@ export class FxCoreV3Implement {
 
   @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForValidateAppPackage), ConcurrentLockerMW])
   async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.validateApplication);
     inputs.stage = Stage.validateApplication;
 
     const context: DriverContext = createDriverContext(inputs);
@@ -607,7 +606,6 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
   ])
   async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    setCurrentStage(Stage.createAppPackage);
     inputs.stage = Stage.createAppPackage;
 
     const context: DriverContext = createDriverContext(inputs);
@@ -657,7 +655,6 @@ export class FxCoreV3Implement {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string, FxError>> {
-    setCurrentStage(Stage.previewWithManifest);
     inputs.stage = Stage.previewWithManifest;
 
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;

@@ -20,9 +20,11 @@ import {
 } from "../../../src/component/generator/spfx/utils/question-helper";
 import { SPFXQuestionNames } from "../../../src/component/generator/spfx/utils/questions";
 import { Utils } from "../../../src/component/generator/spfx/utils/utils";
-import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
+import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
+import { ManifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { envUtil } from "../../../src/component/utils/envUtil";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -32,21 +34,47 @@ describe("SPFxGenerator", function () {
   beforeEach(async () => {
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3(newProjectSettingsV3());
+    context = createContextV3();
 
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
-    sinon.stub(fs, "stat").resolves();
 
     const manifestId = uuid.v4();
-    sinon.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));
+    sinon
+      .stub(fs, "readFile")
+      .resolves(
+        new Buffer(
+          `{"id": "${manifestId}", "preconfiguredEntries": [{"title": {"default": "helloworld"}}]}`
+        )
+      );
     sinon.stub(fs, "writeFile").resolves();
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
     sinon.stub(fs, "remove").resolves();
-    sinon.stub(fs, "readJson").resolves({});
+    sinon.stub(fs, "readJson").callsFake((directory: string) => {
+      if (directory.includes("teams")) {
+        return {
+          $schema:
+            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+          manifestVersion: "1.16",
+          id: "fakedId",
+          icons: {
+            color: "color.png",
+            outline: "outline.png",
+          },
+          staticTabs: [],
+          configurableTabs: [],
+        };
+      } else if (directory.includes(".yo-rc.json")) {
+        return { "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } };
+      } else {
+        return { id: "fakedid", preconfiguredEntries: [{ title: { default: "helloworld" } }] };
+      }
+    });
     sinon.stub(fs, "ensureFile").resolves();
     sinon.stub(fs, "writeJSON").resolves();
+    sinon.stub(fs, "ensureDir").resolves();
+    sinon.stub(fs, "copy").resolves();
   });
 
   afterEach(async () => {
@@ -61,6 +89,7 @@ describe("SPFxGenerator", function () {
       platform: Platform.CLI,
       projectPath: testFolder,
       "app-name": "spfxTestApp",
+      "spfx-solution": "new",
     };
     const doYeomanScaffoldStub = sinon
       .stub(SPFxGenerator, "doYeomanScaffold" as any)
@@ -88,6 +117,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.webpart_desp]: "test",
       [SPFXQuestionNames.webpart_name]: "hello",
       "app-name": "spfxTestApp",
+      "spfx-solution": "new",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -105,6 +135,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.webpart_desp]: "test",
       [SPFXQuestionNames.webpart_name]: "hello",
       "app-name": "spfxTestApp",
+      "spfx-solution": "new",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -122,6 +153,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.webpart_desp]: "test",
       [SPFXQuestionNames.webpart_name]: "hello",
       "app-name": "spfxTestApp",
+      "spfx-solution": "new",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -140,6 +172,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.webpart_name]:
         "extremelylongextremelylongextremelylongextremelylongspfxwebpartname",
       "app-name": "spfxTestApp",
+      "spfx-solution": "new",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -152,6 +185,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -174,6 +208,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
@@ -204,6 +239,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -234,6 +270,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(false);
@@ -256,6 +293,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -277,6 +315,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -294,6 +333,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -318,6 +358,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -343,6 +384,7 @@ describe("SPFxGenerator", function () {
       projectPath: testFolder,
       "app-name": "spfxTestApp",
       [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.globalPackage,
+      "spfx-solution": "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(PackageSelectOptionsHelper, "isLowerThanRecommendedVersion").resolves(true);
@@ -358,5 +400,95 @@ describe("SPFxGenerator", function () {
     chai.expect(result.isOk()).to.eq(true);
 
     chai.expect(generateTemplateStub.calledOnce).to.be.true;
+  });
+
+  it("No web part in imported SPFx solution", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").resolves([]);
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).to.eq("RetrieveSPFxInfoFailed");
+    }
+  });
+
+  it("Generate template fail when import SPFx solution", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").resolves(["helloworld", "second"] as any);
+    sinon.stub(fs, "stat").resolves({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(err(undefined));
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    chai.expect(generateTemplateStub.calledOnce).to.eq(true);
+  });
+
+  it("Teams manifest staticTabs is updated if imported SPFx solution has multiple web parts", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else {
+        return ["helloworld", "second"] as any;
+      }
+    });
+    sinon.stub(fs, "stat").resolves({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+    const fakedManifest = { staticTabs: [{ name: "default" }] };
+    const readAppManifestStub = sinon
+      .stub(ManifestUtils.prototype, "_readAppManifest")
+      .resolves(ok(fakedManifest as any));
+    const writeAppManifestStub = sinon
+      .stub(ManifestUtils.prototype, "_writeAppManifest")
+      .resolves();
+    const writeEnvStub = sinon.stub(envUtil, "writeEnv");
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+    chai.expect(fakedManifest.staticTabs.length).to.eq(3);
+    chai.expect(generateTemplateStub.calledOnce).to.eq(true);
+    chai.expect(writeEnvStub.calledOnce).to.eq(true);
+    chai.expect(readAppManifestStub.calledTwice).to.eq(true);
+    chai.expect(writeAppManifestStub.calledTwice).to.eq(true);
   });
 });

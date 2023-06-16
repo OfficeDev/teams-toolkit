@@ -24,7 +24,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   NotificationType2,
@@ -88,6 +88,14 @@ export interface IServerConnection {
       FxError
     >
   >;
+  preCheckYmlAndEnvForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>>;
+  validateManifestForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>>;
   deployArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken

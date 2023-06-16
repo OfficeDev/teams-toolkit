@@ -6,7 +6,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { SolutionSource } from "./constants";
 import { DriverContext } from "./driver/interface/commonArgs";
 
-export class DeployUtils {
+class DeployUtils {
   async askForDeployConsentV3(ctx: DriverContext): Promise<Result<Void, FxError>> {
     const msg = getLocalizedString("core.deploy.confirmEnvNoticeV3", process.env.TEAMSFX_ENV);
     const deployOption = getLocalizedString("core.option.deploy");

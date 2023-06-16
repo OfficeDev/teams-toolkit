@@ -103,7 +103,7 @@ import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
+import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { manifestUtils } from "../../component/resource/appManifest/utils/ManifestUtils";
 
 const Constants = {
@@ -656,12 +656,7 @@ export async function popupMessage(
   return res?.isOk() ? res.value : undefined;
 }
 
-export async function generateLocalConfig(context: MigrationContext): Promise<void> {
-  if (!(await context.fsPathExists(path.join(".fx", "configs", "config.local.json")))) {
-    const oldProjectSettings = await loadProjectSettings(context.projectPath);
-    await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
-  }
-}
+export async function generateLocalConfig(context: MigrationContext): Promise<void> {}
 
 export async function setTelemetryProjectId(context: CoreHookContext): Promise<void> {
   const projectPath = getParameterFromCxt(context, "projectPath", "");

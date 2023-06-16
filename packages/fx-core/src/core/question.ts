@@ -29,7 +29,6 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ConstantString } from "../common/constants";
-import { isOfficeAddinEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { sampleProvider } from "../common/samples";
@@ -362,7 +361,7 @@ export function getOutlookAddinTypeProjectQuestionNode(inputs?: Inputs): SingleS
   };
 }
 
-export function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
+function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: CoreQuestionNames.TargetEnvName,
@@ -385,11 +384,6 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
         const match = targetEnvName.match(environmentManager.envNameRegex);
         if (!match) {
           return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
-        }
-
-        const envFilePath = environmentManager.getEnvConfigPath(targetEnvName, projectPath);
-        if (os.type() === "Windows_NT" && envFilePath.length >= WINDOWS_MAX_PATH_LENGTH) {
-          return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation2");
         }
 
         if (targetEnvName === LocalEnvironmentName) {
@@ -476,7 +470,7 @@ export function newResourceGroupNameQuestion(
   };
   return question;
 }
-export function QuestionNewResourceGroupName(): TextInputQuestion {
+function QuestionNewResourceGroupName(): TextInputQuestion {
   return {
     type: "text",
     name: CoreQuestionNames.NewResourceGroupName,
@@ -497,9 +491,7 @@ export function QuestionNewResourceGroupLocation(): SingleSelectQuestion {
 }
 
 export function ScratchOptionYesVSC(): OptionItem {
-  const label = isOfficeAddinEnabled()
-    ? getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")
-    : getLocalizedString("core.ScratchOptionYesVSC.label");
+  const label = getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label");
   return {
     id: "yes",
     label: `$(new-folder) ${label}`,
@@ -562,9 +554,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC());
-    if (isOfficeAddinEnabled()) {
-      staticOptions.push(CreateNewOfficeAddinOption());
-    }
+    staticOptions.push(CreateNewOfficeAddinOption());
     staticOptions.push(ScratchOptionNoVSC());
   } else {
     staticOptions.push(ScratchOptionYes());
@@ -607,7 +597,7 @@ export function SampleSelect(): SingleSelectQuestion {
   };
 }
 
-export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
+const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
 
 export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
   return {
@@ -633,7 +623,7 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
   };
 };
 
-export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
+const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
     id: tab.name,
     label: tab.name,
@@ -645,7 +635,7 @@ export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   };
 };
 
-export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
+const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
     id: tab.name,
     label: tab.name,
@@ -682,7 +672,7 @@ export const BotIdsQuestion = (
   };
 };
 
-export const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
+const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
   return {
     id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,
     label: isMessageExtension
@@ -818,7 +808,7 @@ export async function selectEnvNode(
   return envNode;
 }
 
-export function confirmManifestNode(
+function confirmManifestNode(
   defaultManifestFilePath: string,
   isTeamsApp = true,
   isLocal = false

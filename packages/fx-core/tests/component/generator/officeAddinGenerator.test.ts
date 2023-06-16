@@ -6,7 +6,7 @@
  */
 
 import {
-  ContextV3,
+  Context,
   devPreview,
   err,
   Inputs,
@@ -51,7 +51,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
-  let context: ContextV3;
+  let context: Context;
   let mockedEnvRestore: RestoreFn;
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 

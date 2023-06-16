@@ -5,32 +5,22 @@
  * @author Yuqi Zhou <yuqzho@microsoft.com>
  */
 
-import { AppDefinition } from "./resource/appManifest/interfaces/appDefinition";
-import * as appStudio from "./resource/appManifest/appStudio";
-import * as os from "os";
 import {
-  err,
-  Result,
-  ok,
+  Context,
   FxError,
-  UserError,
-  ContextV3,
-  Inputs,
-  TeamsAppManifest,
   IStaticTab,
-  Platform,
+  Inputs,
+  Result,
+  TeamsAppManifest,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import path from "path";
 import fs from "fs-extra";
-import { environmentManager } from "../core/environment";
-import { CoreQuestionNames } from "../core/question";
-import {
-  BOTS_TPL_V3,
-  COMPOSE_EXTENSIONS_TPL_V3,
-  DEFAULT_DESCRIPTION,
-  DEFAULT_DEVELOPER,
-} from "./resource/appManifest/constants";
+import path from "path";
+import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
+import { CoreQuestionNames } from "../core/question";
 import {
   BotOptionItem,
   CoordinatorSource,
@@ -39,8 +29,16 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
 } from "./constants";
-import { getLocalizedString } from "../common/localizeUtils";
+import * as appStudio from "./resource/appManifest/appStudio";
+import {
+  BOTS_TPL_V3,
+  COMPOSE_EXTENSIONS_TPL_V3,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_DEVELOPER,
+} from "./resource/appManifest/constants";
+import { AppDefinition } from "./resource/appManifest/interfaces/appDefinition";
 import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
+import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
 import {
   isBot,
   isBotAndMessageExtension,
@@ -48,7 +46,6 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "./resource/appManifest/utils/utils";
-import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
 import { envUtil } from "./utils/envUtil";
 
 const appPackageFolderName = "appPackage";
@@ -61,7 +58,7 @@ export const answerToReplaceMessageExtensionBotId = "messageExtension";
 
 export class DeveloperPortalScaffoldUtils {
   async updateFilesForTdp(
-    ctx: ContextV3,
+    ctx: Context,
     appDefinition: AppDefinition,
     inputs: Inputs
   ): Promise<Result<undefined, FxError>> {
@@ -93,7 +90,7 @@ export enum TabUrlType {
 }
 
 async function updateManifest(
-  ctx: ContextV3,
+  ctx: Context,
   appDefinition: AppDefinition,
   inputs: Inputs
 ): Promise<Result<undefined, FxError>> {

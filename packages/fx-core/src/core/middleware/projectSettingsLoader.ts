@@ -8,10 +8,7 @@ import * as uuid from "uuid";
 import {
   ConfigFolderName,
   FxError,
-  InputConfigsFolderName,
   Inputs,
-  ProjectSettings,
-  ProjectSettingsFileName,
   Result,
   Stage,
   StaticPlatforms,
@@ -37,7 +34,7 @@ import { ReadFileError } from "../../error/common";
 export async function loadProjectSettings(
   inputs: Inputs,
   isMultiEnvEnabled = false
-): Promise<Result<ProjectSettings, FxError>> {
+): Promise<Result<any, FxError>> {
   if (!inputs.projectPath) {
     return err(new NoProjectOpenedError());
   }
@@ -47,11 +44,11 @@ export async function loadProjectSettings(
 export async function loadProjectSettingsByProjectPath(
   projectPath: string,
   isMultiEnvEnabled = false
-): Promise<Result<ProjectSettings, FxError>> {
+): Promise<Result<any, FxError>> {
   try {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, true);
     if (readSettingsResult.isOk()) {
-      const projectSettings: ProjectSettings = {
+      const projectSettings: any = {
         projectId: readSettingsResult.value.trackingId,
         version: readSettingsResult.value.version,
       };
@@ -69,7 +66,7 @@ export async function loadProjectSettingsByProjectPathV2(
   projectPath: string,
   isMultiEnvEnabled = false,
   onlyV2 = false
-): Promise<Result<ProjectSettings, FxError>> {
+): Promise<Result<any, FxError>> {
   let settingsFile;
   if (onlyV2) {
     settingsFile = getProjectSettingPathV2(projectPath);
@@ -79,7 +76,7 @@ export async function loadProjectSettingsByProjectPathV2(
       : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
   }
 
-  const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+  const projectSettings: any = await fs.readJson(settingsFile);
   if (!projectSettings.projectId) {
     projectSettings.projectId = uuid.v4();
     sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
@@ -112,10 +109,5 @@ export function getProjectSettingPathV3(projectPath: string): string {
 }
 
 export function getProjectSettingPathV2(projectPath: string): string {
-  return path.resolve(
-    projectPath,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
+  return path.resolve(projectPath, `.${ConfigFolderName}`, "configs", "projectSettings.json");
 }

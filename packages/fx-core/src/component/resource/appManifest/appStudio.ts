@@ -9,13 +9,13 @@ import {
   M365TokenProvider,
   ok,
   Result,
-  ResourceContextV3,
   TeamsAppManifest,
   UserError,
   LogProvider,
   Platform,
   Colors,
   ManifestUtil,
+  Context,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -31,8 +31,14 @@ import { AppStudioResultFactory } from "./results";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "./utils/ManifestUtils";
 import { Constants, supportedLanguageCodes } from "./constants";
-import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
-import { ConfigureTeamsAppDriver } from "../../driver/teamsApp/configure";
+import {
+  CreateAppPackageDriver,
+  actionName as createAppPackageActionName,
+} from "../../driver/teamsApp/createAppPackage";
+import {
+  ConfigureTeamsAppDriver,
+  actionName as configureTeamsAppActionName,
+} from "../../driver/teamsApp/configure";
 import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
 import { DriverContext } from "../../driver/interface/commonArgs";
@@ -41,8 +47,6 @@ import { AppPackage } from "./interfaces/appPackage";
 import { basename, extname } from "path";
 import set from "lodash/set";
 import { CoreQuestionNames } from "../../../core/question";
-import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
-import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
 
 export async function checkIfAppInDifferentAcountSameTenant(
@@ -73,7 +77,7 @@ export async function checkIfAppInDifferentAcountSameTenant(
 }
 
 export async function updateManifestV3(
-  ctx: ResourceContextV3,
+  ctx: Context,
   inputs: InputsWithProjectPath
 ): Promise<Result<Map<string, string>, FxError>> {
   const state = {
@@ -145,7 +149,7 @@ export async function updateManifestV3(
     }
   }
 
-  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+  const appStudioTokenRes = await ctx.tokenProvider!.m365TokenProvider.getAccessToken({
     scopes: AppStudioScopes,
   });
   if (appStudioTokenRes.isErr()) {
@@ -179,7 +183,7 @@ export async function updateManifestV3(
     }
 
     let loginHint = "";
-    const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
+    const accountRes = await ctx.tokenProvider!.m365TokenProvider.getJsonObject({
       scopes: AppStudioScopes,
     });
     if (accountRes.isOk()) {
@@ -214,7 +218,7 @@ export async function updateManifestV3(
         });
     }
     return result;
-  } catch (error) {
+  } catch (error: any) {
     if (error.message && error.message.includes("404")) {
       return err(
         AppStudioResultFactory.UserError(
@@ -229,7 +233,7 @@ export async function updateManifestV3(
 }
 
 export async function updateTeamsAppV3ForPublish(
-  ctx: ResourceContextV3,
+  ctx: Context,
   inputs: InputsWithProjectPath
 ): Promise<Result<any, FxError>> {
   let teamsAppId;
@@ -347,15 +351,12 @@ export async function getAppPackage(
       }
     });
     return ok(appPackage);
-  } catch (e) {
+  } catch (e: any) {
     return err(e);
   }
 }
 
-function generateDriverContext(
-  ctx: ResourceContextV3,
-  inputs: InputsWithProjectPath
-): DriverContext {
+function generateDriverContext(ctx: Context, inputs: InputsWithProjectPath): DriverContext {
   return {
     azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
     m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,

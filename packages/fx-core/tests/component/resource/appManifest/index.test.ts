@@ -7,7 +7,7 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import _ from "lodash";
 import {
-  ContextV3,
+  Context,
   InputsWithProjectPath,
   Platform,
   ResourceContextV3,
@@ -47,7 +47,7 @@ describe("App-manifest Component", () => {
     "app-name": appName,
     appPackagePath: "fakePath",
   };
-  let context: ContextV3;
+  let context: Context;
   setTools(tools);
 
   beforeEach(() => {
@@ -445,7 +445,7 @@ describe("App-manifest Component - v3", () => {
     teamsAppId: uuid.v4(),
     userList: [],
   };
-  let context: ContextV3;
+  let context: Context;
   setTools(tools);
 
   beforeEach(() => {

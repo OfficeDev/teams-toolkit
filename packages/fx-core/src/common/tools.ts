@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
+import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 import {
   AppPackageFolderName,
   AzureAccountProvider,
-  AzureSolutionSettings,
   ConfigFolderName,
-  ConfigMap,
   FxError,
-  Json,
   M365TokenProvider,
   OptionItem,
-  ProjectSettings,
   Result,
   SubscriptionInfo,
   SystemError,
@@ -20,14 +18,11 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { ExecOptions, exec } from "child_process";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
-import _ from "lodash";
 import Mustache from "mustache";
 import * as path from "path";
-import { promisify } from "util";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { SolutionError } from "../component/constants";
@@ -43,8 +38,6 @@ import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from 
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { getProjectTemplatesFolderPath } from "./utils";
-import { Tunnel } from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -59,51 +52,6 @@ Handlebars.registerHelper("equals", (value, target) => {
 });
 
 const AzurePortalUrl = "https://portal.azure.com";
-
-export function convertDotenvToEmbeddedJson(dict: Record<string, string>): Json {
-  const result: Json = {};
-  for (const key of Object.keys(dict)) {
-    const array = key.split(".");
-    let obj = result;
-    for (let i = 0; i < array.length - 1; ++i) {
-      const subKey = array[i];
-      let subObj = obj[subKey];
-      if (!subObj) {
-        subObj = {};
-        obj[subKey] = subObj;
-      }
-      obj = subObj;
-    }
-    obj[array[array.length - 1]] = dict[key];
-  }
-  return result;
-}
-
-export function replaceTemplateWithUserData(
-  template: string,
-  userData: Record<string, string>
-): string {
-  const view = convertDotenvToEmbeddedJson(userData);
-  Mustache.escape = (t: string) => {
-    if (!t) {
-      return t;
-    }
-    const str = JSON.stringify(t);
-    return str.substr(1, str.length - 2);
-    // return t;
-  };
-  const result = Mustache.render(template, view);
-  return result;
-}
-
-export function serializeDict(dict: Record<string, string>): string {
-  const array: string[] = [];
-  for (const key of Object.keys(dict)) {
-    const value = dict[key];
-    array.push(`${key}=${value}`);
-  }
-  return array.join("\n");
-}
 
 export const deepCopy = <T>(target: T): T => {
   if (target === null) {
@@ -288,8 +236,8 @@ export function getUuid(): string {
   return uuid.v4();
 }
 
-export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
-  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+export function isSPFxProject(projectSettings?: any): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as any;
   if (solutionSettings) {
     const selectedPlugins = solutionSettings.activeResourcePlugins;
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;

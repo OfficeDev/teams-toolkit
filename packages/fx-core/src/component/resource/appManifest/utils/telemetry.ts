@@ -1,16 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  PluginContext,
-  SystemError,
-  UserError,
-  v2,
-  ResourceContextV3,
-} from "@microsoft/teamsfx-api";
-import { Constants } from "../constants";
-import { PluginNames, REMOTE_TEAMS_APP_TENANT_ID, ComponentNames } from "../../../constants";
+import { Context, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../../../driver/interface/commonArgs";
+import { Constants } from "../constants";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -62,9 +55,9 @@ export enum TelemetryEventName {
 }
 
 export class TelemetryUtils {
-  static ctx: PluginContext | v2.Context | DriverContext;
+  static ctx: Context | DriverContext;
 
-  public static init(ctx: PluginContext | v2.Context | DriverContext) {
+  public static init(ctx: Context | DriverContext) {
     TelemetryUtils.ctx = ctx;
   }
 
@@ -124,28 +117,6 @@ export class TelemetryUtils {
   }
 
   private static addCommonProperty(properties: { [key: string]: string }) {
-    let tenantId;
-    let teamsAppId;
-    if ((this.ctx as PluginContext).envInfo?.state instanceof Map) {
-      tenantId = (this.ctx as PluginContext).envInfo?.state
-        .get(PluginNames.SOLUTION)
-        ?.get(REMOTE_TEAMS_APP_TENANT_ID);
-      teamsAppId = (this.ctx as PluginContext).envInfo?.state
-        .get(PluginNames.APPST)
-        ?.get(Constants.TEAMS_APP_ID) as string;
-    } else {
-      tenantId = (this.ctx as ResourceContextV3).envInfo?.state[PluginNames.SOLUTION]
-        .teamsAppTenantId;
-      teamsAppId = (this.ctx as ResourceContextV3).envInfo?.state[ComponentNames.AppManifest]
-        .teamsAppId;
-    }
-    if (tenantId) {
-      properties[TelemetryPropertyKey.tenantId] = tenantId;
-    }
-    if (teamsAppId) {
-      properties[TelemetryPropertyKey.appId] = teamsAppId;
-    }
-
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
   }
 }

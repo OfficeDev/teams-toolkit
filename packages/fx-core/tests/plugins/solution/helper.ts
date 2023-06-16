@@ -1,5 +1,5 @@
 import {
-  ContextV3,
+  Context,
   FxError,
   ok,
   PluginContext,
@@ -35,7 +35,7 @@ export class TestHelper {
   static simpleAuthOutputValue = "simple_auth_output_value";
   static armTemplateJson = `{"test_key": "test_value"}`;
 
-  static mockContextV3(): ContextV3 {
+  static mockContextV3(): Context {
     const ctx = createContextV3();
     const envInfo = newEnvInfoV3();
     envInfo.state.solution = {
@@ -48,7 +48,7 @@ export class TestHelper {
     return ctx;
   }
 
-  static getMockedDeployCtx(mockedCtx: ContextV3): any {
+  static getMockedDeployCtx(mockedCtx: Context): any {
     return {
       resourceGroupName: "poll-deployment-rg",
       deploymentName: "poll-deployment",
@@ -59,7 +59,7 @@ export class TestHelper {
     };
   }
 
-  static mockArmDeploymentDependencies(mockedCtx: ContextV3, mocker: sinon.SinonSandbox) {
+  static mockArmDeploymentDependencies(mockedCtx: Context, mocker: sinon.SinonSandbox) {
     mockedCtx.tokenProvider!.azureAccountProvider!.getIdentityCredentialAsync = async function () {
       return new MyTokenCredential();
     };

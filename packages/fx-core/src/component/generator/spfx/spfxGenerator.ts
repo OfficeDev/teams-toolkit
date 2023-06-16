@@ -4,7 +4,7 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   AppPackageFolderName,
-  ContextV3,
+  Context,
   err,
   FxError,
   Inputs,
@@ -57,7 +57,7 @@ export class SPFxGenerator {
     }),
   ])
   public static async generate(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
@@ -69,7 +69,7 @@ export class SPFxGenerator {
   }
 
   private static async newSPFxProject(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
@@ -88,7 +88,7 @@ export class SPFxGenerator {
   }
 
   private static async importSPFxProject(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
@@ -350,7 +350,7 @@ export class SPFxGenerator {
   }
 
   public static async doYeomanScaffold(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<string, FxError>> {

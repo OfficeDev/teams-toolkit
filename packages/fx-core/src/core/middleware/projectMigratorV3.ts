@@ -9,13 +9,9 @@ import {
   err,
   FxError,
   ok,
-  ProjectSettings,
   SystemError,
   UserError,
-  InputConfigsFolderName,
   Platform,
-  AzureSolutionSettings,
-  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -379,7 +375,7 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   }
 }
 
-async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
+async function loadProjectSettings(projectPath: string): Promise<any> {
   const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
@@ -472,9 +468,9 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     path.join(context.projectPath, oldAadManifestPath)
   );
 
-  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
-    .activeResourcePlugins;
-  const component = (projectSettings as ProjectSettingsV3).components;
+  const activeResourcePlugins = (projectSettings.solutionSettings as any)
+    .activeResourcePlugins as any[];
+  const component = (projectSettings as any).components as any[];
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
     (component &&
@@ -503,7 +499,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
 
 export async function azureParameterMigration(context: MigrationContext): Promise<void> {
   // Ensure `.fx/configs` exists
-  const configFolderPath = path.join(".fx", InputConfigsFolderName);
+  const configFolderPath = path.join(".fx", "configs");
   const configFolderPathExists = await context.fsPathExists(configFolderPath);
   if (!configFolderPathExists) {
     // Keep same practice now. Needs dicussion whether to throw error.

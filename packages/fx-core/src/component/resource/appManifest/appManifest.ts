@@ -2,17 +2,14 @@
 // Licensed under the MIT license.
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  CloudResource,
+  Context,
   err,
   FxError,
   InputsWithProjectPath,
   M365TokenProvider,
   ok,
-  ResourceContextV3,
   Result,
   UserError,
-  v2,
-  v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -40,7 +37,7 @@ import { updateManifestV3 } from "./appStudio";
 import { manifestUtils } from "./utils/ManifestUtils";
 
 @Service("app-manifest")
-export class AppManifest implements CloudResource {
+export class AppManifest {
   name = "app-manifest";
   outputs = {
     teamsAppId: {
@@ -61,7 +58,7 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async deployV3(
-    context: ResourceContextV3,
+    context: Context,
     inputs: InputsWithProjectPath
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
@@ -91,24 +88,6 @@ export class AppManifest implements CloudResource {
     }
     return existFiles;
   }
-  private async getTeamsAppId(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
-  ): Promise<string> {
-    let teamsAppId = "";
-    // User may manually update id in manifest template file, rather than configuration file
-    // The id in manifest template file should override configurations
-    const manifestResult = await manifestUtils.getManifest(inputs.projectPath, envInfo, false);
-    if (manifestResult.isOk()) {
-      teamsAppId = manifestResult.value.id;
-    }
-    if (!isUUID(teamsAppId)) {
-      teamsAppId = (envInfo.state[ComponentNames.AppManifest] as v3.TeamsAppResource).teamsAppId;
-    }
-    return teamsAppId;
-  }
-
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -118,9 +97,9 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async listCollaborator(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3 | undefined,
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: any | undefined,
     m365TokenProvider: M365TokenProvider,
     teamsAppIdV3?: string
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
@@ -193,9 +172,9 @@ export class AppManifest implements CloudResource {
     }),
   ])
   public async grantPermission(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3 | undefined,
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: any | undefined,
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser,
     teamsAppIdV3?: string
@@ -265,9 +244,9 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async checkPermission(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3 | undefined,
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: any | undefined,
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser,
     teamsAppIdV3?: string

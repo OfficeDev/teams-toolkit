@@ -1,6 +1,6 @@
 import "mocha";
 import {
-  ContextV3,
+  Context,
   Effect,
   FxError,
   InputsWithProjectPath,

@@ -2,26 +2,30 @@
 // Licensed under the MIT license.
 
 import {
-  FxError,
-  ok,
-  Result,
-  TokenProvider,
-  v2,
-  err,
-  v3,
-  Platform,
   Colors,
-  Json,
-  UserError,
-  Inputs,
+  Context,
   DynamicPlatforms,
-  QTreeNode,
-  ContextV3,
+  FxError,
+  Inputs,
+  InputsWithProjectPath,
   M365TokenProvider,
-  SystemError,
   MultiSelectQuestion,
+  Platform,
+  QTreeNode,
+  Result,
+  SystemError,
+  TokenProvider,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
+import axios from "axios";
+import * as dotenv from "dotenv";
+import fs from "fs-extra";
 import { Container } from "typedi";
+import { validate as uuidValidate } from "uuid";
+import { VSCodeExtensionCommand } from "../common/constants";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import {
   AadOwner,
   AppIds,
@@ -31,39 +35,27 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { AppStudioScopes, getHashedEnv, GraphScopes, isV3Enabled } from "../common/tools";
+import { AppStudioScopes, GraphScopes, getHashedEnv, isV3Enabled } from "../common/tools";
 import {
-  AzureRoleAssignmentsHelpLink,
-  SharePointManageSiteAdminHelpLink,
+  ComponentNames,
+  SOLUTION_PROVISION_SUCCEEDED,
   SolutionError,
   SolutionSource,
   SolutionTelemetryProperty,
-  SOLUTION_PROVISION_SUCCEEDED,
 } from "../component/constants";
+import { getUserEmailQuestion } from "../component/question";
+import { AadApp } from "../component/resource/aadApp/aadApp";
+import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { AppUser } from "../component/resource/appManifest/interfaces/appUser";
+import { FileNotFoundError } from "../error/common";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
-import { getUserEmailQuestion } from "../component/question";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { VSCodeExtensionCommand } from "../common/constants";
-import { ComponentNames } from "../component/constants";
-import { hasAAD, hasAzureResourceV3, hasSPFxTab } from "../common/projectSettingsHelperV3";
-import { AppManifest } from "../component/resource/appManifest/appManifest";
-import "../component/resource/appManifest/appManifest";
-import axios from "axios";
-import { AadApp } from "../component/resource/aadApp/aadApp";
-import "../component/resource/aadApp/aadApp";
-import fs from "fs-extra";
-import * as dotenv from "dotenv";
-import { validate as uuidValidate } from "uuid";
 import {
   CoreQuestionNames,
   selectAadAppManifestQuestion,
   selectEnvNode,
   selectTeamsAppManifestQuestion,
 } from "./question";
-import { envUtil } from "../component/utils/envUtil";
-import { FileNotFoundError } from "../error/common";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -186,7 +178,7 @@ export class CollaborationUtil {
 
   // Priority parameter > dotenv > env
   static async getTeamsAppIdAndAadObjectId(
-    inputs: v2.InputsWithProjectPath
+    inputs: InputsWithProjectPath
   ): Promise<Result<AppIds, FxError>> {
     let teamsAppId, aadObjectId;
 
@@ -305,11 +297,11 @@ export class CollaborationUtil {
 }
 
 export async function listCollaborator(
-  ctx: ContextV3,
-  inputs: v2.InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3 | undefined,
+  ctx: Context,
+  inputs: InputsWithProjectPath,
+  envInfo: any | undefined,
   tokenProvider: TokenProvider,
-  telemetryProps?: Json
+  telemetryProps?: Record<string, string>
 ): Promise<Result<ListCollaboratorResult, FxError>> {
   const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
   if (result.isErr()) {
@@ -340,8 +332,8 @@ export async function listCollaborator(
     appIds = getAppIdsResult.value;
   }
 
-  const hasAad = isV3Enabled() ? appIds!.aadObjectId != undefined : hasAAD(ctx.projectSetting);
-  const hasTeams = isV3Enabled() ? appIds!.teamsAppId != undefined : true;
+  const hasAad = appIds!.aadObjectId != undefined;
+  const hasTeams = appIds!.teamsAppId != undefined;
   const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
   const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
   const appStudioRes = hasTeams
@@ -453,7 +445,7 @@ export async function listCollaborator(
     telemetryProps[SolutionTelemetryProperty.Env] = isV3Enabled()
       ? inputs.env
         ? getHashedEnv(inputs.env)
-        : undefined
+        : ""
       : getHashedEnv(envInfo!.envName);
     telemetryProps[SolutionTelemetryProperty.CollaboratorCount] = teamsOwnerCount.toString();
     telemetryProps[SolutionTelemetryProperty.AadOwnerCount] = aadOwnerCount.toString();
@@ -463,10 +455,7 @@ export async function listCollaborator(
   });
 }
 
-function getCurrentCollaborationState(
-  envInfo: v3.EnvInfoV3,
-  user: AppUser
-): CollaborationStateResult {
+function getCurrentCollaborationState(envInfo: any, user: AppUser): CollaborationStateResult {
   const provisioned =
     envInfo.state.solution[SOLUTION_PROVISION_SUCCEEDED] === "true" ||
     envInfo.state.solution[SOLUTION_PROVISION_SUCCEEDED] === true;
@@ -493,11 +482,11 @@ function getCurrentCollaborationState(
 }
 
 export async function checkPermission(
-  ctx: ContextV3,
-  inputs: v2.InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3 | undefined,
+  ctx: Context,
+  inputs: InputsWithProjectPath,
+  envInfo: any | undefined,
   tokenProvider: TokenProvider,
-  telemetryProps?: Json
+  telemetryProps?: Record<string, string>
 ): Promise<Result<PermissionsResult, FxError>> {
   const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
   if (result.isErr()) {
@@ -567,9 +556,7 @@ export async function checkPermission(
     return err(appStudioRes.error);
   }
   const permissions = appStudioRes.value;
-  const isAadActivated = isV3Enabled()
-    ? appIds!.aadObjectId != undefined
-    : hasAAD(ctx.projectSetting);
+  const isAadActivated = appIds!.aadObjectId != undefined;
   if (isAadActivated) {
     const aadRes = await aadPlugin.checkPermission(
       ctx,
@@ -628,11 +615,11 @@ export async function checkPermission(
 }
 
 export async function grantPermission(
-  ctx: ContextV3,
-  inputs: v2.InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3 | undefined,
+  ctx: Context,
+  inputs: InputsWithProjectPath,
+  envInfo: any | undefined,
   tokenProvider: TokenProvider,
-  telemetryProps?: Json
+  telemetryProps?: Record<string, string>
 ): Promise<Result<PermissionsResult, FxError>> {
   const progressBar = ctx.userInteraction.createProgressBar(
     getLocalizedString("core.collaboration.GrantingPermission"),
@@ -715,9 +702,7 @@ export async function grantPermission(
 
       ctx.userInteraction.showMessage("info", message, false);
     }
-    const isAadActivated = isV3Enabled()
-      ? appIds!.aadObjectId != undefined
-      : hasAAD(ctx.projectSetting);
+    const isAadActivated = appIds!.aadObjectId != undefined;
     const isTeamsActivated = isV3Enabled() ? appIds!.teamsAppId != undefined : true;
     const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
     const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
@@ -762,23 +747,6 @@ export async function grantPermission(
           { content: `${permission.resourceId}`, color: Colors.BRIGHT_MAGENTA },
         ];
         ctx.userInteraction.showMessage("info", message, false);
-      }
-      // Will not show helplink for v3
-      if (!isV3Enabled() && hasSPFxTab(ctx.projectSetting)) {
-        ctx.userInteraction.showMessage(
-          "info",
-          getLocalizedString("core.collaboration.SharePointTip") +
-            SharePointManageSiteAdminHelpLink,
-          false
-        );
-      }
-      // Will not show helplink for v3
-      if (!isV3Enabled() && hasAzureResourceV3(ctx.projectSetting)) {
-        ctx.userInteraction.showMessage(
-          "info",
-          getLocalizedString("core.collaboration.AzureTip") + AzureRoleAssignmentsHelpLink,
-          false
-        );
       }
     }
     return ok({

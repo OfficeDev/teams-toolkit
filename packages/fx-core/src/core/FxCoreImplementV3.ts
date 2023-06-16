@@ -231,24 +231,27 @@ export class FxCoreV3Implement {
       manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
     };
-    const contextV3: DriverContext = createDriverContext(inputs);
-    const res = await updateAadClient.run(inputArgs, contextV3);
+    const Context: DriverContext = createDriverContext(inputs);
+    const res = await updateAadClient.run(inputArgs, Context);
     if (res.isErr()) {
       return err(res.error);
     }
-    if (contextV3.platform === Platform.CLI) {
+    if (Context.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
-      contextV3.ui!.showMessage("info", msg, false);
+      Context.ui!.showMessage("info", msg, false);
     } else {
       const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
-      contextV3
-        .ui!.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
-        .then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
-            contextV3.ui!.openUrl(ViewAadAppHelpLinkV5);
-          }
-        });
+      Context.ui!.showMessage(
+        "info",
+        msg,
+        false,
+        getLocalizedString("core.deploy.aadManifestLearnMore")
+      ).then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+          Context.ui!.openUrl(ViewAadAppHelpLinkV5);
+        }
+      });
     }
     return ok(Void);
   }
@@ -328,8 +331,8 @@ export class FxCoreV3Implement {
       webpartName: inputs[SPFxQuestionNames.WebPartName],
       spfxPackage: SPFxVersionOptionIds.installLocally,
     };
-    const contextV3: DriverContext = createDriverContext(inputs);
-    return await driver.run(args, contextV3);
+    const Context: DriverContext = createDriverContext(inputs);
+    return await driver.run(args, Context);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
@@ -559,8 +562,8 @@ export class FxCoreV3Implement {
       "build",
       `aad.${inputs.env}.json`
     );
-    const contextV3: DriverContext = createDriverContext(inputs);
-    await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
+    const Context: DriverContext = createDriverContext(inputs);
+    await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }
 

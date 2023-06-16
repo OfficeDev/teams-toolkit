@@ -20,7 +20,7 @@ import { CommonStrings, ConfigNames } from "../strings";
 import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
 import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../appManifest/constants";
-import { ResourceContextV3, SystemError } from "@microsoft/teamsfx-api";
+import { Context, SystemError } from "@microsoft/teamsfx-api";
 import { AppStudioClient as AppStudio } from "../../../driver/teamsApp/clients/appStudioClient";
 import { isHappyResponse } from "../common";
 import { HttpStatusCode } from "../../../constant/commonConstant";
@@ -101,7 +101,7 @@ export class AppStudioClient {
     token: string,
     registration: IBotRegistration,
     checkExistence = true,
-    context?: ResourceContextV3
+    context?: Context
   ): Promise<void> {
     AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);

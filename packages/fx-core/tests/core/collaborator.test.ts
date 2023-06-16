@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import {
-  ContextV3,
+  Context,
   OptionItem,
   Platform,
   ProjectSettingsV3,
@@ -66,7 +66,7 @@ describe("Collaborator APIs for V3", () => {
     },
     components: [],
   };
-  const ctx = new MockedV2Context(projectSettings) as ContextV3;
+  const ctx = new MockedV2Context(projectSettings) as Context;
   const inputs: v2.InputsWithProjectPath = {
     platform: Platform.VSCode,
     projectPath: path.join(os.tmpdir(), randomAppName()),

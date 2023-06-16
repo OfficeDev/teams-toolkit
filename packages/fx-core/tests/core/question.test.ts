@@ -22,6 +22,7 @@ import {
   BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
+  LinkUnfurlingItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionNewUIItem,
@@ -195,7 +196,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
     ]);
   });
 
-  it("should return 2 message extension type options in second layer question", () => {
+  it("should return 3 message extension type options in second layer question", () => {
     // Act
     const question = getMessageExtensionTypeProjectQuestionNode({} as Inputs);
     // Assert
@@ -206,6 +207,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
       getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
     );
     chai.assert.deepEqual(question.staticOptions, [
+      LinkUnfurlingItem(),
       M365SearchAppOptionItem(),
       MessageExtensionNewUIItem(),
     ]);

@@ -51,6 +51,7 @@ import {
   CoordinatorSource,
   DashboardOptionItem,
   DefaultBotAndMessageExtensionItem,
+  LinkUnfurlingItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
@@ -105,6 +106,7 @@ export enum TemplateNames {
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
+  LinkUnfurling = "link-unfurling",
 }
 
 const Feature2TemplateName: any = {
@@ -129,6 +131,7 @@ const Feature2TemplateName: any = {
   [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,
+  [`${LinkUnfurlingItem().id}:undefined`]: TemplateNames.LinkUnfurling,
 };
 
 const M365Actions = [

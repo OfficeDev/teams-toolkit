@@ -445,6 +445,17 @@ export function MessageExtensionNewUIItem(): OptionItem {
     detail: getLocalizedString("core.MessageExtensionOption.detail"),
   };
 }
+
+export function LinkUnfurlingItem(): OptionItem {
+  return {
+    id: "LinkUnfurling",
+    label: `${getLocalizedString("core.LinkUnfurlingOption.label")}`,
+    cliName: "link-unfurling",
+    detail: getLocalizedString("core.LinkUnfurlingOption.detail"),
+    description: getLocalizedString("core.createProjectQuestion.option.description.worksInOutlook"),
+  };
+}
+
 export function TabSPFxItem(): OptionItem {
   return {
     id: "TabSPFx",

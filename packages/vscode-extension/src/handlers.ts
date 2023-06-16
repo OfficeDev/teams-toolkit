@@ -17,23 +17,17 @@ import {
   BuildFolderName,
   ConfigFolderName,
   CoreCallbackEvent,
-  EnvConfigFileNameTemplate,
-  EnvNamePlaceholder,
-  EnvStateFileNameTemplate,
   Func,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   M365TokenProvider,
   OptionItem,
   Platform,
-  ProjectSettingsFileName,
   Result,
   SelectFileConfig,
   SelectFolderConfig,
   SingleSelectConfig,
   Stage,
-  StatesFolderName,
   StaticOptions,
   SubscriptionInfo,
   SystemError,
@@ -350,8 +344,8 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
   const projectSettingsPath = path.resolve(
     workspacePath,
     `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
+    "configs",
+    "projectSettings.json"
   );
 
   // check if file is project config
@@ -2119,13 +2113,13 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
 
     if (args[0].type === "config") {
       sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env)
+        `${workspacePath}/.${ConfigFolderName}/configs/`,
+        `config.${env}.json`
       );
     } else if (args[0].type === "state") {
       sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
+        `${workspacePath}/.${ConfigFolderName}/states/`,
+        `state.${env}.json`
       );
     } else {
       // Load env folder from yml

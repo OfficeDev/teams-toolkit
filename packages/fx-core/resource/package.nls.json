@@ -64,8 +64,6 @@
   "core.collaboration.Undefined": "undefined",
   "core.collaboration.ResourceName": ", Resource Name: ",
   "core.collaboration.Permission": ", Permission: ",
-  "core.collaboration.notProvisioned": "The resources have not been provisioned yet. Provision the resources first.",
-  "core.collaboration.tenantNotMatch": "Tenant id of your account and the provisioned Azure AD app does not match. Check whether you logined with wrong account.",
   "core.developerPortal.scaffold.CannotFindManifest": "Could not find manifest from the downloaded package for teams app %s.",
   "plugins.spfx.questions.framework.title": "Framework",
   "plugins.spfx.questions.webpartName.error.duplicate": "The folder %s already exists. Choose a different name for your component.",

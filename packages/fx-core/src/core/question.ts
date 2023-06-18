@@ -48,6 +48,7 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoOboItem,
   WorkflowOptionItem,
 } from "../component/constants";
 import {
@@ -323,6 +324,7 @@ export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQues
     M365SsoLaunchPageOptionItem(),
     DashboardOptionItem(),
     TabSPFxItem(),
+    TabSsoOboItem(),
   ];
 
   return {

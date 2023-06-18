@@ -60,6 +60,7 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoOboItem,
   WorkflowOptionItem,
 } from "../constants";
 import { deployUtils } from "../deployUtils";
@@ -91,6 +92,7 @@ import { glob } from "glob";
 export enum TemplateNames {
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
+  SsoTabObo = "sso-tab-with-obo-flow",
   M365Tab = "m365-tab",
   DashboardTab = "dashboard-tab",
   NotificationRestify = "notification-restify",
@@ -125,6 +127,7 @@ const Feature2TemplateName: any = {
   [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
   [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
+  [`${TabSsoOboItem().id}:undefined`]: TemplateNames.SsoTabObo,
   [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.M365Tab,
   [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,

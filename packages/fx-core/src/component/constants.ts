@@ -468,6 +468,17 @@ export function TabSsoItem(): OptionItem {
   };
 }
 
+export function TabSsoOboItem(): OptionItem {
+  return {
+    id: "TabSSOOBO",
+    label: "TabSSOOBO",
+    cliName: "tab-sso-obo",
+    description: getLocalizedString("core.TabSsoObo.description"),
+    detail: getLocalizedString("core.TabSsoObo.detail"),
+    groupName: getLocalizedString("core.options.separator.scenario"),
+  };
+}
+
 export function BotSsoItem(): OptionItem {
   return {
     id: "BotSSO",

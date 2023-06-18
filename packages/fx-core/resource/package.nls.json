@@ -240,6 +240,8 @@
   "core.TabSPFxOption.detailNew": "Build UI with SharePoint Framework",
   "core.TabSso.description": "Single Sign On for Tab",
   "core.TabSso.detail": "Enable Single Sign On in your Teams Tab app",
+  "core.TabSsoObo.description": "Single Sign On for Tab",
+  "core.TabSsoObo.detail": "Enable Single Sign On in your Teams Tab app",
   "core.BotSso.description": "Single Sign On for Bot",
   "core.BotSso.detail": "Enable Single Sign On in your Teams Bot app",
   "core.TabNonSso.label": "Basic Tab",

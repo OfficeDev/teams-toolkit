@@ -3,6 +3,7 @@ const helloWorldCard = require("./adaptiveCards/helloWorldCard.json");
 
 class LinkUnfurlingApp extends TeamsActivityHandler {
   // Link Unfurling.
+  // This function can be triggered after this app is installed.
   handleTeamsAppBasedLinkQuery(context, query) {
     const previewCard = CardFactory.thumbnailCard("Preview Card", query.url, [
       "https://raw.githubusercontent.com/microsoft/botframework-sdk/master/icon.png",
@@ -29,6 +30,7 @@ class LinkUnfurlingApp extends TeamsActivityHandler {
   }
 
   // Zero Install Link Unfurling
+  // This function can be triggered if this app sets "supportsAnonymizedPayloads": true in manifest and is uploaded to org's app catalog.
   handleTeamsAnonymousAppBasedLinkQuery(context, query) {
     // When the returned card is an adaptive card, the previewCard property of the attachment is required.
     const previewCard = CardFactory.thumbnailCard("Preview Card", query.url, [

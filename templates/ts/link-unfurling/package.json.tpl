@@ -1,7 +1,7 @@
 {
     "name": "{{appName}}",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit m365 message extension sample",
+    "description": "Microsoft Teams Toolkit link unfurling sample",
     "engines": {
         "node": "16 || 18"
     },

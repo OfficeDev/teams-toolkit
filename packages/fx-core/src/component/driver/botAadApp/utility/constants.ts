@@ -7,4 +7,8 @@ export const logMessageKeys = {
   failExecuteDriver: "driver.botAadApp.log.failExecuteDriver",
   successCreateBotAad: "driver.botAadApp.log.successCreateBotAad",
   useExistingBotAad: "driver.botAadApp.log.useExistingBotAad",
+  startCreateBotAadApp: "botRegistration.log.startCreateBotAadApp",
+  successCreateBotAadApp: "botRegistration.log.successCreateBotAadApp",
+  skipCreateBotAadApp: "botRegistration.log.skipCreateBotAadApp",
+  failCreateBotAadApp: "botRegistration.log.failCreateBotAadApp",
 };

@@ -388,5 +388,3 @@ mochawesome-report
 
 # metrics
 .metrics
-
-package-lock.json

@@ -15,41 +15,34 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettings,
   QTreeNode,
   Result,
   Stage,
   StatesFolderName,
   Tools,
-  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
-import { Container } from "typedi";
-import * as uuid from "uuid";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import { ComponentNames, validateSchemaOption } from "../component/constants";
+import { validateSchemaOption } from "../component/constants";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForValidateMethod } from "../component/question";
-import { AppManifest } from "../component/resource/appManifest/appManifest";
-import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { WriteFileError } from "../error";
 import { CallbackRegistry } from "./callback";
-import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
-import { environmentManager, newEnvInfoV3 } from "./environment";
-import { CopyFileError, InvalidInputError, ObjectIsUndefinedError } from "./error";
+import { environmentManager } from "./environment";
+import { InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -560,58 +553,4 @@ export async function ensureBasicFolderStructure(
     return err(new WriteFileError(e as Error, "core"));
   }
   return ok(null);
-}
-
-export async function listCollaboratorFunc(inputs: Inputs): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.listCollaborator;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await listCollaborator(
-    context,
-    inputs as v2.InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
-}
-
-export async function checkPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.checkPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await checkPermission(
-    context,
-    inputs as v2.InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
-}
-
-export async function grantPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.grantPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await grantPermission(
-    context,
-    inputs as v2.InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
 }

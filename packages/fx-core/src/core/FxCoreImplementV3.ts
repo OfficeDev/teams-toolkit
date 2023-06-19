@@ -16,6 +16,7 @@ import {
   Result,
   Stage,
   Tools,
+  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -25,7 +26,7 @@ import { Container } from "typedi";
 
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
@@ -83,7 +84,6 @@ import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../erro
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
-import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
 import { TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -92,6 +92,7 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { listCollaborator, checkPermission, grantPermission } from "./collaborator";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -352,7 +353,15 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
-    return grantPermissionFunc(inputs);
+    inputs.stage = Stage.grantPermission;
+    const context = createContextV3();
+    const res = await grantPermission(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      undefined,
+      TOOLS.tokenProvider
+    );
+    return res;
   }
 
   @hooks([
@@ -364,7 +373,15 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
-    return checkPermissionFunc(inputs);
+    inputs.stage = Stage.checkPermission;
+    const context = createContextV3();
+    const res = await checkPermission(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      undefined,
+      TOOLS.tokenProvider
+    );
+    return res;
   }
 
   @hooks([
@@ -376,8 +393,17 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
-    return listCollaboratorFunc(inputs);
+    inputs.stage = Stage.listCollaborator;
+    const context = createContextV3();
+    const res = await listCollaborator(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      undefined,
+      TOOLS.tokenProvider
+    );
+    return res;
   }
+
   /**
    * get all dot envs
    */

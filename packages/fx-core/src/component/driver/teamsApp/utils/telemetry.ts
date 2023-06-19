@@ -17,7 +17,6 @@ export enum TelemetryPropertyKey {
   errorType = "error-type",
   errorCode = "error-code",
   errorMessage = "error-message",
-  validationResult = "validation-result",
   updateExistingApp = "update",
   success = "success",
   appId = "appid",
@@ -26,10 +25,7 @@ export enum TelemetryPropertyKey {
   customizedKeys = "customized-manifest-keys",
   validationErrors = "validation-errors",
   validationWarnings = "validation-warnings",
-  manual = "manual",
-  statusCode = "status-code",
-  url = "url",
-  method = "method",
+  OverwriteIfAppAlreadyExists = "overwrite-if-app-already-exists",
 }
 
 enum TelemetryPropertyValue {
@@ -40,23 +36,9 @@ enum TelemetryPropertyValue {
 }
 
 export enum TelemetryEventName {
-  scaffold = "scaffold",
-  validateManifest = "validate-manifest",
-  buildTeamsPackage = "build",
-  publish = "publish",
-  deploy = "deploy",
-  updateManifest = "update-manifest",
-  provision = "provision",
-  provisionManifest = "provision-manifest",
-  postProvision = "post-provision",
   checkPermission = "check-permission",
   grantPermission = "grant-permission",
   listCollaborator = "list-collaborator",
-  localDebug = "local-debug",
-  init = "init",
-  addCapability = "add-capability",
-  loadManifest = "load-manifest",
-  saveManifest = "save-manifest",
   appStudioApi = "app-studio-api",
   authSvcApi = "auth-svc-api",
 }

@@ -73,7 +73,6 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { checkPermissionFunc, grantPermissionFunc, listCollaboratorFunc } from "./FxCore";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -90,6 +89,7 @@ import {
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { listCollaborator, checkPermission, grantPermission } from "./collaborator";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -353,7 +353,15 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
-    return grantPermissionFunc(inputs);
+    inputs.stage = Stage.grantPermission;
+    const context = createContextV3();
+    const res = await grantPermission(
+      context,
+      inputs as InputsWithProjectPath,
+      undefined,
+      TOOLS.tokenProvider
+    );
+    return res;
   }
 
   @hooks([
@@ -365,7 +373,15 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
-    return checkPermissionFunc(inputs);
+    inputs.stage = Stage.checkPermission;
+    const context = createContextV3();
+    const res = await checkPermission(
+      context,
+      inputs as InputsWithProjectPath,
+      undefined,
+      TOOLS.tokenProvider
+    );
+    return res;
   }
 
   @hooks([
@@ -377,8 +393,17 @@ export class FxCoreV3Implement {
     EnvWriterMW,
   ])
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
-    return listCollaboratorFunc(inputs);
+    inputs.stage = Stage.listCollaborator;
+    const context = createContextV3();
+    const res = await listCollaborator(
+      context,
+      inputs as InputsWithProjectPath,
+      undefined,
+      TOOLS.tokenProvider
+    );
+    return res;
   }
+
   /**
    * get all dot envs
    */

@@ -29,16 +29,14 @@ import "../component/driver/script/scriptDriver";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForValidateMethod } from "../component/question";
-import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { CallbackRegistry } from "./callback";
-import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentManager } from "./environment";
-import { InvalidInputError, ObjectIsUndefinedError } from "./error";
+import { InvalidInputError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -471,58 +469,4 @@ export class FxCore {
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }
-}
-
-export async function listCollaboratorFunc(inputs: Inputs): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.listCollaborator;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await listCollaborator(
-    context,
-    inputs as InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
-}
-
-export async function checkPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.checkPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await checkPermission(
-    context,
-    inputs as InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
-}
-
-export async function grantPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.grantPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await grantPermission(
-    context,
-    inputs as InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
 }

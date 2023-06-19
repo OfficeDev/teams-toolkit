@@ -353,10 +353,6 @@ export class FxCoreV3Implement {
   ])
   async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.grantPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
     const context = createContextV3();
     const res = await grantPermission(
       context,
@@ -377,10 +373,6 @@ export class FxCoreV3Implement {
   ])
   async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.checkPermission;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
     const context = createContextV3();
     const res = await checkPermission(
       context,
@@ -401,10 +393,6 @@ export class FxCoreV3Implement {
   ])
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.listCollaborator;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
     const context = createContextV3();
     const res = await listCollaborator(
       context,

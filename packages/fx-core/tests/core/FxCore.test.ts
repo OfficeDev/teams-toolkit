@@ -24,7 +24,7 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FxCore, ObjectIsUndefinedError, getUuid } from "../../src";
+import { FxCore, getUuid } from "../../src";
 import { Hub } from "../../src/common/m365/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
 import {
@@ -56,7 +56,6 @@ import { manifestUtils } from "../../src/component/resource/appManifest/utils/Ma
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
-import * as coreImplement from "../../src/core/FxCore";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import * as collaborator from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
@@ -498,27 +497,6 @@ describe("Core basic APIs", () => {
     assert.isTrue(res.isOk());
     res = await core.grantPermission(inputs);
     assert.isTrue(res.isOk());
-  });
-
-  it("permission v3 fail for project path", async () => {
-    let res;
-    const core = new FxCore(tools);
-    const appName = await mockV3Project();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      stage: Stage.listCollaborator,
-    };
-    res = await core.listCollaborator(inputs);
-    assert.isTrue(res.isErr());
-    res = await core.checkPermission(inputs);
-    assert.isTrue(res.isErr());
-    res = await core.grantPermission(inputs);
-    assert.isTrue(res.isErr());
   });
 
   it("not implement method", async () => {

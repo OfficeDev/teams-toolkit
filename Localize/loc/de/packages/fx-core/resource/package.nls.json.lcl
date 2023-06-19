@@ -2600,7 +2600,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The upgrade process has failed. To troubleshoot and resolve the issue, please check the error message in the [Output panel]5D;(command:fx-extension.showOutputChannel).]A; If you prefer to upgrade manually, please click on 'Learn More' to view the FAQ section.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Upgradevorgang ist fehlgeschlagen. Zur Fehlersuche und -behebung überprüfen Sie bitte die Fehlermeldung im [Ausgabe-Panel]5D; (Befehl:fx-extension.showOutputChannel).]A;Wenn Sie das Upgrade lieber manuell durchführen möchten, klicken Sie bitte auf „Weitere Informationen“, um den FAQ-Bereich aufzurufen.]]></Val>
+            <Val><![CDATA[Der Upgradevorgang ist fehlgeschlagen. Zur Fehlersuche und -behebung überprüfen Sie bitte die Fehlermeldung im [Ausgabe-Panel]5D;(Befehl:fx-extension.showOutputChannel).]A;Wenn Sie das Upgrade lieber manuell durchführen möchten, klicken Sie bitte auf Weitere Informationen“, um den FAQ-Bereich aufzurufen.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upgrade Failed. Check the error message in [output channel]5D;(command:fx-extension.showOutputChannel) to troubleshoot and fix. To upgrade manually, click Learn More for the FAQ.]]></Val>

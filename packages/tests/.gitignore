@@ -116,8 +116,6 @@ resource/
 
 ~$*
 
-package-lock.json
-
 # Test result
 report.json
 mochawesome-report/

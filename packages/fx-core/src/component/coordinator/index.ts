@@ -60,7 +60,6 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  TabSsoOboItem,
   WorkflowOptionItem,
 } from "../constants";
 import { deployUtils } from "../deployUtils";
@@ -127,8 +126,7 @@ const Feature2TemplateName: any = {
   [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
   [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
-  [`${TabSsoOboItem().id}:undefined`]: TemplateNames.SsoTabObo,
-  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.M365Tab,
+  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.SsoTabObo,
   [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,

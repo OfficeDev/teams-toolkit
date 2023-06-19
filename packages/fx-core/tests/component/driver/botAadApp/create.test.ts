@@ -248,4 +248,34 @@ describe("botAadAppCreate", async () => {
       expectedSecretText
     );
   });
+
+  it("should success when no log provider in context", async () => {
+    const args: any = {
+      name: expectedDisplayName,
+    };
+    const progressBar = {
+      next: sinon.stub(),
+    };
+    const mockedDriverContextWithNoLogProvider: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+    };
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    mockedDriverContextWithNoLogProvider.progressBar = progressBar;
+
+    const result = await createBotAadAppDriver.execute(
+      args,
+      mockedDriverContextWithNoLogProvider,
+      outputEnvVarNames
+    );
+    expect(result.result.isOk()).to.be.true;
+  });
 });

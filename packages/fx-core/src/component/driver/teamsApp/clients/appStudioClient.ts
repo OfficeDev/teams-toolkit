@@ -13,7 +13,7 @@ import { IPublishingAppDenition } from "../interfaces/appdefinitions/IPublishing
 import { AppStudioResultFactory } from ".././results";
 import { Constants, ErrorMessages, APP_STUDIO_API_NAMES } from ".././constants";
 import { RetryHandler } from "../utils/utils";
-import { TelemetryEventName, TelemetryUtils } from "../utils/telemetry";
+import { TelemetryEventName, TelemetryUtils, TelemetryPropertyKey } from "../utils/telemetry";
 import { getAppStudioEndpoint } from ".././constants";
 import { HelpLinks } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
@@ -61,19 +61,31 @@ export namespace AppStudioClient {
     return instance;
   }
 
-  export function sendStartEvent(apiName: string): void {
+  export function sendStartEvent(
+    apiName: string,
+    telemetryProperties?: { [key: string]: string }
+  ): void {
     TelemetryUtils.sendStartEvent(TelemetryEventName.appStudioApi, {
       url: `<${apiName}-url>`,
+      ...telemetryProperties,
     });
   }
 
-  export function sendSuccessEvent(apiName: string): void {
+  export function sendSuccessEvent(
+    apiName: string,
+    telemetryProperties?: { [key: string]: string }
+  ): void {
     TelemetryUtils.sendSuccessEvent(TelemetryEventName.appStudioApi, {
       url: `<${apiName}-url>`,
+      ...telemetryProperties,
     });
   }
 
-  export function wrapException(e: any, apiName: string): Error {
+  export function wrapException(
+    e: any,
+    apiName: string,
+    telemetryProperties?: { [key: string]: string }
+  ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
@@ -94,6 +106,7 @@ export namespace AppStudioClient {
       method: e.request?.method,
       "status-code": `${e?.response?.status}`,
       url: `<${apiName}-url>`,
+      ...telemetryProperties,
     });
     return error;
   }
@@ -112,7 +125,10 @@ export namespace AppStudioClient {
     logProvider?: LogProvider,
     overwrite = false
   ): Promise<AppDefinition> {
-    sendStartEvent(APP_STUDIO_API_NAMES.CREATE_APP);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryPropertyKey.OverwriteIfAppAlreadyExists]: String(overwrite),
+    };
+    sendStartEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
     try {
       const requester = createRequesterWithToken(appStudioToken, region);
 
@@ -128,7 +144,7 @@ export namespace AppStudioClient {
       if (response && response.data) {
         const app = <AppDefinition>response.data;
         await logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
-        sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_APP);
+        sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
         return app;
       } else {
         throw new Error(`Cannot create teams app`);
@@ -172,7 +188,7 @@ export namespace AppStudioClient {
         }
       }
 
-      const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
+      const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
       throw error;
     }
   }

@@ -44,6 +44,7 @@ import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "./createAppPackage";
 import { actionName as configureTeamsAppActionName } from "./configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
+import { TelemetryUtils } from "./utils/telemetry";
 
 export async function checkIfAppInDifferentAcountSameTenant(
   teamsAppId: string,
@@ -76,6 +77,7 @@ export async function updateManifestV3(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<Map<string, string>, FxError>> {
+  TelemetryUtils.init(ctx);
   const state = {
     ENV_NAME: process.env.TEAMSFX_ENV,
   };

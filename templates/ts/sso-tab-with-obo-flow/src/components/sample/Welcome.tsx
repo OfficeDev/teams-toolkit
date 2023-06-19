@@ -15,6 +15,7 @@ import { useData } from "@microsoft/teamsfx-react";
 import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
 import { TeamsFxContext } from "../Context";
+import { app } from "@microsoft/teams-js";
 
 export function Welcome(props: { showFunction?: boolean; environment?: string }) {
   const { showFunction, environment } = {
@@ -41,11 +42,17 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
     }
   });
   const userName = loading || error ? "" : data!.displayName;
+  const hubName = useData(async () => {
+    await app.initialize();
+    const context = await app.getContext();
+    return context.app.host.name;
+  })?.data;
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
         <Image src="hello.png" />
         <h1 className="center">Congratulations{userName ? ", " + userName : ""}!</h1>
+        {hubName && <p className="center">Your app is running in {hubName}</p>}
         <p className="center">Your app is running in your {friendlyEnvironmentName}</p>
 
         <div className="tabList">

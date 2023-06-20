@@ -186,6 +186,10 @@ export class VsCodeUI implements UserInteraction {
                 quickPick.items = convertToFxQuickPickItems(options);
                 quickPick.busy = false;
                 quickPick.placeholder = option.placeholder;
+                if (option.skipSingleOption && options.length === 1) {
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  onDidAccept();
+                }
               })
               .catch((error) => {
                 resolve(err(assembleError(error)));
@@ -335,6 +339,10 @@ export class VsCodeUI implements UserInteraction {
                 quickPick.items = convertToFxQuickPickItems(options);
                 quickPick.busy = false;
                 quickPick.placeholder = option.placeholder;
+                if (option.skipSingleOption && options.length === 1) {
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  onDidAccept();
+                }
               })
               .catch((error) => {
                 resolve(err(assembleError(error)));

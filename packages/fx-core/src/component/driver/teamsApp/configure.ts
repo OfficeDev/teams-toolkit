@@ -157,7 +157,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppUpdateFailedError.name,
-          AppStudioError.TeamsAppUpdateFailedError.message(teamsAppId),
+          AppStudioError.TeamsAppUpdateFailedError.message(teamsAppId, e),
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );

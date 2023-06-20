@@ -20,7 +20,7 @@ import { FxError, ok, Result, UserError, err } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
 import {
   codeSpacesAuthComplete,
@@ -285,12 +285,8 @@ export class CodeFlowLogin {
   async logout(): Promise<boolean> {
     try {
       await saveAccountId(this.accountName, undefined);
-      const accounts = await this.msalTokenCache.getAllAccounts();
-      if (accounts.length > 0) {
-        accounts.forEach(async (accountInfo) => {
-          await this.msalTokenCache.removeAccount(accountInfo);
-        });
-      }
+      (this.msalTokenCache as any).storage.setCache({});
+      await clearCache(this.accountName);
       this.account = undefined;
       this.status = loggedOut;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
@@ -523,10 +519,15 @@ export function UserCancelError(source: string): UserError {
   });
 }
 
+// if connot convert token via base64, return empty object
 export function ConvertTokenToJson(token: string): object {
-  const array = token.split(".");
-  const buff = Buffer.from(array[1], "base64");
-  return JSON.parse(buff.toString(UTF8));
+  try {
+    const array = token.split(".");
+    const buff = Buffer.from(array[1], "base64");
+    return JSON.parse(buff.toString(UTF8));
+  } catch (e) {
+    return {};
+  }
 }
 
 export async function checkIsOnline(): Promise<boolean> {

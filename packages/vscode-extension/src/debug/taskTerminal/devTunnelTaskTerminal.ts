@@ -7,14 +7,13 @@
  */
 
 import * as vscode from "vscode";
-import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
 import { Tunnel, TunnelAccessControlEntryType, TunnelPort } from "@microsoft/dev-tunnels-contracts";
 import {
   TunnelManagementHttpClient,
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
 import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
-import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, Void, UserError, SystemError } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { VS_CODE_UI } from "../../extension";
@@ -35,6 +34,8 @@ import {
   TunnelError,
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
+import { DevTunnelManager } from "./utils/devTunnelManager";
+import { ExtensionErrors } from "../../error";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
@@ -79,17 +80,26 @@ const Access = Object.freeze({
 
 export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   protected readonly args: IDevTunnelArgs;
-  private readonly tunnelManagementClientImpl: TunnelManagementHttpClient;
+  protected cancel: (() => void) | undefined;
+  private readonly devTunnelManager: DevTunnelManager;
   private readonly devTunnelStateManager: DevTunnelStateManager;
   private tunnel: Tunnel | undefined;
   private isOutputSummary: boolean;
-  private cancel: (() => void) | undefined;
 
-  constructor(taskDefinition: vscode.TaskDefinition) {
+  constructor(
+    taskDefinition: vscode.TaskDefinition,
+    devTunnelManager: DevTunnelManager,
+    devTunnelStateManager: DevTunnelStateManager
+  ) {
     super(taskDefinition, 1);
     this.args = taskDefinition.args as IDevTunnelArgs;
     this.isOutputSummary = false;
-    this.tunnelManagementClientImpl = new TunnelManagementHttpClient(
+    this.devTunnelManager = devTunnelManager;
+    this.devTunnelStateManager = devTunnelStateManager;
+  }
+
+  static create(taskDefinition: vscode.TaskDefinition): DevTunnelTaskTerminal {
+    const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       TunnelManagementUserAgent,
       async () => {
         const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
@@ -98,13 +108,15 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         });
 
         if (tokenRes.isErr()) {
-          return null;
+          throw tokenRes.error;
         }
         const res = `Bearer ${tokenRes.value}`;
         return res;
       }
     );
-    this.devTunnelStateManager = DevTunnelStateManager.create();
+    const devTunnelManager = new DevTunnelManager(tunnelManagementClientImpl);
+    const devTunnelStateManager = DevTunnelStateManager.create();
+    return new DevTunnelTaskTerminal(taskDefinition, devTunnelManager, devTunnelStateManager);
   }
 
   async stop(error?: any): Promise<void> {
@@ -117,7 +129,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       if (this.tunnel) {
         const deleteTunnel = this.tunnel;
         this.tunnel = undefined;
-        await this.tunnelManagementClientImpl.deleteTunnel(deleteTunnel);
+        await this.devTunnelManager.deleteTunnel(deleteTunnel);
         await this.devTunnelStateManager.deleteTunnelState({
           tunnelId: deleteTunnel.tunnelId,
           clusterId: deleteTunnel.clusterId,
@@ -132,6 +144,9 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   }
 
   protected async _do(): Promise<Result<Void, FxError>> {
+    await this.devTunnelManager.setTelemetryProperties({
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+    });
     await this.outputStartMessage(devTunnelDisplayMessages);
     await this.outputStartDevTunnelStepMessage();
     await this.resolveArgs(this.args);
@@ -159,12 +174,12 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           continue;
         }
 
-        const tunnelInstance = await this.tunnelManagementClientImpl.getTunnel({
+        const tunnelInstance = await this.devTunnelManager.getTunnel({
           tunnelId: devTunnelState.tunnelId,
           clusterId: devTunnelState.clusterId,
         });
         if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
-          await this.tunnelManagementClientImpl.deleteTunnel(tunnelInstance);
+          await this.devTunnelManager.deleteTunnel(tunnelInstance);
         }
       } catch {
         // Do nothing if delete existing tunnel failed.
@@ -175,7 +190,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
   private async deleteAllTunnelsMessage(): Promise<void> {
     try {
-      const tunnels = await this.tunnelManagementClientImpl.listTunnels();
+      const tunnels = await this.devTunnelManager.listTunnels();
       const teamsToolkitTunnels = tunnels.filter((t) => t?.tags?.includes(DevTunnelTag));
 
       if (teamsToolkitTunnels.length === 0) {
@@ -215,7 +230,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         ) {
           try {
             for (const tunnel of teamsToolkitTunnels) {
-              await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
+              await this.devTunnelManager.deleteTunnel(tunnel);
               VsCodeLogInstance.info(
                 devTunnelDisplayMessages.deleteDevTunnelMessage(
                   `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`
@@ -248,9 +263,12 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     options?: TunnelRequestOptions
   ): Promise<Tunnel> {
     try {
-      return await this.tunnelManagementClientImpl.createTunnel(tunnel, options);
+      return await this.devTunnelManager.createTunnel(tunnel, options);
     } catch (error: any) {
-      if (error?.response?.data?.title === "Resource limit exceeded.") {
+      if (
+        error instanceof UserError &&
+        error.name === ExtensionErrors.TunnelResourceLimitExceededError
+      ) {
         this.deleteAllTunnelsMessage();
       }
       throw error;
@@ -292,16 +310,17 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         return err(TunnelError.StartTunnelError());
       }
 
-      const host = new TunnelRelayTunnelHost(this.tunnelManagementClientImpl);
-      host.trace = (level, eventId, msg, err) => {
-        if (msg && level !== TraceLevel.Verbose) {
-          this.writeEmitter.fire(`${msg}\r\n`);
+      const host = await this.devTunnelManager.startHost(
+        tunnelInstance,
+        (level, eventId, msg, err) => {
+          if (msg && level !== TraceLevel.Verbose) {
+            this.writeEmitter.fire(`${msg}\r\n`);
+          }
+          if (err) {
+            this.writeEmitter.fire(`${err}\r\n`);
+          }
         }
-        if (err) {
-          this.writeEmitter.fire(`${err}\r\n`);
-        }
-      };
-      await host.start(tunnelInstance);
+      );
 
       const extendedTunnelPorts = this.validateAndExtendTunnelPorts(
         args,
@@ -334,6 +353,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       );
       return ok(Void);
     } catch (error: any) {
+      if (error instanceof UserError || error instanceof SystemError) return err(error);
       return err(TunnelError.StartTunnelError(error));
     }
   }

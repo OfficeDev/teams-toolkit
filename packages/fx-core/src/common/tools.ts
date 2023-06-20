@@ -1,16 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
+import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 import {
-  AppPackageFolderName,
   AzureAccountProvider,
-  AzureSolutionSettings,
-  ConfigFolderName,
-  ConfigMap,
   FxError,
-  Json,
   M365TokenProvider,
   OptionItem,
-  ProjectSettings,
   Result,
   SubscriptionInfo,
   SystemError,
@@ -20,14 +16,9 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { ExecOptions, exec } from "child_process";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
-import _ from "lodash";
-import Mustache from "mustache";
-import * as path from "path";
-import { promisify } from "util";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { SolutionError } from "../component/constants";
@@ -42,9 +33,6 @@ import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
-import { getProjectTemplatesFolderPath } from "./utils";
-import { Tunnel } from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -59,51 +47,6 @@ Handlebars.registerHelper("equals", (value, target) => {
 });
 
 const AzurePortalUrl = "https://portal.azure.com";
-
-export function convertDotenvToEmbeddedJson(dict: Record<string, string>): Json {
-  const result: Json = {};
-  for (const key of Object.keys(dict)) {
-    const array = key.split(".");
-    let obj = result;
-    for (let i = 0; i < array.length - 1; ++i) {
-      const subKey = array[i];
-      let subObj = obj[subKey];
-      if (!subObj) {
-        subObj = {};
-        obj[subKey] = subObj;
-      }
-      obj = subObj;
-    }
-    obj[array[array.length - 1]] = dict[key];
-  }
-  return result;
-}
-
-export function replaceTemplateWithUserData(
-  template: string,
-  userData: Record<string, string>
-): string {
-  const view = convertDotenvToEmbeddedJson(userData);
-  Mustache.escape = (t: string) => {
-    if (!t) {
-      return t;
-    }
-    const str = JSON.stringify(t);
-    return str.substr(1, str.length - 2);
-    // return t;
-  };
-  const result = Mustache.render(template, view);
-  return result;
-}
-
-export function serializeDict(dict: Record<string, string>): string {
-  const array: string[] = [];
-  for (const key of Object.keys(dict)) {
-    const value = dict[key];
-    array.push(`${key}=${value}`);
-  }
-  return array.join("\n");
-}
 
 export const deepCopy = <T>(target: T): T => {
   if (target === null) {
@@ -234,43 +177,10 @@ export function compileHandlebarsTemplateString(templateString: string, context:
   return template(context);
 }
 
-export async function getAppDirectory(projectRoot: string): Promise<string> {
-  const REMOTE_MANIFEST = "manifest.source.json";
-  const appDirNewLocForMultiEnv = path.resolve(
-    await getProjectTemplatesFolderPath(projectRoot),
-    AppPackageFolderName
-  );
-  const appDirNewLoc = path.join(projectRoot, AppPackageFolderName);
-  const appDirOldLoc = path.join(projectRoot, `.${ConfigFolderName}`);
-  if (await fs.pathExists(appDirNewLocForMultiEnv)) {
-    return appDirNewLocForMultiEnv;
-  } else if (await fs.pathExists(path.join(appDirNewLoc, REMOTE_MANIFEST))) {
-    return appDirNewLoc;
-  } else {
-    return appDirOldLoc;
-  }
-}
-
-export function getSiteNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
-  if (!result) {
-    throw FailedToParseResourceIdError("site name", resourceId);
-  }
-  return result;
-}
-
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
     throw FailedToParseResourceIdError("resource group name", resourceId);
-  }
-  return result;
-}
-
-export function getSubscriptionIdFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
-  if (!result) {
-    throw FailedToParseResourceIdError("subscription id", resourceId);
   }
   return result;
 }
@@ -288,8 +198,8 @@ export function getUuid(): string {
   return uuid.v4();
 }
 
-export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
-  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+export function isSPFxProject(projectSettings?: any): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as any;
   if (solutionSettings) {
     const selectedPlugins = solutionSettings.activeResourcePlugins;
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
@@ -315,19 +225,6 @@ export async function isVideoFilterProject(projectPath: string): Promise<Result<
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
-}
-
-export function getAllowedAppIds(): string[] {
-  return [
-    TeamsClientId.MobileDesktop,
-    TeamsClientId.Web,
-    OfficeClientId.Desktop,
-    OfficeClientId.Web1,
-    OfficeClientId.Web2,
-    OutlookClientId.Desktop,
-    OutlookClientId.Web1,
-    OutlookClientId.Web2,
-  ];
 }
 
 export function getAllowedAppMaps(): Record<string, string> {

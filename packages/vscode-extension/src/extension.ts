@@ -11,8 +11,6 @@ import {
   BuildFolderName,
   ConfigFolderName,
   FxError,
-  InputConfigsFolderName,
-  ProjectSettingsFileName,
   Result,
 } from "@microsoft/teamsfx-api";
 import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
@@ -691,7 +689,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const projectSettingsSelector = {
     language: "json",
     scheme: "file",
-    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`,
+    pattern: `**/.${ConfigFolderName}/configs/projectSettings.json`,
   };
 
   const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();

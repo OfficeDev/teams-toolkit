@@ -4,31 +4,23 @@
 /**
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
+import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
+import { Context, FxError, Result, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import { ConstantString } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { CompileBicepError, DeployArmError } from "../../../error/arm";
+import { InvalidAzureCredentialError } from "../../../error/azure";
+import { InvalidActionInputError } from "../../../error/common";
+import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
+import { cpUtils } from "../../utils/depsChecker/cpUtils";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
-import { validateArgs } from "./validator";
-import { hasBicepTemplate, convertOutputs, getFileExtension } from "./util/util";
-import {
-  err,
-  FxError,
-  ok,
-  Result,
-  SolutionContext,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
-import { ConstantString } from "../../../common/constants";
-import * as fs from "fs-extra";
-import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
 import { ensureBicepForDriver } from "./util/bicepChecker";
-import { WrapDriverContext } from "../util/wrapUtil";
 import { ArmErrorHandle, DeployContext } from "./util/handleError";
-import { InvalidActionInputError } from "../../../error/common";
-import { InvalidAzureCredentialError } from "../../../error/azure";
-import { CompileBicepError, DeployArmError } from "../../../error/arm";
-import { cpUtils } from "../../utils/depsChecker/cpUtils";
+import { convertOutputs, getFileExtension, hasBicepTemplate } from "./util/util";
+import { validateArgs } from "./validator";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -108,7 +100,7 @@ export class ArmDeployImpl {
     templateArg: templateArgs
   ): Promise<Result<deploymentOutput | undefined, FxError>> {
     const deployCtx: DeployContext = {
-      ctx: this.context as any as SolutionContext,
+      ctx: this.context as any as Context,
       finished: false,
       deploymentStartTime: Date.now(),
       client: this.client!,
@@ -127,7 +119,7 @@ export class ArmDeployImpl {
       };
       const res = await this.executeDeployment(templateArg, deploymentParameters, deployCtx);
       return res;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof UserError || error instanceof SystemError) return err(error);
       return err(new DeployArmError(deployCtx.deploymentName, deployCtx.resourceGroupName, error));
     }

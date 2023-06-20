@@ -3,28 +3,21 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  BuildFolderName,
-  ConfigFolderName,
   CoreCallbackEvent,
   CryptoProvider,
   err,
   Func,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   InputsWithProjectPath,
   ok,
-  Platform,
   QTreeNode,
   Result,
   Stage,
-  StatesFolderName,
   Tools,
   Void,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
-import fs from "fs-extra";
-import * as path from "path";
 import "reflect-metadata";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -37,20 +30,19 @@ import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForValidateMethod } from "../component/question";
 import { envUtil } from "../component/utils/envUtil";
+import { metadataUtil } from "../component/utils/metadataUtil";
+import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
-import { WriteFileError } from "../error";
 import { CallbackRegistry } from "./callback";
 import { LocalCrypto } from "./crypto";
 import { environmentManager } from "./environment";
-import { InvalidInputError, ObjectIsUndefinedError } from "./error";
+import { InvalidInputError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { pathUtils } from "../component/utils/pathUtils";
-import { metadataUtil } from "../component/utils/metadataUtil";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -477,80 +469,4 @@ export class FxCore {
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }
-}
-
-export async function ensureBasicFolderStructure(
-  inputs: Inputs,
-  createPackageJson = true
-): Promise<Result<null, FxError>> {
-  if (!inputs.projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  try {
-    if (createPackageJson) {
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (inputs.platform !== Platform.VS) {
-        const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
-        const exists = await fs.pathExists(packageJsonFilePath);
-        if (!exists) {
-          await fs.writeFile(
-            packageJsonFilePath,
-            JSON.stringify(
-              {
-                name: appName,
-                version: "0.0.1",
-                description: "",
-                author: "",
-                scripts: {
-                  test: 'echo "Error: no test specified" && exit 1',
-                },
-                devDependencies: {
-                  "@microsoft/teamsfx-cli": "1.*",
-                },
-                license: "MIT",
-              },
-              null,
-              4
-            )
-          );
-        }
-      }
-    }
-    {
-      const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
-      let lines: string[] = [];
-      const exists = await fs.pathExists(gitIgnoreFilePath);
-      if (exists) {
-        const content = await fs.readFile(gitIgnoreFilePath, { encoding: "utf8" });
-        lines = content.split("\n");
-        for (let i = 0; i < lines.length; ++i) {
-          lines[i] = lines[i].trim();
-        }
-      }
-      const gitIgnoreContent = [
-        "\n# TeamsFx files",
-        "node_modules",
-        `.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`,
-        `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
-        ".DS_Store",
-        ".env.teamsfx.local",
-        "subscriptionInfo.json",
-        BuildFolderName,
-      ];
-      gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
-      gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
-      if (inputs.platform === Platform.VS) {
-        gitIgnoreContent.push("appsettings.Development.json");
-      }
-      gitIgnoreContent.forEach((line) => {
-        if (!lines.includes(line.trim())) {
-          lines.push(line.trim());
-        }
-      });
-      await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
-    }
-  } catch (e) {
-    return err(new WriteFileError(e as Error, "core"));
-  }
-  return ok(null);
 }

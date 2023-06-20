@@ -23,7 +23,7 @@ import {
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
-import { ok, ProjectSettings } from "@microsoft/teamsfx-api";
+import { ok } from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import { mockMigrationContext } from "./utils";
 import * as os from "os";
@@ -91,7 +91,7 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -158,7 +158,7 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -203,7 +203,7 @@ describe("debugMigration", () => {
       ]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -242,7 +242,7 @@ describe("debugMigration", () => {
       }]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -325,7 +325,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -407,7 +407,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -477,7 +477,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -497,7 +497,7 @@ describe("debugMigration", () => {
       const testTaskContent = `[]`;
       const expectedTaskContent = `[]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -544,7 +544,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -594,7 +594,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -655,7 +655,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -717,7 +717,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -778,7 +778,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -869,7 +869,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -939,7 +939,7 @@ describe("debugMigration", () => {
         debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1036,7 +1036,7 @@ describe("debugMigration", () => {
         debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1067,7 +1067,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1099,7 +1099,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1135,7 +1135,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1228,7 +1228,7 @@ describe("debugMigration", () => {
         debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1262,7 +1262,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1302,7 +1302,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1376,7 +1376,7 @@ describe("debugMigration", () => {
         debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1427,7 +1427,7 @@ describe("debugMigration", () => {
         debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1478,7 +1478,7 @@ describe("debugMigration", () => {
         debugV3MigrationUtils.setUpLocalProjectsTask("Deploy")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1587,7 +1587,7 @@ describe("debugMigration", () => {
         },
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1620,7 +1620,7 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1685,7 +1685,7 @@ describe("debugMigration", () => {
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,
@@ -1746,7 +1746,7 @@ describe("debugMigration", () => {
       ]`;
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const migrationContext = await mockMigrationContext(projectPath);
       const debugContext = new DebugMigrationContext(
         migrationContext,
@@ -1801,7 +1801,7 @@ describe("debugMigration", () => {
       ]`;
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const migrationContext = await mockMigrationContext(projectPath);
       const debugContext = new DebugMigrationContext(
         migrationContext,
@@ -1862,7 +1862,7 @@ describe("debugMigration", () => {
       ]`;
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const migrationContext = await mockMigrationContext(projectPath);
       const debugContext = new DebugMigrationContext(
         migrationContext,
@@ -2010,7 +2010,7 @@ describe("debugMigration", () => {
       }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const oldProjectSettings = {} as ProjectSettings;
+      const oldProjectSettings = {} as any;
       const debugContext = new DebugMigrationContext(
         migrationContext,
         testTasks,

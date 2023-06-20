@@ -13,7 +13,7 @@ import {
   err,
   ManifestUtil,
   devPreview,
-  ContextV3,
+  Context,
 } from "@microsoft/teamsfx-api";
 import { join } from "path";
 import {
@@ -50,7 +50,7 @@ export class OfficeAddinGenerator {
     }),
   ])
   static async generate(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
@@ -78,7 +78,7 @@ export class OfficeAddinGenerator {
   }
 
   public static async doScaffolding(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {

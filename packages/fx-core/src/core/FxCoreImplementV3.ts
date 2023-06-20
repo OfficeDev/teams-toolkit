@@ -5,25 +5,23 @@ import { hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
   BuildFolderName,
-  err,
   Func,
   FxError,
   Inputs,
   InputsWithProjectPath,
-  ok,
   Platform,
-  ResourceContextV3,
   Result,
   Stage,
   Tools,
-  v2,
   Void,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Container } from "typedi";
-
+import { DotenvParseOutput } from "dotenv";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -34,8 +32,8 @@ import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
   AzureSolutionQuestionNames,
-  SingleSignOnOptionItem,
   SPFxQuestionNames,
+  SingleSignOnOptionItem,
   ViewAadAppHelpLinkV5,
 } from "../component/constants";
 import { coordinator } from "../component/coordinator";
@@ -46,25 +44,20 @@ import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
+import { updateManifestV3 } from "../component/driver/teamsApp/appStudio";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
-import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
-import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
-import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
-import { DotenvParseOutput } from "dotenv";
-import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
 } from "../component/driver/teamsApp/utils/utils";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
-import {
-  getVersionState,
-  getProjectVersionFromPath,
-  getTrackingIdFromPath,
-} from "./middleware/utils/v3MigrationUtils";
+import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
+import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
+import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import {
   getQuestionsForAddWebpart,
@@ -74,9 +67,6 @@ import {
   getQuestionsForValidateAppPackage,
   getQuestionsForValidateManifest,
 } from "../component/question";
-import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
-import { updateManifestV3 } from "../component/driver/teamsApp/appStudio";
-import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";
@@ -89,8 +79,15 @@ import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
+import { ProjectMigratorMWV3, checkActiveResourcePlugins } from "./middleware/projectMigratorV3";
+import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
+import {
+  getProjectVersionFromPath,
+  getTrackingIdFromPath,
+  getVersionState,
+} from "./middleware/utils/v3MigrationUtils";
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
+import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { listCollaborator, checkPermission, grantPermission } from "./collaborator";
 
@@ -234,24 +231,27 @@ export class FxCoreV3Implement {
       manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
     };
-    const contextV3: DriverContext = createDriverContext(inputs);
-    const res = await updateAadClient.run(inputArgs, contextV3);
+    const Context: DriverContext = createDriverContext(inputs);
+    const res = await updateAadClient.run(inputArgs, Context);
     if (res.isErr()) {
       return err(res.error);
     }
-    if (contextV3.platform === Platform.CLI) {
+    if (Context.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
-      contextV3.ui!.showMessage("info", msg, false);
+      Context.ui!.showMessage("info", msg, false);
     } else {
       const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
-      contextV3
-        .ui!.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
-        .then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
-            contextV3.ui!.openUrl(ViewAadAppHelpLinkV5);
-          }
-        });
+      Context.ui!.showMessage(
+        "info",
+        msg,
+        false,
+        getLocalizedString("core.deploy.aadManifestLearnMore")
+      ).then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+          Context.ui!.openUrl(ViewAadAppHelpLinkV5);
+        }
+      });
     }
     return ok(Void);
   }
@@ -289,7 +289,7 @@ export class FxCoreV3Implement {
   ])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     inputs.manifestTemplatePath = inputs[CoreQuestionNames.TeamsAppManifestFilePath] as string;
-    const context = createContextV3() as ResourceContextV3;
+    const context = createContextV3();
     const res = await updateManifestV3(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
       ctx!.envVars = envUtil.map2object(res.value);
@@ -330,8 +330,8 @@ export class FxCoreV3Implement {
       webpartName: inputs[SPFxQuestionNames.WebPartName],
       spfxPackage: SPFxVersionOptionIds.installLocally,
     };
-    const contextV3: DriverContext = createDriverContext(inputs);
-    return await driver.run(args, contextV3);
+    const Context: DriverContext = createDriverContext(inputs);
+    return await driver.run(args, Context);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
@@ -357,7 +357,7 @@ export class FxCoreV3Implement {
     const context = createContextV3();
     const res = await grantPermission(
       context,
-      inputs as v2.InputsWithProjectPath,
+      inputs as InputsWithProjectPath,
       undefined,
       TOOLS.tokenProvider
     );
@@ -377,7 +377,7 @@ export class FxCoreV3Implement {
     const context = createContextV3();
     const res = await checkPermission(
       context,
-      inputs as v2.InputsWithProjectPath,
+      inputs as InputsWithProjectPath,
       undefined,
       TOOLS.tokenProvider
     );
@@ -397,7 +397,7 @@ export class FxCoreV3Implement {
     const context = createContextV3();
     const res = await listCollaborator(
       context,
-      inputs as v2.InputsWithProjectPath,
+      inputs as InputsWithProjectPath,
       undefined,
       TOOLS.tokenProvider
     );
@@ -586,8 +586,8 @@ export class FxCoreV3Implement {
       "build",
       `aad.${inputs.env}.json`
     );
-    const contextV3: DriverContext = createDriverContext(inputs);
-    await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
+    const Context: DriverContext = createDriverContext(inputs);
+    await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }
 

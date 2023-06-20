@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProjectSettings } from "@microsoft/teamsfx-api";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { InstallToolArgs } from "../../../../component/driver/devTool/interfaces/InstallToolArgs";
 import { BaseAppYmlGenerator } from "../appYmlGenerator";
@@ -66,7 +65,7 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
   };
 
   constructor(
-    oldProjectSettings: ProjectSettings,
+    oldProjectSettings: any,
     config: AppLocalYmlConfig,
     placeholderMappings: DebugPlaceholderMapping
   ) {

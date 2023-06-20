@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ContextV3, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
+import { Context, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
@@ -17,13 +17,13 @@ import { createAuthFiles } from "../resource/aadApp/utils";
 export class SSO {
   name = "sso";
 
-  async add(context: ContextV3, inputs: InputsWithProjectPath): Promise<Result<any, FxError>> {
+  async add(context: Context, inputs: InputsWithProjectPath): Promise<Result<any, FxError>> {
     return addSsoV3(context, inputs);
   }
 }
 
 async function addSsoV3(
-  context: ContextV3,
+  context: Context,
   inputs: InputsWithProjectPath
 ): Promise<Result<any, FxError>> {
   context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoStart, {

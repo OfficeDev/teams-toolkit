@@ -8,7 +8,6 @@ import {
   FuncValidation,
   Inputs,
   Platform,
-  ProjectSettings,
   Settings,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
@@ -265,7 +264,7 @@ describe("Other test case", () => {
     }
   });
   it("isValidProject: true", async () => {
-    const projectSettings: ProjectSettings = {
+    const projectSettings: any = {
       appName: "myapp",
       version: "1.0.0",
       projectId: "123",

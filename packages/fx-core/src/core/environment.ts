@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { EnvConfig, FxError, Result, err, ok, v3 } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import fs from "fs-extra";
@@ -65,11 +65,7 @@ class EnvironmentManager {
 
 export const environmentManager = new EnvironmentManager();
 
-export function newEnvInfoV3(
-  envName?: string,
-  config?: EnvConfig,
-  state?: v3.ResourceStates
-): v3.EnvInfoV3 {
+export function newEnvInfoV3(envName?: string, config?: any, state?: any): any {
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
     config: config ?? {

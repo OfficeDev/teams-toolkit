@@ -7,13 +7,7 @@ import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
-import {
-  AppPackageFolderName,
-  AzureSolutionSettings,
-  Inputs,
-  Platform,
-  ProjectSettings,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
@@ -236,12 +230,12 @@ export function getParameterFromCxt(
   return value;
 }
 
-export function getCapabilityStatus(projectSettings: ProjectSettings): {
+export function getCapabilityStatus(projectSettings: any): {
   TabSso: boolean;
   BotSso: boolean;
   Tab: boolean;
 } {
-  const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
+  const capabilities = (projectSettings.solutionSettings as any).capabilities;
   const tabSso = capabilities.includes("TabSSO");
   const botSso = capabilities.includes("BotSSO");
   const tab = capabilities.includes("Tab");

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, PluginContext, v2 } from "@microsoft/teamsfx-api";
+import { FxError, Context } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { Constants, Messages, Telemetry } from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
@@ -39,13 +39,13 @@ export class AadAppClient {
   }
 
   public static async grantPermission(
-    ctx: PluginContext | v2.Context,
+    ctx: Context,
     objectId: string,
     userObjectId: string
   ): Promise<void> {
     try {
       await GraphClient.grantPermission(TokenProvider.token as string, objectId, userObjectId);
-    } catch (error) {
+    } catch (error: any) {
       if (error?.response?.data?.error.message == Constants.createOwnerDuplicatedMessage) {
         ctx.logProvider?.info(Messages.OwnerAlreadyAdded(userObjectId, objectId));
         return;

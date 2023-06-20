@@ -3,11 +3,11 @@
 import {
   FxError,
   InputsWithProjectPath,
+  ManifestCapability,
   Result,
   TeamsAppManifest,
   err,
   ok,
-  v3,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -89,7 +89,7 @@ export class ManifestUtils {
 
   async addCapabilities(
     inputs: InputsWithProjectPath,
-    capabilities: v3.ManifestCapability[],
+    capabilities: ManifestCapability[],
     isM365 = false
   ): Promise<Result<undefined, FxError>> {
     const appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
@@ -266,7 +266,7 @@ export class ManifestUtils {
 
   async getManifest(
     projectPath: string,
-    envInfo: v3.EnvInfoV3,
+    envInfo: any,
     ignoreEnvStateValueMissing: boolean,
     telemetryProps?: Record<string, string>
   ): Promise<Result<TeamsAppManifest, FxError>> {
@@ -415,7 +415,7 @@ export class ManifestUtils {
 }
 
 export function resolveManifestTemplate(
-  envInfo: v3.EnvInfoV3,
+  envInfo: any,
   templateString: string,
   keepEnvStatePlaceHoldersIfValuesNotExist = true
 ): string {

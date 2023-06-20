@@ -6,12 +6,11 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
-  ContextV3,
+  Context,
   err,
   FxError,
   LogProvider,
   ok,
-  PluginContext,
   Result,
   SystemError,
   UserError,
@@ -35,9 +34,7 @@ export class YoChecker implements DependencyChecker {
     this._logger = logger;
   }
 
-  public async ensureLatestDependency(
-    ctx: PluginContext | ContextV3
-  ): Promise<Result<boolean, FxError>> {
+  public async ensureLatestDependency(ctx: Context): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYoStart);
     try {
       this._logger.info(`${displayName} not found, installing...`);

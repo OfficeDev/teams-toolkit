@@ -1,22 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
 import * as chai from "chai";
-import * as sinon from "sinon";
-import { createContextV3 } from "../../../../../src/component/utils";
-import { ComponentNames } from "../../../../../src/component/constants";
 import faker from "faker";
-import { MockedAzureAccountProvider, MockedM365Provider } from "../../../../plugins/solution/util";
+import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import * as sinon from "sinon";
+import { FeatureFlagName } from "../../../../../src/common/constants";
+import { AppUser } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AadApp } from "../../../../../src/component/resource/aadApp/aadApp";
+import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
+import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
-import { AppUser } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
-import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
-import { Inputs, Platform, ResourceContextV3 } from "@microsoft/teamsfx-api";
-import { InputsWithProjectPath } from "@microsoft/teamsfx-api";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { FeatureFlagName } from "../../../../../src/common/constants";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../../plugins/solution/util";
 
 describe("aadApp", () => {
   const sandbox = sinon.createSandbox();
@@ -46,30 +43,6 @@ describe("aadApp", () => {
           resourceId: "resourceId",
         },
       ]);
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-      ctx.envInfo = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-          [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
-        },
-        config: {},
-      };
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -85,28 +58,6 @@ describe("aadApp", () => {
   });
 
   it("list collaborator error", async function () {
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    ctx.envInfo = {
-      envName: "dev",
-      state: {
-        solution: {},
-      },
-      config: {},
-    };
     ctx.tokenProvider = {
       m365TokenProvider: new MockedM365Provider(),
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -119,30 +70,6 @@ describe("aadApp", () => {
 
   it("check permission success", async function () {
     sandbox.stub(AadAppClient, "checkPermission").resolves(true);
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    ctx.envInfo = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
-      },
-      config: {},
-    };
     ctx.tokenProvider = {
       m365TokenProvider: new MockedM365Provider(),
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -156,30 +83,6 @@ describe("aadApp", () => {
   });
 
   it("check permission error", async function () {
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    ctx.envInfo = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: {},
-      },
-      config: {},
-    };
     ctx.tokenProvider = {
       m365TokenProvider: new MockedM365Provider(),
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -192,30 +95,6 @@ describe("aadApp", () => {
 
   it("grant permission success", async function () {
     sandbox.stub(AadAppClient, "grantPermission").resolves();
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    ctx.envInfo = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
-      },
-      config: {},
-    };
     ctx.tokenProvider = {
       m365TokenProvider: new MockedM365Provider(),
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -226,30 +105,6 @@ describe("aadApp", () => {
   });
 
   it("grant permission error", async function () {
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    ctx.envInfo = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: {},
-      },
-      config: {},
-    };
     ctx.tokenProvider = {
       m365TokenProvider: new MockedM365Provider(),
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -288,28 +143,6 @@ describe("aadApp", () => {
             },
           ];
         });
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-      ctx.envInfo = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -325,28 +158,6 @@ describe("aadApp", () => {
 
     it("grant permission v3", async function () {
       sandbox.stub(AadAppClient, "grantPermission").resolves();
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-      ctx.envInfo = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -359,28 +170,6 @@ describe("aadApp", () => {
 
     it("check permission v3", async function () {
       sandbox.stub(AadAppClient, "checkPermission").resolves(true);
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-      ctx.envInfo = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),

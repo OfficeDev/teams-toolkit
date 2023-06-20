@@ -51,6 +51,7 @@
     "test:azureFuncDeploy": "nyc mocha \"tests/component/driver/deploy/azure/AzureFunctionDeployDriver.test.ts\"",
     "test:devportal": "nyc mocha \"tests/component/developerPortalScaffoldUtils.test.ts\"",
     "test:qm": "nyc mocha \"tests/ui/qm.visitor.test.ts\"",
+    "test:coll": "nyc mocha \"tests/core/collaborator.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

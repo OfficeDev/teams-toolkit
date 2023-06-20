@@ -9,7 +9,6 @@ import {
   M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
-  PluginContext,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -25,7 +24,6 @@ import {
 import faker from "faker";
 import sinon from "sinon";
 import { SPFXQuestionNames } from "../../../../src/component/generator/spfx/utils/questions";
-import { newEnvInfo } from "../../../../src/core/environment";
 
 export class TestHelper {
   static getFakePluginContext(
@@ -33,7 +31,7 @@ export class TestHelper {
     testFolder: string,
     framework: string | undefined,
     webpartName?: string
-  ): PluginContext {
+  ): any {
     const pluginContext = {
       projectSettings: {
         appName: appName,
@@ -41,13 +39,12 @@ export class TestHelper {
       root: testFolder,
       m365TokenProvider: mockM365TokenProvider(),
       answers: {},
-    } as PluginContext;
+    } as any;
     pluginContext.answers![SPFXQuestionNames.webpart_name] = webpartName
       ? webpartName
       : "helloworld";
     pluginContext.answers![SPFXQuestionNames.webpart_desp] = "test";
     pluginContext.answers![SPFXQuestionNames.framework_type] = framework;
-    pluginContext.envInfo = newEnvInfo("test", undefined, new Map<string, Map<string, string>>());
     return pluginContext;
   }
 }

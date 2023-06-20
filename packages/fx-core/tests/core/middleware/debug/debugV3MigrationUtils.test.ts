@@ -6,7 +6,6 @@ import fs from "fs-extra";
 import * as chai from "chai";
 import * as os from "os";
 import * as sinon from "sinon";
-import { ProjectSettings } from "@microsoft/teamsfx-api";
 
 import {
   generateLabel,
@@ -90,14 +89,14 @@ describe("debugV3MigrationUtils", () => {
         message: "not bot",
         projectSettings: {
           solutionSettings: { activeResourcePlugins: [] },
-        } as unknown as ProjectSettings,
+        } as any,
         isFuncHostedBot: false,
       },
       {
         message: "undefined pluginSettings",
         projectSettings: {
           solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },
-        } as unknown as ProjectSettings,
+        } as any,
         isFuncHostedBot: false,
       },
       {
@@ -105,7 +104,7 @@ describe("debugV3MigrationUtils", () => {
         projectSettings: {
           solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },
           pluginSettings: {},
-        } as unknown as ProjectSettings,
+        } as any,
         isFuncHostedBot: false,
       },
       {
@@ -113,7 +112,7 @@ describe("debugV3MigrationUtils", () => {
         projectSettings: {
           solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },
           pluginSettings: { "fx-resource-bot": {} },
-        } as unknown as ProjectSettings,
+        } as any,
         isFuncHostedBot: false,
       },
       {
@@ -121,7 +120,7 @@ describe("debugV3MigrationUtils", () => {
         projectSettings: {
           solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },
           pluginSettings: { "fx-resource-bot": { "host-type": "azure-service" } },
-        } as unknown as ProjectSettings,
+        } as any,
         isFuncHostedBot: false,
       },
       {
@@ -129,7 +128,7 @@ describe("debugV3MigrationUtils", () => {
         projectSettings: {
           solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },
           pluginSettings: { "fx-resource-bot": { "host-type": "azure-functions" } },
-        } as unknown as ProjectSettings,
+        } as any,
         isFuncHostedBot: true,
       },
       {
@@ -137,7 +136,7 @@ describe("debugV3MigrationUtils", () => {
         projectSettings: {
           solutionSettings: { activeResourcePlugins: ["fx-resource-bot"] },
           pluginSettings: { "fx-resource-bot": { "host-type": "azure-function" } },
-        } as unknown as ProjectSettings,
+        } as any,
         isFuncHostedBot: true,
       },
     ];

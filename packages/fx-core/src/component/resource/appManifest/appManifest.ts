@@ -2,15 +2,14 @@
 // Licensed under the MIT license.
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  CloudResource,
+  Context,
   err,
   FxError,
+  InputsWithProjectPath,
   M365TokenProvider,
   ok,
   Result,
   UserError,
-  v2,
-  v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -22,14 +21,14 @@ import { Constants, ErrorMessages } from "../../driver/teamsApp/constants";
 import { AppStudioError } from "../../driver/teamsApp/errors";
 import { AppUser } from "../../driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioResultFactory } from "../../driver/teamsApp/results";
-import { TelemetryEventName, TelemetryUtils } from "../../driver/teamsApp/utils/telemetry";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { TelemetryEventName, TelemetryUtils } from "../../driver/teamsApp/utils/telemetry";
 
 /**
  * @deprecated Collaboration methods will be moved.
  */
 @Service("app-manifest")
-export class AppManifest implements CloudResource {
+export class AppManifest {
   name = "app-manifest";
   outputs = {
     teamsAppId: {
@@ -51,9 +50,9 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async listCollaborator(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3 | undefined,
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: any | undefined,
     m365TokenProvider: M365TokenProvider,
     teamsAppIdV3?: string
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
@@ -126,9 +125,9 @@ export class AppManifest implements CloudResource {
     }),
   ])
   public async grantPermission(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3 | undefined,
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: any | undefined,
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser,
     teamsAppIdV3?: string
@@ -198,9 +197,9 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async checkPermission(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3 | undefined,
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: any | undefined,
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser,
     teamsAppIdV3?: string

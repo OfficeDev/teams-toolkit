@@ -1,19 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Component,
-  ContextV3,
-  FxError,
-  InputsWithProjectPath,
-  SystemError,
-} from "@microsoft/teamsfx-api";
+import { Context, FxError, InputsWithProjectPath, SystemError } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { globalVars, TOOLS } from "../core/globalVars";
-import { AzureSolutionQuestionNames } from "./constants";
+import {
+  AzureSolutionQuestionNames,
+  PluginNames,
+  ComponentNames,
+  Scenarios,
+  TelemetryConstants,
+} from "./constants";
 import { TelemetryKeys } from "./resource/botService/constants";
-import { PluginNames } from "./constants";
-import { ComponentNames, Scenarios, TelemetryConstants } from "./constants";
 import { TelemetryHelper } from "./resource/botService/telemetryHelper";
 
 type TelemetryProps = { [key: string]: string };
@@ -76,7 +74,7 @@ export function sendErrorEvent(
 
 export function sendMigratedStartEvent(
   eventName: string,
-  context: ContextV3,
+  context: Context,
   inputs: InputsWithProjectPath,
   properties?: TelemetryProps,
   measurements?: { [key: string]: number }
@@ -94,7 +92,7 @@ export function sendMigratedStartEvent(
     sendStartEvent(TelemetryEvent.GenerateBicep, props, measurements);
     return;
   }
-  if (eventName === TelemetryEvent.Provision && context.envInfo?.envName === "local") {
+  if (eventName === TelemetryEvent.Provision && inputs.env === "local") {
     migrateProvision(
       (props) => {
         sendStartEvent(TelemetryEvent.LocalDebug, props, measurements);
@@ -104,7 +102,7 @@ export function sendMigratedStartEvent(
     );
     return;
   }
-  if (eventName === TelemetryEvent.Provision && context.envInfo?.envName !== "local") {
+  if (eventName === TelemetryEvent.Provision && inputs.env !== "local") {
     migrateProvision(
       (props) => {
         sendStartEvent(TelemetryEvent.Provision, props, measurements);
@@ -131,7 +129,7 @@ export function sendMigratedStartEvent(
 
 export function sendMigratedSuccessEvent(
   eventName: string,
-  context: ContextV3,
+  context: Context,
   inputs: InputsWithProjectPath,
   properties?: TelemetryProps,
   measurements?: { [key: string]: number }
@@ -141,23 +139,15 @@ export function sendMigratedSuccessEvent(
   }
   if (eventName === TelemetryEvent.AddFeature) {
     const componentName = properties?.[TelemetryProperty.Component] ?? "";
-    let props: TelemetryProps = {
+    const props: TelemetryProps = {
       ...properties,
       [TelemetryProperty.Component]: migrateComponentName(componentName),
     };
-    if (componentName === ComponentNames.TeamsBot) {
-      props = fulfillCommonBotProperties(
-        props,
-        context.projectSetting.components.find(
-          (component) => component.name === ComponentNames.TeamsBot
-        )
-      );
-    }
     sendSuccessEvent(TelemetryEvent.Scaffold, props, measurements);
     sendSuccessEvent(TelemetryEvent.GenerateBicep, props, measurements);
     return;
   }
-  if (eventName === TelemetryEvent.Provision && context.envInfo?.envName === "local") {
+  if (eventName === TelemetryEvent.Provision && inputs.env === "local") {
     migrateProvision(
       (props) => {
         sendSuccessEvent(TelemetryEvent.LocalDebug, props, measurements);
@@ -169,7 +159,7 @@ export function sendMigratedSuccessEvent(
     );
     return;
   }
-  if (eventName === TelemetryEvent.Provision && context.envInfo?.envName !== "local") {
+  if (eventName === TelemetryEvent.Provision && inputs.env !== "local") {
     migrateProvision(
       (props) => {
         sendSuccessEvent(TelemetryEvent.Provision, props, measurements);
@@ -195,7 +185,7 @@ export function sendMigratedSuccessEvent(
 export function sendMigratedErrorEvent(
   eventName: string,
   error: FxError,
-  context: ContextV3,
+  context: Context,
   inputs: InputsWithProjectPath,
   properties?: TelemetryProps,
   measurements?: { [key: string]: number }
@@ -239,22 +229,18 @@ function needMigrate(eventName: string, properties?: TelemetryProps): boolean {
   );
 }
 
-function migrateEventName(eventName: string, context: ContextV3): string {
+function migrateEventName(eventName: string, context: Context): string {
   if (eventName === TelemetryEvent.AddFeature) {
     return TelemetryEvent.Scaffold;
   }
-  if (eventName === TelemetryEvent.Provision && context.envInfo?.envName === "local") {
+  if (eventName === TelemetryEvent.Provision) {
     return TelemetryEvent.LocalDebug;
   }
   return eventName;
 }
 
-function getMigrateComponents(context: ContextV3): Component[] {
-  return context.projectSetting.components.filter((component) =>
-    [ComponentNames.TeamsApi, ComponentNames.TeamsBot, ComponentNames.TeamsTab].includes(
-      component.name
-    )
-  );
+function getMigrateComponents(context: Context): any[] {
+  return [];
 }
 
 function migrateComponentName(componentName: string): string {
@@ -272,31 +258,17 @@ function migrateComponentName(componentName: string): string {
 
 function migrateDeploy(
   cb: (properties?: TelemetryProps) => void,
-  context: ContextV3,
+  context: Context,
   inputs: InputsWithProjectPath,
   properties?: TelemetryProps
 ): void {
-  let inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy];
-  if (!Array.isArray(inputPlugins)) {
-    inputPlugins = context.projectSetting.components
-      .filter((component) => component.deploy && component.hosting != undefined)
-      .map((component) => migrateComponentName(component.name));
-  }
-
+  const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy];
   if (Array.isArray(inputPlugins)) {
     inputPlugins.forEach((pluginName) => {
-      let props: TelemetryProps = {
+      const props: TelemetryProps = {
         ...properties,
         [TelemetryProperty.Component]: migrateComponentName(pluginName),
       };
-      if (pluginName === PluginNames.BOT) {
-        props = fulfillCommonBotProperties(
-          props,
-          context.projectSetting.components.find(
-            (component) => component.name === ComponentNames.TeamsBot
-          )
-        );
-      }
       cb(props);
     });
   }
@@ -304,7 +276,7 @@ function migrateDeploy(
 
 function migrateProvision(
   cb: (properties?: TelemetryProps) => void,
-  context: ContextV3,
+  context: Context,
   properties?: TelemetryProps
 ): void {
   const components = getMigrateComponents(context);
@@ -318,7 +290,7 @@ function migrateProvision(
   });
 }
 
-function fulfillCommonBotProperties(props: TelemetryProps, component?: Component): TelemetryProps {
+function fulfillCommonBotProperties(props: TelemetryProps, component?: any): TelemetryProps {
   if (component?.name === ComponentNames.TeamsBot) {
     props = {
       ...props,

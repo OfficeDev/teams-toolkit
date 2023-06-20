@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
-import { PluginContext, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
+import { Context, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "../../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { AppDefinition } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { AppUser } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
@@ -57,7 +57,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -87,7 +87,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -168,7 +168,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -193,7 +193,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -224,7 +224,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -253,7 +253,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -284,7 +284,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -313,7 +313,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -352,7 +352,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -381,7 +381,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -449,7 +449,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -484,7 +484,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 

@@ -95,21 +95,21 @@ jobs:
 
       - name: create pvt file (random platform/node)
         if: ${{ github.event.schedule == '0 18 * * *' }} || ${{ github.event.inputs.test-case }} == ''
+        working-directory: ./packages/tests
         run: |
           npm install
-          cd .github/scripts
-          npx ts-node createRandomPVT.ts
-          cd ../..
+          npx ts-node ./scripts/createRandomPVT.ts
 
       - name: setup matrix
         id: setup-matrix
+        working-directory: ./packages/tests
         run: |
           matrix=""
           if [ ! -z "${{ github.event.inputs.test-case }}" ]; then
             matrix='{"node-version": ${{ github.event.inputs.node-version }}, "test-case": ${{ github.event.inputs.test-case }}, "os": ${{ github.event.inputs.os }} }'
           else
-            bash .github/scripts/convert-test-case.sh ./.github/workflows/pvt.json
-            matrix=$(cat ./.github/workflows/test-case-temp.json)
+            bash ./scripts/convert-test-case.sh ./workflows/pvt.json
+            matrix=$(cat ./scripts/test-case-temp.json)
           fi
 
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
@@ -136,6 +136,7 @@ jobs:
 
       - name: Archive Test Plan
         if: contains(steps.ttk.outputs.version, 'alpha') == false
+        working-directory: ./packages/tests
         run: |
           npm install
           testplanid='${{ github.event.inputs.target-testplan-id }}'
@@ -150,7 +151,7 @@ jobs:
         with:
           name: testplan
           path: |
-            ./testplan.json
+            ./packages/tests/testplan.json
 
     outputs:
       npm-tag: ${{ steps.bvt.outputs.npm-tag || steps.pvt.outputs.npm-tag }}
@@ -197,6 +198,9 @@ jobs:
       max-parallel: 50
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
+    defaults:
+      run: 
+        working-directory: packages/tests
     steps:
       - name: Set m365 account (unix)
         if: matrix.os != 'windows-latest'
@@ -341,7 +345,6 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-
           npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
 
       - name: Run UI Test(mac & win)

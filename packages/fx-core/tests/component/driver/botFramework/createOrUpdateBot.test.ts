@@ -318,5 +318,20 @@ describe("CreateOrUpdateM365BotDriver", () => {
         "The bot registration has been updated successfully (https://dev.botframework.com/bots?id=11111111-1111-1111-1111-111111111111)."
       );
     });
+
+    it("botId is not a valid GUID", async () => {
+      const args: any = {
+        botId: "test-bot-id",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        description: "test-description",
+        iconUrl: "test-iconUrl",
+      };
+      const executionResult = await driver.execute(args, mockedDriverContext);
+      chai.assert(executionResult.result.isErr());
+      if (executionResult.result.isErr()) {
+        chai.assert(executionResult.result.error.name === "InvalidBotId");
+      }
+    });
   });
 });

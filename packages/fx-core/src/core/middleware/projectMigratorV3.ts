@@ -375,7 +375,7 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
 }
 
 async function loadProjectSettings(projectPath: string): Promise<any> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {

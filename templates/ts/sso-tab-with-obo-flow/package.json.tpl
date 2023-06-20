@@ -10,7 +10,7 @@
     "@microsoft/mgt-element": "^2.8.0",
     "@microsoft/mgt-react": "^2.8.0",
     "@microsoft/mgt-teamsfx-provider": "^2.8.0",
-    "@microsoft/microsoft-graph-client": "^3.0.1",
+    "@microsoft/microsoft-graph-client": "^3.0.5",
     "@microsoft/teams-js": "^2.7.1",
     "@microsoft/teamsfx": "^2.2.0",
     "@microsoft/teamsfx-react": "^3.0.0",

@@ -369,6 +369,18 @@ class CLIUserInteraction implements UserInteraction {
     if (loadRes.isErr()) {
       return err(loadRes.error);
     }
+    if (config.options.length === 1 && config.skipSingleOption) {
+      const answer = (config.options as StaticOptions)[0];
+      if (config.returnObject) {
+        return ok({ type: "success", result: answer });
+      } else {
+        if (typeof answer === "string") {
+          return ok({ type: "success", result: answer });
+        } else {
+          return ok({ type: "success", result: answer.id });
+        }
+      }
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
       const [choices, defaultValue] = this.toChoices(
@@ -429,6 +441,18 @@ class CLIUserInteraction implements UserInteraction {
     const loadRes = await this.loadOptions(config);
     if (loadRes.isErr()) {
       return err(loadRes.error);
+    }
+    if (config.options.length === 1 && config.skipSingleOption) {
+      const answers = config.options as StaticOptions;
+      if (config.returnObject) {
+        return ok({ type: "success", result: answers });
+      } else {
+        if (typeof answers[0] === "string") {
+          return ok({ type: "success", result: answers });
+        } else {
+          return ok({ type: "success", result: (answers as OptionItem[]).map((a) => a.id) });
+        }
+      }
     }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {

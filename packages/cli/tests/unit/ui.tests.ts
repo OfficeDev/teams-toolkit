@@ -191,7 +191,22 @@ describe("User Interaction Tests", function () {
       }
     });
 
-    it("Auto skip for single option", async () => {
+    it("Auto skip for single option 1", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
       const config: SingleSelectConfig = {
         name: "test",
         title: "test",
@@ -300,7 +315,22 @@ describe("User Interaction Tests", function () {
       }
     });
 
-    it("Auto skip for single option", async () => {
+    it("Auto skip for single option 1", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
       const config: MultiSelectConfig = {
         name: "test",
         title: "test",

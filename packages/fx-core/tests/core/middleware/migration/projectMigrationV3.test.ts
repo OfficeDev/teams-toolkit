@@ -1404,10 +1404,9 @@ describe("debugMigration", () => {
   });
 });
 
-describe("updateGitignore", async () => {
+describe("updateGitignore", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
-  const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
@@ -1418,18 +1417,21 @@ describe("updateGitignore", async () => {
   });
 
   it("should update existing gitignore file", async () => {
+    const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
     await copyTestProject("happyPath", projectPath);
 
-    await generateAppYml(migrationContext);
+    await MigratorV3.updateGitignore(migrationContext);
 
     await assertFileContent(projectPath, ".gitignore", "whenGitignoreExist");
   });
 
   it("should create new gitignore file when no gitignore file exists", async () => {
+    const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
     await copyTestProject("happyPath", projectPath);
+
     await fs.remove(path.join(projectPath, ".gitignore"));
 
-    await generateAppYml(migrationContext);
+    await MigratorV3.updateGitignore(migrationContext);
 
     await assertFileContent(projectPath, ".gitignore", "whenGitignoreNotExist");
   });

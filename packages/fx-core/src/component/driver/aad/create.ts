@@ -160,12 +160,12 @@ export class CreateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new UnhandledUserError(error as Error, actionName, helpLink)),
+            result: err(new UnhandledUserError(new Error(message), actionName, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new UnhandledError(error as Error, actionName)),
+            result: err(new UnhandledError(new Error(message), actionName)),
             summaries: summaries,
           };
         }

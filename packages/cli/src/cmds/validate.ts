@@ -59,7 +59,7 @@ export class ManifestValidate extends YargsCommand {
           // Throw error if --env not specified
           if (!args.env && !CLIUIInstance.interactive) {
             const error = new EnvNotSpecified();
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
             return err(error);
           }
         }

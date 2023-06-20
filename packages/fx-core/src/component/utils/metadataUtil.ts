@@ -38,6 +38,8 @@ export class MetadataUtil {
     props[prefix + "version"] = manifest.version ?? "";
     props[prefix + "manifestVersion"] = manifest.manifestVersion ?? "";
     props[prefix + "bots"] = manifest.bots?.map((bot) => bot.botId).toString() ?? "";
+    props[prefix + "composeExtensions"] =
+      manifest.composeExtensions?.map((bot) => bot.botId).toString() ?? "";
     props[prefix + "staticTabs.contentUrl"] =
       manifest.staticTabs
         ?.map((tab) =>

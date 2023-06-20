@@ -9,7 +9,7 @@ import { assert } from "chai";
 import * as sinon from "sinon";
 
 import * as tools from "../../../../src/common/tools";
-import * as utils from "../../../../src/component/code/utils";
+import * as utils from "../../../../src/component/driver/script/scriptDriver";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";

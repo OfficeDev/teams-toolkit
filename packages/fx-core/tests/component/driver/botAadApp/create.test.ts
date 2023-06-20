@@ -17,6 +17,7 @@ import {
   UnhandledError,
   UnhandledUserError,
 } from "../../../../src/error/common";
+import { CreateAADAppError } from "../../../../src/component/resource/botService/errors";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -207,6 +208,30 @@ describe("botAadAppCreate", async () => {
         "Bot password is empty. Add it in env file or clear bot id to have bot id/password pair regenerated. action: botAadApp/create."
       )
       .and.is.instanceOf(UserError);
+  });
+
+  it("should show detailed error when GraphClient throws CreateAADAppError", async () => {
+    sinon.stub(GraphClient, "registerAadApp").callsFake(() => {
+      throw new CreateAADAppError({
+        response: {
+          data: {
+            error: {
+              message: "Quota exceeded",
+            },
+          },
+        },
+      });
+    });
+    const args: any = {
+      name: expectedDisplayName,
+    };
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
+      (error) => {
+        console.log(JSON.stringify(error));
+        expect(error instanceof UnhandledUserError).to.be.true;
+        expect(error.message).contains("Quota exceeded");
+      }
+    );
   });
 
   it("should be good when reusing existing bot in env", async () => {

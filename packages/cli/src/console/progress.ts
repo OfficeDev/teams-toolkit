@@ -30,7 +30,7 @@ export default class Progress implements IProgressHandler {
 
     if (this.instances.length === 0 && this.finishedRows.length > 0) {
       for (const row of this.finishedRows) {
-        row.freeze();
+        row.d.freeze();
       }
       this.finishedRows = [];
     }

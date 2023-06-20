@@ -486,11 +486,7 @@ export type SelectFileConfig = UIConfig<string> & {
     filters?: {
         [name: string]: string[];
     };
-    possibleFiles?: {
-        id: string;
-        label: string;
-        description?: string;
-    }[];
+    possibleOptions?: OptionItem[];
 };
 
 // @public (undocumented)
@@ -526,6 +522,7 @@ export const SettingsFolderName = "teamsfx";
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
+    possibleOptions?: OptionItem[];
     // (undocumented)
     type: "singleFile";
     validation?: FuncValidation<string>;

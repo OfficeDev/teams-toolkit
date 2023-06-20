@@ -260,6 +260,11 @@ export interface SingleFileQuestion extends UserInputQuestion {
    * validation function
    */
   validation?: FuncValidation<string>;
+
+  /**
+   * possible options.
+   */
+  possibleOptions?: OptionItem[];
 }
 
 export interface MultiFileQuestion extends UserInputQuestion {

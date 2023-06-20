@@ -135,14 +135,10 @@ export type SelectFileConfig = UIConfig<string> & {
   filters?: { [name: string]: string[] };
 
   /**
-   * Possible files that will be listed for users to select.
+   * Possible options that will be listed for users to select.
    * The id cannot be "default" or "browse" as they are reserved for default and browse options.
    */
-  possibleFiles?: {
-    id: string;
-    label: string;
-    description?: string;
-  }[];
+  possibleOptions?: OptionItem[];
 };
 
 /**

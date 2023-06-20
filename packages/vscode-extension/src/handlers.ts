@@ -586,7 +586,7 @@ export async function publishInDeveloperPortalHandler(
     if (lastAppPackageFile && fs.existsSync(lastAppPackageFile)) {
       selectFileConfig.default = lastAppPackageFile;
     } else {
-      selectFileConfig.possibleFiles = files.map((file) => {
+      selectFileConfig.possibleOptions = files.map((file) => {
         const appPackageFilename = path.basename(file);
         const appPackageFilepath = path.dirname(file);
         return {

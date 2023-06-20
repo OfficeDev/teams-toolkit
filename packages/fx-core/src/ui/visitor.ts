@@ -214,6 +214,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         step: step,
         totalSteps: totalSteps,
         validation: validationFunc,
+        possibleOptions: question.possibleOptions,
       });
     } else if (question.type === "folder") {
       const validationFunc = question.validation

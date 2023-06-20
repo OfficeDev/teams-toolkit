@@ -601,17 +601,13 @@ export class VsCodeUI implements UserInteraction {
   async selectFileInQuickPick(
     config: UIConfig<any> & {
       filters?: { [name: string]: string[] };
-      possibleFiles?: {
-        id: string;
-        label: string;
-        description?: string;
-      }[];
+      possibleOptions?: OptionItem[];
     },
     type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
-    if (config.possibleFiles) {
-      if (config.possibleFiles.find((o) => o.id === "browse" || o.id === "default")) {
+    if (config.possibleOptions) {
+      if (config.possibleOptions.find((o) => o.id === "browse" || o.id === "default")) {
         return Promise.resolve(
           err(
             new SystemError(
@@ -640,8 +636,8 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise(async (resolve) => {
         // set options
         quickPick.items = [
-          ...(config.possibleFiles
-            ? config.possibleFiles
+          ...(config.possibleOptions
+            ? convertToFxQuickPickItems(config.possibleOptions)
             : defaultValue
             ? [
                 {
@@ -688,7 +684,7 @@ export class VsCodeUI implements UserInteraction {
               resolve(
                 ok({
                   type: "success",
-                  result: config.possibleFiles?.find((f) => f.id === item.id)?.id,
+                  result: config.possibleOptions?.find((f) => f.id === item.id)?.id,
                 })
               );
             }

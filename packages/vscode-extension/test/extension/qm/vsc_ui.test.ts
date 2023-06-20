@@ -233,7 +233,7 @@ describe("UI Unit Tests", async () => {
         title: "title",
         placeholder: "placeholder",
         default: "default folder",
-        possibleFiles: [
+        possibleOptions: [
           {
             id: "1",
             label: "1",
@@ -283,7 +283,7 @@ describe("UI Unit Tests", async () => {
         title: "title",
         placeholder: "placeholder",
         default: "default",
-        possibleFiles: [
+        possibleOptions: [
           {
             id: "default",
             label: "default",

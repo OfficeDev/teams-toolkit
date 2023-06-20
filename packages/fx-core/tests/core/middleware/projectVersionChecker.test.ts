@@ -27,38 +27,6 @@ describe("Middleware - projectVersionChecker.test", () => {
     sandbox.restore();
   });
 
-  // To be removed after TEAMSFX_V3 feature flag is cleaned up
-  it("doesn't show update dialog or message", async () => {
-    class MyClass {
-      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        return ok("");
-      }
-    }
-
-    hooks(MyClass, {
-      myMethod: [ProjectVersionCheckerMW],
-    });
-    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
-      version: MetadataV2.projectMaxVersion,
-      source: VersionSource.projectSettings,
-    });
-
-    const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
-    const showLog = sandbox.stub(mockTools.logProvider, "warning");
-
-    const my = new MyClass();
-    // no project
-    const inputs1: Inputs = { platform: Platform.VSCode };
-    await my.myMethod(inputs1);
-    const inputs2: Inputs = {
-      platform: Platform.CLI,
-      projectPath: path.join(os.tmpdir(), randomAppName()),
-    };
-    await my.myMethod(inputs2);
-    assert.isTrue(showMessageFunc.callCount === 0);
-    assert.isTrue(showLog.callCount === 0);
-  });
-
   it("doesn't show update dialog or message in V3", async () => {
     try {
       class MyClass {

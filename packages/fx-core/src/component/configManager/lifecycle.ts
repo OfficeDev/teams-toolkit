@@ -101,11 +101,13 @@ function resolveString(
 }
 
 export class Lifecycle implements ILifecycle {
+  version: string;
   name: LifecycleName;
   driverDefs: DriverDefinition[];
-  constructor(name: LifecycleName, driverDefs: DriverDefinition[]) {
+  constructor(name: LifecycleName, driverDefs: DriverDefinition[], version: string) {
     this.driverDefs = driverDefs;
     this.name = name;
+    this.version = version;
   }
 
   resolvePlaceholders(): UnresolvedPlaceholders {
@@ -249,7 +251,8 @@ export class Lifecycle implements ILifecycle {
           ctx,
           driver.writeToEnvironmentFile
             ? new Map(Object.entries(driver.writeToEnvironmentFile))
-            : undefined
+            : undefined,
+          this.version
         );
         result = r.result;
         summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);

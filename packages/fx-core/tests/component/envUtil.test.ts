@@ -71,54 +71,79 @@ describe("env utils", () => {
     assert.equal(res1, path.join(".", "teamsfx", YmlFileNameOld));
   });
 
-  it("pathUtils.getEnvFolderPath", async () => {
-    const mockProjectModel: ProjectModel = {
-      environmentFolderPath: "/home/envs",
-    };
-    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-    const res = await pathUtils.getEnvFolderPath(".");
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      assert.equal(res.value, "/home/envs");
-    }
+  describe("pathUtils.getEnvFolderPath", () => {
+    it("happy path", async () => {
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+        environmentFolderPath: "/home/envs",
+      };
+      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
+      const res = await pathUtils.getEnvFolderPath(".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value, "/home/envs");
+      }
+    });
+    it("returns default value", async () => {
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
+      sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
+      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "pathExists").resolves(true);
+      const res = await pathUtils.getEnvFolderPath("");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value, path.join("", "./env"));
+      }
+    });
+    it("returns undefined value", async () => {
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
+      sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
+      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const res = await pathUtils.getEnvFolderPath("");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.isUndefined(res.value);
+      }
+    });
   });
-  it("pathUtils.getEnvFolderPath returns undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
-    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
-    sandbox.stub(fs, "pathExists").resolves(true);
-    const res = await pathUtils.getEnvFolderPath(".");
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      assert.isUndefined(res.value);
-    }
+
+  describe("pathUtils.getEnvFilePath", () => {
+    it("happy path", async () => {
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+        environmentFolderPath: "/home/envs",
+      };
+      sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
+      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "pathExists").resolves(true);
+      const res = await pathUtils.getEnvFilePath(".", "dev");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value, path.join("/home/envs", ".env.dev"));
+      }
+    });
+    it("returns default value", async () => {
+      const mockProjectModel: ProjectModel = {
+        version: "1.0.0",
+      };
+      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
+      const res = await pathUtils.getEnvFilePath(".", "dev");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value, path.join("./env", ".env.dev"));
+      }
+    });
   });
-  it("pathUtils.getEnvFilePath", async () => {
-    const mockProjectModel: ProjectModel = {
-      environmentFolderPath: "/home/envs",
-    };
-    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
-    sandbox.stub(fs, "pathExists").resolves(true);
-    const res = await pathUtils.getEnvFilePath(".", "dev");
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      assert.equal(res.value, path.join("/home/envs", ".env.dev"));
-    }
-  });
-  it("pathUtils.getEnvFilePath returns undefined", async () => {
-    const mockProjectModel: ProjectModel = {};
-    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-    const res = await pathUtils.getEnvFilePath(".", "dev");
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      assert.isUndefined(res.value);
-    }
-  });
+
   it("envUtil.readEnv", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     const encRes = await cryptoProvider.encrypt(decrypted);

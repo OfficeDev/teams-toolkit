@@ -49,6 +49,7 @@ export enum TelemetryProperty {
   IsFromTdp = "is-from-developer-portal",
   ToolkitVersion = "toolkit-version",
   YmlName = "yml-name",
+  YmlSchemaVersion = "yml-schema-version",
 }
 
 export enum TelemetryEvent {

@@ -42,6 +42,14 @@ export async function happyPathTest(
       ? `${cmdBase} --runtime dotnet`
       : `${cmdBase} --programming-language typescript`;
   console.log(`ready to run CMD: ${cmd}`);
+
+  const cliVersion = await execAsync("teamsfx -v", {
+    cwd: testFolder,
+    env: env,
+    timeout: 0,
+  });
+  console.log(`[Successfully] teamsfx -v ${cliVersion.stdout}`);
+
   await execAsync(cmd, {
     cwd: testFolder,
     env: env,

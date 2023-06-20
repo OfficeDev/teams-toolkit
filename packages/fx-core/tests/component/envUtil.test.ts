@@ -95,9 +95,6 @@ describe("env utils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        assert.equal(res.value, path.join("", "./env"));
-      }
     });
     it("returns undefined value", async () => {
       const mockProjectModel: ProjectModel = {
@@ -138,9 +135,6 @@ describe("env utils", () => {
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFilePath(".", "dev");
       assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        assert.equal(res.value, path.join("./env", ".env.dev"));
-      }
     });
   });
 

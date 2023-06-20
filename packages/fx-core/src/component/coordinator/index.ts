@@ -564,6 +564,32 @@ export class Coordinator {
     return ok(res);
   }
 
+  async preCheckYmlAndEnvForVS(
+    ctx: DriverContext,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<Void, FxError>> {
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const cycles: ILifecycle[] = [projectModel.provision].filter(
+      (c) => c !== undefined
+    ) as ILifecycle[];
+
+    let unresolvedPlaceholders: string[] = [];
+    // 2. check each cycle
+    for (const cycle of cycles) {
+      unresolvedPlaceholders = unresolvedPlaceholders.concat(cycle.resolvePlaceholders());
+    }
+    if (unresolvedPlaceholders.length > 0) {
+      return err(new LifeCycleUndefinedError(unresolvedPlaceholders.join(",")));
+    }
+    return ok(Void);
+  }
+
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -832,7 +858,15 @@ export class Coordinator {
         }
       }
     } else {
-      ctx.ui?.showMessage("info", msg, false);
+      if (ctx.platform === Platform.VS) {
+        ctx.ui!.showMessage(
+          "info",
+          getLocalizedString("core.common.LifecycleComplete.prepareTeamsApp"),
+          false
+        );
+      } else {
+        ctx.ui!.showMessage("info", msg, false);
+      }
     }
     ctx.logProvider.info(msg);
 

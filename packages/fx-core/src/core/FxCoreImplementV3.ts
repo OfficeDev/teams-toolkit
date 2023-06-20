@@ -518,6 +518,25 @@ export class FxCoreV3Implement {
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+  ])
+  async preCheckYmlAndEnvForVS(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    const context = createDriverContext(inputs);
+    const result = await coordinator.preCheckYmlAndEnvForVS(
+      context,
+      inputs as InputsWithProjectPath
+    );
+    return result;
+  }
+
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
@@ -612,7 +631,7 @@ export class FxCoreV3Implement {
     const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
-      showMessage: true,
+      showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const result = await driver.run(args, context);

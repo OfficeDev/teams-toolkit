@@ -97,7 +97,6 @@ import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
-import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";

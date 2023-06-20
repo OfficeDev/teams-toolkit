@@ -23,7 +23,7 @@ import {
   TelemetryProperty,
   sendTelemetryEvent,
 } from "../../common/telemetry";
-import { MetadataV3 } from "../../common/versionMetadata";
+import { MetadataV2, MetadataV3 } from "../../common/versionMetadata";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
 import { settingsUtil } from "../../component/utils/settingsUtil";
 import { NoProjectOpenedError } from "../error";
@@ -101,13 +101,9 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
 }
 
 export function getProjectSettingsPath(projectPath: string): string {
-  return getProjectSettingPathV3(projectPath);
-}
-
-export function getProjectSettingPathV3(projectPath: string): string {
   return path.resolve(projectPath, MetadataV3.configFile);
 }
 
 export function getProjectSettingPathV2(projectPath: string): string {
-  return path.resolve(projectPath, `.${ConfigFolderName}`, "configs", "projectSettings.json");
+  return path.resolve(projectPath, `.${ConfigFolderName}`, "configs", MetadataV2.configFile);
 }

@@ -48,7 +48,7 @@ import {
   outputCancelMessage,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
-import { getProjectSettingPathV3 } from "../../../../src/core/middleware/projectSettingsLoader";
+import { getProjectSettingsPath } from "../../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
@@ -1119,7 +1119,7 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(loader, "getProjectSettingPathV2").returns("");
-    sandbox.stub(loader, "getProjectSettingPathV3").returns("");
+    sandbox.stub(loader, "getProjectSettingsPath").returns("");
     sandbox.stub(fs, "pathExists").callsFake(async (path) => {
       return path ? true : false;
     });
@@ -1137,7 +1137,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V2 ", async () => {
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path === getProjectSettingPathV3(projectPath)) {
+      if (path === getProjectSettingsPath(projectPath)) {
         return false;
       }
       return true;

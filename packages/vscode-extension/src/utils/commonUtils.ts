@@ -12,7 +12,6 @@ import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import {
   PluginNames,
   initializePreviewFeatureFlags,
-  isExistingTabApp as isExistingTabAppCore,
   isValidProject,
 } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
@@ -120,19 +119,6 @@ export function openFolderInExplorer(folderPath: string): void {
 }
 
 export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
-  // Check if solution settings is empty.
-  const projectSettingsPath = path.resolve(
-    workspacePath,
-    `.${ConfigFolderName}`,
-    "configs",
-    "projectSettings.json"
-  );
-
-  if (await fs.pathExists(projectSettingsPath)) {
-    const projectSettings = await fs.readJson(projectSettingsPath);
-    return isExistingTabAppCore(projectSettings);
-  }
-
   return false;
 }
 

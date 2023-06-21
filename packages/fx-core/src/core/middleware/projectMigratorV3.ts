@@ -9,13 +9,9 @@ import {
   err,
   FxError,
   ok,
-  ProjectSettings,
   SystemError,
   UserError,
-  InputConfigsFolderName,
   Platform,
-  AzureSolutionSettings,
-  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -101,7 +97,6 @@ import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
-import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
@@ -379,8 +374,8 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   }
 }
 
-async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
+async function loadProjectSettings(projectPath: string): Promise<any> {
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {
@@ -472,9 +467,9 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     path.join(context.projectPath, oldAadManifestPath)
   );
 
-  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
-    .activeResourcePlugins;
-  const component = (projectSettings as ProjectSettingsV3).components;
+  const activeResourcePlugins = (projectSettings.solutionSettings as any)
+    .activeResourcePlugins as any[];
+  const component = (projectSettings as any).components as any[];
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
     (component &&
@@ -503,7 +498,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
 
 export async function azureParameterMigration(context: MigrationContext): Promise<void> {
   // Ensure `.fx/configs` exists
-  const configFolderPath = path.join(".fx", InputConfigsFolderName);
+  const configFolderPath = path.join(".fx", "configs");
   const configFolderPathExists = await context.fsPathExists(configFolderPath);
   if (!configFolderPathExists) {
     // Keep same practice now. Needs dicussion whether to throw error.

@@ -2,13 +2,10 @@
 // Licensed under the MIT license.
 
 import {
-  ConfigMap,
   FxError,
-  LocalSettings,
   LogLevel,
   LogProvider,
   PermissionRequestProvider,
-  PluginContext,
   Result,
   TelemetryReporter,
   UserInteraction,
@@ -136,7 +133,7 @@ export class TestHelper {
 
     const configOfOtherPlugins = new Map();
 
-    const pluginContext: PluginContext = {
+    const pluginContext: any = {
       logProvider: mockLogProvider,
       ui: mockUI,
       telemetryReporter: mockTelemetryReporter,
@@ -171,20 +168,20 @@ export class TestHelper {
         components: [{ name: "teams-tab" }, { name: "aad-app" }],
       },
       permissionRequestProvider: mockPermissionRequestProvider,
-    } as unknown as PluginContext;
+    } as any;
 
-    const localSettings: LocalSettings = {
-      teamsApp: new ConfigMap(),
-      auth: new ConfigMap(),
+    const localSettings: any = {
+      teamsApp: new Map(),
+      auth: new Map(),
     };
     if (frontend) {
-      localSettings.frontend = new ConfigMap([
+      localSettings.frontend = new Map([
         ["tabDomain", domain],
         ["tabEndpoint", endpoint],
       ]);
     }
     if (bot) {
-      localSettings.bot = new ConfigMap([
+      localSettings.bot = new Map([
         ["botEndpoint", botEndpoint],
         ["botId", botId],
       ]);

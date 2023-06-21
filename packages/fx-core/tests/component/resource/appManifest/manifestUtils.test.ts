@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok, Platform, TeamsAppManifest, v2 } from "@microsoft/teamsfx-api";
+import { InputsWithProjectPath, ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import "mocha";
 import "reflect-metadata";
@@ -12,7 +12,7 @@ import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
 
 describe("getManifest V3", () => {
   const sandbox = sinon.createSandbox();
-  let inputs: v2.InputsWithProjectPath;
+  let inputs: InputsWithProjectPath;
   let manifest: TeamsAppManifest;
   const manifestTemplate = `{
       "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",

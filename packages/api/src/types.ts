@@ -2,23 +2,14 @@
 // Licensed under the MIT license.
 "use strict";
 
+import {
+  IBot,
+  IComposeExtension,
+  IConfigurableTab,
+  IStaticTab,
+  IWebApplicationInfo,
+} from "@microsoft/teams-manifest";
 import { Platform, Stage, VsCodeEnv } from "./constants";
-import { TokenProvider } from "./utils/login";
-import { Context } from "./v2/types";
-import { AppManifestProvider } from "./v3/plugins";
-import { EnvInfoV3 } from "./v3/types";
-
-export type Json = Record<string, any>;
-
-export type ConfigValue = any;
-
-export type PluginIdentity = string;
-
-export type PluginConfig = ConfigMap;
-export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
-
-export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
-export type ReadonlySolutionConfig = ReadonlyMap<PluginIdentity, ReadonlyPluginConfig>;
 
 /**
  * Definition of option item in single selection or multiple selection
@@ -63,102 +54,9 @@ export interface OptionItem {
   buttons?: { iconPath: string; tooltip: string; command: string }[];
 }
 
-export class ConfigMap extends Map<string, ConfigValue> {
-  getString(k: string, defaultValue?: string): string | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    return String(v);
-  }
-  getBoolean(k: string, defaultValue?: boolean): boolean | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    return Boolean(v);
-  }
-  getNumber(k: string, defaultValue?: number): number | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    return Number(v);
-  }
-  getStringArray(k: string, defaultValue?: string[]): string[] | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    return v as string[];
-  }
-  getNumberArray(k: string, defaultValue?: number[]): number[] | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    return v as number[];
-  }
-  getBooleanArray(k: string, defaultValue?: boolean[]): boolean[] | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    return v as boolean[];
-  }
-  getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    if (v instanceof ConfigMap) {
-      return v.toJSON() as OptionItem;
-    } else {
-      return v as OptionItem;
-    }
-  }
-  getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
-    const v = super.get(k);
-    if (!v) return defaultValue;
-    return v as OptionItem[];
-  }
-
-  toJSON(): Json {
-    const out: Json = {};
-    for (const entry of super.entries()) {
-      if (entry[1] instanceof ConfigMap) {
-        out[entry[0]] = entry[1].toJSON();
-      } else {
-        out[entry[0]] = entry[1];
-      }
-    }
-    return out;
-  }
-
-  public static fromJSON(obj?: Json): ConfigMap | undefined {
-    if (!obj) return undefined;
-    const map = new ConfigMap();
-    for (const entry of Object.entries(obj)) {
-      if (typeof entry[1] !== "object") {
-        map.set(entry[0], entry[1]);
-      } else {
-        map.set(entry[0], this.fromJSON(entry[1]));
-      }
-    }
-    return map;
-  }
-  constructor(entries?: readonly (readonly [string, ConfigValue])[] | null) {
-    super(entries);
-    Object.setPrototypeOf(this, ConfigMap.prototype);
-  }
-}
-
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Void = {};
 export const Void = {};
-
-export type ResourceTemplate = Record<string, ConfigValue>;
-
-export type ResourceTemplates = {
-  [k: string]: ResourceTemplate | undefined;
-};
-
-export type ResourceConfig = ResourceTemplate;
-
-export type ResourceConfigs = ResourceTemplates;
-
-export type ReadonlyResourceConfig = Readonly<ResourceConfig>;
-
-export type ReadonlyResourceConfigs = Readonly<{
-  [k: string]: ReadonlyResourceConfig | undefined;
-}>;
-
 /**
  * environment meta data
  */
@@ -167,64 +65,7 @@ export interface EnvMeta {
   local: boolean;
   sideloading: boolean;
 }
-
-/**
- * project static settings
- */
-export interface ProjectSettings {
-  appName?: string;
-  version?: string;
-  projectId: string;
-  programmingLanguage?: string;
-  defaultFunctionName?: string;
-  solutionSettings?: SolutionSettings;
-  isFromSample?: boolean;
-  isM365?: boolean;
-  /**
-   * pluginSettings is used for plugin settings irrelevant to environments
-   */
-  pluginSettings?: Json;
-}
-
-/**
- * solution settings
- */
-export interface SolutionSettings extends Json {
-  name: string;
-  /**
-   * solution settings schema version
-   */
-  version?: string;
-}
-
-export interface AzureSolutionSettings extends SolutionSettings {
-  hostType: string;
-  capabilities: string[];
-  azureResources: string[];
-  activeResourcePlugins: string[];
-}
-
-/**
- * local debug settings
- */
-export interface LocalSettings {
-  teamsApp?: ConfigMap;
-  auth?: ConfigMap;
-  frontend?: ConfigMap;
-  backend?: ConfigMap;
-  bot?: ConfigMap;
-}
-
-/**
- * project dynamic states
- */
-export interface ProjectStates {
-  solution: Record<string, ConfigValue>;
-  resources: {
-    [k: string]: Record<string, ConfigValue>;
-  };
-}
-export interface Inputs extends Json {
+export interface Inputs extends Record<string, any> {
   projectPath?: string;
   targetEnvName?: string;
   sourceEnvName?: string;
@@ -245,46 +86,14 @@ export interface Inputs extends Json {
   teamsAppFromTdp?: any;
 }
 
-export interface ProjectConfig {
-  settings?: ProjectSettings;
-  config?: Json;
-}
+export type InputsWithProjectPath = Inputs & { projectPath: string };
 
-export interface ProjectConfigV3 {
-  projectSettings: ProjectSettings;
-  envInfos: {
-    [key: string]: EnvInfoV3;
-  };
-}
+// This type has not been supported by TypeScript yet.
+// Check here https://github.com/microsoft/TypeScript/issues/13923.
+export type DeepReadonly<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
 
-export interface Component extends Json {
-  name: string;
-  hosting?: string;
-  code?: string;
-  deployType?: "folder" | "zip";
-  language?: string;
-  folder?: string;
-  artifactFolder?: string;
-  build?: boolean;
-  provision?: boolean;
-  deploy?: boolean;
-  connections?: string[];
-  sso?: boolean;
-}
-export interface ProjectSettingsV3 extends ProjectSettings {
-  components: Component[];
-}
-export interface ContextV3 extends Context {
-  projectSetting: ProjectSettingsV3;
-  envInfo?: EnvInfoV3;
-  tokenProvider?: TokenProvider;
-  projectPath?: string;
-  templateVariables?: { [key: string]: string };
-}
-export interface ResourceContextV3 extends ContextV3 {
-  envInfo: EnvInfoV3;
-  tokenProvider: TokenProvider;
-}
 export type MaybePromise<T> = T | Promise<T>;
 
 /**
@@ -294,3 +103,30 @@ export interface Settings {
   version: string;
   trackingId: string;
 }
+
+export type ManifestCapability =
+  | {
+      name: "staticTab";
+      snippet?: IStaticTab;
+      existingApp?: boolean;
+    }
+  | {
+      name: "configurableTab";
+      snippet?: IConfigurableTab;
+      existingApp?: boolean;
+    }
+  | {
+      name: "Bot";
+      snippet?: IBot;
+      existingApp?: boolean;
+    }
+  | {
+      name: "MessageExtension";
+      snippet?: IComposeExtension;
+      existingApp?: boolean;
+    }
+  | {
+      name: "WebApplicationInfo";
+      snippet?: IWebApplicationInfo;
+      existingApp?: boolean;
+    };

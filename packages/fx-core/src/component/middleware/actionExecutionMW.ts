@@ -3,9 +3,9 @@
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
-  ActionContext,
-  ContextV3,
+  Context,
   FxError,
+  IProgressHandler,
   InputsWithProjectPath,
   MaybePromise,
   QTreeNode,
@@ -43,11 +43,15 @@ interface ActionOption {
   progressTitle?: string;
   progressSteps?: number;
   question?: (
-    context: ContextV3,
+    context: Context,
     inputs: InputsWithProjectPath
   ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
 }
-
+export interface ActionContext {
+  progressBar?: IProgressHandler;
+  telemetryProps?: Record<string, string>;
+  telemetryMeasures?: Record<string, number>;
+}
 export function ActionExecutionMW(action: ActionOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const componentName = action.componentName || ctx.self?.constructor.name;
@@ -65,7 +69,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       if (action.enableTelemetry) {
         if (!globalVars.trackingId) {
           // try to get trackingId
-          const projectPath = (ctx.arguments[0] as ContextV3 | DriverContext).projectPath;
+          const projectPath = (ctx.arguments[0] as Context | DriverContext).projectPath;
           if (projectPath) {
             await settingsUtil.readSettings(projectPath, false);
           }
@@ -75,14 +79,14 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         sendStartEvent(eventName, telemetryProps);
         sendMigratedStartEvent(
           eventName,
-          ctx.arguments[0] as ContextV3,
+          ctx.arguments[0] as Context,
           ctx.arguments[1] as InputsWithProjectPath,
           telemetryProps
         );
       }
       // run question model
       if (action.question) {
-        const context = ctx.arguments[0] as ContextV3;
+        const context = ctx.arguments[0] as Context;
         const inputs = ctx.arguments[1] as InputsWithProjectPath;
         const getQuestionRes = await action.question(context, inputs);
         if (getQuestionRes.isErr()) throw getQuestionRes.error;
@@ -123,7 +127,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
         sendMigratedSuccessEvent(
           eventName,
-          ctx.arguments[0] as ContextV3,
+          ctx.arguments[0] as Context,
           ctx.arguments[1] as InputsWithProjectPath,
           telemetryProps,
           telemetryMeasures
@@ -148,7 +152,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         sendMigratedErrorEvent(
           eventName,
           fxError,
-          ctx.arguments[0] as ContextV3,
+          ctx.arguments[0] as Context,
           ctx.arguments[1] as InputsWithProjectPath,
           telemetryProps
         );

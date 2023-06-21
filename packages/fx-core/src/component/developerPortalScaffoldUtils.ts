@@ -5,30 +5,22 @@
  * @author Yuqi Zhou <yuqzho@microsoft.com>
  */
 
-import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import * as appStudio from "./driver/teamsApp/appStudio";
 import {
-  err,
-  Result,
-  ok,
+  Context,
   FxError,
-  UserError,
-  ContextV3,
-  Inputs,
-  TeamsAppManifest,
   IStaticTab,
+  Inputs,
+  Result,
+  TeamsAppManifest,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import path from "path";
 import fs from "fs-extra";
-import { environmentManager } from "../core/environment";
-import { CoreQuestionNames } from "../core/question";
-import {
-  BOTS_TPL_V3,
-  COMPOSE_EXTENSIONS_TPL_V3,
-  DEFAULT_DESCRIPTION,
-  DEFAULT_DEVELOPER,
-} from "./driver/teamsApp/constants";
+import * as path from "path";
+import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
+import { CoreQuestionNames } from "../core/question";
 import {
   BotOptionItem,
   CoordinatorSource,
@@ -37,8 +29,16 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
 } from "./constants";
-import { getLocalizedString } from "../common/localizeUtils";
+import * as appStudio from "./driver/teamsApp/appStudio";
+import {
+  BOTS_TPL_V3,
+  COMPOSE_EXTENSIONS_TPL_V3,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_DEVELOPER,
+} from "./driver/teamsApp/constants";
+import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
+import { TelemetryUtils } from "./driver/teamsApp/utils/telemetry";
 import {
   isBot,
   isBotAndMessageExtension,
@@ -46,7 +46,6 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "./driver/teamsApp/utils/utils";
-import { TelemetryUtils } from "./driver/teamsApp/utils/telemetry";
 import { envUtil } from "./utils/envUtil";
 
 const appPackageFolderName = "appPackage";
@@ -59,7 +58,7 @@ export const answerToReplaceMessageExtensionBotId = "messageExtension";
 
 export class DeveloperPortalScaffoldUtils {
   async updateFilesForTdp(
-    ctx: ContextV3,
+    ctx: Context,
     appDefinition: AppDefinition,
     inputs: Inputs
   ): Promise<Result<undefined, FxError>> {
@@ -91,7 +90,7 @@ export enum TabUrlType {
 }
 
 async function updateManifest(
-  ctx: ContextV3,
+  ctx: Context,
   appDefinition: AppDefinition,
   inputs: Inputs
 ): Promise<Result<undefined, FxError>> {

@@ -1,9 +1,3 @@
-import {
-  AzureSolutionSettings,
-  Json,
-  ProjectSettings,
-  ProjectSettingsV3,
-} from "@microsoft/teamsfx-api";
 import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
 import { join } from "path";
@@ -26,12 +20,9 @@ export const EnvStateMigrationComponentNames = [
   ["fx-resource-simple-auth", ComponentNames.SimpleAuth],
 ];
 
-export function convertProjectSettingsV2ToV3(
-  settingsV2: ProjectSettings,
-  projectPath: string
-): ProjectSettingsV3 {
-  const settingsV3 = cloneDeep(settingsV2) as ProjectSettingsV3;
-  const solutionSettings = settingsV2.solutionSettings as AzureSolutionSettings;
+export function convertProjectSettingsV2ToV3(settingsV2: any, projectPath: string): any {
+  const settingsV3 = cloneDeep(settingsV2) as any;
+  const solutionSettings = settingsV2.solutionSettings as any;
   if (solutionSettings && (!settingsV3.components || settingsV3.components.length === 0)) {
     settingsV3.components = [];
     const isVS = isVSProject(settingsV2);

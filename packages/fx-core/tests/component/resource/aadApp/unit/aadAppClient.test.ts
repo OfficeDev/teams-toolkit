@@ -7,14 +7,14 @@ import * as sinon from "sinon";
 import faker from "faker";
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
 import { TestHelper } from "../helper";
-import { PluginContext, UserError, SystemError } from "@microsoft/teamsfx-api";
+import { Context, UserError, SystemError } from "@microsoft/teamsfx-api";
 import { GraphClient } from "../../../../../src/component/resource/aadApp/graph";
 import { Constants } from "../../../../../src/component/resource/aadApp/constants";
 import { MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 
 describe("AAD App Client Test", () => {
-  let ctx: PluginContext;
+  let ctx: Context;
   beforeEach(async () => {
     setTools(new MockTools());
     ctx = await TestHelper.pluginContext(new Map(), true, false, false);

@@ -8,16 +8,7 @@ import * as path from "path";
 import { format } from "util";
 import * as vscode from "vscode";
 
-import {
-  ConfigFolderName,
-  EnvNamePlaceholder,
-  EnvStateFileNameTemplate,
-  InputConfigsFolderName,
-  Json,
-  ProjectSettingsFileName,
-  StatesFolderName,
-  SubscriptionInfo,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import {
   PluginNames,
   initializePreviewFeatureFlags,
@@ -133,8 +124,8 @@ export async function isExistingTabApp(workspacePath: string): Promise<boolean> 
   const projectSettingsPath = path.resolve(
     workspacePath,
     `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
+    "configs",
+    "projectSettings.json"
   );
 
   if (await fs.pathExists(projectSettingsPath)) {
@@ -149,8 +140,8 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
   const projectSettingsPath = path.resolve(
     workspacePath,
     `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
+    "configs",
+    "projectSettings.json"
   );
 
   if (await fs.pathExists(projectSettingsPath)) {
@@ -276,7 +267,7 @@ export function getAllFeatureFlags(): string[] | undefined {
 export async function getSubscriptionInfoFromEnv(
   env: string
 ): Promise<SubscriptionInfo | undefined> {
-  let provisionResult: Json | undefined;
+  let provisionResult: Record<string, any> | undefined;
 
   try {
     provisionResult = await getProvisionResultJson(env);
@@ -304,7 +295,7 @@ export async function getSubscriptionInfoFromEnv(
 }
 
 export async function getM365TenantFromEnv(env: string): Promise<string | undefined> {
-  let provisionResult: Json | undefined;
+  let provisionResult: Record<string, any> | undefined;
 
   try {
     provisionResult = await getProvisionResultJson(env);
@@ -321,7 +312,7 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
-  let provisionResult: Json | undefined;
+  let provisionResult: Record<string, any> | undefined;
 
   try {
     provisionResult = await getProvisionResultJson(env);
@@ -335,7 +326,7 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
     return undefined;
   }
 
-  return provisionResult.solution.resourceGroupName;
+  return provisionResult.solution?.resourceGroupName;
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
@@ -348,7 +339,7 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
   }
 }
 
-async function getProvisionResultJson(env: string): Promise<Json | undefined> {
+async function getProvisionResultJson(env: string): Promise<Record<string, string> | undefined> {
   if (globalVariables.workspaceUri) {
     if (!globalVariables.isTeamsFxProject) {
       return undefined;
@@ -359,14 +350,7 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
       `.${ConfigFolderName}`
     );
 
-    const provisionOutputFile = path.join(
-      configRoot!,
-      path.join(
-        StatesFolderName,
-
-        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
-      )
-    );
+    const provisionOutputFile = path.join(configRoot!, path.join("states", `state.${env}.json`));
 
     if (!fs.existsSync(provisionOutputFile)) {
       return undefined;

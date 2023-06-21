@@ -9,13 +9,13 @@ import {
   M365TokenProvider,
   ok,
   Result,
-  ResourceContextV3,
   TeamsAppManifest,
   UserError,
   LogProvider,
   Platform,
   Colors,
   ManifestUtil,
+  Context,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -44,6 +44,7 @@ import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "./createAppPackage";
 import { actionName as configureTeamsAppActionName } from "./configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
+import { TelemetryUtils } from "./utils/telemetry";
 
 export async function checkIfAppInDifferentAcountSameTenant(
   teamsAppId: string,
@@ -73,9 +74,10 @@ export async function checkIfAppInDifferentAcountSameTenant(
 }
 
 export async function updateManifestV3(
-  ctx: ResourceContextV3,
+  ctx: Context,
   inputs: InputsWithProjectPath
 ): Promise<Result<Map<string, string>, FxError>> {
+  TelemetryUtils.init(ctx);
   const state = {
     ENV_NAME: process.env.TEAMSFX_ENV,
   };
@@ -145,7 +147,7 @@ export async function updateManifestV3(
     }
   }
 
-  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+  const appStudioTokenRes = await ctx.tokenProvider!.m365TokenProvider.getAccessToken({
     scopes: AppStudioScopes,
   });
   if (appStudioTokenRes.isErr()) {
@@ -179,7 +181,7 @@ export async function updateManifestV3(
     }
 
     let loginHint = "";
-    const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
+    const accountRes = await ctx.tokenProvider!.m365TokenProvider.getJsonObject({
       scopes: AppStudioScopes,
     });
     if (accountRes.isOk()) {
@@ -214,7 +216,7 @@ export async function updateManifestV3(
         });
     }
     return result;
-  } catch (error) {
+  } catch (error: any) {
     if (error.message && error.message.includes("404")) {
       return err(
         AppStudioResultFactory.UserError(
@@ -229,7 +231,7 @@ export async function updateManifestV3(
 }
 
 export async function updateTeamsAppV3ForPublish(
-  ctx: ResourceContextV3,
+  ctx: Context,
   inputs: InputsWithProjectPath
 ): Promise<Result<any, FxError>> {
   let teamsAppId;
@@ -347,15 +349,12 @@ export async function getAppPackage(
       }
     });
     return ok(appPackage);
-  } catch (e) {
+  } catch (e: any) {
     return err(e);
   }
 }
 
-function generateDriverContext(
-  ctx: ResourceContextV3,
-  inputs: InputsWithProjectPath
-): DriverContext {
+function generateDriverContext(ctx: Context, inputs: InputsWithProjectPath): DriverContext {
   return {
     azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
     m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,

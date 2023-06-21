@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { InputsWithProjectPath, Platform, ProjectSettingsV3, Stage } from "@microsoft/teamsfx-api";
+import { InputsWithProjectPath, Platform, Stage } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { createSandbox } from "sinon";
-import Container from "typedi";
+import { Container } from "typedi";
 import { FeatureFlagName } from "../../../src/common/constants";
 import * as templateUtils from "../../../src/component/generator/utils";
 import { ComponentNames } from "../../../src/component/constants";
@@ -24,13 +24,6 @@ describe("SSO can add in VS V3 project", () => {
   setTools(tools);
   const appName = `unittest${randomAppName()}`;
   const context = utils.createContextV3();
-  const basicProjectSetting: ProjectSettingsV3 = {
-    appName: "",
-    projectId: "",
-    programmingLanguage: "typescript",
-    components: [],
-  };
-  context.projectSetting = basicProjectSetting;
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
   });

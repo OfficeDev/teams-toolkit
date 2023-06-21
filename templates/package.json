@@ -37,7 +37,8 @@
         "ts/notification-restify",
         "ts/notification-timer-trigger",
         "ts/sso-tab",
-        "ts/workflow"
+        "ts/workflow",
+        "ts/sso-tab-with-obo-flow"
     ],
     "devDependencies": {
         "@microsoft/eslint-plugin-teamsfx": "^0.0.3",

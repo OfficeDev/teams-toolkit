@@ -7,16 +7,10 @@ import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
-import {
-  AppPackageFolderName,
-  AzureSolutionSettings,
-  Inputs,
-  Platform,
-  ProjectSettings,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import semver from "semver";
-import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
+import { getProjectSettingPathV2, getProjectSettingsPath } from "../projectSettingsLoader";
 import {
   MetadataV2,
   MetadataV3,
@@ -156,7 +150,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
 }
 
 export async function getProjectVersionFromPath(projectPath: string): Promise<VersionInfo> {
-  const v3path = getProjectSettingPathV3(projectPath);
+  const v3path = getProjectSettingsPath(projectPath);
   if (await fs.pathExists(v3path)) {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
     if (readSettingsResult.isOk()) {
@@ -194,7 +188,7 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
 }
 
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
-  const v3path = getProjectSettingPathV3(projectPath);
+  const v3path = getProjectSettingsPath(projectPath);
   if (await fs.pathExists(v3path)) {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
     if (readSettingsResult.isOk()) {
@@ -236,12 +230,12 @@ export function getParameterFromCxt(
   return value;
 }
 
-export function getCapabilityStatus(projectSettings: ProjectSettings): {
+export function getCapabilityStatus(projectSettings: any): {
   TabSso: boolean;
   BotSso: boolean;
   Tab: boolean;
 } {
-  const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
+  const capabilities = (projectSettings.solutionSettings as any).capabilities;
   const tabSso = capabilities.includes("TabSSO");
   const botSso = capabilities.includes("BotSSO");
   const tab = capabilities.includes("Tab");

@@ -3,7 +3,6 @@
 import {
   AdaptiveCardsFolderName,
   AppPackageFolderName,
-  ProjectConfigV3,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import {
@@ -13,7 +12,6 @@ import {
   getAllowedAppMaps,
   getPermissionMap,
 } from "@microsoft/teamsfx-core";
-import { Mutex } from "async-mutex";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
 import isUUID from "validator/lib/isUUID";
@@ -268,15 +266,11 @@ export interface PropertyPair {
 
 export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   constructor() {}
-  private projectConfigs: ProjectConfigV3 | undefined = undefined;
-  private mutex = new Mutex();
-
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
     // V3 supports customize aad manifest
     if (document.fileName.endsWith(MetadataV3.aadManifestFileName)) {
-      this.projectConfigs = undefined;
       return this.computeTemplateCodeLenses(document);
     } else {
       return this.computeAadManifestCodeLenses(document);

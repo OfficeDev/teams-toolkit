@@ -3,61 +3,46 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  BuildFolderName,
-  ConfigFolderName,
   CoreCallbackEvent,
   CryptoProvider,
   err,
   Func,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   InputsWithProjectPath,
   ok,
-  Platform,
-  ProjectSettings,
   QTreeNode,
   Result,
   Stage,
-  StatesFolderName,
   Tools,
-  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
-import fs from "fs-extra";
-import * as path from "path";
 import "reflect-metadata";
-import { Container } from "typedi";
-import * as uuid from "uuid";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import { ComponentNames, validateSchemaOption } from "../component/constants";
+import { validateSchemaOption } from "../component/constants";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForValidateMethod } from "../component/question";
-import { AppManifest } from "../component/resource/appManifest/appManifest";
-import { createContextV3 } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
+import { metadataUtil } from "../component/utils/metadataUtil";
+import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
-import { WriteFileError } from "../error";
 import { CallbackRegistry } from "./callback";
-import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
-import { environmentManager, newEnvInfoV3 } from "./environment";
-import { CopyFileError, InvalidInputError, ObjectIsUndefinedError } from "./error";
+import { environmentManager } from "./environment";
+import { InvalidInputError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { pathUtils } from "../component/utils/pathUtils";
-import { metadataUtil } from "../component/utils/metadataUtil";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -484,134 +469,4 @@ export class FxCore {
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }
-}
-
-export async function ensureBasicFolderStructure(
-  inputs: Inputs,
-  createPackageJson = true
-): Promise<Result<null, FxError>> {
-  if (!inputs.projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  try {
-    if (createPackageJson) {
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (inputs.platform !== Platform.VS) {
-        const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
-        const exists = await fs.pathExists(packageJsonFilePath);
-        if (!exists) {
-          await fs.writeFile(
-            packageJsonFilePath,
-            JSON.stringify(
-              {
-                name: appName,
-                version: "0.0.1",
-                description: "",
-                author: "",
-                scripts: {
-                  test: 'echo "Error: no test specified" && exit 1',
-                },
-                devDependencies: {
-                  "@microsoft/teamsfx-cli": "1.*",
-                },
-                license: "MIT",
-              },
-              null,
-              4
-            )
-          );
-        }
-      }
-    }
-    {
-      const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
-      let lines: string[] = [];
-      const exists = await fs.pathExists(gitIgnoreFilePath);
-      if (exists) {
-        const content = await fs.readFile(gitIgnoreFilePath, { encoding: "utf8" });
-        lines = content.split("\n");
-        for (let i = 0; i < lines.length; ++i) {
-          lines[i] = lines[i].trim();
-        }
-      }
-      const gitIgnoreContent = [
-        "\n# TeamsFx files",
-        "node_modules",
-        `.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`,
-        `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
-        ".DS_Store",
-        ".env.teamsfx.local",
-        "subscriptionInfo.json",
-        BuildFolderName,
-      ];
-      gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
-      gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
-      if (inputs.platform === Platform.VS) {
-        gitIgnoreContent.push("appsettings.Development.json");
-      }
-      gitIgnoreContent.forEach((line) => {
-        if (!lines.includes(line.trim())) {
-          lines.push(line.trim());
-        }
-      });
-      await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
-    }
-  } catch (e) {
-    return err(new WriteFileError(e as Error, "core"));
-  }
-  return ok(null);
-}
-
-export async function listCollaboratorFunc(inputs: Inputs): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.listCollaborator;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await listCollaborator(
-    context,
-    inputs as v2.InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
-}
-
-export async function checkPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.checkPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await checkPermission(
-    context,
-    inputs as v2.InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
-}
-
-export async function grantPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  inputs.stage = Stage.grantPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  const context = createContextV3();
-  const res = await grantPermission(
-    context,
-    inputs as v2.InputsWithProjectPath,
-    undefined,
-    TOOLS.tokenProvider
-  );
-  return res;
 }

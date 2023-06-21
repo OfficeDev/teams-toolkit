@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { err, FxError, ok, Result, SolutionContext } from "@microsoft/teamsfx-api";
+import { Context, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { ConstantString } from "../../../../common/constants";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 import { ResourceGroupNotExistError } from "../../../../error/azure";
@@ -19,7 +19,7 @@ const ErrorCodes = {
 const filteredErrorMessage = "Template output evaluation skipped";
 
 export type DeployContext = {
-  ctx: SolutionContext;
+  ctx: Context;
   finished: boolean;
   client: ResourceManagementClient;
   resourceGroupName: string;

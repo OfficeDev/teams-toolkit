@@ -2,17 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
-import {
-  ContextV3,
-  FxError,
-  Inputs,
-  ProjectSettingsV3,
-  TelemetryReporter,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { Context, FxError, Inputs, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
-import * as uuid from "uuid";
-import { LocalCrypto } from "../core/crypto";
 import { TOOLS } from "../core/globalVars";
 import {
   ComponentNames,
@@ -23,24 +14,11 @@ import {
 import { DriverContext } from "./driver/interface/commonArgs";
 import { getComponent, getComponentByScenario } from "./workflow";
 
-function newProjectSettingsV3(): ProjectSettingsV3 {
-  const projectSettings: ProjectSettingsV3 = {
-    appName: "test",
-    projectId: uuid.v4(),
-    version: "2.1.0",
-    components: [],
-  };
-  return projectSettings;
-}
-
-export function createContextV3(): ContextV3 {
-  const context: ContextV3 = {
+export function createContextV3(): Context {
+  const context: Context = {
     userInteraction: TOOLS.ui,
     logProvider: TOOLS.logProvider,
     telemetryReporter: TOOLS.telemetryReporter!,
-    cryptoProvider: new LocalCrypto(""),
-    permissionRequestProvider: TOOLS.permissionRequest,
-    projectSetting: newProjectSettingsV3(),
     tokenProvider: TOOLS.tokenProvider,
   };
   return context;
@@ -81,12 +59,12 @@ const ComponentConnections = {
   [ComponentNames.APIM]: [ComponentNames.TeamsTab, ComponentNames.TeamsBot],
 };
 
-export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void {
+export function ensureComponentConnections(settingsV3: any): void {
   const exists = (c: string) => getComponent(settingsV3, c) !== undefined;
   const existingConfigNames = Object.keys(ComponentConnections).filter(exists);
   for (const configName of existingConfigNames) {
     const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
-    const configs = settingsV3.components.filter((c) => c.name === configName);
+    const configs = settingsV3.components.filter((c: any) => c.name === configName);
     for (const config of configs) {
       config.connections = cloneDeep(existingResources);
     }

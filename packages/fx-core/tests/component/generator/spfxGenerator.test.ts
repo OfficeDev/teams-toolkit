@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ContextV3, err, Inputs, ok, Platform, SystemError } from "@microsoft/teamsfx-api";
+import { Context, err, Inputs, ok, Platform, SystemError } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -28,7 +28,7 @@ import { envUtil } from "../../../src/component/utils/envUtil";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
-  let context: ContextV3;
+  let context: Context;
   let mockedEnvRestore: RestoreFn | undefined;
 
   beforeEach(async () => {

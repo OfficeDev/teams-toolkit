@@ -56,7 +56,6 @@ import { manifestUtils } from "../../src/component/driver/teamsApp/utils/Manifes
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
-import * as coreImplement from "../../src/core/FxCore";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import * as collaborator from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
@@ -473,37 +472,31 @@ describe("Core basic APIs", () => {
   });
 
   it("permission v3", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      let res;
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        stage: Stage.listCollaborator,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
-      sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "listCollaboratorFunc").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "checkPermissionFunc").resolves(ok(undefined));
-      sandbox.stub(coreImplement, "grantPermissionFunc").resolves(ok(undefined));
-      res = await core.listCollaborator(inputs);
-      assert.isTrue(res.isOk());
-      res = await core.checkPermission(inputs);
-      assert.isTrue(res.isOk());
-      res = await core.grantPermission(inputs);
-      assert.isTrue(res.isOk());
-    } finally {
-      restore();
-    }
+    let res;
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.listCollaborator,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
+    sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
+    sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
+    sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
+    sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));
+
+    res = await core.listCollaborator(inputs);
+    assert.isTrue(res.isOk());
+    res = await core.checkPermission(inputs);
+    assert.isTrue(res.isOk());
+    res = await core.grantPermission(inputs);
+    assert.isTrue(res.isOk());
   });
 
   it("not implement method", async () => {

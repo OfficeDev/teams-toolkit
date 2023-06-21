@@ -58,13 +58,3 @@ export class FeatureFlagName {
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly ImportSPFx = "IMPORT_SPFX";
 }
-
-export class ManifestVariables {
-  static readonly DeveloperWebsiteUrl = "developerWebsiteUrl";
-  static readonly DeveloperPrivacyUrl = "developerPrivacyUrl";
-  static readonly DeveloperTermsOfUseUrl = "developerTermsOfUseUrl";
-  static readonly TabContentUrl = "tabContentUrl";
-  static readonly TabWebsiteUrl = "tabWebsiteUrl";
-  static readonly TabConfigurationUrl = "tabConfigurationUrl";
-  static readonly BotId = "botId";
-}

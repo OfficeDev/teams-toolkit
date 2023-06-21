@@ -1,10 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StringArrayValidation, StringValidation, Inputs, Platform, VsCodeEnv } from "../src/index";
+import {
+  StringArrayValidation,
+  StringValidation,
+  Inputs,
+  Platform,
+  VsCodeEnv,
+  QTreeNode,
+} from "../src/index";
 import * as chai from "chai";
 import { FuncValidation, validate } from "../src/qm/validation";
 import "mocha";
+import { group } from "console";
 
 describe("Question Model - Validation Test", () => {
   const inputs: Inputs = {
@@ -300,5 +308,20 @@ describe("Question Model - Validation Test", () => {
     const value3 = "";
     const res3 = await validate(validation, value3, inputs);
     chai.assert.isTrue(res3 === undefined);
+  });
+});
+
+describe("Question Model - QTreeNode", () => {
+  it("QTreeNode", async () => {
+    const node = new QTreeNode({
+      type: "group",
+    });
+    const child1 = new QTreeNode({ type: "group" });
+    node.addChild(child1);
+    const child2 = new QTreeNode({ type: "text", name: "name", title: "title" });
+    child1.addChild(child2);
+    node.trim();
+    chai.assert.isTrue(node.children!.length === 1);
+    chai.assert.isTrue(node.children![0]!.data!.name === "name");
   });
 });

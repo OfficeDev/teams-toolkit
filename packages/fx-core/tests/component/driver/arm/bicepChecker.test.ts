@@ -11,7 +11,7 @@ import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { MockTools } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
-import { ContextV3 } from "@microsoft/teamsfx-api";
+import { Context } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 
 chai.use(chaiAsPromised);
@@ -29,7 +29,7 @@ const bicepDownloadUrlPrefix = "https://github.com/Azure/bicep/releases/download
 describe("BicepChecker", () => {
   let sandbox: sinon.SinonSandbox;
   let downloaded: boolean;
-  let context: ContextV3;
+  let context: Context;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();

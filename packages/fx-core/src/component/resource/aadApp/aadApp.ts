@@ -1,15 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  ContextV3,
-  err,
-  FxError,
-  PluginContext,
-  Result,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { Context, err, FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ComponentNames } from "../../constants";
@@ -28,7 +20,7 @@ import { addStartAndEndTelemetry } from "../../driver/middleware/addStartAndEndT
 export class AadApp {
   @hooks([addStartAndEndTelemetry("list-collaborator", "fx-resource-aad-app-for-teams")])
   async listCollaborator(
-    ctx: ContextV3,
+    ctx: Context,
     aadObjectIdV3?: string
   ): Promise<Result<AadOwner[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
@@ -41,7 +33,7 @@ export class AadApp {
   }
   @hooks([addStartAndEndTelemetry("grant-permission", "fx-resource-aad-app-for-teams")])
   async grantPermission(
-    ctx: ContextV3,
+    ctx: Context,
     userInfo: AppUser,
     aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
@@ -55,7 +47,7 @@ export class AadApp {
   }
   @hooks([addStartAndEndTelemetry("check-permission", "fx-resource-aad-app-for-teams")])
   async checkPermission(
-    ctx: ContextV3,
+    ctx: Context,
     userInfo: AppUser,
     aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
@@ -70,7 +62,7 @@ export class AadApp {
 
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
-    ctx: PluginContext | ContextV3,
+    ctx: Context | Context,
     stage: string
   ): Promise<AadResult> {
     try {
@@ -80,7 +72,7 @@ export class AadApp {
     }
   }
 
-  private returnError(e: any, ctx: PluginContext | ContextV3, stage: string): AadResult {
+  private returnError(e: any, ctx: Context | Context, stage: string): AadResult {
     if (e instanceof SystemError || e instanceof UserError) {
       let errorMessage = e.message;
       // For errors contains innerError, e.g. failures when calling Graph API

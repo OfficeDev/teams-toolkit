@@ -9,16 +9,14 @@ import * as xml2js from "xml2js";
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ActionContext,
   Colors,
-  ContextV3,
+  Context,
   err,
   FxError,
   Inputs,
   InputsWithProjectPath,
   ok,
   Platform,
-  ResourceContextV3,
   Result,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -77,7 +75,7 @@ import {
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
@@ -161,7 +159,7 @@ class Coordinator {
     }),
   ])
   async create(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
@@ -234,7 +232,6 @@ class Coordinator {
           feature === M365SsoLaunchPageOptionItem().id ||
           feature === M365SearchAppOptionItem().id
         ) {
-          context.projectSetting.isM365 = true;
           inputs.isM365 = true;
         }
         const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
@@ -889,7 +886,7 @@ class Coordinator {
     }),
   ])
   async publishInDeveloperPortal(
-    ctx: ContextV3,
+    ctx: Context,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<Void, FxError>> {
@@ -900,7 +897,7 @@ class Coordinator {
     if (!inputs[CoreQuestionNames.AppPackagePath]) {
       return err(new ObjectIsUndefinedError("appPackagePath"));
     }
-    const updateRes = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+    const updateRes = await updateTeamsAppV3ForPublish(ctx, inputs);
 
     if (updateRes.isErr()) {
       return err(updateRes.error);

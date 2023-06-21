@@ -14,8 +14,6 @@ import {
   Inputs,
   OptionItem,
   Platform,
-  ProjectSettings,
-  ProjectSettingsFileName,
   Result,
   Stage,
   SystemError,
@@ -393,14 +391,14 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: ProjectSettings = {
+      const projectSettings: any = {
         appName: "myapp",
         version: "1.0.0",
         projectId: "123",
       };
       const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
       await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
+      const settingsFile = path.resolve(configFolder, "projectSettings.json");
       await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
 
       sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });

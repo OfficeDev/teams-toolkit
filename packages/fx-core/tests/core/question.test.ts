@@ -9,14 +9,13 @@ import * as sinon from "sinon";
 import {
   FuncValidation,
   Inputs,
+  InputsWithProjectPath,
   ok,
   OptionItem,
   Platform,
   QTreeNode,
-  v2,
 } from "@microsoft/teamsfx-api";
 
-import * as featureFlags from "../../src/common/featureFlags";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import {
   BotOptionItem,
@@ -349,7 +348,7 @@ describe("addOfficeAddinQuestions()", () => {
 });
 
 describe("updateAadManifestQuestion()", async () => {
-  const inputs: v2.InputsWithProjectPath = {
+  const inputs: InputsWithProjectPath = {
     platform: Platform.VSCode,
     projectPath: path.join(os.tmpdir(), randomAppName()),
   };

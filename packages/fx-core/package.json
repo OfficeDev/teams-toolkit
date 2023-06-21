@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "2.0.2",
+  "version": "2.0.3-rc.0",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -79,6 +79,8 @@
     "@azure/storage-blob": "^12.7.0",
     "@dbpiper/timer": "1.0.0-beta.2",
     "@feathersjs/hooks": "^0.6.5",
+    "@microsoft/dev-tunnels-contracts": "~1.0.7360",
+    "@microsoft/dev-tunnels-management": "~1.0.7360",
     "@microsoft/teamsfx-api": "^0.22.3",
     "@npmcli/arborist": "^4.2.0",
     "@types/proper-lockfile": "^4.1.1",
@@ -132,9 +134,7 @@
     "xml2js": "^0.5.0",
     "yaml": "^2.2.2",
     "yaml-language-server": "1.7.0",
-    "zip-a-folder": "0.0.12",
-    "@microsoft/dev-tunnels-contracts": "~1.0.7360",
-    "@microsoft/dev-tunnels-management": "~1.0.7360"
+    "zip-a-folder": "0.0.12"
   },
   "devDependencies": {
     "@azure/storage-blob": "^12.5.0",

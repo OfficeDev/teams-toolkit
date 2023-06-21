@@ -103,6 +103,7 @@ export enum TemplateNames {
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
+  SsoTabObo = "sso-tab-with-obo-flow",
 }
 
 const Feature2TemplateName: any = {
@@ -123,7 +124,7 @@ const Feature2TemplateName: any = {
   [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
   [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
-  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.M365Tab,
+  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.SsoTabObo,
   [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,

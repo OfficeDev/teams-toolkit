@@ -24,6 +24,9 @@ export default class Progress implements IProgressHandler {
       this.rows[idx].update();
       this.rows[idx].removeCB();
       if (!hideAfterFinish) this.finishedRows.push(this.rows[idx]);
+      else {
+        ScreenManager.delete(this.rows[idx]);
+      }
       this.instances.splice(idx, 1);
       this.rows.splice(idx, 1);
     }

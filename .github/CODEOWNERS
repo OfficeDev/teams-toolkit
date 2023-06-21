@@ -82,29 +82,15 @@
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
 
-/packages/fx-core/src/component/feature/bot @JerryYangKai  @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/component/code/botCode.ts @JerryYangKai @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/component/resource/botService @JerryYangKai @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/component/resource/azureAppService @JerryYangKai @eriolchan @Yukun-dong @Siglud @hund030
-
-/packages/fx-core/src/component/feature/tab.ts @eriolchan @hund030 @huimiu
-/packages/fx-core/src/component/code/tab @hund030 @eriolchan @huimiu
-/packages/fx-core/src/component/resource/azureStorage @hund030 @eriolchan @huimiu
-
-/packages/fx-core/src/component/feature/api @eriolchan @hund030 @huimiu
-/packages/fx-core/src/component/code/api @eriolchan @hund030 @huimiu
-/packages/fx-core/src/component/code/api/depsChecker @a1exwang @kimizhu @qinezh
-
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/feature/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
-
-/packages/fx-core/src/common/template-utils @hund030 @huimiu @eriolchan
-/packages/fx-core/tests/common/templateFetch.test.ts @hund030 @huimiu @eriolchan
 
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/src/common/m365 @kimizhu @swatDong @kuojianlu
 /packages/fx-core/tests/common/m365 @kimizhu @swatDong @kuojianlu
+/packages/fx-core/src/component/resource/botService @kimizhu @swatDong @kuojianlu
+/packages/fx-core/tests/component/resource/botService @kimizhu @swatDong @kuojianlu
 
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 

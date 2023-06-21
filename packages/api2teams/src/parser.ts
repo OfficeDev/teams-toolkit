@@ -41,6 +41,11 @@ export async function parseApi(yaml: string, options: CliOptions) {
   const unResolvedApi = (await SwaggerParser.parse(yaml)) as OpenAPIV3.Document;
   const apis = (await SwaggerParser.validate(yaml)) as OpenAPIV3.Document;
 
+  if (!apis.openapi || apis.openapi < '3.0.0') {
+    console.error('[ERROR] The OpenAPI Spec version must be 3.0.0 or higher');
+    return;
+  }
+
   console.log(
     ' > yaml file information: API name: %s, Version: %s',
     apis.info.title,

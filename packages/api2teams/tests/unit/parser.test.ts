@@ -77,7 +77,7 @@ describe('parseApi tests', () => {
       pathExistsStub.onCall(0).returns(true);
       pathExistsStub.onCall(1).returns(true);
       isFolderEmptyStub.resolves(true);
-      const api = { info: { title: 'API', version: '1.0' } };
+      const api = { openapi:'3.0.0', info: { title: 'API', version: '1.0' } };
       validateStub.resolves(api);
 
       await parseApi('path/to/yaml', { output: 'path/to/output' });

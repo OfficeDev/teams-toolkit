@@ -146,6 +146,80 @@ describe("User Interaction Tests", function () {
         expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
       }
     });
+    it("Auto skip for single option (return object = true)", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals({
+          id: "a",
+          cliName: "aa",
+          label: "aaa",
+        });
+      }
+    });
+    it("Auto skip for single option (return object = false)", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Auto skip for single option 1", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
   });
 
   describe("Multi Select Options", () => {
@@ -191,6 +265,83 @@ describe("User Interaction Tests", function () {
         UI.updatePresetAnswer("resources", ["bb", "cc"]);
         const result = await UI.selectOptions(config);
         expect(result.isOk() ? result.value.result : result.error).deep.equals(["b", "c"]);
+      }
+    });
+
+    it("Auto skip for single option (return object = true)", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals([
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ]);
+      }
+    });
+    it("Auto skip for single option (return object = false)", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("Auto skip for single option 1", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
       }
     });
   });

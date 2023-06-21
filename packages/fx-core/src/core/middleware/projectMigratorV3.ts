@@ -97,7 +97,6 @@ import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
-import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
@@ -376,7 +375,7 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
 }
 
 async function loadProjectSettings(projectPath: string): Promise<any> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {

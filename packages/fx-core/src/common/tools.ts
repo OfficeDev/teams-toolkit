@@ -28,7 +28,7 @@ import { getAppStudioEndpoint } from "../component/driver/teamsApp/constants";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
 import { FailedToParseResourceIdError } from "../core/error";
-import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
+import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
@@ -302,7 +302,7 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
     return undefined;
   }
   try {
-    const settingsPath = getProjectSettingPathV3(rootPath);
+    const settingsPath = getProjectSettingsPath(rootPath);
 
     if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
       return undefined;

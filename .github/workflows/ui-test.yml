@@ -46,9 +46,6 @@ on:
         required: false
         type: string
 
-  schedule:
-    - cron: "0 18 * * *"
-
 jobs:
   setup:
     runs-on: ubuntu-latest

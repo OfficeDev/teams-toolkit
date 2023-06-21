@@ -436,11 +436,11 @@ export class FxCoreV3Implement {
     if (version.source === VersionSource.unknown) {
       return err(new InvalidProjectError());
     }
-    return await this.innerMigrationV3();
+    return await this.innerMigrationV3(inputs);
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
-  async innerMigrationV3(): Promise<Result<Void, FxError>> {
+  async innerMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 

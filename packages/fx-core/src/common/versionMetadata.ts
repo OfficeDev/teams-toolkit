@@ -8,6 +8,7 @@ import { EOL } from "os";
 
 export const MetadataV3 = {
   projectVersion: "1.0.0",
+  unSupprotVersion: "2.0.0",
   platformVersion: {
     vs: "17.5.x.x",
     vsc: "5.x.x",

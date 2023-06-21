@@ -138,6 +138,9 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   const defaultName = !inputs.teamsAppFromTdp?.appName
     ? undefined
     : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  if (inputs.platform !== Platform.CLI_HELP) {
+    createNew.addChild(new QTreeNode(skipAppName));
+  }
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (isFromDevPortal(inputs)) {

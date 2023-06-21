@@ -124,6 +124,7 @@ export const spfxSolutionQuestion: Question = {
       label: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting"),
     },
   ],
+  default: "new",
 };
 
 export function spfxImportFolderQuestion(): Question {

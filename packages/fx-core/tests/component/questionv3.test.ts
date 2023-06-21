@@ -53,12 +53,7 @@ describe("question for v3", () => {
   });
 
   it("validate app package question", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      validateMethod: "validateAgainstAppPackage",
-    };
-    const nodeRes = await getQuestionsForValidateAppPackage(inputs);
+    const nodeRes = await getQuestionsForValidateAppPackage();
     assert.isTrue(nodeRes.isOk());
   });
 

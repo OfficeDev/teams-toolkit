@@ -38,7 +38,10 @@ import {
   OfficeAddinItems,
 } from "../../src/component/generator/officeAddin/question";
 import { environmentManager } from "../../src/core/environment";
-import { addOfficeAddinQuestions } from "../../src/core/middleware/questionModel";
+import {
+  addOfficeAddinQuestions,
+  getQuestionsForCreateProjectV2,
+} from "../../src/core/middleware/questionModel";
 import {
   CoreQuestionNames,
   createAppNameQuestion,
@@ -413,5 +416,21 @@ describe("updateAadManifestQuestion()", async () => {
     const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
     const expectRes = "Skip Current Question";
     chai.expect(res).to.equal(expectRes);
+  });
+  it("getQuestionsForCreateProjectWithoutDotNet for cli", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+    };
+
+    const questions = await getQuestionsForCreateProjectV2(inputs);
+
+    chai.expect(questions.isOk()).to.be.true;
+    if (questions.isOk()) {
+      chai.expect(questions.value?.children![0].children?.length).to.equal(3);
+    }
   });
 });

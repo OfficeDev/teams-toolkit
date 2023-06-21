@@ -187,7 +187,7 @@ export class SPFxGenerator {
 
       const webpartsDir = path.join(spfxFolder, "src", "webparts");
       const webparts = (await fs.readdir(webpartsDir)).filter(async (file) =>
-        (await fs.stat(file)).isDirectory()
+        fs.statSync(path.join(webpartsDir, file)).isDirectory()
       );
       if (webparts.length > 1) {
         importDetails.push(
@@ -545,7 +545,7 @@ export class SPFxGenerator {
     const webpartsDir = path.join(spfxFolder, "src", "webparts");
     if (await fs.pathExists(webpartsDir)) {
       const webparts = (await fs.readdir(webpartsDir)).filter(async (file) =>
-        (await fs.stat(file)).isDirectory()
+        fs.statSync(path.join(webpartsDir, file)).isDirectory()
       );
       if (webparts.length < 1) {
         return undefined;

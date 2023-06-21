@@ -84,7 +84,7 @@ export class DeveloperPortalScaffoldUtils {
   }
 }
 
-export enum TabUrlType {
+enum TabUrlType {
   WebsiteUrl = "WebsiteUrl",
   ContentUrl = "ContentUrl",
 }

@@ -181,7 +181,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
 
   it("should return 4 tab type options in second layer question", () => {
     // Act
-    const question = getTabTypeProjectQuestionNode({} as Inputs);
+    const question = getTabTypeProjectQuestionNode();
     // Assert
     chai.assert.equal(question.type, "singleSelect");
     chai.assert.equal(question.name, "capabilities");
@@ -199,7 +199,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
 
   it("should return 2 message extension type options in second layer question", () => {
     // Act
-    const question = getMessageExtensionTypeProjectQuestionNode({} as Inputs);
+    const question = getMessageExtensionTypeProjectQuestionNode();
     // Assert
     chai.assert.equal(question.type, "singleSelect");
     chai.assert.equal(question.name, "capabilities");
@@ -215,7 +215,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
 
   it("should return 2 outlook type options in second layer question", () => {
     // Act
-    const question = getOutlookAddinTypeProjectQuestionNode({} as Inputs);
+    const question = getOutlookAddinTypeProjectQuestionNode();
     // Assert
     chai.assert.equal(question.type, "singleSelect");
     chai.assert.equal(question.name, "capabilities");

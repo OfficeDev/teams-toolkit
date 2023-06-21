@@ -213,7 +213,7 @@ export function sendMigratedErrorEvent(
   }
   if (componentName) {
     props = { ...props, [TelemetryProperty.Component]: componentName };
-    sendErrorEvent(migrateEventName(eventName, context), error, props, measurements);
+    sendErrorEvent(migrateEventName(eventName), error, props, measurements);
   }
 }
 
@@ -229,7 +229,7 @@ function needMigrate(eventName: string, properties?: TelemetryProps): boolean {
   );
 }
 
-function migrateEventName(eventName: string, context: Context): string {
+function migrateEventName(eventName: string): string {
   if (eventName === TelemetryEvent.AddFeature) {
     return TelemetryEvent.Scaffold;
   }
@@ -239,7 +239,7 @@ function migrateEventName(eventName: string, context: Context): string {
   return eventName;
 }
 
-function getMigrateComponents(context: Context): any[] {
+function getMigrateComponents(): any[] {
   return [];
 }
 
@@ -279,7 +279,7 @@ function migrateProvision(
   context: Context,
   properties?: TelemetryProps
 ): void {
-  const components = getMigrateComponents(context);
+  const components = getMigrateComponents();
   components.forEach((component) => {
     let props: TelemetryProps = {
       ...properties,

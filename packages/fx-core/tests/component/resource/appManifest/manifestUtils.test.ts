@@ -7,8 +7,8 @@ import "reflect-metadata";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
+import { newEnvInfoV3 } from "../../../helpers";
 
 describe("getManifest V3", () => {
   const sandbox = sinon.createSandbox();

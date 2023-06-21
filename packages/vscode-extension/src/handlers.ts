@@ -198,22 +198,12 @@ export function activate(): Result<Void, FxError> {
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
-      workspace.onDidCreateFiles(async (event) => {
-        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
-      });
-
-      workspace.onDidDeleteFiles(async (event) => {
-        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
-      });
-
       workspace.onDidRenameFiles(async (event) => {
         const files = [];
         for (const f of event.files) {
           files.push(f.newUri);
           files.push(f.oldUri);
         }
-
-        await refreshEnvTreeOnFileChanged(workspacePath, files);
       });
 
       workspace.onDidSaveTextDocument(async (event) => {
@@ -254,21 +244,6 @@ export async function getSettingsVersion(): Promise<string | undefined> {
     }
   }
   return undefined;
-}
-
-async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
-  let needRefresh = false;
-  for (const file of files) {
-    // check if file is env config
-    if (environmentManager.isEnvConfig(workspacePath, file.fsPath)) {
-      needRefresh = true;
-      break;
-    }
-  }
-
-  if (needRefresh) {
-    await envTreeProviderInstance.reloadEnvironments();
-  }
 }
 
 export function addFileSystemWatcher(workspacePath: string) {

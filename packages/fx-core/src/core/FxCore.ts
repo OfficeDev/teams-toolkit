@@ -364,7 +364,7 @@ export class FxCore {
     return this.v3Implement.dispatch(this.projectVersionCheck, inputs);
   }
 
-  async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async activateEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
 

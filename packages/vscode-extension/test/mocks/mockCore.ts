@@ -58,10 +58,6 @@ export class MockCore {
     return ok("");
   }
 
-  async activateEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-
   async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(new QTreeNode({ type: "group" }));
   }

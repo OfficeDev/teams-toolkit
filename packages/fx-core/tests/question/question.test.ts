@@ -13,7 +13,9 @@ import {
   getQuestionsForValidateManifest,
   spfxFolderQuestion,
 } from "../../src/component/question";
-describe("question for v3", () => {
+import { getQuestionsForCreateProjectV2 } from "../../src/core/middleware/questionModel";
+import { FeatureFlagName } from "../../src/common/constants";
+describe("question", () => {
   let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();
   beforeEach(() => {
@@ -90,6 +92,22 @@ describe("question for v3", () => {
       projectPath: ".",
     };
     const nodeRes = await getQuestionsForUpdateTeamsApp(inputs);
+    assert.isTrue(nodeRes.isOk());
+  });
+});
+
+describe("scaffold question", () => {
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    mockedEnvRestore();
+  });
+  it("getQuestionsForCreateProjectWithDotNet", async () => {
+    mockedEnvRestore = mockedEnv({ [FeatureFlagName.CLIDotNet]: "true" });
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: ".",
+    };
+    const nodeRes = await getQuestionsForCreateProjectV2(inputs);
     assert.isTrue(nodeRes.isOk());
   });
 });

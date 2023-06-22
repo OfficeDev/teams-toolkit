@@ -90,7 +90,7 @@ export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestio
     title: getLocalizedString("core.getUserEmailQuestion.title"),
     default: defaultUserEmail,
     validation: {
-      validFunc: (input: string): string | undefined => {
+      validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
         if (!input || input.trim() === "") {
           return getLocalizedString("core.getUserEmailQuestion.validation1");
         }

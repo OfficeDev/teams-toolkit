@@ -363,11 +363,6 @@ export class FxCore {
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     return this.v3Implement.dispatch(this.projectVersionCheck, inputs);
   }
-
-  async activateEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-
   // apply the given yaml template to current project.
   async apply(
     inputs: Inputs,

@@ -557,8 +557,6 @@ export type SingleSelectResult = InputResult<string | OptionItem>;
 // @public (undocumented)
 export enum Stage {
     // (undocumented)
-    activateEnv = "activateEnv",
-    // (undocumented)
     addCapability = "addCapability",
     // (undocumented)
     addCiCdFlow = "addCiCdFlow",

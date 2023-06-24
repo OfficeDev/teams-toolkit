@@ -1,2 +1,12 @@
+# Ignore all files in the 'tab/csharp/default' directory
 tab/csharp/default/*
+
+# Ignore all files in the 'tab/csharp/non-sso' directory
 tab/csharp/non-sso/*
+
+# Ignore any file that ends in '.min.js' or '.min.css'
+*.min.js
+*.min.css
+
+# Ignore any file in the 'dist' directory or any of its subdirectories
+dist/**

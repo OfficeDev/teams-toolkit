@@ -24,6 +24,7 @@
         "js/notification-timer-trigger",
         "js/sso-tab",
         "js/workflow",
+        "js/sso-tab-with-obo-flow",
         "ts/command-and-response",
         "ts/dashboard-tab",
         "ts/default-bot",

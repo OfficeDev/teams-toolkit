@@ -38,7 +38,7 @@ export function ImportAddinProjectItem(): OptionItem {
   };
 }
 
-export enum QuestionName {
+enum QuestionName {
   AddinLanguageQuestion = "addin-language",
   AddinNameQuestion = "addin-name",
   AddinProjectFolderQuestion = "addin-project-folder",

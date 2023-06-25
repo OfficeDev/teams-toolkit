@@ -95,6 +95,7 @@ export enum CoreQuestionNames {
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
   M365Host = "m365-host",
+  BotHostTypeTrigger = "bot-host-type-trigger",
 }
 
 export const ProjectNamePattern =

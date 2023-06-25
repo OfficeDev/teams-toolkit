@@ -222,8 +222,8 @@ class EnvUtil {
     if (!envFolderPath) return ok([]);
     const list = await fs.readdir(envFolderPath);
     const envs = list
-      .filter((fileName) => fileName.startsWith(".env.") && !fileName.endsWith(".user"))
-      .map((fileName) => fileName.substring(5));
+      .map((fileName) => this.extractEnvNameFromFileName(fileName))
+      .filter((env) => env !== undefined) as string[];
     return ok(envs);
   }
   object2map(obj: DotenvOutput): Map<string, string> {
@@ -239,6 +239,13 @@ class EnvUtil {
       obj[key] = map.get(key) || "";
     }
     return obj;
+  }
+
+  extractEnvNameFromFileName(inputFileName: string): string | undefined {
+    const regex = /^\.env\.(\w+)$/;
+    const matches = inputFileName.match(regex);
+    const envName = matches && matches[1];
+    return envName || undefined;
   }
 }
 

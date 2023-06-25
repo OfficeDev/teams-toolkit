@@ -206,9 +206,7 @@ export class FxCore {
    */
   async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
     const inputFileName = path.basename(inputFile);
-    const regex = /\.env\.(\w+)/;
-    const matches = inputFileName.match(regex);
-    const envName = matches && matches[1];
+    const envName = envUtil.extractEnvNameFromFileName(inputFileName);
     if (!envName) return ok(false);
     const folderRes = await pathUtils.getEnvFolderPath(projectPath);
     if (folderRes.isErr()) return err(folderRes.error);

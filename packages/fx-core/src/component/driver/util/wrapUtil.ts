@@ -10,7 +10,7 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult } from "../interface/stepDriver";
 
-export type ActionResult = ExecutionResult | ExecutionResult["result"];
+type ActionResult = ExecutionResult | ExecutionResult["result"];
 
 export interface WrapDriverContext extends DriverContext {
   createProgressBar(title: string, steps: number): Promise<IProgressHandler | undefined>;

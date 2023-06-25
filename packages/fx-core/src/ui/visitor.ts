@@ -23,7 +23,6 @@ import {
   validate,
   TelemetryEvent,
   TelemetryProperty,
-  DynamicOptions,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError, UserCancelError, assembleError } from "../error";
 

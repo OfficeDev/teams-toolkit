@@ -2228,12 +2228,6 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     }
   }
 
-  if (env && env !== "local") {
-    const inputs = getSystemInputs();
-    inputs.env = env;
-    await core.activateEnv(inputs);
-  }
-
   const inputs = getSystemInputs();
   const result = await runCommand(Stage.deployTeams, inputs);
 

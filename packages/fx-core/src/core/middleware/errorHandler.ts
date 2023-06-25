@@ -17,7 +17,7 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
   // }`;
   // if locale is set in inputs, set it globally.
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (inputs.locale) setLocale(inputs.locale);
+  if (inputs?.locale) setLocale(inputs.locale);
   try {
     // let log = `FxCore start call:${taskName}`;
     // if (inputs.loglevel && inputs.loglevel === "Debug") {

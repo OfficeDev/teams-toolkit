@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as chai from "chai";
-import sinon from "sinon";
-import fs from "fs-extra";
-import _ from "lodash";
 import {
   Context,
   InputsWithProjectPath,
@@ -13,27 +8,28 @@ import {
   TeamsAppManifest,
   ok,
 } from "@microsoft/teamsfx-api";
-import Container from "typedi";
-import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
-import { MockedM365Provider, MockedAzureAccountProvider } from "../../../plugins/solution/util";
-import { createContextV3 } from "../../../../src/component/utils";
-import { setTools } from "../../../../src/core/globalVars";
-import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
-import { ComponentNames } from "../../../../src/component/constants";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { updateManifestV3 } from "../../../../src/component/driver/teamsApp/appStudio";
-import { Constants } from "../../../../src/component/driver/teamsApp/constants";
-import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
-import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import * as uuid from "uuid";
-import { newEnvInfoV3 } from "../../../../src/core/environment";
-import { AppDefinition } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import * as chai from "chai";
+import fs from "fs-extra";
+import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import sinon from "sinon";
+import Container from "typedi";
 import { FeatureFlagName } from "../../../../src/common/constants";
 import * as commonTools from "../../../../src/common/tools";
-import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
+import { updateManifestV3 } from "../../../../src/component/driver/teamsApp/appStudio";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
+import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
+import { createContextV3 } from "../../../../src/component/utils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
+import { setTools } from "../../../../src/core/globalVars";
+import { MockLogProvider, MockTools, randomAppName } from "../../../core/utils";
+import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import { newEnvInfoV3 } from "../../../helpers";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();

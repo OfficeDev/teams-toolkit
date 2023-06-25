@@ -11,7 +11,6 @@ import {
   Scenarios,
   TelemetryConstants,
 } from "./constants";
-import { TelemetryKeys } from "./resource/botService/constants";
 import { TelemetryHelper } from "./resource/botService/telemetryHelper";
 
 type TelemetryProps = { [key: string]: string };
@@ -92,24 +91,7 @@ export function sendMigratedStartEvent(
     sendStartEvent(TelemetryEvent.GenerateBicep, props, measurements);
     return;
   }
-  if (eventName === TelemetryEvent.Provision && inputs.env === "local") {
-    migrateProvision(
-      (props) => {
-        sendStartEvent(TelemetryEvent.LocalDebug, props, measurements);
-      },
-      context,
-      properties
-    );
-    return;
-  }
-  if (eventName === TelemetryEvent.Provision && inputs.env !== "local") {
-    migrateProvision(
-      (props) => {
-        sendStartEvent(TelemetryEvent.Provision, props, measurements);
-      },
-      context,
-      properties
-    );
+  if (eventName === TelemetryEvent.Provision) {
     return;
   }
   if (eventName === TelemetryEvent.Deploy) {
@@ -147,28 +129,7 @@ export function sendMigratedSuccessEvent(
     sendSuccessEvent(TelemetryEvent.GenerateBicep, props, measurements);
     return;
   }
-  if (eventName === TelemetryEvent.Provision && inputs.env === "local") {
-    migrateProvision(
-      (props) => {
-        sendSuccessEvent(TelemetryEvent.LocalDebug, props, measurements);
-        sendStartEvent(TelemetryEvent.PostLocalDebug, props, measurements);
-        sendSuccessEvent(TelemetryEvent.PostLocalDebug, props, measurements);
-      },
-      context,
-      properties
-    );
-    return;
-  }
-  if (eventName === TelemetryEvent.Provision && inputs.env !== "local") {
-    migrateProvision(
-      (props) => {
-        sendSuccessEvent(TelemetryEvent.Provision, props, measurements);
-        sendStartEvent(TelemetryEvent.PostProvision, props, measurements);
-        sendSuccessEvent(TelemetryEvent.PostProvision, props, measurements);
-      },
-      context,
-      properties
-    );
+  if (eventName === TelemetryEvent.Provision) {
     return;
   }
   if (eventName === TelemetryEvent.Deploy) {
@@ -213,7 +174,7 @@ export function sendMigratedErrorEvent(
   }
   if (componentName) {
     props = { ...props, [TelemetryProperty.Component]: componentName };
-    sendErrorEvent(migrateEventName(eventName, context), error, props, measurements);
+    sendErrorEvent(migrateEventName(eventName), error, props, measurements);
   }
 }
 
@@ -229,7 +190,7 @@ function needMigrate(eventName: string, properties?: TelemetryProps): boolean {
   );
 }
 
-function migrateEventName(eventName: string, context: Context): string {
+function migrateEventName(eventName: string): string {
   if (eventName === TelemetryEvent.AddFeature) {
     return TelemetryEvent.Scaffold;
   }
@@ -237,10 +198,6 @@ function migrateEventName(eventName: string, context: Context): string {
     return TelemetryEvent.LocalDebug;
   }
   return eventName;
-}
-
-function getMigrateComponents(context: Context): any[] {
-  return [];
 }
 
 function migrateComponentName(componentName: string): string {
@@ -272,34 +229,4 @@ function migrateDeploy(
       cb(props);
     });
   }
-}
-
-function migrateProvision(
-  cb: (properties?: TelemetryProps) => void,
-  context: Context,
-  properties?: TelemetryProps
-): void {
-  const components = getMigrateComponents(context);
-  components.forEach((component) => {
-    let props: TelemetryProps = {
-      ...properties,
-      [TelemetryProperty.Component]: migrateComponentName(component.name),
-    };
-    props = fulfillCommonBotProperties(props, component);
-    cb(props);
-  });
-}
-
-function fulfillCommonBotProperties(props: TelemetryProps, component?: any): TelemetryProps {
-  if (component?.name === ComponentNames.TeamsBot) {
-    props = {
-      ...props,
-      [TelemetryKeys.HostType]:
-        component?.hosting === ComponentNames.Function ? "azure-function" : "app-service",
-      [TelemetryKeys.BotCapabilities]: component?.capabilities
-        ? JSON.stringify(component.capabilities)
-        : "",
-    };
-  }
-  return props;
 }

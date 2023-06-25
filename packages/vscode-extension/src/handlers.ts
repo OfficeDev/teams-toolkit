@@ -260,7 +260,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   let needRefresh = false;
   for (const file of files) {
     // check if file is env config
-    if (environmentManager.isEnvConfig(workspacePath, file.fsPath)) {
+    if (core.isEnvFile(workspacePath, file.fsPath)) {
       needRefresh = true;
       break;
     }

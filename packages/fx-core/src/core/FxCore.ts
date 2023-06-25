@@ -42,7 +42,9 @@ import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
-import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { PreProvisionResForVS, VersionCheckRes } from "./types";
+import fs from "fs-extra";
+import * as path from "path";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -197,6 +199,24 @@ export class FxCore {
     inputs: InputsWithProjectPath
   ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
     return this.v3Implement.dispatch(this.getDotEnvs, inputs);
+  }
+
+  /**
+   * given projectPath and filePath, return whether the filePath is a env file
+   */
+  async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
+    const inputFileName = path.basename(inputFile);
+    const regex = /\.env\.(\w+)/;
+    const matches = inputFileName.match(regex);
+    const envName = matches && matches[1];
+    if (!envName) return ok(false);
+    const folderRes = await pathUtils.getEnvFolderPath(projectPath);
+    if (folderRes.isErr()) return err(folderRes.error);
+    const envFolderPath = folderRes.value;
+    if (!envFolderPath) return ok(false);
+    const inputFileDir = path.dirname(inputFile);
+    if (path.resolve(inputFileDir) !== path.resolve(envFolderPath)) return ok(false);
+    return ok(true);
   }
 
   /**

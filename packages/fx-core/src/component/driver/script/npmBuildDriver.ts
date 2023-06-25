@@ -13,6 +13,7 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { BaseBuildStepDriver } from "./baseBuildStepDriver";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { ExecutionResult } from "../interface/stepDriver";
 
 const ACTION_NAME = "cli/runNpmCommand";
 
@@ -31,6 +32,11 @@ export class NpmBuildDriver extends BaseBuildStepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return super.run(args, context);
+  }
+
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
+  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return super.execute(args, ctx);
   }
 }
 

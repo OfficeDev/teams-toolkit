@@ -765,7 +765,7 @@ describe("envUtils", () => {
     });
   });
 
-  describe("extractEnvNameFromEnvFile", () => {
+  describe("extractEnvNameFromFileName", () => {
     it("happy path", async () => {
       const res = await envUtil.extractEnvNameFromFileName(".env.dev");
       assert.isTrue(res === "dev");

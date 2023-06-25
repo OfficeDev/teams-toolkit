@@ -19,7 +19,6 @@ import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
 import * as bicepChecker from "../../../../src/component/driver/arm/util/bicepChecker";
 import axios from "axios";
-import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
 import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
 
 describe("Arm driver deploy", () => {
@@ -61,7 +60,7 @@ describe("Arm driver deploy", () => {
         status: 200,
         data: "",
       });
-      let res: ActionResult;
+      let res: any;
       let deployArgs = {
         subscriptionId: "00000000-0000-0000-0000-000000000000",
         resourceGroupName: "mock-group",

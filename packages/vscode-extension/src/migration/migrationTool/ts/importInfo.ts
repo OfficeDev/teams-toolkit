@@ -78,7 +78,7 @@ export interface ImportSingleExportInfo {
  *  type: 'ImportNamespaceSpecifier',
  * }
  */
-export interface ImportEntireModuleInfo {
+interface ImportEntireModuleInfo {
   alias: string;
   type: "ImportDefaultSpecifier" | "ImportNamespaceSpecifier" | "TSImportEqualsDeclaration";
 }

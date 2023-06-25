@@ -214,7 +214,10 @@ export function getVersionState(info: VersionInfo): VersionState {
     semver.lte(info.version, MetadataV2.projectMaxVersion)
   ) {
     return VersionState.upgradeable;
-  } else if (info.source === VersionSource.teamsapp && info.version === MetadataV3.projectVersion) {
+  } else if (
+    info.source === VersionSource.teamsapp &&
+    semver.lt(info.version, MetadataV3.unSupprotVersion)
+  ) {
     return VersionState.compatible;
   }
   return VersionState.unsupported;

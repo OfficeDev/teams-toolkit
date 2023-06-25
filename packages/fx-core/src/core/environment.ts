@@ -50,6 +50,10 @@ class EnvironmentManager {
     return ok(remoteEnvs);
   }
 
+  public isEnvConfig(projectPath: string, filePath: string): boolean {
+    return false;
+  }
+
   public getDefaultEnvName() {
     return this.defaultEnvName;
   }

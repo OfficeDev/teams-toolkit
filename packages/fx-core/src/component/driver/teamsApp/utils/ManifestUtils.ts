@@ -47,7 +47,7 @@ import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
 
-class ManifestUtils {
+export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
     return await this._readAppManifest(filePath);

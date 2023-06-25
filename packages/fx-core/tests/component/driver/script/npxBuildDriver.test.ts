@@ -16,6 +16,7 @@ import { DriverContext } from "../../../../src/component/driver/interface/common
 import { NpxBuildDriver } from "../../../../src/component/driver/script/npxBuildDriver";
 import { MockUserInteraction } from "../../../core/utils";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
+import chai from "chai";
 
 describe("NPX Build Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -43,6 +44,7 @@ describe("NPX Build Driver test", () => {
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.run(args, context);
     assert.equal(res.isOk(), true);
+    chai.assert.equal((await driver.execute(args, context)).result.isOk(), true);
   });
 
   it("NPX build error", async () => {

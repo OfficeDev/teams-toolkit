@@ -43,6 +43,8 @@ describe("NPM Build Driver test", () => {
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.run(args, context);
     chai.assert.equal(res.isOk(), true);
+
+    chai.assert.equal((await driver.execute(args, context)).result.isOk(), true);
   });
 
   it("Dotnet build error", async () => {

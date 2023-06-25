@@ -83,7 +83,7 @@
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
 
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
-/packages/fx-core/tests/component/feature/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
+/packages/fx-core/tests/component/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
 
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang

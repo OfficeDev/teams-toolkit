@@ -121,7 +121,7 @@
 /packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/featureFlags.test.ts @jayzhang @xzf0587 @LongOddCode
 
-/packages/fx-core/src/common/globalState.ts @tecton @jayzhang @LongOddCode 
+/packages/fx-core/src/common/globalState.ts @tecton @jayzhang @LongOddCode
 /packages/fx-core/tests/common/globalState.test.ts @tecton @jayzhang @LongOddCode
 
 /packages/fx-core/src/common/jsonUtils.ts @jayzhang @xzf0587 @LongOddCode
@@ -204,6 +204,8 @@
 
 /packages/fx-core/src/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
 /packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
+/packages/fx-core/src/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
+/packages/fx-core/tests/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 

@@ -11,7 +11,7 @@ import { M365AccountNode } from "./m365Node";
 import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import { isSPFxProject } from "../../globalVariables";
 
-export class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
+class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
   private static instance: AccountTreeViewProvider;
   private _onDidChangeTreeData: vscode.EventEmitter<DynamicNode | undefined | void> =
     new vscode.EventEmitter<DynamicNode | undefined | void>();

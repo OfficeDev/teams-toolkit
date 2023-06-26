@@ -63,13 +63,13 @@ const activeNpmInstallTasks = new Map<string, NpmInstallTaskInfo>();
  * Event emitters use this id to identify each tracked task, and `runTask` matches this id
  * to determine whether a task is terminated or not.
  */
-export let taskEndEventEmitter: vscode.EventEmitter<{
+let taskEndEventEmitter: vscode.EventEmitter<{
   id: string;
   name: string;
   exitCode?: number;
 }>;
 let taskStartEventEmitter: vscode.EventEmitter<string>;
-export const trackedTasks = new Map<string, string>();
+const trackedTasks = new Map<string, string>();
 
 function getTaskKey(task: vscode.Task): string {
   if (task === undefined) {
@@ -149,41 +149,6 @@ function displayTerminal(taskName: string): boolean {
   }
 
   return false;
-}
-
-export async function runTask(task: vscode.Task): Promise<number | undefined> {
-  if (task.definition.teamsfxTaskId === undefined) {
-    task.definition.teamsfxTaskId = uuid.v4();
-  }
-
-  const taskId = task.definition.teamsfxTaskId;
-  let started = false;
-
-  return new Promise<number | undefined>((resolve, reject) => {
-    // corner case but need to handle - somehow the task does not start
-    const startTimer = setTimeout(() => {
-      if (!started) {
-        reject(new Error("Task start timeout"));
-      }
-    }, 30000);
-
-    const startListener = taskStartEventEmitter.event((result) => {
-      if (taskId === result) {
-        clearTimeout(startTimer);
-        started = true;
-        startListener.dispose();
-      }
-    });
-
-    vscode.tasks.executeTask(task);
-
-    const endListener = taskEndEventEmitter.event((result) => {
-      if (taskId === result.id) {
-        endListener.dispose();
-        resolve(result.exitCode);
-      }
-    });
-  });
 }
 
 function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {

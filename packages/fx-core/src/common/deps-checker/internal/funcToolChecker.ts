@@ -426,7 +426,7 @@ export class FuncToolChecker implements DepsChecker {
   }
 }
 
-export function mapToFuncToolsVersion(output: string): FuncVersion {
+function mapToFuncToolsVersion(output: string): FuncVersion {
   const regex = /(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
   const match = regex.exec(output);
   if (!match) {
@@ -452,7 +452,7 @@ export function mapToFuncToolsVersion(output: string): FuncVersion {
   };
 }
 
-export function isFuncVersionSupport(
+function isFuncVersionSupport(
   actualFuncVersion: FuncVersion,
   expectedFuncVersion: string
 ): boolean {

@@ -194,7 +194,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   }
 }
 
-export async function generateAccountHint(includeTenantId = true): Promise<string> {
+async function generateAccountHint(includeTenantId = true): Promise<string> {
   let tenantId = undefined,
     loginHint = undefined;
   const accountInfo = M365TokenInstance.getCachedAccountInfo();

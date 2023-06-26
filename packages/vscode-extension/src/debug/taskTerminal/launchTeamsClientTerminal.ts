@@ -25,7 +25,7 @@ import { core, getSystemInputs } from "../../handlers";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Hub } from "@microsoft/teamsfx-core";
 
-export interface LaunchTeamsClientArgs {
+interface LaunchTeamsClientArgs {
   env?: string;
   manifestPath: string;
 }

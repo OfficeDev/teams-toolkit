@@ -140,7 +140,7 @@ export async function sendDebugAllEvent(
 }
 
 export const UnknownPlaceholder = "<unknown>";
-export const UndefinedPlaceholder = "<undefined>";
+const UndefinedPlaceholder = "<undefined>";
 export const DefaultPlaceholder = "<default>";
 
 export function maskValue(

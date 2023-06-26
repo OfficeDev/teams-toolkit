@@ -5,14 +5,20 @@ import * as chai from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import { getTaskInfo, maskArrayValue, maskValue } from "../../src/debug/localTelemetryReporter";
+import {
+  DefaultPlaceholder,
+  getTaskInfo,
+  maskArrayValue,
+  maskValue,
+  UndefinedPlaceholder,
+} from "../../src/debug/localTelemetryReporter";
 import * as globalVariables from "../../src/globalVariables";
 
 describe("LocalTelemetryReporter", () => {
   describe("maskValue()", () => {
     it("mask undefined value without known values", () => {
       const res = maskValue(undefined);
-      chai.assert.equal(res, "<undefined>");
+      chai.assert.equal(res, UndefinedPlaceholder);
     });
 
     it("mask unknown value without known values", () => {
@@ -22,7 +28,7 @@ describe("LocalTelemetryReporter", () => {
 
     it("mask undefined value with string known values", () => {
       const res = maskValue(undefined, ["test known value"]);
-      chai.assert.equal(res, "<undefined>");
+      chai.assert.equal(res, UndefinedPlaceholder);
     });
 
     it("mask unknown value with string known values", () => {
@@ -36,27 +42,29 @@ describe("LocalTelemetryReporter", () => {
     });
 
     it("mask undefined value with mask value", () => {
-      const res = maskValue(undefined, [{ value: "test known value", mask: "<default>" }]);
-      chai.assert.equal(res, "<undefined>");
+      const res = maskValue(undefined, [{ value: "test known value", mask: DefaultPlaceholder }]);
+      chai.assert.equal(res, UndefinedPlaceholder);
     });
 
     it("mask unknown value with mask values", () => {
       const res = maskValue("unknown test value", [
-        { value: "test known value", mask: "<default>" },
+        { value: "test known value", mask: DefaultPlaceholder },
       ]);
       chai.assert.equal(res, "<unknown>");
     });
 
     it("mask known value with mask values", () => {
-      const res = maskValue("test known value", [{ value: "test known value", mask: "<default>" }]);
-      chai.assert.equal(res, "<default>");
+      const res = maskValue("test known value", [
+        { value: "test known value", mask: DefaultPlaceholder },
+      ]);
+      chai.assert.equal(res, DefaultPlaceholder);
     });
   });
 
   describe("maskArrayValue()", () => {
     it("mask undefined value without known values", () => {
       const res = maskArrayValue(undefined);
-      chai.assert.equal(res, "<undefined>");
+      chai.assert.equal(res, UndefinedPlaceholder);
     });
 
     it("mask empty array value without known values", () => {
@@ -77,9 +85,9 @@ describe("LocalTelemetryReporter", () => {
     it("mask values with mask value", () => {
       const res = maskArrayValue(
         ["test known value"],
-        [{ value: "test known value", mask: "<default>" }]
+        [{ value: "test known value", mask: DefaultPlaceholder }]
       );
-      chai.assert.sameDeepOrderedMembers(res as string[], ["<default>"]);
+      chai.assert.sameDeepOrderedMembers(res as string[], [DefaultPlaceholder]);
     });
   });
 
@@ -129,9 +137,9 @@ describe("LocalTelemetryReporter", () => {
             type: "<unknown>",
           },
           {
-            command: "<undefined>",
+            command: UndefinedPlaceholder,
             label: "<unknown>",
-            type: "<undefined>",
+            type: UndefinedPlaceholder,
           },
         ]
       );
@@ -186,9 +194,9 @@ describe("LocalTelemetryReporter", () => {
             type: "teamsfx",
           },
           {
-            command: "<undefined>",
+            command: UndefinedPlaceholder,
             label: "Start services",
-            type: "<undefined>",
+            type: UndefinedPlaceholder,
           },
         ]
       );
@@ -231,9 +239,9 @@ describe("LocalTelemetryReporter", () => {
             type: "teamsfx",
           },
           {
-            command: "<undefined>",
+            command: UndefinedPlaceholder,
             label: "Start services",
-            type: "<undefined>",
+            type: UndefinedPlaceholder,
           },
           {
             command: "<unknown>",
@@ -272,9 +280,9 @@ describe("LocalTelemetryReporter", () => {
             type: "teamsfx",
           },
           {
-            command: "<undefined>",
+            command: UndefinedPlaceholder,
             label: "Start services",
-            type: "<undefined>",
+            type: UndefinedPlaceholder,
           },
         ]
       );
@@ -322,9 +330,9 @@ describe("LocalTelemetryReporter", () => {
             type: "teamsfx",
           },
           {
-            command: "<undefined>",
+            command: UndefinedPlaceholder,
             label: "Start services",
-            type: "<undefined>",
+            type: UndefinedPlaceholder,
           },
         ]
       );

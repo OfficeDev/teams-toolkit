@@ -199,8 +199,11 @@
 /packages/fx-core/tests/component/driver/arm @xzf0587 @blackchoey @adashen
 
 /packages/fx-core/src/core/middleware/projectMigrationV3 @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/templates/core/v3Migration @xzf0587 @frankqianms @blackchoey @adashen
 /packages/fx-core/tests/core/middleware/migration @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/core/middleware/projectVersionChecker.test.ts @xzf0587 @frankqianms @blackchoey @adashen
 /packages/fx-core/tests/core/middleware/testAssets @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/samples/sampleV3 @xzf0587 @wenytang-ms @frankqianms @blackchoey @adashen
 
 /packages/fx-core/src/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
 /packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen

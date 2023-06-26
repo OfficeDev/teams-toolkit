@@ -200,8 +200,7 @@ jobs:
         id: gpg
         with:
             secrets_file: packages/tests/scripts/test.json.gpg
-            map: 'AZURE_CLIENT_SECRET=AZURE_CLIENT_SECRET,AZURE_CLIENT_ID=AZURE_CLIENT_ID,CLEAN_CLIENT_ID=CLEAN_CLIENT_ID,CLEAN_TENANT_ID=CLEAN_TENANT_ID,M365_COLLABORATOR=M365_COLLABORATOR,M365_DISPLAY_NAME=M365_DISPLAY_NAME,\
-              M365_ACCOUNT_PASSWORD=M365_PASSWORD,M365_TENANT_ID=M365_TENANT_ID,M365_ACCOUNT_NAME=M365_USERNAME,M365_USERNAME_2=M365_USERNAME_2,M365_USERNAME_3=M365_USERNAME_3,M365_USERNAME_4=M365_USERNAME_4'
+            map: 'AZURE_CLIENT_SECRET=AZURE_CLIENT_SECRET,AZURE_CLIENT_ID=AZURE_CLIENT_ID,CLEAN_CLIENT_ID=CLEAN_CLIENT_ID,CLEAN_TENANT_ID=CLEAN_TENANT_ID,M365_COLLABORATOR=M365_COLLABORATOR,M365_DISPLAY_NAME=M365_DISPLAY_NAME,M365_ACCOUNT_PASSWORD=M365_PASSWORD,M365_TENANT_ID=M365_TENANT_ID,M365_USERNAME=M365_USERNAME,M365_USERNAME_2=M365_USERNAME_2,M365_USERNAME_3=M365_USERNAME_3,M365_USERNAME_4=M365_USERNAME_4'
         env:
             GPG_PASSPHRASE: "officedev/teamsfx@ddd"
 
@@ -316,7 +315,7 @@ jobs:
       - name: M365 Login
         working-directory: packages/tests
         run: | # rm -r -f ~/.fx/account
-          npx ts-node src/scripts/m365Login.ts -- '${{ env.M365_USERNAME }}' '${{ env.M365_PASSWORD }}'
+          npx ts-node src/scripts/m365Login.ts -- '${{ env.M365_ACCOUNT_NAME }}' '${{ env.M365_ACCOUNT_PASSWORD }}'
 
       - name: Azure Login(win)
         if: matrix.os == 'windows-latest'
@@ -421,6 +420,9 @@ jobs:
     if: ${{ (github.event_name == 'workflow_dispatch' && needs.setup.outputs.email-receiver) || (github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5))) }}
     needs: [setup, main]
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/tests
     steps:
       - name: Checkout
         uses: actions/checkout@v3

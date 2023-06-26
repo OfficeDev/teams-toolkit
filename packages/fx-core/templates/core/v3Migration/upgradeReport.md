@@ -15,7 +15,7 @@ Some of the changes you may immediately notice are:
 * The changes to use environment files give greater flexibility of configuring which resources are used to provision, but may require some manual steps when creating new environments. [More info](https://aka.ms/teams-toolkit-5.0-upgrade#environment-management)
 
 If you are using Visual Studio version 17.6 or later and developing a bot app locally:
-* You can use the dev tunnel as your tunneling service. [More Info](https://learn.microsoft.com/en-us/aspnet/core/test/dev-tunnels?view=aspnetcore-7.0)
+* You can use the dev tunnel as your tunneling service. [More Info](https://aka.ms/vs-dev-tunnel-guidance)
 * In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel)
 
 If you're using APIM:

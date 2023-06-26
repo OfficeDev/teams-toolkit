@@ -56,6 +56,8 @@ import {
   selectEnvNode,
   selectTeamsAppManifestQuestion,
 } from "./question";
+import "../component/resource/appManifest/appManifest";
+import "../component/resource/aadApp/aadApp";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters

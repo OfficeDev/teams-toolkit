@@ -124,20 +124,6 @@ export class PluginError extends Error {
   }
 }
 
-export class CreateAADAppError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(ErrorType.USER, CreateAppError.name, CreateAppError.message(), [], innerError);
-    resolveInnerError(this, GraphErrorCodes);
-  }
-}
-
-export class CreateAADSecretError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(ErrorType.USER, CreateSecretError.name, CreateSecretError.message(), [], innerError);
-    resolveInnerError(this, GraphErrorCodes);
-  }
-}
-
 export class ProvisionError extends PluginError {
   constructor(resource: string, innerError?: InnerError) {
     super(

@@ -10,11 +10,6 @@ export class RegularExprs {
   public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z\d]/g;
 }
 
-export class AADRegistrationConstants {
-  public static readonly GRAPH_REST_BASE_URL: string = "https://graph.microsoft.com/v1.0";
-  public static readonly AZURE_AD_MULTIPLE_ORGS: string = "AzureADMultipleOrgs";
-}
-
 export class Retry {
   public static readonly RETRY_TIMES = 6;
   public static readonly BACKOFF_TIME_MS = 5000;

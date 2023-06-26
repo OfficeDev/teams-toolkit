@@ -206,10 +206,6 @@ export class Utils {
   }
 }
 
-export async function sleep(ms: number) {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export function getExecCommand(command: string): string {
   return isWindows() ? `${command}.cmd` : command;
 }

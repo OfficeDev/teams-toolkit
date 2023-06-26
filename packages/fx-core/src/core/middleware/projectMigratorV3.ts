@@ -120,7 +120,7 @@ const Parameters = {
   confirmOnly: "confirmOnly",
 };
 
-export const TelemetryPropertyKey = {
+const TelemetryPropertyKey = {
   button: "button",
   mode: "mode",
   upgradeVersion: "upgrade-version",
@@ -128,7 +128,7 @@ export const TelemetryPropertyKey = {
   reason: "reason",
 };
 
-export const TelemetryPropertyValue = {
+const TelemetryPropertyValue = {
   ok: "ok",
   learnMore: "learn-more",
   cancel: "cancel",
@@ -160,7 +160,6 @@ const subMigrations: Array<Migration> = [
   preMigration,
   manifestsMigration,
   generateAppYml,
-  generateLocalConfig,
   configsMigration,
   statesMigration,
   userdataMigration,
@@ -548,7 +547,7 @@ export async function showNotification(
   return await askUserConfirm(ctx, versionForMigration);
 }
 
-export async function askUserConfirm(
+async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
@@ -580,7 +579,7 @@ export async function askUserConfirm(
   return true;
 }
 
-export async function showNonmodalNotification(
+async function showNonmodalNotification(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
@@ -603,7 +602,7 @@ export async function showNonmodalNotification(
   return false;
 }
 
-export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
+async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const res = await TOOLS?.ui.showMessage(
     "info",
@@ -626,19 +625,19 @@ export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise
   }
 }
 
-export async function popupMessageModal(
+async function popupMessageModal(
   versionForMigration: VersionForMigration
 ): Promise<string | undefined> {
   return await popupMessage(versionForMigration, true);
 }
 
-export async function popupMessageNonmodal(
+async function popupMessageNonmodal(
   versionForMigration: VersionForMigration
 ): Promise<string | undefined> {
   return await popupMessage(versionForMigration, false);
 }
 
-export async function popupMessage(
+async function popupMessage(
   versionForMigration: VersionForMigration,
   isModal: boolean
 ): Promise<string | undefined> {
@@ -651,9 +650,7 @@ export async function popupMessage(
   return res?.isOk() ? res.value : undefined;
 }
 
-export async function generateLocalConfig(context: MigrationContext): Promise<void> {}
-
-export async function setTelemetryProjectId(context: CoreHookContext): Promise<void> {
+async function setTelemetryProjectId(context: CoreHookContext): Promise<void> {
   const projectPath = getParameterFromCxt(context, "projectPath", "");
   try {
     const projectId = await getTrackingIdFromPath(projectPath);

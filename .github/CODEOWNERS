@@ -255,3 +255,7 @@
 /packages/fx-core/tests/common/m365 @kimizhu @swatDong @kuojianlu
 /packages/fx-core/src/component/resource/botService @kimizhu @swatDong @kuojianlu
 /packages/fx-core/tests/component/resource/botService @kimizhu @swatDong @kuojianlu
+
+/packages/fx-core/tests/component/driver/teamsApp @nliu @jayzhang @yuqizhou77
+/packages/fx-core/tests/plugins/resource/appstudio @nliu @jayzhang @yuqizhou77
+/packages/fx-core/templates/plugins/resource/appstudio @nliu

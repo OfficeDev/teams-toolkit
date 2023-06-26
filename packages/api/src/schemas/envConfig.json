@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "description": "The schema of TeamsFx configuration.",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "auth": {
+      "type": "object",
+      "description": "Existing AAD app configuration.",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "The client id of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "clientSecret": {
+          "type": "string",
+          "description": "The client secret of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "objectId": {
+          "type": "string",
+          "description": "The object id of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "accessAsUserScopeId": {
+          "type": "string",
+          "description": "The access_as_user scope id of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "frontendDomain": {
+          "type": "string",
+          "description": "The frontend domain for redirect URLs of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "botId": {
+          "type": "string",
+          "description": "The bot id for identifier URIs of existing AAD app for Teams app.",
+          "minLength": 1
+        },
+        "botEndpoint": {
+          "type": "string",
+          "description": "The bot endpoint for redirect URLs of existing AAD app for Teams app.",
+          "minLength": 1
+        }
+      },
+      "dependencies": {
+        "clientId": ["clientSecret", "objectId"],
+        "clientSecret": ["clientId", "objectId"],
+        "objectId": ["clientId", "clientSecret"],
+        "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"],
+        "botId": ["botEndpoint"],
+        "botEndpoint": ["botId"]
+      }
+    },
+    "azure": {
+      "type": "object",
+      "description": "The Azure resource related configuration.",
+      "properties": {
+        "subscriptionId": {
+          "type": "string",
+          "description": "The default subscription to provision Azure resources.",
+          "minLength": 1,
+          "pattern": "^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$"
+        },
+        "resourceGroupName": {
+          "type": "string",
+          "description": "The default resource group of Azure resources.",
+          "minLength": 1,
+          "pattern": "^[-\\w\\._\\(\\)]+$"
+        }
+      }
+    },
+    "bot": {
+      "type": "object",
+      "description": "Existing bot AAD app configuration.",
+      "properties": {
+        "appId": {
+          "type": "string",
+          "description": "The id of existing bot AAD app.",
+          "minLength": 1
+        },
+        "appPassword": {
+          "type": "string",
+          "description": "The password of existing bot AAD app.",
+          "minLength": 1
+        }
+      },
+      "dependencies": {
+        "appId": ["appPassword"],
+        "appPassword": ["appId"]
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "description": "The Teams App manifest related configuration.",
+      "properties": {
+        "appName": {
+          "type": "object",
+          "description": "Teams app name.",
+          "properties": {
+            "short": {
+              "type": "string",
+              "description": "A short display name for teams app.",
+              "maxLength": 30,
+              "minLength": 1
+            },
+            "full": {
+              "type": "string",
+              "description": "The full name for teams app.",
+              "maxLength": 100
+            }
+          },
+          "required": ["short"]
+        },
+        "description": {
+          "type": "object",
+          "description": "Description for Teams app.",
+          "properties": {
+            "short": {
+              "type": "string",
+              "description": "A short description of the app used when space is limited. Maximum length is 80 characters.",
+              "maxLength": 80
+            },
+            "full": {
+              "type": "string",
+              "description": "The full description of the app. Maximum length is 4000 characters.",
+              "maxLength": 4000
+            }
+          }
+        },
+        "icons": {
+          "type": "object",
+          "description": "Icons for Teams App.",
+          "properties": {
+            "color": {
+              "type": "string",
+              "description": "A relative file path to a full color PNG icon. Size 192x192.",
+              "minLength": 1
+            },
+            "outline": {
+              "type": "string",
+              "description": "A relative file path to a transparent PNG outline icon. The border color needs to be white. Size 32x32.",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "required": ["appName"]
+    },
+    "skipAddingSqlUser": {
+      "type": "boolean",
+      "description": "Skip to add user during SQL provision."
+    }
+  },
+  "required": ["manifest"]
+}

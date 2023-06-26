@@ -260,5 +260,8 @@
 /packages/fx-core/src/component/resource/botService @kimizhu @swatDong @kuojianlu
 /packages/fx-core/tests/component/resource/botService @kimizhu @swatDong @kuojianlu
 
+/packages/fx-core/tests/component/driver/teamsApp @nliu-ms @jayzhang @yuqizhou77
+/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @yuqizhou77
+/packages/fx-core/templates/plugins/resource/appstudio @nliu-ms
 /packages/fx-core/src/component/driver/middleware/updateProgress.ts @tecton @jayzhang @LongOddCode
 /packages/fx-core/tests/component/driver/middleware/updateProgress.test.ts @tecton @jayzhang @LongOddCode

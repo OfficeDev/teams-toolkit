@@ -12,7 +12,7 @@ import * as globalVariables from "../globalVariables";
 import { DynamicNode } from "./dynamicNode";
 import { EnvironmentNode } from "./environmentTreeItem";
 
-export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
+class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
   private static instance: EnvironmentTreeViewProvider;
   private _onDidChangeTreeData: vscode.EventEmitter<DynamicNode | undefined | void> =
     new vscode.EventEmitter<DynamicNode | undefined | void>();

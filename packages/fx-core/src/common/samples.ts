@@ -2,12 +2,19 @@ import axios from "axios";
 import { sendRequestWithTimeout } from "../component/generator/utils";
 import sampleConfigV3 from "./samples-config-v3.json";
 import { isVideoFilterEnabled } from "./featureFlags";
+import * as packageJson from "../../package.json";
 
 class configInfo {
   static readonly owner = "OfficeDev";
   static readonly repo = "TeamsFx-Samples";
   static readonly tree = "v2.2.0";
   static readonly file = ".config/samples-config-v3.json";
+}
+
+class preReleaseConfig {
+  static readonly baseUrl = "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/";
+  static readonly defaultPackageLink =
+    "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip";
 }
 
 export interface SampleInfo {
@@ -64,12 +71,17 @@ class SampleProvider {
         time: sample.time,
         configuration: sample.configuration,
         link:
-          (sample as any).packageLink ?? (this.sampleConfigs ?? sampleConfigV3).defaultPackageLink,
+          (sample as any).packageLink ??
+          (this.isStableRelease() ? this.sampleConfigs ?? sampleConfigV3 : preReleaseConfig)
+            .defaultPackageLink,
         suggested: sample.suggested,
         url:
           (sample as any).relativePath && (sample as any).url
             ? (sample as any).url
-            : `${(this.sampleConfigs ?? sampleConfigV3).baseUrl}${sample.id}`,
+            : `${
+                (this.isStableRelease() ? this.sampleConfigs ?? sampleConfigV3 : preReleaseConfig)
+                  .baseUrl
+              }${sample.id}`,
         relativePath: (sample as any).relativePath,
       } as SampleInfo;
     });
@@ -88,6 +100,14 @@ class SampleProvider {
     };
 
     return this.sampleCollection;
+  }
+
+  private isStableRelease(): boolean {
+    const version = packageJson.version;
+    if (version.includes("alpha") || version.includes("beta") || version.includes("rc")) {
+      return false;
+    }
+    return true;
   }
 }
 

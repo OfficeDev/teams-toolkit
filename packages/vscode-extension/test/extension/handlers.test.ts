@@ -5,7 +5,6 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { stubInterface } from "ts-sinon";
 import * as util from "util";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
@@ -68,7 +67,7 @@ import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as launch from "../../src/debug/launch";
-import { environmentManager } from "../../../fx-core/build";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("handlers", () => {
   describe("activate()", function () {

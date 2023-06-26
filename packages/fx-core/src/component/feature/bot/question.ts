@@ -10,7 +10,7 @@ enum HostType {
   Functions = "azure-functions",
 }
 
-export interface HostTypeTriggerOptionItem extends OptionItem {
+interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
   triggers?: NotificationTrigger[];
 }
@@ -75,18 +75,13 @@ export function AppServiceOptionItemForVS(): HostTypeTriggerOptionItem {
   };
 }
 
-export function FunctionsOptionItems(): HostTypeTriggerOptionItem[] {
+function FunctionsOptionItems(): HostTypeTriggerOptionItem[] {
   return [
     FunctionsHttpTriggerOptionItem(),
     FunctionsTimerTriggerOptionItem(),
     FunctionsHttpAndTimerTriggerOptionItem(),
   ];
 }
-
-type HostTypeTriggerOptionItemWithoutText = Omit<
-  HostTypeTriggerOptionItem,
-  "label" | "cliName" | "description" | "detail"
->;
 
 // The restrictions of this question:
 //   - appService and function are mutually exclusive

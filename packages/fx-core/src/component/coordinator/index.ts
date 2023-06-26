@@ -63,7 +63,6 @@ import {
 import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
-import { QuestionNames } from "../feature/bot/constants";
 import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
@@ -232,7 +231,7 @@ class Coordinator {
         ) {
           inputs.isM365 = true;
         }
-        const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
+        const trigger = inputs[CoreQuestionNames.BotHostTypeTrigger] as string;
         const templateName = Feature2TemplateName[`${feature}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);

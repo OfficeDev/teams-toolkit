@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-// eslint-disable-next-line import/no-unresolved
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";

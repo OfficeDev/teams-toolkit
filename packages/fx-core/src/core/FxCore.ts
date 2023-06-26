@@ -43,7 +43,6 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
-import fs from "fs-extra";
 import * as path from "path";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;

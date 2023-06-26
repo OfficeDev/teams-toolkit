@@ -38,7 +38,7 @@ export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   },
 ];
 
-export const BOT_ID_PLACEHOLDER = `{{state.${BOT_STATE_KEY}.botId}}`;
+const BOT_ID_PLACEHOLDER = `{{state.${BOT_STATE_KEY}.botId}}`;
 
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   {
@@ -259,7 +259,6 @@ export const COLOR_TEMPLATE = "plugins/resource/appstudio/defaultIcon.png";
 export const OUTLINE_TEMPLATE = "plugins/resource/appstudio/defaultOutline.png";
 export const DEFAULT_COLOR_PNG_FILENAME = "color.png";
 export const DEFAULT_OUTLINE_PNG_FILENAME = "outline.png";
-export const MANIFEST_RESOURCES = "resources";
 
 // Default values for the developer fields in manifest.
 export const DEFAULT_DEVELOPER = {

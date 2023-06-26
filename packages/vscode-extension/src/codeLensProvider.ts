@@ -259,7 +259,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
   }
 }
 
-export interface PropertyPair {
+interface PropertyPair {
   name: parser.Node;
   value: parser.Node;
 }

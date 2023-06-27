@@ -562,7 +562,7 @@
   "driver.botFramework.summary.create": "The bot registration has been created successfully (%s).",
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
-  "driver.botFramework.error.InvalidBotId": "Bot ID %s is invalid, must be a GUID.",
+  "driver.botFramework.error.InvalidBotId": "Bot ID %s is invalid. It must be a GUID.",
   "error.yaml.InvalidYamlSchemaError": "Unable to parse yaml file: %s. Please review the yaml file.",
   "error.yaml.InvalidYamlSchemaErrorWithReason": "Unable to parse yaml file: %s. Reason: %s Please review the yaml file.",
   "error.yaml.VersionNotSupported": "version %s is not supported. Supported versions: %s.",

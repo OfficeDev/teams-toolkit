@@ -51,7 +51,11 @@ class AccountCrypto {
 
   constructor(accountName: string) {
     this.accountName = accountName;
-    this.keytar = getNodeModule<typeof keytarType>("keytar");
+    try {
+      this.keytar = require("keytar");
+    } catch {
+      // keytar not installed, ingore
+    }
   }
 
   public async encrypt(content: string): Promise<string> {

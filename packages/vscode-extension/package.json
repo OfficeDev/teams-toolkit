@@ -1299,6 +1299,9 @@
     "validator": "^13.7.0",
     "vscode-tas-client": "^0.1.47"
   },
+  "optionalDependencies": {
+    "keytar": "^7.7.0"
+  },
   "extensionDependencies": [
     "ms-vscode.azure-account",
     "redhat.vscode-yaml"

@@ -32,7 +32,6 @@
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon
-/packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @huimiu
 /packages/cli/tests/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /packages/cli/tests/e2e/scaffold @hund030 @eriolchan @huimiu

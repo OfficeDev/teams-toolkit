@@ -273,14 +273,6 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
 }
 
 export function addFileSystemWatcher(workspacePath: string) {
-  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/unify-config-and-aad-manifest-change-logs.md"
-  );
-
-  unifyConfigWatcher.onDidCreate(async (event) => {
-    await openUnifyConfigMd(workspacePath, event.fsPath);
-  });
-
   if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
     const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
@@ -319,25 +311,6 @@ export async function sendSDKVersionTelemetry(filePath: string) {
       packageLockFile?.dependencies["@microsoft/teamsfx"]?.version,
     [TelemetryProperty.TeamsJSVersion]:
       packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
-  });
-}
-
-async function openUnifyConfigMd(workspacePath: string, filePath: string) {
-  const backupName = ".backup";
-  const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
-  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
-  await openPreviewMarkDown(filePath, changeLogsPath);
-}
-
-async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
-  if (changeLogsPath !== filePath) {
-    return;
-  }
-  const uri = Uri.file(changeLogsPath);
-
-  workspace.openTextDocument(uri).then(() => {
-    const PreviewMarkdownCommand = "markdown.showPreview";
-    commands.executeCommand(PreviewMarkdownCommand, uri);
   });
 }
 

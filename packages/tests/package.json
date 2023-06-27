@@ -13,7 +13,7 @@
     "@microsoft/dev-tunnels-management": "~1.0.7360",
     "@microsoft/dev-tunnels-ssh": "~3.11.1",
     "@microsoft/eslint-plugin-teamsfx": "^0.0.3",
-    "@microsoft/teamsfx-core": "^1.23.2",
+    "@microsoft/teamsfx-core": "^2.0.2",
     "@types/chai": "^4.2.19",
     "@types/fs-extra": "^7.0.0",
     "@types/keytar": "^4.4.2",
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@azure/msal-node": "1.2.0",
-    "@microsoft/teamsfx-cli": "^1.2.4",
+    "@microsoft/teamsfx-cli": "^2.0.1",
     "@types/semver": "^7.3.8",
     "axios": "^0.21.1",
     "azure-arm-resource": "^7.4.0",

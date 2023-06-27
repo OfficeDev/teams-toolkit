@@ -40,7 +40,7 @@
     "ts-node": "^10.7.0",
     "typescript": "^4.7.2",
     "uuid": "^8.3.2",
-    "vscode-extension-tester": "^5.5.1"
+    "vscode-extension-tester": "~5.6.0"
   },
   "dependencies": {
     "@azure/msal-node": "1.2.0",

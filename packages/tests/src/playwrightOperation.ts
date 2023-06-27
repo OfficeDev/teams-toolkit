@@ -119,7 +119,6 @@ export async function initPage(
     await page.waitForTimeout(Timeout.shortTimeLoading);
     // verify add page is closed
     await frame?.waitForSelector("button span:has-text('Add')", {
-      timeout: Timeout.playwrightAddAppButton,
       state: "detached",
     });
     try {
@@ -278,7 +277,7 @@ export async function initTeamsPage(
         });
         throw error;
       }
-      try {
+      {
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-iframe"
         );
@@ -293,16 +292,6 @@ export async function initTeamsPage(
         await page.waitForSelector(`button:has-text("Save")`, {
           state: "detached",
         });
-      } catch (error) {
-        console.log(
-          "save button not detected because test tenant not support - skip"
-        );
-        await page.screenshot({
-          path: getPlaywrightScreenshotPath("error"),
-          fullPage: true,
-        });
-        // test tenant not support spfx app save - block
-        // throw error;
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("successful to add teams app!!!");
@@ -1369,16 +1358,6 @@ export async function validateGraphConnector(page: Page, displayName: string) {
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    try {
-      console.log("dismiss message");
-      await page
-        .click('button:has-text("Dismiss")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no message to dismiss");
-    }
     try {
       const startBtn = await frame?.waitForSelector('button:has-text("Start")');
       await RetryHandler.retry(async () => {

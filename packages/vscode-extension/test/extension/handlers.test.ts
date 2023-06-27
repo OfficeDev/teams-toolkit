@@ -158,8 +158,8 @@ describe("handlers", () => {
 
     handlers.addFileSystemWatcher(workspacePath);
 
-    chai.assert.equal(createWatcher.callCount, 3);
-    chai.assert.equal(createListener.callCount, 3);
+    chai.assert.equal(createWatcher.callCount, 2);
+    chai.assert.equal(createListener.callCount, 2);
     chai.assert.isTrue(changeListener.calledTwice);
   });
 
@@ -179,8 +179,8 @@ describe("handlers", () => {
 
     handlers.addFileSystemWatcher(workspacePath);
 
-    chai.assert.isTrue(createWatcher.calledOnce);
-    chai.assert.isTrue(createListener.calledOnce);
+    chai.assert.isTrue(createWatcher.notCalled);
+    chai.assert.isTrue(createListener.notCalled);
     chai.assert.isTrue(changeListener.notCalled);
   });
 

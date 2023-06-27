@@ -17,8 +17,6 @@
             "sample-localdebug-npm-search",
             "sample-localdebug-query-org",
             "sample-localdebug-stock-update",
-            "sample-localdebug-graph-connector",
-            "sample-localdebug-todo-list-sql",
             "sample-localdebug-incoming-webhook",
             "sample-localdebug-proactive-message"
         ]
@@ -57,6 +55,7 @@
             "sample-localdebug-one-productivity-hub",
             "sample-localdebug-share-now",
             "sample-localdebug-dashboard",
+            "sample-localdebug-todo-list-sql",
             "sample-localdebug-hello-world-tab-with-backend"
         ]
     },
@@ -102,7 +101,8 @@
             }
         },
         "cases": [
-            "sample-localdebug-adaptive-card"
+            "sample-localdebug-adaptive-card",
+            "sample-localdebug-graph-connector"
         ]
     }
 ]

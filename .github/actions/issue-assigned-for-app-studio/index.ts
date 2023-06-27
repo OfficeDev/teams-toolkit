@@ -19,9 +19,6 @@ class CheckAssignedIssueForAppStudio extends Action {
 
 	owner = context.repo.owner;
 	repo = context.repo.repo;
-	kit = new Octokit({
-		auth: githubToken,
-	});
 
 	async onAssigned(issueHandler: OctoKitIssue, _assignee: string): Promise<void> {
 		this.issue = await issueHandler.getIssue();
@@ -48,7 +45,7 @@ class CheckAssignedIssueForAppStudio extends Action {
 		safeLog(`start manually trigger issue ${issueNumber}`);
 		const issue = new OctoKitIssue(githubToken, context.repo, { number: issueNumber });
 		const issueContent = await issue.getIssue();
-		if (issueContent.assignee) {
+		if (issueContent && issueContent.assignee) {
 			await this.onAssigned(issue, issueContent.assignee);
 		} else {
 			safeLog(`Issue ${issueNumber} is not assigned, ignore`);

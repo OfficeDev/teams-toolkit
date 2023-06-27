@@ -45,7 +45,6 @@
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@microsoft/eslint-plugin-teamsfx": "^0.0.3-rc",
     "@microsoft/extra-shot-mocha": "0.0.2-alpha.4bafd4166.0",
-    "@microsoft/teamsfx-api": "^0.22.3",
     "@types/adm-zip": "^0.4.34",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",

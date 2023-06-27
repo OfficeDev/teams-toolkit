@@ -1,4 +1,4 @@
-import { FxError, Result, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { FxError, Result, TeamsAppManifest, devPreview } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { TOOLS } from "../../core/globalVars";
@@ -32,7 +32,7 @@ class MetadataUtil {
     return res;
   }
 
-  parseManifest(manifest: TeamsAppManifest): void {
+  parseManifest(manifest: TeamsAppManifest | devPreview.DevPreviewSchema): void {
     const props: { [key: string]: string } = {};
     const prefix = "manifest.";
     props[prefix + "id"] = manifest.id ?? "";
@@ -58,6 +58,8 @@ class MetadataUtil {
         )
         .toString() ?? "";
     props[prefix + "webApplicationInfo.id"] = manifest.webApplicationInfo?.id ?? "";
+    props[prefix + "extensions"] =
+      "extensions" in manifest && manifest["extensions"]?.length != 0 ? "true" : "false";
 
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
   }

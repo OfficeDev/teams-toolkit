@@ -140,6 +140,7 @@ describe("metadata util", () => {
         "manifest.staticTabs.contentUrl": "",
         "manifest.configurableTabs.configurationUrl": "",
         "manifest.webApplicationInfo.id": "",
+        "manifest.extensions": "false",
       })
     );
   });
@@ -157,10 +158,11 @@ describe("metadata util", () => {
       ],
       configurableTabs: [{ configurationUrl: "https://example.com/config1" }],
       webApplicationInfo: { id: "web-app-id" },
+      extensions: [{}],
     };
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
 
-    metadataUtil.parseManifest(manifest as TeamsAppManifest);
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
 
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
@@ -177,6 +179,7 @@ describe("metadata util", () => {
           .update(manifest.configurableTabs[0].configurationUrl)
           .digest("base64")}`,
         "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "true",
       })
     );
   });

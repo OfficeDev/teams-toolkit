@@ -254,7 +254,7 @@ export class WebviewPanel {
 
   private getNonce() {
     let text = "";
-    // eslint-disable-next-line no-secrets/no-secrets
+    // eslint-disable-next-line
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     for (let i = 0; i < 32; i++) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));

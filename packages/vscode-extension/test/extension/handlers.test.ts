@@ -68,7 +68,7 @@ import { ExtensionSurvey } from "../../src/utils/survey";
 import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
 import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
 import * as launch from "../../src/debug/launch";
-import { environmentManager } from "../../../fx-core/build";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("handlers", () => {
   describe("activate()", function () {

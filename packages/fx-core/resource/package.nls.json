@@ -394,8 +394,6 @@
   "plugins.bot.ErrorSuggestions": "Suggestions: %s",
   "plugins.bot.InvalidValue": "%s is invalid with value: %s",
   "plugins.bot.SomethingIsMissing": "%s is missing.",
-  "plugins.bot.FailedToGetAlreadyCreatedBot": "Cannot create bot with id %s which may be taken by an existing bot. Visit %s to learn more.\nOr API call to Developer Portal failed: Error, Request failed with status code 500, API name: create-bot, X-Correlation-ID: undefined. This may come from some intermittent service error. Please wait for a few minutes and retry.",
-  "_plugins.bot.FailedToGetAlreadyCreatedBot.comment": " This is to describe API call, no need to translate 'X-Correlation-ID'.",
   "plugins.bot.FailedToProvision": "Unable to provision %s.",
   "plugins.bot.FailedToUpdateConfigs": "Unable to update configs for %s",
   "plugins.bot.BotRegistrationNotFoundWith": "Bot registration was not found with botId %s. Click 'Get Help' button to learn more about how to check bot registrations.",

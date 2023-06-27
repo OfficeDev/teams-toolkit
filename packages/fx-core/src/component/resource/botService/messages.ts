@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 /**
- * @author zhijie <zhihuan@microsoft.com>
+ * @author Qianhao Dong <qidon@microsoft.com>
  */
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
-export function localString(key: string, ...params: any[]): [string, string] {
+function localString(key: string, ...params: any[]): [string, string] {
   return [getDefaultString(key, ...params), getLocalizedString(key, ...params)];
 }
 export class Messages {

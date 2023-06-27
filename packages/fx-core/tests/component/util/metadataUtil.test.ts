@@ -182,5 +182,28 @@ describe("metadata util", () => {
         "manifest.extensions": "true",
       })
     );
+
+    // If extensions is empty, it should report false in telemetry event
+    manifest.extensions = [];
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+
+    assert.isTrue(
+      spy.calledWith(TelemetryEvent.MetaData, {
+        "manifest.id": "test-id",
+        "manifest.version": "1.0",
+        "manifest.manifestVersion": "1.0",
+        "manifest.bots": "bot1,bot2",
+        "manifest.composeExtensions": "bot1,bot2",
+        "manifest.staticTabs.contentUrl": `${[
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+        ].toString()}`,
+        "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
+          .update(manifest.configurableTabs[0].configurationUrl)
+          .digest("base64")}`,
+        "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "false",
+      })
+    );
   });
 });

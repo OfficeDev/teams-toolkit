@@ -16,7 +16,7 @@ Some of the changes you may immediately notice are:
 
 If you are using Visual Studio version 17.7 or later and developing a bot app locally:
 * You can use the dev tunnel as your tunneling service. [More Info](https://aka.ms/vs-dev-tunnel-guidance)
-* In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel)
+* In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel.
 
 If you're using APIM:
 * You need to provide values to `APIM__PUBLISHEREMAIL` and the `APIM__PUBLISHERNAME` environment variables. [More info](https://aka.ms/teams-toolkit-5.0-upgrade#provision-apim-service)

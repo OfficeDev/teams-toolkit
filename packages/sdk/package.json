@@ -58,7 +58,7 @@
     "jwt-decode": "^3.1.2",
     "tedious": "^14.3.0",
     "tslib": "^2.3.1",
-    "ajv": "^6.12.6",
+    "ajv": "6.12.6",
     "uuid": "^8.3.2"
   },
   "peerDependencies": {

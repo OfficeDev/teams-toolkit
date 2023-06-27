@@ -312,12 +312,17 @@ export async function runWithLimitedConcurrency<T>(
   concurrencyLimit: number
 ): Promise<void> {
   const queue: any[] = [];
+  const mutex = new Mutex();
+
   for (const item of items) {
     // fire the async function, add its promise to the queue, and remove
     // it from queue when complete
     const p = callback(item)
       .then((res: any) => {
-        queue.splice(queue.indexOf(p), 1);
+        mutex.acquire().then(() => {
+          queue.splice(queue.indexOf(p), 1);
+          mutex.release();
+        });
         return res;
       })
       .catch((err: any) => {
@@ -346,4 +351,29 @@ export function convertToLangKey(programmingLanguage: string): string {
     }
   }
   return programmingLanguage;
+}
+
+class Mutex {
+  private locked = false;
+  private queue: (() => void)[] = [];
+
+  async acquire(): Promise<void> {
+    return new Promise((resolve) => {
+      if (!this.locked) {
+        this.locked = true;
+        resolve();
+      } else {
+        this.queue.push(resolve);
+      }
+    });
+  }
+
+  release(): void {
+    if (this.queue.length > 0) {
+      const next = this.queue.shift();
+      next?.();
+    } else {
+      this.locked = false;
+    }
+  }
 }

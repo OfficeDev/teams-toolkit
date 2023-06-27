@@ -244,6 +244,7 @@ export enum TelemetryProperty {
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   Errors = "errors",
+  Hub = "hub",
   DebugSessionId = "session-id",
   DebugType = "type",
   DebugRequest = "request",

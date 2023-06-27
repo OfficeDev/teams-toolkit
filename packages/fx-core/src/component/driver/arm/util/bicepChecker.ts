@@ -12,8 +12,6 @@ import { cpUtils } from "../../../utils/depsChecker/cpUtils";
 import { finished, Readable, Writable } from "stream";
 import {
   DepsCheckerEvent,
-  isMacOS,
-  isWindows,
   Messages,
   TelemetryMeasurement,
   TelemtryMessages,
@@ -29,6 +27,7 @@ import { sendErrorTelemetryThenReturnError } from "../../../utils";
 import { DriverContext } from "../../interface/commonArgs";
 import { InstallSoftwareError } from "../../../../error/common";
 import { DownloadBicepCliError } from "../../../../error/arm";
+import { isMacOS, isWindows } from "../../../../common/deps-checker/util/system";
 
 const BicepName = "Bicep";
 

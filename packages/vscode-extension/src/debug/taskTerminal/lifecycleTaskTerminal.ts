@@ -17,7 +17,7 @@ import * as commonUtils from "../commonUtils";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
-export interface LifecycleArgs {
+interface LifecycleArgs {
   template?: string;
   env?: string;
 }

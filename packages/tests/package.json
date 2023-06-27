@@ -43,7 +43,7 @@
     "vscode-extension-tester": "~5.6.0"
   },
   "dependencies": {
-    "@azure/msal-node": "1.2.0",
+    "@azure/msal-node": "1.17.3",
     "@microsoft/teamsfx-cli": "^2.0.1",
     "@types/semver": "^7.3.8",
     "axios": "^0.21.1",

@@ -88,9 +88,29 @@ export async function parseApi(yaml: string, options: CliOptions) {
   }
 
   console.log('generate help command card');
-  await fs.copy(
+
+  const helpCardJson = await fs.readJSON(
     __dirname + '/resources/helpCard.json',
-    options.output + '/src/adaptiveCards/helpCard.json'
+    'utf8'
+  );
+
+  if (requestCards?.length > 0) {
+    helpCardJson.body.push({
+      type: 'TextBlock',
+      text: 'Supported Commands',
+      weight: 'Bolder'
+    });
+    for (const card of requestCards) {
+      if (card.content?.body?.[0]) {
+        helpCardJson.body.push(card.content.body[0]);
+      }
+    }
+  }
+
+  await fs.outputJSON(
+    options.output + '/src/adaptiveCards/helpCard.json',
+    helpCardJson,
+    { spaces: 2 }
   );
 
   console.log('generate action cards');

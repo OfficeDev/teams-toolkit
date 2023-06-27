@@ -32,17 +32,27 @@ describe('parseApi tests', () => {
       pathExistsStub = sandbox.stub(fs, 'pathExists');
       mkdirStub = sandbox.stub(fs, 'mkdir');
       outputFileStub = sandbox.stub(fs, 'outputFile');
-      readJsonStub = sandbox.stub(fs, 'readJSON').resolves({
-        bots: [
-          {
-            commandLists: [
+      readJsonStub = sandbox.stub(fs, 'readJSON');
+      readJsonStub.callsFake((filePath: string) => {
+        if (filePath.indexOf("manifest.json") >= 0) {
+          return Promise.resolve({
+            bots: [
               {
-                commands: []
+                commandLists: [
+                  {
+                    commands: []
+                  }
+                ]
               }
             ]
-          }
-        ]
+          });
+        } else if (filePath.indexOf('helpCard.json')) {
+          return Promise.resolve({});
+        } else {
+          return Promise.resolve({});
+        }
       });
+
       outputJsonStub = sandbox.stub(fs, 'outputJSON');
       copyFileStub = sandbox.stub(fs, 'copy');
       validateStub = sandbox.stub(SwaggerParser, 'validate');

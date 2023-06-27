@@ -26,7 +26,7 @@ export type SampleListProps = {
   highlightSample: (id: string) => void;
 };
 
-type SampleDetailProps = {
+export type SampleDetailProps = {
   url: string;
   image: any;
   tags: string[];

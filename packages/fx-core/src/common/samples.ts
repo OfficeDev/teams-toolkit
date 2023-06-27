@@ -24,7 +24,7 @@ export interface SampleInfo {
   relativePath?: string;
 }
 
-export interface SampleCollection {
+interface SampleCollection {
   samples: SampleInfo[];
 }
 

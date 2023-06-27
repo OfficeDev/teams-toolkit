@@ -28,7 +28,7 @@ export { CoreCallbackFunc, FxCore } from "./core/FxCore";
 export { sampleProvider } from "./common/samples";
 export { loadingOptionsPlaceholder } from "./common/utils";
 export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioClient";
-export { getPermissionMap } from "./component/resource/aadApp/permissions/index";
+export { getPermissionMap } from "./component/driver/aad/permissions/index";
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 export * from "./component/driver/teamsApp/utils/utils";
 export { CollaborationConstants } from "./core/collaborator";

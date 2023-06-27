@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IPermissionList } from "../interfaces/IPermissionList";
+import { IPermissionList } from "../interface/IPermissionList";
 import * as jsonPermissionList from "./permissions.json";
 
 export function getPermissionMap(): any {

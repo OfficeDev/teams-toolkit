@@ -228,11 +228,11 @@ const questionVisitor: QuestionTreeVisitor = async function (
         totalSteps: totalSteps,
         validation: validationFunc,
       });
-    } else if (question.type === "singleFileOrText" && !!ui.selectFileOrInput) {
+    } else if (question.type === "singleFileOrText" && !!ui.singleFileOrInput) {
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
-      const res = await ui.selectFileOrInput({
+      const res = await ui.singleFileOrInput({
         name: question.name,
         title: title,
         placeholder: placeholder,

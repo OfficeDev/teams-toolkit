@@ -21,7 +21,7 @@ import {
   QTreeNode,
   Result,
   SelectFileConfig,
-  SelectFileOrInputQuestion,
+  SingleFileOrInputQuestion,
   SelectFileResult,
   SelectFilesConfig,
   SelectFilesResult,
@@ -36,7 +36,7 @@ import {
   UserInteraction,
   err,
   ok,
-  selectFileOrInputConfig,
+  singleFileOrInputConfig,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError, UserCancelError } from "../../src/error/common";
 import { traverse } from "../../src/ui/visitor";
@@ -132,8 +132,8 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
 
-  selectFileOrInput(
-    config: selectFileOrInputConfig
+  singleFileOrInput(
+    config: singleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>> {
     throw new Error("Method not implemented.");
   }
@@ -714,8 +714,8 @@ describe("Question Model - Visitor Test", () => {
     });
 
     it("single file or input", async () => {
-      sandbox.stub(mockUI, "selectFileOrInput").resolves(ok({ type: "success", result: "file" }));
-      const question: SelectFileOrInputQuestion = {
+      sandbox.stub(mockUI, "singleFileOrInput").resolves(ok({ type: "success", result: "file" }));
+      const question: SingleFileOrInputQuestion = {
         type: "singleFileOrText",
         name: "test",
         title: "test",

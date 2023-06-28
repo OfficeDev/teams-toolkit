@@ -314,7 +314,7 @@ export interface FuncQuestion extends BaseQuestion {
   func: LocalFunc<any>;
 }
 
-export interface SelectFileOrInputQuestion extends UserInputQuestion {
+export interface SingleFileOrInputQuestion extends UserInputQuestion {
   type: "singleFileOrText";
   inputOptionItem: OptionItem;
   inputBoxConfig: InputTextConfig;
@@ -337,7 +337,7 @@ export type Question =
   | FolderQuestion
   | FuncQuestion
   | SingleFileQuestion
-  | SelectFileOrInputQuestion;
+  | SingleFileOrInputQuestion;
 
 /**
  * QTreeNode is the tree node data structure, which have three main properties:

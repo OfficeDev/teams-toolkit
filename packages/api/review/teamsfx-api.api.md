@@ -479,7 +479,7 @@ export class QTreeNode {
 }
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SelectFileOrInputQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -492,24 +492,6 @@ export type SelectFileConfig = UIConfig<string> & {
         description?: string;
     }[];
 };
-
-// @public (undocumented)
-export interface selectFileOrInputConfig extends SelectFileConfig {
-    // (undocumented)
-    inputBoxConfig: InputTextConfig;
-    // (undocumented)
-    inputOptionItem: OptionItem;
-}
-
-// @public (undocumented)
-export interface SelectFileOrInputQuestion extends UserInputQuestion {
-    // (undocumented)
-    inputBoxConfig: InputTextConfig;
-    // (undocumented)
-    inputOptionItem: OptionItem;
-    // (undocumented)
-    type: "singleFileOrText";
-}
 
 // @public (undocumented)
 export type SelectFileResult = InputResult<string>;
@@ -540,6 +522,24 @@ export interface Settings {
 
 // @public (undocumented)
 export const SettingsFolderName = "teamsfx";
+
+// @public (undocumented)
+export interface singleFileOrInputConfig extends SelectFileConfig {
+    // (undocumented)
+    inputBoxConfig: InputTextConfig;
+    // (undocumented)
+    inputOptionItem: OptionItem;
+}
+
+// @public (undocumented)
+export interface SingleFileOrInputQuestion extends UserInputQuestion {
+    // (undocumented)
+    inputBoxConfig: InputTextConfig;
+    // (undocumented)
+    inputOptionItem: OptionItem;
+    // (undocumented)
+    type: "singleFileOrText";
+}
 
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
@@ -906,7 +906,6 @@ export interface UserInteraction {
         };
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
-    selectFileOrInput?(config: selectFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
     selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
     selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult, FxError>>;
@@ -916,6 +915,7 @@ export interface UserInteraction {
         content: string;
         color: Colors;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
+    singleFileOrInput?(config: singleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
 }
 
 // @public

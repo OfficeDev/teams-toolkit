@@ -805,7 +805,7 @@ function fillInAppNameFuncQuestion(): FuncQuestion {
   return q;
 }
 
-export function questionTreeForVSC(inputs: Inputs): IQTreeNode {
+export function createNewQuestion(inputs: Inputs): IQTreeNode {
   const root: IQTreeNode = {
     data: projectTypeQuestion(inputs),
     children: [

@@ -31,6 +31,7 @@ export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioCl
 export { getPermissionMap } from "./component/resource/aadApp/permissions/index";
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 export * from "./component/driver/teamsApp/utils/utils";
+export { manifestUtils } from "./component/driver/teamsApp/utils/ManifestUtils";
 export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export * from "./core/error";

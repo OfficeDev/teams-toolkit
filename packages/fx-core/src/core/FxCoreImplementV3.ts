@@ -677,7 +677,7 @@ export class FxCoreV3Implement {
     }
 
     const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils._getCapabilities(manifestRes.value);
+    const capabilities = manifestUtils.getCapabilities(manifestRes.value);
 
     const launchHelper = new LaunchHelper(
       this.tools.tokenProvider.m365TokenProvider,

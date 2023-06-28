@@ -105,7 +105,7 @@ export interface UserInputQuestion extends BaseQuestion {
     | "multiFile"
     | "folder"
     | "text"
-    | "selectLocalFileOrInput";
+    | "singleFileOrText";
   /**
    * title is required for human input question
    */
@@ -314,8 +314,8 @@ export interface FuncQuestion extends BaseQuestion {
   func: LocalFunc<any>;
 }
 
-export interface SelectLocalFileOrInputQuestion extends UserInputQuestion {
-  type: "selectLocalFileOrInput";
+export interface SelectFileOrInputQuestion extends UserInputQuestion {
+  type: "singleFileOrText";
   inputOptionItem: OptionItem;
   inputBoxConfig: InputTextConfig;
 }
@@ -337,7 +337,7 @@ export type Question =
   | FolderQuestion
   | FuncQuestion
   | SingleFileQuestion
-  | SelectLocalFileOrInputQuestion;
+  | SelectFileOrInputQuestion;
 
 /**
  * QTreeNode is the tree node data structure, which have three main properties:

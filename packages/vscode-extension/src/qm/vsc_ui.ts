@@ -42,7 +42,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
-  selectLocalFileOrInputConfig,
+  selectFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   StaticOptions,
@@ -726,8 +726,8 @@ export class VsCodeUI implements UserInteraction {
     });
   }
 
-  async selectLocalFileOrInput(
-    config: selectLocalFileOrInputConfig
+  async selectFileOrInput(
+    config: selectFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>> {
     const selectFileConfig: SelectFileConfig = {
       possibleFiles: [config.inputOptionItem],

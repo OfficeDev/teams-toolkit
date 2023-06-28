@@ -1,13 +1,4 @@
-import {
-  Context,
-  FxError,
-  M365TokenProvider,
-  Result,
-  SystemError,
-  UserError,
-  err,
-  ok,
-} from "@microsoft/teamsfx-api";
+import { Context, FxError, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
@@ -44,7 +35,6 @@ export class AadCollaboration {
     userObjectId: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     try {
-      // const userObjectId = userInfo.aadId;
       await this.aadAppClient.addOwner(objectId, userObjectId);
 
       const result = [
@@ -101,7 +91,7 @@ export class AadCollaboration {
   private handleError(error: any, ctx: Context): FxError {
     if (axios.isAxiosError(error)) {
       const message = JSON.stringify(error.response!.data);
-      ctx.logProvider.error(message);
+      ctx.logProvider?.error(message);
       if (error.response!.status >= 400 && error.response!.status < 500) {
         return new HttpClientError(componentNameAad, message);
       } else {
@@ -110,7 +100,7 @@ export class AadCollaboration {
     }
 
     const message = JSON.stringify(error);
-    ctx.logProvider.error(message);
+    ctx.logProvider?.error(message);
     return new UnhandledError(error as Error, componentNameAad);
   }
 }
@@ -220,7 +210,8 @@ export class TeamsCollaboration {
 
   private handleError(error: any, ctx: Context): FxError {
     if (error.innerError) {
-      const message = error.innerError.message;
+      const message = JSON.stringify(error.innerError.response.data);
+      ctx.logProvider?.error(message);
       const fxError =
         error.innerError.response.status &&
         error.innerError.response.status >= 400 &&
@@ -231,7 +222,7 @@ export class TeamsCollaboration {
     }
 
     const message = JSON.stringify(error);
-    ctx.logProvider.error(message);
+    ctx.logProvider?.error(message);
     return new UnhandledError(error as Error, componentNameTeams);
   }
 }

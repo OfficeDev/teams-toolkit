@@ -3320,7 +3320,7 @@
         <Str Cat="Text">
           <Val><![CDATA[View provisioned resources]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[查看预配的资源:]]></Val>
+            <Val><![CDATA[查看预配的资源]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

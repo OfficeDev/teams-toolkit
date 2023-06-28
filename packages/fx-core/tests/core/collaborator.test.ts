@@ -22,12 +22,9 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
 import { CollaborationState } from "../../src/common/permissionInterface";
-import { ComponentNames, SolutionError } from "../../src/component/constants";
-import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
+import { SolutionError } from "../../src/component/constants";
 import {
   CollaborationConstants,
   CollaborationUtil,
@@ -47,8 +44,8 @@ import {
   MockedV2Context,
 } from "../plugins/solution/util";
 import { MockTools, randomAppName } from "./utils";
-import "../../src/component/resource/appManifest/appManifest";
-import "../../src/component/resource/aadApp/aadApp";
+import { TeamsCollaboration } from "../../src/component/driver/teamsApp/collaboration";
+import { AadCollaboration } from "../../src/component/driver/aad/utility/collaboration";
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
   const ctx = new MockedV2Context() as Context;
@@ -131,9 +128,8 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
-        .stub(appStudio, "listCollaborator")
+        .stub(TeamsCollaboration.prototype, "listCollaborator")
         .resolves(
           err(
             new UserError(
@@ -174,9 +170,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -186,7 +180,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -217,8 +211,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -301,9 +294,8 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
-        .stub(appStudio, "checkPermission")
+        .stub(TeamsCollaboration.prototype, "checkPermission")
         .resolves(
           err(
             new UserError("AppStudioPlugin", "FailedToCheckPermission", "List collaborator failed.")
@@ -338,9 +330,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -350,7 +340,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -515,9 +505,8 @@ describe("Collaborator APIs for V3", () => {
           isAdministrator: true,
         });
 
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
-        .stub(appStudio, "grantPermission")
+        .stub(TeamsCollaboration.prototype, "grantPermission")
         .resolves(
           err(
             new UserError("AppStudioPlugin", "FailedToGrantPermission", "Grant permission failed.")
@@ -555,9 +544,7 @@ describe("Collaborator APIs for V3", () => {
           displayName: "displayName2",
           isAdministrator: true,
         });
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -567,7 +554,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -610,8 +597,7 @@ describe("Collaborator APIs for V3", () => {
           displayName: "displayName2",
           isAdministrator: true,
         });
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -845,9 +831,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("listCollaborator: happy path", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -857,7 +841,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -882,9 +866,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("listCollaborator: happy path with Teams only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -894,7 +876,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -919,9 +901,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("listCollaborator: happy path with AAD only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -931,7 +911,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -956,9 +936,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("list collaborator: failed to read teams app id", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -968,7 +946,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -990,9 +968,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("grantPermission: happy path", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1002,7 +978,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1046,9 +1022,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("grantPermission: happy path with Teams only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1058,7 +1032,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1102,9 +1076,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("grantPermission: happy path with AAD only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1114,7 +1086,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1158,9 +1130,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("grantPermission: failed to read teams app id", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1170,7 +1140,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1211,9 +1181,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("checkPermission: happy path", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1223,7 +1191,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1266,9 +1234,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("checkPermission: happy path with Teams only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1278,7 +1244,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1321,9 +1287,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("checkPermission: happy path with AAD only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1333,7 +1297,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1376,9 +1340,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("checkPermission: failed to read teams app id", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1388,7 +1350,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",

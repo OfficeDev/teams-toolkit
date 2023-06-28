@@ -22,7 +22,6 @@ import {
 import axios from "axios";
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import { Container } from "typedi";
 import { validate as uuidValidate } from "uuid";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -30,19 +29,12 @@ import {
   AadOwner,
   AppIds,
   CollaborationState,
-  CollaborationStateResult,
   ListCollaboratorResult,
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
 import { AppStudioScopes, GraphScopes } from "../common/tools";
-import {
-  ComponentNames,
-  SOLUTION_PROVISION_SUCCEEDED,
-  SolutionError,
-  SolutionSource,
-  SolutionTelemetryProperty,
-} from "../component/constants";
+import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../component/constants";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { getUserEmailQuestion } from "../component/question";
 import { FileNotFoundError } from "../error/common";
@@ -224,7 +216,7 @@ export class CollaborationUtil {
     if (teamsAppManifestFilePath && !teamsAppId) {
       const teamsAppIdRes = await this.loadManifestId(teamsAppManifestFilePath);
       if (teamsAppIdRes.isOk()) {
-        teamsAppId = await this.parseManifestId(teamsAppIdRes.value, inputs);
+        teamsAppId = await this.parseManifestId(teamsAppIdRes.value);
       } else {
         return err(teamsAppIdRes.error);
       }
@@ -233,7 +225,7 @@ export class CollaborationUtil {
     if (aadAppManifestFilePath && !aadObjectId) {
       const aadObjectIdRes = await this.loadManifestId(aadAppManifestFilePath);
       if (aadObjectIdRes.isOk()) {
-        aadObjectId = await this.parseManifestId(aadObjectIdRes.value, inputs);
+        aadObjectId = await this.parseManifestId(aadObjectIdRes.value);
       } else {
         return err(aadObjectIdRes.error);
       }
@@ -279,7 +271,7 @@ export class CollaborationUtil {
     return !!appId.match(CollaborationConstants.placeholderRegex);
   }
 
-  static async parseManifestId(appId: string, inputs: Inputs): Promise<string | undefined> {
+  static async parseManifestId(appId: string): Promise<string | undefined> {
     // Hardcoded id in manifest
     if (uuidValidate(appId)) {
       return appId;
@@ -299,7 +291,6 @@ export class CollaborationUtil {
 export async function listCollaborator(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Record<string, string>
 ): Promise<Result<ListCollaboratorResult, FxError>> {
@@ -429,7 +420,6 @@ export async function listCollaborator(
 export async function checkPermission(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Record<string, string>
 ): Promise<Result<PermissionsResult, FxError>> {
@@ -537,9 +527,7 @@ export async function checkPermission(
 export async function grantPermission(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
-  tokenProvider: TokenProvider,
-  telemetryProps?: Record<string, string>
+  tokenProvider: TokenProvider
 ): Promise<Result<PermissionsResult, FxError>> {
   const progressBar = ctx.userInteraction.createProgressBar(
     getLocalizedString("core.collaboration.GrantingPermission"),

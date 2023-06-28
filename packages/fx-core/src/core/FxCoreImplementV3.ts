@@ -351,7 +351,6 @@ export class FxCoreV3Implement {
     const res = await grantPermission(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -371,7 +370,6 @@ export class FxCoreV3Implement {
     const res = await checkPermission(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -391,7 +389,6 @@ export class FxCoreV3Implement {
     const res = await listCollaborator(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;

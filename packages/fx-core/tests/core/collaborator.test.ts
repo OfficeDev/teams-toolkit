@@ -79,22 +79,12 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: {} },
-        config: {},
-      };
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
     it("should return error if cannot get user info", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: { provisionSucceeded: true } },
-        config: {},
-      };
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
 
@@ -107,15 +97,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
@@ -139,29 +121,12 @@ describe("Collaborator APIs for V3", () => {
             )
           )
         );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       inputs.platform = Platform.CLI;
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("happy path", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -190,19 +155,11 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("happy path without aad", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -221,7 +178,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
   });
@@ -242,25 +199,15 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: {} },
-        config: {},
-      };
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("should return error if cannot get user info", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: { provisionSucceeded: true } },
-        config: {},
-      };
       sandbox
         .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(err(new UserError("source", "name", "message")));
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
 
@@ -273,15 +220,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.state === CollaborationState.OK);
     });
 
@@ -301,27 +240,10 @@ describe("Collaborator APIs for V3", () => {
             new UserError("AppStudioPlugin", "FailedToCheckPermission", "List collaborator failed.")
           )
         );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
     it("happy path", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -351,7 +273,7 @@ describe("Collaborator APIs for V3", () => {
         ])
       );
       inputs.platform = Platform.CLI;
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
   });
@@ -371,24 +293,14 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: {} },
-        config: {},
-      };
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr());
     });
     it("should return error if cannot get current user info", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: { provisionSucceeded: true } },
-        config: {},
-      };
       sandbox
         .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(err(new UserError("source", "name", "message")));
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
     it("should return M365TenantNotMatch state if tenant is not match", async () => {
@@ -400,15 +312,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr());
     });
     it("should return error if user email is undefined", async () => {
@@ -425,15 +329,7 @@ describe("Collaborator APIs for V3", () => {
         )
         .onCall(1)
         .resolves(undefined);
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.EmailCannotBeEmptyOrSame);
     });
     it("should return error if cannot find user from email", async () => {
@@ -450,16 +346,8 @@ describe("Collaborator APIs for V3", () => {
         )
         .onCall(1)
         .resolves(undefined);
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       inputs.email = "your_collaborator@yourcompany.com";
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(
         result.isErr() && result.error.name === SolutionError.CannotFindUserInCurrentTenant
       );
@@ -513,19 +401,10 @@ describe("Collaborator APIs for V3", () => {
           )
         );
       inputs.email = "your_collaborator@yourcompany.com";
-      const result = await grantPermission(ctx, inputs, {}, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
     it("happy path", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-
       sandbox
         .stub(CollaborationUtil, "getUserInfo")
         .onCall(0)
@@ -566,19 +445,11 @@ describe("Collaborator APIs for V3", () => {
       );
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.platform = Platform.CLI;
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("happy path without aad", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       sandbox
         .stub(CollaborationUtil, "getUserInfo")
         .onCall(0)
@@ -608,7 +479,7 @@ describe("Collaborator APIs for V3", () => {
         ])
       );
       inputs.email = "your_collaborator@yourcompany.com";
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
   });
@@ -688,7 +559,7 @@ describe("Collaborator APIs for V3", () => {
             return ok("teamsAppId");
           }
         });
-      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId, inputs) => {
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
         return appId;
       });
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
@@ -758,7 +629,7 @@ describe("Collaborator APIs for V3", () => {
             return ok("teamsAppId");
           }
         });
-      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId, inputs) => {
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
         return appId;
       });
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
@@ -861,7 +732,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.VSCode;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
@@ -896,7 +767,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.VSCode;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
@@ -931,7 +802,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.VSCode;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
@@ -963,7 +834,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
 
@@ -1017,7 +888,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.env = "dev";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
 
@@ -1071,7 +942,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.env = "dev";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
@@ -1125,7 +996,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.env = "dev";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
@@ -1176,7 +1047,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.env = "dev";
       inputs.email = "your_collaborator@yourcompany.com";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
 
@@ -1229,7 +1100,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
 
@@ -1282,7 +1153,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
@@ -1335,7 +1206,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
@@ -1385,7 +1256,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
   });
@@ -1472,30 +1343,27 @@ describe("Collaborator APIs for V3", () => {
 
     it("happy path: hardcode", async () => {
       inputs.env = "dev";
-      const res = await CollaborationUtil.parseManifestId(
-        "00000000-0000-0000-0000-000000000000",
-        inputs
-      );
+      const res = await CollaborationUtil.parseManifestId("00000000-0000-0000-0000-000000000000");
       assert.equal(res, "00000000-0000-0000-0000-000000000000");
     });
 
     it("happy path: read from env", async () => {
       inputs.env = "dev";
       const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: "teamsAppId" });
-      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
+      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
       assert.equal(res, "teamsAppId");
       mockedEnvRestoreForInput();
     });
 
     it("return undefined when invalid", async () => {
-      const res = await CollaborationUtil.parseManifestId("TEST", inputs);
+      const res = await CollaborationUtil.parseManifestId("TEST");
       assert.isUndefined(res);
     });
 
     it("return undefined when empty env", async () => {
       inputs.env = "dev";
       const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: undefined });
-      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
+      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
       assert.isUndefined(res);
       mockedEnvRestoreForInput();
     });

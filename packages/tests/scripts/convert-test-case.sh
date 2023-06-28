@@ -14,5 +14,5 @@ do
     done <<< $cases
   done <<< $nodes
 done <<< $oss
-
-echo $result > ./.github/workflows/test-case-temp.json
+SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+echo $result > $SCRIPT_DIR/test-case-temp.json

@@ -241,7 +241,7 @@ export class ManifestUtils {
         return false;
     }
   }
-  _getCapabilities(template: TeamsAppManifest): string[] {
+  public getCapabilities(template: TeamsAppManifest): string[] {
     const capabilities: string[] = [];
     if (template.staticTabs && template.staticTabs!.length > 0) {
       capabilities.push("staticTab");

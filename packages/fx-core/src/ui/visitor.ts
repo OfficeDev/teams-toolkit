@@ -228,6 +228,22 @@ const questionVisitor: QuestionTreeVisitor = async function (
         totalSteps: totalSteps,
         validation: validationFunc,
       });
+    } else if (question.type === "selectLocalFileOrInput" && !!ui.selectLocalFileOrInput) {
+      const validationFunc = question.validation
+        ? getValidationFunction<string>(question.validation, inputs)
+        : undefined;
+      const res = await ui.selectLocalFileOrInput({
+        name: question.name,
+        title: title,
+        placeholder: placeholder,
+        prompt: prompt,
+        inputOptionItem: question.inputOptionItem,
+        inputBoxConfig: question.inputBoxConfig,
+        step: step,
+        totalSteps: totalSteps,
+        validation: validationFunc,
+      });
+      return res;
     }
   }
   return err(

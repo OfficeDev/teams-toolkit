@@ -479,7 +479,7 @@ export class QTreeNode {
 }
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SelectLocalFileOrInputQuestion;
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -511,6 +511,24 @@ export type SelectFolderConfig = UIConfig<string>;
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
+
+// @public (undocumented)
+export interface selectLocalFileOrInputConfig extends SelectFileConfig {
+    // (undocumented)
+    inputBoxConfig: InputTextConfig;
+    // (undocumented)
+    inputOptionItem: OptionItem;
+}
+
+// @public (undocumented)
+export interface SelectLocalFileOrInputQuestion extends UserInputQuestion {
+    // (undocumented)
+    inputBoxConfig: InputTextConfig;
+    // (undocumented)
+    inputOptionItem: OptionItem;
+    // (undocumented)
+    type: "selectLocalFileOrInput";
+}
 
 // @public
 export interface Settings {
@@ -865,7 +883,7 @@ export interface UserInputQuestion extends BaseQuestion {
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "selectLocalFileOrInput";
     validation?: ValidationSchema;
     validationHelp?: string;
 }
@@ -890,6 +908,7 @@ export interface UserInteraction {
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
     selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
+    selectLocalFileOrInput?(config: selectLocalFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
     selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult, FxError>>;
     selectOptions: (config: MultiSelectConfig) => Promise<Result<MultiSelectResult, FxError>>;
     showMessage(level: "info" | "warn" | "error", message: string, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;

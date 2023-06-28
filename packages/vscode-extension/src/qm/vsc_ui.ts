@@ -734,7 +734,7 @@ export class VsCodeUI implements UserInteraction {
       ...config,
     };
 
-    const selectFileOrItemRes = await this.selectFileInQuickPick(selectFileConfig, "file");
+    const selectFileOrItemRes = await this.selectFile(selectFileConfig);
     if (selectFileOrItemRes.isOk()) {
       if (selectFileOrItemRes.value.result === config.inputOptionItem.id) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {

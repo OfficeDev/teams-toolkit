@@ -1,15 +1,28 @@
 import {
+  FolderQuestion,
   IQTreeNode,
   Inputs,
   OptionItem,
   Platform,
   SingleSelectQuestion,
+  Stage,
   StaticOptions,
+  TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Runtime } from "../component/constants";
 import { isFromDevPortal } from "../component/developerPortalScaffoldUtils";
+import {
+  PackageSelectOptionsHelper,
+  SPFxVersionOptionIds,
+} from "../component/generator/spfx/utils/question-helper";
+import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
+import { Constants } from "../component/generator/spfx/utils/constants";
+import * as jsonschema from "jsonschema";
+import * as path from "path";
+import fs from "fs-extra";
+import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
 
 export enum QuestionNames {
   Scratch = "scratch",
@@ -17,6 +30,12 @@ export enum QuestionNames {
   Capabilities = "capabilities",
   BotTrigger = "bot-host-type-trigger",
   Runtime = "runtime",
+  SPFxSolution = "spfx-solution",
+  SPFxInstallPackage = "spfx-install-latest-package",
+  SPFxFramework = "spfx-framework-type",
+  SPFxWebpartName = "spfx-webpart-name",
+  SPFxWebpartDesp = "spfx-webpart-desp",
+  SPFxFolder = "spfx-folder",
 }
 
 export class ScratchOptions {
@@ -294,6 +313,30 @@ export class CapabilityOptions {
       ...CapabilityOptions.mes(),
     ];
   }
+
+  static officeAddinImport(): OptionItem {
+    return {
+      id: "import-addin-project",
+      label: getLocalizedString("core.importAddin.label"),
+      cliName: "import",
+      detail: getLocalizedString("core.importAddin.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
+    };
+  }
+
+  static officeAddinItems(): OptionItem[] {
+    const jsonData = new projectsJsonData();
+    return jsonData.getProjectTemplateNames().map((template) => ({
+      id: template,
+      label: getLocalizedString(jsonData.getProjectDisplayName(template)),
+      detail: getLocalizedString(jsonData.getProjectDetails(template)),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
+    }));
+  }
 }
 
 export function capabilityQuestion(inputs: Inputs): SingleSelectQuestion {
@@ -310,6 +353,8 @@ export function capabilityQuestion(inputs: Inputs): SingleSelectQuestion {
         return CapabilityOptions.tabs();
       } else if (projectType === ProjectTypeOptions.me().id) {
         return CapabilityOptions.mes();
+      } else if (projectType === ProjectTypeOptions.outlookAddin().id) {
+        return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
       }
       return [];
     },
@@ -449,6 +494,115 @@ export function botTriggerQuestion(): SingleSelectQuestion {
   };
 }
 
+export function SPFxSolutionQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.SPFxSolution,
+    title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
+    staticOptions: [
+      { id: "new", label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew") },
+      {
+        id: "import",
+        label: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting"),
+      },
+    ],
+    default: "new",
+  };
+}
+export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.SPFxInstallPackage,
+    title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
+    staticOptions: [],
+    placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
+    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+      await PackageSelectOptionsHelper.loadOptions();
+      return PackageSelectOptionsHelper.getOptions();
+    },
+    default: SPFxVersionOptionIds.installLocally,
+    validation: {
+      validFunc: async (input: string): Promise<string | undefined> => {
+        if (input === SPFxVersionOptionIds.globalPackage) {
+          const hasPackagesInstalled = PackageSelectOptionsHelper.checkGlobalPackages();
+          if (!hasPackagesInstalled) {
+            throw DevEnvironmentSetupError();
+          }
+        }
+        return undefined;
+      },
+    },
+  };
+}
+
+export function SPFxFrameworkQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.SPFxFramework,
+    title: getLocalizedString("plugins.spfx.questions.framework.title"),
+    staticOptions: [
+      { id: "react", label: "React" },
+      { id: "minimal", label: "Minimal" },
+      { id: "none", label: "None" },
+    ],
+    placeholder: "Select an option",
+    default: "react",
+  };
+}
+
+export function SPFxWebpartNameQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.SPFxWebpartName,
+    title: "Web Part Name",
+    default: Constants.DEFAULT_WEBPART_NAME,
+    validation: {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+        const schema = {
+          pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
+        };
+        const validateRes = jsonschema.validate(input, schema);
+        if (validateRes.errors && validateRes.errors.length > 0) {
+          return getLocalizedString(
+            "plugins.spfx.questions.webpartName.error.notMatch",
+            input,
+            schema.pattern
+          );
+        }
+
+        if (
+          previousInputs &&
+          ((previousInputs.stage === Stage.addWebpart &&
+            previousInputs[QuestionNames.SPFxFolder]) ||
+            (previousInputs?.stage === Stage.addFeature && previousInputs?.projectPath))
+        ) {
+          const webpartFolder = path.join(
+            previousInputs[QuestionNames.SPFxFolder],
+            "src",
+            "webparts",
+            input
+          );
+          if (await fs.pathExists(webpartFolder)) {
+            return getLocalizedString(
+              "plugins.spfx.questions.webpartName.error.duplicate",
+              webpartFolder
+            );
+          }
+        }
+        return undefined;
+      },
+    },
+  };
+}
+export function SPFxImportFolderQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: QuestionNames.SPFxFolder,
+    title: getLocalizedString("core.spfxFolder.title"),
+    placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+  };
+}
+
 export function questionTreeForVSC(inputs: Inputs): IQTreeNode {
   const root: IQTreeNode = {
     data: projectTypeQuestion(inputs),
@@ -459,6 +613,25 @@ export function questionTreeForVSC(inputs: Inputs): IQTreeNode {
           {
             data: botTriggerQuestion(),
             condition: { equals: CapabilityOptions.notificationBot().id },
+          },
+          {
+            data: SPFxSolutionQuestion(),
+            condition: { equals: CapabilityOptions.SPFxTab().id },
+            children: [
+              {
+                data: { type: "group" },
+                children: [
+                  { data: SPFxPackageSelectQuestion() },
+                  { data: SPFxFrameworkQuestion() },
+                  { data: SPFxWebpartNameQuestion() },
+                ],
+                condition: { equals: "new" },
+              },
+              {
+                data: SPFxImportFolderQuestion(),
+                condition: { equals: "new" },
+              },
+            ],
           },
         ],
       },

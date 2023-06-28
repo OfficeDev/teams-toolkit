@@ -17,7 +17,6 @@
     "test:dotnet": "nyc mocha \"tests/plugins/resource/dotnet/**/*.test.ts\"",
     "test:function": "nyc mocha \"tests/plugins/resource/function/**/*.test.ts\"",
     "test:frontend": "nyc mocha \"tests/plugins/resource/frontend/**/*.test.ts\"",
-    "test:aad": "nyc mocha \"tests/component/resource/aadApp/**/*.test.ts\"",
     "test:appmanifest": "nyc mocha \"tests/component/resource/appManifest/**/*.test.ts\"",
     "test:spfx": "nyc mocha \"tests/plugins/resource/spfx/**/*.test.ts\"",
     "test:apim": "nyc mocha \"tests/plugins/resource/apim/**/*.test.ts\"",

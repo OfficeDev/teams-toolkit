@@ -4,9 +4,9 @@
 import "mocha";
 import * as chai from "chai";
 import * as util from "util";
-import { AadManifestHelper } from "../../../../../src/component/resource/aadApp/utils/aadManifestHelper";
-import { AadManifestErrorMessage } from "../../../../../src/component/resource/aadApp/errors";
-import { AADManifest } from "../../../../../src/component/resource/aadApp/interfaces/AADManifest";
+import { AadManifestHelper } from "../../../../src/component/driver/aad/utility/aadManifestHelper";
+import { AadManifestErrorMessage } from "../../../../src/component/driver/aad/error/aadManifestError";
+import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
 
 describe("AAD manifest helper Test", () => {
   it("manifestToApplication", async () => {

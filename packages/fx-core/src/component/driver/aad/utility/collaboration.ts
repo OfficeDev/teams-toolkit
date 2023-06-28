@@ -43,19 +43,7 @@ export class AadCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const message = JSON.stringify(error.response!.data);
-        ctx.logProvider.error(message);
-        if (error.response!.status >= 400 && error.response!.status < 500) {
-          return err(new HttpClientError(componentName, message));
-        } else {
-          return err(new HttpServerError(componentName, message));
-        }
-      }
-
-      const message = JSON.stringify(error);
-      ctx.logProvider.error(message);
-      return err(new UnhandledError(error as Error, componentName));
+      return err(this.handleError(error, ctx));
     }
   }
 
@@ -68,19 +56,7 @@ export class AadCollaboration {
       const owners = await this.aadAppClient.getOwners(objectId);
       return ok(owners ?? []);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const message = JSON.stringify(error.response!.data);
-        ctx.logProvider.error(message);
-        if (error.response!.status >= 400 && error.response!.status < 500) {
-          return err(new HttpClientError(componentName, message));
-        } else {
-          return err(new HttpServerError(componentName, message));
-        }
-      }
-
-      const message = JSON.stringify(error);
-      ctx.logProvider.error(message);
-      return err(new UnhandledError(error as Error, componentName));
+      return err(this.handleError(error, ctx));
     }
   }
 
@@ -104,19 +80,23 @@ export class AadCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const message = JSON.stringify(error.response!.data);
-        ctx.logProvider.error(message);
-        if (error.response!.status >= 400 && error.response!.status < 500) {
-          return err(new HttpClientError(componentName, message));
-        } else {
-          return err(new HttpServerError(componentName, message));
-        }
-      }
-
-      const message = JSON.stringify(error);
-      ctx.logProvider.error(message);
-      return err(new UnhandledError(error as Error, componentName));
+      return err(this.handleError(error, ctx));
     }
+  }
+
+  private handleError(error: any, ctx: Context): FxError {
+    if (axios.isAxiosError(error)) {
+      const message = JSON.stringify(error.response!.data);
+      ctx.logProvider.error(message);
+      if (error.response!.status >= 400 && error.response!.status < 500) {
+        return new HttpClientError(componentName, message);
+      } else {
+        return new HttpServerError(componentName, message);
+      }
+    }
+
+    const message = JSON.stringify(error);
+    ctx.logProvider.error(message);
+    return new UnhandledError(error as Error, componentName);
   }
 }

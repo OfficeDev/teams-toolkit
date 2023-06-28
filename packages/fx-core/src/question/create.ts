@@ -836,7 +836,8 @@ export function createNewQuestion(inputs: Inputs): IQTreeNode {
                 condition: { equals: "import" },
                 children: [
                   {
-                    // auto fill in "app-name" question
+                    // auto fill in "app-name" question,
+                    // TODO can we make it as a default value of "app-name" question? (need to discuss)
                     data: fillInAppNameFuncQuestion(),
                   },
                 ],

@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { SubscriptionModels } from "@azure/arm-subscriptions";
-import { TokenCredential } from "@azure/core-auth";
 import type { Environment } from "@azure/ms-rest-azure-env";
 import { ReadStream } from "fs";
 import { CancellationToken, Event, Progress, Terminal } from "vscode";

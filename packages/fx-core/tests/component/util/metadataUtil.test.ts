@@ -146,7 +146,7 @@ describe("metadata util", () => {
   });
 
   it("parseManifest with full manifest", () => {
-    const manifest = {
+    const manifest: any = {
       id: "test-id",
       version: "1.0",
       manifestVersion: "1.0",
@@ -162,6 +162,7 @@ describe("metadata util", () => {
     };
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
 
+    manifest.extensions = [{}];
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
 
     assert.isTrue(
@@ -185,6 +186,29 @@ describe("metadata util", () => {
 
     // If extensions is empty, it should report false in telemetry event
     manifest.extensions = [];
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+
+    assert.isTrue(
+      spy.calledWith(TelemetryEvent.MetaData, {
+        "manifest.id": "test-id",
+        "manifest.version": "1.0",
+        "manifest.manifestVersion": "1.0",
+        "manifest.bots": "bot1,bot2",
+        "manifest.composeExtensions": "bot1,bot2",
+        "manifest.staticTabs.contentUrl": `${[
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+        ].toString()}`,
+        "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
+          .update(manifest.configurableTabs[0].configurationUrl)
+          .digest("base64")}`,
+        "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "false",
+      })
+    );
+
+    // If extensions is undefined, it should report false in telemetry event
+    manifest.extensions = undefined;
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
 
     assert.isTrue(

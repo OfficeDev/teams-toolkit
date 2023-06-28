@@ -214,7 +214,10 @@
 /packages/fx-core/tests/core/middleware/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/component/driver/deploy/azure @Siglud @Yukun-dong @JerryYangKai @eriolchan
-/packages/fx-core/src/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/baseBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/baseBuildStepDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/dotnetBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 
 /packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
 /packages/fx-core/resource/package.nls.cs.json @HuihuiWu-Microsoft @chagong @jayzhang

@@ -2,7 +2,6 @@ import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { Action } from '../common/Action';
 import { context } from '@actions/github';
 import { getRequiredInput, safeLog } from '../common/utils';
-import { Octokit } from '@octokit/rest';
 import { Issue } from '../api/api';
 import { getEmail, setOutput } from '../teamsfx-utils/utils';
 

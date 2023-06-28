@@ -733,5 +733,30 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk());
       assert.isTrue(inputs["test"] === "file");
     });
+
+    it("single file or input with validation", async () => {
+      sandbox.stub(mockUI, "singleFileOrInput").resolves(ok({ type: "success", result: "file" }));
+      const validation: StringValidation = {
+        equals: "test",
+      };
+      const question: SingleFileOrInputQuestion = {
+        type: "singleFileOrText",
+        name: "test",
+        title: "test",
+        inputOptionItem: {
+          id: "input",
+          label: "input",
+        },
+        inputBoxConfig: {
+          name: "input",
+          title: "input",
+        },
+        validation: validation,
+      };
+      const inputs = createInputs();
+      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      assert.isTrue(res.isOk());
+      assert.isTrue(inputs["test"] === "file");
+    });
   });
 });

@@ -726,7 +726,7 @@ export class VsCodeUI implements UserInteraction {
     });
   }
 
-  async selectLocalFileOrInputRemoteUrl(
+  async selectLocalFileOrInput(
     config: selectLocalFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>> {
     const selectFileConfig: SelectFileConfig = {
@@ -737,6 +737,9 @@ export class VsCodeUI implements UserInteraction {
     const selectFileOrItemRes = await this.selectFileInQuickPick(selectFileConfig, "file");
     if (selectFileOrItemRes.isOk()) {
       if (selectFileOrItemRes.value.result === config.inputOptionItem.id) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {
+          [TelemetryProperty.SelectedOption]: selectFileOrItemRes.value.result,
+        });
         const inputRes = await this.inputText(config.inputBoxConfig);
         if (inputRes.isOk()) {
           return ok(inputRes.value);

@@ -9,6 +9,7 @@ import {
   FuncQuestion,
   FxError,
   IProgressHandler,
+  InputResult,
   InputTextConfig,
   InputTextResult,
   Inputs,
@@ -20,6 +21,7 @@ import {
   QTreeNode,
   Result,
   SelectFileConfig,
+  SelectFileOrInputQuestion,
   SelectFileResult,
   SelectFilesConfig,
   SelectFilesResult,
@@ -34,6 +36,7 @@ import {
   UserInteraction,
   err,
   ok,
+  selectFileOrInputConfig,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError, UserCancelError } from "../../src/error/common";
 import { traverse } from "../../src/ui/visitor";
@@ -126,6 +129,12 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
+    throw new Error("Method not implemented.");
+  }
+
+  selectFileOrInput(
+    config: selectFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
     throw new Error("Method not implemented.");
   }
 }
@@ -702,6 +711,27 @@ describe("Question Model - Visitor Test", () => {
       if (res.isErr()) {
         assert.isTrue(res.error instanceof EmptyOptionError);
       }
+    });
+
+    it("single file or input", async () => {
+      sandbox.stub(mockUI, "selectFileOrInput").resolves(ok({ type: "success", result: "file" }));
+      const question: SelectFileOrInputQuestion = {
+        type: "singleFileOrText",
+        name: "test",
+        title: "test",
+        inputOptionItem: {
+          id: "input",
+          label: "input",
+        },
+        inputBoxConfig: {
+          name: "input",
+          title: "input",
+        },
+      };
+      const inputs = createInputs();
+      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      assert.isTrue(res.isOk());
+      assert.isTrue(inputs["test"] === "file");
     });
   });
 });

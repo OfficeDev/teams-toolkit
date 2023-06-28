@@ -330,7 +330,7 @@ export type Question =
  * - condition: trigger condition for this node to be activated;
  * - children: child questions that will be activated according their trigger condition.
  */
-export class QTreeNode {
+export class QTreeNode implements IQTreeNode {
   data: Question | Group;
   condition?: ValidationSchema & { target?: string };
   children?: QTreeNode[];
@@ -376,4 +376,10 @@ export class QTreeNode {
   constructor(data: Question | Group) {
     this.data = data;
   }
+}
+
+export interface IQTreeNode {
+  data: Question | Group;
+  condition?: ValidationSchema & { target?: string };
+  children?: IQTreeNode[];
 }

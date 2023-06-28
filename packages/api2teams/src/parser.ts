@@ -174,6 +174,12 @@ export async function parseApi(yaml: string, options: CliOptions) {
     console.log(` > generate ${apiProviderResult.name} successfully!`);
   }
 
+  console.log('generate teams bot file');
+  await fs.copy(
+    __dirname + '/resources/teamsBotTemplate.txt',
+    options.output + '/src/teamsBot.ts'
+  );
+
   console.log('generate index file');
   const indexFile = await generateIndexFile(responseCards);
   const indexFilePath = path.join(

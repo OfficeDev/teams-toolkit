@@ -1,0 +1,28 @@
+import { MessageBuilder } from "@microsoft/teamsfx";
+import { TeamsActivityHandler } from "botbuilder";
+import helpCard from "./adaptiveCards/helpCard.json";
+
+// An empty teams activity handler.
+// You can add your customization code here to extend your bot logic if needed.
+export class TeamsBot extends TeamsActivityHandler {
+  constructor() {
+    super();
+    this.onMembersAdded(async (context, next) => {
+      if (context.activity.membersAdded) {
+        // Iterate over all new members added to the conversation
+        for (const member of context.activity.membersAdded) {
+          // Greet anyone that was not the target (recipient) of this message.
+          // Since the bot is the recipient for events from the channel,
+          // context.activity.membersAdded === context.activity.recipient.Id indicates the
+          // bot was added to the conversation, and the opposite indicates this is a user.
+          if (member.id !== context.activity.recipient.id) {
+            await context.sendActivity(MessageBuilder.attachAdaptiveCardWithoutData(helpCard));
+          }
+        }
+      }
+
+      // By calling next() you ensure that the next BotHandler is run.
+      await next();
+    });
+  }
+}

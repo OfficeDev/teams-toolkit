@@ -46,8 +46,7 @@ import {
   selectEnvNode,
   selectTeamsAppManifestQuestion,
 } from "./question";
-import { AadCollaboration } from "../component/driver/aad/utility/collaboration";
-import { TeamsCollaboration } from "../component/driver/teamsApp/collaboration";
+import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters

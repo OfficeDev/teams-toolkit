@@ -11,7 +11,7 @@ import {
   SolutionTelemetryProperty,
   TelemetryConstants,
 } from "../constants";
-import { createAuthFiles } from "../driver/aad/utility/createAuthFiles";
+import { createAuthFiles } from "./createAuthFiles";
 
 @Service("sso")
 export class SSO {

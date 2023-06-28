@@ -101,7 +101,6 @@ export class AadAppClient {
   }
 
   public async getOwners(objectId: string): Promise<AadOwner[] | undefined> {
-    // const response = await instance.get(`${baseUrl}/applications/${objectId}/owners`);
     const response = await this.axios.get(`applications/${objectId}/owners`, {
       "axios-retry": {
         retries: this.retryNumber,
@@ -114,20 +113,17 @@ export class AadAppClient {
     });
 
     const aadOwners: AadOwner[] = [];
-    if (response && response.data && response.data.value) {
-      for (const aadOwner of response.data.value) {
-        aadOwners.push({
-          userObjectId: aadOwner.id,
-          resourceId: objectId,
-          displayName: aadOwner.displayName,
-          // For guest account, aadOwner.userPrincipalName will contains "EXT", thus use mail instead.
-          userPrincipalName: aadOwner.mail ?? aadOwner.userPrincipalName,
-        });
-      }
-      return aadOwners;
+    for (const aadOwner of response.data.value) {
+      aadOwners.push({
+        userObjectId: aadOwner.id,
+        resourceId: objectId,
+        displayName: aadOwner.displayName,
+        // For guest account, aadOwner.userPrincipalName will contains "EXT", thus use mail instead.
+        userPrincipalName: aadOwner.mail ?? aadOwner.userPrincipalName,
+      });
     }
 
-    return undefined;
+    return aadOwners;
   }
 
   public async addOwner(objectId: string, userObjectId: string): Promise<void> {

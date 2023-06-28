@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT
+
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export class AadManifestErrorMessage {

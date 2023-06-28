@@ -44,8 +44,8 @@ import {
   MockedV2Context,
 } from "../plugins/solution/util";
 import { MockTools, randomAppName } from "./utils";
-import { TeamsCollaboration } from "../../src/component/driver/teamsApp/collaboration";
-import { AadCollaboration } from "../../src/component/driver/aad/utility/collaboration";
+import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
+
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
   const ctx = new MockedV2Context() as Context;

@@ -1,5 +1,6 @@
 import {
   FolderQuestion,
+  FuncQuestion,
   IQTreeNode,
   Inputs,
   OptionItem,
@@ -17,15 +18,27 @@ import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
 } from "../component/generator/spfx/utils/question-helper";
-import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
+import {
+  DevEnvironmentSetupError,
+  PathAlreadyExistsError,
+  RetrieveSPFxInfoError,
+} from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import fs from "fs-extra";
+import * as os from "os";
 import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
+import { getTemplate } from "../component/generator/officeAddin/question";
+import { ConstantString } from "../common/constants";
+import { convertToAlphanumericOnly } from "../common/utils";
+import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 
 export enum QuestionNames {
   Scratch = "scratch",
+  AppName = "app-name",
+  Folder = "folder",
+  ProgrammingLanguage = "programming-language",
   ProjectType = "project-type",
   Capabilities = "capabilities",
   BotTrigger = "bot-host-type-trigger",
@@ -34,8 +47,12 @@ export enum QuestionNames {
   SPFxInstallPackage = "spfx-install-latest-package",
   SPFxFramework = "spfx-framework-type",
   SPFxWebpartName = "spfx-webpart-name",
-  SPFxWebpartDesp = "spfx-webpart-desp",
   SPFxFolder = "spfx-folder",
+  OfficeAddinFolder = "addin-project-folder",
+  OfficeAddinManifest = "addin-project-manifest",
+  OfficeAddinTemplate = "addin-template-select",
+  OfficeAddinHost = "addin-host",
+  skipAppName = "skip-app-name",
 }
 
 export class ScratchOptions {
@@ -327,11 +344,10 @@ export class CapabilityOptions {
   }
 
   static officeAddinItems(): OptionItem[] {
-    const jsonData = new projectsJsonData();
-    return jsonData.getProjectTemplateNames().map((template) => ({
+    return officeAddinJsonData.getProjectTemplateNames().map((template) => ({
       id: template,
-      label: getLocalizedString(jsonData.getProjectDisplayName(template)),
-      detail: getLocalizedString(jsonData.getProjectDetails(template)),
+      label: getLocalizedString(officeAddinJsonData.getProjectDisplayName(template)),
+      detail: getLocalizedString(officeAddinJsonData.getProjectDetails(template)),
       description: getLocalizedString(
         "core.createProjectQuestion.option.description.previewOnWindow"
       ),
@@ -603,6 +619,192 @@ export function SPFxImportFolderQuestion(): FolderQuestion {
   };
 }
 
+function officeAddinHostingQuestion(): SingleSelectQuestion {
+  const OfficeHostQuestion: SingleSelectQuestion = {
+    type: "singleSelect",
+    name: QuestionNames.OfficeAddinHost,
+    title: "Add-in Host",
+    staticOptions: [],
+    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+      const template = getTemplate(inputs);
+      const getHostTemplateNames = officeAddinJsonData.getHostTemplateNames(template);
+      const options = getHostTemplateNames.map((host) => ({
+        label: officeAddinJsonData.getHostDisplayName(host) as string,
+        id: host,
+      }));
+      return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
+    },
+    default: async (inputs: Inputs): Promise<string> => {
+      const template = getTemplate(inputs);
+      const options = officeAddinJsonData.getHostTemplateNames(template);
+      return options[0] || "No Options";
+    },
+    skipSingleOption: true,
+  };
+  return OfficeHostQuestion;
+}
+const officeAddinJsonData = new projectsJsonData();
+
+function programmingLanguageQuestion(): SingleSelectQuestion {
+  const programmingLanguageQuestion: SingleSelectQuestion = {
+    name: QuestionNames.ProgrammingLanguage,
+    title: "Programming Language",
+    type: "singleSelect",
+    staticOptions: [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+      { id: "csharp", label: "C#" },
+    ],
+    dynamicOptions: (inputs: Inputs): StaticOptions => {
+      const runtime = getRuntime(inputs);
+      // dotnet runtime only supports C#
+      if (runtime === Runtime.dotnet) {
+        return [{ id: "csharp", label: "C#" }];
+      }
+      // office addin supports language defined in officeAddinJsonData
+      const projectType = inputs[QuestionNames.ProjectType];
+      if (projectType === ProjectTypeOptions.outlookAddin().id) {
+        const template = getTemplate(inputs);
+        const supportedTypes = officeAddinJsonData.getSupportedScriptTypes(template);
+        const options = supportedTypes.map((language) => ({ label: language, id: language }));
+        return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
+      }
+      const capabilities = inputs[QuestionNames.Capabilities] as string;
+      // SPFx only supports typescript
+      if (capabilities === CapabilityOptions.SPFxTab().id) {
+        return [{ id: "typescript", label: "TypeScript" }];
+      }
+      // other case
+      return [
+        { id: "javascript", label: "JavaScript" },
+        { id: "typescript", label: "TypeScript" },
+      ];
+    },
+    default: (inputs: Inputs) => {
+      const runtime = getRuntime(inputs);
+      // dotnet
+      if (runtime === Runtime.dotnet) {
+        return "csharp";
+      }
+      // office addin
+      const projectType = inputs[QuestionNames.ProjectType];
+      if (projectType === ProjectTypeOptions.outlookAddin().id) {
+        const template = getTemplate(inputs);
+        const options = officeAddinJsonData.getSupportedScriptTypes(template);
+        return options[0] || "No Options";
+      }
+      // SPFx
+      const capabilities = inputs[QuestionNames.Capabilities] as string;
+      if (capabilities === CapabilityOptions.SPFxTab().id) {
+        return "typescript";
+      }
+      // other
+      return "javascript";
+    },
+    placeholder: (inputs: Inputs): string => {
+      const runtime = getRuntime(inputs);
+      // dotnet
+      if (runtime === Runtime.dotnet) {
+        return "";
+      }
+      // office addin
+      const projectType = inputs[QuestionNames.ProjectType];
+      if (projectType === ProjectTypeOptions.outlookAddin().id) {
+        const template = getTemplate(inputs);
+        const options = officeAddinJsonData.getSupportedScriptTypes(template);
+        return options[0] || "No Options";
+      }
+      const capabilities = inputs[QuestionNames.Capabilities] as string;
+      // SPFx
+      if (capabilities === CapabilityOptions.SPFxTab().id) {
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+      }
+      // other
+      return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
+    },
+    skipSingleOption: true,
+  };
+  return programmingLanguageQuestion;
+}
+
+export function rootFolderQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: QuestionNames.Folder,
+    title: getLocalizedString("core.question.workspaceFolder.title"),
+    placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
+    default: path.join(os.homedir(), ConstantString.RootFolder),
+  };
+}
+
+export const AppNamePattern =
+  '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
+
+export function appNameQuestion(): TextInputQuestion {
+  const question: TextInputQuestion = {
+    type: "text",
+    name: QuestionNames.AppName,
+    title: "Application name",
+    default: (inputs: Inputs) => {
+      const defaultName = !inputs.teamsAppFromTdp?.appName
+        ? undefined
+        : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+      return defaultName;
+    },
+    validation: {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+        const schema = {
+          pattern: AppNamePattern,
+          maxLength: 30,
+        };
+        const appName = input as string;
+        const validateResult = jsonschema.validate(appName, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+          if (validateResult.errors[0].name === "pattern") {
+            return getLocalizedString("core.QuestionAppName.validation.pattern");
+          }
+          if (validateResult.errors[0].name === "maxLength") {
+            return getLocalizedString("core.QuestionAppName.validation.maxlength");
+          }
+        }
+        if (previousInputs && previousInputs.folder) {
+          const folder = previousInputs.folder as string;
+          if (folder) {
+            const projectPath = path.resolve(folder, appName);
+            const exists = await fs.pathExists(projectPath);
+            if (exists)
+              return getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath);
+          }
+        }
+        return undefined;
+      },
+    },
+    placeholder: "Application name",
+  };
+  return question;
+}
+
+function fillInAppNameFuncQuestion(): FuncQuestion {
+  const q: FuncQuestion = {
+    type: "func",
+    name: QuestionNames.skipAppName,
+    title: "Set app name to skip",
+    func: async (inputs: Inputs) => {
+      if (inputs[QuestionNames.SPFxSolution] == "import") {
+        const solutionName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
+        if (solutionName) {
+          inputs[QuestionNames.AppName] = solutionName;
+          if (await fs.pathExists(path.join(inputs.folder, solutionName)))
+            throw PathAlreadyExistsError(path.join(inputs.folder, solutionName));
+        } else {
+          throw RetrieveSPFxInfoError();
+        }
+      }
+    },
+  };
+  return q;
+}
+
 export function questionTreeForVSC(inputs: Inputs): IQTreeNode {
   const root: IQTreeNode = {
     data: projectTypeQuestion(inputs),
@@ -611,12 +813,14 @@ export function questionTreeForVSC(inputs: Inputs): IQTreeNode {
         data: capabilityQuestion(inputs),
         children: [
           {
-            data: botTriggerQuestion(),
+            // Notification bot trigger sub-tree
             condition: { equals: CapabilityOptions.notificationBot().id },
+            data: botTriggerQuestion(),
           },
           {
-            data: SPFxSolutionQuestion(),
+            // SPFx sub-tree
             condition: { equals: CapabilityOptions.SPFxTab().id },
+            data: SPFxSolutionQuestion(),
             children: [
               {
                 data: { type: "group" },
@@ -629,9 +833,53 @@ export function questionTreeForVSC(inputs: Inputs): IQTreeNode {
               },
               {
                 data: SPFxImportFolderQuestion(),
-                condition: { equals: "new" },
+                condition: { equals: "import" },
+                children: [
+                  {
+                    // auto fill in "app-name" question
+                    data: fillInAppNameFuncQuestion(),
+                  },
+                ],
               },
             ],
+          },
+          {
+            // office addin import sub-tree
+            condition: { equals: CapabilityOptions.officeAddinImport().id },
+            data: { type: "group" },
+            children: [
+              {
+                data: {
+                  type: "folder",
+                  name: QuestionNames.OfficeAddinFolder,
+                  title: "Existing add-in project folder",
+                },
+              },
+              {
+                data: {
+                  type: "singleFile",
+                  name: QuestionNames.OfficeAddinManifest,
+                  title: "Select import project manifest file",
+                },
+              },
+            ],
+          },
+          {
+            // office addin other items sub-tree
+            condition: { containsAny: CapabilityOptions.officeAddinItems().map((i) => i.id) },
+            data: officeAddinHostingQuestion(),
+          },
+          {
+            // programming language
+            data: programmingLanguageQuestion(),
+          },
+          {
+            // root folder
+            data: rootFolderQuestion(),
+          },
+          {
+            // app name
+            data: appNameQuestion(),
           },
         ],
       },

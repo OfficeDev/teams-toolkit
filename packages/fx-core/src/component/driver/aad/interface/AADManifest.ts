@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT
+
 export interface AADManifest {
   id?: string | null;
   appId?: string | null;

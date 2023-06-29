@@ -1,8 +1,11 @@
-import { AADApplication } from "../interfaces/AADApplication";
-import { AADManifest } from "../interfaces/AADManifest";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT
+
+import { AADApplication } from "../interface/AADApplication";
+import { AADManifest } from "../interface/AADManifest";
 import isUUID from "validator/lib/isUUID";
 import { getPermissionMap } from "../permissions";
-import { AadManifestErrorMessage } from "../errors";
+import { AadManifestErrorMessage } from "../error/aadManifestError";
 import * as util from "util";
 export class AadManifestHelper {
   public static manifestToApplication(manifest: AADManifest): AADApplication {

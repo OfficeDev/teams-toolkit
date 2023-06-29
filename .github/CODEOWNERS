@@ -267,8 +267,8 @@
 /packages/fx-core/tests/component/driver/middleware/updateProgress.test.ts @tecton @jayzhang @LongOddCode
 
 /packages/fx-core/templates/plugins/resource/aad/ @KennethBWSong @xzf0587 @adashen
-/packages/fx-core/src/component/feature collaboration.ts @KennethBWSong @SLdragon @adashen
-/packages/fx-core/src/component/feature createAuthFiles.ts @KennethBWSong @xzf0587 @adashen
-/packages/fx-core/src/component/feature sso.ts @KennethBWSong @xzf0587 @adashen
+/packages/fx-core/src/component/feature/collaboration.ts @KennethBWSong @SLdragon @adashen
+/packages/fx-core/src/component/feature/createAuthFiles.ts @KennethBWSong @xzf0587 @adashen
+/packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587 @adashen
 packages/fx-core/tests/component/feature/sso.test.ts @KennethBWSong @xzf0587 @adashen
 packages/fx-core/tests/core/collaborator.test.ts @KennethBWSong @SLdragon @adashen

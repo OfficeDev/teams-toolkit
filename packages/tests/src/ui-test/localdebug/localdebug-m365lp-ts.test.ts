@@ -5,8 +5,8 @@ import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../vscodeOperation";
 import {
   initPage,
-  validateOutlookTab,
-  validateTab,
+  validateReactOutlookTab,
+  validateReactTab,
 } from "../../playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import { Timeout, LocalDebugTaskLabel } from "../../constants";
@@ -60,7 +60,7 @@ describe("Local Debug M365 Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForTab();
-      await validateTab(page, Env.displayName, false);
+      await validateReactTab(page, Env.displayName, true);
       const url = page.url();
       const pattern =
         /https:\/\/teams\.microsoft\.com\/_#\/apps\/(.*)\/sections\/index.*/;
@@ -69,7 +69,7 @@ describe("Local Debug M365 Tests", function () {
       await page.goto(
         `https://outlook.office.com/host/${internalId}/index0?login_hint=${Env.username}`
       );
-      await validateOutlookTab(page, Env.displayName, false);
+      await validateReactOutlookTab(page, Env.displayName, true);
     }
   );
 });

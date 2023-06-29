@@ -42,6 +42,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   StaticOptions,
@@ -723,6 +724,34 @@ export class VsCodeUI implements UserInteraction {
         else resolve(err(internalUIError));
       });
     });
+  }
+
+  async selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
+    const selectFileConfig: SelectFileConfig = {
+      ...config,
+      possibleFiles: [config.inputOptionItem],
+    };
+
+    const selectFileOrItemRes = await this.selectFile(selectFileConfig);
+    if (selectFileOrItemRes.isOk()) {
+      if (selectFileOrItemRes.value.result === config.inputOptionItem.id) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {
+          [TelemetryProperty.SelectedOption]: selectFileOrItemRes.value.result,
+        });
+        const inputRes = await this.inputText(config.inputBoxConfig);
+        if (inputRes.isOk()) {
+          return ok(inputRes.value);
+        } else {
+          return err(inputRes.error);
+        }
+      } else {
+        return ok(selectFileOrItemRes.value);
+      }
+    } else {
+      return err(selectFileOrItemRes.error);
+    }
   }
 
   public async showMessage(

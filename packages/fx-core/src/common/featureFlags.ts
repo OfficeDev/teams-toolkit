@@ -36,5 +36,6 @@ export function isVideoFilterEnabled(): boolean {
 }
 
 export function isImportSPFxEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
+  return true;
+  //return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
 }

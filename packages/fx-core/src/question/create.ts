@@ -151,6 +151,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
+      if (CLIPlatforms.includes(inputs.platform)) return [""]; //Cli skip this question
       const staticOptions: StaticOptions = [
         ProjectTypeOptions.bot(),
         ProjectTypeOptions.tab(),
@@ -261,6 +262,16 @@ export class CapabilityOptions {
     };
   }
 
+  static tab(): OptionItem {
+    return {
+      id: "Tab",
+      label: getLocalizedString("core.TabOption.label"),
+      cliName: "tab",
+      description: getLocalizedString("core.TabOption.description"),
+      detail: getLocalizedString("core.TabOption.detail"),
+    };
+  }
+
   static m365SsoLaunchPage(): OptionItem {
     return {
       id: "M365SsoLaunchPage",
@@ -326,7 +337,15 @@ export class CapabilityOptions {
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };
   }
-
+  static me(): OptionItem {
+    return {
+      id: "MessagingExtension",
+      label: getLocalizedString("core.MessageExtensionOption.label"),
+      cliName: "message-extension",
+      description: getLocalizedString("core.MessageExtensionOption.description"),
+      detail: getLocalizedString("core.MessageExtensionOption.detail"),
+    };
+  }
   static bots(inputs?: Inputs): OptionItem[] {
     return [
       CapabilityOptions.basicBot(),
@@ -342,6 +361,15 @@ export class CapabilityOptions {
       CapabilityOptions.m365SsoLaunchPage(),
       CapabilityOptions.dashboardTab(),
       CapabilityOptions.SPFxTab(),
+    ];
+  }
+
+  static dotnetCaps(): OptionItem[] {
+    return [
+      CapabilityOptions.notificationBot(),
+      CapabilityOptions.commandBot(),
+      CapabilityOptions.tab(),
+      CapabilityOptions.me(),
     ];
   }
 
@@ -388,12 +416,18 @@ export function capabilityQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: CapabilityOptions.all(),
     dynamicOptions: (inputs: Inputs) => {
+      // from dev portal
       if (isFromDevPortal(inputs)) {
         const capability = getTemplateId(inputs.teamsAppFromTdp)?.templateId;
         if (capability) {
           return [capability];
         }
       }
+      // dotnet capabilities
+      if (getRuntime(inputs) === Runtime.dotnet) {
+        return CapabilityOptions.dotnetCaps();
+      }
+      // nodejs capabilities
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.bot().id) {
         return CapabilityOptions.bots(inputs);
@@ -1015,8 +1049,8 @@ export function createProjectQuestion(): IQTreeNode {
           {
             condition: {
               // only show for CLI with isCLIDotNetEnabled
-              validFunc: (inputs: Inputs) => {
-                if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform))
+              validFunc: (preInput: string, inputs?: Inputs) => {
+                if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs!.platform))
                   return undefined;
                 return "not supported";
               },
@@ -1024,13 +1058,6 @@ export function createProjectQuestion(): IQTreeNode {
             data: runtimeQuestion(),
           },
           {
-            condition: {
-              // not show for CLI
-              validFunc: (inputs: Inputs) => {
-                if (CLIPlatforms.includes(inputs.platform)) return "";
-                return undefined;
-              },
-            },
             data: projectTypeQuestion(),
             children: [
               {
@@ -1112,8 +1139,8 @@ export function createProjectQuestion(): IQTreeNode {
               },
               {
                 condition: {
-                  validFunc: (inputs: Inputs) => {
-                    const appDef = inputs.teamsAppFromTdp as AppDefinition;
+                  validFunc: (preInput: string, inputs?: Inputs) => {
+                    const appDef = inputs!.teamsAppFromTdp as AppDefinition;
                     if (appDef && isPersonalApp(appDef)) {
                       return undefined;
                     }
@@ -1124,8 +1151,8 @@ export function createProjectQuestion(): IQTreeNode {
                 children: [
                   {
                     condition: {
-                      validFunc: (inputs: Inputs) => {
-                        const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
+                      validFunc: (preInput: string, inputs?: Inputs) => {
+                        const appDefinition = inputs!.teamsAppFromTdp as AppDefinition;
                         if (appDefinition?.staticTabs) {
                           const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
                             (o) => !!o.websiteUrl
@@ -1141,8 +1168,8 @@ export function createProjectQuestion(): IQTreeNode {
                   },
                   {
                     condition: {
-                      validFunc: (inputs: Inputs) => {
-                        const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
+                      validFunc: (preInput: string, inputs?: Inputs) => {
+                        const appDefinition = inputs!.teamsAppFromTdp as AppDefinition;
                         if (appDefinition?.staticTabs) {
                           const tabsWithContentUrls = appDefinition.staticTabs.filter(
                             (o) => !!o.contentUrl
@@ -1160,8 +1187,8 @@ export function createProjectQuestion(): IQTreeNode {
               },
               {
                 condition: {
-                  validFunc: (inputs: Inputs) => {
-                    const appDef = inputs.teamsAppFromTdp as AppDefinition;
+                  validFunc: (preInput: string, inputs?: Inputs) => {
+                    const appDef = inputs!.teamsAppFromTdp as AppDefinition;
                     if (appDef && needBotCode(appDef)) {
                       return undefined;
                     }

@@ -4,8 +4,7 @@ import { DevopsClient } from './azdo';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { context } from '@actions/github';
 import { getInput } from '@actions/core';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import { getEmail } from '../teamsfx-utils/utils';
 import * as WorkItemTrackingInterfaces from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
 
 
@@ -31,15 +30,9 @@ class Milestoned extends Action {
 		if (milestoneTitle.startsWith(milestonePrefix)) {
 			safeLog(`the issue ${content.number} is milestoned with ${milestoneTitle}`);
 			let client = await this.createClient();
-			const users = getAccounts;
-			let asignee = undefined;
-			if (content.assignee) {
-				if (users[content.assignee]) {
-					asignee = users[content.assignee];
-					asignee += '@microsoft.com';
-				} else {
-					safeLog(`the issue ${content.number} assignee:${content.assignee} is not associated with email address, ignore.`);
-				}
+			const asignee = getEmail(content.assignee);
+			if (!asignee) {
+				safeLog(`the issue ${content.number} assignee:${content.assignee} is not associated with email address, ignore.`);
 			}
 			const url = this.issueUrl(content.number);
 			const title = titlePreix + `[${milestoneTitle}]` + content.title;
@@ -92,9 +85,5 @@ class Milestoned extends Action {
 		return `https://github.com/${context.repo.owner}/${context.repo.repo}/issues/${id}`;
 	}
 }
-
-const getAccounts = (() => {
-	return fs.readJsonSync(path.join(__dirname, '../..', '.github', 'accounts.json'));
-})();
 
 new Milestoned().run(); // eslint-disable-line

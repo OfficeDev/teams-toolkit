@@ -447,6 +447,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
     },
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     forgetLastValue: true,
+    skipSingleOption: true,
   };
 }
 
@@ -936,8 +937,11 @@ const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
 };
 function getTabWebsiteOptions(inputs: Inputs): OptionItem[] {
   const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-  if (appDefinition?.staticTabs && appDefinition.staticTabs.length > 0) {
-    return appDefinition.staticTabs.map((o) => tabWebsiteUrlOptionItem(o));
+  if (appDefinition?.staticTabs) {
+    const tabsWithWebsiteUrls = appDefinition.staticTabs.filter((o) => !!o.websiteUrl);
+    if (tabsWithWebsiteUrls.length > 0) {
+      return tabsWithWebsiteUrls.map((o) => tabWebsiteUrlOptionItem(o));
+    }
   }
   return [];
 }
@@ -960,8 +964,11 @@ function selectTabWebsiteUrlQuestion(): MultiSelectQuestion {
 
 function getTabContentUrlOptions(inputs: Inputs): OptionItem[] {
   const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-  if (appDefinition?.staticTabs && appDefinition.staticTabs.length > 0) {
-    return appDefinition.staticTabs.map((o) => tabContentUrlOptionItem(o));
+  if (appDefinition?.staticTabs) {
+    const tabsWithContentUrls = appDefinition.staticTabs.filter((o) => !!o.contentUrl);
+    if (tabsWithContentUrls.length > 0) {
+      return tabsWithContentUrls.map((o) => tabContentUrlOptionItem(o));
+    }
   }
   return [];
 }

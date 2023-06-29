@@ -23,6 +23,7 @@ import {
   validate,
   TelemetryEvent,
   TelemetryProperty,
+  IQTreeNode,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError, UserCancelError, assembleError } from "../error";
 
@@ -241,20 +242,20 @@ const questionVisitor: QuestionTreeVisitor = async function (
 };
 
 export async function traverse(
-  root: QTreeNode,
+  root: IQTreeNode,
   inputs: Inputs,
   ui: UserInteraction,
   telemetryReporter?: TelemetryReporter,
   visitor: QuestionTreeVisitor = questionVisitor
 ): Promise<Result<Void, FxError>> {
-  const stack: QTreeNode[] = [];
-  const history: QTreeNode[] = [];
+  const stack: IQTreeNode[] = [];
+  const history: IQTreeNode[] = [];
   stack.push(root);
   let step = 1; // manual input step
   let totalStep = 1;
-  const parentMap = new Map<QTreeNode, QTreeNode>();
+  const parentMap = new Map<IQTreeNode, IQTreeNode>();
   // const valueMap = new Map<QTreeNode, unknown>();
-  const autoSkipSet = new Set<QTreeNode>();
+  const autoSkipSet = new Set<IQTreeNode>();
   while (stack.length > 0) {
     const curr = stack.pop();
     if (!curr) continue;
@@ -322,7 +323,7 @@ export async function traverse(
     history.push(curr);
 
     if (curr.children) {
-      const matchChildren: QTreeNode[] = [];
+      const matchChildren: IQTreeNode[] = [];
       const valueInMap = findValue(curr, parentMap); //curr.data.type !== "group" ? curr.data.value : undefined; //valueMap.get(curr);
       for (const child of curr.children) {
         if (!child) continue;
@@ -348,7 +349,10 @@ export async function traverse(
   return ok(Void);
 }
 
-function findValue(curr: QTreeNode, parentMap: Map<QTreeNode, QTreeNode>): any {
+function findValue(
+  curr: QTreeNode | IQTreeNode,
+  parentMap: Map<QTreeNode | IQTreeNode, QTreeNode | IQTreeNode>
+): any {
   if (curr.data.type !== "group") {
     // need to convert OptionItem value into id for validation
     if (curr.data.type === "singleSelect") {

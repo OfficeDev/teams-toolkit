@@ -985,7 +985,8 @@ function getBotIdAndMeId(appDefinition: AppDefinition) {
   return [botId, messageExtensionId];
 }
 
-function getBotOptions(appDefinition: AppDefinition): OptionItem[] {
+function getBotOptions(inputs: Inputs): OptionItem[] {
+  const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
   const [botId, messageExtensionId] = getBotIdAndMeId(appDefinition);
   const options: OptionItem[] = [];
   if (botId) {
@@ -998,25 +999,17 @@ function getBotOptions(appDefinition: AppDefinition): OptionItem[] {
 }
 
 function selectBotIdsQuestion(): MultiSelectQuestion {
-  const defaultIds = [];
   const statcOptions: OptionItem[] = [];
-  defaultIds.push(answerToRepaceBotId);
   statcOptions.push(botOptionItem(false, "000000-0000-0000"));
-  defaultIds.push(answerToReplaceMessageExtensionBotId);
   statcOptions.push(botOptionItem(true, "000000-0000-0000"));
   return {
     type: "multiSelect",
     name: QuestionNames.ReplaceBotIds,
     title: getLocalizedString("core.updateBotIdsQuestion.title"),
     staticOptions: statcOptions,
-    dynamicOptions: (inputs: Inputs) => {
-      const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-      const options = getBotOptions(appDefinition);
-      return options;
-    },
+    dynamicOptions: getBotOptions,
     default: (inputs: Inputs) => {
-      const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-      const options = getBotOptions(appDefinition);
+      const options = getBotOptions(inputs);
       return options.map((o) => o.id);
     },
     placeholder: getLocalizedString("core.updateBotIdsQuestion.placeholder"),

@@ -38,7 +38,7 @@ function main() {
     });
   }
 
-  fs.writeJsonSync("./pvt.json", pvtCases, { spaces: 2 });
+  fs.writeJsonSync(path.join(__dirname, "./pvt.json"), pvtCases, { spaces: 2 });
 }
 
 main();

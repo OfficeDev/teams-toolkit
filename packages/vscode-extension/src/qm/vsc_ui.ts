@@ -302,7 +302,7 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    if (option.options.length === 0) {
+    if (typeof option.options === "object" && option.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,

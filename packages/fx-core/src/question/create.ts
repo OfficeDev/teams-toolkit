@@ -716,7 +716,7 @@ function officeAddinHostingQuestion(): SingleSelectQuestion {
 }
 const officeAddinJsonData = new projectsJsonData();
 
-function getLanguageOptions(inputs: Inputs) {
+export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
   if (runtime === Runtime.dotnet) {

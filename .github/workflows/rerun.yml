@@ -82,7 +82,7 @@ jobs:
 
       - name: Switch M365 account
         run: |
-          username='${{ secrets.M365_USERNAME_2 }}'
+          username='${{ env.M365_USERNAME_2 }}'
           echo "M365_ACCOUNT_NAME=$username" >> $GITHUB_ENV
 
       - name: Clean resource 
@@ -92,7 +92,7 @@ jobs:
 
       - name: Switch M365 account
         run: |
-          username='${{ secrets.M365_USERNAME_3 }}'
+          username='${{ env.M365_USERNAME_3 }}'
           echo "M365_ACCOUNT_NAME=$username" >> $GITHUB_ENV
 
       - name: Clean resource 
@@ -102,7 +102,7 @@ jobs:
 
       - name: Switch M365 account
         run: |
-          username='${{ secrets.M365_USERNAME_4 }}'
+          username='${{ env.M365_USERNAME_4 }}'
           echo "M365_ACCOUNT_NAME=$username" >> $GITHUB_ENV
 
       - name: Clean resource 

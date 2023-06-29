@@ -13,7 +13,7 @@ export function getEmail(githubUser?: string): string {
     if (!githubUser) {
         return "";
     }
-    const res = fs.readFileSync(path.join(__dirname, '../..', '.github', 'accounts.json'));
+    const res = fs.readFileSync(path.join(__dirname, '..', '..', '.github', 'accounts.json'));
     const accounts = JSON.parse(res.toString());
     if (accounts[githubUser]) {
         let email = accounts[githubUser];

@@ -2,15 +2,18 @@ import {
   CLIPlatforms,
   FolderQuestion,
   FuncQuestion,
+  FxError,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
   Platform,
+  Result,
   SingleSelectQuestion,
   Stage,
   StaticOptions,
   TextInputQuestion,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -679,6 +682,32 @@ function officeAddinHostingQuestion(): SingleSelectQuestion {
 }
 const officeAddinJsonData = new projectsJsonData();
 
+function getLanguageOptions(inputs: Inputs) {
+  const runtime = getRuntime(inputs);
+  // dotnet runtime only supports C#
+  if (runtime === Runtime.dotnet) {
+    return [{ id: "csharp", label: "C#" }];
+  }
+  // office addin supports language defined in officeAddinJsonData
+  const projectType = inputs[QuestionNames.ProjectType];
+  if (projectType === ProjectTypeOptions.outlookAddin().id) {
+    const template = getTemplate(inputs);
+    const supportedTypes = officeAddinJsonData.getSupportedScriptTypes(template);
+    const options = supportedTypes.map((language) => ({ label: language, id: language }));
+    return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
+  }
+  const capabilities = inputs[QuestionNames.Capabilities] as string;
+  // SPFx only supports typescript
+  if (capabilities === CapabilityOptions.SPFxTab().id) {
+    return [{ id: "typescript", label: "TypeScript" }];
+  }
+  // other case
+  return [
+    { id: "javascript", label: "JavaScript" },
+    { id: "typescript", label: "TypeScript" },
+  ];
+}
+
 function programmingLanguageQuestion(): SingleSelectQuestion {
   const programmingLanguageQuestion: SingleSelectQuestion = {
     name: QuestionNames.ProgrammingLanguage,
@@ -689,51 +718,9 @@ function programmingLanguageQuestion(): SingleSelectQuestion {
       { id: "typescript", label: "TypeScript" },
       { id: "csharp", label: "C#" },
     ],
-    dynamicOptions: (inputs: Inputs): StaticOptions => {
-      const runtime = getRuntime(inputs);
-      // dotnet runtime only supports C#
-      if (runtime === Runtime.dotnet) {
-        return [{ id: "csharp", label: "C#" }];
-      }
-      // office addin supports language defined in officeAddinJsonData
-      const projectType = inputs[QuestionNames.ProjectType];
-      if (projectType === ProjectTypeOptions.outlookAddin().id) {
-        const template = getTemplate(inputs);
-        const supportedTypes = officeAddinJsonData.getSupportedScriptTypes(template);
-        const options = supportedTypes.map((language) => ({ label: language, id: language }));
-        return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
-      }
-      const capabilities = inputs[QuestionNames.Capabilities] as string;
-      // SPFx only supports typescript
-      if (capabilities === CapabilityOptions.SPFxTab().id) {
-        return [{ id: "typescript", label: "TypeScript" }];
-      }
-      // other case
-      return [
-        { id: "javascript", label: "JavaScript" },
-        { id: "typescript", label: "TypeScript" },
-      ];
-    },
+    dynamicOptions: getLanguageOptions,
     default: (inputs: Inputs) => {
-      const runtime = getRuntime(inputs);
-      // dotnet
-      if (runtime === Runtime.dotnet) {
-        return "csharp";
-      }
-      // office addin
-      const projectType = inputs[QuestionNames.ProjectType];
-      if (projectType === ProjectTypeOptions.outlookAddin().id) {
-        const template = getTemplate(inputs);
-        const options = officeAddinJsonData.getSupportedScriptTypes(template);
-        return options[0] || "No Options";
-      }
-      // SPFx
-      const capabilities = inputs[QuestionNames.Capabilities] as string;
-      if (capabilities === CapabilityOptions.SPFxTab().id) {
-        return "typescript";
-      }
-      // other
-      return "javascript";
+      return getLanguageOptions(inputs)[0].id;
     },
     placeholder: (inputs: Inputs): string => {
       const runtime = getRuntime(inputs);
@@ -1105,7 +1092,7 @@ export function createProjectQuestion(): IQTreeNode {
                   {
                     // office addin other items sub-tree
                     condition: {
-                      containsAny: CapabilityOptions.officeAddinItems().map((i) => i.id),
+                      enum: CapabilityOptions.officeAddinItems().map((i) => i.id),
                     },
                     data: officeAddinHostingQuestion(),
                   },
@@ -1127,10 +1114,10 @@ export function createProjectQuestion(): IQTreeNode {
                 condition: {
                   validFunc: (inputs: Inputs) => {
                     const appDef = inputs.teamsAppFromTdp as AppDefinition;
-                    if (!isPersonalApp(appDef)) {
-                      return "not supported";
+                    if (appDef && isPersonalApp(appDef)) {
+                      return undefined;
                     }
-                    return undefined;
+                    return "not needed";
                   },
                 },
                 data: { type: "group" },
@@ -1175,10 +1162,10 @@ export function createProjectQuestion(): IQTreeNode {
                 condition: {
                   validFunc: (inputs: Inputs) => {
                     const appDef = inputs.teamsAppFromTdp as AppDefinition;
-                    if (!needBotCode(appDef)) {
-                      return "not supported";
+                    if (appDef && needBotCode(appDef)) {
+                      return undefined;
                     }
-                    return undefined;
+                    return "not needed";
                   },
                 },
                 data: selectBotIdsQuestion(),
@@ -1200,4 +1187,10 @@ export function createProjectQuestion(): IQTreeNode {
     ],
   };
   return root;
+}
+
+export async function getQuestionsForCreateProjectNew(): Promise<
+  Result<IQTreeNode | undefined, FxError>
+> {
+  return ok(createProjectQuestion());
 }

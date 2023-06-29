@@ -228,6 +228,9 @@ export enum TelemetryEvent {
 
   // Update SDK packages
   UpdateSDKPackages = "update-sdk-packages",
+
+  // Select to input a value when choosing between browsing local file or proceeding to input
+  ContinueToInput = "continue-to-input",
 }
 
 export enum TelemetryProperty {

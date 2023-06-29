@@ -175,6 +175,11 @@ export interface ExecuteFuncConfig extends UIConfig<string> {
   inputs: Inputs;
 }
 
+export interface SingleFileOrInputConfig extends SelectFileConfig {
+  inputOptionItem: OptionItem;
+  inputBoxConfig: InputTextConfig;
+}
+
 /**
  * a wrapper of user input result
  */
@@ -325,6 +330,16 @@ export interface UserInteraction {
     timeout?: number;
     env?: { [k: string]: string };
   }): Promise<Result<string, FxError>>;
+
+  /**
+   * Shows two options to user, one will open a dialog to the user which allows to select a single file, another one will show an input box asking to enter a value
+   * @param config config to select local file or enter a value
+   * @returns A promise that resolves to the local file path or the value entered by user or FxError
+   * @throws FxError
+   */
+  selectFileOrInput?(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>>;
 }
 
 export interface IProgressHandler {

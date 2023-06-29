@@ -1269,6 +1269,7 @@
     "umd-compat-loader": "^2.1.2",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
+    "verdaccio": "^5.25.0",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2"
   },

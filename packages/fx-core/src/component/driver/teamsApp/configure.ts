@@ -97,7 +97,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     if (manifest.isErr()) {
       return err(manifest.error);
     }
-    const capabilities = manifestUtils._getCapabilities(manifest.value).map((x) => {
+    const capabilities = manifestUtils.getCapabilities(manifest.value).map((x) => {
       if (x == "staticTab" || x == "configurableTab") {
         return "Tab";
       } else {

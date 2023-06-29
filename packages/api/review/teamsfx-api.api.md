@@ -681,6 +681,7 @@ export interface StringValidation extends StaticValidation {
     endsWith?: string;
     enum?: string[];
     equals?: string;
+    excludesEnum?: string[];
     includes?: string;
     maxLength?: number;
     minLength?: number;

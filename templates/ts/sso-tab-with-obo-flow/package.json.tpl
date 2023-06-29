@@ -7,8 +7,6 @@
   "private": true,
   "dependencies": {
     "@fluentui/react-components": "^9.18.0",
-    "@microsoft/mgt-element": "^2.11.1",
-    "@microsoft/mgt-react": "^2.11.1",
     "@microsoft/teams-js": "^2.12.0",
     "@microsoft/teamsfx": "^2.2.0",
     "@microsoft/teamsfx-react": "^3.0.0",

@@ -46,6 +46,7 @@
   "homepage": "https://github.com/OfficeDev/TeamsFx",
   "sideEffects": false,
   "dependencies": {
+    "@azure/identity": "^2.0.1",
     "@azure/msal-browser": "^2.21.0",
     "@azure/msal-node": "^1.14.6",
     "@microsoft/adaptivecards-tools": "^1.3.1",
@@ -53,7 +54,9 @@
     "axios": "^0.27.2",
     "botbuilder": ">=4.18.0 <5.0.0",
     "botbuilder-dialogs": ">=4.18.0 <5.0.0",
+    "botframework-schema": ">=4.18.0 <5.0.0",
     "jwt-decode": "^3.1.2",
+    "tedious": "^14.3.0",
     "tslib": "^2.3.1",
     "uuid": "^8.3.2"
   },
@@ -61,7 +64,6 @@
     "@microsoft/teams-js": "^2.12.0"
   },
   "devDependencies": {
-    "@azure/identity": "^2.0.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@microsoft/api-documenter": "^7.14.1",
     "@microsoft/api-extractor": "^7.19.4",
@@ -82,7 +84,6 @@
     "adm-zip": "^0.5.9",
     "axios-mock-adapter": "^1.20.0",
     "botbuilder-core": ">=4.18.0 <5.0.0",
-    "botframework-schema": ">=4.18.0 <5.0.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "dotenv": "^10.0.0",
@@ -116,7 +117,6 @@
     "rollup-plugin-typescript2": "^0.30.0",
     "sinon": "^12.0.1",
     "source-map-loader": "^3.0.0",
-    "tedious": "^14.3.0",
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.4",

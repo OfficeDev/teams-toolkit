@@ -42,7 +42,7 @@ class CheckAssignedIssueForAppStudio extends Action {
 	async onTriggered(_: OctoKit) {
 		const issueNumber = process.env.ISSUE_NUMBER;
 		safeLog(`start manually trigger issue ${issueNumber}`);
-		const issue = new OctoKitIssue(githubToken, context.repo, { number: issueNumber });
+		const issue = new OctoKitIssue(githubToken, context.repo, { number: parseInt(issueNumber || "0") });
 		const issueContent = await issue.getIssue();
 		if (issueContent && issueContent.assignee) {
 			await this.onAssigned(issue, issueContent.assignee);

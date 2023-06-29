@@ -9,7 +9,10 @@ export function setOutput(key: string, value: string) {
     fs.appendFileSync(output, `${key}=${value}${os.EOL}`);
 }
 
-export function getEmail(githubUser: string): string {
+export function getEmail(githubUser?: string): string {
+    if (!githubUser) {
+        return "";
+    }
     const res = fs.readFileSync(path.join(__dirname, '../..', '.github', 'accounts.json'));
     const accounts = JSON.parse(res.toString());
     if (accounts[githubUser]) {

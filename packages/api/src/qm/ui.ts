@@ -175,7 +175,7 @@ export interface ExecuteFuncConfig extends UIConfig<string> {
   inputs: Inputs;
 }
 
-export interface singleFileOrInputConfig extends SelectFileConfig {
+export interface SingleFileOrInputConfig extends SelectFileConfig {
   inputOptionItem: OptionItem;
   inputBoxConfig: InputTextConfig;
 }
@@ -337,8 +337,8 @@ export interface UserInteraction {
    * @returns A promise that resolves to the local file path or the value entered by user or FxError
    * @throws FxError
    */
-  singleFileOrInput?(
-    config: singleFileOrInputConfig
+  selectFileOrInput?(
+    config: SingleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>>;
 }
 

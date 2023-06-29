@@ -26,7 +26,7 @@ import {
   SelectFileConfig,
   SelectFileResult,
   SelectFolderConfig,
-  singleFileOrInputConfig,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -498,7 +498,7 @@ describe("UI Unit Tests", async () => {
   describe("Select local file or input", () => {
     it("selects local file successfully", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
-      const config: singleFileOrInputConfig = {
+      const config: SingleFileOrInputConfig = {
         name: "name",
         title: "title",
         placeholder: "placeholder",
@@ -518,7 +518,7 @@ describe("UI Unit Tests", async () => {
         .resolves(ok({ type: "success", result: "file" }));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
-      const result = await ui.singleFileOrInput(config);
+      const result = await ui.selectFileOrInput(config);
 
       expect(result.isOk()).is.true;
       if (result.isOk()) {
@@ -529,7 +529,7 @@ describe("UI Unit Tests", async () => {
 
     it("selects local file error", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
-      const config: singleFileOrInputConfig = {
+      const config: SingleFileOrInputConfig = {
         name: "name",
         title: "title",
         placeholder: "placeholder",
@@ -549,7 +549,7 @@ describe("UI Unit Tests", async () => {
         .resolves(err(new UserError("source", "name", "msg", "msg")));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
-      const result = await ui.singleFileOrInput(config);
+      const result = await ui.selectFileOrInput(config);
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {
@@ -560,7 +560,7 @@ describe("UI Unit Tests", async () => {
 
     it("inputs a value sucessfully", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
-      const config: singleFileOrInputConfig = {
+      const config: SingleFileOrInputConfig = {
         name: "name",
         title: "title",
         placeholder: "placeholder",
@@ -583,7 +583,7 @@ describe("UI Unit Tests", async () => {
         .resolves(ok({ type: "success", result: "testUrl" }));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
-      const result = await ui.singleFileOrInput(config);
+      const result = await ui.selectFileOrInput(config);
 
       expect(result.isOk()).is.true;
       if (result.isOk()) {
@@ -594,7 +594,7 @@ describe("UI Unit Tests", async () => {
 
     it("inputs a value error", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
-      const config: singleFileOrInputConfig = {
+      const config: SingleFileOrInputConfig = {
         name: "name",
         title: "title",
         placeholder: "placeholder",
@@ -617,7 +617,7 @@ describe("UI Unit Tests", async () => {
         .resolves(err(new UserError("source", "name", "msg", "msg")));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
-      const result = await ui.singleFileOrInput(config);
+      const result = await ui.selectFileOrInput(config);
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {

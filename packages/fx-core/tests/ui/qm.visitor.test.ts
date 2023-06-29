@@ -36,7 +36,7 @@ import {
   UserInteraction,
   err,
   ok,
-  singleFileOrInputConfig,
+  SingleFileOrInputConfig,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError, UserCancelError } from "../../src/error/common";
 import { traverse } from "../../src/ui/visitor";
@@ -132,8 +132,8 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
 
-  singleFileOrInput(
-    config: singleFileOrInputConfig
+  selectFileOrInput(
+    config: SingleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>> {
     throw new Error("Method not implemented.");
   }
@@ -714,7 +714,7 @@ describe("Question Model - Visitor Test", () => {
     });
 
     it("single file or input", async () => {
-      sandbox.stub(mockUI, "singleFileOrInput").resolves(ok({ type: "success", result: "file" }));
+      sandbox.stub(mockUI, "selectFileOrInput").resolves(ok({ type: "success", result: "file" }));
       const question: SingleFileOrInputQuestion = {
         type: "singleFileOrText",
         name: "test",
@@ -735,7 +735,7 @@ describe("Question Model - Visitor Test", () => {
     });
 
     it("single file or input with validation", async () => {
-      sandbox.stub(mockUI, "singleFileOrInput").resolves(ok({ type: "success", result: "file" }));
+      sandbox.stub(mockUI, "selectFileOrInput").resolves(ok({ type: "success", result: "file" }));
       const validation: StringValidation = {
         equals: "test",
       };

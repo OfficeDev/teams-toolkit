@@ -524,7 +524,7 @@ export interface Settings {
 export const SettingsFolderName = "teamsfx";
 
 // @public (undocumented)
-export interface singleFileOrInputConfig extends SelectFileConfig {
+export interface SingleFileOrInputConfig extends SelectFileConfig {
     // (undocumented)
     inputBoxConfig: InputTextConfig;
     // (undocumented)
@@ -906,6 +906,7 @@ export interface UserInteraction {
         };
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
+    selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
     selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
     selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult, FxError>>;
@@ -915,7 +916,6 @@ export interface UserInteraction {
         content: string;
         color: Colors;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
-    singleFileOrInput?(config: singleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
 }
 
 // @public

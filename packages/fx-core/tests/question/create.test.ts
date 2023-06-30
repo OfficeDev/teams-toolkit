@@ -67,9 +67,39 @@ describe("scaffold question", () => {
       mockedEnvRestore();
     });
 
-    it("happy path", async () => {
+    it("traverse in vscode sample", async () => {
       const root = createProjectQuestion();
       assert.isDefined(root);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.Scratch) {
+          return ok({ type: "success", result: ScratchOptions.no().id });
+        } else if (question.name === QuestionNames.Samples) {
+          return ok({ type: "success", result: "abc" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(root, inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.Scratch,
+        QuestionNames.Samples,
+        QuestionNames.Folder,
+      ]);
     });
 
     it("traverse in vscode notification bot", async () => {

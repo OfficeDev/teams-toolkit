@@ -216,7 +216,7 @@ export class FxCoreV3Implement {
       return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
     let manifestOutputPath: string = manifestTemplatePath;
-    if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
+    if (inputs.env && (await validateAadManifestContainsPlaceholder(inputs))) {
       await fs.ensureDir(path.join(inputs.projectPath!, "build"));
       manifestOutputPath = path.join(
         inputs.projectPath!,

@@ -1,4 +1,4 @@
-import { BrowserContext, Page, Frame } from "playwright";
+import { BrowserContext, Page, chromium, Frame } from "playwright";
 import { assert } from "chai";
 import { Timeout, ValidationContent } from "./constants";
 import { RetryHandler } from "./utils/retryHandler";
@@ -94,7 +94,7 @@ export async function initPage(
               })
               .catch(() => popup)
           )
-          .catch(() => { }),
+          .catch(() => {}),
         addBtn?.click(),
       ]);
       console.log("after popup");
@@ -323,7 +323,7 @@ export async function validateOneProducitvity(page: Page, displayName: string) {
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -344,7 +344,7 @@ export async function validateOneProducitvity(page: Page, displayName: string) {
                 })
                 .catch(() => popup)
             )
-            .catch(() => { }),
+            .catch(() => {}),
           startBtn?.click(),
         ]);
         console.log("after popup");
@@ -354,7 +354,7 @@ export async function validateOneProducitvity(page: Page, displayName: string) {
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
-            .catch(() => { });
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         await frame?.waitForSelector(`div:has-text("${displayName}")`);
@@ -402,7 +402,7 @@ export async function validateTab(
               })
               .catch(() => popup)
           )
-          .catch(() => { }),
+          .catch(() => {}),
         frame?.click('button:has-text("Authorize")', {
           timeout: Timeout.playwrightAddAppButton,
           force: true,
@@ -418,7 +418,7 @@ export async function validateTab(
           .click('button:has-text("Reload")', {
             timeout: Timeout.playwrightConsentPageReload,
           })
-          .catch(() => { });
+          .catch(() => {});
         await popup.click("input.button[type='submit'][value='Accept']");
       }
 
@@ -473,7 +473,7 @@ export async function validateReactTab(
                 })
                 .catch(() => popup)
             )
-            .catch(() => { }),
+            .catch(() => {}),
           frame?.click('button:has-text("Call Azure Function")', {
             timeout: Timeout.playwrightAddAppButton,
             force: true,
@@ -489,7 +489,7 @@ export async function validateReactTab(
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
-            .catch(() => { });
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
       });
@@ -538,7 +538,7 @@ export async function validateReactOutlookTab(
                 })
                 .catch(() => popup)
             )
-            .catch(() => { }),
+            .catch(() => {}),
           frame?.click('button:has-text("Call Azure Function")', {
             timeout: Timeout.playwrightAddAppButton,
             force: true,
@@ -554,7 +554,7 @@ export async function validateReactOutlookTab(
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
-            .catch(() => { });
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
       });
@@ -745,7 +745,7 @@ export async function validateBot(
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -775,13 +775,13 @@ export async function validateBot(
               })
               .catch(() => popup)
           )
-          .catch(() => { });
+          .catch(() => {});
         if (popup && !popup?.isClosed()) {
           await popup
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
-            .catch(() => { });
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         await RetryHandler.retry(async () => {
@@ -823,7 +823,7 @@ export async function validateNpm(page: Page, npmName: string) {
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -863,7 +863,7 @@ export async function validateDeeplinking(page: Page, displayName: string) {
         ?.click('div:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -1003,7 +1003,7 @@ export async function validateQueryOrg(page: Page, displayName: string) {
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -1067,7 +1067,7 @@ export async function validateShareNow(page: Page) {
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -1142,7 +1142,7 @@ export async function validateWorkFlowBot(page: Page) {
       ?.click('button:has-text("DoStuff")', {
         timeout: Timeout.playwrightDefaultTimeout,
       })
-      .catch(() => { });
+      .catch(() => {});
     await frame?.waitForSelector(`p:has-text("[ACK] Hello World Bot")`);
   } catch (error) {
     await page.screenshot({
@@ -1167,7 +1167,7 @@ export async function validateNotificationBot(
       .click('button:has-text("Dismiss")', {
         timeout: Timeout.playwrightDefaultTimeout,
       })
-      .catch(() => { });
+      .catch(() => {});
     await RetryHandler.retry(async () => {
       try {
         const result = await axios.post(notificationEndpoint);
@@ -1209,7 +1209,7 @@ export async function validateStockUpdate(page: Page) {
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -1248,7 +1248,7 @@ export async function validateTodoList(page: Page, displayName: string) {
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -1271,7 +1271,7 @@ export async function validateTodoList(page: Page, displayName: string) {
                 })
                 .catch(() => popup)
             )
-            .catch(() => { }),
+            .catch(() => {}),
           startBtn?.click(),
         ]);
         console.log("after popup");
@@ -1281,7 +1281,7 @@ export async function validateTodoList(page: Page, displayName: string) {
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
-            .catch(() => { });
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         const addBtn = await frame?.waitForSelector(
@@ -1323,7 +1323,7 @@ export async function validateProactiveMessaging(page: Page): Promise<void> {
       .click('button:has-text("Dismiss")', {
         timeout: Timeout.playwrightDefaultTimeout,
       })
-      .catch(() => { });
+      .catch(() => {});
   } catch (error) {
     console.log("no message to dismiss");
   }
@@ -1419,7 +1419,7 @@ export async function validateContact(page: Page, displayName: string) {
         .click('button:has-text("Dismiss")', {
           timeout: Timeout.playwrightDefaultTimeout,
         })
-        .catch(() => { });
+        .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
     }
@@ -1437,7 +1437,7 @@ export async function validateContact(page: Page, displayName: string) {
                 })
                 .catch(() => popup)
             )
-            .catch(() => { }),
+            .catch(() => {}),
           startBtn?.click(),
         ]);
         console.log("after popup");
@@ -1447,7 +1447,7 @@ export async function validateContact(page: Page, displayName: string) {
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
-            .catch(() => { });
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
@@ -1468,7 +1468,7 @@ export async function validateContact(page: Page, displayName: string) {
       throw e;
     }
 
-    await RetryHandler.retry(async () => { }, 2);
+    await RetryHandler.retry(async () => {}, 2);
 
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
@@ -1502,7 +1502,7 @@ export async function validateGraphConnector(page: Page, displayName: string) {
                 })
                 .catch(() => popup)
             )
-            .catch(() => { }),
+            .catch(() => {}),
           startBtn?.click(),
         ]);
         console.log("after popup");
@@ -1512,7 +1512,7 @@ export async function validateGraphConnector(page: Page, displayName: string) {
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
-            .catch(() => { });
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
@@ -1644,7 +1644,7 @@ export async function validateAdaptiveCard(
       .click('button:has-text("Dismiss")', {
         timeout: Timeout.playwrightDefaultTimeout,
       })
-      .catch(() => { });
+      .catch(() => {});
     await RetryHandler.retry(async () => {
       try {
         // send post request to bot

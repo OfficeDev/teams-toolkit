@@ -772,7 +772,7 @@ function SPFxImportFolderQuestion(): FolderQuestion {
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
   };
 }
-const getTemplate = (inputs: Inputs): string => {
+export const getTemplate = (inputs: Inputs): string => {
   const capabilities: string[] = inputs["capabilities"];
   const templates: string[] = officeAddinJsonData.getProjectTemplateNames();
 

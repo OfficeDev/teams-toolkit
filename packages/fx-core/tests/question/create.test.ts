@@ -13,6 +13,7 @@ import {
   ScratchOptions,
   createProjectQuestion,
   getLanguageOptions,
+  getTemplate,
 } from "../../src/question/create";
 import {
   Inputs,
@@ -592,6 +593,16 @@ describe("scaffold question", () => {
         [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       });
       assert.isTrue(options.length === 2);
+    });
+  });
+  describe("getTemplate", () => {
+    it("should find taskpane template", () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+      };
+      inputs["capabilities"] = ["taskpane"];
+      const template = getTemplate(inputs);
+      chai.expect(template).to.eq("taskpane");
     });
   });
 });

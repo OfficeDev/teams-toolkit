@@ -882,31 +882,26 @@ async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> 
   }
   envNode.data.name = "env";
   aadAppSelectNode.addChild(envNode);
-  envNode.condition = {
-    validFunc: validateAadManifestContainsPlaceholder,
-  };
+  envNode.condition = validateAadManifestContainsPlaceholder;
   return aadAppSelectNode;
 }
 
-export async function validateAadManifestContainsPlaceholder(
-  input: any,
-  inputs?: Inputs
-): Promise<string | undefined> {
+export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Promise<boolean> {
   const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
   const placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
   const regexObj = new RegExp(placeholderRegex);
   try {
     if (!aadManifestPath || !(await fs.pathExists(aadManifestPath))) {
-      return "Skip Current Question";
+      return false;
     }
     const manifest = await fs.readFile(aadManifestPath, ConstantString.UTF8Encoding);
     if (regexObj.test(manifest)) {
-      return undefined;
+      return true;
     }
   } catch (e) {
-    return "Skip Current Question";
+    return false;
   }
-  return "Skip Current Question";
+  return false;
 }
 
 export function selectM365HostQuestion(): QTreeNode {

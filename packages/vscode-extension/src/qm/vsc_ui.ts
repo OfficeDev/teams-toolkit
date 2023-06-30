@@ -177,6 +177,7 @@ export class VsCodeUI implements UserInteraction {
         async (resolve): Promise<void> => {
           // set items
           let options: StaticOptions = [];
+          let isSkip = false;
           if (typeof option.options === "function") {
             quickPick.busy = true;
             quickPick.placeholder = loadingOptionsPlaceholder();
@@ -189,6 +190,7 @@ export class VsCodeUI implements UserInteraction {
                 quickPick.placeholder = option.placeholder;
                 if (option.skipSingleOption && options.length === 1) {
                   quickPick.selectedItems = [quickPick.items[0]];
+                  isSkip = true;
                   onDidAccept();
                 }
               })
@@ -241,7 +243,7 @@ export class VsCodeUI implements UserInteraction {
                   }
                 }
               } else result = getOptionItem(item);
-              resolve(ok({ type: "success", result: result }));
+              resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
             }
           };
 
@@ -301,7 +303,7 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    if (option.options.length === 0) {
+    if (typeof option.options === "object" && option.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,
@@ -330,6 +332,7 @@ export class VsCodeUI implements UserInteraction {
         async (resolve): Promise<void> => {
           // set items
           let options: StaticOptions = [];
+          let isSkip = false;
           if (typeof option.options === "function") {
             quickPick.busy = true;
             quickPick.placeholder = loadingOptionsPlaceholder();
@@ -342,6 +345,7 @@ export class VsCodeUI implements UserInteraction {
                 quickPick.placeholder = option.placeholder;
                 if (option.skipSingleOption && options.length === 1) {
                   quickPick.selectedItems = [quickPick.items[0]];
+                  isSkip = true;
                   onDidAccept();
                 }
               })
@@ -388,7 +392,7 @@ export class VsCodeUI implements UserInteraction {
             )
               result = strArray;
             else result = quickPick.selectedItems.map((i) => getOptionItem(i));
-            resolve(ok({ type: "success", result: result }));
+            resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
           };
 
           disposables.push(

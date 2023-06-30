@@ -90,6 +90,7 @@ import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./que
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { listCollaborator, checkPermission, grantPermission } from "./collaborator";
+import { getQuestionsForCreateProjectNew } from "../question/create";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -125,12 +126,8 @@ export class FxCoreV3Implement {
     return await method.call(this, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForCreateProjectV2), ContextInjectorMW])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    inputs.stage = Stage.create;
+  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForCreateProjectNew)])
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     const context = createContextV3();
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.

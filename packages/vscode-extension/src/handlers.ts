@@ -690,6 +690,7 @@ export async function runCommand(
         if (!isImportSPFxEnabled()) {
           inputs["spfx-solution"] = "new";
         }
+        inputs["scratch"] = "yes";
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);

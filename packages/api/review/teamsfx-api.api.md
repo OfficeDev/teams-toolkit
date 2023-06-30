@@ -313,6 +313,18 @@ export interface IProgressHandler {
 }
 
 // @public (undocumented)
+export interface IQTreeNode {
+    // (undocumented)
+    children?: IQTreeNode[];
+    // (undocumented)
+    condition?: ValidationSchema & {
+        target?: string;
+    };
+    // (undocumented)
+    data: Question | Group;
+}
+
+// @public (undocumented)
 export const LocalEnvironmentName = "local";
 
 // @public
@@ -461,7 +473,7 @@ export enum Platform {
 export const ProductName = "teamsfx";
 
 // @public
-export class QTreeNode {
+export class QTreeNode implements IQTreeNode {
     constructor(data: Question | Group);
     // (undocumented)
     addChild(node: QTreeNode): QTreeNode;

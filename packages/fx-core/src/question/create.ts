@@ -594,7 +594,7 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     default: "new",
   };
 }
-function SPFxPackageSelectQuestion(): SingleSelectQuestion {
+export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxInstallPackage,
@@ -635,7 +635,7 @@ function SPFxFrameworkQuestion(): SingleSelectQuestion {
   };
 }
 
-function SPFxWebpartNameQuestion(): TextInputQuestion {
+export function SPFxWebpartNameQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.SPFxWebpartName,

@@ -113,38 +113,34 @@ export const getTemplate = (inputs: Inputs): string => {
 
 export const getQuestionsForScaffolding = (): QTreeNode => {
   const importNode = new QTreeNode({ type: "group" });
-  importNode.condition = {
-    validFunc: (input: unknown, inputs?: Inputs) => {
-      if (!inputs) {
-        return "Invalid inputs";
-      }
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-      if (cap === ImportAddinProjectItem().id) {
-        return undefined;
-      }
-      return "Office Addin is not selected";
-    },
+  importNode.condition = (inputs: Inputs) => {
+    if (!inputs) {
+      return false;
+    }
+    const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+    if (cap === ImportAddinProjectItem().id) {
+      return true;
+    }
+    return false;
   };
   importNode.addChild(new QTreeNode(AddinProjectFolderQuestion));
   importNode.addChild(new QTreeNode(AddinProjectManifestQuestion));
 
   const templateNode = new QTreeNode({ type: "group" });
-  templateNode.condition = {
-    validFunc: (input: unknown, inputs?: Inputs) => {
-      if (!inputs) {
-        return "Invalid inputs";
-      }
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-      const addinOptionIds: string[] = [
-        ...OfficeAddinItems().map((item) => {
-          return item.id;
-        }),
-      ];
-      if (addinOptionIds.includes(cap)) {
-        return undefined;
-      }
-      return "Office Addin is not selected";
-    },
+  templateNode.condition = (inputs: Inputs) => {
+    if (!inputs) {
+      return false;
+    }
+    const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+    const addinOptionIds: string[] = [
+      ...OfficeAddinItems().map((item) => {
+        return item.id;
+      }),
+    ];
+    if (addinOptionIds.includes(cap)) {
+      return true;
+    }
+    return false;
   };
   templateNode.addChild(new QTreeNode(AddinLanguageQuestion));
   templateNode.addChild(new QTreeNode(OfficeHostQuestion));

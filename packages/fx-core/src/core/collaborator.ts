@@ -722,21 +722,16 @@ async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> 
     return root;
   }
   envNode.data.name = "env";
-  envNode.condition = {
-    validFunc: validateEnvQuestion,
-  };
+  envNode.condition = validateEnvQuestion;
   teamsAppSelectNode.addChild(envNode);
   aadAppSelectNode.addChild(envNode);
 
   return root;
 }
 
-export async function validateEnvQuestion(
-  input: any,
-  inputs?: Inputs
-): Promise<string | undefined> {
+export async function validateEnvQuestion(inputs: Inputs): Promise<boolean> {
   if (inputs?.env || inputs?.targetEnvName) {
-    return "Env already selected";
+    return false;
   }
 
   const appType = inputs?.[CollaborationConstants.AppType] as string[];
@@ -747,7 +742,7 @@ export async function validateEnvQuestion(
 
   // When both is selected, only show the question once at the end
   if ((requireAad && !aadManifestPath) || (requireTeams && !teamsManifestPath)) {
-    return "Question not finished";
+    return false;
   }
 
   // Only show env question when manifest id is referencing value from .env file
@@ -757,10 +752,10 @@ export async function validateEnvQuestion(
     if (teamsAppIdRes.isOk()) {
       requireEnv = CollaborationUtil.requireEnvQuestion(teamsAppIdRes.value);
       if (requireEnv) {
-        return undefined;
+        return true;
       }
     } else {
-      return "Invalid manifest";
+      return false;
     }
   }
 
@@ -769,12 +764,12 @@ export async function validateEnvQuestion(
     if (aadAppIdRes.isOk()) {
       requireEnv = CollaborationUtil.requireEnvQuestion(aadAppIdRes.value);
       if (requireEnv) {
-        return undefined;
+        return true;
       }
     } else {
-      return "Invalid manifest";
+      return false;
     }
   }
 
-  return "Env question not required";
+  return false;
 }

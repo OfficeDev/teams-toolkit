@@ -101,6 +101,9 @@ export enum Colors {
 }
 
 // @public (undocumented)
+export type ConditionFunc = (inputs: Inputs) => boolean | Promise<boolean>;
+
+// @public (undocumented)
 export const ConfigFolderName = "fx";
 
 // @public (undocumented)
@@ -317,9 +320,7 @@ export interface IQTreeNode {
     // (undocumented)
     children?: IQTreeNode[];
     // (undocumented)
-    condition?: ValidationSchema & {
-        target?: string;
-    };
+    condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
 }
@@ -480,9 +481,7 @@ export class QTreeNode implements IQTreeNode {
     // (undocumented)
     children?: QTreeNode[];
     // (undocumented)
-    condition?: ValidationSchema & {
-        target?: string;
-    };
+    condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
     trim(): QTreeNode | undefined;
@@ -931,7 +930,7 @@ export interface UserInteraction {
 }
 
 // @public
-export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
+export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema | ConditionFunc, value: T, inputs?: Inputs): Promise<string | undefined>;
 
 // @public (undocumented)
 export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;

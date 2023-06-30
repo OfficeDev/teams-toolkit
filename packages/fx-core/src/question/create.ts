@@ -1145,13 +1145,8 @@ export function createProjectQuestion(): IQTreeNode {
         data: { type: "group" },
         children: [
           {
-            condition: {
-              // only show for CLI with isCLIDotNetEnabled
-              validFunc: (preInput: string, inputs?: Inputs) => {
-                if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs!.platform))
-                  return undefined;
-                return "not supported";
-              },
+            condition: (inputs: Inputs) => {
+              return isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform);
             },
             data: runtimeQuestion(),
           },
@@ -1236,62 +1231,48 @@ export function createProjectQuestion(): IQTreeNode {
                 ],
               },
               {
-                condition: {
-                  validFunc: (preInput: string, inputs?: Inputs) => {
-                    const appDef = inputs!.teamsAppFromTdp as AppDefinition;
-                    if (appDef && isPersonalApp(appDef)) {
-                      return undefined;
-                    }
-                    return "not needed";
-                  },
+                condition: (inputs: Inputs) => {
+                  const appDef = inputs.teamsAppFromTdp as AppDefinition;
+                  return appDef && isPersonalApp(appDef);
                 },
                 data: { type: "group" },
                 children: [
                   {
-                    condition: {
-                      validFunc: (preInput: string, inputs?: Inputs) => {
-                        const appDefinition = inputs!.teamsAppFromTdp as AppDefinition;
-                        if (appDefinition?.staticTabs) {
-                          const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
-                            (o) => !!o.websiteUrl
-                          );
-                          if (tabsWithWebsiteUrls.length > 0) {
-                            return undefined;
-                          }
+                    condition: (inputs: Inputs) => {
+                      const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
+                      if (appDefinition?.staticTabs) {
+                        const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
+                          (o) => !!o.websiteUrl
+                        );
+                        if (tabsWithWebsiteUrls.length > 0) {
+                          return true;
                         }
-                        return "not supported";
-                      },
+                      }
+                      return false;
                     },
                     data: selectTabWebsiteUrlQuestion(),
                   },
                   {
-                    condition: {
-                      validFunc: (preInput: string, inputs?: Inputs) => {
-                        const appDefinition = inputs!.teamsAppFromTdp as AppDefinition;
-                        if (appDefinition?.staticTabs) {
-                          const tabsWithContentUrls = appDefinition.staticTabs.filter(
-                            (o) => !!o.contentUrl
-                          );
-                          if (tabsWithContentUrls.length > 0) {
-                            return undefined;
-                          }
+                    condition: (inputs: Inputs) => {
+                      const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
+                      if (appDefinition?.staticTabs) {
+                        const tabsWithContentUrls = appDefinition.staticTabs.filter(
+                          (o) => !!o.contentUrl
+                        );
+                        if (tabsWithContentUrls.length > 0) {
+                          return true;
                         }
-                        return "not supported";
-                      },
+                      }
+                      return false;
                     },
                     data: selectTabsContentUrlQuestion(),
                   },
                 ],
               },
               {
-                condition: {
-                  validFunc: (preInput: string, inputs?: Inputs) => {
-                    const appDef = inputs!.teamsAppFromTdp as AppDefinition;
-                    if (appDef && needBotCode(appDef)) {
-                      return undefined;
-                    }
-                    return "not needed";
-                  },
+                condition: (inputs: Inputs) => {
+                  const appDef = inputs.teamsAppFromTdp as AppDefinition;
+                  return appDef && needBotCode(appDef);
                 },
                 data: selectBotIdsQuestion(),
               },

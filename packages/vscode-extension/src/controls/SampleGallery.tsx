@@ -3,6 +3,7 @@ import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
+import { SampleCardProps, SampleCollection, SampleInfo, SampleListProps } from "./ISamples";
 import InMeetingApp from "../../img/webview/sample/in-meeting-app.png";
 import ShareNow from "../../img/webview/sample/share-now.gif";
 import ToDoList from "../../img/webview/sample/to-do-list.gif";

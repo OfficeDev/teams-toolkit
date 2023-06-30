@@ -54,6 +54,7 @@ export class TeamsFxTelemetryReporter {
           [TelemetryConstants.properties.errorCode]: errorCode,
           [TelemetryConstants.properties.errorType]: errorType,
           [TelemetryConstants.properties.errorMessage]: error.message,
+          [TelemetryConstants.properties.errorStack]: error.stack !== undefined ? error.stack : "",
           ...actualConfig.properties,
         };
 

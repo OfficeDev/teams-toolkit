@@ -1,4 +1,4 @@
-interface SampleInfo {
+export interface SampleInfo {
   id: string;
   title: string;
   shortDescription: string;
@@ -12,21 +12,21 @@ interface SampleInfo {
   relativePath?: string;
 }
 
-interface SampleCollection {
+export interface SampleCollection {
   samples: SampleInfo[];
 }
 
-type SampleCardProps = SampleDetailProps & {
+export type SampleCardProps = SampleDetailProps & {
   suggested: boolean;
   order: number;
 };
 
-type SampleListProps = {
+export type SampleListProps = {
   samples: Array<SampleInfo>;
   highlightSample: (id: string) => void;
 };
 
-type SampleDetailProps = {
+export type SampleDetailProps = {
   url: string;
   image: any;
   tags: string[];

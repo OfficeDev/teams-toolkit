@@ -22,7 +22,7 @@ ReactDOM.render(
   document.getElementById("root") as HTMLElement
 );
 
-export default function App(props: any) {
+function App(props: any) {
   // Initializing the office-ui-fabric-icons here to avoid multiple initializations in every component.
   initializeIcons();
 

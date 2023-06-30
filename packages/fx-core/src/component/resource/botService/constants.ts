@@ -4,12 +4,8 @@
 import { APP_STUDIO_API_NAMES } from "../../driver/teamsApp/constants";
 
 /**
- * @author zhijie <zhihuan@microsoft.com>
+ * @author Qianhao Dong <qidon@microsoft.com>
  */
-export class RegularExprs {
-  public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z\d]/g;
-}
-
 export class Retry {
   public static readonly RETRY_TIMES = 6;
   public static readonly BACKOFF_TIME_MS = 5000;
@@ -32,20 +28,6 @@ export class ErrorNames {
   public static readonly ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR = "AcquireBotFrameworkTokenError";
   public static readonly FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR = "ForbiddenResultBotFrameworkError";
   public static readonly CONFLICT_RESULT_BOT_FRAMEWORK_ERROR = "ConflictResultBotFrameworkError";
-}
-
-export class Links {
-  public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
-  public static readonly HELP_LINK = "https://aka.ms/teamsfx-bot-help";
-}
-
-export class Alias {
-  public static readonly TEAMS_BOT_PLUGIN = "BT";
-  public static readonly BICEP_MODULE = "bot";
-}
-
-export class MaxLengths {
-  public static readonly AAD_DISPLAY_NAME = 120;
 }
 
 export class TelemetryKeys {

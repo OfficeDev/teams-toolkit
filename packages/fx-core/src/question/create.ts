@@ -30,7 +30,6 @@ import * as path from "path";
 import fs from "fs-extra";
 import * as os from "os";
 import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
-import { getTemplate } from "../component/generator/officeAddin/question";
 import { ConstantString } from "../common/constants";
 import { convertToAlphanumericOnly } from "../common/utils";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
@@ -122,7 +121,7 @@ export class ProjectTypeOptions {
   }
 }
 
-export function scratchOrSampleQuestion(): SingleSelectQuestion {
+function scratchOrSampleQuestion(): SingleSelectQuestion {
   const staticOptions: OptionItem[] = ScratchOptions.all();
   return {
     type: "singleSelect",
@@ -136,7 +135,7 @@ export function scratchOrSampleQuestion(): SingleSelectQuestion {
   };
 }
 
-export function projectTypeQuestion(): SingleSelectQuestion {
+function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     ProjectTypeOptions.bot(),
     ProjectTypeOptions.tab(),
@@ -407,7 +406,7 @@ export class CapabilityOptions {
   }
 }
 
-export function capabilityQuestion(): SingleSelectQuestion {
+function capabilityQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.Capabilities,
     title: getLocalizedString("core.createProjectQuestion.projectType.bot.title"),
@@ -454,12 +453,12 @@ enum HostType {
   Functions = "azure-functions",
 }
 
-export const NotificationTriggers = {
+const NotificationTriggers = {
   HTTP: "http",
   TIMER: "timer",
 } as const;
 
-export type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
+type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
 
 interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
@@ -555,7 +554,7 @@ function getRuntime(inputs: Inputs): Runtime {
   return runtime;
 }
 
-export function botTriggerQuestion(): SingleSelectQuestion {
+function botTriggerQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.BotTrigger,
     title: getLocalizedString("plugins.bot.questionHostTypeTrigger.title"),
@@ -580,7 +579,7 @@ export function botTriggerQuestion(): SingleSelectQuestion {
   };
 }
 
-export function SPFxSolutionQuestion(): SingleSelectQuestion {
+function SPFxSolutionQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxSolution,
@@ -595,7 +594,7 @@ export function SPFxSolutionQuestion(): SingleSelectQuestion {
     default: "new",
   };
 }
-export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
+function SPFxPackageSelectQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxInstallPackage,
@@ -621,7 +620,7 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
   };
 }
 
-export function SPFxFrameworkQuestion(): SingleSelectQuestion {
+function SPFxFrameworkQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxFramework,
@@ -636,7 +635,7 @@ export function SPFxFrameworkQuestion(): SingleSelectQuestion {
   };
 }
 
-export function SPFxWebpartNameQuestion(): TextInputQuestion {
+function SPFxWebpartNameQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.SPFxWebpartName,
@@ -765,7 +764,7 @@ export class PackageSelectOptionsHelper {
     return semver.lte(installedVersion, recommendedLowestVersion);
   }
 }
-export function SPFxImportFolderQuestion(): FolderQuestion {
+function SPFxImportFolderQuestion(): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.SPFxFolder,
@@ -773,7 +772,16 @@ export function SPFxImportFolderQuestion(): FolderQuestion {
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
   };
 }
+const getTemplate = (inputs: Inputs): string => {
+  const capabilities: string[] = inputs["capabilities"];
+  const templates: string[] = officeAddinJsonData.getProjectTemplateNames();
 
+  const foundTemplate = templates.find((template) => {
+    return capabilities.includes(template);
+  });
+
+  return foundTemplate ?? "";
+};
 function officeAddinHostingQuestion(): SingleSelectQuestion {
   const OfficeHostQuestion: SingleSelectQuestion = {
     type: "singleSelect",
@@ -866,7 +874,7 @@ function programmingLanguageQuestion(): SingleSelectQuestion {
   return programmingLanguageQuestion;
 }
 
-export function rootFolderQuestion(): FolderQuestion {
+function rootFolderQuestion(): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.Folder,
@@ -879,7 +887,7 @@ export function rootFolderQuestion(): FolderQuestion {
 export const AppNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
-export function appNameQuestion(): TextInputQuestion {
+function appNameQuestion(): TextInputQuestion {
   const question: TextInputQuestion = {
     type: "text",
     name: QuestionNames.AppName,
@@ -1056,7 +1064,7 @@ function getTabContentUrlOptions(inputs: Inputs): OptionItem[] {
   return [];
 }
 
-export const selectTabsContentUrlQuestion = (): MultiSelectQuestion => {
+const selectTabsContentUrlQuestion = (): MultiSelectQuestion => {
   return {
     type: "multiSelect",
     name: QuestionNames.ReplaceContentUrl,
@@ -1071,8 +1079,8 @@ export const selectTabsContentUrlQuestion = (): MultiSelectQuestion => {
     forgetLastValue: true,
   };
 };
-export const answerToRepaceBotId = "bot";
-export const answerToReplaceMessageExtensionBotId = "messageExtension";
+const answerToRepaceBotId = "bot";
+const answerToReplaceMessageExtensionBotId = "messageExtension";
 const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
   return {
     id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,

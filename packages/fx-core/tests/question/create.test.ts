@@ -548,8 +548,8 @@ describe("scaffold question", () => {
   describe("getLanguageOptions", () => {
     it("dotnet", async () => {
       const options = getLanguageOptions({
-        platform: Platform.VSCode,
-        runtime: "dotnet",
+        platform: Platform.CLI,
+        runtime: Runtime.dotnet,
       });
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });

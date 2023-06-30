@@ -60,7 +60,7 @@ async function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown>
   return raw;
 }
 
-type QuestionTreeVisitor = (
+export type QuestionTreeVisitor = (
   question: Question,
   ui: UserInteraction,
   inputs: Inputs,

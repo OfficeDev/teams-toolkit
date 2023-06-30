@@ -15,6 +15,7 @@ import {
 } from "../../src/component/question";
 import { getQuestionsForCreateProjectV2 } from "../../src/core/middleware/questionModel";
 import { FeatureFlagName } from "../../src/common/constants";
+import * as path from "path";
 describe("question", () => {
   let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();
@@ -41,7 +42,7 @@ describe("question", () => {
 
     const res = (spfxFolderQuestion() as any).default({ projectPath: projectDir });
 
-    assert.equal(res, "\\test/src");
+    assert.equal(path.resolve(res), path.resolve("\\test/src"));
   });
 
   it("validate manifest question", async () => {

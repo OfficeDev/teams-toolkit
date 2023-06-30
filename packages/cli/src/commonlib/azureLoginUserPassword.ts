@@ -4,14 +4,14 @@
 "use strict";
 
 import { Subscription, SubscriptionClient, TenantIdDescription } from "@azure/arm-subscriptions";
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import * as identity from "@azure/identity";
 import dotenv from "dotenv";
 
 import { AzureAccountProvider, SubscriptionInfo, UserError } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
-import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core";
 
 dotenv.config();
 

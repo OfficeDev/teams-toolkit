@@ -1,0 +1,51 @@
+name: Issue-milestoned
+
+on: 
+  issues:
+    types: [milestoned]
+  workflow_dispatch: # allows to run manually for testing
+    inputs:
+      issueNumber:
+        description: 'specific issue number to test issue-milestoned action'
+        required: true  
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout github action repository
+        uses: actions/checkout@v3
+        with:
+         repository: "microsoft/vscode-github-triage-actions"
+         ref: stable 
+         path: ./action-base
+      
+      - name: Copy action
+        run: |
+          cp -r .github/actions/issue-milestoned ./action-base/issue-milestoned
+          cp -r .github/actions/teamsfx-utils ./action-base/teamsfx-utils
+
+      - name: Npm install dependencies
+        run: npm install azure-devops-node-api --prefix ./action-base
+      - name: Npm install
+        run: npm install --production --prefix ./action-base
+      - name: Build action
+        continue-on-error: true
+        run: npm run build --prefix ./action-base
+      
+      - name: Create AZDO Item 
+        uses: ./action-base/issue-milestoned
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+          milestone-prefix: "CY"
+          devops-token: ${{secrets.ADO_PAT}}
+          devops-org: "msazure"
+          devops-projectId: "Microsoft Teams Extensibility"
+          title-prefix: "[Github]"
+          bug-label: "bug"
+          bug-area-path: "Microsoft Teams Extensibility"
+          bug-iteration-path: "Microsoft Teams Extensibility"
+        env:
+          ISSUE_NUMBER: ${{github.event.inputs.issueNumber}}

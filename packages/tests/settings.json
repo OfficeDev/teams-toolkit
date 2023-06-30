@@ -1,0 +1,8 @@
+{
+    "files.simpleDialog.enable": true,
+    "window.dialogStyle": "custom",
+    "telemetry.enableTelemetry": false,
+    "extensions.autoUpdate": false,
+    "security.workspace.trust.enabled": false,
+    "fx-extension.prerequisiteCheck.devCert": false
+}

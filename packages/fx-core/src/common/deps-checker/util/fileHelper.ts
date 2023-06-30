@@ -2,7 +2,7 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 import * as fs from "fs-extra";
-import { defaultHelpLink } from "../constant/helpLink";
+import { v3DefaultHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
 import { DepsCheckerError } from "../depsError";
 
@@ -24,7 +24,7 @@ export async function createSymlink(target: string, linkFilePath: string): Promi
   await unlinkSymlink(linkFilePath);
   // check if destination already exists
   if (await fs.pathExists(linkFilePath)) {
-    throw new DepsCheckerError(Messages.symlinkDirAlreadyExist(), defaultHelpLink);
+    throw new DepsCheckerError(Messages.symlinkDirAlreadyExist(), v3DefaultHelpLink);
   }
 
   return await fs.ensureSymlink(

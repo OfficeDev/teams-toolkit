@@ -1,23 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import "mocha";
+import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
-
 import { registerCommands } from "../../../src/cmds/index";
 import { expect } from "../utils";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Register Commands Tests", function () {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
-  let restoreFn: RestoreFn = () => {};
+  const restoreFn: RestoreFn = () => {};
 
   before(() => {
     sandbox
       .stub<any, any>(yargs, "command")
-      .callsFake((command: string, description: string, builder: any, handler: any) => {
+      .callsFake((command: any, description: any, builder: any, handler: any) => {
         registeredCommands.push(command.split(" ")[0]);
       });
     sandbox.stub(yargs, "options").returns(yargs);
@@ -37,16 +36,9 @@ describe("Register Commands Tests", function () {
   });
 
   it("Register Commands Check V3", () => {
-    restoreFn = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     registerCommands(yargs);
     expect(registeredCommands).includes("account");
     expect(registeredCommands).includes("new");
-    if (!isPreviewFeaturesEnabled()) {
-      expect(registeredCommands).includes("capability");
-      expect(registeredCommands).includes("resource");
-    }
     expect(registeredCommands).includes("provision");
     expect(registeredCommands).includes("deploy");
     expect(registeredCommands).includes("package");
@@ -63,10 +55,6 @@ describe("Register Commands Tests", function () {
     registerCommands(yargs);
     expect(registeredCommands).includes("account");
     expect(registeredCommands).includes("new");
-    if (!isPreviewFeaturesEnabled()) {
-      expect(registeredCommands).includes("capability");
-      expect(registeredCommands).includes("resource");
-    }
     expect(registeredCommands).includes("provision");
     expect(registeredCommands).includes("deploy");
     expect(registeredCommands).includes("package");

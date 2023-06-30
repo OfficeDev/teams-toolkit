@@ -38,27 +38,21 @@ import {
   errorNames,
 } from "../../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
-import {
-  Metadata,
-  MetadataV2,
-  MetadataV3,
-  VersionSource,
-  VersionState,
-} from "../../../../src/common/versionMetadata";
+import { NotAllowedMigrationError } from "../../../../src/core/error";
+import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
 import {
   buildEnvUserFileName,
-  getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
   outputCancelMessage,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
-import { getProjectSettingPathV3 } from "../../../../src/core/middleware/projectSettingsLoader";
+import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
+import { getProjectSettingsPath } from "../../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import { settingsUtil } from "../../../../src/component/utils/settingsUtil";
 import {
   copyTestProject,
   mockMigrationContext,
@@ -68,9 +62,11 @@ import {
   readEnvUserFile,
   Constants,
   getManifestPathV2,
+  loadExpectedYmlFile,
+  getYmlTemplates,
 } from "./utils";
 import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";
@@ -577,11 +573,12 @@ describe("manifestsMigration valid domain", () => {
     assert.equal(manifest, manifestExpeceted);
   });
 
-  it("manifest without validDomain", async () => {
+  it("manifest without validDomain and bicep has output key validDomain", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     // Stub
     sandbox.stub(migrationContext, "backup").resolves(true);
+    sandbox.stub(v3MigrationUtils, "isValidDomainForBotOutputKey").resolves(true);
     await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
     const oldManifestPath = getManifestPathV2(projectPath);
     const readRes = await manifestUtils._readAppManifest(oldManifestPath);
@@ -607,7 +604,11 @@ describe("manifestsMigration valid domain", () => {
     )
       .replace(/\s/g, "")
       .replace(/\t/g, "")
-      .replace(/\n/g, "");
+      .replace(/\n/g, "")
+      .replace(
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__VALIDDOMAIN"
+      );
     assert.equal(manifest, manifestExpeceted);
   });
 
@@ -1105,6 +1106,9 @@ describe("Migration utils", () => {
   it("checkVersionForMigration V3", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: "1.0.0" }));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
     const state = await checkVersionForMigration(migrationContext);
@@ -1115,7 +1119,7 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(loader, "getProjectSettingPathV2").returns("");
-    sandbox.stub(loader, "getProjectSettingPathV3").returns("");
+    sandbox.stub(loader, "getProjectSettingsPath").returns("");
     sandbox.stub(fs, "pathExists").callsFake(async (path) => {
       return path ? true : false;
     });
@@ -1131,14 +1135,9 @@ describe("Migration utils", () => {
     assert.equal(state.state, VersionState.unsupported);
   });
 
-  it("UpgradeCanceledError", () => {
-    const err = UpgradeCanceledError();
-    assert.isNotNull(err);
-  });
-
   it("getTrackingIdFromPath: V2 ", async () => {
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path === getProjectSettingPathV3(projectPath)) {
+      if (path === getProjectSettingsPath(projectPath)) {
         return false;
       }
       return true;
@@ -1150,7 +1149,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 ", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(SettingsUtils.prototype, "readSettings").resolves(
+    sandbox.stub(settingsUtil, "readSettings").resolves(
       ok({
         version: MetadataV3.projectVersion,
         trackingId: mockedId,
@@ -1162,9 +1161,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 failed", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox
-      .stub(SettingsUtils.prototype, "readSettings")
-      .resolves(err(new Error("mocked error") as FxError));
+    sandbox.stub(settingsUtil, "readSettings").resolves(err(new Error("mocked error") as FxError));
     const trackingId = await getTrackingIdFromPath(projectPath);
     assert.equal(trackingId, "");
   });
@@ -1198,25 +1195,24 @@ describe("Migration utils", () => {
     );
     assert.equal(
       getVersionState({
+        version: "1.1.0",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
+        version: "2.0.0",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.unsupported
+    );
+    assert.equal(
+      getVersionState({
         version: "",
         source: VersionSource.unknown,
       }),
       VersionState.unsupported
-    );
-  });
-
-  it("getDownloadLinkByVersionAndPlatform", () => {
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VS),
-      `${Metadata.versionMatchLink}#visual-studio`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.CLI),
-      `${Metadata.versionMatchLink}#cli`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
-      `${Metadata.versionMatchLink}#vscode`
     );
   });
 
@@ -1326,6 +1322,7 @@ describe("debugMigration", () => {
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
     sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async () => {});
+    await getYmlTemplates();
   });
 
   afterEach(async () => {
@@ -1352,6 +1349,7 @@ describe("debugMigration", () => {
     "V3.5.0-V4.0.6-tab-bot-func-node18",
     "beforeV3.4.0-tab-bot-func-node18",
     "transparent-notification-node18",
+    "V4.0.2-notification-trigger",
   ];
 
   const simpleAuthPath = path.join(os.homedir(), ".fx", "localauth").replace(/\\/g, "\\\\");
@@ -1373,13 +1371,16 @@ describe("debugMigration", () => {
       await copyTestProject(path.join("debug", testCase), projectPath);
 
       await debugMigration(migrationContext);
-
+      const expectedYmlContent = await loadExpectedYmlFile(
+        path.join(projectPath, "expected", "app.local.yml")
+      );
+      const actualYmlContent = await fs.readFile(
+        path.join(projectPath, "teamsapp.local.yml"),
+        "utf-8"
+      );
       assert.equal(
-        await fs.readFile(path.join(projectPath, "teamsapp.local.yml"), "utf-8"),
-        (await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")).replace(
-          "SIMPLE_AUTH_APPSETTINGS_PATH",
-          simpleAuthAppsettingsPath
-        )
+        actualYmlContent,
+        expectedYmlContent.replace("SIMPLE_AUTH_APPSETTINGS_PATH", simpleAuthAppsettingsPath)
       );
       assert.equal(
         await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),

@@ -7,19 +7,11 @@ import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
-import {
-  AppPackageFolderName,
-  AzureSolutionSettings,
-  Inputs,
-  Platform,
-  ProjectSettings,
-  ProjectSettingsV3,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import semver from "semver";
-import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
+import { getProjectSettingPathV2, getProjectSettingsPath } from "../projectSettingsLoader";
 import {
-  Metadata,
   MetadataV2,
   MetadataV3,
   MetadataV3Abandoned,
@@ -32,7 +24,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
 import * as dotenv from "dotenv";
-import { manifestUtils } from "../../../component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../component/driver/teamsApp/utils/ManifestUtils";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -126,19 +118,8 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   return res;
 }
 
-export function getDownloadLinkByVersionAndPlatform(version: string, platform: Platform): string {
-  let anchorInLink = "vscode";
-  if (platform === Platform.VS) {
-    anchorInLink = "visual-studio";
-  } else if (platform === Platform.CLI) {
-    anchorInLink = "cli";
-  }
-  return `${Metadata.versionMatchLink}#${anchorInLink}`;
-}
-
 export function outputCancelMessage(version: string, platform: Platform): void {
   TOOLS?.logProvider.warning(`Upgrade cancelled.`);
-  const link = getDownloadLinkByVersionAndPlatform(version, platform);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
       `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
@@ -169,7 +150,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
 }
 
 export async function getProjectVersionFromPath(projectPath: string): Promise<VersionInfo> {
-  const v3path = getProjectSettingPathV3(projectPath);
+  const v3path = getProjectSettingsPath(projectPath);
   if (await fs.pathExists(v3path)) {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
     if (readSettingsResult.isOk()) {
@@ -207,7 +188,7 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
 }
 
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
-  const v3path = getProjectSettingPathV3(projectPath);
+  const v3path = getProjectSettingsPath(projectPath);
   if (await fs.pathExists(v3path)) {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
     if (readSettingsResult.isOk()) {
@@ -233,7 +214,10 @@ export function getVersionState(info: VersionInfo): VersionState {
     semver.lte(info.version, MetadataV2.projectMaxVersion)
   ) {
     return VersionState.upgradeable;
-  } else if (info.source === VersionSource.teamsapp && info.version === MetadataV3.projectVersion) {
+  } else if (
+    info.source === VersionSource.teamsapp &&
+    semver.lt(info.version, MetadataV3.unSupprotVersion)
+  ) {
     return VersionState.compatible;
   }
   return VersionState.unsupported;
@@ -249,16 +233,12 @@ export function getParameterFromCxt(
   return value;
 }
 
-export function getToolkitVersionLink(platform: Platform, projectVersion: string): string {
-  return Metadata.versionMatchLink;
-}
-
-export function getCapabilityStatus(projectSettings: ProjectSettings): {
+export function getCapabilityStatus(projectSettings: any): {
   TabSso: boolean;
   BotSso: boolean;
   Tab: boolean;
 } {
-  const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
+  const capabilities = (projectSettings.solutionSettings as any).capabilities;
   const tabSso = capabilities.includes("TabSSO");
   const botSso = capabilities.includes("BotSSO");
   const tab = capabilities.includes("Tab");
@@ -350,10 +330,30 @@ export async function updateAndSaveManifestForSpfx(
   await context.fsWriteFile(localTemplatePath, localTemplate);
 }
 
+export function isValidDomainForBotOutputKey(bicepContent: string): boolean {
+  // Match teams-bot or fx-resource-bot output obj
+  const pluginRegex = new RegExp(
+    "output +(\\S+) +object += +{" + // Mataches start of output declaration and capture output name. Example: output functionOutput object = {
+      "[^{]*" + // Matches everything between '{' and plugin id declaration. For example: comments, extra properties. Will match multilines.
+      "teamsFxPluginId: +'(teams-bot|fx-resource-bot)'" + // Matches given plugin id == teams-bot or fx-resource-bot
+      "[^}]*" + // Mathches anything except '}'
+      "(validDomain|domain) *:" + // Matches domain key and tries not to mismatch key and value
+      "[^}]*}", // Matches until end of obj as '}'
+    "g"
+  );
+  const outputContents = pluginRegex.exec(bicepContent);
+  if (outputContents && outputContents[3] === "validDomain") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 export async function addMissingValidDomainForManifest(
   manifestPath: string,
   tab: boolean,
-  bot: boolean
+  bot: boolean,
+  isValidDomain: boolean
 ): Promise<void> {
   const teamsAppManifest = (await manifestUtils._readAppManifest(manifestPath))._unsafeUnwrap();
   teamsAppManifest.validDomains = teamsAppManifest.validDomains ?? [];
@@ -366,9 +366,9 @@ export async function addMissingValidDomainForManifest(
     !teamsAppManifest.validDomains?.includes(validDomain.bot) &&
     !teamsAppManifest.validDomains?.includes(validDomain.botWithValid);
   if (shouldAddBotDomain) {
-    teamsAppManifest.validDomains.push(validDomain.bot);
+    teamsAppManifest.validDomains.push(isValidDomain ? validDomain.botWithValid : validDomain.bot);
   }
-  manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
+  await manifestUtils._writeAppManifest(teamsAppManifest, manifestPath);
 }
 
 export function tryExtractEnvFromUserdata(filename: string): string {
@@ -380,7 +380,7 @@ export function tryExtractEnvFromUserdata(filename: string): string {
   return "";
 }
 
-export function buildFileName(...parts: string[]): string {
+function buildFileName(...parts: string[]): string {
   return parts.join(".");
 }
 export function buildEnvFileName(envName: string): string {

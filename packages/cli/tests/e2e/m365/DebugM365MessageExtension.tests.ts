@@ -11,7 +11,6 @@ import { describe } from "mocha";
 import * as path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
@@ -36,10 +35,6 @@ describe("Debug V3 m365-message-extension template", () => {
   const projectPath = path.resolve(testFolder, appName);
 
   afterEach(async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     const context = await readContextMultiEnvV3(projectPath, "local");
 
     // clean up
@@ -54,16 +49,12 @@ describe("Debug V3 m365-message-extension template", () => {
   });
 
   it("happy path: provision and deploy", { testPlanCaseId: 17449538 }, async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     // create
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SearchApp);
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
-    await CliHelper.provisionProject(projectPath, "--env local", {
+    await CliHelper.provisionProject(projectPath, "", "local", {
       ...process.env,
       BOT_DOMAIN: "test.ngrok.io",
       BOT_ENDPOINT: "https://test.ngrok.io",
@@ -95,7 +86,7 @@ describe("Debug V3 m365-message-extension template", () => {
     chai.assert.isNotEmpty(context.M365_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--env local");
+    await CliHelper.deployAll(projectPath, "", "local");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "local");

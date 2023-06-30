@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { getDefaultString, getLocalizedString } from "../../localizeUtils";
+import { nodeInstallationLink } from "./helpLink";
 
 export const Messages = {
   // learnMoreButtonText: getLocalizedString("depChecker.learnMoreButtonText"),
@@ -16,11 +17,11 @@ export const Messages = {
       .replace("@NodeVersion", nodeVersion)
       .replace("@FuncVersion", funcVersion),
   symlinkDirAlreadyExist: () => getLocalizedString("depChecker.symlinkDirAlreadyExist"),
-
-  startInstallNgrok: () => getLocalizedString("depChecker.startInstallNgrok"),
-  finishInstallNgrok: () => getLocalizedString("depChecker.finishInstallNgrok"),
-  needInstallNgrok: () => getLocalizedString("depChecker.needInstallNgrok"),
-  failToValidateNgrok: () => getLocalizedString("depChecker.failToValidateNgrok"),
+  invalidFuncVersion: (version: string) =>
+    getLocalizedString("depChecker.invalidFuncVersion", version),
+  noSentinelFile: () => getLocalizedString("depChecker.noSentinelFile"),
+  funcVersionNotMatch: (funcVersion: string, expectedFuncVersion: string) =>
+    getLocalizedString("depChecker.funcVersionNotMatch", funcVersion, expectedFuncVersion),
 
   downloadDotnet: () => getLocalizedString("depChecker.downloadDotnet"),
   finishInstallDotnet: () => getLocalizedString("depChecker.finishInstallDotnet"),
@@ -28,15 +29,24 @@ export const Messages = {
   dotnetInstallStderr: () => getLocalizedString("depChecker.dotnetInstallStderr"),
   dotnetInstallErrorCode: () => getLocalizedString("depChecker.dotnetInstallErrorCode"),
 
-  NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound"),
-  NodeNotSupported: () => getLocalizedString("depChecker.NodeNotSupported"),
+  NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound", nodeInstallationLink),
 
   // In v3, the message will be displayed in the output.
   // TODO: add localized string to FxError.displayMessage
   V3NodeNotSupported: (currentVersion: string, supportedVersions: string) =>
-    getDefaultString("depChecker.V3NodeNotSupported", currentVersion, supportedVersions),
+    getDefaultString(
+      "depChecker.V3NodeNotSupported",
+      currentVersion,
+      supportedVersions,
+      nodeInstallationLink
+    ),
   NodeNotLts: (currentVersion: string, supportedVersions: string) =>
-    getDefaultString("depChecker.NodeNotLts", currentVersion, supportedVersions),
+    getDefaultString(
+      "depChecker.NodeNotLts",
+      currentVersion,
+      supportedVersions,
+      nodeInstallationLink
+    ),
 
   dotnetNotFound: () => getLocalizedString("depChecker.dotnetNotFound"),
   // depsNotFound: () => getLocalizedString("depChecker.depsNotFound"),

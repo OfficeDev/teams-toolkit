@@ -10,7 +10,6 @@ import * as chai from "chai";
 import * as path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 import m365Provider from "../../../src/commonlib/m365LoginUserPassword";
 import { AadValidator } from "../../commonlib/aadValidate";
@@ -34,12 +33,8 @@ describe("Deploy V3 m365-tab template", () => {
   const resourceGroupName = `${appName}-rg`;
 
   afterEach(async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     // clean up
-    const context = await readContextMultiEnvV3(projectPath, "local");
+    const context = await readContextMultiEnvV3(projectPath, "dev");
     if (context?.TEAMS_APP_ID) {
       await deleteTeamsApp(context.TEAMS_APP_ID);
     }
@@ -51,10 +46,6 @@ describe("Deploy V3 m365-tab template", () => {
   });
 
   it("happy path: provision and deploy", { testPlanCaseId: 17449539 }, async function () {
-    if (!isV3Enabled()) {
-      this.skip();
-    }
-
     // create
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SsoLaunchPage);
     console.log(`[Successfully] scaffold to ${projectPath}`);
@@ -63,7 +54,7 @@ describe("Deploy V3 m365-tab template", () => {
     const result = await createResourceGroup(resourceGroupName, "eastus");
     chai.assert.isTrue(result);
 
-    await CliHelper.provisionProject(projectPath, "--interactive false --env dev", {
+    await CliHelper.provisionProject(projectPath, "", "dev", {
       ...process.env,
       AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
     });
@@ -94,7 +85,7 @@ describe("Deploy V3 m365-tab template", () => {
     chai.assert.isNotEmpty(context.M365_APP_ID);
 
     // deploy
-    await CliHelper.deployAll(projectPath, "--interactive false --env dev");
+    await CliHelper.deployAll(projectPath, "", "dev");
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     context = await readContextMultiEnvV3(projectPath, "dev");

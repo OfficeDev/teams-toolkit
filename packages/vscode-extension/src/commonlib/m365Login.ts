@@ -41,7 +41,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 const SERVER_PORT = 0;
 const cachePlugin = new CryptoCachePlugin(m365CacheName);
@@ -270,6 +270,21 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       );
       if (tokenRes.isOk()) {
         const tokenJson = ConvertTokenToJson(tokenRes.value);
+        // if token is empty, try to get token by app studio scope, normally this should only affect UX
+        if (Object.keys(tokenJson).length === 0) {
+          const appStudioRes = await M365Login.codeFlowInstance.getTokenByScopes(
+            AppStudioScopes,
+            false
+          );
+          if (appStudioRes.isOk()) {
+            const appStudioJson = ConvertTokenToJson(appStudioRes.value);
+            return ok({
+              status: signedIn,
+              token: appStudioRes.value,
+              accountInfo: appStudioJson as any,
+            });
+          }
+        }
         return ok({ status: signedIn, token: tokenRes.value, accountInfo: tokenJson as any });
       } else {
         if (

@@ -23,6 +23,11 @@ jobs:
         with:
           node-version: 14
 
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref }}
+
       - name: Install VSCE command
         run: |
           npm install vsce -g
@@ -35,6 +40,21 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: cd.yml
           path: .
+      
+      - name: get VSC beta tag
+        if: ${{ github.event.inputs.isPreview != 'no' }}
+        id: vsc_ver
+        run: |
+          VSC_VER=$(jq -c -r '.[]|select(.name == "ms-teams-vscode-extension")|.name+"@"+.version' versions.json)
+          echo "-------------------" $VSC_VER
+          echo "::set-output name=vsc_ver::$VSC_VER"
+
+      - uses: mathieudutour/github-tag-action@v6.0
+        if: ${{ github.event.inputs.isPreview != 'no' }}
+        with: 
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.vsc_ver.outputs.vsc_ver }}
+          tag_prefix: ""
 
       - name: release preview
         if: ${{ github.event.inputs.isPreview != 'no' }}

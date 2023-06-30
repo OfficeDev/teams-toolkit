@@ -1,26 +1,21 @@
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import { AccessToken, GetTokenOptions } from "@azure/identity";
 import {
-  v2,
-  FxError,
-  ok,
-  PluginContext,
-  Result,
-  Void,
-  Plugin,
-  CryptoProvider,
-  LogProvider,
-  ProjectSettings,
-  TelemetryReporter,
-  UserInteraction,
+  AzureAccountProvider,
   Colors,
-  LogLevel,
+  Context,
+  CryptoProvider,
+  FxError,
+  IProgressHandler,
   InputTextConfig,
   InputTextResult,
-  IProgressHandler,
+  LogLevel,
+  LogProvider,
+  LoginStatus,
+  M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
-  RunnableTask,
+  Result,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -29,15 +24,12 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  TaskConfig,
-  AzureAccountProvider,
   SubscriptionInfo,
-  PermissionRequestProvider,
-  M365TokenProvider,
+  TelemetryReporter,
   TokenRequest,
-  LoginStatus,
+  UserInteraction,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { MockPermissionRequestProvider } from "../../core/utils";
 
 export class MyTokenCredential implements TokenCredential {
   public async getToken(
@@ -50,71 +42,6 @@ export class MyTokenCredential implements TokenCredential {
     };
   }
 }
-
-export const validManifest = {
-  $schema:
-    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
-  manifestVersion: "1.14",
-  version: "1.0.0",
-  id: "{appid}",
-  packageName: "com.microsoft.teams.extension",
-  developer: {
-    name: "Teams App, Inc.",
-    websiteUrl: "https://{baseUrl}",
-    privacyUrl: "https://{baseUrl}/index.html#/privacy",
-    termsOfUseUrl: "https://{baseUrl}/index.html#/termsofuse",
-  },
-  icons: {
-    color: "color.png",
-    outline: "outline.png",
-  },
-  name: {
-    short: "MyApp",
-    full: "This field is not used",
-  },
-  description: {
-    short: "Short description of {appName}.",
-    full: "Full description of {appName}.",
-  },
-  accentColor: "#FFFFFF",
-  bots: [],
-  composeExtensions: [],
-  configurableTabs: [],
-  staticTabs: [],
-  permissions: ["identity", "messageTeamMembers"],
-  validDomains: [],
-  webApplicationInfo: {
-    id: "{appClientId}",
-    resource: "{webApplicationInfoResource}",
-  },
-};
-
-export function mockPublishThatAlwaysSucceed(plugin: Plugin) {
-  plugin.publish = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
-    return ok(Void);
-  };
-}
-
-export function mockV2PublishThatAlwaysSucceed(plugin: v2.ResourcePlugin): void {
-  plugin.publishApplication = async function (): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  };
-}
-
-export function mockScaffoldCodeThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
-  plugin.scaffoldSourceCode = async function (): Promise<
-    Result<{ output: Record<string, string> }, FxError>
-  > {
-    return ok({ output: {} });
-  };
-}
-
-export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: v2.ResourcePlugin): void {
-  plugin.executeUserTask = async function (): Promise<Result<unknown, FxError>> {
-    return ok(Void);
-  };
-}
-
 export class MockedLogProvider implements LogProvider {
   async info(message: { content: string; color: Colors }[] | string | any): Promise<boolean> {
     return true;
@@ -228,15 +155,6 @@ export class MockedUserInteraction implements UserInteraction {
       },
     };
   }
-
-  async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    return task.run(...args);
-  }
-
   async runCommand(args: {
     cmd: string;
     workingDirectory?: string;
@@ -248,21 +166,15 @@ export class MockedUserInteraction implements UserInteraction {
   }
 }
 
-export class MockedV2Context implements v2.Context {
+export class MockedV2Context implements Context {
   userInteraction: UserInteraction;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
-  cryptoProvider: CryptoProvider;
-  projectSetting: ProjectSettings;
-  permissionRequestProvider: PermissionRequestProvider;
 
-  constructor(settings: ProjectSettings) {
+  constructor() {
     this.userInteraction = new MockedUserInteraction();
     this.logProvider = new MockedLogProvider();
     this.telemetryReporter = new MockedTelemetryReporter();
-    this.cryptoProvider = new MockedCryptoProvider();
-    this.projectSetting = settings;
-    this.permissionRequestProvider = new MockPermissionRequestProvider();
   }
 }
 

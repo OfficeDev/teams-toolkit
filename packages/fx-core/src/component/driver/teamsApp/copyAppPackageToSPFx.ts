@@ -9,7 +9,7 @@ import path from "path";
 import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError } from "../../../error/common";
-import { Constants } from "../../resource/appManifest/constants";
+import { Constants } from "./constants";
 import { asFactory, asString, wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";

@@ -20,7 +20,7 @@ import {
   readContextMultiEnv,
   readContextMultiEnvV3,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { it } from "../../commonlib/it";
 import { Runtime } from "../../commonlib/constants";
 

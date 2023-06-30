@@ -8,7 +8,7 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as tools from "../../../../src/common/tools";
-import * as utils from "../../../../src/component/code/utils";
+import * as utils from "../../../../src/component/driver/script/scriptDriver";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
@@ -43,6 +43,8 @@ describe("NPM Build Driver test", () => {
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.run(args, context);
     chai.assert.equal(res.isOk(), true);
+
+    chai.assert.equal((await driver.execute(args, context)).result.isOk(), true);
   });
 
   it("Dotnet build error", async () => {

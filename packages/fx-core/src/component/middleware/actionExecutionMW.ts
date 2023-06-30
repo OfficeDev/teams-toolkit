@@ -3,41 +3,31 @@
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
-  ActionContext,
-  assembleError,
-  ContextV3,
-  Effect,
-  err,
-  ErrorHandler,
+  Context,
   FxError,
+  IProgressHandler,
   InputsWithProjectPath,
   MaybePromise,
   QTreeNode,
   Result,
   SystemError,
-  traverse,
   UserError,
+  err,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
-import { globalVars, TOOLS } from "../../core/globalVars";
+import { TOOLS, globalVars } from "../../core/globalVars";
+import { assembleError } from "../../error/common";
+import { traverse } from "../../ui/visitor";
 import { TelemetryConstants } from "../constants";
 import { DriverContext } from "../driver/interface/commonArgs";
-import {
-  sendErrorEvent,
-  sendMigratedErrorEvent,
-  sendMigratedStartEvent,
-  sendMigratedSuccessEvent,
-  sendStartEvent,
-  sendSuccessEvent,
-} from "../telemetry";
+import { sendErrorEvent, sendStartEvent, sendSuccessEvent } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
 
-export interface ActionOption {
+interface ActionOption {
   componentName?: string;
   errorSource?: string;
   errorHelpLink?: string;
   errorIssueLink?: string;
-  errorHandler?: ErrorHandler;
   enableTelemetry?: boolean;
   telemetryComponentName?: string;
   telemetryEventName?: string;
@@ -45,16 +35,16 @@ export interface ActionOption {
   enableProgressBar?: boolean;
   progressTitle?: string;
   progressSteps?: number;
-  plan?: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Effect[], FxError>>;
   question?: (
-    context: ContextV3,
+    context: Context,
     inputs: InputsWithProjectPath
   ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
 }
-
+export interface ActionContext {
+  progressBar?: IProgressHandler;
+  telemetryProps?: Record<string, string>;
+  telemetryMeasures?: Record<string, number>;
+}
 export function ActionExecutionMW(action: ActionOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const componentName = action.componentName || ctx.self?.constructor.name;
@@ -72,7 +62,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       if (action.enableTelemetry) {
         if (!globalVars.trackingId) {
           // try to get trackingId
-          const projectPath = (ctx.arguments[0] as ContextV3 | DriverContext).projectPath;
+          const projectPath = (ctx.arguments[0] as Context | DriverContext).projectPath;
           if (projectPath) {
             await settingsUtil.readSettings(projectPath, false);
           }
@@ -80,16 +70,10 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
         if (globalVars.trackingId) telemetryProps["project-id"] = globalVars.trackingId; // add trackingId prop in telemetry
         sendStartEvent(eventName, telemetryProps);
-        sendMigratedStartEvent(
-          eventName,
-          ctx.arguments[0] as ContextV3,
-          ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps
-        );
       }
       // run question model
       if (action.question) {
-        const context = ctx.arguments[0] as ContextV3;
+        const context = ctx.arguments[0] as Context;
         const inputs = ctx.arguments[1] as InputsWithProjectPath;
         const getQuestionRes = await action.question(context, inputs);
         if (getQuestionRes.isErr()) throw getQuestionRes.error;
@@ -128,42 +112,23 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       merge(telemetryMeasures, { [TelemetryConstants.properties.timeCost]: timeCost });
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
-        sendMigratedSuccessEvent(
-          eventName,
-          ctx.arguments[0] as ContextV3,
-          ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps,
-          telemetryMeasures
-        );
       }
       await progressBar?.end(true);
     } catch (e) {
       await progressBar?.end(false);
-      let fxError;
-      if (action.errorHandler) {
-        fxError = action.errorHandler(e, telemetryProps);
-      } else {
-        fxError = assembleError(e);
-        if (fxError.source === "unknown") {
-          fxError.source = action.errorSource || fxError.source;
-          if (fxError instanceof UserError) {
-            fxError.helpLink = fxError.helpLink || action.errorHelpLink;
-          }
-          if (fxError instanceof SystemError) {
-            fxError.issueLink = fxError.issueLink || action.errorIssueLink;
-          }
+      const fxError = assembleError(e);
+      if (fxError.source === "unknown") {
+        fxError.source = action.errorSource || fxError.source;
+        if (fxError instanceof UserError) {
+          fxError.helpLink = fxError.helpLink || action.errorHelpLink;
+        }
+        if (fxError instanceof SystemError) {
+          fxError.issueLink = fxError.issueLink || action.errorIssueLink;
         }
       }
       // send error telemetry
       if (action.enableTelemetry) {
         sendErrorEvent(eventName, fxError, telemetryProps);
-        sendMigratedErrorEvent(
-          eventName,
-          fxError,
-          ctx.arguments[0] as ContextV3,
-          ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps
-        );
       }
       ctx.result = err(fxError);
     }

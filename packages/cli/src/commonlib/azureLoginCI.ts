@@ -2,15 +2,13 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { TokenCredential } from "@azure/core-http";
+import { TokenCredential } from "@azure/core-auth";
 import * as identity from "@azure/identity";
 import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
 import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-
-import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
 
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
@@ -19,11 +17,8 @@ import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import {
-  AzureScopes,
-  ConvertTokenToJson,
-  isV3Enabled,
-} from "@microsoft/teamsfx-core/build/common/tools";
+import { ConvertTokenToJson } from "@microsoft/teamsfx-core";
+import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -189,20 +184,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
-        if (!isV3Enabled()) {
-          await this.saveSubscription({
-            subscriptionId: item.subscriptionId,
-            subscriptionName: item.subscriptionName,
-            tenantId: item.tenantId,
-          });
-        }
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.subscriptionId = item.subscriptionId;
         AzureAccountManager.subscriptionName = item.subscriptionName;
         return;
       }
     }
-    throw NotFoundSubscriptionId();
+    throw new InvalidAzureSubscriptionError(subscriptionId);
   }
 
   async saveSubscription(subscriptionInfo: SubscriptionInfo): Promise<void> {
@@ -254,28 +242,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    if (isV3Enabled()) {
-      return undefined;
-    }
-    const subscriptionFIlePath = await this.getSubscriptionInfoPath();
-    if (subscriptionFIlePath === undefined) {
-      return undefined;
-    }
-    if (!fs.existsSync(subscriptionFIlePath)) {
-      return undefined;
-    }
-    const content = (await fs.readFile(subscriptionFIlePath)).toString();
-    if (content.length == 0) {
-      return undefined;
-    }
-    const subscriptionJson = JSON.parse(content);
-    AzureAccountManager.subscriptionId = subscriptionJson.subscriptionId;
-    AzureAccountManager.subscriptionName = subscriptionJson.subscriptionName;
-    return {
-      subscriptionId: subscriptionJson.subscriptionId,
-      tenantId: subscriptionJson.tenantId,
-      subscriptionName: subscriptionJson.subscriptionName,
-    };
+    return undefined;
   }
 }
 

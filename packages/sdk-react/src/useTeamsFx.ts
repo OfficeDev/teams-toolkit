@@ -44,7 +44,7 @@ export type TeamsFxContext = {
  * @param teamsfxConfig - custom configuration to override default ones.
  * @returns TeamsFxContext object
  *
- * @beta
+ * @public
  */
 export function useTeamsFx(teamsfxConfig?: Record<string, string>): TeamsFxContext {
   const [result] = useTeams({});

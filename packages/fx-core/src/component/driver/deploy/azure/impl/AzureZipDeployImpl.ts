@@ -14,7 +14,7 @@ import {
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-auth";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { getLocalizedMessage, ProgressMessages } from "../../../../messages";
+import { ProgressMessages } from "../../../../messages";
 import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
@@ -58,10 +58,10 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     await this.restartFunctionApp(azureResource);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
-        getLocalizedMessage(
+        getLocalizedString(
           "driver.deploy.notice.deployAcceleration",
           "https://aka.ms/teamsfx-config-run-from-package"
-        ).localized
+        )
       );
     }
   }
@@ -101,17 +101,17 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
     const cost = Date.now() - startTime;
-    this.context.telemetryReporter?.sendTelemetryEvent("deployResponse", {
+    this.context.telemetryReporter.sendTelemetryEvent("deployResponse", {
       time_cost: cost.toString(),
-      status: deployRes?.status.toString() ?? "",
+      status: deployRes?.status?.toString() ?? "",
       message: deployRes?.message ?? "",
       received_time: deployRes?.received_time ?? "",
-      started_time: deployRes?.start_time.toString() ?? "",
-      end_time: deployRes?.end_time.toString() ?? "",
-      last_success_end_time: deployRes?.last_success_end_time.toString() ?? "",
-      complete: deployRes?.complete.toString() ?? "",
-      active: deployRes?.active.toString() ?? "",
-      is_readonly: deployRes?.is_readonly.toString() ?? "",
+      started_time: deployRes?.start_time?.toString() ?? "",
+      end_time: deployRes?.end_time?.toString() ?? "",
+      last_success_end_time: deployRes?.last_success_end_time?.toString() ?? "",
+      complete: deployRes?.complete?.toString() ?? "",
+      active: deployRes?.active?.toString() ?? "",
+      is_readonly: deployRes?.is_readonly?.toString() ?? "",
       site_name_hash: deployRes?.site_name
         ? createHash("sha256").update(deployRes.site_name).digest("hex")
         : "",
@@ -156,7 +156,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: AzureUploadConfig,
-    logger?: LogProvider
+    logger: LogProvider
   ): Promise<string> {
     let res: AxiosZipDeployResult;
     let retryCount = 0;
@@ -170,14 +170,14 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           if ((e.response?.status ?? HttpStatusCode.OK) >= HttpStatusCode.INTERNAL_SERVER_ERROR) {
             retryCount += 1;
             if (retryCount < DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
-              await logger?.warning(
+              await logger.warning(
                 `Upload zip file failed with response status code: ${
                   e.response?.status ?? "NA"
                 }. Retrying...`
               );
             } else {
               // if retry times exceed, throw error
-              await logger?.warning(
+              await logger.warning(
                 `Retry times exceeded. Upload zip file failed with remote server error. Message: ${JSON.stringify(
                   e.response?.data
                 )}`
@@ -194,7 +194,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
             }
           } else {
             // None server error, throw
-            await logger?.error(
+            await logger.error(
               `Upload zip file failed with response status code: ${
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
@@ -211,7 +211,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           }
         } else {
           // if the error is not axios error, throw
-          await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
+          await logger.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
           throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
@@ -219,7 +219,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
 
     if (res?.status !== HttpStatusCode.OK && res?.status !== HttpStatusCode.ACCEPTED) {
       if (res?.status) {
-        await logger?.error(`Deployment is failed with error code: ${res.status}.`);
+        await logger.error(`Deployment is failed with error code: ${res.status}.`);
       }
       throw new DeployZipPackageError(
         zipDeployEndpoint,

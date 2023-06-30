@@ -6,18 +6,25 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
-import { PluginContext, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
-import { AppStudioClient } from "../../../../../src/component/resource/appManifest/appStudioClient";
-import { AppDefinition } from "../../../../../src/component/resource/appManifest/interfaces/appDefinition";
-import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
-import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";
-import { TelemetryUtils } from "../../../../../src/component/resource/appManifest/utils/telemetry";
-import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
-import { newEnvInfo } from "../../../../../src/core/environment";
-import { PublishingState } from "../../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
-import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils/ManifestUtils";
-import { AppStudioResultFactory } from "../../../../../src/component/resource/appManifest/results";
-import { Constants } from "../../../../../src/component/resource/appManifest/constants";
+import { Context, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
+import { AppStudioClient } from "../../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { AppDefinition } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { AppUser } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
+import { AppStudioError } from "../../../../../src/component/driver/teamsApp/errors";
+import { TelemetryUtils } from "../../../../../src/component/driver/teamsApp/utils/telemetry";
+import { RetryHandler } from "../../../../../src/component/driver/teamsApp/utils/utils";
+import { PublishingState } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
+import { manifestUtils } from "../../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { AppStudioResultFactory } from "../../../../../src/component/driver/teamsApp/results";
+import { Constants } from "../../../../../src/component/driver/teamsApp/constants";
+
+function newEnvInfo() {
+  return {
+    envName: "default",
+    config: {},
+    state: new Map(),
+  };
+}
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
@@ -50,7 +57,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -80,7 +87,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -161,7 +168,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -186,7 +193,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -217,7 +224,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -246,7 +253,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -277,7 +284,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -306,7 +313,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -345,7 +352,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -374,7 +381,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -442,7 +449,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
@@ -477,7 +484,7 @@ describe("App Studio API Test", () => {
       const ctx = {
         envInfo: newEnvInfo(),
         root: "fakeRoot",
-      } as any as PluginContext;
+      } as any;
       TelemetryUtils.init(ctx);
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 

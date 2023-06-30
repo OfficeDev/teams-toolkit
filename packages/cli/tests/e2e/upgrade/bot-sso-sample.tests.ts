@@ -6,17 +6,16 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { MetadataV3 } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
+import fs from "fs-extra";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Cleaner } from "../../utils/cleaner";
 import { TemplateProject } from "../../commonlib/constants";
+import { Cleaner } from "../../utils/cleaner";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
-import fs from "fs-extra";
-import { MetadataV3 } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 describe("upgrade", () => {
   const testFolder = getTestFolder();
@@ -28,12 +27,8 @@ describe("upgrade", () => {
   });
 
   it("sample bot sso", { testPlanCaseId: 19314244 }, async function () {
-    if (!isV3Enabled()) {
-      return;
-    }
-
     {
-      Executor.installCLI(testFolder, "1.2.5", true);
+      await Executor.installCLI(testFolder, "1.2.5", true);
       const env = Object.assign({}, process.env);
       env["TEAMSFX_V3"] = "false";
       // new projiect
@@ -45,6 +40,7 @@ describe("upgrade", () => {
       );
     }
 
+    await Executor.installCLI(testFolder, "alpha", true);
     {
       // upgrade
       const result = await Executor.upgrade(projectPath);
@@ -56,7 +52,7 @@ describe("upgrade", () => {
       );
       const content = await fs.readFile(manifestPath, { encoding: "utf-8" });
       const res = JSON.parse(content);
-      chai.assert.isTrue(res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__DOMAIN}}"));
+      chai.assert.isTrue(res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__VALIDDOMAIN}}"));
     }
   });
 });

@@ -523,10 +523,15 @@ export function UserCancelError(source: string): UserError {
   });
 }
 
+// if connot convert token via base64, return empty object
 export function ConvertTokenToJson(token: string): object {
-  const array = token.split(".");
-  const buff = Buffer.from(array[1], "base64");
-  return JSON.parse(buff.toString(UTF8));
+  try {
+    const array = token.split(".");
+    const buff = Buffer.from(array[1], "base64");
+    return JSON.parse(buff.toString(UTF8));
+  } catch (e) {
+    return {};
+  }
 }
 
 export async function checkIsOnline(): Promise<boolean> {
@@ -536,14 +541,14 @@ export async function checkIsOnline(): Promise<boolean> {
     method: "head",
   };
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const req = http.request(options, (res) => {
       res.on("data", () => {});
       res.on("end", () => {
         resolve(true);
       });
     });
-    req.on("error", (e) => resolve(false));
+    req.on("error", () => resolve(false));
     req.end();
   });
 }

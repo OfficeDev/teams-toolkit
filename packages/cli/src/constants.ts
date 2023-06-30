@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
-import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { sampleProvider, CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
 
 export type OptionsMap = { [_: string]: Options };
@@ -56,6 +55,14 @@ export const CollaboratorEmailNode = new QTreeNode({
   title: "Input email address of collaborator",
 });
 
+export const CollaboratorEmailOptions: OptionsMap = {
+  email: {
+    type: "string",
+    global: false,
+    description: "Input email address of collaborator",
+  },
+};
+
 export const ManifestFilePathParamName = "manifest-path";
 export const AppPackageFilePathParamName = "app-package-file-path";
 export const BuildPackageOptions: OptionsMap = {
@@ -94,7 +101,7 @@ export const ValidateApplicationOptions: OptionsMap = {
   },
 };
 
-export const AadManifestFilePathName = "manifest-file-path";
+export const AadManifestFilePathName = CoreQuestionNames.AadAppManifestFilePath;
 export const AadManifestOptions: OptionsMap = {
   [AadManifestFilePathName]: {
     type: "string",

@@ -12,7 +12,7 @@ import {
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
 import { MessageResponse, NotificationTarget, NotificationTargetType } from "./interface";
-import { ConversationReferenceStore } from "./storage";
+import { DefaultConversationReferenceStore } from "./storage";
 
 /**
  * Send a plain text message to a notification target.
@@ -416,7 +416,7 @@ export class TeamsBotInstallation implements NotificationTarget {
  * @deprecated Use `BotBuilderCloudAdapter.NotificationBot` instead.
  */
 export class NotificationBot {
-  private readonly conversationReferenceStore: ConversationReferenceStore;
+  private readonly conversationReferenceStore: DefaultConversationReferenceStore;
   private readonly adapter: BotFrameworkAdapter;
 
   /**

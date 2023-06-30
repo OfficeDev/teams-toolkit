@@ -13,7 +13,7 @@ import { isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import * as globalVariables from "../../../globalVariables";
 import { FeatureFlags } from "../../../utils/commonUtils";
 
-export interface IDevTunnelState {
+interface IDevTunnelState {
   tunnelId?: string;
   clusterId?: string;
   sessionId?: string;

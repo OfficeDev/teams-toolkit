@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
@@ -210,11 +210,10 @@ export class FrontendValidator {
   }
 
   private static getResourceIdFromCtx(ctx: any): string {
-    if (isV3Enabled()) {
-      return ctx[EnvConstants.TAB_AZURE_STORAGE_RESOURCE_ID];
-    } else {
-      return ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
-    }
+    return (
+      ctx[EnvConstants.TAB_AZURE_STORAGE_RESOURCE_ID] ??
+      ctx[EnvConstants.TAB_AZURE_APP_SERVICE_RESOURCE_ID]
+    );
   }
 
   private static async getSasToken(

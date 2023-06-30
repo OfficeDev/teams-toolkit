@@ -7,14 +7,9 @@ import {
   AzureAccountProvider,
   FuncValidation,
   Inputs,
-  Json,
   Platform,
-  ProjectSettings,
   Settings,
-  Stage,
   SubscriptionInfo,
-  SystemError,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -23,27 +18,16 @@ import mockedEnv from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
 import { execPowerShell, execShell } from "../../src/common/local/process";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
-import {
-  FetchSampleError,
-  ProjectFolderExistError,
-  ReadFileError,
-  WriteFileError,
-} from "../../src/core/error";
-import {
-  upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage,
-} from "../../src/core/middleware/envInfoLoaderV3";
-import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
+import { createAppNameQuestion } from "../../src/core/question";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
+import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
 
 export class MockedAzureTokenProvider implements AzureAccountProvider {
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
@@ -145,34 +129,6 @@ describe("Other test case", () => {
     assert.isTrue(validRes === undefined);
   });
 
-  it("error: ProjectFolderExistError", async () => {
-    const error = new ProjectFolderExistError(os.tmpdir());
-    assert.isTrue(error.name === "ProjectFolderExistError");
-    assert.isTrue(
-      error.message === `Path ${os.tmpdir()} already exists. Select a different folder.`
-    );
-  });
-
-  it("error: WriteFileError", async () => {
-    const msg = "file not exist";
-    const error = WriteFileError(new Error(msg));
-    assert.isTrue(error.name === "WriteFileError");
-    assert.isTrue(error.message === msg);
-  });
-
-  it("error: ReadFileError", async () => {
-    const msg = "file not exist";
-    const error = ReadFileError(new Error(msg));
-    assert.isTrue(error.name === "ReadFileError");
-    assert.isTrue(error.message === msg);
-  });
-
-  it("error: FetchSampleError", async () => {
-    const error = new FetchSampleError("hello world app");
-    assert.isTrue(error.name === "FetchSampleError");
-    assert.isTrue(error.message.includes("hello world app"));
-  });
-
   it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
     const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
 
@@ -225,25 +181,16 @@ describe("Other test case", () => {
     restore();
   });
 
-  it("parseTeamsAppTenantId", async () => {
-    const res1 = parseTeamsAppTenantId({ tid: "123" });
-    assert.isTrue(res1.isOk());
-    const res2 = parseTeamsAppTenantId();
-    assert.isTrue(res2.isErr());
-    const res3 = parseTeamsAppTenantId({ abd: "123" });
-    assert.isTrue(res3.isErr());
-  });
-
   it("executeCommand", async () => {
     {
       try {
-        const res = await executeCommand("ls", []);
+        const res = await cpUtils.executeCommand(undefined, undefined, undefined, "ls");
         assert.isTrue(res !== undefined);
       } catch (e) {}
     }
     {
       try {
-        const res = await tryExecuteCommand("ls", []);
+        const res = await cpUtils.tryExecuteCommand(undefined, undefined, undefined, "ls");
         assert.isTrue(res !== undefined);
       } catch (e) {}
     }
@@ -317,7 +264,7 @@ describe("Other test case", () => {
     }
   });
   it("isValidProject: true", async () => {
-    const projectSettings: ProjectSettings = {
+    const projectSettings: any = {
       appName: "myapp",
       version: "1.0.0",
       projectId: "123",
@@ -388,27 +335,5 @@ describe("Other test case", () => {
       mockRmClient
     );
     assert.isTrue(node !== undefined);
-  });
-  it("upgradeProgrammingLanguage", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state: Json = { solution: { programmingLanguage: "javascript" } };
-    upgradeProgrammingLanguage(state, projectSettings);
-    assert.equal(projectSettings.programmingLanguage, "javascript");
-    assert.isUndefined(state.solution.programmingLanguage);
-  });
-  it("upgradeDefaultFunctionName", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state = { solution: { defaultFunctionName: "getUserProfile" } };
-    upgradeDefaultFunctionName(state, projectSettings);
-    assert.equal(projectSettings.defaultFunctionName, "getUserProfile");
-    assert.isUndefined(state.solution.defaultFunctionName);
   });
 });

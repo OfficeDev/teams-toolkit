@@ -610,6 +610,25 @@ describe("Notification Tests - Node", () => {
       assert.strictEqual(channels.length, 0);
     });
 
+    it("getPagedMembers should return correct members", async () => {
+      sandbox.stub(TeamsInfo, "getPagedMembers").resolves({
+        continuationToken: "token",
+        members: [{} as TeamsChannelAccount, {} as TeamsChannelAccount],
+      });
+      const conversationRef = {
+        conversation: {
+          conversationType: "channel",
+        },
+      };
+      const fakeBotAppId = "fakeBotAppId";
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any, fakeBotAppId);
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
+      const { data: members, continuationToken } = await installation.getPagedMembers();
+      assert.strictEqual(members.length, 2);
+      assert.strictEqual(continuationToken, "token");
+    });
+
     it("members should return correct members", async () => {
       sandbox.stub(TeamsInfo, "getPagedMembers").resolves({
         continuationToken: undefined as unknown as string,
@@ -696,6 +715,36 @@ describe("Notification Bot Tests - Node", () => {
     assert.isTrue(middlewares[0] instanceof NotificationMiddleware);
   });
 
+  it("getPagedInstallations should return correct targets", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) => resolve({ continuationToken: "", members: [] }));
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+      _a_2: {
+        channelId: "2",
+        conversation: {
+          id: "2",
+          tenantId: "a",
+        },
+      },
+    };
+    const { data: installations, continuationToken } =
+      await notificationBot.getPagedInstallations();
+    assert.strictEqual(installations.length, 2);
+    assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
+    assert.strictEqual(installations[1].conversationReference.conversation?.id, "2");
+    assert.strictEqual(continuationToken, "");
+  });
+
   it("installations should return correct targets", async () => {
     sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
       return new Promise((resolve) => resolve({ continuationToken: "", members: [] }));
@@ -724,6 +773,30 @@ describe("Notification Bot Tests - Node", () => {
     assert.strictEqual(installations[1].conversationReference.conversation?.id, "2");
   });
 
+  it("getPagedInstallations should remove invalid target", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      throw {
+        name: "test",
+        message: "test",
+        code: "BotNotInConversationRoster",
+      };
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+    const { data: installations } = await notificationBot.getPagedInstallations();
+    assert.strictEqual(installations.length, 0);
+    assert.deepStrictEqual(storage.items, {});
+  });
+
   it("installations should remove invalid target", async () => {
     sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
       throw {
@@ -746,6 +819,39 @@ describe("Notification Bot Tests - Node", () => {
     const installations = await notificationBot.installations();
     assert.strictEqual(installations.length, 0);
     assert.deepStrictEqual(storage.items, {});
+  });
+
+  it("getPagedInstallations should keep valid target", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      throw {
+        name: "test",
+        message: "test",
+        code: "Throttled",
+      };
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+    const { data: installations } = await notificationBot.getPagedInstallations();
+    assert.strictEqual(installations.length, 1);
+    assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
+    assert.deepStrictEqual(storage.items, {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    });
   });
 
   it("installations should keep valid target", async () => {
@@ -947,5 +1053,19 @@ describe("Notification Bot Tests - Node", () => {
       Promise.resolve(c.info.id === "NotFound")
     );
     assert.isUndefined(channel);
+  });
+
+  it("buildTeamsBotInstallation should return correct data", async () => {
+    const reference = {
+      channelId: "1",
+      conversation: {
+        conversationType: "channel",
+        id: "1",
+        tenantId: "a",
+      },
+    } as ConversationReference;
+    const notificationBot = new NotificationBot(adapter, { storage });
+    const installation = notificationBot.buildTeamsBotInstallation(reference);
+    assert.isNotNull(installation);
   });
 });

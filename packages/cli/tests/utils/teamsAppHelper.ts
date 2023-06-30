@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import axios, { AxiosInstance } from "axios";
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 

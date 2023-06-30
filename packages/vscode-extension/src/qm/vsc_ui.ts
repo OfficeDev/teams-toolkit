@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { remove, find } from "lodash";
+import { find, remove } from "lodash";
 import * as path from "path";
 import {
   commands,
@@ -10,7 +10,6 @@ import {
   ExtensionContext,
   extensions,
   InputBox,
-  ProgressLocation,
   QuickInputButton,
   QuickInputButtons,
   QuickPick,
@@ -24,7 +23,6 @@ import {
 } from "vscode";
 
 import {
-  assembleError,
   Colors,
   err,
   ExecuteFuncConfig,
@@ -38,32 +36,30 @@ import {
   ok,
   OptionItem,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   StaticOptions,
   SystemError,
-  TaskConfig,
   UIConfig,
-  UserCancelError,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-
+import { UserCancelError, assembleError, loadingOptionsPlaceholder } from "@microsoft/teamsfx-core";
 import * as packageJson from "../../package.json";
+import { TerminalName } from "../constants";
 import { ExtensionErrors, ExtensionSource } from "../error";
+import { showOutputChannel } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { TerminalName } from "../constants";
-import { showOutputChannel } from "../handlers";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -120,16 +116,7 @@ function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
   }
 }
 
-function toIdSet(items: ({ id: string } | string)[]): Set<string> {
-  const set = new Set<string>();
-  for (const i of items) {
-    if (typeof i === "string") set.add(i);
-    else set.add(i.id);
-  }
-  return set;
-}
-
-export function cloneSet(set: Set<string>): Set<string> {
+function cloneSet(set: Set<string>): Set<string> {
   const res = new Set<string>();
   for (const e of set) res.add(e);
   return res;
@@ -154,7 +141,7 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    if (option.options.length === 0) {
+    if (typeof option.options === "object" && option.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,
@@ -189,8 +176,29 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          const options = option.options;
-          quickPick.items = convertToFxQuickPickItems(option.options);
+          let options: StaticOptions = [];
+          if (typeof option.options === "function") {
+            quickPick.busy = true;
+            quickPick.placeholder = loadingOptionsPlaceholder();
+            option
+              .options()
+              .then((results) => {
+                options = results;
+                quickPick.items = convertToFxQuickPickItems(options);
+                quickPick.busy = false;
+                quickPick.placeholder = option.placeholder;
+                if (option.skipSingleOption && options.length === 1) {
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  onDidAccept();
+                }
+              })
+              .catch((error) => {
+                resolve(err(assembleError(error)));
+              });
+          } else {
+            options = option.options as StaticOptions;
+          }
+          quickPick.items = convertToFxQuickPickItems(options);
           // set default
           if (option.default) {
             // let defaultOption: string | OptionItem | undefined;
@@ -217,7 +225,7 @@ export class VsCodeUI implements UserInteraction {
               const item = selectedItems[0];
               let result: string | OptionItem;
               if (
-                typeof option.options[0] === "string" ||
+                typeof options[0] === "string" ||
                 option.returnObject === undefined ||
                 option.returnObject === false
               ) {
@@ -240,7 +248,7 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve(err(UserCancelError));
+              resolve(err(new UserCancelError("VSC")));
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -259,7 +267,7 @@ export class VsCodeUI implements UserInteraction {
               }
             }),
             quickPick.onDidTriggerItemButton((event) => {
-              const itemOptions: StaticOptions = option.options;
+              const itemOptions: StaticOptions = options;
               if (itemOptions.length > 0 && typeof itemOptions[0] === "string") {
                 return;
               }
@@ -321,7 +329,29 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = convertToFxQuickPickItems(option.options);
+          let options: StaticOptions = [];
+          if (typeof option.options === "function") {
+            quickPick.busy = true;
+            quickPick.placeholder = loadingOptionsPlaceholder();
+            option
+              .options()
+              .then((results) => {
+                options = results;
+                quickPick.items = convertToFxQuickPickItems(options);
+                quickPick.busy = false;
+                quickPick.placeholder = option.placeholder;
+                if (option.skipSingleOption && options.length === 1) {
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  onDidAccept();
+                }
+              })
+              .catch((error) => {
+                resolve(err(assembleError(error)));
+              });
+          } else {
+            options = option.options as StaticOptions;
+          }
+          quickPick.items = convertToFxQuickPickItems(options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
@@ -352,7 +382,7 @@ export class VsCodeUI implements UserInteraction {
             }
             let result: OptionItem[] | string[] = strArray;
             if (
-              typeof option.options[0] === "string" ||
+              typeof options[0] === "string" ||
               option.returnObject === undefined ||
               option.returnObject === false
             )
@@ -364,7 +394,7 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve(err(UserCancelError));
+              resolve(err(new UserCancelError("VSC")));
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -446,7 +476,7 @@ export class VsCodeUI implements UserInteraction {
           }),
           inputBox.onDidAccept(onDidAccept),
           inputBox.onDidHide(() => {
-            resolve(err(UserCancelError));
+            resolve(err(new UserCancelError("VSC")));
           }),
           inputBox.onDidTriggerButton((button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -518,7 +548,7 @@ export class VsCodeUI implements UserInteraction {
                   const result = uriList[0].fsPath;
                   resolve(ok({ type: "success", result: result }));
                 } else {
-                  resolve(err(UserCancelError));
+                  resolve(err(new UserCancelError("VSC")));
                 }
               }
             }
@@ -528,7 +558,7 @@ export class VsCodeUI implements UserInteraction {
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
               if (!hideByDialog) {
-                resolve(err(UserCancelError));
+                resolve(err(new UserCancelError("VSC")));
               }
             }),
             quickPick.onDidTriggerButton((button) => {
@@ -653,7 +683,7 @@ export class VsCodeUI implements UserInteraction {
                   resolve(ok({ type: "success", result: result }));
                 }
               } else {
-                resolve(err(UserCancelError));
+                resolve(err(new UserCancelError("VSC")));
               }
             } else {
               resolve(
@@ -669,7 +699,7 @@ export class VsCodeUI implements UserInteraction {
         disposables.push(
           quickPick.onDidAccept(onDidAccept),
           quickPick.onDidHide(() => {
-            if (fileSelectorIsOpen === false) resolve(err(UserCancelError));
+            if (fileSelectorIsOpen === false) resolve(err(new UserCancelError("VSC")));
           }),
           quickPick.onDidTriggerButton((button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
@@ -694,6 +724,34 @@ export class VsCodeUI implements UserInteraction {
         else resolve(err(internalUIError));
       });
     });
+  }
+
+  async selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
+    const selectFileConfig: SelectFileConfig = {
+      ...config,
+      possibleFiles: [config.inputOptionItem],
+    };
+
+    const selectFileOrItemRes = await this.selectFile(selectFileConfig);
+    if (selectFileOrItemRes.isOk()) {
+      if (selectFileOrItemRes.value.result === config.inputOptionItem.id) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {
+          [TelemetryProperty.SelectedOption]: selectFileOrItemRes.value.result,
+        });
+        const inputRes = await this.inputText(config.inputBoxConfig);
+        if (inputRes.isOk()) {
+          return ok(inputRes.value);
+        } else {
+          return err(inputRes.error);
+        }
+      } else {
+        return ok(selectFileOrItemRes.value);
+      }
+    } else {
+      return err(selectFileOrItemRes.error);
+    }
   }
 
   public async showMessage(
@@ -737,7 +795,7 @@ export class VsCodeUI implements UserInteraction {
         }
         promise.then((v) => {
           if (v) resolve(ok(v));
-          else resolve(err(UserCancelError));
+          else resolve(err(new UserCancelError("VSC")));
         });
       } catch (error) {
         resolve(err(assembleError(error)));
@@ -747,82 +805,6 @@ export class VsCodeUI implements UserInteraction {
 
   public createProgressBar(title: string, totalSteps: number): IProgressHandler {
     return new ProgressHandler(title, totalSteps);
-  }
-
-  async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    return new Promise(async (resolve) => {
-      window.withProgress(
-        {
-          location: ProgressLocation.Notification,
-          cancellable: config.cancellable,
-        },
-        async (progress, token): Promise<any> => {
-          if (config.cancellable === true) {
-            token.onCancellationRequested(() => {
-              if (task.cancel) task.cancel();
-              resolve(err(UserCancelError));
-            });
-          }
-          let lastReport = 0;
-          const showProgress = config.showProgress === true;
-          const total = task.total ? task.total : 1;
-          const head = task.name ? task.name : "";
-          const report = (task: RunnableTask<T>) => {
-            const current = task.current ? task.current : 0;
-            const body = showProgress
-              ? `: ${Math.round((current * 100) / total)} %`
-              : `: [${current + 1}/${total}]`;
-            const tail = task.message
-              ? ` ${task.message}`
-              : localize("teamstoolkit.progressHandler.prepareTask");
-            const message = `${head}${body}${tail}`;
-            if (showProgress)
-              progress.report({
-                increment: ((current - lastReport) * 100) / total,
-                message: message,
-              });
-            else progress.report({ message: message });
-          };
-          task
-            .run(args)
-            .then(async (v) => {
-              report(task);
-              await sleep(100);
-              resolve(v);
-            })
-            .catch((e) => {
-              resolve(err(assembleError(e)));
-            });
-          let current;
-          if (showProgress) {
-            report(task);
-            do {
-              current = task.current ? task.current : 0;
-              const inc = ((current - lastReport) * 100) / total;
-              const delta = current - lastReport;
-              if (inc > 0) {
-                report(task);
-                lastReport += delta;
-              }
-              await sleep(100);
-            } while (current < total && !task.isCanceled);
-            report(task);
-            await sleep(100);
-          } else {
-            do {
-              report(task);
-              await sleep(100);
-              current = task.current ? task.current : 0;
-            } while (current < total && !task.isCanceled);
-          }
-          if (task.isCanceled) resolve(err(UserCancelError));
-        }
-      );
-    });
   }
 
   async reload(): Promise<Result<boolean, FxError>> {
@@ -837,8 +819,8 @@ export class VsCodeUI implements UserInteraction {
       ExtTelemetry.reporter?.dispose();
     }
 
-    // wait 1 second before reloading.
-    await sleep(1000);
+    // wait 2 seconds before reloading.
+    await sleep(2000);
     const success = await commands.executeCommand("workbench.action.reloadWindow");
     if (success) {
       return ok(success as boolean);

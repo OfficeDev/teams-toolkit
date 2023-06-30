@@ -35,7 +35,7 @@ export type CliCapabilities = "notification" | "command-bot" | "tab" | "message-
 export type CliTriggerType = "http-restify" | "http-functions" | "timer-functions";
 
 export enum Capability {
-  Tab = "tab",
+  // Tab = "tab",
   SSOTab = "sso-tab",
   Bot = "bot",
   MessageExtension = "message-extension",
@@ -65,10 +65,12 @@ export enum TemplateProject {
   OneProductivityHub = "graph-toolkit-one-productivity-hub",
   TodoListBackend = "todo-list-with-Azure-backend",
   ShareNow = "share-now",
-  OutlookAddIn = "hello-world-teams-tab-and-outlook-add-in",
+  TabOutlookAddIn = "hello-world-teams-tab-and-outlook-add-in",
+  OutlookAddIn = "outlook-add-in-set-signature",
   AssistDashboard = "developer-assist-dashboard",
   ProactiveMessaging = "bot-proactive-messaging-teamsfx",
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
+  DiceRoller = "live-share-dice-roller",
 }
 
 export enum Resource {
@@ -181,18 +183,18 @@ export class EnvConstants {
   static readonly AAD_APP_OAUTH_AUTHORITY_HOST = "AAD_APP_OAUTH_AUTHORITY_HOST";
   // FrontEnd
   static readonly TAB_AZURE_STORAGE_RESOURCE_ID = "TAB_AZURE_STORAGE_RESOURCE_ID";
+  static readonly TAB_AZURE_APP_SERVICE_RESOURCE_ID = "TAB_AZURE_APP_SERVICE_RESOURCE_ID";
   static readonly TAB_ENDPOINT = "TAB_ENDPOINT";
   static readonly TAB_DOMAIN = "TAB_DOMAIN";
-  static readonly TAB_AZURE_APP_SERVICE_RESOURCE_ID = "TAB_AZURE_APP_SERVICE_RESOURCE_ID";
-
   // BOT
   static readonly BOT_ID = "BOT_ID";
   static readonly BOT_PASSWORD = "SECRET_BOT_PASSWORD";
   static readonly BOT_AZURE_APP_SERVICE_RESOURCE_ID = "BOT_AZURE_APP_SERVICE_RESOURCE_ID";
   static readonly BOT_AZURE_FUNCTION_RESOURCE_ID = "BOT_AZURE_FUNCTION_APP_RESOURCE_ID";
   static readonly BOT_DOMAIN = "BOT_DOMAIN";
-
   // FUNCTION
   static readonly FUNCTION_ID = "FUNCTION_RESOURCE_ID";
+  static readonly FUNCTION_ID_2 = "API_FUNCTION_RESOURCE_ID";
   static readonly FUNCTION_ENDPOINT = "FUNCTION_ENDPOINT";
+  static readonly FUNCTION_ENDPOINT_2 = "API_FUNCTION_ENDPOINT";
 }

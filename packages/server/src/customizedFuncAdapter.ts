@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  assembleError,
   err,
   FxError,
   LocalFunc,
@@ -12,13 +11,14 @@ import {
   SystemError,
   ValidateFunc,
 } from "@microsoft/teamsfx-api";
+import { assembleError } from "@microsoft/teamsfx-core";
 
 import { CustomizeFuncType } from "./apis";
 
-export let GlobalFuncId = 0;
-export type FuncType = LocalFunc<any> | ValidateFunc<any> | OnSelectionChangeFunc;
+let GlobalFuncId = 0;
+type FuncType = LocalFunc<any> | ValidateFunc<any> | OnSelectionChangeFunc;
 
-export const GlobalFuncMap = new Map<number, FuncType>();
+const GlobalFuncMap = new Map<number, FuncType>();
 
 export function setFunc(func: FuncType): number {
   ++GlobalFuncId;

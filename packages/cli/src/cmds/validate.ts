@@ -1,27 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, ok, Func } from "@microsoft/teamsfx-api";
-import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { validateAppPackageOption, validateSchemaOption } from "@microsoft/teamsfx-core";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
 import {
-  RootFolderOptions,
-  EnvOptions,
-  ValidateApplicationOptions,
   AppPackageFilePathParamName,
+  EnvOptions,
+  ManifestFilePathParamName,
+  RootFolderOptions,
+  ValidateApplicationOptions,
 } from "../constants";
+import { ArgumentConflictError, MissingRequiredArgumentError } from "../error";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import CLIUIInstance from "../userInteraction";
-import { EnvNotSpecified } from "../error";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -29,9 +31,12 @@ export class ManifestValidate extends YargsCommand {
   public readonly description = "Validate the Teams app using manifest schema or validation rules.";
 
   public builder(yargs: Argv): Argv<any> {
-    if (isV3Enabled()) yargs.options(RootFolderOptions).options(ValidateApplicationOptions);
-    else yargs.options(RootFolderOptions);
-    return yargs.hide("interactive").version(false).options(RootFolderOptions).options(EnvOptions);
+    return yargs
+      .hide("interactive")
+      .version(false)
+      .options(ValidateApplicationOptions)
+      .options(RootFolderOptions)
+      .options(EnvOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -49,32 +54,18 @@ export class ManifestValidate extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
     {
-      let result;
-
-      if (isV3Enabled()) {
-        if (args[AppPackageFilePathParamName]) {
-          inputs.validateMethod = "validateAgainstAppPackage";
-        } else {
-          inputs.validateMethod = "validateAgainstSchema";
-          // Throw error if --env not specified
-          if (!args.env && !CLIUIInstance.interactive) {
-            const error = new EnvNotSpecified();
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
-            return err(error);
-          }
-        }
-        result = await core.validateApplication(inputs);
-      } else {
-        const func: Func = {
-          namespace: "fx-solution-azure",
-          method: "validateManifest",
-          params: {
-            type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-          },
-        };
-        result = await core.executeUserTask!(func, inputs);
+      const validateArgsResult = this.validateArgs(args);
+      if (validateArgsResult.isErr()) {
+        return err(validateArgsResult.error);
       }
-
+      if (!CLIUIInstance.interactive) {
+        if (args[AppPackageFilePathParamName]) {
+          inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
+        } else {
+          inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
+        }
+      }
+      const result = await core.validateApplication(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.ValidateManifest,
@@ -91,5 +82,26 @@ export class ManifestValidate extends YargsCommand {
       ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
+  }
+
+  private validateArgs(args: { [argName: string]: string }): Result<any, FxError> {
+    // Throw error when --manifest-path and --app-package-file-path are both provided
+    if (args[AppPackageFilePathParamName] && args[ManifestFilePathParamName]) {
+      const error = new ArgumentConflictError(
+        "teamsfx validate",
+        AppPackageFilePathParamName,
+        ManifestFilePathParamName
+      );
+      return err(error);
+    }
+
+    // Throw error if --env not specified
+    if (args[ManifestFilePathParamName] && !args.env && !CLIUIInstance.interactive) {
+      const error = new MissingRequiredArgumentError("teamsfx validate", "env");
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      return err(error);
+    }
+
+    return ok(undefined);
   }
 }

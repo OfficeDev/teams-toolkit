@@ -10,15 +10,15 @@ import { v4 as uuid } from "uuid";
 import { TeamsAppManifest } from "@microsoft/teamsfx-api";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { ConfigureTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import {
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
-import { AppDefinition } from "./../../../../src/component/resource/appManifest/interfaces/appDefinition";
-import { Constants } from "./../../../../src/component/resource/appManifest/constants";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { AppDefinition } from "./../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { Constants } from "./../../../../src/component/driver/teamsApp/constants";
 
 describe("teamsApp/update", async () => {
   const teamsAppDriver = new ConfigureTeamsAppDriver();

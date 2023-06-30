@@ -10,6 +10,7 @@ import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
 import { FileNotFoundError } from "../../error/common";
+import { internalOutputNames as UpdateTeamsAppOutputNames } from "../driver/teamsApp/configure";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -28,7 +29,7 @@ const EligibleKeys: EligibleKeySettings = {
   TEAMS_APP_TENANT_ID: false,
 };
 
-export class EnvUtil {
+class EnvUtil {
   /**
    * read .env file and set to process.env (if loadToProcessEnv = true)
    * if silent = true, no error will return if .env file is not available, this function returns ok({ TEAMSFX_ENV: env })
@@ -167,6 +168,10 @@ export class EnvUtil {
         value = res.value;
         // envs[key] = value;
         secretEnv[key] = value;
+      } else if (key === UpdateTeamsAppOutputNames.teamsAppUpdateTime) {
+        // Corner case: Avoid TEAMS_APP_UPDATE_TIME to be committed and cause merge conflict
+        // Bug: 21970450
+        secretEnv[key] = value;
       } else {
         noneSecretEnv[key] = value;
       }
@@ -194,9 +199,12 @@ export class EnvUtil {
     const contentSecret = dotenvUtil.serialize(parsedDotenvSecret);
 
     //persist
+    await fs.ensureFile(dotEnvFilePath);
     await fs.writeFile(dotEnvFilePath, content, { encoding: "utf8" });
-    if (Object.keys(parsedDotenvSecret.obj).length > 0)
+    if (Object.keys(parsedDotenvSecret.obj).length > 0) {
+      await fs.ensureFile(dotEnvSecretFilePath);
       await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
+    }
     if (!envFileExists) {
       TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
     }
@@ -214,8 +222,8 @@ export class EnvUtil {
     if (!envFolderPath) return ok([]);
     const list = await fs.readdir(envFolderPath);
     const envs = list
-      .filter((fileName) => fileName.startsWith(".env.") && !fileName.endsWith(".user"))
-      .map((fileName) => fileName.substring(5));
+      .map((fileName) => this.extractEnvNameFromFileName(fileName))
+      .filter((env) => env !== undefined) as string[];
     return ok(envs);
   }
   object2map(obj: DotenvOutput): Map<string, string> {
@@ -232,6 +240,13 @@ export class EnvUtil {
     }
     return obj;
   }
+
+  extractEnvNameFromFileName(inputFileName: string): string | undefined {
+    const regex = /^\.env\.(\w+)$/;
+    const matches = inputFileName.match(regex);
+    const envName = matches && matches[1];
+    return envName || undefined;
+  }
 }
 
 export const envUtil = new EnvUtil();
@@ -240,12 +255,12 @@ const NEW_LINE_SPLITTER = /\r?\n/;
 type DotenvParsedLine =
   | string
   | { key: string; value: string; comment?: string; quote?: '"' | "'" };
-export interface DotenvParseResult {
+interface DotenvParseResult {
   lines?: DotenvParsedLine[];
   obj: DotenvOutput;
 }
 
-export class DotenvUtil {
+class DotenvUtil {
   deserialize(src: string | Buffer): DotenvParseResult {
     const lines: DotenvParsedLine[] = [];
     const obj: DotenvOutput = {};

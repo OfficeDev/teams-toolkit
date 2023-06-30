@@ -15,11 +15,10 @@ import {
   execAsyncWithRetry,
   getTestFolder,
   getUniqueAppName,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
@@ -28,15 +27,6 @@ describe("Collaboration", function () {
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
   let appId: string;
-
-  let mockedEnvRestore: RestoreFn;
-
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
-  });
-  afterEach(() => {
-    mockedEnvRestore();
-  });
 
   it(
     "Collaboration: CLI with permission status and permission grant - spfx",
@@ -57,6 +47,8 @@ describe("Collaboration", function () {
         }
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
+      const filePath = path.join(projectPath, "teamsapp.yml");
+      removeTeamsAppExtendToM365(filePath);
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {
@@ -66,60 +58,31 @@ describe("Collaboration", function () {
       });
       console.log("[Successfully] provision");
 
-      if (isV3Enabled()) {
-        const solutionConfig = await fs.readJson(`${projectPath}/src/config/package-solution.json`);
-        appId = solutionConfig["solution"]["id"];
-      } else {
-        const solutionConfig = await fs.readJson(
-          `${projectPath}/SPFx/config/package-solution.json`
-        );
-        appId = solutionConfig["solution"]["id"];
-      }
+      const solutionConfig = await fs.readJson(`${projectPath}/src/config/package-solution.json`);
+      appId = solutionConfig["solution"]["id"];
 
-      let checkPermissionResult;
-      if (isV3Enabled()) {
-        checkPermissionResult = await execAsyncWithRetry(
-          `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      } else {
-        checkPermissionResult = await execAsyncWithRetry(`teamsfx permission status`, {
+      const checkPermissionResult = await execAsyncWithRetry(
+        `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json`,
+        {
           cwd: projectPath,
           env: process.env,
           timeout: 0,
-        });
-      }
+        }
+      );
 
       expect(checkPermissionResult.stdout).to.contains(
         "Resource Name: Teams App, Permission: Administrator"
       );
       console.log("[Successfully] check permission");
 
-      let grantCollaboratorResult;
-
-      if (isV3Enabled()) {
-        grantCollaboratorResult = await execAsyncWithRetry(
-          `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      } else {
-        grantCollaboratorResult = await execAsyncWithRetry(
-          `teamsfx permission grant --email ${collaborator}`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      }
+      const grantCollaboratorResult = await execAsyncWithRetry(
+        `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        }
+      );
       // Grant Permission
 
       expect(grantCollaboratorResult.stdout).to.contains(
@@ -127,27 +90,14 @@ describe("Collaboration", function () {
       );
       console.log("[Successfully] grant permission");
 
-      let listCollaboratorResult;
-
-      if (isV3Enabled()) {
-        listCollaboratorResult = await execAsync(
-          `teamsfx permission status --list-all-collaborators  --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      } else {
-        listCollaboratorResult = await execAsync(
-          `teamsfx permission status --list-all-collaborators`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-      }
+      const listCollaboratorResult = await execAsync(
+        `teamsfx permission status --list-all-collaborators  --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --interactive false`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        }
+      );
 
       // Check collaborator.
       // When collaborator account is guest account in the tenant. Account name pattern will change.

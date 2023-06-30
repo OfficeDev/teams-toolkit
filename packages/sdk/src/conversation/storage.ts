@@ -4,7 +4,12 @@
 import { ConversationReference } from "botbuilder";
 import * as fs from "fs";
 import * as path from "path";
-import { NotificationTargetStorage } from "./interface";
+import {
+  NotificationTargetStorage,
+  ConversationReferenceStore,
+  ConversationReferenceStoreAddOptions,
+  PagedData,
+} from "./interface";
 
 /**
  * @internal
@@ -110,31 +115,50 @@ export class LocalFileStorage implements NotificationTargetStorage {
 /**
  * @internal
  */
-export class ConversationReferenceStore {
+export class DefaultConversationReferenceStore implements ConversationReferenceStore {
   private readonly storage: NotificationTargetStorage;
 
   constructor(storage: NotificationTargetStorage) {
     this.storage = storage;
   }
 
-  async check(reference: Partial<ConversationReference>): Promise<boolean> {
-    const ref = await this.storage.read(this.getKey(reference));
-    return ref !== undefined;
+  async add(
+    key: string,
+    reference: Partial<ConversationReference>,
+    options: ConversationReferenceStoreAddOptions
+  ): Promise<boolean> {
+    if (options.overwrite) {
+      await this.storage.write(key, reference);
+      return true;
+    }
+
+    const ref = await this.storage.read(key);
+    if (ref === undefined) {
+      await this.storage.write(key, reference);
+      return true;
+    }
+
+    return false;
   }
 
-  getAll(): Promise<Partial<ConversationReference>[]> {
-    return this.storage.list();
+  async remove(key: string, reference: Partial<ConversationReference>): Promise<boolean> {
+    const ref = await this.storage.read(key);
+    if (ref === undefined) {
+      return false;
+    }
+
+    await this.storage.delete(key);
+    return true;
   }
 
-  set(reference: Partial<ConversationReference>): Promise<void> {
-    return this.storage.write(this.getKey(reference), reference);
-  }
-
-  delete(reference: Partial<ConversationReference>): Promise<void> {
-    return this.storage.delete(this.getKey(reference));
-  }
-
-  private getKey(reference: Partial<ConversationReference>): string {
-    return `_${reference.conversation?.tenantId}_${reference.conversation?.id}`;
+  async list(
+    pageSize?: number,
+    continuationToken?: string
+  ): Promise<PagedData<Partial<ConversationReference>>> {
+    const data = await this.storage.list();
+    return {
+      data,
+      continuationToken: "",
+    };
   }
 }

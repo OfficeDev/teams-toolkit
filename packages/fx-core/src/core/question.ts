@@ -13,7 +13,6 @@ import {
   BuildFolderName,
   DynamicPlatforms,
   FolderQuestion,
-  FuncQuestion,
   FxError,
   Inputs,
   LocalEnvironmentName,
@@ -30,21 +29,13 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ConstantString } from "../common/constants";
-import {
-  isBotNotificationEnabled,
-  isOfficeAddinEnabled,
-  isPreviewFeaturesEnabled,
-} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { sampleProvider } from "../common/samples";
-import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
-  BotNewUIOptionItem,
   BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
-  ExistingTabOptionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
@@ -54,39 +45,34 @@ import {
   NewProjectTypeOutlookAddinOptionItem,
   NewProjectTypeTabOptionItem,
   NotificationOptionItem,
-  TabNewUIOptionItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../component/constants";
 import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
+  isFromDevPortal,
 } from "../component/developerPortalScaffoldUtils";
 import {
   ImportAddinProjectItem,
   OfficeAddinItems,
 } from "../component/generator/officeAddin/question";
-import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
+import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import { environmentManager } from "./environment";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
-  DefaultAppNameFunc = "default-app-name-func",
   Folder = "folder",
   ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   ProjectType = "project-type",
   Capabilities = "capabilities",
   Features = "features",
-  Solution = "solution",
   CreateFromScratch = "scratch",
   Runtime = "runtime",
   Samples = "samples",
-  Stage = "stage",
-  SubStage = "substage",
   SourceEnvName = "sourceEnvName",
   TargetEnvName = "targetEnvName",
   TargetResourceGroupName = "targetResourceGroupName",
@@ -101,13 +87,15 @@ export enum CoreQuestionNames {
   ReplaceBotIds = "replaceBotIds",
   TeamsAppManifestFilePath = "manifest-path",
   LocalTeamsAppManifestFilePath = "local-manifest-path",
-  AadAppManifestFilePath = "aadAppManifestFilePath",
+  AadAppManifestFilePath = "manifest-file-path",
   TeamsAppPackageFilePath = "app-package-file-path",
+  ValidateMethod = "validate-method",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
   M365Host = "m365-host",
+  BotHostTypeTrigger = "bot-host-type-trigger",
 }
 
 export const ProjectNamePattern =
@@ -155,24 +143,6 @@ export function createAppNameQuestion(
   return question;
 }
 
-export const DefaultAppNameFunc: FuncQuestion = {
-  type: "func",
-  name: CoreQuestionNames.DefaultAppNameFunc,
-  func: (inputs: Inputs) => {
-    const appName = path.basename(inputs.projectPath ?? "");
-    const schema = {
-      pattern: ProjectNamePattern,
-      maxLength: 30,
-    };
-    const validateResult = jsonschema.validate(appName, schema);
-    if (validateResult.errors && validateResult.errors.length > 0) {
-      return undefined;
-    }
-
-    return appName;
-  },
-};
-
 export function QuestionRootFolder(): FolderQuestion {
   return {
     type: "folder",
@@ -213,143 +183,28 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    if (isPreviewFeaturesEnabled()) {
-      const capability = inputs[CoreQuestionNames.Capabilities] as string;
-      if (capability && capability === TabSPFxItem().id) {
-        return "typescript";
-      }
-      const feature = inputs[CoreQuestionNames.Features] as string;
-      if (feature && feature === TabSPFxItem().id) {
-        return "typescript";
-      }
-    } else {
-      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
-        return "typescript";
+    const capability = inputs[CoreQuestionNames.Capabilities] as string;
+    if (capability && capability === TabSPFxItem().id) {
+      return "typescript";
+    }
+    const feature = inputs[CoreQuestionNames.Features] as string;
+    if (feature && feature === TabSPFxItem().id) {
+      return "typescript";
     }
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    if (isPreviewFeaturesEnabled()) {
-      const capability = inputs[CoreQuestionNames.Capabilities] as string;
-      if (capability && capability === TabSPFxItem().id) {
-        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
-      }
-      const feature = inputs[CoreQuestionNames.Features] as string;
-      if (feature && feature === TabSPFxItem().id) {
-        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
-      }
-    } else {
-      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
-        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    const capability = inputs[CoreQuestionNames.Capabilities] as string;
+    if (capability && capability === TabSPFxItem().id) {
+      return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    }
+    const feature = inputs[CoreQuestionNames.Features] as string;
+    if (feature && feature === TabSPFxItem().id) {
+      return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
     }
     return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
   },
 };
-
-function hasCapability(items: string[], optionItem: OptionItem): boolean {
-  return items.includes(optionItem.id) || items.includes(optionItem.label);
-}
-
-function setIntersect<T>(set1: Set<T>, set2: Set<T>): Set<T> {
-  return new Set([...set1].filter((item) => set2.has(item)));
-}
-
-function setDiff<T>(set1: Set<T>, set2: Set<T>): Set<T> {
-  return new Set([...set1].filter((item) => !set2.has(item)));
-}
-
-function setUnion<T>(...sets: Set<T>[]): Set<T> {
-  return new Set(([] as T[]).concat(...sets.map((set) => [...set])));
-}
-
-// Each set is mutually exclusive. Handle conflict by removing items conflicting with the newly added items.
-// Assuming intersection of all sets are empty sets and no conflicts in newly added items.
-//
-// For example: sets = [[1, 2], [3, 4]], previous = [1, 2, 5], current = [1, 2, 4, 5].
-// So the newly added one is [4]. Remove all items from `current` that conflict with [4].
-// Result = [4, 5].
-export function handleSelectionConflict<T>(
-  sets: Set<T>[],
-  previous: Set<T>,
-  current: Set<T>
-): Set<T> {
-  const allSets = setUnion(...sets);
-  const addedItems = setDiff(current, previous);
-
-  for (const set of sets) {
-    if (setIntersect(set, addedItems).size > 0) {
-      return setUnion(setIntersect(set, current), setDiff(current, allSets));
-    }
-  }
-
-  // If newly added items are not in any sets, do nothing.
-  return current;
-}
-
-export function validateConflict<T>(sets: Set<T>[], current: Set<T>): string | undefined {
-  const all = setUnion(...sets);
-  const currentIntersectAll = setIntersect(all, current);
-  for (const set of sets) {
-    if (setIntersect(set, current).size > 0) {
-      const currentIntersectSet = setIntersect(set, current);
-      if (currentIntersectSet.size < currentIntersectAll.size) {
-        return getLocalizedString(
-          "core.capability.validation",
-          `[${Array.from(current).join(", ")}]`,
-          Array.from(sets)
-            .map((set) => `[${Array.from(set).join(", ")}]`)
-            .join(", ")
-        );
-      }
-    }
-  }
-  return undefined;
-}
-
-export function createCapabilityQuestion(): MultiSelectQuestion {
-  let staticOptions: StaticOptions;
-  if (isBotNotificationEnabled()) {
-    // new capabilities question order
-    const newBots = [
-      NotificationOptionItem(),
-      CommandAndResponseOptionItem(),
-      WorkflowOptionItem(),
-    ];
-
-    staticOptions = [
-      ...newBots,
-      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem()] : []),
-      ...(isAadManifestEnabled() ? [TabNonSsoItem()] : []),
-      ...[TabNewUIOptionItem(), TabSPFxNewUIItem(), MessageExtensionNewUIItem()],
-      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem(), M365SearchAppOptionItem()] : []),
-    ];
-  } else {
-    staticOptions = [
-      ...[TabOptionItem(), BotOptionItem(), MessageExtensionItem(), TabSPFxItem()],
-      ...(isAadManifestEnabled() ? [TabNonSsoItem()] : []),
-      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem()] : []),
-      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem(), M365SearchAppOptionItem()] : []),
-    ];
-  }
-  return {
-    name: CoreQuestionNames.Capabilities,
-    title: isBotNotificationEnabled()
-      ? getLocalizedString("core.createCapabilityQuestion.titleNew")
-      : getLocalizedString("core.createCapabilityQuestion.title"),
-    type: "multiSelect",
-    staticOptions: staticOptions,
-    default: isBotNotificationEnabled()
-      ? [CommandAndResponseOptionItem().id]
-      : [TabOptionItem().id],
-    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
-    validation: {
-      validFunc: validateCapabilities,
-    },
-    onDidChangeSelection: onChangeSelectionForCapabilities,
-  };
-}
 
 export function createCapabilityForDotNet(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
@@ -394,18 +249,13 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   const staticOptions: StaticOptions = [
     ...newBots,
     ...newTabs,
-    TabNewUIOptionItem(),
-    TabSPFxNewUIItem(),
+    TabSPFxItem(),
     TabNonSsoItem(),
-    BotNewUIOptionItem(),
+    BotOptionItem(),
     MessageExtensionNewUIItem(),
     M365SsoLaunchPageOptionItem(),
     M365SearchAppOptionItem(),
   ];
-
-  if (isExistingTabAppEnabled()) {
-    staticOptions.splice(newBots.length, 0, ExistingTabOptionItem());
-  }
 
   return {
     name: CoreQuestionNames.Capabilities,
@@ -422,8 +272,11 @@ export function createNewProjectQuestionWith2Layers(inputs?: Inputs): SingleSele
     NewProjectTypeBotOptionItem(),
     NewProjectTypeTabOptionItem(),
     NewProjectTypeMessageExtensionOptionItem(),
-    NewProjectTypeOutlookAddinOptionItem(),
   ];
+
+  if (!isFromDevPortal(inputs)) {
+    staticOptions.push(NewProjectTypeOutlookAddinOptionItem());
+  }
 
   return {
     name: CoreQuestionNames.ProjectType,
@@ -437,7 +290,7 @@ export function createNewProjectQuestionWith2Layers(inputs?: Inputs): SingleSele
 
 export function getBotProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
-    BotNewUIOptionItem(),
+    BotOptionItem(),
     NotificationOptionItem(),
     CommandAndResponseOptionItem(),
     WorkflowOptionItem(),
@@ -465,12 +318,12 @@ export function getBotProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion
   };
 }
 
-export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+export function getTabTypeProjectQuestionNode(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     TabNonSsoItem(),
     M365SsoLaunchPageOptionItem(),
     DashboardOptionItem(),
-    TabSPFxNewUIItem(),
+    TabSPFxItem(),
   ];
 
   return {
@@ -483,8 +336,8 @@ export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQues
   };
 }
 
-export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
-  const staticOptions: StaticOptions = [MessageExtensionNewUIItem(), M365SearchAppOptionItem()];
+export function getMessageExtensionTypeProjectQuestionNode(): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [M365SearchAppOptionItem(), MessageExtensionNewUIItem()];
 
   return {
     name: CoreQuestionNames.Capabilities,
@@ -496,7 +349,7 @@ export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): Sin
   };
 }
 
-export function getOutlookAddinTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+export function getOutlookAddinTypeProjectQuestionNode(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [...OfficeAddinItems(), ImportAddinProjectItem()];
 
   return {
@@ -509,102 +362,7 @@ export function getOutlookAddinTypeProjectQuestionNode(inputs?: Inputs): SingleS
   };
 }
 
-export function validateCapabilities(inputs: string[]): string | undefined {
-  if (inputs.length === 0) {
-    return getLocalizedString("core.createCapabilityQuestion.placeholder");
-  }
-  const set = new Set<string>();
-  inputs.forEach((i) => set.add(i));
-  let result = validateConflict(
-    [
-      new Set([BotOptionItem().id, MessageExtensionItem().id]),
-      new Set([NotificationOptionItem().id]),
-      new Set([CommandAndResponseOptionItem().id]),
-      new Set([WorkflowOptionItem().id]),
-    ],
-    set
-  );
-  if (result) return result;
-  result = validateConflict(
-    [
-      new Set([
-        TabOptionItem().id,
-        TabNonSsoItem().id,
-        BotOptionItem().id,
-        MessageExtensionItem().id,
-        NotificationOptionItem().id,
-        CommandAndResponseOptionItem().id,
-        WorkflowOptionItem().id,
-      ]),
-      new Set([TabSPFxItem().id]),
-    ],
-    set
-  );
-  if (result) return result;
-  result = validateConflict([new Set([TabOptionItem().id]), new Set([TabNonSsoItem().id])], set);
-  if (result) return result;
-  result = validateConflict(
-    [
-      new Set([
-        TabOptionItem().id,
-        TabNonSsoItem().id,
-        TabSPFxItem().id,
-        BotOptionItem().id,
-        MessageExtensionItem().id,
-        NotificationOptionItem().id,
-        CommandAndResponseOptionItem().id,
-        WorkflowOptionItem().id,
-        ExistingTabOptionItem().id,
-      ]),
-      new Set([M365SsoLaunchPageOptionItem().id]),
-      new Set([M365SearchAppOptionItem().id]),
-    ],
-    set
-  );
-  return result;
-}
-
-export async function onChangeSelectionForCapabilities(
-  currentSelectedIds: Set<string>,
-  previousSelectedIds: Set<string>
-): Promise<Set<string>> {
-  let result = handleSelectionConflict(
-    [
-      new Set([BotOptionItem().id, MessageExtensionItem().id]),
-      new Set([NotificationOptionItem().id]),
-      new Set([CommandAndResponseOptionItem().id]),
-      new Set([WorkflowOptionItem().id]),
-    ],
-    previousSelectedIds,
-    currentSelectedIds
-  );
-  result = handleSelectionConflict(
-    [
-      new Set([
-        TabOptionItem().id,
-        TabNonSsoItem().id,
-        BotOptionItem().id,
-        MessageExtensionItem().id,
-        NotificationOptionItem().id,
-        CommandAndResponseOptionItem().id,
-        WorkflowOptionItem().id,
-      ]),
-      new Set([TabSPFxItem().id]),
-      new Set([ExistingTabOptionItem().id]),
-      new Set([M365SsoLaunchPageOptionItem().id]),
-      new Set([M365SearchAppOptionItem().id]),
-    ],
-    previousSelectedIds,
-    result
-  );
-  result = handleSelectionConflict(
-    [new Set([TabOptionItem().id]), new Set([TabNonSsoItem().id])],
-    previousSelectedIds,
-    result
-  );
-  return result;
-}
-export function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
+function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: CoreQuestionNames.TargetEnvName,
@@ -616,7 +374,6 @@ export function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
 }
 
 export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
-  const WINDOWS_MAX_PATH_LENGTH = 260;
   return {
     type: "text",
     name: CoreQuestionNames.NewTargetEnvName,
@@ -627,11 +384,6 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
         const match = targetEnvName.match(environmentManager.envNameRegex);
         if (!match) {
           return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
-        }
-
-        const envFilePath = environmentManager.getEnvConfigPath(targetEnvName, projectPath);
-        if (os.type() === "Windows_NT" && envFilePath.length >= WINDOWS_MAX_PATH_LENGTH) {
-          return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation2");
         }
 
         if (targetEnvName === LocalEnvironmentName) {
@@ -718,7 +470,7 @@ export function newResourceGroupNameQuestion(
   };
   return question;
 }
-export function QuestionNewResourceGroupName(): TextInputQuestion {
+function QuestionNewResourceGroupName(): TextInputQuestion {
   return {
     type: "text",
     name: CoreQuestionNames.NewResourceGroupName,
@@ -739,9 +491,7 @@ export function QuestionNewResourceGroupLocation(): SingleSelectQuestion {
 }
 
 export function ScratchOptionYesVSC(): OptionItem {
-  const label = isOfficeAddinEnabled()
-    ? getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")
-    : getLocalizedString("core.ScratchOptionYesVSC.label");
+  const label = getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label");
   return {
     id: "yes",
     label: `$(new-folder) ${label}`,
@@ -804,9 +554,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC());
-    if (isOfficeAddinEnabled()) {
-      staticOptions.push(CreateNewOfficeAddinOption());
-    }
+    staticOptions.push(CreateNewOfficeAddinOption());
     staticOptions.push(ScratchOptionNoVSC());
   } else {
     staticOptions.push(ScratchOptionYes());
@@ -849,27 +597,7 @@ export function SampleSelect(): SingleSelectQuestion {
   };
 }
 
-export function ExistingTabEndpointQuestion(): TextInputQuestion {
-  return {
-    type: "text",
-    name: CoreQuestionNames.ExistingTabEndpoint,
-    title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
-    default: "https://localhost:3000",
-    placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
-    validation: {
-      validFunc: async (endpoint: string): Promise<string | undefined> => {
-        const match = endpoint.match(/^https:\/\/[\S]+$/i);
-        if (!match) {
-          return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
-        }
-
-        return undefined;
-      },
-    },
-  };
-}
-
-export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
+const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
 
 export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
   return {
@@ -895,7 +623,7 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
   };
 };
 
-export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
+const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
     id: tab.name,
     label: tab.name,
@@ -907,7 +635,7 @@ export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   };
 };
 
-export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
+const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
     id: tab.name,
     label: tab.name,
@@ -944,7 +672,7 @@ export const BotIdsQuestion = (
   };
 };
 
-export const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
+const botOptionItem = (isMessageExtension: boolean, botId: string): OptionItem => {
   return {
     id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,
     label: isMessageExtension
@@ -1023,7 +751,11 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false):
   };
 
   const res = new QTreeNode(teamsAppManifestNode);
-  if (inputs.platform !== Platform.CLI_HELP && inputs.platform !== Platform.CLI) {
+  if (
+    inputs.platform !== Platform.CLI_HELP &&
+    inputs.platform !== Platform.CLI &&
+    inputs.platform !== Platform.VS
+  ) {
     const manifestPath = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
@@ -1076,7 +808,7 @@ export async function selectEnvNode(
   return envNode;
 }
 
-export function confirmManifestNode(
+function confirmManifestNode(
   defaultManifestFilePath: string,
   isTeamsApp = true,
   isLocal = false

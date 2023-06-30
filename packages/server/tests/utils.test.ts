@@ -3,15 +3,13 @@
 
 import { err, FxError, ok, SystemError, UIConfig, UserError } from "@microsoft/teamsfx-api";
 import "mocha";
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import {
-  convertToHandlerResult,
   convertUIConfigToJson,
   getResponseWithErrorHandling,
   standardizeResult,
 } from "../src/utils";
 import { CustomizeFuncRequestType } from "../src/apis";
-import { ResponseError } from "vscode-jsonrpc";
 import { reset } from "../src/customizedFuncAdapter";
 
 describe("utils", () => {
@@ -147,31 +145,6 @@ describe("utils", () => {
       const r = ok<string, FxError>("test");
       const res = standardizeResult(r);
       expect(res).to.eql(ok("test"));
-    });
-  });
-
-  describe("convertToHandlerResult", () => {
-    it("case 1: ok result", () => {
-      const r = ok<string, FxError>("test");
-      const res = convertToHandlerResult(r);
-      expect(res).to.eql(r.value);
-    });
-
-    it("case 2: error result", () => {
-      const e = new UserError(
-        "testSource",
-        "testUserError",
-        "test user error",
-        "test display user error"
-      );
-      const exp = new ResponseError(-32000, e.message, e);
-      const res = convertToHandlerResult(err(e));
-      expect(res instanceof ResponseError).to.be.true;
-      if (res instanceof ResponseError) {
-        expect(res.code).to.equal(exp.code);
-        expect(res.message).to.equal(exp.message);
-        expect(res.data).to.equal(exp.data);
-      }
     });
   });
 });

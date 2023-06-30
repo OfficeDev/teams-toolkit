@@ -10,11 +10,11 @@ import { HttpStatusCode } from "../constant/commonConstant";
 import { BaseComponentInnerError } from "../error/componentError";
 import { FxError } from "@microsoft/teamsfx-api";
 
-export function isAzureRestError(error: any): error is RestError {
+function isAzureRestError(error: any): error is RestError {
   return error instanceof RestError || error.hasOwnProperty("statusCode");
 }
 
-export function isAzureRemoteServerError(error: any): error is RestError {
+function isAzureRemoteServerError(error: any): error is RestError {
   return (
     isAzureRestError(error) &&
     (error?.statusCode ?? HttpStatusCode.ACCEPTED) >= HttpStatusCode.INTERNAL_SERVER_ERROR

@@ -10,7 +10,6 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ResourceContextV3,
   UserError,
   ManifestUtil,
 } from "@microsoft/teamsfx-api";
@@ -19,17 +18,17 @@ import {
   getAppPackage,
   updateManifestV3,
   updateTeamsAppV3ForPublish,
-} from "../../../../src/component/resource/appManifest/appStudio";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
+} from "../../../../src/component/driver/teamsApp/appStudio";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import AdmZip from "adm-zip";
-import { RetryHandler } from "../../../../src/component/resource/appManifest/utils/utils";
+import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { RestoreFn } from "mocked-env";
 import { CoreQuestionNames } from "../../../../src/core/question";
 import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
-import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { setTools } from "../../../../src/core/globalVars";
 
@@ -50,7 +49,7 @@ describe("appStudio", () => {
       sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
       sandbox.stub(manifestUtils, "getManifestV3").resolves(err(new UserError({})));
-      const ctx = createContextV3() as ResourceContextV3;
+      const ctx = createContextV3();
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "projectPath",
@@ -234,7 +233,7 @@ describe("appStudio", () => {
         projectPath: "projectPath",
       };
 
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.equal(res.error.name, "ManifestValidationFailed");
@@ -251,7 +250,7 @@ describe("appStudio", () => {
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.equal(res.error.name, "FileNotFoundError");
@@ -273,7 +272,7 @@ describe("appStudio", () => {
         projectPath: "projectPath",
       };
 
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.equal(res.error.name, "ManifestValidationFailed");
@@ -295,7 +294,7 @@ describe("appStudio", () => {
         projectPath: "projectPath",
       };
 
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         console.log(res.error);
@@ -318,7 +317,7 @@ describe("appStudio", () => {
         projectPath: "projectPath",
       };
 
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.equal(res.error.name, "ManifestValidationFailed");
@@ -345,7 +344,7 @@ describe("appStudio", () => {
       const errors: string[] = ["error1"];
       sandbox.stub(ManifestUtil, "validateManifest").resolves(errors);
 
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.equal(res.error.name, "ManifestValidationFailed");
@@ -381,7 +380,7 @@ describe("appStudio", () => {
         .stub(updateDriver, "run")
         .resolves(err(new UserError("apiError", "apiError", "", "")));
 
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.equal(res.error.name, "apiError");
@@ -414,7 +413,7 @@ describe("appStudio", () => {
       });
       sandbox.stub(updateDriver, "run").resolves(ok(new Map([])));
 
-      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isOk());
     });
   });

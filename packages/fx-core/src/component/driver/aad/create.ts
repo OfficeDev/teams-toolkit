@@ -17,14 +17,18 @@ import {
   err,
 } from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../common/tools";
-import { Constants } from "../../resource/aadApp/constants";
 import { MissingEnvUserError } from "./error/missingEnvError";
 import axios from "axios";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
-import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
+import { logMessageKeys, descriptionMessageKeys, constants } from "./utility/constants";
+import {
+  HttpClientError,
+  HttpServerError,
+  InvalidActionInputError,
+  UnhandledError,
+} from "../../../error/common";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { SignInAudience } from "./interface/signInAudience";
 import { updateProgress } from "../middleware/updateProgress";
@@ -160,12 +164,12 @@ export class CreateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new UnhandledUserError(error as Error, actionName, helpLink)),
+            result: err(new HttpClientError(actionName, message, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new UnhandledError(error as Error, actionName)),
+            result: err(new HttpServerError(actionName, message)),
             summaries: summaries,
           };
         }
@@ -217,7 +221,7 @@ export class CreateAadAppDriver implements StepDriver {
 
     const tenantId = tokenObjectResponse.value.tid as string; // The tid claim is AAD tenant id
     state.tenantId = tenantId;
-    state.authorityHost = Constants.oauthAuthorityPrefix;
-    state.authority = `${Constants.oauthAuthorityPrefix}/${tenantId}`;
+    state.authorityHost = constants.oauthAuthorityPrefix;
+    state.authority = `${constants.oauthAuthorityPrefix}/${tenantId}`;
   }
 }

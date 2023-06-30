@@ -5,7 +5,6 @@ import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import * as path from "path";
 import { hooks } from "@feathersjs/hooks/lib";
-import { pathToFileURL } from "url";
 import { Result, FxError, ok, err, Platform, Colors } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
@@ -13,8 +12,8 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
-import { Constants } from "../../resource/appManifest/constants";
+import { manifestUtils } from "./utils/ManifestUtils";
+import { Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
@@ -59,14 +58,12 @@ export class CreateAppPackageDriver implements StepDriver {
       return err(result.error);
     }
 
-    const state = this.loadCurrentState();
-
     let manifestPath = args.manifestPath;
     if (!path.isAbsolute(manifestPath)) {
       manifestPath = path.join(context.projectPath, manifestPath);
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath, state);
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -177,16 +174,6 @@ export class CreateAppPackageDriver implements StepDriver {
     }
 
     return ok(new Map());
-  }
-
-  private loadCurrentState() {
-    return {
-      TAB_ENDPOINT: process.env.TAB_ENDPOINT,
-      TAB_DOMAIN: process.env.TAB_DOMAIN,
-      BOT_ID: process.env.BOT_ID,
-      BOT_DOMAIN: process.env.BOT_DOMAIN,
-      ENV_NAME: process.env.TEAMSFX_ENV,
-    };
   }
 
   private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {

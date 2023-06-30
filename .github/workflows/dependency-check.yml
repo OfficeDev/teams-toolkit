@@ -1,0 +1,31 @@
+name: SDK Dependency Auto Upgrade
+on:
+  schedule:
+    # The "*" (#42, asterisk) character has special semantics in YAML, so this
+    # string has to be quoted.
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get TeamsFx Renovate App Token
+        id: teamsfx-renovate
+        uses: getsentry/action-github-app-token@v2
+        with:
+          app_id: ${{ secrets.RENOVATE_APP_ID }}
+          private_key: ${{ secrets.RENOVATE_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v36.0.0
+        with:
+          token: "${{ steps.teamsfx-renovate.outputs.token }}"
+          configurationFile: .github/renovate.json
+        env:
+          RENOVATE_FORK_TOKEN: "${{ secrets.FORK_RENOVATE_PAT }}"

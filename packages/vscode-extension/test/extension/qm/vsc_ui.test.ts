@@ -18,13 +18,19 @@ import {
 } from "vscode";
 
 import {
+  err,
+  FxError,
+  InputResult,
+  ok,
+  Result,
   SelectFileConfig,
+  SelectFileResult,
   SelectFolderConfig,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
-  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { UserCancelError } from "@microsoft/teamsfx-core";
 import { FxQuickPickItem, VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { sleep } from "../../../src/utils/commonUtils";
@@ -59,7 +65,6 @@ describe("UI Unit Tests", async () => {
 
   describe("Select Folder", () => {
     it("has returns default folder", async function (this: Mocha.Context) {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFolderConfig = {
         name: "name",
@@ -105,7 +110,6 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFolderConfig = {
         name: "name",
@@ -141,7 +145,7 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {
-        expect(result.error).to.equal(UserCancelError);
+        expect(result.error instanceof UserCancelError).is.true;
       }
       sinon.restore();
     });
@@ -149,7 +153,6 @@ describe("UI Unit Tests", async () => {
 
   describe("Select File", () => {
     it("has returns default file", async function (this: Mocha.Context) {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -190,7 +193,6 @@ describe("UI Unit Tests", async () => {
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -226,13 +228,12 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
       if (result.isErr()) {
-        expect(result.error).to.equal(UserCancelError);
+        expect(result.error instanceof UserCancelError).is.true;
       }
       sinon.restore();
     });
 
     it("has returns item in possible files", async function (this: Mocha.Context) {
-      sinon.stub(commonTools, "isV3Enabled").returns(false);
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -335,7 +336,6 @@ describe("UI Unit Tests", async () => {
     });
 
     it("runs command successfully", async function (this: Mocha.Context) {
-      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = stubInterface<Terminal>();
@@ -364,7 +364,6 @@ describe("UI Unit Tests", async () => {
     });
 
     it("runs command timeout", async function (this: Mocha.Context) {
-      sandbox.stub(commonTools, "isV3Enabled").returns(false);
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = {
@@ -492,6 +491,138 @@ describe("UI Unit Tests", async () => {
 
       expect(result.isErr()).is.true;
 
+      sinon.restore();
+    });
+  });
+
+  describe("Select local file or input", () => {
+    it("selects local file successfully", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleFileOrInputConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        inputOptionItem: {
+          id: "input",
+          label: "input",
+        },
+        inputBoxConfig: {
+          prompt: "prompt",
+          title: "title",
+          name: "input name",
+        },
+      };
+
+      sinon
+        .stub(VsCodeUI.prototype, "selectFile")
+        .resolves(ok({ type: "success", result: "file" }));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectFileOrInput(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("file");
+      }
+      sinon.restore();
+    });
+
+    it("selects local file error", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleFileOrInputConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        inputOptionItem: {
+          id: "input",
+          label: "input",
+        },
+        inputBoxConfig: {
+          prompt: "prompt",
+          title: "title",
+          name: "input name",
+        },
+      };
+
+      sinon
+        .stub(VsCodeUI.prototype, "selectFile")
+        .resolves(err(new UserError("source", "name", "msg", "msg")));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectFileOrInput(config);
+
+      expect(result.isErr()).is.true;
+      if (result.isErr()) {
+        expect(result.error.name).to.equal("name");
+      }
+      sinon.restore();
+    });
+
+    it("inputs a value sucessfully", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleFileOrInputConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        inputOptionItem: {
+          id: "input",
+          label: "input",
+        },
+        inputBoxConfig: {
+          prompt: "prompt",
+          title: "title",
+          name: "input name",
+        },
+      };
+
+      sinon
+        .stub(VsCodeUI.prototype, "selectFile")
+        .resolves(ok({ type: "success", result: "input" }));
+      sinon
+        .stub(VsCodeUI.prototype, "inputText")
+        .resolves(ok({ type: "success", result: "testUrl" }));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectFileOrInput(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("testUrl");
+      }
+      sinon.restore();
+    });
+
+    it("inputs a value error", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleFileOrInputConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        inputOptionItem: {
+          id: "input",
+          label: "input",
+        },
+        inputBoxConfig: {
+          prompt: "prompt",
+          title: "title",
+          name: "input name",
+        },
+      };
+
+      sinon
+        .stub(VsCodeUI.prototype, "selectFile")
+        .resolves(ok({ type: "success", result: "input" }));
+      sinon
+        .stub(VsCodeUI.prototype, "inputText")
+        .resolves(err(new UserError("source", "name", "msg", "msg")));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectFileOrInput(config);
+
+      expect(result.isErr()).is.true;
+      if (result.isErr()) {
+        expect(result.error.name).to.equal("name");
+      }
       sinon.restore();
     });
   });

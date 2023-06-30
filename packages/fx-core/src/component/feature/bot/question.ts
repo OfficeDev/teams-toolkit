@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Inputs, SingleSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AzureSolutionQuestionNames, NotificationOptionItem } from "../../constants";
-import { Runtime } from "../../constants";
+import { AzureSolutionQuestionNames, NotificationOptionItem, Runtime } from "../../constants";
 import { NotificationTrigger, NotificationTriggers, QuestionNames } from "./constants";
 
 enum HostType {
@@ -12,63 +10,77 @@ enum HostType {
   Functions = "azure-functions",
 }
 
-export interface HostTypeTriggerOptionItem extends OptionItem {
+interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
   triggers?: NotificationTrigger[];
 }
 
 // NOTE: id must be the sample as cliName to prevent parsing error for CLI default value.
-export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "timer-functions",
-  hostType: HostType.Functions,
-  triggers: [NotificationTriggers.TIMER],
-});
+export function FunctionsTimerTriggerOptionItem(): HostTypeTriggerOptionItem {
+  return {
+    id: "timer-functions",
+    hostType: HostType.Functions,
+    triggers: [NotificationTriggers.TIMER],
+    label: getLocalizedString("plugins.bot.triggers.timer-functions.label"),
+    cliName: getLocalizedString("plugins.bot.triggers.timer-functions.cliName"),
+    description: getLocalizedString("plugins.bot.triggers.timer-functions.description"),
+    detail: getLocalizedString("plugins.bot.triggers.timer-functions.detail"),
+  };
+}
 
-export const FunctionsHttpAndTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "http-and-timer-functions",
-  hostType: HostType.Functions,
-  triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
-});
+export function FunctionsHttpAndTimerTriggerOptionItem(): HostTypeTriggerOptionItem {
+  return {
+    id: "http-and-timer-functions",
+    hostType: HostType.Functions,
+    triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
+    label: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.label"),
+    cliName: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.cliName"),
+    description: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.description"),
+    detail: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.detail"),
+  };
+}
 
-export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "http-functions",
-  hostType: HostType.Functions,
-  triggers: [NotificationTriggers.HTTP],
-});
+export function FunctionsHttpTriggerOptionItem(): HostTypeTriggerOptionItem {
+  return {
+    id: "http-functions",
+    hostType: HostType.Functions,
+    triggers: [NotificationTriggers.HTTP],
+    label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
+    cliName: getLocalizedString("plugins.bot.triggers.http-functions.cliName"),
+    description: getLocalizedString("plugins.bot.triggers.http-functions.description"),
+    detail: getLocalizedString("plugins.bot.triggers.http-functions.detail"),
+  };
+}
 
-export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "http-restify",
-  hostType: HostType.AppService,
-  // trigger of app service host is hard-coded to http, so no need to set here
-});
+export function AppServiceOptionItem(): HostTypeTriggerOptionItem {
+  return {
+    id: "http-restify",
+    hostType: HostType.AppService,
+    label: getLocalizedString("plugins.bot.triggers.http-restify.label"),
+    cliName: getLocalizedString("plugins.bot.triggers.http-restify.cliName"),
+    description: getLocalizedString("plugins.bot.triggers.http-restify.description"),
+    detail: getLocalizedString("plugins.bot.triggers.http-restify.detail"),
+  };
+}
 
 // TODO: this option will not be shown in UI, leave messages empty.
-export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = optionWithL10n({
-  id: "http-webapi",
-  hostType: HostType.AppService,
-});
-
-export const FunctionsOptionItems: HostTypeTriggerOptionItem[] = [
-  FunctionsHttpTriggerOptionItem,
-  FunctionsTimerTriggerOptionItem,
-  FunctionsHttpAndTimerTriggerOptionItem,
-];
-
-type HostTypeTriggerOptionItemWithoutText = Omit<
-  HostTypeTriggerOptionItem,
-  "label" | "cliName" | "description" | "detail"
->;
-
-function optionWithL10n(option: HostTypeTriggerOptionItemWithoutText): HostTypeTriggerOptionItem {
-  // e.g. expands to plugins.bot.triggers.functionsTimer.label
-  const prefix = "plugins.bot.triggers";
+export function AppServiceOptionItemForVS(): HostTypeTriggerOptionItem {
   return {
-    ...option,
-    label: getLocalizedString(`${prefix}.${option.id}.label`),
-    cliName: getLocalizedString(`${prefix}.${option.id}.cliName`),
-    description: getLocalizedString(`${prefix}.${option.id}.description`),
-    detail: getLocalizedString(`${prefix}.${option.id}.detail`),
+    id: "http-webapi",
+    hostType: HostType.AppService,
+    label: getLocalizedString("plugins.bot.triggers.http-webapi.label"),
+    cliName: getLocalizedString("plugins.bot.triggers.http-webapi.cliName"),
+    description: getLocalizedString("plugins.bot.triggers.http-webapi.description"),
+    detail: getLocalizedString("plugins.bot.triggers.http-webapi.detail"),
   };
+}
+
+function FunctionsOptionItems(): HostTypeTriggerOptionItem[] {
+  return [
+    FunctionsHttpTriggerOptionItem(),
+    FunctionsTimerTriggerOptionItem(),
+    FunctionsHttpAndTimerTriggerOptionItem(),
+  ];
 }
 
 // The restrictions of this question:
@@ -78,11 +90,9 @@ export function createHostTypeTriggerQuestion(
   platform?: Platform,
   runtime?: Runtime
 ): SingleSelectQuestion {
-  const prefix = "plugins.bot.questionHostTypeTrigger";
-
   const appServiceOptionItem =
-    runtime === Runtime.dotnet ? AppServiceOptionItemForVS : AppServiceOptionItem;
-  let staticOptions = [appServiceOptionItem, ...FunctionsOptionItems];
+    runtime === Runtime.dotnet ? AppServiceOptionItemForVS() : AppServiceOptionItem();
+  let staticOptions = [appServiceOptionItem, ...FunctionsOptionItems()];
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.
     staticOptions = staticOptions.map((option) => {
@@ -95,11 +105,11 @@ export function createHostTypeTriggerQuestion(
 
   return {
     name: QuestionNames.BOT_HOST_TYPE_TRIGGER,
-    title: getLocalizedString(`${prefix}.title`),
+    title: getLocalizedString("plugins.bot.questionHostTypeTrigger.title"),
     type: "singleSelect",
     staticOptions: staticOptions,
     default: appServiceOptionItem.id,
-    placeholder: getLocalizedString(`${prefix}.placeholder`),
+    placeholder: getLocalizedString("plugins.bot.questionHostTypeTrigger.placeholder"),
   };
 }
 
@@ -110,21 +120,14 @@ export const showNotificationTriggerCondition = {
     if (!inputs) {
       return "Invalid inputs";
     }
-    if (isPreviewFeaturesEnabled()) {
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-      if (cap === NotificationOptionItem().id) {
-        return undefined;
-      }
-      // Single Select Option for "Add Feature"
-      const feature = inputs[AzureSolutionQuestionNames.Features];
-      if (feature === NotificationOptionItem().id) {
-        return undefined;
-      }
-    } else {
-      const cap = inputs[AzureSolutionQuestionNames.Capabilities];
-      if (Array.isArray(cap) && cap.includes(NotificationOptionItem().id)) {
-        return undefined;
-      }
+    const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+    if (cap === NotificationOptionItem().id) {
+      return undefined;
+    }
+    // Single Select Option for "Add Feature"
+    const feature = inputs[AzureSolutionQuestionNames.Features];
+    if (feature === NotificationOptionItem().id) {
+      return undefined;
     }
     return "Notification is not selected";
   },

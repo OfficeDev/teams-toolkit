@@ -1,23 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as AdmZip from "adm-zip";
-import axios from "axios";
-import { execSync } from "child_process";
-import * as fs from "fs-extra";
-import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
-import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes, Correlator, sampleProvider } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "../commonlib/azureLogin";
 import M365TokenInstance from "../commonlib/m365Login";
@@ -33,7 +22,6 @@ import {
   TelemetrySuccess,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { isMacOS } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { Commands } from "./Commands";
 import { EventMessages } from "./messages";
@@ -94,7 +82,12 @@ export class WebviewPanel {
     this.panel.onDidChangeViewState(
       (e) => {
         const panel = e.webviewPanel;
-        if (TreatmentVariableValue.inProductDoc && panelType === PanelType.RespondToCardActions) {
+        if (
+          TreatmentVariableValue.inProductDoc &&
+          (panelType === PanelType.RespondToCardActions ||
+            panelType === PanelType.FunctionBasedNotificationBotReadme ||
+            panelType === PanelType.RestifyServerNotificationBotReadme)
+        ) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
             [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
             [TelemetryProperty.Interaction]: panel.visible
@@ -158,19 +151,10 @@ export class WebviewPanel {
           case Commands.SwitchPanel:
             WebviewPanel.createOrShow(msg.data);
             break;
-          case Commands.InitAccountInfo:
-            this.setStatusChangeMap();
-            break;
-          case Commands.UpdateGlobalStepsDone:
-            await this.updateGlobalStepsDone(msg.data);
-            break;
-          case Commands.GetGlobalStepsDone:
-            await this.getGlobalStepsDone();
-            break;
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
           case Commands.LoadSampleCollection:
-            this.LoadSampleCollection();
+            await this.LoadSampleCollection();
             break;
           default:
             break;
@@ -209,21 +193,8 @@ export class WebviewPanel {
     }
   }
 
-  private async updateGlobalStepsDone(data: any) {
-    await globalStateUpdate("globalStepsDone", data);
-  }
-
-  private async getGlobalStepsDone() {
-    const globalStepsDone = await globalStateGet("globalStepsDone", []);
-    if (this.panel && this.panel.webview) {
-      this.panel.webview.postMessage({
-        message: "updateStepsDone",
-        data: globalStepsDone,
-      });
-    }
-  }
-
-  private LoadSampleCollection() {
+  private async LoadSampleCollection() {
+    await sampleProvider.fetchSampleConfig();
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
         message: EventMessages.LoadSampleCollection,
@@ -232,7 +203,7 @@ export class WebviewPanel {
     }
   }
 
-  private getWebpageTitle(panelType: PanelType) {
+  private getWebpageTitle(panelType: PanelType): string {
     switch (panelType) {
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
@@ -242,116 +213,10 @@ export class WebviewPanel {
         return localize("teamstoolkit.guides.cardActionResponse.label");
       case PanelType.AccountHelp:
         return localize("teamstoolkit.webview.accountHelp");
-    }
-  }
-
-  private setStatusChangeMap() {
-    const m365WebviewCallback = (
-      status: string,
-      token: string | undefined,
-      accountInfo: Record<string, unknown> | undefined
-    ) => {
-      let email = undefined;
-      if (status === "SignedIn") {
-        email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
-      }
-
-      if (this.panel && this.panel.webview) {
-        this.panel.webview.postMessage({
-          message: "m365AccountChange",
-          data: email,
-        });
-      }
-
-      return Promise.resolve();
-    };
-
-    M365TokenInstance.setStatusChangeMap(
-      "quick-start-webview",
-      { scopes: AppStudioScopes },
-      m365WebviewCallback
-    );
-
-    AzureAccountManager.setStatusChangeMap(
-      "quick-start-webview",
-      async (status, token, accountInfo) => {
-        let email = undefined;
-        if (status === "SignedIn") {
-          const token = await AzureAccountManager.getIdentityCredentialAsync();
-          if (token !== undefined) {
-            email = (token as any).username ? (token as any).username : undefined;
-          }
-        }
-
-        if (this.panel && this.panel.webview) {
-          this.panel.webview.postMessage({
-            message: "azureAccountChange",
-            data: email,
-          });
-        }
-
-        return Promise.resolve();
-      }
-    );
-  }
-
-  private async fetchCodeZip(url: string) {
-    let retries = 3;
-    let result = undefined;
-    while (retries > 0) {
-      retries--;
-      try {
-        result = await axios.get(url, {
-          responseType: "arraybuffer",
-        });
-        if (result.status === 200 || result.status === 201) {
-          return result;
-        }
-      } catch (e) {
-        await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, 10000));
-      }
-    }
-    return result;
-  }
-
-  private async saveFilesRecursively(
-    zip: AdmZip,
-    appFolder: string,
-    dstPath: string
-  ): Promise<void> {
-    await Promise.all(
-      zip
-        .getEntries()
-        .filter(
-          (entry) =>
-            !entry.isDirectory &&
-            entry.entryName.includes(appFolder) &&
-            entry.entryName.split("/").includes(appFolder)
-        )
-        .map(async (entry) => {
-          const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
-          const filePath = path.join(dstPath, entryPath);
-          await fs.ensureDir(path.dirname(filePath));
-          await fs.writeFile(filePath, entry.getData());
-        })
-    );
-  }
-
-  private async downloadSampleHook(sampleId: string, sampleAppPath: string) {
-    // A temporary solution to avoid duplicate componentId
-    if (sampleId === "todo-list-SPFx") {
-      const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
-      const componentId = uuid.v4();
-      glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
-        await Promise.all(
-          files.map(async (file) => {
-            let content = (await fs.readFile(file)).toString();
-            const reg = new RegExp(originalId, "g");
-            content = content.replace(reg, componentId);
-            await fs.writeFile(file, content);
-          })
-        );
-      });
+      case PanelType.RestifyServerNotificationBotReadme:
+        return localize("teamstoolkit.guides.notificationBot.label");
+      case PanelType.FunctionBasedNotificationBotReadme:
+        return localize("teamstoolkit.guides.notificationBot.label");
     }
   }
 
@@ -381,8 +246,6 @@ export class WebviewPanel {
             <script>
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
-              const isSupportedNode = ${this.isValidNode()};
-              const isMacPlatform = ${isMacOS()};
             </script>
             <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
           </body>
@@ -391,7 +254,7 @@ export class WebviewPanel {
 
   private getNonce() {
     let text = "";
-    // eslint-disable-next-line no-secrets/no-secrets
+    // eslint-disable-next-line
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     for (let i = 0; i < 32; i++) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -407,27 +270,6 @@ export class WebviewPanel {
     }
     return undefined;
   }
-
-  isValidNode = () => {
-    try {
-      const supportedVersions = ["10", "12", "14"];
-      const output = execSync("node --version");
-      const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
-
-      const match = regex.exec(output.toString());
-      if (!match) {
-        return false;
-      }
-
-      const majorVersion = match.groups?.major_version;
-      if (!majorVersion) {
-        return false;
-      }
-
-      return supportedVersions.includes(majorVersion);
-    } catch (e) {}
-    return false;
-  };
 
   public dispose() {
     const panelIndex = WebviewPanel.currentPanels.indexOf(this);

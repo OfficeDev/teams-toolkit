@@ -45,6 +45,23 @@ describe("Progress", () => {
     expect(Progress["finishedRows"]).deep.equals([]);
   });
 
+  it("static finish hide", () => {
+    const updateStub = sandbox.stub(Row.prototype, "update");
+    const romoveCBStub = sandbox.stub(Row.prototype, "removeCB");
+    const freezeStub = sandbox.stub(Row.prototype, "freeze");
+    const instance = new Progress("Test static finish", 3);
+    const row = new Row(() => "Test static finish");
+    Progress["instances"] = [instance];
+    Progress["rows"] = [row];
+    Progress["finish"](instance, true);
+    sinon.assert.calledOnce(updateStub);
+    sinon.assert.calledOnce(romoveCBStub);
+    // sinon.assert.calledOnce(freezeStub);
+    expect(Progress["instances"]).deep.equals([]);
+    expect(Progress["rows"]).deep.equals([]);
+    expect(Progress["finishedRows"]).deep.equals([]);
+  });
+
   it("static end", () => {
     const endStub = sandbox.stub(Progress.prototype, "end");
     const instance = new Progress("Test static end", 3);

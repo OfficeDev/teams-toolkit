@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import m365Provider from "../../../src/commonlib/m365LoginUserPassword";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import axios, { AxiosInstance } from "axios";
 
 async function createRequester(): Promise<AxiosInstance> {

@@ -521,6 +521,7 @@ export async function validateReactOutlookTab(
   includeFunction?: boolean
 ) {
   try {
+    await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(
       'iframe[data-tid="app-host-iframe"]'
     );

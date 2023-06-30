@@ -31,12 +31,11 @@ const config = {
   devtool: "source-map",
   externals: {
     vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    keytar: "keytar",
     ["original-fs"]: "commonjs original-fs", // original-fs package is builtin Electron package which we use to prevent special fs logic for .asar files, 📖 -> https://www.electronjs.org/docs/latest/tutorial/asar-archives#treating-an-asar-archive-as-a-normal-file
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-    extensions: [".tsx", ".ts", ".js"],
+    extensions: [".tsx", ".ts", ".js", ".node"],
   },
   module: {
     rules: [
@@ -67,6 +66,10 @@ const config = {
       {
         test: /node_modules[\\|/](yaml-language-server|vscode-languageserver|vscode-json-languageservice|prettier)/,
         use: "umd-compat-loader",
+      },
+      {
+        test: /\.node$/,
+        use: 'node-loader',
       },
     ],
   },

@@ -11,7 +11,6 @@ import * as fs from "fs-extra";
 import * as keytarType from "keytar";
 import VsCodeLogInstance from "./log";
 import * as os from "os";
-import { env } from "vscode";
 import { localize } from "../utils/localizeUtils";
 
 const cacheDir = os.homedir + `/.${ConfigFolderName}/account`;
@@ -23,24 +22,6 @@ const cachePathEnd = ".json";
 const serviceName = "Microsoft Teams Toolkit";
 
 export const UTF8 = "utf8";
-
-// the recommended way to use keytar in vscode, https://code.visualstudio.com/api/advanced-topics/remote-extensions#persisting-secrets
-declare const __webpack_require__: typeof require;
-declare const __non_webpack_require__: typeof require;
-function getNodeModule<T>(moduleName: string): T | undefined {
-  const r = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-  try {
-    return r(`${env.appRoot}/node_modules.asar/${moduleName}`);
-  } catch (err) {
-    // Not in ASAR.
-  }
-  try {
-    return r(`${env.appRoot}/node_modules/${moduleName}`);
-  } catch (err) {
-    // Not available.
-  }
-  return undefined;
-}
 
 class AccountCrypto {
   private readonly algorithm: crypto.CipherGCMTypes = "aes-256-gcm";

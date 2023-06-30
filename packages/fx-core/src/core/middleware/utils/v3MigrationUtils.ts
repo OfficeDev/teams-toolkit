@@ -155,7 +155,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
     );
     TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit.`
     );
   } else {
     TOOLS?.logProvider.warning(

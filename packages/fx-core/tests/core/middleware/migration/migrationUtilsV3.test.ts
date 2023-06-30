@@ -381,7 +381,7 @@ describe("Migration: upgrade cancel messages", () => {
       `Upgrade cancelled.`,
       `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at https://aka.ms/teams-toolkit-5.0-upgrade.`,
       `If you want to upgrade, please trigger this command again.`,
-      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit 17.4.x.x.`,
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit.`,
     ];
     assert.equal(messageArray.join(""), groundTruth.join(""));
   });

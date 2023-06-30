@@ -546,13 +546,29 @@ describe("scaffold question", () => {
   });
 
   describe("getLanguageOptions", () => {
-    it("dotnet", async () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+
+    it("dotnet for VS", async () => {
+      const options = getLanguageOptions({
+        platform: Platform.VS,
+        runtime: Runtime.dotnet,
+      });
+      assert.isTrue(options.length === 1 && options[0].id === "csharp");
+    });
+
+    it("dotnet when TEAMSFX_CLI_DOTNET", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
       const options = getLanguageOptions({
         platform: Platform.CLI,
         runtime: Runtime.dotnet,
       });
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });
+
     it("office addin", async () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,

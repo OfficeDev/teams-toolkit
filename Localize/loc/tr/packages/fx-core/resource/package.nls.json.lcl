@@ -955,18 +955,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.collaboration.error.failedToGetTeamsAppId" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to find Teams app id in your .env file. Make sure you have already run 'Provision' or correctly set the value with key '%s' in your .env file.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.env dosyanızda Teams uygulama kimliği bulunamıyor. 'Provision' öğesini zaten çalıştırmış olduğunuzdan veya .env dosyanızda değeri '%s' anahtarıyla doğru bir şekilde ayarladığınızdan emin olun.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to find Teams app id in your .env file. Please correctly set the value with key '%s' in your .env file.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.collaboration.error.failedToLoadDotEnvFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to load your .env File. Reason: %s]]></Val>
@@ -2815,6 +2803,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.botFramework.error.InvalidBotId" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot ID %s is invalid. It must be a GUID.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.botFramework.progressBar.createOrUpdateBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating or updating bot registration.]]></Val>
@@ -3697,153 +3691,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Video filter app in remote is not supported by Teams Toolkit. Please check the README.md file in project root folder.]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.CheckPermissionError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to check permission.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[İzin denetlenemiyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to check permission.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.CreateAppError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to create an app in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Azure Active Directory'de uygulama oluşturulamıyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to create an app in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.CreateSecretError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[`Unable to create an application secret in Azure Active Directory.`]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[`Azure Active Directory’de uygulama gizli dizisi oluşturulamıyor.`]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[`Failed to create an application secret in Azure Active Directory.`]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.FormatError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Invalid format for %s. Value: %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s için geçersiz biçim. Değer: %s.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GetConfigError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get configuration value "%s" for %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s için "%s" yapılandırma değeri alınamıyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get configuration value "%s" for %s.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GetTokenError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get user login information for %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s için kullanıcı oturum açma bilgileri alınamıyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get user login information for %s.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GrantPermissionError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[%s: %s. Unable to grant permission.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s: %s. İzin verilemiyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[%s: %s. Failed to grant permission.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.ListCollaboratorError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to list collaborator.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ortak çalışan listesi alınamıyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to list collaborator.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.TenantNotExistError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get tenant information from user login.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kullanıcı oturum açma işleminden kiracı bilgileri alınamıyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get tenant information from user login.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.AppObjectIdIsNull" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Missing Object ID.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nesne kimliği eksik.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.CheckPermissionFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to check permission in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Azure Active Directory’de izin denetlenemiyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to check permission in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.GrantPermissionFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to grant permission in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Azure Active Directory’de izin verilemiyor.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to grant permission in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.ReachRetryLimit" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Exceeded retry limit.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Yeniden deneme sınırı aşıldı.]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4954,15 +4801,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.aad.OwnerAlreadyAdded" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[User %s is already added as owner of Azure AD app %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s kullanıcısı zaten %s Azure AD uygulamasının sahibi olarak ekli.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";plugins.appstudio.adminPortal" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Go to admin portal]]></Val>
@@ -5244,18 +5082,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to retrieve Azure credentials.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.bot.FailedToGetAlreadyCreatedBot" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot create bot with id %s which may be taken by an existing bot. Visit %s to learn more.]A;Or API call to Developer Portal failed: Error, Request failed with status code 500, API name: create-bot, X-Correlation-ID: undefined. This may come from some intermittent service error. Please wait for a few minutes and retry.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s kimliğine sahip bot oluşturulamıyor, bu kimlik mevcut bir bot tarafından alınmış olabilir. Daha fazla bilgi için %s sayfasını ziyaret edin.]A;Veya Geliştirici Portalı’na yapılan API çağrısı başarısız oldu: Hata, İstek, 500 durum koduyla başarısız oldu, API adı: create-bot, X-Correlation-ID: tanımsız. Bu, aralıklı olarak ortaya çıkan bir hizmet hatasından kaynaklanmış olabilir. Lütfen birkaç dakika bekleyip yeniden deneyin.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Could not get bot with id %s which was created before. ]A;This could happen if the bot was created by another account. Visit %s to learn more.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -5804,7 +5630,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Unable to upload and deploy package to App Catalog %s. You need your org's Microsoft 365 tenant admin permissions. You can get free Microsoft 365 tenant from [Microsoft 365 developer program]5D;(%s) for testing purpose.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Paket, %s Uygulama Kataloğuna yüklenemiyor ve dağıtılamıyor. Kuruluşunuzun Microsoft 365 kiracı yöneticisi izinlerine ihtiyacınız var. Test amacıyla [Microsoft 365 geliştirici programından]5D; (%s) ücretsiz Microsoft 365 kiracısı edinebilirsiniz.]]></Val>
+            <Val><![CDATA[Paket, %s Uygulama Kataloğuna yüklenemiyor ve dağıtılamıyor. Kuruluşunuzun Microsoft 365 kiracı yöneticisi izinlerine ihtiyacınız var. Test amacıyla [Microsoft 365 geliştirici programından]5D;(%s) ücretsiz Microsoft 365 kiracısı edinebilirsiniz.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, use site admin account.]]></Val>
@@ -5901,16 +5727,19 @@
       </Item>
       <Item ItemId=";plugins.spfx.questions.spfxSolution.createNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create New]]></Val>
+          <Val><![CDATA[Create a New SPFx Solution]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.spfxSolution.importExisting" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Import Existing SPFx Solution]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Import an Existing SPFx Solution]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Mevcut SPFx Çözümünü İçeri Aktar]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Import Existing SPFx Solution]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

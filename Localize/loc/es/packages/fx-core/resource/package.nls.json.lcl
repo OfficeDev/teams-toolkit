@@ -992,7 +992,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Successfully prepared Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La aplicación de Teams se preparó correctamente.]]></Val>
+            <Val><![CDATA[La aplicación teams se preparó correctamente.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2992,8 +2992,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create or update JSON file.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Cree o actualice appsettings en un archivo JSON.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cree o actualice el archivo JSON.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create or update appsettings to JSON file.]]></Val>
@@ -3004,8 +3004,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The json file has been generated successfully to %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Las appsettings se han generado correctamente en %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[El archivo JSON se ha generado correctamente en %s.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The appsettings have been generated successfully to %s.]]></Val>
@@ -4376,7 +4376,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Previous task is still running. Wait until your previous task is finished and try again.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La tarea anterior aún se está ejecutando. Espere a que finalice la tarea anterior e inténtelo de nuevo.]]></Val>
+            <Val><![CDATA[La tarea anterior todavía se está ejecutando. Espere hasta que finalice la tarea anterior e inténtelo de nuevo.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4397,7 +4397,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A http client error happened while performing the %s task. The error response is: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Error de cliente HTTP al realizar la tarea de %s. La respuesta del error es: %s]]></Val>
+            <Val><![CDATA[Error de cliente HTTP al realizar la tarea %s. La respuesta de error es: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4406,7 +4406,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A http server error happened while performing the %s task. Please try again later. The error response is: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Error del servidor HTTP al realizar la tarea de %s. Vuelva a intentarlo más tarde. La respuesta del error es: %s]]></Val>
+            <Val><![CDATA[Error del servidor HTTP al realizar la tarea %s. Vuelva a intentarlo más tarde. La respuesta de error es: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4489,6 +4489,9 @@
       <Item ItemId=";error.common.ReadFileError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to read file for reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[No se puede leer el archivo por el motivo: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5669,7 +5672,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to import existing SPFx solution to Teams Toolkit: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[No se pudo importar la solución SPFx existente en el kit de herramientas de Teams: %s]]></Val>
+            <Val><![CDATA[No se pudo importar la solución SPFx existente al kit de herramientas de Teams: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5762,7 +5765,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit failed to import your SPFx solution. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit no pudo importar la solución SPFx. Puede encontrar un registro completo de los detalles de la importación en %s.]]></Val>
+            <Val><![CDATA[El kit de herramientas de Teams no pudo importar la solución SPFx. Puede encontrar un registro completo de los detalles de importación en %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5771,7 +5774,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has imported your SPFx solution successfully. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit ha importado la solución SPFx correctamente. Puede encontrar un registro completo de los detalles de la importación en %s.]]></Val>
+            <Val><![CDATA[El kit de herramientas de Teams ha importado correctamente la solución SPFx. Puede encontrar un registro completo de los detalles de importación en %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5797,6 +5800,9 @@
       <Item ItemId=";plugins.spfx.import.updateTemplates" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating templates...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Actualizando las plantillas...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5902,6 +5908,9 @@
       <Item ItemId=";plugins.spfx.questions.spfxSolution.createNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create New]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Crear nueva]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

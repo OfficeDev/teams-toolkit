@@ -3713,7 +3713,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Take 2 minutes to help us improve, your feedback matters!]A;[We Would Love Your Feedback]5D;(command:fx-extension.openSurvey)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Poświęć 2 minuty, aby pomóc nam się rozwijać, Twoja opinia ma znaczenie!]A; [Chcielibyśmy poznać Twoją opinię]5D; (command:fx-extension.openSurvey)]]></Val>
+            <Val><![CDATA[Poświęć 2 minuty, aby pomóc nam się rozwijać, Twoja opinia ma znaczenie!]A; [Chcielibyśmy poznać Twoją opinię]5D;(command:fx-extension.openSurvey)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Take 2 minutes to help us improve, your feedback matters!]A;[We would love your feedback]5D;(command:fx-extension.openSurvey)]]></Val>

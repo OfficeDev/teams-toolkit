@@ -32,6 +32,7 @@ import {
   ProjectModel,
 } from "../../src/component/configManager/interface";
 import {
+  BotOptionItem,
   M365SsoLaunchPageOptionItem,
   NewProjectTypeOutlookAddinOptionItem,
   SolutionSource,
@@ -90,6 +91,7 @@ import {
   randomAppName,
 } from "../core/utils";
 import { MockedUserInteraction } from "../plugins/solution/util";
+import { QuestionNames } from "../../src/question/create";
 
 export function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -402,12 +404,15 @@ describe("component coordinator test", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
+      scratch: "yes",
       folder: ".",
-      [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "javascript",
       teamsAppFromTdp: appDefinition,
-      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
-      [CoreQuestionNames.ReplaceContentUrl]: [],
+      [QuestionNames.ProjectType]: "tab-type",
+      [QuestionNames.Capabilities]: "TabNonSso",
+      [QuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [QuestionNames.ReplaceContentUrl]: [],
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -448,8 +453,11 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
+      scratch: "yes",
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.ProjectType]: "bot-type",
+      [QuestionNames.Capabilities]: BotOptionItem().id,
       [CoreQuestionNames.ReplaceBotIds]: ["bot"],
       teamsAppFromTdp: appDefinition,
     };
@@ -503,12 +511,14 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "javascript",
       teamsAppFromTdp: appDefinition,
-      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
-      [CoreQuestionNames.ReplaceContentUrl]: [],
-      [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+      [QuestionNames.ProjectType]: "tab-bot-type",
+      [QuestionNames.Capabilities]: "TabNonSsoAndBot",
+      [QuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [QuestionNames.ReplaceContentUrl]: [],
+      [QuestionNames.ReplaceBotIds]: ["bot"],
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -555,12 +565,14 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "javascript",
       teamsAppFromTdp: appDefinition,
-      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
-      [CoreQuestionNames.ReplaceContentUrl]: [],
-      [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+      [QuestionNames.ProjectType]: "tab-bot-type",
+      [QuestionNames.Capabilities]: "TabNonSsoAndBot",
+      [QuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [QuestionNames.ReplaceContentUrl]: [],
+      [QuestionNames.ReplaceBotIds]: ["bot"],
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);

@@ -21,18 +21,20 @@ import { camelCase } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
 import * as util from "util";
+import { merge } from "lodash";
 import { cpUtils } from "../../../common/deps-checker";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError } from "../../../error";
 import { QuestionNames } from "../../../question/questionNames";
 import { SPFxQuestionNames } from "../../constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { envUtil } from "../../utils/envUtil";
 import { Generator } from "../generator";
 import { GeneratorChecker } from "./depsChecker/generatorChecker";
 import { YoChecker } from "./depsChecker/yoChecker";
 import {
+  CopyExistingSPFxSolutionError,
   ImportSPFxSolutionError,
   LatestPackageInstallError,
   RetrieveSPFxInfoError,
@@ -42,7 +44,7 @@ import {
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "../../../question/create";
-import { TelemetryEvents } from "./utils/telemetryEvents";
+import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
 
 export class SPFxGenerator {
@@ -57,12 +59,18 @@ export class SPFxGenerator {
   public static async generate(
     context: Context,
     inputs: Inputs,
-    destinationPath: string
+    destinationPath: string,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    if (inputs[QuestionNames.SPFxSolution] === "new") {
+    const spfxSolution = inputs[QuestionNames.SPFxSolution];
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.SPFxSolution]: spfxSolution,
+    });
+
+    if (spfxSolution === "new") {
       return await this.newSPFxProject(context, inputs, destinationPath);
     } else {
-      return await this.importSPFxProject(context, inputs, destinationPath);
+      return await this.importSPFxProject(context, inputs, destinationPath, actionContext);
     }
   }
 
@@ -88,7 +96,8 @@ export class SPFxGenerator {
   private static async importSPFxProject(
     context: Context,
     inputs: Inputs,
-    destinationPath: string
+    destinationPath: string,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const importProgress = context.userInteraction.createProgressBar(
       getLocalizedString("plugins.spfx.import.title"),
@@ -106,14 +115,7 @@ export class SPFxGenerator {
         EOL +
           `(.) Processing: Copying existing SPFx solution from ${spfxFolder} to ${destSpfxFolder}...`
       );
-      await fs.ensureDir(destSpfxFolder);
-      await fs.copy(spfxFolder, destSpfxFolder, {
-        overwrite: true,
-        recursive: true,
-        filter: (file) => {
-          return file.indexOf("node_modules") < 0;
-        },
-      });
+      await this.copySPFxSolution(spfxFolder, destSpfxFolder);
       importDetails.push(`(√) Done: Succeeded to copy existing SPFx solution.`);
 
       // Retrieve solution info to generate template
@@ -321,6 +323,10 @@ export class SPFxGenerator {
       context.logProvider.error(
         getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
       );
+
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.SPFxSolution]: spfxSolution,
+      });
 
       if (error instanceof UserError || error instanceof SystemError) {
         return err(error);
@@ -534,6 +540,21 @@ export class SPFxGenerator {
       throw new FileNotFoundError(Constants.PLUGIN_NAME, yoInfoPath, Constants.IMPORT_HELP_LINK);
     }
     return undefined;
+  }
+
+  private static async copySPFxSolution(src: string, dest: string) {
+    try {
+      await fs.ensureDir(dest);
+      await fs.copy(src, dest, {
+        overwrite: true,
+        recursive: true,
+        filter: (file) => {
+          return file.indexOf("node_modules") < 0;
+        },
+      });
+    } catch (e) {
+      throw err(CopyExistingSPFxSolutionError(e as any));
+    }
   }
 
   private static async getWebpartManifest(spfxFolder: string): Promise<any | undefined> {

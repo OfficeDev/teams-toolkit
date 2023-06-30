@@ -72,7 +72,7 @@ describe("Local Debug M365 Tests", function () {
       const result = url.match(pattern);
       const internalId = result![1];
       await page.goto(
-        `https://outlook.office.com/host/${internalId}/index0?login_hint=${Env.username}`
+        `https://outlook.office.com/host/${internalId}/index?login_hint=${Env.username}`
       );
       await validateReactOutlookTab(page, Env.displayName, true);
     }

@@ -46,7 +46,7 @@ describe("Local Debug M365 Tests", function () {
       validateFileExist(projectPath, "src/index.tsx");
 
       await startDebugging("Debug in Teams (Chrome)");
-      
+
       await waitForTerminal(
         LocalDebugTaskLabel.StartBackend,
         "Worker process started and initialized"

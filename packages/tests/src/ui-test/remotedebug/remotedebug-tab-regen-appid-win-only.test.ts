@@ -15,7 +15,11 @@ import {
   createNewProject,
   clearNotifications,
 } from "../../vscodeOperation";
-import { initPage, validateBasicTab, validateTab } from "../../playwrightOperation";
+import {
+  initPage,
+  validateBasicTab,
+  validateTab,
+} from "../../playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { cleanAppStudio } from "../../utils/cleanHelper";

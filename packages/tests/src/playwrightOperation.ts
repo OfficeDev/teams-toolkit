@@ -505,7 +505,6 @@ export async function validateReactTab(
     }
 
     await frame?.waitForSelector(`b:has-text("${displayName}")`);
-
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -571,7 +570,6 @@ export async function validateReactOutlookTab(
     }
 
     await frame?.waitForSelector(`b:has-text("${displayName}")`);
-
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

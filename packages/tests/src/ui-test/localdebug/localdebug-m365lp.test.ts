@@ -51,7 +51,7 @@ describe("Local Debug M365 Tests", function () {
         LocalDebugTaskLabel.StartBackend,
         "Worker process started and initialized"
       );
-      
+
       await waitForTerminal(
         LocalDebugTaskLabel.StartFrontend,
         "Compiled successfully!"

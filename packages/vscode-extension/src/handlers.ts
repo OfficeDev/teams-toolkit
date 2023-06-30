@@ -423,10 +423,12 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+  const properties: { [key: string]: string } = {};
 
   try {
     const inputs = getSystemInputs();
     inputs.env = env;
+    properties[TelemetryProperty.Env] = env;
 
     const result = await core.previewWithManifest(inputs);
     if (result.isErr()) {
@@ -435,17 +437,23 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
     const url = result.value as string;
+    properties[TelemetryProperty.Hub] = hub;
 
     await openHubWebClient(hub, url);
   } catch (error) {
     const assembledError = assembleError(error);
     showError(assembledError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, assembledError);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.TreeViewPreview,
+      assembledError,
+      properties
+    );
     return err(assembledError);
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    ...properties,
   });
   return ok(null);
 }

@@ -271,4 +271,5 @@
 /packages/fx-core/src/component/feature/createAuthFiles.ts @KennethBWSong @xzf0587 @adashen
 /packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587 @adashen
 packages/fx-core/tests/component/feature/sso.test.ts @KennethBWSong @xzf0587 @adashen
+packages/fx-core/tests/component/feature/collaborator.test.ts @KennethBWSong @SLdragon @adashen
 packages/fx-core/tests/core/collaborator.test.ts @KennethBWSong @SLdragon @adashen

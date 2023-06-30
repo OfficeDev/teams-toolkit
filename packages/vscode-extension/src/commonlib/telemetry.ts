@@ -106,6 +106,12 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       );
     }
 
+    if (TelemetryProperty.ErrorStack in properties) {
+      properties[TelemetryProperty.ErrorStack] = anonymizeFilePaths(
+        properties[TelemetryProperty.ErrorStack]
+      );
+    }
+
     if (this.testFeatureFlag) {
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     } else {

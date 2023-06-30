@@ -40,6 +40,7 @@ import { YamlParser } from "../../src/component/configManager/parser";
 import {
   BotOptionItem,
   MessageExtensionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/component/constants";
@@ -556,7 +557,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.AppName]: appName,
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
@@ -593,7 +594,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.AppName]: appName,
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),

@@ -22,7 +22,6 @@
         "js/notification-http-trigger",
         "js/notification-restify",
         "js/notification-timer-trigger",
-        "js/sso-tab",
         "js/workflow",
         "js/sso-tab-with-obo-flow",
         "ts/command-and-response",
@@ -37,7 +36,6 @@
         "ts/notification-http-trigger",
         "ts/notification-restify",
         "ts/notification-timer-trigger",
-        "ts/sso-tab",
         "ts/workflow",
         "ts/sso-tab-with-obo-flow"
     ],

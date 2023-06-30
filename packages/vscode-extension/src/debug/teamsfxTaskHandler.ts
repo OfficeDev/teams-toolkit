@@ -1,9 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProductName, UserError } from "@microsoft/teamsfx-api";
-import * as uuid from "uuid";
+import * as path from "path";
+import { performance } from "perf_hooks";
+import * as util from "util";
 import * as vscode from "vscode";
+
+import { ProductName, UserError } from "@microsoft/teamsfx-api";
+import {
+  Correlator,
+  getHashedEnv,
+  Hub,
+  isValidProject,
+  TaskCommand,
+} from "@microsoft/teamsfx-core";
+
+import VsCodeLogInstance from "../commonlib/log";
+import { ExtensionErrors, ExtensionSource } from "../error";
+import { VS_CODE_UI } from "../extension";
+import * as globalVariables from "../globalVariables";
+import {
+  TelemetryEvent,
+  TelemetryMeasurements,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
+import { localize } from "../utils/localizeUtils";
 import {
   DebugNoSessionId,
   endLocalDebugSession,
@@ -11,34 +32,16 @@ import {
   getLocalDebugSessionId,
   getNpmInstallLogInfo,
 } from "./commonUtils";
-import * as globalVariables from "../globalVariables";
-import {
-  TelemetryEvent,
-  TelemetryMeasurements,
-  TelemetryProperty,
-} from "../telemetry/extTelemetryEvents";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
-import { TaskCommand } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { isValidProject } from "@microsoft/teamsfx-core";
-import * as path from "path";
 import {
   errorDetail,
-  Hub,
   issueChooseLink,
   issueLink,
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
 } from "./constants";
-import * as util from "util";
-import VsCodeLogInstance from "../commonlib/log";
-import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
-import { localize } from "../utils/localizeUtils";
-import { VS_CODE_UI } from "../extension";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
-import { ExtensionErrors, ExtensionSource } from "../error";
-import { performance } from "perf_hooks";
 import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
+import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -380,6 +383,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         [TelemetryProperty.DebugRemote]: debugConfig.teamsfxIsRemote + "",
         [TelemetryProperty.DebugAppId]: debugConfig.teamsfxAppId + "",
         [TelemetryProperty.Env]: env,
+        [TelemetryProperty.Hub]: debugConfig.teamsfxHub + "",
       });
       // This is the launch browser local debug session.
       if (debugConfig.request === "launch" && !debugConfig.teamsfxIsRemote) {

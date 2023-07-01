@@ -114,33 +114,20 @@ export const getTemplate = (inputs: Inputs): string => {
 export const getQuestionsForScaffolding = (): QTreeNode => {
   const importNode = new QTreeNode({ type: "group" });
   importNode.condition = (inputs: Inputs) => {
-    if (!inputs) {
-      return false;
-    }
-    const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-    if (cap === ImportAddinProjectItem().id) {
-      return true;
-    }
-    return false;
+    return inputs[AzureSolutionQuestionNames.Capabilities] === ImportAddinProjectItem().id;
   };
   importNode.addChild(new QTreeNode(AddinProjectFolderQuestion));
   importNode.addChild(new QTreeNode(AddinProjectManifestQuestion));
 
   const templateNode = new QTreeNode({ type: "group" });
   templateNode.condition = (inputs: Inputs) => {
-    if (!inputs) {
-      return false;
-    }
     const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
     const addinOptionIds: string[] = [
       ...OfficeAddinItems().map((item) => {
         return item.id;
       }),
     ];
-    if (addinOptionIds.includes(cap)) {
-      return true;
-    }
-    return false;
+    return addinOptionIds.includes(cap);
   };
   templateNode.addChild(new QTreeNode(AddinLanguageQuestion));
   templateNode.addChild(new QTreeNode(OfficeHostQuestion));

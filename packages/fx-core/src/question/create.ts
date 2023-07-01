@@ -63,6 +63,7 @@ export enum QuestionNames {
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
   ReplaceBotIds = "replaceBotIds",
+  SafeProjectName = "safeProjectName",
 }
 
 export class ScratchOptions {

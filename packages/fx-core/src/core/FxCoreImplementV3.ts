@@ -17,11 +17,11 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Container } from "typedi";
-import { DotenvParseOutput } from "dotenv";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -73,6 +73,8 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
+import { getQuestionsForCreateProjectNew } from "../question/create";
+import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -80,7 +82,7 @@ import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMWV3, checkActiveResourcePlugins } from "./middleware/projectMigratorV3";
-import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
+import { QuestionModelMW } from "./middleware/questionModel";
 import {
   getProjectVersionFromPath,
   getTrackingIdFromPath,
@@ -89,8 +91,6 @@ import {
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { listCollaborator, checkPermission, grantPermission } from "./collaborator";
-import { getQuestionsForCreateProjectNew } from "../question/create";
 
 export class FxCoreV3Implement {
   tools: Tools;

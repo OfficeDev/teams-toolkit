@@ -313,14 +313,17 @@ describe("Question Model - Validation Test", () => {
       const input = inputs.input as string;
       return input.length <= 5;
     };
-    const value1 = "123456";
-    const res1 = await validate(validation, value1, inputs);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    inputs.input = "123456";
+    const res1 = await validate(validation, "", inputs);
     chai.assert.isTrue(res1 !== undefined);
-    const value2 = "12345";
-    const res2 = await validate(validation, value2, inputs);
+    inputs.input = "12345";
+    const res2 = await validate(validation, "", inputs);
     chai.assert.isTrue(res2 === undefined);
-    const value3 = "";
-    const res3 = await validate(validation, value3, inputs);
+    inputs.input = "";
+    const res3 = await validate(validation, "", inputs);
     chai.assert.isTrue(res3 === undefined);
   });
 });

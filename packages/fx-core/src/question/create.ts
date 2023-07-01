@@ -1137,157 +1137,151 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-export function createProjectQuestion(): IQTreeNode {
-  const root: IQTreeNode = {
-    data: scratchOrSampleQuestion(),
-    children: [
-      {
-        condition: { equals: ScratchOptions.yes().id },
-        data: { type: "group" },
-        children: [
-          {
-            condition: (inputs: Inputs) => {
-              return isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform);
+export const createProjectQuestion: IQTreeNode = {
+  data: scratchOrSampleQuestion(),
+  children: [
+    {
+      condition: { equals: ScratchOptions.yes().id },
+      data: { type: "group" },
+      children: [
+        {
+          condition: (inputs: Inputs) =>
+            isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform),
+          data: runtimeQuestion(),
+        },
+        {
+          data: projectTypeQuestion(),
+          children: [
+            {
+              data: capabilityQuestion(),
+              children: [
+                {
+                  // Notification bot trigger sub-tree
+                  condition: { equals: CapabilityOptions.notificationBot().id },
+                  data: botTriggerQuestion(),
+                },
+                {
+                  // SPFx sub-tree
+                  condition: { equals: CapabilityOptions.SPFxTab().id },
+                  data: SPFxSolutionQuestion(),
+                  children: [
+                    {
+                      data: { type: "group" },
+                      children: [
+                        { data: SPFxPackageSelectQuestion() },
+                        { data: SPFxFrameworkQuestion() },
+                        { data: SPFxWebpartNameQuestion() },
+                      ],
+                      condition: { equals: "new" },
+                    },
+                    {
+                      data: SPFxImportFolderQuestion(),
+                      condition: { equals: "import" },
+                      children: [
+                        {
+                          // auto fill in "app-name" question,
+                          // TODO can we make it as a default value of "app-name" question? (need to discuss)
+                          data: fillInAppNameFuncQuestion(),
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  // office addin import sub-tree
+                  condition: { equals: CapabilityOptions.officeAddinImport().id },
+                  data: { type: "group" },
+                  children: [
+                    {
+                      data: {
+                        type: "folder",
+                        name: QuestionNames.OfficeAddinFolder,
+                        title: "Existing add-in project folder",
+                      },
+                    },
+                    {
+                      data: {
+                        type: "singleFile",
+                        name: QuestionNames.OfficeAddinManifest,
+                        title: "Select import project manifest file",
+                      },
+                    },
+                  ],
+                },
+                {
+                  // office addin other items sub-tree
+                  condition: {
+                    enum: CapabilityOptions.officeAddinItems().map((i) => i.id),
+                  },
+                  data: officeAddinHostingQuestion(),
+                },
+                {
+                  // programming language
+                  data: programmingLanguageQuestion(),
+                },
+                {
+                  // root folder
+                  data: rootFolderQuestion(),
+                },
+                {
+                  // app name
+                  data: appNameQuestion(),
+                },
+              ],
             },
-            data: runtimeQuestion(),
-          },
-          {
-            data: projectTypeQuestion(),
-            children: [
-              {
-                data: capabilityQuestion(),
-                children: [
-                  {
-                    // Notification bot trigger sub-tree
-                    condition: { equals: CapabilityOptions.notificationBot().id },
-                    data: botTriggerQuestion(),
-                  },
-                  {
-                    // SPFx sub-tree
-                    condition: { equals: CapabilityOptions.SPFxTab().id },
-                    data: SPFxSolutionQuestion(),
-                    children: [
-                      {
-                        data: { type: "group" },
-                        children: [
-                          { data: SPFxPackageSelectQuestion() },
-                          { data: SPFxFrameworkQuestion() },
-                          { data: SPFxWebpartNameQuestion() },
-                        ],
-                        condition: { equals: "new" },
-                      },
-                      {
-                        data: SPFxImportFolderQuestion(),
-                        condition: { equals: "import" },
-                        children: [
-                          {
-                            // auto fill in "app-name" question,
-                            // TODO can we make it as a default value of "app-name" question? (need to discuss)
-                            data: fillInAppNameFuncQuestion(),
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    // office addin import sub-tree
-                    condition: { equals: CapabilityOptions.officeAddinImport().id },
-                    data: { type: "group" },
-                    children: [
-                      {
-                        data: {
-                          type: "folder",
-                          name: QuestionNames.OfficeAddinFolder,
-                          title: "Existing add-in project folder",
-                        },
-                      },
-                      {
-                        data: {
-                          type: "singleFile",
-                          name: QuestionNames.OfficeAddinManifest,
-                          title: "Select import project manifest file",
-                        },
-                      },
-                    ],
-                  },
-                  {
-                    // office addin other items sub-tree
-                    condition: {
-                      enum: CapabilityOptions.officeAddinItems().map((i) => i.id),
-                    },
-                    data: officeAddinHostingQuestion(),
-                  },
-                  {
-                    // programming language
-                    data: programmingLanguageQuestion(),
-                  },
-                  {
-                    // root folder
-                    data: rootFolderQuestion(),
-                  },
-                  {
-                    // app name
-                    data: appNameQuestion(),
-                  },
-                ],
-              },
-              {
-                condition: (inputs: Inputs) => {
-                  const appDef = inputs.teamsAppFromTdp as AppDefinition;
-                  return appDef && isPersonalApp(appDef);
-                },
-                data: { type: "group" },
-                children: [
-                  {
-                    condition: (inputs: Inputs) => {
-                      const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-                      if (appDefinition?.staticTabs) {
-                        const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
-                          (o) => !!o.websiteUrl
-                        );
-                        if (tabsWithWebsiteUrls.length > 0) {
-                          return true;
-                        }
+            {
+              condition: (inputs: Inputs) =>
+                inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
+              data: { type: "group" },
+              children: [
+                {
+                  condition: (inputs: Inputs) => {
+                    const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
+                    if (appDefinition?.staticTabs) {
+                      const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
+                        (o) => !!o.websiteUrl
+                      );
+                      if (tabsWithWebsiteUrls.length > 0) {
+                        return true;
                       }
-                      return false;
-                    },
-                    data: selectTabWebsiteUrlQuestion(),
+                    }
+                    return false;
                   },
-                  {
-                    //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
-                    condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
-                    data: selectTabsContentUrlQuestion(),
-                  },
-                ],
-              },
-              {
-                condition: (inputs: Inputs) => {
-                  const appDef = inputs.teamsAppFromTdp as AppDefinition;
-                  return appDef && needBotCode(appDef);
+                  data: selectTabWebsiteUrlQuestion(),
                 },
-                data: selectBotIdsQuestion(),
+                {
+                  //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
+                  condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
+                  data: selectTabsContentUrlQuestion(),
+                },
+              ],
+            },
+            {
+              condition: (inputs: Inputs) => {
+                const appDef = inputs.teamsAppFromTdp as AppDefinition;
+                return appDef && needBotCode(appDef);
               },
-            ],
-          },
-        ],
-      },
-      {
-        condition: { equals: ScratchOptions.no().id },
-        data: sampleSelectQuestion(),
-        children: [
-          {
-            // root folder
-            data: rootFolderQuestion(),
-          },
-        ],
-      },
-    ],
-  };
-  return root;
-}
+              data: selectBotIdsQuestion(),
+            },
+          ],
+        },
+      ],
+    },
+    {
+      condition: { equals: ScratchOptions.no().id },
+      data: sampleSelectQuestion(),
+      children: [
+        {
+          // root folder
+          data: rootFolderQuestion(),
+        },
+      ],
+    },
+  ],
+};
 
 export async function getQuestionsForCreateProjectNew(): Promise<
   Result<IQTreeNode | undefined, FxError>
 > {
-  return ok(createProjectQuestion());
+  return ok(createProjectQuestion);
 }

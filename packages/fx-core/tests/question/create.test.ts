@@ -69,8 +69,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode sample", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -95,7 +93,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Samples,
@@ -104,8 +102,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode notification bot", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -144,7 +140,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -156,8 +152,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode Office addin", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -203,7 +197,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -216,8 +210,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode SPFx new", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -263,7 +255,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -278,8 +270,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode SPFx import", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -323,7 +313,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -337,7 +327,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode TDP with tab and bot", async () => {
-      const root = createProjectQuestion();
       const appDefinition: AppDefinition = {
         teamsAppId: "mock-id",
         appId: "mock-id",
@@ -419,7 +408,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -433,7 +422,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode TDP with empty website url", async () => {
-      const root = createProjectQuestion();
       const appDefinition: AppDefinition = {
         teamsAppId: "mock-id",
         appId: "mock-id",
@@ -491,7 +479,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -504,8 +492,6 @@ describe("scaffold question", () => {
     });
     it("traverse in cli", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.CLI,
       };
@@ -542,7 +528,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -556,8 +542,6 @@ describe("scaffold question", () => {
 
     it("traverse in cli TEAMSFX_CLI_DOTNET=true", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.CLI,
       };
@@ -602,7 +586,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "runtime",

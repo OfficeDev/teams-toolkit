@@ -113,9 +113,8 @@ export const getTemplate = (inputs: Inputs): string => {
 
 export const getQuestionsForScaffolding = (): QTreeNode => {
   const importNode = new QTreeNode({ type: "group" });
-  importNode.condition = (inputs: Inputs) => {
-    return inputs[AzureSolutionQuestionNames.Capabilities] === ImportAddinProjectItem().id;
-  };
+  importNode.condition = (inputs: Inputs) =>
+    inputs[AzureSolutionQuestionNames.Capabilities] === ImportAddinProjectItem().id;
   importNode.addChild(new QTreeNode(AddinProjectFolderQuestion));
   importNode.addChild(new QTreeNode(AddinProjectManifestQuestion));
 

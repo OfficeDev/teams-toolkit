@@ -602,7 +602,7 @@ describe("scaffold question", () => {
       };
       inputs["capabilities"] = ["taskpane"];
       const template = getTemplate(inputs);
-      chai.expect(template).to.eq("taskpane");
+      assert.equal(template, "taskpane");
     });
   });
 });

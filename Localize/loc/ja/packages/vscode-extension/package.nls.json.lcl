@@ -2063,7 +2063,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Multi-Tenant Support]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マルチテナント サポート]]></Val>
+            <Val><![CDATA[マルチテナントのサポート]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3842,7 +3842,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams ツールキットを使用して体験を続行するための推奨事項をいくつか示します。]A; • [使用法ガイド]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) を探索し、より実用的なガイダンスを入手します]A; • このアプリの開発方法を理解するには、[Readme.md]5D; (command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) を開きます]A; • [ドキュメント]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D) をお読みください]]></Val>
+            <Val><![CDATA[Teams ツールキットを使用して体験を続行するための推奨事項をいくつか示します。]A; • [使用法ガイド]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) を探索し、より実用的なガイダンスを入手します]A; • このアプリの開発方法を理解するには、[Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) を開きます]A; • [ドキュメント]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D) をお読みください]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>

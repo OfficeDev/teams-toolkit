@@ -1253,18 +1253,8 @@ export function createProjectQuestion(): IQTreeNode {
                     data: selectTabWebsiteUrlQuestion(),
                   },
                   {
-                    condition: (inputs: Inputs) => {
-                      const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-                      if (appDefinition?.staticTabs) {
-                        const tabsWithContentUrls = appDefinition.staticTabs.filter(
-                          (o) => !!o.contentUrl
-                        );
-                        if (tabsWithContentUrls.length > 0) {
-                          return true;
-                        }
-                      }
-                      return false;
-                    },
+                    //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
+                    condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
                     data: selectTabsContentUrlQuestion(),
                   },
                 ],

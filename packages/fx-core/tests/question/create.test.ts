@@ -432,6 +432,76 @@ describe("scaffold question", () => {
         QuestionNames.ReplaceBotIds,
       ]);
     });
+    it("traverse in vscode TDP with empty website url", async () => {
+      const root = createProjectQuestion();
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mock-id",
+        appId: "mock-id",
+        staticTabs: [
+          {
+            name: "tab1",
+            entityId: "tab1",
+            contentUrl: "https://test.com",
+            websiteUrl: "",
+            context: [],
+            scopes: [],
+          },
+        ],
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        teamsAppFromTdp: appDefinition,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+        await callFuncs(question, inputs);
+        if (question.name === QuestionNames.Scratch) {
+          return ok({ type: "success", result: ScratchOptions.yes().id });
+        } else if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: "tab-bot-type" });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: TabNonSsoAndDefaultBotItem().id });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 2);
+          return ok({ type: "success", result: "typescript" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.ReplaceContentUrl) {
+          const select = question as MultiSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: [] });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(root, inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.Scratch,
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+        QuestionNames.ReplaceContentUrl,
+      ]);
+    });
     it("traverse in cli", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
       const root = createProjectQuestion();

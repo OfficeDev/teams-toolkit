@@ -100,6 +100,16 @@ export function RetrieveSPFxInfoError(): UserError {
   });
 }
 
+export function UpdateSPFxTemplateError(e: Error): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "UpdateSPFxTemplateFailed",
+    message: getDefaultString("plugins.spfx.error.import.updateSPFxTemplate", e.message),
+    displayMessage: getLocalizedString("plugins.spfx.error.import.updateSPFxTemplate", e.message),
+    helpLink: Constants.IMPORT_HELP_LINK,
+  });
+}
+
 export function ImportSPFxSolutionError(e: Error): UserError {
   return new UserError({
     source: Constants.PLUGIN_NAME,

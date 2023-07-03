@@ -450,6 +450,135 @@ export async function validateTab(
   }
 }
 
+export async function validateReactTab(
+  page: Page,
+  displayName: string,
+  includeFunction?: boolean
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-iframe"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    if (includeFunction) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          frame?.click('button:has-text("Call Azure Function")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
+        ]);
+        console.log("after popup");
+
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
+      });
+
+      console.log("verify function info");
+      const backendElement = await frame?.waitForSelector(
+        'pre:has-text("receivedHTTPRequestBody")'
+      );
+      const content = await backendElement?.innerText();
+      if (!content?.includes("User display name is"))
+        assert.fail("User display name is not found in the response");
+      console.log("verify function info success");
+    }
+
+    await frame?.waitForSelector(`b:has-text("${displayName}")`);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateReactOutlookTab(
+  page: Page,
+  displayName: string,
+  includeFunction?: boolean
+) {
+  try {
+    await page.waitForTimeout(Timeout.longTimeWait);
+    const frameElementHandle = await page.waitForSelector(
+      'iframe[data-tid="app-host-iframe"]'
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    if (includeFunction) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          frame?.click('button:has-text("Call Azure Function")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
+        ]);
+        console.log("after popup");
+
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
+      });
+
+      console.log("verify function info");
+      const backendElement = await frame?.waitForSelector(
+        'pre:has-text("receivedHTTPRequestBody")'
+      );
+      const content = await backendElement?.innerText();
+      if (!content?.includes("User display name is"))
+        assert.fail("User display name is not found in the response");
+      console.log("verify function info success");
+    }
+
+    await frame?.waitForSelector(`b:has-text("${displayName}")`);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
 export async function validateBasicTab(
   page: Page,
   content = "Hello, World",

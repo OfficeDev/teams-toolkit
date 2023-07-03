@@ -7,16 +7,16 @@ import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { Context, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
-import { AppStudioClient } from "../../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { AppDefinition } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { AppUser } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
-import { AppStudioError } from "../../../../../src/component/driver/teamsApp/errors";
-import { TelemetryUtils } from "../../../../../src/component/driver/teamsApp/utils/telemetry";
-import { RetryHandler } from "../../../../../src/component/driver/teamsApp/utils/utils";
-import { PublishingState } from "../../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
-import { manifestUtils } from "../../../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { AppStudioResultFactory } from "../../../../../src/component/driver/teamsApp/results";
-import { Constants } from "../../../../../src/component/driver/teamsApp/constants";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { AppDefinition } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { AppUser } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
+import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
+import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
+import { PublishingState } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { AppStudioResultFactory } from "../../../../src/component/driver/teamsApp/results";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 
 function newEnvInfo() {
   return {
@@ -149,6 +149,22 @@ describe("App Studio API Test", () => {
         data: appDef,
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+
+      const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      chai.assert.equal(res, appDef);
+    });
+
+    it("Happy path - with wrong region", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appDef,
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com");
 
       const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
       chai.assert.equal(res, appDef);

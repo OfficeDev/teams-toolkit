@@ -1,0 +1,66 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug UI Tests",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "extest",
+        "run-tests",
+        "--storage",
+        ".test-resources",
+        "--extensions_dir",
+        ".test-resources",
+        "--type",
+        "stable",
+        "--code_version",
+        "1.78.0",
+        "--code_settings",
+        "./settings.json",
+        "./out/ui-test/**/${{ YOUR TEST CASE }}.test.js"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "npm: build"
+    },
+    {
+      "name": "Debug UI Tests WSL2",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "ui-test:run:all:wsl2"],
+      "skipFiles": ["<node_internals>/**", "node_modules/**/*"],
+      "env": {
+        "CLEAN_TENANT_ID": "",
+        "CLEAN_CLIENT_SECRET": "",
+        "CLEAN_CLIENT_ID": "",
+
+        "NGROK_TOKEN": "",
+
+        "M365_ACCOUNT_NAME": "",
+        "M365_ACCOUNT_PASSWORD": "",
+        "M365_DISPLAY_NAME": "",
+        "M365_TENANT_ID": "",
+        "M365_COLLABORATOR": "",
+
+        "AZURE_ACCOUNT_NAME": "",
+        "AZURE_ACCOUNT_PASSWORD": "",
+        "AZURE_TENANT_ID": "",
+        "AZURE_SUBSCRIPTION_ID": "",
+        "AZURE_SUBSCRIPTION_NAME": "",
+
+        "TEAMSFX_DEV_TUNNEL_TEST": true,
+        "TEAMSFX_V3": true,
+        "TEAMSFX_V3_MIGRATION": true,
+        "TEAMSFX_TELEMETRY_TEST": true,
+
+        "CI_ENABLED": true
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "Setup WSL2"
+    }
+  ]
+}

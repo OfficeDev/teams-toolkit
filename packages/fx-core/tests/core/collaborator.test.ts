@@ -1396,8 +1396,8 @@ describe("Collaborator APIs for V3", () => {
         return true;
       });
 
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.isUndefined(res);
+      const res = await validateEnvQuestion(inputs);
+      assert.isTrue(res);
     });
 
     it("env node validation: waiting for select aad manifest", async () => {
@@ -1408,8 +1408,8 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.AadAppQuestionId,
       ];
       inputs.env = undefined;
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Question not finished");
+      const res = await validateEnvQuestion(inputs);
+      assert.isFalse(res);
     });
 
     it("env node validation: select teams and aad, no need select env", async () => {
@@ -1428,8 +1428,8 @@ describe("Collaborator APIs for V3", () => {
         return true;
       });
 
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Env already selected");
+      const res = await validateEnvQuestion(inputs);
+      assert.isFalse(res);
     });
 
     it("env node validation: select teams and aad, app id hardcoded", async () => {
@@ -1448,8 +1448,8 @@ describe("Collaborator APIs for V3", () => {
         return false;
       });
 
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Env question not required");
+      const res = await validateEnvQuestion(inputs);
+      assert.isFalse(res);
     });
 
     it("env node validation: select teams and aad, invalid manifest", async () => {
@@ -1465,8 +1465,8 @@ describe("Collaborator APIs for V3", () => {
         .stub(CollaborationUtil, "loadManifestId")
         .resolves(err(new UserError("source", "name", "message")));
 
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Invalid manifest");
+      const res = await validateEnvQuestion(inputs);
+      assert.isFalse(res);
     });
 
     it("env node validation: select aad, invalid manifest", async () => {
@@ -1478,8 +1478,8 @@ describe("Collaborator APIs for V3", () => {
         .stub(CollaborationUtil, "loadManifestId")
         .resolves(err(new UserError("source", "name", "message")));
 
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Invalid manifest");
+      const res = await validateEnvQuestion(inputs);
+      assert.isFalse(res);
     });
 
     it("env node validation: select aad, need select env", async () => {
@@ -1494,8 +1494,8 @@ describe("Collaborator APIs for V3", () => {
         return true;
       });
 
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.isUndefined(res);
+      const res = await validateEnvQuestion(inputs);
+      assert.isTrue(res);
     });
 
     it("happy path: getQuestionsForGrantPermission", async () => {

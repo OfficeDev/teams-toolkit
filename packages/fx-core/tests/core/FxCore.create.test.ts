@@ -1,32 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, Inputs, ok, Platform, Stage, UserError } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
-import * as path from "path";
 import sinon from "sinon";
-import fs from "fs-extra";
 import { AppDefinition, FxCore } from "../../src";
-import {
-  CoreQuestionNames,
-  ScratchOptionNoVSC,
-  ScratchOptionYesVSC,
-} from "../../src/core/question";
-import { BotOptionItem, TabOptionItem, TabSPFxItem } from "../../src/component/constants";
-import { deleteFolder, MockTools, randomAppName } from "./utils";
-import { SPFXQuestionNames } from "../../src/component/generator/spfx/utils/questions";
+import { coordinator } from "../../src/component/coordinator";
 import { setTools } from "../../src/core/globalVars";
-import { environmentManager } from "../../src/core/environment";
-import { Generator } from "../../src/component/generator/generator";
 import {
   CapabilityOptions,
   ProjectTypeOptions,
   QuestionNames,
   ScratchOptions,
 } from "../../src/question/create";
-import { coordinator } from "../../src/component/coordinator";
+import { MockTools, randomAppName } from "./utils";
 
 describe("FxCore.createProject", () => {
   const sandbox = sinon.createSandbox();

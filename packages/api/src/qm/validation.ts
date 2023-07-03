@@ -127,6 +127,8 @@ export interface FuncValidation<
   validFunc: ValidateFunc<T>;
 }
 
+export type ConditionFunc = (inputs: Inputs) => boolean | Promise<boolean>;
+
 /**
  * Definition of validation schema, which is a union of `StringValidation`, `StringArrayValidation` and `FuncValidation<any>`
  */
@@ -156,7 +158,7 @@ export function getValidationFunction<T extends string | string[] | undefined>(
  * Return `undefined` when 'value' is valid.
  */
 export async function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(
-  validSchema: ValidationSchema,
+  validSchema: ValidationSchema | ConditionFunc,
   value: T,
   inputs?: Inputs
 ): Promise<string | undefined> {
@@ -166,6 +168,10 @@ export async function validate<T extends string | string[] | OptionItem | Option
     if (funcValidation.validFunc) {
       const res = await funcValidation.validFunc(value, inputs);
       return res as string;
+    } else if (typeof funcValidation === "function") {
+      const res = await (funcValidation as ConditionFunc)(inputs!);
+      if (res) return undefined;
+      return "condition function is not met.";
     }
   }
 

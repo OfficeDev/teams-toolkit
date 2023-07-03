@@ -4,6 +4,7 @@
 import { Inputs, OptionItem } from "../types";
 import { InputTextConfig } from "./ui";
 import {
+  ConditionFunc,
   FuncValidation,
   StringArrayValidation,
   StringValidation,
@@ -347,7 +348,7 @@ export type Question =
  */
 export class QTreeNode implements IQTreeNode {
   data: Question | Group;
-  condition?: ValidationSchema & { target?: string };
+  condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: QTreeNode[];
   addChild(node: QTreeNode): QTreeNode {
     if (!this.children) {
@@ -395,6 +396,6 @@ export class QTreeNode implements IQTreeNode {
 
 export interface IQTreeNode {
   data: Question | Group;
-  condition?: ValidationSchema & { target?: string };
+  condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: IQTreeNode[];
 }

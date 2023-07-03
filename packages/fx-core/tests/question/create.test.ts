@@ -13,6 +13,7 @@ import {
   ScratchOptions,
   createProjectQuestion,
   getLanguageOptions,
+  getTemplate,
 } from "../../src/question/create";
 import {
   Inputs,
@@ -68,8 +69,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode sample", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -94,7 +93,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Samples,
@@ -103,8 +102,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode notification bot", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -143,7 +140,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -155,8 +152,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode Office addin", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -202,7 +197,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -215,8 +210,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode SPFx new", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -262,7 +255,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -277,8 +270,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode SPFx import", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -322,7 +313,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -336,7 +327,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode TDP with tab and bot", async () => {
-      const root = createProjectQuestion();
       const appDefinition: AppDefinition = {
         teamsAppId: "mock-id",
         appId: "mock-id",
@@ -418,7 +408,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -431,10 +421,77 @@ describe("scaffold question", () => {
         QuestionNames.ReplaceBotIds,
       ]);
     });
+    it("traverse in vscode TDP with empty website url", async () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mock-id",
+        appId: "mock-id",
+        staticTabs: [
+          {
+            name: "tab1",
+            entityId: "tab1",
+            contentUrl: "https://test.com",
+            websiteUrl: "",
+            context: [],
+            scopes: [],
+          },
+        ],
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        teamsAppFromTdp: appDefinition,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+        await callFuncs(question, inputs);
+        if (question.name === QuestionNames.Scratch) {
+          return ok({ type: "success", result: ScratchOptions.yes().id });
+        } else if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: "tab-bot-type" });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: TabNonSsoAndDefaultBotItem().id });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 2);
+          return ok({ type: "success", result: "typescript" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.ReplaceContentUrl) {
+          const select = question as MultiSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: [] });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.Scratch,
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+        QuestionNames.ReplaceContentUrl,
+      ]);
+    });
     it("traverse in cli", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.CLI,
       };
@@ -471,7 +528,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -485,8 +542,6 @@ describe("scaffold question", () => {
 
     it("traverse in cli TEAMSFX_CLI_DOTNET=true", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.CLI,
       };
@@ -531,7 +586,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "runtime",
@@ -592,6 +647,16 @@ describe("scaffold question", () => {
         [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       });
       assert.isTrue(options.length === 2);
+    });
+  });
+  describe("getTemplate", () => {
+    it("should find taskpane template", () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+      };
+      inputs["capabilities"] = ["taskpane"];
+      const template = getTemplate(inputs);
+      assert.equal(template, "taskpane");
     });
   });
 });

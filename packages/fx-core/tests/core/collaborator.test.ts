@@ -43,7 +43,7 @@ import {
   MockedM365Provider,
   MockedV2Context,
 } from "../plugins/solution/util";
-import { MockTools, randomAppName } from "./utils";
+import { MockM365TokenProvider, MockTools, randomAppName } from "./utils";
 import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
 import { setTools } from "../../src/core/globalVars";
 
@@ -1378,7 +1378,6 @@ describe("Collaborator APIs for V3", () => {
     };
 
     const tools = new MockTools();
-    tools.tokenProvider.m365TokenProvider = new MockedM365Provider();
     setTools(tools);
 
     afterEach(() => {
@@ -1691,6 +1690,14 @@ describe("Collaborator APIs for V3", () => {
       sandbox.stub(CollaborationUtil, "loadManifestId").resolves(ok("manifestId"));
       sandbox.stub(CollaborationUtil, "requireEnvQuestion").returns(true);
       sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev", "test"]));
+      sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "fake_tid",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       inputs.env = undefined;
 
       const grantPermissionNodeRes = await getQuestionsForGrantPermission(inputs);

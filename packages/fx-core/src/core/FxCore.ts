@@ -10,7 +10,6 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
-  IQTreeNode,
   ok,
   QTreeNode,
   Result,

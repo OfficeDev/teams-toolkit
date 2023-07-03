@@ -289,9 +289,15 @@ export async function initTeamsPage(
         }
         const saveBtn = await page.waitForSelector(`button:has-text("Save")`);
         await saveBtn?.click();
-        await page.waitForSelector(`button:has-text("Save")`, {
-          state: "detached",
-        });
+        try {
+          await page.waitForSelector(`button:has-text("Save")`, {
+            state: "detached",
+          });
+        } catch (error) {
+          await page.waitForSelector(`div:has-text("Error: [HTTP]:404 - Not Found")`,);
+          console.log("Error: [HTTP]:404 - Not Found");
+          console.log('account tenant is not supported. skip...')
+        }
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("successful to add teams app!!!");

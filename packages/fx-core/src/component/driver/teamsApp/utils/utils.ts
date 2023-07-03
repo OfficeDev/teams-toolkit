@@ -43,9 +43,18 @@ export function renderTemplate(manifestString: string, view: any): string {
 }
 
 export function isPersonalApp(appDefinition: AppDefinition): boolean {
+  const restrictedEntityIds: Array<string> = [
+    "conversations",
+    "recent",
+    "about",
+    "alltabs",
+    "chat",
+  ];
   if (!!appDefinition.staticTabs && appDefinition.staticTabs.length > 0) {
-    const tabsWithUrls = appDefinition.staticTabs.filter((tab) => !!tab.contentUrl);
-    return tabsWithUrls.length > 0;
+    return (
+      appDefinition.staticTabs.filter((tab) => !restrictedEntityIds.includes(tab.entityId)).length >
+      0
+    );
   }
 
   return false;

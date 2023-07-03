@@ -980,7 +980,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Successfully prepared Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Приложение Teams успешно подготовлено.]]></Val>
+            <Val><![CDATA[Приложение Teams подготовлено.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2806,6 +2806,9 @@
       <Item ItemId=";driver.botFramework.error.InvalidBotId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Bot ID %s is invalid. It must be a GUID.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Недопустимый идентификатор бота %s. Это должен быть GUID.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2986,8 +2989,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create or update JSON file.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Создайте или обновите настройки приложения в файле JSON.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Создание или обновление файла JSON.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create or update appsettings to JSON file.]]></Val>
@@ -2998,8 +3001,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The json file has been generated successfully to %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Настройки приложения успешно сгенерированы в %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[JSON-файл создан в %s.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The appsettings have been generated successfully to %s.]]></Val>
@@ -4223,7 +4226,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Previous task is still running. Wait until your previous task is finished and try again.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Предыдущая задача все еще выполняется. Дождитесь завершения предыдущей задачи и повторите попытку.]]></Val>
+            <Val><![CDATA[Предыдущая задача по-прежнему выполняется. Дождитесь ее завершения и повторите попытку.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4244,7 +4247,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A http client error happened while performing the %s task. The error response is: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[При выполнении задачи %s http-клиента произошла ошибка. Ответ об ошибке: %s]]></Val>
+            <Val><![CDATA[Во время выполнения задачи %s произошла ошибка HTTP-клиента. Сообщение об ошибке: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4253,7 +4256,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A http server error happened while performing the %s task. Please try again later. The error response is: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[При выполнении задачи %s произошла ошибка HTTP-сервера. Повторите попытку позже. Ответ об ошибке: %s]]></Val>
+            <Val><![CDATA[При выполнении задачи %s произошла ошибка HTTP-сервера. Повторите попытку позже. Сообщение об ошибке: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4336,6 +4339,9 @@
       <Item ItemId=";error.common.ReadFileError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to read file for reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось прочитать файл. Причина: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4355,7 +4361,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Unable to write file for reason: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось записать файл по причине: %s]]></Val>
+            <Val><![CDATA[Не удалось записать файл. Причина: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4778,7 +4784,7 @@
         <Str Cat="Text">
           <Val><![CDATA[version %s is not supported. Supported versions: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[версия %s не поддерживается. Поддерживаемые версии: %s.]]></Val>
+            <Val><![CDATA[Версия %s не поддерживается. Поддерживаемые версии: %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5504,7 +5510,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to retrieve existing SPFx solution information. Please make sure your SPFx solution is valid.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось получить сведения о существующем решении SPFx. Убедитесь, что решение SPFx допустимо.]]></Val>
+            <Val><![CDATA[Не удалось получить сведения о существующем решении SPFx. Убедитесь, что ваше решение действительно.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5570,7 +5576,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Copying existing SPFx solution...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Копирование существующего решения SPFx...]]></Val>
+            <Val><![CDATA[Копирование существующего решения SPFx…]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5579,7 +5585,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Generating templates based on solution info...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Создание шаблонов на основе сведений о решении...]]></Val>
+            <Val><![CDATA[Создание шаблонов на основе сведений о решении…]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5588,7 +5594,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit failed to import your SPFx solution. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Набору инструментов Teams не удалось импортировать решение SPFx. Полный журнал сведений об импорте можно найти в %s.]]></Val>
+            <Val><![CDATA[Набору средств Teams не удалось импортировать ваше решение SPFx. Полный журнал сведений об импорте см. в %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5597,7 +5603,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has imported your SPFx solution successfully. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Набор инструментов Teams успешно импортирует решение SPFx. Полный журнал сведений об импорте можно найти в %s.]]></Val>
+            <Val><![CDATA[Набор инструментов Teams импортировал решение SPFx. Полный журнал сведений об импорте можно найти в %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5623,6 +5629,9 @@
       <Item ItemId=";plugins.spfx.import.updateTemplates" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating templates...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Обновление шаблонов...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5728,6 +5737,9 @@
       <Item ItemId=";plugins.spfx.questions.spfxSolution.createNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a New SPFx Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Создание нового решения SPFx]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5846,7 +5858,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Loading options ...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Параметры загрузки...]]></Val>
+            <Val><![CDATA[Загрузка параметров…]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

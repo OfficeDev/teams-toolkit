@@ -2054,7 +2054,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable multi-Tenant support for Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Activez la prise en charge multilocataire pour l’application Teams.]]></Val>
+            <Val><![CDATA[Activer la prise en charge multi-locataires pour l'application Teams.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2063,7 +2063,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Multi-Tenant Support]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Prise en charge multilocataire]]></Val>
+            <Val><![CDATA[Prise en charge multi-locataires]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

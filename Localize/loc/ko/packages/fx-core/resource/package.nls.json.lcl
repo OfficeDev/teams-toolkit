@@ -3001,8 +3001,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The json file has been generated successfully to %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[앱 설정이 %s에 생성되었습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[json 파일이 %s에 생성되었습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The appsettings have been generated successfully to %s.]]></Val>
@@ -4339,6 +4339,9 @@
       <Item ItemId=";error.common.ReadFileError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to read file for reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[다음 이유로 인해 파일을 읽을 수 없습니다. %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4781,7 +4784,7 @@
         <Str Cat="Text">
           <Val><![CDATA[version %s is not supported. Supported versions: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[버전 %s 지원되지 않습니다. 지원되는 버전: %s.]]></Val>
+            <Val><![CDATA[%s 버전은 지원되지 않습니다. 지원되는 버전: %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5600,7 +5603,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has imported your SPFx solution successfully. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit에서 SPFx 솔루션을 가져왔습니다. 가져오기 세부 정보의 전체 로그는 %s 찾을 수 있습니다.]]></Val>
+            <Val><![CDATA[Teams 도구 키트에서 SPFx 솔루션을 가져왔습니다. 가져오기 세부 정보의 전체 로그는 %s에서 확인할 수 있습니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5609,7 +5612,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Your SPFx solution has been successfully imported to %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SPFx 솔루션을 %s 가져왔습니다.]]></Val>
+            <Val><![CDATA[SPFx 솔루션을 %s(으)로 가져왔습니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5626,6 +5629,9 @@
       <Item ItemId=";plugins.spfx.import.updateTemplates" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating templates...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[템플릿을 업데이트하는 중...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

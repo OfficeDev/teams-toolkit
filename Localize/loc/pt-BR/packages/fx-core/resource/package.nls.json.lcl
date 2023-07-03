@@ -980,7 +980,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Successfully prepared Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aplicativo Teams preparado com êxito.]]></Val>
+            <Val><![CDATA[Aplicativo Teams preparado com sucesso.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2806,6 +2806,9 @@
       <Item ItemId=";driver.botFramework.error.InvalidBotId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Bot ID %s is invalid. It must be a GUID.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[A ID do bot %s é inválida. Deve ser um GUID.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2986,8 +2989,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create or update JSON file.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Crie ou atualize as appsettings do arquivo JSON.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Crie ou atualize o arquivo JSON.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create or update appsettings to JSON file.]]></Val>
@@ -4244,7 +4247,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A http client error happened while performing the %s task. The error response is: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ocorreu um erro de cliente http ao executar a %s tarefa. A resposta de erro é: %s]]></Val>
+            <Val><![CDATA[Ocorreu um erro do cliente http ao executar a tarefa %s. A resposta do erro é: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5507,7 +5510,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to retrieve existing SPFx solution information. Please make sure your SPFx solution is valid.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha ao recuperar informações de solução SPFx existentes. Verifique se a solução SPFx é válida.]]></Val>
+            <Val><![CDATA[Falha ao recuperar as informações de solução SPFx existentes. Verifique se a solução SPFx é válida.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5591,7 +5594,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit failed to import your SPFx solution. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha do Teams Toolkit ao importar sua solução SPFx. Um log completo de detalhes de importação pode ser encontrado no %s.]]></Val>
+            <Val><![CDATA[O Kit de Ferramentas do Teams não pôde importar sua solução SPFx. Um log completo de detalhes da importação pode ser encontrado em %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5618,7 +5621,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Importing SPFx solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Importando solução SPFx]]></Val>
+            <Val><![CDATA[Importando a solução SPFx]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5734,6 +5737,9 @@
       <Item ItemId=";plugins.spfx.questions.spfxSolution.createNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a New SPFx Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Criar uma nova solução SPFx]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5852,7 +5858,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Loading options ...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Carregando opções ...]]></Val>
+            <Val><![CDATA[Carregando opções...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

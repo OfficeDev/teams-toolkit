@@ -2063,7 +2063,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Multi-Tenant Support]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マルチテナント サポート]]></Val>
+            <Val><![CDATA[マルチテナントのサポート]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

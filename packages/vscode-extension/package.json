@@ -1280,13 +1280,8 @@
     "@microsoft/dev-tunnels-contracts": "~1.0.7360",
     "@microsoft/dev-tunnels-management": "~1.0.7360",
     "@microsoft/dev-tunnels-ssh": "~3.11.1",
-<<<<<<< HEAD
-    "@microsoft/teamsfx-api": "^0.22.2",
-    "@microsoft/teamsfx-core": "^2.0.2",
-=======
     "@microsoft/teamsfx-api": "^0.22.3",
-    "@microsoft/teamsfx-core": "^2.0.1",
->>>>>>> dev
+    "@microsoft/teamsfx-core": "^2.0.2",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

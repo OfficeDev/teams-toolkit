@@ -23,11 +23,7 @@ jobs:
       # Setup environment.
       - uses: actions/setup-node@v2
         with:
-<<<<<<< HEAD
           node-version: '16'
-=======
-          node-version: '18'
->>>>>>> dev
           
       - name: Checkout the code
         uses: actions/checkout@v2

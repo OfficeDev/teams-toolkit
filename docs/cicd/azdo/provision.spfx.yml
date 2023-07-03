@@ -10,11 +10,7 @@ steps:
 # Setup environment.
 - task: NodeTool@0
   inputs:
-<<<<<<< HEAD
     versionSpec: '16'
-=======
-    versionSpec: '18'
->>>>>>> dev
     checkLatest: true
 
 # Check out

@@ -378,7 +378,7 @@ jobs:
         if: failure()
         with:
           name: screenshots ${{ matrix.test-case }} ${{ matrix.os }}
-          path: ./packages/tests/test-resources/screenshots/
+          path: ./packages/tests/.test-resources/screenshots/
 
       - name: Upload source code
         uses: actions/upload-artifact@v3

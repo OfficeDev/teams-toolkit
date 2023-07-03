@@ -507,11 +507,6 @@ describe("scaffold question", () => {
         await callFuncs(question, inputs);
         if (question.name === QuestionNames.Scratch) {
           return ok({ type: "success", result: ScratchOptions.yes().id });
-        } else if (question.name === QuestionNames.ProjectType) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 1);
-          return ok({ type: "success", result: "" });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -530,13 +525,12 @@ describe("scaffold question", () => {
       };
       await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
-        "scratch",
-        "project-type",
-        "capabilities",
-        "bot-host-type-trigger",
-        "programming-language",
-        "folder",
-        "app-name",
+        QuestionNames.Scratch,
+        QuestionNames.Capabilities,
+        QuestionNames.BotTrigger,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
       ]);
     });
 
@@ -559,11 +553,6 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: ScratchOptions.yes().id });
         } else if (question.name === QuestionNames.Runtime) {
           return ok({ type: "success", result: Runtime.dotnet });
-        } else if (question.name === QuestionNames.ProjectType) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 1);
-          return ok({ type: "success", result: "" });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -588,14 +577,13 @@ describe("scaffold question", () => {
       };
       await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
-        "scratch",
-        "runtime",
-        "project-type",
-        "capabilities",
-        "bot-host-type-trigger",
-        "programming-language",
-        "folder",
-        "app-name",
+        QuestionNames.Scratch,
+        QuestionNames.Runtime,
+        QuestionNames.Capabilities,
+        QuestionNames.BotTrigger,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
       ]);
     });
   });

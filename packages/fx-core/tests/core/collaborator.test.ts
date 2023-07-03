@@ -1406,10 +1406,6 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(node?.data.name, CollaborationConstants.AppType);
         assert.equal(node?.children?.length, 2);
 
-<<<<<<< HEAD
-      const res = await validateEnvQuestion(inputs);
-      assert.isTrue(res);
-=======
         const teamsAppNode = node?.children?.[0];
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
@@ -1426,7 +1422,6 @@ describe("Collaborator APIs for V3", () => {
         const aadEnvValidate = await aadEnv!.validFunc("", inputs);
         assert.isUndefined(aadEnvValidate);
       }
->>>>>>> f4f96361c (refactor: remove export for validateEnvQuestion)
     });
 
     it("list collaborator: should contain teams app and aad app node and no need to select env", async () => {
@@ -1436,14 +1431,7 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-<<<<<<< HEAD
-      inputs.env = undefined;
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-=======
       inputs.platform = Platform.VSCode;
->>>>>>> f4f96361c (refactor: remove export for validateEnvQuestion)
 
       sandbox.stub(CollaborationUtil, "loadManifestId").resolves(ok("manifestId"));
       sandbox.stub(CollaborationUtil, "requireEnvQuestion").returns(true);
@@ -1457,10 +1445,6 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(node?.data.name, CollaborationConstants.AppType);
         assert.equal(node?.children?.length, 2);
 
-<<<<<<< HEAD
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-=======
         const teamsAppNode = node?.children?.[0];
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
@@ -1475,7 +1459,6 @@ describe("Collaborator APIs for V3", () => {
         const aadEnvValidate = await aadEnv!.validFunc("", inputs);
         assert.equal(aadEnvValidate, "Env already selected");
       }
->>>>>>> f4f96361c (refactor: remove export for validateEnvQuestion)
     });
 
     it("list collaborator: should contain teams app and aad app node and need to select env with manifest id hardcoded", async () => {
@@ -1485,69 +1468,6 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-<<<<<<< HEAD
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return false;
-      });
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select teams and aad, invalid manifest", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-
-      sandbox
-        .stub(CollaborationUtil, "loadManifestId")
-        .resolves(err(new UserError("source", "name", "message")));
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select aad, invalid manifest", async () => {
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs.env = undefined;
-
-      sandbox
-        .stub(CollaborationUtil, "loadManifestId")
-        .resolves(err(new UserError("source", "name", "message")));
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select aad, need select env", async () => {
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isTrue(res);
-    });
-
-    it("happy path: getQuestionsForGrantPermission", async () => {
-=======
->>>>>>> f4f96361c (refactor: remove export for validateEnvQuestion)
       inputs.platform = Platform.VSCode;
 
       sandbox.stub(CollaborationUtil, "loadManifestId").resolves(ok("manifestId"));

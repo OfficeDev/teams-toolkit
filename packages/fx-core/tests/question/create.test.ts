@@ -158,8 +158,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me", async () => {
-      const root = createProjectQuestion();
-      assert.isDefined(root);
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -200,7 +198,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(root, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",

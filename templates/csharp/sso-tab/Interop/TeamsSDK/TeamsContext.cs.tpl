@@ -231,11 +231,6 @@ public class TeamsHostContext
     public HostClientType ClientType { get; set; }
 
     /// <summary>
-    /// Identifies which host is running your app
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
     /// Current ring ID.
     /// </summary>
     public string RingId { get; set; }

@@ -3,7 +3,7 @@
 @using {{SafeProjectName}}.Components;
 
 <div>
-    <Hello />
+    <Welcome />
 </div>
 
 

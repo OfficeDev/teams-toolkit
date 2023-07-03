@@ -5746,7 +5746,7 @@
       <Item ItemId=";plugins.spfx.questions.spfxSolution.importExisting" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Import an Existing SPFx Solution]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[匯入現有的 SPFx 解決方案]]></Val>
           </Tgt>
           <Prev Cat="Text">

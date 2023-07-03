@@ -2054,7 +2054,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable multi-Tenant support for Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[啟用 Teams 應用程式的多租使用者支援。]]></Val>
+            <Val><![CDATA[啟用 Teams 應用程式的多租用戶支援。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2063,7 +2063,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Multi-Tenant Support]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[多租使用者支援]]></Val>
+            <Val><![CDATA[多租用戶支援]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3170,7 +3170,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [Output panel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法更新 %d 個檔案: %s 等等。如需詳細資料，請參閱 [輸出面板]5D; (command:fx-extension.showOutputChannel)。]]></Val>
+            <Val><![CDATA[無法更新 %d 個檔案: %s 等等。如需詳細資料，請參閱 [輸出面板]5D;(command:fx-extension.showOutputChannel)。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [output channel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>

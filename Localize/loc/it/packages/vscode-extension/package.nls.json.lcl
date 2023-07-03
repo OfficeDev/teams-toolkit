@@ -2270,7 +2270,7 @@
         <Str Cat="Text">
           <Val><![CDATA[[%s]5D; is successfully created at [local address]5D;(%s). You can continue to debug your app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Creazione di [%s]5D; completata in [indirizzo locale]5D; (%s). È possibile continuare a eseguire il debug dell'app.]]></Val>
+            <Val><![CDATA[Creazione di [%s]5D; completata in [indirizzo locale]5D;(%s). È possibile continuare a eseguire il debug dell'app.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.]]></Val>
@@ -2303,7 +2303,7 @@
         <Str Cat="Text">
           <Val><![CDATA[[%s]5D; is successfully created at [local address]5D;(%s). You can continue to preview your app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Creazione di [%s]5D; completata in [indirizzo locale]5D; (%s). È possibile continuare a visualizzare l'anteprima dell'app.]]></Val>
+            <Val><![CDATA[Creazione di [%s]5D; completata in [indirizzo locale]5D;(%s). È possibile continuare a visualizzare l'anteprima dell'app.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3725,7 +3725,7 @@
         <Str Cat="Text">
           <Val><![CDATA[[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;Upgrade your Teams Toolkit project to stay compatible with the latest version. A backup directory will be created along with an Upgrade Summary. [More Info]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;If you don't want to upgrade now, please keep using Teams Toolkit version 4.x.x.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Progetto di aggiornamento]5D; (comando:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;Aggiornare il progetto Teams Toolkit per mantenere la compatibilità con la versione più recente. Verrà creata una directory di backup insieme a un riepilogo dell'aggiornamento. [Altre informazioni]5D;(comando:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;Se non si vuole eseguire l'aggiornamento adesso, continuare a usare Teams Toolkit versione 4.x.x.]]></Val>
+            <Val><![CDATA[[Progetto di aggiornamento]5D;(comando:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;Aggiornare il progetto Teams Toolkit per mantenere la compatibilità con la versione più recente. Verrà creata una directory di backup insieme a un riepilogo dell'aggiornamento. [Altre informazioni]5D;(comando:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;Se non si vuole eseguire l'aggiornamento adesso, continuare a usare Teams Toolkit versione 4.x.x.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You need to upgrade the project to use the latest features. The upgrade process will not change your custom code. It will create the backup files in case you want to roll back. [Learn more]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%2C%22learnmore%22%5D)]A;[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]A;This upgrade is mandatory to continue using the current version of Teams Toolkit. If you don't want to upgrade now, please keep using Teams Toolkit version 4.x.x.]]></Val>
@@ -3791,7 +3791,7 @@
         <Str Cat="Text">
           <Val><![CDATA[You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.]A;[Open Lifecycle Commands]5D;(command:fx-extension.openLifecycleTreeview?%5B%22WalkThrough%22%5D)]A;__Tip: Learn more about ['Lifecycle']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[È possibile effettuare il provisioning delle risorse nel cloud e distribuire il codice dell'app nelle risorse di cui è stato effettuato il provisioning. Infine, distribuire la prima app in Teams.]A; [Comandi apri ciclo di vita]5D; (comando:fx-extension.openLifecycleTreeview?%5B%22WalkThrough%22%5D)]A; __Consiglio: altre informazioni su [’Ciclo di vita']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
+            <Val><![CDATA[È possibile effettuare il provisioning delle risorse nel cloud e distribuire il codice dell'app nelle risorse di cui è stato effettuato il provisioning. Infine, distribuire la prima app in Teams.]A; [Comandi apri ciclo di vita]5D;(comando:fx-extension.openLifecycleTreeview?%5B%22WalkThrough%22%5D)]A; __Consiglio: altre informazioni su [’Ciclo di vita']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.]A;[Open Deployment Commands]5D;(command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)]A;__Tip: Learn more about ['Deployment']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
@@ -3863,7 +3863,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Press [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug]5D;(command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.]A;[Run Local Preview (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Premi [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) o individua il pannello '[Run and Debug]5D;(command:workbench.view.debug)' sulla barra attività e fai clic sull'icona di riproduzione per visualizzare l'anteprima locale dell'app nel contesto di Teams.]A;[Esegui anteprima locale (F5)]5D; (command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: per eseguire l'anteprima locale, accedi a Microsoft 365 (account aziendale) con l’opzione trasferimento locale option.]]></Val>
+            <Val><![CDATA[Premi [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) o individua il pannello '[Run and Debug]5D;(command:workbench.view.debug)' sulla barra attività e fai clic sull'icona di riproduzione per visualizzare l'anteprima locale dell'app nel contesto di Teams.]A;[Esegui anteprima locale (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: per eseguire l'anteprima locale, accedi a Microsoft 365 (account aziendale) con l’opzione trasferimento locale option.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Press [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug]5D;(command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.]A;[Run local preview (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__]]></Val>

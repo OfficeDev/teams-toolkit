@@ -5746,7 +5746,7 @@
       <Item ItemId=";plugins.spfx.questions.spfxSolution.importExisting" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Import an Existing SPFx Solution]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Импорт существующего решения SPFx]]></Val>
           </Tgt>
           <Prev Cat="Text">

@@ -31,6 +31,7 @@ import { MockUserInteraction } from "../core/utils";
 import os from "os";
 import { Runtime, TabNonSsoAndDefaultBotItem } from "../../src/component/constants";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 
 async function callFuncs(question: Question, inputs: Inputs) {
   if (question.default && typeof question.default === "object") {
@@ -128,6 +129,10 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 4);
+          assert.equal(
+            (question.title as any)!(inputs),
+            getLocalizedString("core.createProjectQuestion.projectType.bot.title")
+          );
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
           return ok({ type: "success", result: NotificationTriggerOptions.appService().id });
@@ -146,6 +151,60 @@ describe("scaffold question", () => {
         "project-type",
         "capabilities",
         "bot-host-type-trigger",
+        "programming-language",
+        "folder",
+        "app-name",
+      ]);
+    });
+
+    it("traverse in vscode me", async () => {
+      const root = createProjectQuestion();
+      assert.isDefined(root);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.Scratch) {
+          return ok({ type: "success", result: ScratchOptions.yes().id });
+        } else if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: ProjectTypeOptions.me().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 2);
+          assert.equal(
+            (question.title as any)!(inputs),
+            getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
+          );
+          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          return ok({ type: "success", result: "javascript" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(root, inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        "scratch",
+        "project-type",
+        "capabilities",
         "programming-language",
         "folder",
         "app-name",
@@ -180,6 +239,10 @@ describe("scaffold question", () => {
             ...CapabilityOptions.officeAddinItems(),
             CapabilityOptions.officeAddinImport(),
           ]);
+          assert.equal(
+            (question.title as any)!(inputs),
+            getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
+          );
           return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
         } else if (question.name === QuestionNames.OfficeAddinFolder) {
           return ok({ type: "success", result: "./" });
@@ -234,6 +297,10 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 4);
+          assert.equal(
+            (question.title as any)!(inputs),
+            getLocalizedString("core.createProjectQuestion.projectType.tab.title")
+          );
           return ok({ type: "success", result: CapabilityOptions.SPFxTab().id });
         } else if (question.name === QuestionNames.SPFxSolution) {
           return ok({ type: "success", result: "new" });

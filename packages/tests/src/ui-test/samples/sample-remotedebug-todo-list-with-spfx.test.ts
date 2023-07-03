@@ -6,7 +6,7 @@ import {
   TemplateProject,
   TemplateProjectFolder,
 } from "../../constants";
-import { initTeamsPage } from "../../playwrightOperation";
+import { initTeamsPage, verifyTodoListSpfx } from "../../playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";
@@ -55,6 +55,7 @@ describe("Sample Tests", function () {
         "TodoListSPFx-dev",
         "spfx"
       );
+      await verifyTodoListSpfx(page);
       console.log("debug finish!");
     }
   );

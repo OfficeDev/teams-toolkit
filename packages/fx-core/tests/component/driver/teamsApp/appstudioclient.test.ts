@@ -150,6 +150,8 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
 
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+
       const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
       chai.assert.equal(res, appDef);
     });

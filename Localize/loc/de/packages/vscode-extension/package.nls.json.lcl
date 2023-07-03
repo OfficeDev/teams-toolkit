@@ -2054,7 +2054,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Enable multi-Tenant support for Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Aktivieren Sie mehrinstanzenfähigen Support für die Teams-App.]]></Val>
+            <Val><![CDATA[Aktivieren Sie die mehrinstanzenfähige Unterstützung für die Teams-App.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2063,7 +2063,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Multi-Tenant Support]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mehrinstanzenfähiger Support]]></Val>
+            <Val><![CDATA[Mehrinstanzenfähige Unterstützung]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

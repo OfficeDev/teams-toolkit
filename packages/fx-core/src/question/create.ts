@@ -40,35 +40,7 @@ import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinition
 import { Utils } from "../component/generator/spfx/utils/utils";
 import semver from "semver";
 import { cloneDeep } from "lodash";
-
-export enum QuestionNames {
-  Scratch = "scratch",
-  SctatchYes = "scratch-yes",
-  AppName = "app-name",
-  Folder = "folder",
-  ProgrammingLanguage = "programming-language",
-  ProjectType = "project-type",
-  Capabilities = "capabilities",
-  BotTrigger = "bot-host-type-trigger",
-  Runtime = "runtime",
-  SPFxSolution = "spfx-solution",
-  SPFxInstallPackage = "spfx-install-latest-package",
-  SPFxFramework = "spfx-framework-type",
-  SPFxWebpartName = "spfx-webpart-name",
-  SPFxFolder = "spfx-folder",
-  OfficeAddinFolder = "addin-project-folder",
-  OfficeAddinManifest = "addin-project-manifest",
-  OfficeAddinTemplate = "addin-template-select",
-  OfficeAddinHost = "addin-host",
-  OfficeAddinImport = "addin-import",
-  SkipAppName = "skip-app-name",
-  Samples = "samples",
-  ReplaceContentUrl = "replaceContentUrl",
-  ReplaceWebsiteUrl = "replaceWebsiteUrl",
-  ReplaceBotIds = "replaceBotIds",
-  SafeProjectName = "safeProjectName",
-  RepalceTabUrl = "tdp-tab-url",
-}
+import { QuestionNames } from "./questionNames";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -407,6 +379,32 @@ export class CapabilityOptions {
         "core.createProjectQuestion.option.description.previewOnWindow"
       ),
     }));
+  }
+
+  static nonSsoTabAndBot(): OptionItem {
+    return {
+      id: "TabNonSsoAndBot",
+      label: "", // No need to set display name as this option won't be shown in UI
+    };
+  }
+
+  static botAndMe(): OptionItem {
+    return {
+      id: "BotAndMessageExtension",
+      label: "", // No need to set display name as this option won't be shown in UI
+    };
+  }
+
+  static linkUnfurling(): OptionItem {
+    return {
+      id: "LinkUnfurling",
+      label: `${getLocalizedString("core.LinkUnfurlingOption.label")}`,
+      cliName: "link-unfurling",
+      detail: getLocalizedString("core.LinkUnfurlingOption.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.worksInOutlook"
+      ),
+    };
   }
 }
 
@@ -854,15 +852,21 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   ];
 }
 
+export enum ProgrammingLanguage {
+  JS = "javascript",
+  TS = "typescript",
+  CSharp = "csharp",
+}
+
 function programmingLanguageQuestion(): SingleSelectQuestion {
   const programmingLanguageQuestion: SingleSelectQuestion = {
     name: QuestionNames.ProgrammingLanguage,
     title: "Programming Language",
     type: "singleSelect",
     staticOptions: [
-      { id: "javascript", label: "JavaScript" },
-      { id: "typescript", label: "TypeScript" },
-      { id: "csharp", label: "C#" },
+      { id: ProgrammingLanguage.JS, label: "JavaScript" },
+      { id: ProgrammingLanguage.TS, label: "TypeScript" },
+      { id: ProgrammingLanguage.CSharp, label: "C#" },
     ],
     dynamicOptions: getLanguageOptions,
     default: (inputs: Inputs) => {
@@ -907,7 +911,7 @@ function rootFolderQuestion(): FolderQuestion {
 export const AppNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
-function appNameQuestion(): TextInputQuestion {
+export function appNameQuestion(): TextInputQuestion {
   const question: TextInputQuestion = {
     type: "text",
     name: QuestionNames.AppName,

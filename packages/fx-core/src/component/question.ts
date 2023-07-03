@@ -5,14 +5,12 @@ import {
   FxError,
   Inputs,
   ok,
-  Platform,
   QTreeNode,
   Result,
   SingleSelectQuestion,
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";
 import path from "path";
-import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   CoreQuestionNames,
@@ -20,16 +18,7 @@ import {
   selectTeamsAppManifestQuestion,
   selectTeamsAppPackageQuestion,
 } from "../core/question";
-import {
-  Runtime,
-  SPFxQuestionNames,
-  validateAppPackageOption,
-  validateSchemaOption,
-} from "./constants";
-import {
-  createHostTypeTriggerQuestion,
-  showNotificationTriggerCondition,
-} from "./feature/bot/question";
+import { SPFxQuestionNames, validateAppPackageOption, validateSchemaOption } from "./constants";
 import {
   frameworkQuestion,
   spfxImportFolderQuestion,
@@ -37,46 +26,6 @@ import {
   spfxSolutionQuestion,
   webpartNameQuestion,
 } from "./generator/spfx/utils/questions";
-
-export async function getNotificationTriggerQuestionNode(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const res = new QTreeNode({
-    type: "group",
-  });
-  if (isCLIDotNetEnabled()) {
-    Object.values(Runtime).forEach((runtime) => {
-      const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
-      node.condition = (inputs: Inputs) => inputs["runtime"] === runtime;
-      res.addChild(node);
-    });
-  } else {
-    const runtime = getPlatformRuntime(inputs.platform);
-    const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
-    res.addChild(node);
-  }
-  res.condition = showNotificationTriggerCondition;
-  return ok(res);
-}
-
-const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
-  [Platform.VS, Runtime.dotnet],
-  [Platform.VSCode, Runtime.nodejs],
-  [Platform.CLI, Runtime.nodejs],
-  [Platform.CLI_HELP, Runtime.nodejs],
-]);
-
-function getKeyNotFoundInMapErrorMsg(key: any) {
-  return `The key ${key} is not found in map.`;
-}
-
-function getPlatformRuntime(platform: Platform): Runtime {
-  const runtime = PlatformRuntimeMap.get(platform);
-  if (runtime) {
-    return runtime;
-  }
-  throw new Error(getKeyNotFoundInMapErrorMsg(platform));
-}
 
 export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
   let defaultUserEmail = "";

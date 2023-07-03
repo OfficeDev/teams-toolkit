@@ -1,37 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { assert } from "chai";
-import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import sinon from "sinon";
-import {
-  CapabilityOptions,
-  NotificationTriggerOptions,
-  ProjectTypeOptions,
-  QuestionNames,
-  SPFxVersionOptionIds,
-  ScratchOptions,
-  createProjectQuestion,
-  getLanguageOptions,
-  getTemplate,
-} from "../../src/question/create";
 import {
   Inputs,
   LocalFunc,
   MultiSelectQuestion,
-  OptionItem,
   Platform,
   Question,
   SingleSelectQuestion,
   UserInteraction,
   ok,
 } from "@microsoft/teamsfx-api";
+import { assert } from "chai";
+import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import sinon from "sinon";
+import { getLocalizedString } from "../../src/common/localizeUtils";
+import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import {
+  CapabilityOptions,
+  NotificationTriggerOptions,
+  ProjectTypeOptions,
+  SPFxVersionOptionIds,
+  ScratchOptions,
+  createProjectQuestion,
+  getLanguageOptions,
+  getTemplate,
+} from "../../src/question/create";
+import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockUserInteraction } from "../core/utils";
-import os from "os";
-import { Runtime, TabNonSsoAndDefaultBotItem } from "../../src/component/constants";
-import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { getLocalizedString } from "../../src/common/localizeUtils";
 
 async function callFuncs(question: Question, inputs: Inputs) {
   if (question.default && typeof question.default === "object") {
@@ -445,7 +442,7 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 1);
-          return ok({ type: "success", result: TabNonSsoAndDefaultBotItem().id });
+          return ok({ type: "success", result: CapabilityOptions.nonSsoTabAndBot().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -526,7 +523,7 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 1);
-          return ok({ type: "success", result: TabNonSsoAndDefaultBotItem().id });
+          return ok({ type: "success", result: CapabilityOptions.nonSsoTabAndBot().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);

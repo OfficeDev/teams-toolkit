@@ -3,14 +3,6 @@
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabSsoItem,
-  BotSsoItem,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../component/constants";
 import { MetadataV3 } from "./versionMetadata";
 
 export function validateProjectSettings(projectSettings: any): string | undefined {
@@ -21,14 +13,7 @@ export function validateProjectSettings(projectSettings: any): string | undefine
   if (validateRes) {
     return `solutionSettings.azureResources validation failed: ${validateRes}`;
   }
-  validateRes = validateStringArray(solutionSettings.capabilities, [
-    TabOptionItem().id,
-    BotOptionItem().id,
-    MessageExtensionItem().id,
-    TabSPFxItem().id,
-    TabSsoItem().id,
-    BotSsoItem().id,
-  ]);
+  validateRes = validateStringArray(solutionSettings.capabilities);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;
   }

@@ -20,15 +20,8 @@ import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
-import { CoreQuestionNames } from "../core/question";
-import {
-  BotOptionItem,
-  CoordinatorSource,
-  DefaultBotAndMessageExtensionItem,
-  MessageExtensionNewUIItem,
-  TabNonSsoAndDefaultBotItem,
-  TabNonSsoItem,
-} from "./constants";
+import { CapabilityOptions, QuestionNames } from "../question";
+import { CoordinatorSource } from "./constants";
 import * as appStudio from "./driver/teamsApp/appStudio";
 import {
   BOTS_TPL_V3,
@@ -147,12 +140,12 @@ async function updateManifest(
   const tabs = manifest.staticTabs;
   let needUpdateStaticTabUrls = false;
   if (
-    inputs[CoreQuestionNames.ReplaceContentUrl] &&
-    inputs[CoreQuestionNames.ReplaceContentUrl].length != 0
+    inputs[QuestionNames.ReplaceContentUrl] &&
+    inputs[QuestionNames.ReplaceContentUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
     updateTabUrl(
-      inputs[CoreQuestionNames.ReplaceContentUrl],
+      inputs[QuestionNames.ReplaceContentUrl],
       TabUrlType.ContentUrl,
       tabs,
       existingManifestTemplate.staticTabs
@@ -160,12 +153,12 @@ async function updateManifest(
   }
 
   if (
-    inputs[CoreQuestionNames.ReplaceWebsiteUrl] &&
-    inputs[CoreQuestionNames.ReplaceWebsiteUrl].length != 0
+    inputs[QuestionNames.ReplaceWebsiteUrl] &&
+    inputs[QuestionNames.ReplaceWebsiteUrl].length != 0
   ) {
     needUpdateStaticTabUrls = true;
     updateTabUrl(
-      inputs[CoreQuestionNames.ReplaceWebsiteUrl],
+      inputs[QuestionNames.ReplaceWebsiteUrl],
       TabUrlType.WebsiteUrl,
       tabs,
       existingManifestTemplate.staticTabs
@@ -179,8 +172,8 @@ async function updateManifest(
   }
 
   // manifest: bot
-  if (inputs[CoreQuestionNames.ReplaceBotIds]) {
-    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
+  if (inputs[QuestionNames.ReplaceBotIds]) {
+    if (inputs[QuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
       if (existingManifestTemplate.bots && existingManifestTemplate.bots.length > 0) {
         manifest.bots = existingManifestTemplate.bots;
       } else {
@@ -189,7 +182,7 @@ async function updateManifest(
       }
     }
 
-    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToReplaceMessageExtensionBotId)) {
+    if (inputs[QuestionNames.ReplaceBotIds].includes(answerToReplaceMessageExtensionBotId)) {
       if (
         existingManifestTemplate.composeExtensions &&
         existingManifestTemplate.composeExtensions.length > 0
@@ -300,27 +293,27 @@ export function getTemplateId(
 ): { projectType: string; templateId: string } | undefined {
   // tab with bot, tab with message extension, tab with bot and message extension
   if (needTabAndBotCode(teamsApp)) {
-    return { projectType: "tab-bot-type", templateId: TabNonSsoAndDefaultBotItem().id };
+    return { projectType: "tab-bot-type", templateId: CapabilityOptions.nonSsoTabAndBot().id };
   }
 
   // tab only
   if (needTabCode(teamsApp)) {
-    return { projectType: "tab-type", templateId: TabNonSsoItem().id };
+    return { projectType: "tab-type", templateId: CapabilityOptions.nonSsoTab().id };
   }
 
   // bot and message extension
   if (isBotAndMessageExtension(teamsApp)) {
-    return { projectType: "bot-me-type", templateId: DefaultBotAndMessageExtensionItem().id };
+    return { projectType: "bot-me-type", templateId: CapabilityOptions.botAndMe().id };
   }
 
   // message extension
   if (isMessageExtension(teamsApp)) {
-    return { projectType: "me-type", templateId: MessageExtensionNewUIItem().id };
+    return { projectType: "me-type", templateId: CapabilityOptions.me().id };
   }
 
   // bot
   if (isBot(teamsApp)) {
-    return { projectType: "bot-type", templateId: BotOptionItem().id };
+    return { projectType: "bot-type", templateId: CapabilityOptions.basicBot().id };
   }
 
   return undefined;

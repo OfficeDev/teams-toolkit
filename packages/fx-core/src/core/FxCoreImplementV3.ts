@@ -31,7 +31,6 @@ import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHel
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
-  AzureSolutionQuestionNames,
   SPFxQuestionNames,
   SingleSignOnOptionItem,
   ViewAadAppHelpLinkV5,
@@ -73,6 +72,7 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
+import { QuestionNames } from "../question";
 import { getQuestionsForCreateProject } from "../question/create";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
@@ -301,7 +301,7 @@ export class FxCoreV3Implement {
     if (func.method === "addSso") {
       // used in v3 only in VS
       inputs.stage = Stage.addFeature;
-      inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
+      inputs[QuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
     }

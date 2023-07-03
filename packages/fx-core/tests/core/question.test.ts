@@ -6,234 +6,20 @@ import os from "os";
 import path from "path";
 import * as sinon from "sinon";
 
-import {
-  FuncValidation,
-  Inputs,
-  InputsWithProjectPath,
-  ok,
-  OptionItem,
-  Platform,
-  QTreeNode,
-} from "@microsoft/teamsfx-api";
+import { FuncValidation, InputsWithProjectPath, ok, Platform } from "@microsoft/teamsfx-api";
 
 import { getLocalizedString } from "../../src/common/localizeUtils";
-import {
-  BotOptionItem,
-  CommandAndResponseOptionItem,
-  DashboardOptionItem,
-  LinkUnfurlingItem,
-  M365SearchAppOptionItem,
-  M365SsoLaunchPageOptionItem,
-  MessageExtensionNewUIItem,
-  NewProjectTypeBotOptionItem,
-  NewProjectTypeMessageExtensionOptionItem,
-  NewProjectTypeOutlookAddinOptionItem,
-  NewProjectTypeTabOptionItem,
-  NotificationOptionItem,
-  TabNonSsoItem,
-  TabSPFxItem,
-  WorkflowOptionItem,
-} from "../../src/component/constants";
-import {
-  ImportAddinProjectItem,
-  OfficeAddinItems,
-} from "../../src/component/generator/officeAddin/question";
 import { environmentManager } from "../../src/core/environment";
 import {
-  addOfficeAddinQuestions,
-  getQuestionsForCreateProjectV2,
-} from "../../src/core/middleware/questionModel";
-import {
   CoreQuestionNames,
-  createAppNameQuestion,
-  createCapabilityQuestionPreview,
-  createNewProjectQuestionWith2Layers,
-  getBotProjectQuestionNode,
-  getMessageExtensionTypeProjectQuestionNode,
-  getOutlookAddinTypeProjectQuestionNode,
   getQuestionForDeployAadManifest,
-  getTabTypeProjectQuestionNode,
-  ProgrammingLanguageQuestion,
-  ScratchOptionYesVSC,
   validateAadManifestContainsPlaceholder,
 } from "../../src/core/question";
+import { appNameQuestion } from "../../src/question";
 import { randomAppName } from "./utils";
 
-describe("Programming Language Questions", async () => {
-  it("should return csharp on VS platform", async () => {
-    chai.assert.isTrue(ProgrammingLanguageQuestion.dynamicOptions !== undefined);
-    if (ProgrammingLanguageQuestion.dynamicOptions === undefined) {
-      throw "unreachable";
-    }
-    const inputs: Inputs = { platform: Platform.VS };
-    const questions = await ProgrammingLanguageQuestion.dynamicOptions(inputs);
-    chai.assert.isTrue(questions !== undefined);
-    chai.assert.isArray(questions);
-    chai.assert.lengthOf(questions, 1);
-    chai.assert.property(questions[0], "id");
-    chai.assert.equal((questions[0] as any).id, "csharp");
-  });
-});
-
-describe("createCapabilityQuestionPreview()", () => {
-  beforeEach(() => {
-    sinon.restore();
-    sinon.stub(process, "env").value({
-      BOT_NOTIFICATION_ENABLED: "true",
-    });
-  });
-
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it("should return single select question", () => {
-    // Act
-    const question = createCapabilityQuestionPreview();
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "capabilities");
-    chai.assert.deepEqual(question.staticOptions, [
-      NotificationOptionItem(),
-      CommandAndResponseOptionItem(),
-      WorkflowOptionItem(),
-      DashboardOptionItem(),
-      TabSPFxItem(),
-      TabNonSsoItem(),
-      BotOptionItem(),
-      MessageExtensionNewUIItem(),
-      M365SsoLaunchPageOptionItem(),
-      M365SearchAppOptionItem(),
-    ]);
-  });
-});
-
-describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => {
-  const sandbox = sinon.createSandbox();
-
-  beforeEach(() => {});
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should return 4 type options in first layer question if not from TDP", () => {
-    // Act
-    const question = createNewProjectQuestionWith2Layers();
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "project-type");
-    chai.assert.equal(question.title, getLocalizedString("core.createProjectQuestion.title"));
-    chai.assert.deepEqual(question.staticOptions, [
-      NewProjectTypeBotOptionItem(),
-      NewProjectTypeTabOptionItem(),
-      NewProjectTypeMessageExtensionOptionItem(),
-      NewProjectTypeOutlookAddinOptionItem(),
-    ]);
-  });
-
-  it("should return 3 type options in first layer question if from TDP", () => {
-    // Act
-    const question = createNewProjectQuestionWith2Layers({
-      teamsAppFromTdp: { id: "1" },
-      platform: Platform.VSCode,
-    });
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "project-type");
-    chai.assert.equal(question.title, getLocalizedString("core.createProjectQuestion.title"));
-    chai.assert.deepEqual(question.staticOptions, [
-      NewProjectTypeBotOptionItem(),
-      NewProjectTypeTabOptionItem(),
-      NewProjectTypeMessageExtensionOptionItem(),
-    ]);
-  });
-
-  it("should return 4 bot type options in second layer question", () => {
-    // Act
-    const question = getBotProjectQuestionNode({} as Inputs);
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "capabilities");
-    chai.assert.equal(
-      question.title,
-      getLocalizedString("core.createProjectQuestion.projectType.bot.title")
-    );
-    chai.assert.deepEqual(question.staticOptions, [
-      BotOptionItem(),
-      NotificationOptionItem(),
-      CommandAndResponseOptionItem(),
-      WorkflowOptionItem(),
-    ]);
-  });
-
-  it("should return 4 bot type options in second layer question with in-product AB test", () => {
-    // Act
-    const question = getBotProjectQuestionNode({ inProductDoc: true } as Inputs);
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "capabilities");
-    chai.assert.equal(
-      question.title,
-      getLocalizedString("core.createProjectQuestion.projectType.bot.title")
-    );
-    chai.assert.equal((question.staticOptions[3] as OptionItem).data, "cardActionResponse");
-  });
-
-  it("should return 4 tab type options in second layer question", () => {
-    // Act
-    const question = getTabTypeProjectQuestionNode();
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "capabilities");
-    chai.assert.equal(
-      question.title,
-      getLocalizedString("core.createProjectQuestion.projectType.tab.title")
-    );
-    chai.assert.deepEqual(question.staticOptions, [
-      TabNonSsoItem(),
-      M365SsoLaunchPageOptionItem(),
-      DashboardOptionItem(),
-      TabSPFxItem(),
-    ]);
-  });
-
-  it("should return 3 message extension type options in second layer question", () => {
-    // Act
-    const question = getMessageExtensionTypeProjectQuestionNode();
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "capabilities");
-    chai.assert.equal(
-      question.title,
-      getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
-    );
-    chai.assert.deepEqual(question.staticOptions, [
-      LinkUnfurlingItem(),
-      M365SearchAppOptionItem(),
-      MessageExtensionNewUIItem(),
-    ]);
-  });
-
-  it("should return 2 outlook type options in second layer question", () => {
-    // Act
-    const question = getOutlookAddinTypeProjectQuestionNode();
-    // Assert
-    chai.assert.equal(question.type, "singleSelect");
-    chai.assert.equal(question.name, "capabilities");
-    chai.assert.equal(
-      question.title,
-      getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
-    );
-    chai.assert.deepEqual(question.staticOptions, [
-      ...OfficeAddinItems(),
-      ImportAddinProjectItem(),
-    ]);
-  });
-});
-
 describe("App name question", async () => {
-  const question = createAppNameQuestion();
+  const question = appNameQuestion();
   const validFunc = (question.validation as FuncValidation<string>).validFunc;
 
   it("app name exceed maxlength of 30", async () => {
@@ -328,28 +114,6 @@ describe("App name question", async () => {
   });
 });
 
-describe("addOfficeAddinQuestions()", () => {
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it("should add questions", () => {
-    const parent = new QTreeNode({
-      type: "group",
-    });
-    addOfficeAddinQuestions(parent);
-    chai.assert(parent.children?.length != undefined && parent.children.length > 0);
-  });
-
-  it("should show in scratch option when feature flag is on", () => {
-    const officeAddinOption = ScratchOptionYesVSC();
-    chai.assert.equal(
-      officeAddinOption.label,
-      `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.officeAddin.label")}`
-    );
-  });
-});
-
 describe("updateAadManifestQuestion()", async () => {
   const inputs: InputsWithProjectPath = {
     platform: Platform.VSCode,
@@ -417,21 +181,5 @@ describe("updateAadManifestQuestion()", async () => {
     sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
     const res = await validateAadManifestContainsPlaceholder(inputs);
     chai.expect(res).to.equal(false);
-  });
-  it("getQuestionsForCreateProjectWithoutDotNet for cli", async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI_HELP,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
-    };
-
-    const questions = await getQuestionsForCreateProjectV2(inputs);
-
-    chai.expect(questions.isOk()).to.be.true;
-    if (questions.isOk()) {
-      chai.expect(questions.value?.children![0].children?.length).to.equal(3);
-    }
   });
 });

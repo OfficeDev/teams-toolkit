@@ -9,7 +9,6 @@ import {
   LogProvider,
   Ok,
   Platform,
-  QTreeNode,
   Result,
   Stage,
   SystemError,
@@ -39,22 +38,15 @@ import {
   UnresolvedPlaceholders,
 } from "../../src/component/configManager/interface";
 import { YamlParser } from "../../src/component/configManager/parser";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabNonSsoItem,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../../src/component/constants";
 import { coordinator } from "../../src/component/coordinator";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import "../../src/component/feature/sso";
-import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -63,19 +55,15 @@ import * as collaborator from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
 import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
-import {
-  CoreQuestionNames,
-  ProgrammingLanguageQuestion,
-  ScratchOptionYesVSC,
-} from "../../src/core/question";
+import { ProgrammingLanguageQuestion, QuestionNames } from "../../src/core/question";
 import {
   FileNotFoundError,
   InvalidProjectError,
   MissingEnvironmentVariablesError,
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
+import { CapabilityOptions, ScratchOptions } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
-import { QuestionNames } from "../../src/question/create";
 
 const tools = new MockTools();
 
@@ -102,17 +90,17 @@ describe("Core basic APIs", () => {
       // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+        [QuestionNames.AppName]: appName,
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [QuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.AadAppManifestFilePath]: path.join(
           os.tmpdir(),
           appName,
           "aad.manifest.json"
         ),
-        [CoreQuestionNames.TargetEnvName]: "dev",
+        [QuestionNames.TargetEnvName]: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
       };
@@ -141,7 +129,7 @@ describe("Core basic APIs", () => {
       const appPath = path.join(os.tmpdir(), appName);
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.Folder]: os.tmpdir(),
         "spfx-folder": ".\\src",
         "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
         "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
@@ -178,12 +166,12 @@ describe("Core basic APIs", () => {
       sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+        [QuestionNames.AppName]: appName,
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [QuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.AadAppManifestFilePath]: path.join(
           os.tmpdir(),
           appName,
           "aad.manifest.json"
@@ -214,16 +202,12 @@ describe("Core basic APIs", () => {
     sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.AadAppManifestFilePath]: path.join(
-        os.tmpdir(),
-        appName,
-        "aad.manifest.json"
-      ),
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: path.join(os.tmpdir(), appName, "aad.manifest.json"),
       env: "dev",
       stage: Stage.deployAad,
       projectPath: path.join(os.tmpdir(), appName),
@@ -245,16 +229,12 @@ describe("Core basic APIs", () => {
     sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
     const inputs: Inputs = {
       platform: Platform.CLI,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.AadAppManifestFilePath]: path.join(
-        os.tmpdir(),
-        appName,
-        "aad.manifest.json"
-      ),
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: path.join(os.tmpdir(), appName, "aad.manifest.json"),
       env: "dev",
       stage: Stage.deployAad,
       projectPath: path.join(os.tmpdir(), appName),
@@ -282,12 +262,12 @@ describe("Core basic APIs", () => {
       sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
+        [QuestionNames.AppName]: appName,
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [QuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.AadAppManifestFilePath]: appManifestPath,
         env: "dev",
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
@@ -317,12 +297,12 @@ describe("Core basic APIs", () => {
       sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([""]));
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        [CoreQuestionNames.AadAppManifestFilePath]: appManifestPath,
+        [QuestionNames.AppName]: appName,
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [QuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.AadAppManifestFilePath]: appManifestPath,
         env: undefined,
         stage: Stage.deployAad,
         projectPath: path.join(os.tmpdir(), appName),
@@ -368,12 +348,12 @@ describe("Core basic APIs", () => {
       await fs.remove(appManifestPath);
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
-        [CoreQuestionNames.AadAppManifestFilePath]: path.join(
+        [QuestionNames.AppName]: appName,
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [QuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.AadAppManifestFilePath]: path.join(
           os.tmpdir(),
           appName,
           "aad.manifest.json"
@@ -480,11 +460,11 @@ describe("Core basic APIs", () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
-      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
       stage: Stage.listCollaborator,
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -556,11 +536,11 @@ describe("Core basic APIs", () => {
       const core = new FxCore(tools);
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.AppName]: appName,
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
+        [QuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
       };
@@ -593,11 +573,11 @@ describe("Core basic APIs", () => {
       const core = new FxCore(tools);
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
-        [CoreQuestionNames.Folder]: os.tmpdir(),
+        [QuestionNames.AppName]: appName,
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
+        [QuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
       };
@@ -622,7 +602,7 @@ describe("Core basic APIs", () => {
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
     };
     if (
       ProgrammingLanguageQuestion.dynamicOptions &&
@@ -637,15 +617,15 @@ describe("Core basic APIs", () => {
 
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabOptionItem().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: BotOptionItem().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: MessageExtensionItem().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.me().id,
     });
 
     function languageAssert(inputs: Inputs) {
@@ -960,7 +940,7 @@ describe("publishInDeveloperPortal", () => {
       env: "local",
       projectPath: "project-path",
       platform: Platform.VSCode,
-      [CoreQuestionNames.AppPackagePath]: "path",
+      [QuestionNames.AppPackagePath]: "path",
       ignoreLockByUT: true,
     };
     sandbox.stub(fs, "pathExists").resolves(false);
@@ -986,9 +966,9 @@ describe("Teams app APIs", async () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.TeamsAppPackageFilePath]: ".\\build\\appPackage\\appPackage.dev.zip",
-      [CoreQuestionNames.ValidateMethod]: "validateAgainstAppPackage",
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.TeamsAppPackageFilePath]: ".\\build\\appPackage\\appPackage.dev.zip",
+      [QuestionNames.ValidateMethod]: "validateAgainstAppPackage",
       projectPath: path.join(os.tmpdir(), appName),
     };
 
@@ -1004,9 +984,9 @@ describe("Teams app APIs", async () => {
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
-      [CoreQuestionNames.ValidateMethod]: "validateAgainstSchema",
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
+      [QuestionNames.ValidateMethod]: "validateAgainstSchema",
       projectPath: path.join(os.tmpdir(), appName),
     };
 
@@ -1024,10 +1004,10 @@ describe("Teams app APIs", async () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.TeamsAppManifestFilePath]: ".\\appPackage\\manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
-      [CoreQuestionNames.OutputZipPathParamName]: ".\\build\\appPackage\\appPackage.dev.zip",
+      [QuestionNames.OutputZipPathParamName]: ".\\build\\appPackage\\appPackage.dev.zip",
     };
 
     sinon.stub(process, "platform").value("win32");
@@ -1042,7 +1022,7 @@ describe("Teams app APIs", async () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.Folder]: os.tmpdir(),
       projectPath: path.join(os.tmpdir(), appName),
     };
 
@@ -1065,8 +1045,8 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(err({ foo: "bar" } as any));
     const appName = await mockV3Project();
     const inputs: Inputs = {
-      [CoreQuestionNames.M365Host]: Hub.teams,
-      [CoreQuestionNames.TeamsAppManifestFilePath]: path.join(
+      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
         "appPackage",
@@ -1086,8 +1066,8 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(err({ foo: "bar" } as any));
     const inputs: Inputs = {
-      [CoreQuestionNames.M365Host]: Hub.teams,
-      [CoreQuestionNames.TeamsAppManifestFilePath]: path.join(
+      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
         "appPackage",
@@ -1107,8 +1087,8 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(ok("test-url"));
     const inputs: Inputs = {
-      [CoreQuestionNames.M365Host]: Hub.teams,
-      [CoreQuestionNames.TeamsAppManifestFilePath]: path.join(
+      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
         "appPackage",

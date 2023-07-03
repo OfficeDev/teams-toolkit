@@ -1296,6 +1296,13 @@ export function createProjectQuestion(): IQTreeNode {
                 data: selectBotIdsQuestion(),
               },
             ],
+            condition: {
+              // only show for VSCode
+              validFunc: (preInput: string, inputs?: Inputs) => {
+                if (inputs!.platform === Platform.VSCode) return undefined;
+                return "not supported";
+              },
+            },
           },
         ],
       },

@@ -5,10 +5,12 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "fs-extra";
 
-import { assembleError, LogProvider } from "@microsoft/teamsfx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 
 import { waitSeconds } from "../tools";
 import { CoreSource } from "../../core/error";
+import { NotExtendedToM365Error } from "./errors";
+import { assembleError } from "../../error/common";
 
 // Call m365 service for package CRUD
 export class PackageService {
@@ -153,10 +155,12 @@ export class PackageService {
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
         this.traceError(error);
+        if (error.response.status === 404) {
+          throw new NotExtendedToM365Error(CoreSource);
+        }
       } else {
         this.logger?.error(error.message);
       }
-
       throw assembleError(error, CoreSource);
     }
   }

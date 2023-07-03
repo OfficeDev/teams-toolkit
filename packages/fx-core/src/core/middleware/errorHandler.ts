@@ -3,8 +3,9 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { assembleError, err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { setLocale } from "../globalVars";
+import { assembleError } from "../../error/common";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
@@ -16,7 +17,7 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
   // }`;
   // if locale is set in inputs, set it globally.
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (inputs.locale) setLocale(inputs.locale);
+  if (inputs?.locale) setLocale(inputs.locale);
   try {
     // let log = `FxCore start call:${taskName}`;
     // if (inputs.loglevel && inputs.loglevel === "Debug") {

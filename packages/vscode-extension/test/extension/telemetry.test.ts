@@ -86,17 +86,17 @@ describe("telemetry", () => {
       "sampleErrorEvent",
       {
         stringProp: "some string",
-        stackProp: "some user stack trace",
+        "error-stack": "some user stack trace at C:/fake_path/fake_file:1:1",
       },
       { numericMeasure: 123 },
-      ["stackProp"]
+      ["error-stack"]
     );
 
     expect(reporterSpy.sendTelemetryErrorEvent).to.have.been.called.with(
       "sampleErrorEvent",
       {
         stringProp: "some string",
-        stackProp: "some user stack trace",
+        "error-stack": "some user stack trace at <REDACTED: user-file-path>:1:1",
         "project-id": "",
         "correlation-id": "",
         "feature-flags": featureFlags,

@@ -14,9 +14,6 @@ import { MissingEnvironmentVariablesError } from "../../../../error/common";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
-const driverConstants = {
-  generateManifestFailedMessageKey: "driver.aadApp.error.generateManifestFailed",
-};
 
 export async function buildAadManifest(
   context: DriverContext,

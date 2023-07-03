@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { Activity, Middleware, TurnContext } from "botbuilder";
-import { ConversationReferenceStore } from "../storage";
-import { cloneConversation } from "../utils";
+import { cloneConversation, getKey } from "../utils";
+import { ConversationReferenceStore } from "../interface";
 
 /**
  * @internal
@@ -40,7 +40,9 @@ export class NotificationMiddleware implements Middleware {
       case ActivityType.CurrentBotInstalled:
       case ActivityType.TeamRestored: {
         const reference = TurnContext.getConversationReference(context.activity);
-        await this.conversationReferenceStore.set(reference);
+        await this.conversationReferenceStore.add(getKey(reference), reference, {
+          overwrite: true,
+        });
         break;
       }
       case ActivityType.CurrentBotMessaged: {
@@ -50,7 +52,7 @@ export class NotificationMiddleware implements Middleware {
       case ActivityType.CurrentBotUninstalled:
       case ActivityType.TeamDeleted: {
         const reference = TurnContext.getConversationReference(context.activity);
-        await this.conversationReferenceStore.delete(reference);
+        await this.conversationReferenceStore.remove(getKey(reference), reference);
         break;
       }
       default:
@@ -87,17 +89,15 @@ export class NotificationMiddleware implements Middleware {
     const reference = TurnContext.getConversationReference(context.activity);
     const conversationType = reference?.conversation?.conversationType;
     if (conversationType === "personal" || conversationType === "groupChat") {
-      if (!(await this.conversationReferenceStore.check(reference))) {
-        await this.conversationReferenceStore.set(reference);
-      }
+      await this.conversationReferenceStore.add(getKey(reference), reference, { overwrite: false });
     } else if (conversationType === "channel") {
       const teamId = context.activity?.channelData?.team?.id;
       if (teamId !== undefined) {
         const teamReference = cloneConversation(reference);
         teamReference.conversation.id = teamId;
-        if (!(await this.conversationReferenceStore.check(teamReference))) {
-          await this.conversationReferenceStore.set(teamReference);
-        }
+        await this.conversationReferenceStore.add(getKey(teamReference), teamReference, {
+          overwrite: false,
+        });
       }
     }
   }

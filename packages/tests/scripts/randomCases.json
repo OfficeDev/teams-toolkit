@@ -1,0 +1,108 @@
+[
+    {
+        "os": {
+            "windows-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "ubuntu-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "macos-latest": {
+                "node-16": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-npm-search",
+            "sample-localdebug-query-org",
+            "sample-localdebug-stock-update",
+            "sample-localdebug-incoming-webhook",
+            "sample-localdebug-proactive-message"
+        ]
+    },
+    {
+        "os": {
+            "windows-latest": {
+                "node-16": []
+            },
+            "ubuntu-latest": {
+                "node-16": []
+            },
+            "macos-latest": {
+                "node-16": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-todo-list-with-spfx"
+        ]
+    },
+    {
+        "os": {
+            "ubuntu-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "windows-latest": {
+                "node-16": [],
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-hello-world-meeting",
+            "sample-localdebug-contact-exporter",
+            "sample-localdebug-todo-list-with-m365",
+            "sample-localdebug-one-productivity-hub",
+            "sample-localdebug-share-now",
+            "sample-localdebug-dashboard",
+            "sample-localdebug-todo-list-sql",
+            "sample-localdebug-hello-world-tab-with-backend"
+        ]
+    },
+    {
+        "os": {
+            "windows-latest": {
+                "node-16": [],
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-remotedebug-adaptive-card",
+            "sample-remotedebug-dashboard",
+            "sample-remotedebug-graph-connector",
+            "sample-remotedebug-contact-exporter",
+            "sample-remotedebug-hello-world-tab-with-backend",
+            "sample-remotedebug-npm-search",
+            "sample-remotedebug-hello-world-meeting",
+            "sample-remotedebug-todo-list-sql",
+            "sample-remotedebug-todo-list-with-m365",
+            "sample-remotedebug-one-productivity-hub",
+            "sample-remotedebug-stock-update",
+            "sample-remotedebug-query-org",
+            "sample-remotedebug-share-now",
+            "sample-remotedebug-proactive-message"
+        ]
+    },
+    {
+        "os": {
+            "windows-latest": {
+                "node-16": []
+            }
+        },
+        "cases": [
+            "sample-remotedebug-todo-list-with-spfx"
+        ]
+    },
+    {
+        "os": {
+            "ubuntu-latest": {
+                "node-16": [],
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-adaptive-card",
+            "sample-localdebug-graph-connector"
+        ]
+    }
+]

@@ -8,29 +8,9 @@
 // If you need to edit this file, please edit it in the above folder
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
-
-import * as os from "os";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
-export function isWindows(): boolean {
-  return os.type() === "Windows_NT";
-}
-
-export function isMacOS(): boolean {
-  return os.type() === "Darwin";
-}
-
-export function isLinux(): boolean {
-  return os.type() === "Linux";
-}
-
-// help links
-export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
-export const bicepHelpLink = `${defaultHelpLink}#how-to-install-bicep-cli`;
-
 export const Messages = {
-  learnMoreButtonText: () => getLocalizedString("core.option.learnMore"),
-
   downloadBicep: () => getLocalizedString("depChecker.downloadBicep"),
   finishInstallBicep: () => getLocalizedString("depChecker.finishInstallBicep"),
 };

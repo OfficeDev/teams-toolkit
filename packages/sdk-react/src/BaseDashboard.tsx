@@ -107,6 +107,7 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
   /**
    * Override this method to define the layout of the widget in the dashboard.
    * @returns The layout of the widget in the dashboard.
+   * @public
    */
   protected layout(): JSX.Element | undefined {
     return undefined;
@@ -115,6 +116,7 @@ export class BaseDashboard<P, S> extends Component<P, S & BaseDashboardState> {
   /**
    * Override this method to customize the dashboard style.
    * @returns The className for customizing the dashboard style.
+   * @public
    */
   protected styling(): string {
     return null;

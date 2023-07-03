@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, ok, Platform, Stage, v3 } from "@microsoft/teamsfx-api";
+import { Inputs, ok, Platform, Stage } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import fs from "fs-extra";
 import { FxCore } from "../../src";
 import {
   CoreQuestionNames,
@@ -15,12 +16,10 @@ import {
 } from "../../src/core/question";
 import { BotOptionItem, TabOptionItem, TabSPFxItem } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import fs from "fs-extra";
-import { SPFXQuestionNames } from "../../src/component/resource/spfx/utils/questions";
+import { SPFXQuestionNames } from "../../src/component/generator/spfx/utils/questions";
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
-import * as templateActions from "../../src/common/template-utils/templatesActions";
+import { Generator } from "../../src/component/generator/generator";
 
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -30,22 +29,10 @@ describe("Core basic APIs for v3", () => {
   beforeEach(() => {
     sandbox.restore();
     setTools(tools);
-    sandbox
-      .stub<any, any>(axios, "get")
-      .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
-        const buffer = fs.readFileSync("./tests/core/samples_v2.zip");
-        return {
-          data: buffer,
-          status: 200,
-          statusText: "",
-          headers: {},
-          config: config!,
-          request: {},
-        };
-      });
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
   });
 
   afterEach(() => {
@@ -118,6 +105,30 @@ describe("Core basic APIs for v3", () => {
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
     projectPath = inputs.projectPath!;
+  });
+
+  it("Import existing SPFx solution (VSC, SPFx)", async () => {
+    appName = randomAppName();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      stage: Stage.create,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+      [SPFXQuestionNames.spfx_solution]: "import",
+      [SPFXQuestionNames.spfx_import_folder]: "c:\\test",
+    };
+    sandbox
+      .stub(fs, "readJson")
+      .resolves({ "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } });
+    sandbox.stub(fs, "pathExists").callsFake((directory: string) => {
+      if (directory.includes(".yo-rc.json")) return true;
+      else return false;
+    });
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
   });
 
   it("create from sample (CLI)", async () => {

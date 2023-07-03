@@ -7,18 +7,19 @@ import chai from "chai";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import { v4 as uuid } from "uuid";
-import { TeamsAppManifest, ok, UserCancelError, Platform } from "@microsoft/teamsfx-api";
+import { TeamsAppManifest, ok, Platform } from "@microsoft/teamsfx-api";
 import { PublishAppPackageDriver } from "../../../../src/component/driver/teamsApp/publishAppPackage";
 import { PublishAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/PublishAppPackageArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import {
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
-import { Constants } from "./../../../../src/component/resource/appManifest/constants";
-import { PublishingState } from "../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { Constants } from "./../../../../src/component/driver/teamsApp/constants";
+import { PublishingState } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
+import { UserCancelError } from "../../../../src/error/common";
 
 describe("teamsApp/publishAppPackage", async () => {
   const teamsAppDriver = new PublishAppPackageDriver();
@@ -108,7 +109,7 @@ describe("teamsApp/publishAppPackage", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
-      chai.assert.equal(result.error.name, UserCancelError.name);
+      chai.assert.isTrue(result.error instanceof UserCancelError);
     }
   });
 

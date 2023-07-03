@@ -5,32 +5,22 @@
  * @author Yuqi Zhou <yuqzho@microsoft.com>
  */
 
-import { AppDefinition } from "./resource/appManifest/interfaces/appDefinition";
-import * as appStudio from "./resource/appManifest/appStudio";
-import * as os from "os";
 import {
-  err,
-  Result,
-  ok,
+  Context,
   FxError,
-  UserError,
-  ContextV3,
-  Inputs,
-  TeamsAppManifest,
   IStaticTab,
-  Platform,
+  Inputs,
+  Result,
+  TeamsAppManifest,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import path from "path";
 import fs from "fs-extra";
-import { environmentManager } from "../core/environment";
-import { CoreQuestionNames } from "../core/question";
-import {
-  BOTS_TPL_V3,
-  COMPOSE_EXTENSIONS_TPL_V3,
-  DEFAULT_DESCRIPTION,
-  DEFAULT_DEVELOPER,
-} from "./resource/appManifest/constants";
+import * as path from "path";
+import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
+import { CoreQuestionNames } from "../core/question";
 import {
   BotOptionItem,
   CoordinatorSource,
@@ -39,16 +29,24 @@ import {
   TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
 } from "./constants";
-import { getLocalizedString } from "../common/localizeUtils";
-import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
+import * as appStudio from "./driver/teamsApp/appStudio";
+import {
+  BOTS_TPL_V3,
+  COMPOSE_EXTENSIONS_TPL_V3,
+  DEFAULT_DESCRIPTION,
+  DEFAULT_DEVELOPER,
+} from "./driver/teamsApp/constants";
+import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
+import { TelemetryUtils } from "./driver/teamsApp/utils/telemetry";
 import {
   isBot,
   isBotAndMessageExtension,
   isMessageExtension,
   needTabAndBotCode,
   needTabCode,
-} from "./resource/appManifest/utils/utils";
-import { TelemetryUtils } from "./resource/appManifest/utils/telemetry";
+} from "./driver/teamsApp/utils/utils";
+import { envUtil } from "./utils/envUtil";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -60,7 +58,7 @@ export const answerToReplaceMessageExtensionBotId = "messageExtension";
 
 export class DeveloperPortalScaffoldUtils {
   async updateFilesForTdp(
-    ctx: ContextV3,
+    ctx: Context,
     appDefinition: AppDefinition,
     inputs: Inputs
   ): Promise<Result<undefined, FxError>> {
@@ -86,13 +84,13 @@ export class DeveloperPortalScaffoldUtils {
   }
 }
 
-export enum TabUrlType {
+enum TabUrlType {
   WebsiteUrl = "WebsiteUrl",
   ContentUrl = "ContentUrl",
 }
 
 async function updateManifest(
-  ctx: ContextV3,
+  ctx: Context,
   appDefinition: AppDefinition,
   inputs: Inputs
 ): Promise<Result<undefined, FxError>> {
@@ -144,25 +142,6 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
-
-  // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
-  // This is a short-term solution to convert the value to what TTK expects.
-  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-    if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = updateScope(
-          manifest.configurableTabs[0].scopes
-        ) as any;
-      }
-    }
-  }
-  if (!!manifest.bots && manifest.bots.length > 0) {
-    if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = updateScope(manifest.bots[0].scopes) as any;
-      }
-    }
-  }
 
   // manifest: tab
   const tabs = manifest.staticTabs;
@@ -277,28 +256,9 @@ async function updateManifest(
 }
 
 async function updateEnv(appId: string, projectPath: string): Promise<Result<undefined, FxError>> {
-  const dotEnvFile = environmentManager.getDotEnvPath("local", projectPath);
-  const source = await fs.readFile(dotEnvFile);
-  const writeStream = fs.createWriteStream(dotEnvFile);
-  source
-    .toString()
-    .split(/\r?\n/)
-    .forEach((line) => {
-      const reg = /^([a-zA-Z_][a-zA-Z0-9_]*=)/g;
-      const match = reg.exec(line);
-      if (match) {
-        if (match[1].startsWith("TEAMS_APP_ID=")) {
-          writeStream.write(`TEAMS_APP_ID=${appId}${os.EOL}`);
-        } else {
-          writeStream.write(`${line.trim()}${os.EOL}`);
-        }
-      } else {
-        writeStream.write(`${line.trim()}${os.EOL}`);
-      }
-    });
-
-  writeStream.end();
-  return ok(undefined);
+  return await envUtil.writeEnv(projectPath, "local", {
+    TEAMS_APP_ID: appId,
+  });
 }
 
 function updateTabUrl(
@@ -364,10 +324,6 @@ export function getTemplateId(
   }
 
   return undefined;
-}
-
-export function updateScope(scopes: string[]): string[] {
-  return scopes.map((o) => o.toLowerCase());
 }
 
 export function isFromDevPortal(inputs: Inputs | undefined): boolean {

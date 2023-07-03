@@ -51,16 +51,13 @@ export const MetadataV2 = {
   userdataSuffix: "userdata",
   configFile: "projectSettings.json",
   updateToolkitLink: "https://aka.ms/update-teams-toolkit",
+  aadTemplateFileName: "aad.template.json",
 };
 
 export const MetadataV3Abandoned = {
   projectVersion: "3.0.0",
   configFolder: "teamsfx",
   configFile: "settings.json",
-};
-
-export const Metadata = {
-  versionMatchLink: "https://aka.ms/teamsfx-project-toolkit-match",
 };
 
 export enum VersionState {

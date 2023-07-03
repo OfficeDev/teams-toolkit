@@ -2,9 +2,13 @@
 // Licensed under the MIT license.
 
 import { FxError, LogLevel, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { IncompatibleProjectError, isUserCancelError } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
+import {
+  IncompatibleProjectError,
+  UnhandledError,
+  isUserCancelError,
+  Correlator,
+  VersionState,
+} from "@microsoft/teamsfx-core";
 import { readFileSync } from "fs";
 import path from "path";
 import { Argv, Options, exit } from "yargs";
@@ -14,7 +18,6 @@ import CLILogProvider from "./commonlib/log";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import Progress from "./console/progress";
 import * as constants from "./constants";
-import { UnknownError } from "./error";
 import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
 import UI from "./userInteraction";
 import { getSystemInputs } from "./utils";
@@ -132,10 +135,6 @@ export abstract class YargsCommand {
               }
             }
           }
-          const configResult = await result.value.getProjectConfigV3(inputs);
-          if (configResult.isOk()) {
-            CliTelemetry.setIsFromSample(configResult.value?.projectSettings?.isFromSample);
-          }
         }
       }
 
@@ -152,7 +151,8 @@ export abstract class YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Info, "User canceled.", true);
         return;
       }
-      const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
+      const FxError: UserError | SystemError =
+        "source" in e ? e : new UnhandledError(e, constants.cliSource);
       CLILogProvider.outputError(`${FxError.source}.${FxError.name}: ${FxError.message}`);
       if ("helpLink" in FxError && FxError.helpLink) {
         CLILogProvider.outputError(

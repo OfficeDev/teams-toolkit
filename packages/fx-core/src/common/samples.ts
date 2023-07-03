@@ -1,8 +1,7 @@
-import sampleConfig from "./samples-config.json";
-import sampleConfigV3 from "./samples-config-v3.json";
-import { isV3Enabled, isVideoFilterEnabled } from "./tools";
-import { sendRequestWithTimeout } from "../component/generator/utils";
 import axios from "axios";
+import { sendRequestWithTimeout } from "../component/generator/utils";
+import sampleConfigV3 from "./samples-config-v3.json";
+import { isVideoFilterEnabled } from "./tools";
 
 class configInfo {
   static readonly owner = "OfficeDev";
@@ -25,7 +24,7 @@ export interface SampleInfo {
   relativePath?: string;
 }
 
-export interface SampleCollection {
+interface SampleCollection {
   samples: SampleInfo[];
 }
 
@@ -55,45 +54,25 @@ class SampleProvider {
     }
   }
   public get SampleCollection(): SampleCollection {
-    let samples;
-    if (isV3Enabled()) {
-      samples = (this.sampleConfigs ?? sampleConfigV3).samples.map((sample: any) => {
-        return {
-          id: sample.id,
-          title: sample.title,
-          shortDescription: sample.shortDescription,
-          fullDescription: sample.fullDescription,
-          tags: sample.tags,
-          time: sample.time,
-          configuration: sample.configuration,
-          link:
-            (sample as any).packageLink ??
-            (this.sampleConfigs ?? sampleConfigV3).defaultPackageLink,
-          suggested: sample.suggested,
-          url:
-            (sample as any).relativePath && (sample as any).url
-              ? (sample as any).url
-              : `${(this.sampleConfigs ?? sampleConfigV3).baseUrl}${sample.id}`,
-          relativePath: (sample as any).relativePath,
-        } as SampleInfo;
-      });
-    } else {
-      samples = sampleConfig.samples.map((sample) => {
-        return {
-          id: sample.id,
-          title: sample.title,
-          shortDescription: sample.shortDescription,
-          fullDescription: sample.fullDescription,
-          tags: sample.tags,
-          time: sample.time,
-          configuration: sample.configuration,
-          link: sample.packageLink ?? sampleConfig.defaultPackageLink,
-          suggested: sample.suggested,
-          url: sample.relativePath ? sample.url : sample.url ?? sampleConfig.baseUrl,
-          relativePath: sample.relativePath,
-        } as SampleInfo;
-      });
-    }
+    const samples = (this.sampleConfigs ?? sampleConfigV3).samples.map((sample: any) => {
+      return {
+        id: sample.id,
+        title: sample.title,
+        shortDescription: sample.shortDescription,
+        fullDescription: sample.fullDescription,
+        tags: sample.tags,
+        time: sample.time,
+        configuration: sample.configuration,
+        link:
+          (sample as any).packageLink ?? (this.sampleConfigs ?? sampleConfigV3).defaultPackageLink,
+        suggested: sample.suggested,
+        url:
+          (sample as any).relativePath && (sample as any).url
+            ? (sample as any).url
+            : `${(this.sampleConfigs ?? sampleConfigV3).baseUrl}${sample.id}`,
+        relativePath: (sample as any).relativePath,
+      } as SampleInfo;
+    });
 
     // remove video filter sample app if feature flag is disabled.
     if (!isVideoFilterEnabled()) {

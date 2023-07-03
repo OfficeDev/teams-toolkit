@@ -3,7 +3,6 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { sampleProvider } from "../../src/common/samples";
-import sampleConfig from "../../src/common/samples-config.json";
 import sampleConfigV3 from "../../src/common/samples-config-v3.json";
 import axios from "axios";
 import { err } from "@microsoft/teamsfx-api";
@@ -14,24 +13,25 @@ describe("Samples", () => {
     sampleProvider["sampleConfigs"] = undefined;
   });
 
-  it("Get v2 samples", () => {
+  it("Get v3 samples - default sample config", () => {
     const restore = mockedEnv({
-      TEAMSFX_V3: "false",
+      TEAMSFX_V3: "true",
     });
 
     const samples = sampleProvider.SampleCollection.samples;
     for (const sample of samples) {
-      chai.expect(sampleConfig.samples.find((sampleInConfig) => sampleInConfig.id === sample.id))
+      chai.expect(sampleConfigV3.samples.find((sampleInConfig) => sampleInConfig.id === sample.id))
         .exist;
     }
     restore();
     (sampleProvider as any).sampleCollection = undefined;
   });
 
-  it("Get v3 samples", () => {
+  it("Get v3 samples - online sample config", () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
     });
+    sampleProvider["sampleConfigs"] = sampleConfigV3;
 
     const samples = sampleProvider.SampleCollection.samples;
     for (const sample of samples) {

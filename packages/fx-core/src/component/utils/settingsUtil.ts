@@ -12,15 +12,15 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import { getProjectSettingPathV3 } from "../../core/middleware/projectSettingsLoader";
 import { FileNotFoundError } from "../../error/common";
+import { pathUtils } from "./pathUtils";
 
-export class SettingsUtils {
+class SettingsUtils {
   async readSettings(
     projectPath: string,
     ensureTrackingId = true
   ): Promise<Result<Settings, FxError>> {
-    const projectYamlPath: string = getProjectSettingPathV3(projectPath);
+    const projectYamlPath: string = pathUtils.getYmlFilePath(projectPath, "dev");
     if (!(await fs.pathExists(projectYamlPath))) {
       return err(new FileNotFoundError("SettingsUtils", projectYamlPath));
     }
@@ -44,7 +44,7 @@ export class SettingsUtils {
     return ok(projectSettings);
   }
   async writeSettings(projectPath: string, settings: Settings): Promise<Result<string, FxError>> {
-    const projectYamlPath: string = getProjectSettingPathV3(projectPath);
+    const projectYamlPath: string = pathUtils.getYmlFilePath(projectPath, "dev");
     if (!(await fs.pathExists(projectYamlPath))) {
       return err(new FileNotFoundError("SettingsUtils", projectYamlPath));
     }

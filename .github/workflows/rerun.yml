@@ -13,8 +13,12 @@ on:
         default: "3"
         type: string
 
+  schedule:
+    - cron: "0 16 * * *"
+
 jobs:
   rerun:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - name: re-run failed jobs
@@ -36,3 +40,72 @@ jobs:
               -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.inputs.run_id }}/rerun-failed-jobs
           fi
+  clean:
+    name: Clean resource
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' }}
+    defaults:
+      run:
+        working-directory: packages/tests
+    env:
+      M365_ACCOUNT_NAME: "test14@xxbdw.onmicrosoft.com"
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_M365_PASSWORD }}
+      M365_DISPLAY_NAME: "ttktest"
+      M365_USERNAME_2: "test15@xxbdw.onmicrosoft.com"
+      M365_USERNAME_3: "test16@xxbdw.onmicrosoft.com"
+      M365_USERNAME_4: "test17@xxbdw.onmicrosoft.com"
+      CLEAN_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+      CLEAN_CLIENT_SECRET: ${{ secrets.CLEAN_CLIENT_SECRET }}
+      CLEAN_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      MAIL_API_KEY: ${{ secrets.MAIL_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Install npm packages
+        run: |
+          npm install
+
+      - name: Clean resource
+        if: always()
+        run: |
+          npx ts-node src/scripts/clean.ts
+
+      - name: Switch M365 account
+        run: |
+          username='${{ secrets.M365_USERNAME_2 }}'
+          echo "M365_ACCOUNT_NAME=$username" >> $GITHUB_ENV
+
+      - name: Clean resource 
+        if: always()
+        run: |
+          npx ts-node src/scripts/clean.ts
+
+      - name: Switch M365 account
+        run: |
+          username='${{ secrets.M365_USERNAME_3 }}'
+          echo "M365_ACCOUNT_NAME=$username" >> $GITHUB_ENV
+
+      - name: Clean resource 
+        if: always()
+        run: |
+          npx ts-node src/scripts/clean.ts
+
+      - name: Switch M365 account
+        run: |
+          username='${{ secrets.M365_USERNAME_4 }}'
+          echo "M365_ACCOUNT_NAME=$username" >> $GITHUB_ENV
+
+      - name: Clean resource 
+        if: always()
+        run: |
+          npx ts-node src/scripts/clean.ts

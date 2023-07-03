@@ -11,7 +11,11 @@ steps:
 # Setup environment.
 - task: NodeTool@0
   inputs:
+<<<<<<< HEAD
     versionSpec: '16'
+=======
+    versionSpec: '18'
+>>>>>>> dev
     checkLatest: true
 
 - task: Bash@3

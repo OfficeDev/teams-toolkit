@@ -4,14 +4,13 @@
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { ResultFactory } from "../results";
 import { GetTokenError, TenantNotExistError } from "../errors";
-import { AppStudioScopes, GraphScopes } from "../../../../common/tools";
+import { GraphScopes } from "../../../../common/tools";
 
 export enum TokenAudience {
   Graph = "graph",
-  AppStudio = "appStudio",
 }
 
-export interface GraphAndAppStudioTokenProvider {
+interface GraphAndAppStudioTokenProvider {
   m365?: M365TokenProvider;
 }
 interface TokenInstance {
@@ -42,29 +41,6 @@ class GraphInstance implements TokenInstance {
   }
 }
 
-class AppStudioInstance implements TokenInstance {
-  public async getToken(
-    tokenProvider: GraphAndAppStudioTokenProvider
-  ): Promise<string | undefined> {
-    const tokenRes = await tokenProvider.m365?.getAccessToken({ scopes: AppStudioScopes });
-    const token = tokenRes?.isOk() ? tokenRes.value : undefined;
-    return token;
-  }
-
-  public async getTenant(
-    tokenProvider: GraphAndAppStudioTokenProvider
-  ): Promise<string | undefined> {
-    const tokenObjectRes = await tokenProvider.m365?.getJsonObject({ scopes: AppStudioScopes });
-    const tokenObject = tokenObjectRes?.isOk() ? tokenObjectRes.value : undefined;
-    if (!tokenObject) {
-      return undefined;
-    }
-
-    const tenantId: string = (tokenObject as any).tid;
-    return tenantId;
-  }
-}
-
 export class TokenProvider {
   static token?: string;
   static tenantId?: string;
@@ -76,12 +52,7 @@ export class TokenProvider {
   ): Promise<void> {
     this.audience = audience;
 
-    let instance: TokenInstance;
-    if (audience === TokenAudience.AppStudio) {
-      instance = new AppStudioInstance();
-    } else {
-      instance = new GraphInstance();
-    }
+    const instance = new GraphInstance();
 
     const token = await instance.getToken(tokenProvider);
     if (token) {

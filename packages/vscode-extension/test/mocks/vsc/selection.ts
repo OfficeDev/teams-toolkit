@@ -10,7 +10,7 @@ import * as vscMockRange from "./range";
  * A selection in the editor.
  * The selection is a range that has an orientation.
  */
-export interface ISelection {
+interface ISelection {
   /**
    * The line number on which the selection has started.
    */
@@ -32,7 +32,7 @@ export interface ISelection {
 /**
  * The direction of a selection.
  */
-export enum SelectionDirection {
+enum SelectionDirection {
   /**
    * The selection starts above where it ends.
    */
@@ -47,7 +47,7 @@ export enum SelectionDirection {
  * A selection in the editor.
  * The selection is a range that has an orientation.
  */
-export class Selection extends vscMockRange.Range {
+class Selection extends vscMockRange.Range {
   /**
    * The line number on which the selection has started.
    */

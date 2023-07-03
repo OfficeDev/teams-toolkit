@@ -8,7 +8,8 @@
 import * as util from "util";
 import * as vscode from "vscode";
 import { v4 as uuidv4 } from "uuid";
-import { assembleError, FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import { FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import { assembleError } from "@microsoft/teamsfx-core";
 import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -17,7 +18,7 @@ import { sendDebugAllEvent } from "../localTelemetryReporter";
 import * as commonUtils from "../commonUtils";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { performance } from "perf_hooks";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 const ControlCodes = {
   CtrlC: "\u0003",

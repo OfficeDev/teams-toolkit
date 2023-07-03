@@ -15,9 +15,9 @@ import { RetryHandler } from "../../../../src/component/resource/botService/retr
 import axios from "axios";
 import { ErrorNames } from "../../../../src/component/resource/botService/constants";
 import { Messages } from "./messages";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
-import { TelemetryUtils } from "../../../../src/component/resource/appManifest/utils/telemetry";
-import { AppStudioClient as AppStudio } from "../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
+import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
+import { AppStudioClient as AppStudio } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 
 describe("AppStudio Client", () => {
   const tools = new MockTools();

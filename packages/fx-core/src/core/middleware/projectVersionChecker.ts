@@ -1,34 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { CoreHookContext } from "../types";
-import { TOOLS } from "../globalVars";
-import { getLocalizedString } from "../../common/localizeUtils";
+import { err, FxError, Inputs, Platform } from "@microsoft/teamsfx-api";
 import semver from "semver";
-import { isV3Enabled } from "../../common/tools";
-import { getProjectVersion } from "./utils/v3MigrationUtils";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { MetadataV2, VersionInfo, VersionSource } from "../../common/versionMetadata";
-import { learnMoreText } from "./projectMigrator";
-import { learnMoreLink } from "./projectMigratorV3";
-import {
-  sendTelemetryEvent,
-  Component,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "../../common/telemetry";
 import { IncompatibleProjectError } from "../error";
-
-let userCancelFlag = false;
-const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "../types";
+import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
+import { getProjectVersion } from "./utils/v3MigrationUtils";
 
 export const ProjectVersionCheckerMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
   const versionInfo = await getProjectVersion(ctx);
-  if ((await needToShowUpdateDialog(ctx, versionInfo)) && checkMethod(ctx)) {
+  if (needToShowUpdateDialog(versionInfo)) {
     const errRes = await showDialog(ctx);
     ctx.result = err(errRes);
     return;
@@ -37,18 +26,9 @@ export const ProjectVersionCheckerMW: Middleware = async (
   await next();
 };
 
-async function needToShowUpdateDialog(ctx: CoreHookContext, versionInfo: VersionInfo) {
-  if (isV3Enabled()) {
-    if (versionInfo.source === VersionSource.teamsapp && semver.gte(versionInfo.version, "2.0.0")) {
-      return true;
-    }
-  } else {
-    if (versionInfo.source !== VersionSource.projectSettings) {
-      sendTelemetryEvent(Component.core, TelemetryEvent.DisplayToolingUpdateNotification, {
-        [TelemetryProperty.ToolkitVersion]: "V2",
-      });
-      return true;
-    }
+function needToShowUpdateDialog(versionInfo: VersionInfo) {
+  if (versionInfo.source === VersionSource.teamsapp && semver.gte(versionInfo.version, "2.0.0")) {
+    return true;
   }
   return false;
 }
@@ -59,8 +39,8 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
   if (inputs.platform === Platform.VSCode) {
     const messageKey = "core.projectVersionChecker.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
-      if (res.isOk() && res.value === learnMoreText) {
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
+      if (res.isOk() && res.value === moreInfoButton) {
         TOOLS.ui.openUrl(MetadataV2.updateToolkitLink);
       }
     });
@@ -72,17 +52,11 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, learnMoreText).then((res) => {
-      if (res.isOk() && res.value === learnMoreText) {
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
+      if (res.isOk() && res.value === moreInfoButton) {
         TOOLS.ui.openUrl(learnMoreLink);
       }
     });
     return IncompatibleProjectError(messageKey);
   }
-}
-
-function checkMethod(ctx: CoreHookContext): boolean {
-  if (ctx.method && methods.has(ctx.method) && userCancelFlag) return false;
-  userCancelFlag = ctx.method != undefined && methods.has(ctx.method);
-  return true;
 }

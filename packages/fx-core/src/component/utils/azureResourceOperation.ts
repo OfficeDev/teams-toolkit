@@ -107,14 +107,11 @@ export async function generateSasToken(
   return token;
 }
 
-export function getBlobUri(storageName: string): string {
+function getBlobUri(storageName: string): string {
   return `https://${storageName}.blob.core.windows.net`;
 }
 
-export async function getBlobServiceClient(
-  blobUri: string,
-  sasToken: string
-): Promise<BlobServiceClient> {
+async function getBlobServiceClient(blobUri: string, sasToken: string): Promise<BlobServiceClient> {
   const connectionString = `BlobEndpoint=${blobUri};SharedAccessSignature=${sasToken}`;
   return BlobServiceClient.fromConnectionString(connectionString);
 }

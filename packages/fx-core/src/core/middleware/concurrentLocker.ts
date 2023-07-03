@@ -4,7 +4,6 @@
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import {
-  ConcurrentError,
   ConfigFolderName,
   CoreCallbackEvent,
   err,
@@ -24,7 +23,7 @@ import crypto from "crypto";
 import * as os from "os";
 import { waitSeconds } from "../../common/tools";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
-import { FileNotFoundError, InvalidProjectError } from "../../error/common";
+import { ConcurrentError, FileNotFoundError, InvalidProjectError } from "../../error/common";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {

@@ -2,17 +2,16 @@
 // Licensed under the MIT license.
 
 /**
- * @author zhijie <zhihuan@microsoft.com>
+ * @author Qianhao Dong <qidon@microsoft.com>
  */
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
-export function localString(key: string, ...params: any[]): [string, string] {
+function localString(key: string, ...params: any[]): [string, string] {
   return [getDefaultString(key, ...params), getLocalizedString(key, ...params)];
 }
 export class Messages {
   public static readonly SomethingIsMissing = (something: string): [string, string] =>
     localString("plugins.bot.SomethingIsMissing", something);
-
   public static readonly FailToProvisionSomeResource = (resource: string): [string, string] =>
     localString("plugins.bot.FailedToProvision", resource);
 
@@ -22,16 +21,8 @@ export class Messages {
   public static readonly BotRegistrationNotFoundWith = (botId: string): [string, string] =>
     localString("plugins.bot.BotRegistrationNotFoundWith", botId);
 
-  public static readonly FailToUpdateMessageEndpoint = (endpoint: string): [string, string] =>
-    localString("plugins.bot.FailedUpdateMessageEndpoint", endpoint);
-
-  public static readonly FailToCallAppStudioForCheckingAADApp = (): [string, string] =>
-    localString("plugins.bot.FailToCallAppStudioApi");
   public static readonly BotResourceExist = (where: string): string =>
     getLocalizedString("plugins.bot.BotResourceExists", where);
-  public static readonly SuccessfullyCreatedBotAadApp = getLocalizedString(
-    "plugins.bot.CreateBotAADSuccess"
-  );
 
   public static readonly ProvisioningBotRegistration = getLocalizedString(
     "plugins.bot.ProvisionBotRegistration"

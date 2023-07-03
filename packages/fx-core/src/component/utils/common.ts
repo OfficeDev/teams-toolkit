@@ -113,20 +113,6 @@ export async function wrapSummary(
   }
 }
 
-export async function wrapSummaryWithArgs(
-  exec: () => Promise<Result<Map<string, string>, FxError>>,
-  summary: string[][]
-): Promise<ExecutionResult> {
-  const result = await exec();
-  if (result.isOk()) {
-    const summaries = summary.map((s) => getLocalizedString(s[0], ...s.splice(1)));
-    return { result, summaries };
-  } else {
-    const summaries: string[] = [];
-    return { result, summaries };
-  }
-}
-
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
 export function expandEnvironmentVariable(content: string): string {
   const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
@@ -158,18 +144,6 @@ export function getEnvironmentVariables(content: string): string[] {
     return [...new Set(variables)];
   }
   return [];
-}
-
-/**
- * compare two key-value pairs, return true if they are exactly same
- * @param kv1 parameter the first key-value pair
- * @param kv2 parameter the first key-value pair
- */
-export function isKvPairEqual<T>(kv1: { [key: string]: T }, kv2: { [key: string]: T }): boolean {
-  const _compare = (l: { [key: string]: T }, r: { [key: string]: T }) =>
-    !Object.keys(l).some((key) => r[key] !== l[key]);
-
-  return _compare(kv1, kv2) && _compare(kv2, kv1);
 }
 
 export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string): string {

@@ -5,4 +5,3 @@
 export * from "./cpUtils";
 export * from "./system";
 export * from "./progressIndicator";
-export * from "./extensionInstaller";

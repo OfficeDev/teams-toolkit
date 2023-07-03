@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, ok, Result } from "neverthrow";
+import { Result } from "neverthrow";
 import { LocalFunc } from ".";
-import { FxError, UserCancelError } from "../error";
+import { FxError } from "../error";
 import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
 import { Inputs, OptionItem } from "../types";
 import { Colors } from "./../utils/log";
@@ -66,14 +66,19 @@ export interface UIConfig<T> {
  */
 export interface SingleSelectConfig extends UIConfig<string> {
   /**
-   * option array
+   * option array or a callback function which returns option array
    */
-  options: StaticOptions;
+  options: StaticOptions | (() => Promise<StaticOptions>);
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an `OptionItem` object; otherwise, the answer value is the `id` string of the `OptionItem`.
    * In case of option items with `string[]` type, whether `returnObject` is true or false, the returned answer value is always a string.
    */
   returnObject?: boolean;
+
+  /**
+   * whether skip selection if there is only one option, default is false
+   */
+  skipSingleOption?: boolean;
 }
 
 /**
@@ -81,9 +86,9 @@ export interface SingleSelectConfig extends UIConfig<string> {
  */
 export interface MultiSelectConfig extends UIConfig<string[]> {
   /**
-   * option array
+   * option array or a callback function which returns option array
    */
-  options: StaticOptions;
+  options: StaticOptions | (() => Promise<StaticOptions>);
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an array of `OptionItem` objects; otherwise, the answer value is an array of `id` strings.
    * In case of option items with `string[]` type, whether `returnObject` is true or false, the returned answer value is always a string array.
@@ -96,6 +101,11 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
    * @returns the final selected option ids
    */
   onDidChangeSelection?: OnSelectionChangeFunc;
+
+  /**
+   * whether skip selection if there is only one option, default is false
+   */
+  skipSingleOption?: boolean;
 }
 
 /**
@@ -194,69 +204,6 @@ export type SelectFilesResult = InputResult<string[]>;
 export type SelectFolderResult = InputResult<string>;
 
 /**
- * Definition of a runnable task
- */
-export interface RunnableTask<T> {
-  /**
-   * task name
-   */
-  name?: string;
-  /**
-   * current progress
-   */
-  current?: number;
-  /**
-   * total progress
-   */
-  readonly total?: number;
-  /**
-   * status message
-   */
-  message?: string;
-  /**
-   * a function that realy implements the running of the task
-   * @param args args
-   */
-  run(...args: any): Promise<Result<T, FxError>>;
-  /**
-   * a function that implements the cancelling of the task
-   */
-  cancel?(): void;
-  /**
-   * a state that indicate whether the task is cancelled or not
-   */
-  isCanceled?: boolean;
-}
-/**
- * task running configuration
- */
-export interface TaskConfig {
-  /**
-   * whether task can be cancelled or not
-   */
-  cancellable?: boolean;
-  /**
-   * whether to show the numeric progress of the task
-   */
-  showProgress?: boolean;
-}
-
-/**
- * task group configuration
- */
-export interface TaskGroupConfig {
-  /**
-   * if true, the tasks in the group are running in parallel
-   * if false, the tasks are running in sequence.
-   */
-  sequential?: boolean;
-  /**
-   * whether to terminate all tasks if some task is failed or canceled
-   */
-  fastFail?: boolean;
-}
-
-/**
  * Definition of user interaction, which is platform independent
  */
 export interface UserInteraction {
@@ -349,19 +296,6 @@ export interface UserInteraction {
   createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
 
   /**
-   * A function to run a task with progress bar. (CLI and VS Code has different UI experience for progress bar)
-   * @param task a runnable task with progress definition
-   * @param config task running configuration
-   * @param args args for task run() API
-   * @returns A promise that resolves the wrapper of task running result or FxError
-   */
-  runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>>;
-
-  /**
    * Reload window to update user interface. (Only works for VS Code)
    * @returns A promise indicating if reload is successful.
    */
@@ -413,88 +347,5 @@ export interface IProgressHandler {
    * End the progress bar and tell if success. After calling it, the progress bar will disappear. This handler
    * can be reused after calling end().
    */
-  end: (success: boolean) => Promise<void>;
-}
-
-/**
- * An implementation of task group that will define the progress when all tasks are running
- */
-export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
-  name?: string;
-  current = 0;
-  readonly total: number;
-  isCanceled = false;
-  tasks: RunnableTask<T>[];
-  config?: TaskGroupConfig;
-  message?: string;
-  constructor(tasks: RunnableTask<T>[], config?: TaskGroupConfig) {
-    this.tasks = tasks;
-    this.config = config;
-    this.total = this.tasks.length;
-  }
-  async run(...args: any): Promise<Result<Result<T, FxError>[], FxError>> {
-    if (this.tasks.length === 0) return ok([]);
-    return new Promise(async (resolve) => {
-      let results: Result<T, FxError>[] = [];
-      const isFastFail = this.config && this.config.fastFail;
-      const isSeq = this.config && this.config.sequential;
-      if (isSeq) {
-        this.current = 0;
-        for (let i = 0; i < this.tasks.length; ++i) {
-          if (this.isCanceled === true) {
-            resolve(err(UserCancelError));
-            return;
-          }
-          const task = this.tasks[i];
-          if (task.name) {
-            this.message = task.name;
-          }
-          try {
-            const taskRes = await task.run(args);
-            if (taskRes.isErr() && isFastFail) {
-              this.isCanceled = true;
-              resolve(err(taskRes.error));
-              return;
-            }
-            results.push(taskRes);
-          } catch (e) {
-            if (isFastFail) {
-              this.isCanceled = true;
-              resolve(err(e));
-              return;
-            }
-            results.push(err(e));
-          } finally {
-            this.current = i + 1;
-          }
-        }
-      } else {
-        const promiseResults = this.tasks.map((t) => t.run(args));
-        promiseResults.forEach((p) => {
-          p.then((v) => {
-            this.current++;
-            if (v.isErr() && isFastFail) {
-              this.isCanceled = true;
-              resolve(err(v.error));
-              return;
-            }
-          }).catch((e) => {
-            this.current++;
-            if (isFastFail) {
-              this.isCanceled = true;
-              resolve(err(e));
-              return;
-            }
-          });
-        });
-        results = await Promise.all(promiseResults);
-      }
-      resolve(ok(results));
-    });
-  }
-
-  cancel() {
-    for (const task of this.tasks) if (task.cancel) task.cancel();
-    this.isCanceled = true;
-  }
+  end: (success: boolean, hideAfterFinish?: boolean) => Promise<void>;
 }

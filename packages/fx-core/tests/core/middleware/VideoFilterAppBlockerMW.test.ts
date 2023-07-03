@@ -2,34 +2,16 @@
 // Licensed under the MIT license.
 
 import { hooks, NextFunction } from "@feathersjs/hooks/lib";
-import {
-  ConfigFolderName,
-  Context,
-  Func,
-  FxError,
-  InputConfigsFolderName,
-  Inputs,
-  ok,
-  Platform,
-  ProjectSettingsFileName,
-  Result,
-  SettingsFileName,
-  SettingsFolderName,
-} from "@microsoft/teamsfx-api";
+import { Func, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
-import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import * as os from "os";
-import * as path from "path";
-import sinon from "sinon";
 import mockFs from "mock-fs";
+import * as path from "path";
+import { VideoFilterAppRemoteNotSupportedError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
-import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { VideoFilterAppBlockerMW } from "../../../src/core/middleware/videoFilterAppBlocker";
 import { CoreHookContext } from "../../../src/core/types";
-import { MockProjectSettings, MockTools, randomAppName } from "../utils";
-import { VideoFilterAppRemoteNotSupportedError } from "../../../src/core/error";
+import { MockTools } from "../utils";
 
 describe("Middleware - VideoFilterAppBlockerMW", () => {
   function createMock(): {
@@ -61,21 +43,17 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   }
 
   const mockProjectRoot = "video-filter";
-  let mockedEnvRestore: RestoreFn;
 
   afterEach(function () {
     mockFs.restore();
-    mockedEnvRestore();
   });
 
   it("blocks video filter project", async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
     const mock = createMock();
     mockFs({
-      [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-        JSON.stringify({
-          meetingExtensionDefinition: { videoFiltersConfigurationUrl: "https://a.b.c" },
-        }),
+      [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify({
+        meetingExtensionDefinition: { videoFiltersConfigurationUrl: "https://a.b.c" },
+      }),
     });
 
     const result = await mock.instance.myMethod(mock.inputs);
@@ -88,10 +66,9 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   it("ignores non-video project", async () => {
     const mock = createMock();
     mockFs({
-      [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-        JSON.stringify({
-          meetingExtensionDefinition: {},
-        }),
+      [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify({
+        meetingExtensionDefinition: {},
+      }),
     });
 
     const result = await mock.instance.myMethod(mock.inputs);
@@ -104,8 +81,7 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
   it("ignores project with incorrect manifest", async () => {
     const mock = createMock();
     mockFs({
-      [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-        "invalid json",
+      [path.join(mockProjectRoot, "appPackage", "manifest.json")]: "invalid json",
     });
 
     const result = await mock.instance.myMethod(mock.inputs);
@@ -138,8 +114,7 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
         executeUserTask: [VideoFilterAppBlockerMW, TestMW],
       });
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          "invalid json",
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: "invalid json",
       });
 
       const func = {
@@ -174,8 +149,7 @@ describe("Middleware - VideoFilterAppBlockerMW", () => {
         executeUserTask: [VideoFilterAppBlockerMW, TestMW],
       });
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          "invalid json",
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: "invalid json",
       });
 
       const func = {

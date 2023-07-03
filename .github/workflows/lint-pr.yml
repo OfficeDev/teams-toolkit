@@ -137,10 +137,20 @@ jobs:
           npm install mustache -g
           echo "{}" > test.json
       
-      - name: check yaml lint
+      - name: check origin or remote
+        id: remote
         run: |
-          TRAGET=origin/${{ github.event.pull_request.base.ref }}
-          YMLTPL=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates/scenarios | grep -E '.yml.tpl$'|xargs)
+          if [ ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }} ]
+          then
+            echo "target=origin" >> $GITHUB_OUTPUT
+          else
+            echo "target=remote" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: check yaml lint origin
+        run: |
+          TRAGET=${{steps.remote.outputs.target}}/${{ github.event.pull_request.base.ref }}
+          YMLTPL=$(git diff --diff-filter=MARC $TRAGET...HEAD --name-only -- templates | grep -E '.yml.tpl$'|xargs)
           echo $YMLTPL
           if [ ! -z "$YMLTPL" ]
           then
@@ -192,7 +202,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    if: ${{ github.event_name ==  'pull_request' && (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'prerelease') && github.event.action != 'edited' }}
+    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
@@ -206,11 +216,20 @@ jobs:
         with: 
           reviewers: "MuyangAmigo"
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: check origin or remote
+        id: remote
+        run: |
+          if [ ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }} ]
+          then
+            echo "target=origin" >> $GITHUB_OUTPUT
+          else
+            echo "target=remote" >> $GITHUB_OUTPUT
+          fi
       - name: check feature history
         id: description
         shell: "/bin/bash {0}"
         run: |
-          head="origin/$GIT_BRANCH_NAME_BASE"
+          head=${{steps.remote.outputs.target}}/${{ github.event.pull_request.base.ref }}
           echo $head
           history_cli_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           echo $history_cli_feat
@@ -242,15 +261,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-      - name: lerna expect pre version
-        if: ${{ github.event.pull_request.base.ref == 'prerelease' }}
-        run: |
-          npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --ignore-scripts --yes
-          npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
       - name: lerna expect rc version
         if: ${{ github.event.pull_request.base.ref == 'main' }}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${GITHUB_REF#refs/*/} --yes
           npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
       - uses: edwardgeorge/file-outputs-action@main
         id: test

@@ -3,17 +3,14 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ConcurrentError,
   ConfigFolderName,
   CoreCallbackEvent,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   ok,
   Platform,
   Result,
   SettingsFolderName,
-  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import fs from "fs-extra";
@@ -27,7 +24,12 @@ import { CoreSource, NoProjectOpenedError } from "../../../src/core/error";
 import { randomAppName } from "../utils";
 import * as tools from "../../../src/common/tools";
 import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
-import { FileNotFoundError, InvalidProjectError } from "../../../src/error/common";
+import {
+  ConcurrentError,
+  FileNotFoundError,
+  InvalidProjectError,
+  UserCancelError,
+} from "../../../src/error/common";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {
@@ -71,7 +73,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     }
     async methodThrowError(inputs: Inputs): Promise<Result<any, FxError>> {
       this.count++;
-      throw UserCancelError;
+      throw new UserCancelError();
     }
     async methodCallSelf(inputs: Inputs): Promise<Result<any, FxError>> {
       this.count++;
@@ -93,11 +95,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     sinon.stub(projectSettingsHelper, "isValidProjectV2").resolves(true);
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     try {
-      const settingDir = path.join(
-        inputs.projectPath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName
-      );
+      const settingDir = path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs");
       await fs.ensureDir(settingDir);
       const my = new MyClass();
       await my.methodReturnOK(inputs);
@@ -117,7 +115,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       const my = new MyClass();
       await my.methodThrowError(inputs);
     } catch (e) {
-      assert.isTrue(e === UserCancelError);
+      assert.isTrue(e instanceof UserCancelError);
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }

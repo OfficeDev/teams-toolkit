@@ -5,29 +5,40 @@ import "mocha";
 import * as sinon from "sinon";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateBotAadAppDriver } from "../../../../src/component/driver/botAadApp/create";
-import { MockedM365Provider, MockedTelemetryReporter } from "../../../plugins/solution/util";
+import {
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedTelemetryReporter,
+} from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
-import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
-import axios from "axios";
 import {
+  HttpClientError,
+  HttpServerError,
   InvalidActionInputError,
-  MissingEnvironmentVariablesError,
   UnhandledError,
-  UnhandledUserError,
 } from "../../../../src/error/common";
+<<<<<<< HEAD
 import { CreateAADAppError } from "../../../../src/component/resource/botService/errors";
+=======
+import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
+import { AADApplication } from "../../../../src/component/resource/aadApp/interfaces/AADApplication";
+import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
+>>>>>>> dev
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const outputKeys = {
-  BOT_ID: "BOT_ID",
-  SECRET_BOT_PASSWORD: "SECRET_BOT_PASSWORD",
+  botId: "BOT_ID",
+  botPassword: "SECRET_BOT_PASSWORD",
 };
 
+const outputEnvVarNames = new Map<string, string>(Object.entries(outputKeys));
+
 describe("botAadAppCreate", async () => {
+  const expectedObjectId = "00000000-0000-0000-0000-000000000000";
   const expectedClientId = "00000000-0000-0000-0000-111111111111";
   const expectedDisplayName = "AAD app name";
   const expectedSecretText = "fake secret";
@@ -35,6 +46,7 @@ describe("botAadAppCreate", async () => {
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
     telemetryReporter: new MockedTelemetryReporter(),
+    logProvider: new MockedLogProvider(),
   };
 
   let envRestore: RestoreFn | undefined;
@@ -49,17 +61,27 @@ describe("botAadAppCreate", async () => {
 
   it("should throw error if argument property is missing", async () => {
     const args: any = {};
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.rejectedWith(
-      InvalidActionInputError
-    );
+    await expect(
+      createBotAadAppDriver.handler(args, mockedDriverContext, outputEnvVarNames)
+    ).to.rejectedWith(InvalidActionInputError);
   });
 
   it("should throw error if argument property is invalid", async () => {
     const args: any = {
       name: "",
     };
+    await expect(
+      createBotAadAppDriver.handler(args, mockedDriverContext, outputEnvVarNames)
+    ).to.rejectedWith(InvalidActionInputError);
+  });
+
+  it("should throw error if outputEnvVarNames is undefined", async () => {
+    const args: any = {
+      name: "test",
+    };
+
     await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.rejectedWith(
-      InvalidActionInputError
+      OutputEnvironmentVariableUndefinedError
     );
   });
 
@@ -68,33 +90,24 @@ describe("botAadAppCreate", async () => {
       name: expectedDisplayName,
     };
 
-    sinon.stub(GraphClient, "registerAadApp").resolves({
-      clientId: expectedClientId,
-      clientSecret: expectedSecretText,
-    });
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
 
-    const result = await createBotAadAppDriver.handler(args, mockedDriverContext);
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
 
-    expect(result.output.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
-    expect(result.output.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(expectedSecretText);
-  });
-
-  it("happy path with run", async () => {
-    const args: any = {
-      name: expectedDisplayName,
-    };
-
-    sinon.stub(GraphClient, "registerAadApp").resolves({
-      clientId: expectedClientId,
-      clientSecret: expectedSecretText,
-    });
-
-    const result = await createBotAadAppDriver.run(args, mockedDriverContext);
-    expect(result.isOk()).to.be.true;
-    expect(result.isOk() && result.value.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
-    expect(result.isOk() && result.value.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(
-      expectedSecretText
+    const result = await createBotAadAppDriver.handler(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
     );
+
+    console.log(JSON.stringify(result));
+
+    expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
+    expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);
   });
 
   it("happy path with execute", async () => {
@@ -105,26 +118,33 @@ describe("botAadAppCreate", async () => {
       next: sinon.stub(),
     };
 
-    sinon.stub(GraphClient, "registerAadApp").resolves({
-      clientId: expectedClientId,
-      clientSecret: expectedSecretText,
-    });
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
     mockedDriverContext.progressBar = progressBar;
 
-    const result = await createBotAadAppDriver.execute(args, mockedDriverContext);
+    const result = await createBotAadAppDriver.execute(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
+    );
     expect(result.result.isOk()).to.be.true;
-    expect(result.result.isOk() && result.result.value.get(outputKeys.BOT_ID)).to.be.equal(
+    expect(result.result.isOk() && result.result.value.get(outputKeys.botId)).to.be.equal(
       expectedClientId
     );
-    expect(
-      result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
-    ).to.be.equal(expectedSecretText);
+    expect(result.result.isOk() && result.result.value.get(outputKeys.botPassword)).to.be.equal(
+      expectedSecretText
+    );
     expect(progressBar.next.calledOnce).to.be.true;
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {
-    sinon.stub(axios, "isAxiosError").returns(true);
-    sinon.stub(GraphClient, "registerAadApp").rejects({
+    sinon.stub(AadAppClient.prototype, "createAadApp").rejects({
       isAxiosError: true,
       response: {
         status: 400,
@@ -142,19 +162,18 @@ describe("botAadAppCreate", async () => {
       name: expectedDisplayName,
     };
 
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
-      (error) => {
-        expect(error instanceof UnhandledUserError).to.be.true;
-        expect(error.message).contains(
-          "An unexpected error has occurred while performing the botAadApp/create task"
-        );
-      }
-    );
+    await expect(
+      createBotAadAppDriver.handler(args, mockedDriverContext, outputEnvVarNames)
+    ).to.be.rejected.then((error) => {
+      expect(error instanceof HttpClientError).to.be.true;
+      expect(error.message).contains(
+        'A http client error happened while performing the botAadApp/create task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+      );
+    });
   });
 
   it("should throw system error when GraphClient failed with non 4xx error", async () => {
-    sinon.stub(axios, "isAxiosError").returns(true);
-    sinon.stub(GraphClient, "registerAadApp").rejects({
+    sinon.stub(AadAppClient.prototype, "createAadApp").rejects({
       isAxiosError: true,
       response: {
         status: 500,
@@ -171,39 +190,39 @@ describe("botAadAppCreate", async () => {
       name: expectedDisplayName,
     };
 
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
-      (error) => {
-        expect(error instanceof UnhandledError).to.be.true;
-        expect(error.message).contains(
-          "An unexpected error has occurred while performing the botAadApp/create task"
-        );
-      }
-    );
+    await expect(
+      createBotAadAppDriver.handler(args, mockedDriverContext, outputEnvVarNames)
+    ).to.be.rejected.then((error) => {
+      expect(error instanceof HttpServerError).to.be.true;
+      expect(error.message).equals(
+        'A http server error happened while performing the botAadApp/create task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+      );
+    });
   });
 
   it("should throw error when GraphClient throws errors", async () => {
-    sinon.stub(GraphClient, "registerAadApp").throwsException();
+    sinon.stub(AadAppClient.prototype, "createAadApp").throwsException();
     const args: any = {
       name: expectedDisplayName,
     };
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
-      (error) => {
-        expect(error instanceof UnhandledError).to.be.true;
-      }
-    );
+    await expect(
+      createBotAadAppDriver.handler(args, mockedDriverContext, outputEnvVarNames)
+    ).to.be.rejected.then((error) => {
+      expect(error instanceof UnhandledError).to.be.true;
+    });
   });
 
   it("should throw UnexpectedEmptyBotPasswordError when bot password is empty", async () => {
     envRestore = mockedEnv({
-      [outputKeys.BOT_ID]: expectedClientId,
-      [outputKeys.SECRET_BOT_PASSWORD]: "",
+      [outputKeys.botId]: expectedClientId,
+      [outputKeys.botPassword]: "",
     });
 
     const args: any = {
       name: expectedDisplayName,
     };
 
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext))
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext, outputEnvVarNames))
       .to.be.eventually.rejectedWith(
         "Bot password is empty. Add it in env file or clear bot id to have bot id/password pair regenerated. action: botAadApp/create."
       )
@@ -236,22 +255,55 @@ describe("botAadAppCreate", async () => {
 
   it("should be good when reusing existing bot in env", async () => {
     envRestore = mockedEnv({
-      [outputKeys.BOT_ID]: expectedClientId,
-      [outputKeys.SECRET_BOT_PASSWORD]: expectedSecretText,
+      [outputKeys.botId]: expectedClientId,
+      [outputKeys.botPassword]: expectedSecretText,
     });
 
     const args: any = {
       name: expectedDisplayName,
     };
 
-    const result = await createBotAadAppDriver.execute(args, mockedDriverContext);
-
+    const result = await createBotAadAppDriver.execute(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
+    );
     expect(result.result.isOk()).to.be.true;
-    expect(result.result.isOk() && result.result.value.get(outputKeys.BOT_ID)).to.be.equal(
+    expect(result.result.isOk() && result.result.value.get(outputKeys.botId)).to.be.equal(
       expectedClientId
     );
-    expect(
-      result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
-    ).to.be.equal(expectedSecretText);
+    expect(result.result.isOk() && result.result.value.get(outputKeys.botPassword)).to.be.equal(
+      expectedSecretText
+    );
+  });
+
+  it("should success when no log provider in context", async () => {
+    const args: any = {
+      name: expectedDisplayName,
+    };
+    const progressBar = {
+      next: sinon.stub(),
+    };
+    const mockedDriverContextWithNoLogProvider: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+    };
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    mockedDriverContextWithNoLogProvider.progressBar = progressBar;
+
+    const result = await createBotAadAppDriver.execute(
+      args,
+      mockedDriverContextWithNoLogProvider,
+      outputEnvVarNames
+    );
+    expect(result.result.isOk()).to.be.true;
   });
 });

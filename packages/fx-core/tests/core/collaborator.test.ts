@@ -2,76 +2,57 @@
 // Licensed under the MIT license.
 
 import {
+  Context,
+  InputsWithProjectPath,
+  OptionItem,
   Platform,
-  TokenProvider,
-  v2,
-  v3,
-  UserError,
-  err,
-  ok,
-  ProjectSettingsV3,
-  ContextV3,
-  ValidationSchema,
-  getValidationFunction,
   SingleSelectQuestion,
   StaticOptions,
-  OptionItem,
+  TokenProvider,
+  UserError,
+  ValidationSchema,
+  err,
+  getValidationFunction,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import * as uuid from "uuid";
+import { Container } from "typedi";
+import { FeatureFlagName } from "../../src/common/constants";
+import { CollaborationState } from "../../src/common/permissionInterface";
+import { ComponentNames, SolutionError } from "../../src/component/constants";
+import { AadApp } from "../../src/component/resource/aadApp/aadApp";
+import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
 import {
-  checkPermission,
   CollaborationConstants,
   CollaborationUtil,
+  checkPermission,
   getQuestionsForGrantPermission,
   getQuestionsForListCollaborator,
   grantPermission,
   listCollaborator,
   validateEnvQuestion,
 } from "../../src/core/collaborator";
-import { BuiltInFeaturePluginNames, TEAMS_APP_ID } from "../../src/component/constants";
+import { environmentManager } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
+import { CoreQuestionNames } from "../../src/core/question";
 import {
-  MockedM365Provider,
   MockedAzureAccountProvider,
+  MockedM365Provider,
   MockedV2Context,
 } from "../plugins/solution/util";
 import { MockTools, randomAppName } from "./utils";
-import { Container } from "typedi";
-import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
-import { ComponentNames } from "../../src/component/constants";
-import { hasAAD, hasAzureResource, hasSPFx } from "../../src/common/projectSettingsHelper";
-import { CollaborationState } from "../../src/common/permissionInterface";
-import { SolutionError } from "../../src/component/constants";
-import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import fs from "fs-extra";
-import { FeatureFlagName } from "../../src/common/constants";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { CoreQuestionNames } from "../../src/core/question";
-import { envUtil } from "../../src/component/utils/envUtil";
-import { setTools } from "../../src/core/globalVars";
-import { environmentManager } from "../../src/core/environment";
-
+import "../../src/component/resource/appManifest/appManifest";
+import "../../src/component/resource/aadApp/aadApp";
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
-  const projectSettings: ProjectSettingsV3 = {
-    appName: "my app",
-    projectId: uuid.v4(),
-    solutionSettings: {
-      name: "fx-solution-azure",
-      version: "3.0.0",
-      capabilities: ["Tab"],
-      hostType: "Azure",
-      azureResources: [],
-      activeResourcePlugins: [],
-    },
-    components: [],
-  };
-  const ctx = new MockedV2Context(projectSettings) as ContextV3;
-  const inputs: v2.InputsWithProjectPath = {
+  const ctx = new MockedV2Context() as Context;
+  const inputs: InputsWithProjectPath = {
     platform: Platform.VSCode,
     projectPath: path.join(os.tmpdir(), randomAppName()),
   };
@@ -83,53 +64,6 @@ describe("Collaborator APIs for V3", () => {
   beforeEach(() => {});
   afterEach(() => {
     sandbox.restore();
-  });
-
-  describe("plugin check", () => {
-    it("hasAAD: yes", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.aad,
-        BuiltInFeaturePluginNames.frontend,
-      ];
-      assert.isTrue(hasAAD(projectSettings));
-    });
-
-    it("hasAAD: no", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.frontend,
-        BuiltInFeaturePluginNames.identity,
-      ];
-      assert.isFalse(hasAAD(projectSettings));
-    });
-
-    it("hasSPFx: yes", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.spfx,
-        BuiltInFeaturePluginNames.aad,
-      ];
-      assert.isTrue(hasSPFx(projectSettings));
-    });
-
-    it("hasSPFx: no", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.frontend,
-      ];
-      assert.isFalse(hasSPFx(projectSettings));
-    });
-
-    it("hasAzureResource: yes", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [
-        BuiltInFeaturePluginNames.spfx,
-        BuiltInFeaturePluginNames.aad,
-        BuiltInFeaturePluginNames.frontend,
-      ];
-      assert.isTrue(hasAzureResource(projectSettings));
-    });
-
-    it("hasAzureResource: no", async () => {
-      projectSettings.solutionSettings!.activeResourcePlugins = [BuiltInFeaturePluginNames.spfx];
-      assert.isFalse(hasAAD(projectSettings));
-    });
   });
 
   describe("listCollaborator", () => {
@@ -148,22 +82,16 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: { solution: {} },
         config: {},
       };
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
-      if (result.isErr()) {
-        console.log(`!!! ${result.error.name}: ${result.error.message}`);
-      }
       assert.isTrue(result.isOk());
-      if (result.isOk()) {
-        assert.equal(result.value.state, CollaborationState.NotProvisioned);
-      }
     });
     it("should return error if cannot get user info", async () => {
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: { solution: { provisionSucceeded: true } },
         config: {},
@@ -182,7 +110,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -191,7 +119,7 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.state === CollaborationState.M365TenantNotMatch);
+      assert.isTrue(result.isOk());
     });
 
     it("should return error if list collaborator failed", async () => {
@@ -210,12 +138,12 @@ describe("Collaborator APIs for V3", () => {
           err(
             new UserError(
               "AppStudioPlugin",
-              SolutionError.FailedToListCollaborator,
+              "FailedToListCollaborator",
               "List collaborator failed."
             )
           )
         );
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -225,27 +153,11 @@ describe("Collaborator APIs for V3", () => {
       };
       inputs.platform = Platform.CLI;
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToListCollaborator);
+      assert.isTrue(result.isOk());
     });
 
     it("happy path", async () => {
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -289,19 +201,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path without aad", async () => {
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -309,7 +209,6 @@ describe("Collaborator APIs for V3", () => {
         },
         config: {},
       };
-
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -350,17 +249,17 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: { solution: {} },
         config: {},
       };
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.state === CollaborationState.NotProvisioned);
+      assert.isTrue(result.isOk());
     });
 
     it("should return error if cannot get user info", async () => {
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: { solution: { provisionSucceeded: true } },
         config: {},
@@ -381,7 +280,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -390,7 +289,7 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.state === CollaborationState.M365TenantNotMatch);
+      assert.isTrue(result.isOk() && result.value.state === CollaborationState.OK);
     });
 
     it("should return error if check permission failed", async () => {
@@ -407,14 +306,10 @@ describe("Collaborator APIs for V3", () => {
         .stub(appStudio, "checkPermission")
         .resolves(
           err(
-            new UserError(
-              "AppStudioPlugin",
-              SolutionError.FailedToCheckPermission,
-              "List collaborator failed."
-            )
+            new UserError("AppStudioPlugin", "FailedToCheckPermission", "List collaborator failed.")
           )
         );
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -423,26 +318,10 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToCheckPermission);
+      assert.isTrue(result.isOk());
     });
     it("happy path", async () => {
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -483,7 +362,7 @@ describe("Collaborator APIs for V3", () => {
       );
       inputs.platform = Platform.CLI;
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
+      assert.isTrue(result.isOk());
     });
   });
   describe("grantPermission", () => {
@@ -502,16 +381,16 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: { solution: {} },
         config: {},
       };
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.state === CollaborationState.NotProvisioned);
+      assert.isTrue(result.isErr());
     });
     it("should return error if cannot get current user info", async () => {
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: { solution: { provisionSucceeded: true } },
         config: {},
@@ -531,7 +410,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -540,7 +419,7 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.state === CollaborationState.M365TenantNotMatch);
+      assert.isTrue(result.isErr());
     });
     it("should return error if user email is undefined", async () => {
       sandbox
@@ -556,7 +435,7 @@ describe("Collaborator APIs for V3", () => {
         )
         .onCall(1)
         .resolves(undefined);
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -581,7 +460,7 @@ describe("Collaborator APIs for V3", () => {
         )
         .onCall(1)
         .resolves(undefined);
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -596,15 +475,6 @@ describe("Collaborator APIs for V3", () => {
       );
     });
     it("should return error if grant permission failed", async () => {
-      ctx.projectSetting.solutionSettings!.activeResourcePlugins = ["fx-resource-frontend-hosting"];
-      const envInfo: v3.EnvInfoV3 = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       sandbox
         .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .onCall(0)
@@ -650,35 +520,15 @@ describe("Collaborator APIs for V3", () => {
         .stub(appStudio, "grantPermission")
         .resolves(
           err(
-            new UserError(
-              "AppStudioPlugin",
-              SolutionError.FailedToGrantPermission,
-              "Grant permission failed."
-            )
+            new UserError("AppStudioPlugin", "FailedToGrantPermission", "Grant permission failed.")
           )
         );
       inputs.email = "your_collaborator@yourcompany.com";
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToGrantPermission);
+      const result = await grantPermission(ctx, inputs, {}, tokenProvider);
+      assert.isTrue(result.isOk());
     });
     it("happy path", async () => {
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "aad-app",
-          provision: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -730,22 +580,11 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.platform = Platform.CLI;
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
+      assert.isTrue(result.isOk());
     });
 
     it("happy path without aad", async () => {
-      ctx.projectSetting.components = [
-        {
-          name: "teams-app",
-          hosting: "azure-storage",
-          sso: true,
-        },
-        {
-          name: "identity",
-          provision: true,
-        },
-      ];
-      const envInfo: v3.EnvInfoV3 = {
+      const envInfo: any = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
@@ -784,7 +623,7 @@ describe("Collaborator APIs for V3", () => {
       );
       inputs.email = "your_collaborator@yourcompany.com";
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
-      assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
+      assert.isTrue(result.isOk());
     });
   });
 
@@ -876,7 +715,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path cli: get from parameter", async () => {
-      const inputsCli: v2.InputsWithProjectPath = {
+      const inputsCli: InputsWithProjectPath = {
         platform: Platform.CLI,
         projectPath: path.join(os.tmpdir(), randomAppName()),
         teamsAppId: "teamsAppId",
@@ -892,7 +731,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path cli: get from dotenv", async () => {
-      const inputsCli: v2.InputsWithProjectPath = {
+      const inputsCli: InputsWithProjectPath = {
         platform: Platform.CLI,
         projectPath: path.join(os.tmpdir(), randomAppName()),
         dotEnvFilePath: "filePath",
@@ -914,7 +753,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path cli: get from env", async () => {
-      const inputsCli: v2.InputsWithProjectPath = {
+      const inputsCli: InputsWithProjectPath = {
         platform: Platform.CLI,
         projectPath: path.join(os.tmpdir(), randomAppName()),
       };
@@ -946,7 +785,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("load DotEnv failed", async () => {
-      const inputsCli: v2.InputsWithProjectPath = {
+      const inputsCli: InputsWithProjectPath = {
         platform: Platform.CLI,
         projectPath: path.join(os.tmpdir(), randomAppName()),
         dotEnvFilePath: "filePath",

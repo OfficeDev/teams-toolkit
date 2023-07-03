@@ -38,27 +38,21 @@ import {
   errorNames,
 } from "../../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
-import {
-  Metadata,
-  MetadataV3,
-  VersionSource,
-  VersionState,
-} from "../../../../src/common/versionMetadata";
+import { NotAllowedMigrationError } from "../../../../src/core/error";
+import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
 import {
   buildEnvUserFileName,
-  getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
   outputCancelMessage,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
-import { getProjectSettingPathV3 } from "../../../../src/core/middleware/projectSettingsLoader";
+import { getProjectSettingsPath } from "../../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import { settingsUtil } from "../../../../src/component/utils/settingsUtil";
 import {
   copyTestProject,
   mockMigrationContext,
@@ -72,7 +66,7 @@ import {
   getYmlTemplates,
 } from "./utils";
 import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";
@@ -1112,6 +1106,9 @@ describe("Migration utils", () => {
   it("checkVersionForMigration V3", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: "1.0.0" }));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
     const state = await checkVersionForMigration(migrationContext);
@@ -1122,7 +1119,7 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(loader, "getProjectSettingPathV2").returns("");
-    sandbox.stub(loader, "getProjectSettingPathV3").returns("");
+    sandbox.stub(loader, "getProjectSettingsPath").returns("");
     sandbox.stub(fs, "pathExists").callsFake(async (path) => {
       return path ? true : false;
     });
@@ -1138,14 +1135,9 @@ describe("Migration utils", () => {
     assert.equal(state.state, VersionState.unsupported);
   });
 
-  it("UpgradeCanceledError", () => {
-    const err = UpgradeCanceledError();
-    assert.isNotNull(err);
-  });
-
   it("getTrackingIdFromPath: V2 ", async () => {
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path === getProjectSettingPathV3(projectPath)) {
+      if (path === getProjectSettingsPath(projectPath)) {
         return false;
       }
       return true;
@@ -1157,7 +1149,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 ", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(SettingsUtils.prototype, "readSettings").resolves(
+    sandbox.stub(settingsUtil, "readSettings").resolves(
       ok({
         version: MetadataV3.projectVersion,
         trackingId: mockedId,
@@ -1169,9 +1161,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 failed", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox
-      .stub(SettingsUtils.prototype, "readSettings")
-      .resolves(err(new Error("mocked error") as FxError));
+    sandbox.stub(settingsUtil, "readSettings").resolves(err(new Error("mocked error") as FxError));
     const trackingId = await getTrackingIdFromPath(projectPath);
     assert.equal(trackingId, "");
   });
@@ -1223,21 +1213,6 @@ describe("Migration utils", () => {
         source: VersionSource.unknown,
       }),
       VersionState.unsupported
-    );
-  });
-
-  it("getDownloadLinkByVersionAndPlatform", () => {
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VS),
-      `${Metadata.versionMatchLink}#visual-studio`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.CLI),
-      `${Metadata.versionMatchLink}#cli`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
-      `${Metadata.versionMatchLink}#vscode`
     );
   });
 

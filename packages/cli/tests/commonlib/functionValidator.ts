@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
 import { StateConfigKey, PluginId, EnvConstants } from "./constants";
 import {
   getSubscriptionIdFromResourceId,
@@ -19,7 +18,6 @@ import {
   getExpectedM365ApplicationIdUri,
   getExpectedM365ClientSecret,
 } from "./utilities";
-import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments?api-version=2019-08-01`;
@@ -59,7 +57,9 @@ export class FunctionValidator {
     this.env = env;
 
     const resourceId =
-      ctx[EnvConstants.FUNCTION_ID] ?? ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+      ctx[EnvConstants.FUNCTION_ID] ??
+      ctx[EnvConstants.FUNCTION_ID_2] ??
+      ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
     chai.assert.exists(resourceId);
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);
@@ -95,10 +95,6 @@ export class FunctionValidator {
     const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
-    const activeResourcePlugins = isV3Enabled()
-      ? []
-      : await getActivePluginsFromProjectSetting(this.projectPath);
-    chai.assert.isArray(activeResourcePlugins);
     // Validating app settings
     console.log("validating app settings.");
     const webappSettingsResponse = await getWebappSettings(
@@ -108,62 +104,10 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
-    if (isV3Enabled()) {
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.API_ENDPOINT],
-        this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string
-      );
-      // TODO: add v3 validation
-    } else {
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.API_ENDPOINT],
-        this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
-      );
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
-        getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
-      );
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-        await getExpectedM365ClientSecret(
-          this.ctx,
-          this.projectPath,
-          this.env,
-          activeResourcePlugins
-        )
-      );
-      chai.assert.equal(
-        webappSettingsResponse[BaseConfig.IDENTITY_ID],
-        this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
-      );
-    }
-
-    if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
-      chai.assert.equal(
-        webappSettingsResponse[SQLConfig.SQL_ENDPOINT],
-        this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
-      );
-      chai.assert.equal(
-        webappSettingsResponse[SQLConfig.SQL_DATABASE_NAME],
-        this.ctx[PluginId.AzureSQL][StateConfigKey.databaseName] as string
-      );
-    }
-
-    // validate app config with allowedOrigins
-    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
-      console.log("validating app config.");
-      const webAppConfigResponse = await getWebappConfigs(
-        this.subscriptionId,
-        this.rg,
-        this.functionAppName,
-        token as string
-      );
-      chai.assert.exists(webAppConfigResponse!.cors!.allowedOrigins);
-      chai.assert.isArray(webAppConfigResponse!.cors!.allowedOrigins);
-      chai
-        .expect(webAppConfigResponse!.cors!.allowedOrigins)
-        .to.includes(this.ctx[PluginId.FrontendHosting][StateConfigKey.endpoint]);
-    }
+    const endpoint =
+      (this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string) ??
+      (this.ctx[EnvConstants.FUNCTION_ENDPOINT_2] as string);
+    chai.assert.equal(webappSettingsResponse[BaseConfig.API_ENDPOINT], endpoint);
 
     console.log("Successfully validate Function Provision.");
   }

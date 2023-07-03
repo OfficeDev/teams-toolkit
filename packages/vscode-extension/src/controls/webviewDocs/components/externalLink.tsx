@@ -12,6 +12,7 @@ export default function ExternalLink(props: {
   title: string;
   link: string;
   triggerFrom: TelemetryTriggerFrom;
+  docName?: string;
 }) {
   const onOpenLink = () => {
     vscode.postMessage({
@@ -25,6 +26,7 @@ export default function ExternalLink(props: {
         properties: {
           [TelemetryProperty.TriggerFrom]: props.triggerFrom,
           [TelemetryProperty.Identifier]: props.title,
+          [TelemetryProperty.TutorialName]: props.docName,
         },
       },
     });

@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { Result, FxError, ok, err, LogLevel } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core";
 import {
+  environmentManager,
   InvalidEnvNameError,
   ProjectEnvAlreadyExistError,
-} from "@microsoft/teamsfx-core/build/core/error";
+} from "@microsoft/teamsfx-core";
 import os from "os";
 import { Argv } from "yargs";
 import activate from "../activate";

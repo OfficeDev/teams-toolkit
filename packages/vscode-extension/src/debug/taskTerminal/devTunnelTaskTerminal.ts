@@ -34,11 +34,17 @@ import {
   TunnelError,
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
+<<<<<<< HEAD
 import { DevTunnelManager } from "./utils/devTunnelManager";
 import { ExtensionErrors } from "../../error";
+=======
+import { FeatureFlags, isFeatureFlagEnabled } from "../../utils/commonUtils";
+>>>>>>> dev
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
+const TunnelManagementTestUserAgent = { name: "Teams-Toolkit-Test" };
+
 const DevTunnelTimeout = 2147483647; // 2^31-1, max timeout ms
 
 const DevTunnelTag = "TeamsToolkitCreatedTag";
@@ -81,7 +87,11 @@ const Access = Object.freeze({
 export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   protected readonly args: IDevTunnelArgs;
   protected cancel: (() => void) | undefined;
+<<<<<<< HEAD
   private readonly devTunnelManager: DevTunnelManager;
+=======
+  private readonly tunnelManagementClientImpl: TunnelManagementHttpClient;
+>>>>>>> dev
   private readonly devTunnelStateManager: DevTunnelStateManager;
   private tunnel: Tunnel | undefined;
   private isOutputSummary: boolean;
@@ -94,6 +104,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     super(taskDefinition, 1);
     this.args = taskDefinition.args as IDevTunnelArgs;
     this.isOutputSummary = false;
+<<<<<<< HEAD
     this.devTunnelManager = devTunnelManager;
     this.devTunnelStateManager = devTunnelStateManager;
   }
@@ -101,6 +112,12 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   static create(taskDefinition: vscode.TaskDefinition): DevTunnelTaskTerminal {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       TunnelManagementUserAgent,
+=======
+    this.tunnelManagementClientImpl = new TunnelManagementHttpClient(
+      isFeatureFlagEnabled(FeatureFlags.DevTunnelTest)
+        ? TunnelManagementTestUserAgent
+        : TunnelManagementUserAgent,
+>>>>>>> dev
       async () => {
         const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
           scopes: DevTunnelScopes,

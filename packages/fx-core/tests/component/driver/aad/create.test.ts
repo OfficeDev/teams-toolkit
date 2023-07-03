@@ -16,9 +16,9 @@ import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAp
 import { AADApplication } from "../../../../src/component/resource/aadApp/interfaces/AADApplication";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
 import {
+  HttpClientError,
+  HttpServerError,
   InvalidActionInputError,
-  UnhandledError,
-  UnhandledUserError,
 } from "../../../../src/error/common";
 import { UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
@@ -325,10 +325,14 @@ describe("aadAppCreate", async () => {
     const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledUserError)
+      .is.instanceOf(HttpClientError)
       .and.has.property("message")
       .and.equals(
+<<<<<<< HEAD
         'An unexpected error has occurred while performing the aadApp/create task. The reason for this error is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
+=======
+        'A http client error happened while performing the aadApp/create task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+>>>>>>> dev
       );
   });
 
@@ -354,10 +358,14 @@ describe("aadAppCreate", async () => {
     const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr())
-      .is.instanceOf(UnhandledError)
+      .is.instanceOf(HttpServerError)
       .and.has.property("message")
       .and.equals(
+<<<<<<< HEAD
         'An unexpected error has occurred while performing the aadApp/create task. The reason for this error is: {"error":{"code":"InternalServerError","message":"Internal server error"}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
+=======
+        'A http server error happened while performing the aadApp/create task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+>>>>>>> dev
       );
   });
 
@@ -468,11 +476,65 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/create");
     expect(endTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.properties.success).to.equal("no");
-    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledUserError");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.HttpClientError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");
-    expect(endTelemetry.properties["error-message"])
-      .contain("An unexpected error has occurred while performing the aadApp/create task")
-      .and.contain("Invalid value specified for property");
+    expect(endTelemetry.properties["error-message"]).to.equal(
+      'A http client error happened while performing the aadApp/create task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
+    );
+  });
+
+  it("should send telemetries with error stack", async () => {
+    const mockedTelemetryReporter = new MockedTelemetryReporter();
+    let startTelemetry: any, endTelemetry: any;
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").callsFake(() => {
+      const error = new Error("fake error");
+      error.stack = "fake stack";
+      throw error;
+    });
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        startTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        endTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const driverContext: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: mockedTelemetryReporter,
+    };
+
+    const result = await createAadAppDriver.execute(args, driverContext, outputEnvVarNames);
+
+    expect(result.result.isOk()).to.be.false;
+    expect(startTelemetry.eventName).to.equal("aadApp/create-start");
+    expect(startTelemetry.properties.component).to.equal("aadAppcreate");
+    expect(endTelemetry.eventName).to.equal("aadApp/create");
+    expect(endTelemetry.properties.component).to.equal("aadAppcreate");
+    expect(endTelemetry.properties.success).to.equal("no");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledError");
+    expect(endTelemetry.properties["error-type"]).to.equal("system");
+    expect(endTelemetry.properties["error-stack"]).to.equal("fake stack");
   });
 
   it("should use input signInAudience when provided", async () => {

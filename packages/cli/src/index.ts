@@ -7,13 +7,12 @@ import "./console/screen";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
 initializePreviewFeatureFlags();
 
 import { registerCommands } from "./cmds";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
-import HelpParamGenerator from "./helpParamGenerator";
 import { getVersion } from "./utils";
 
 function changeArgv(argv: string[]): string[] {
@@ -25,10 +24,6 @@ function changeArgv(argv: string[]): string[] {
  */
 export async function start() {
   registerPrompts();
-  const result = await HelpParamGenerator.initializeQuestionsForHelp();
-  if (result.isErr()) {
-    throw result.error;
-  }
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
     "camel-case-expansion": false,

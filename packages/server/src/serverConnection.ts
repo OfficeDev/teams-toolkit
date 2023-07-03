@@ -20,10 +20,12 @@ import {
   FxCore,
   environmentManager,
   getSideloadingStatus,
+<<<<<<< HEAD
   isV3Enabled,
+=======
+>>>>>>> dev
   listDevTunnels,
 } from "@microsoft/teamsfx-core";
-import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
@@ -209,43 +211,25 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
-    let res: Result<Void, FxError>;
-    if (isV3Enabled()) {
-      inputs[CoreQuestionNames.OutputZipPathParamName] = path.join(
-        inputs.projectPath!,
-        AppPackageFolderName,
-        BuildFolderName,
-        `appPackage.${inputs.env}.zip`
-      );
-      inputs[CoreQuestionNames.OutputManifestParamName] = path.join(
-        inputs.projectPath!,
-        AppPackageFolderName,
-        BuildFolderName,
-        `manifest.${inputs.env}.json`
-      );
-      res = await Correlator.runWithId(
-        corrId,
-        (inputs) => this.core.createAppPackage(inputs),
-        inputs
-      );
-      if (res.isOk()) {
-        return ok(undefined);
-      }
-    } else {
-      func = {
-        namespace: "fx-solution-azure",
-        method: "buildPackage",
-        params: {
-          type: inputs.env == environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-          env: inputs.env,
-        },
-      };
-      res = await Correlator.runWithId(
-        corrId,
-        (func, inputs) => this.core.executeUserTask(func, inputs),
-        func,
-        inputs
-      );
+    inputs[CoreQuestionNames.OutputZipPathParamName] = path.join(
+      inputs.projectPath!,
+      AppPackageFolderName,
+      BuildFolderName,
+      `appPackage.${inputs.env}.zip`
+    );
+    inputs[CoreQuestionNames.OutputManifestParamName] = path.join(
+      inputs.projectPath!,
+      AppPackageFolderName,
+      BuildFolderName,
+      `manifest.${inputs.env}.json`
+    );
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.createAppPackage(inputs),
+      inputs
+    );
+    if (res.isOk()) {
+      return ok(undefined);
     }
     return standardizeResult(res);
   }
@@ -269,28 +253,11 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
 
-    let res;
-    if (isV3Enabled()) {
-      res = await Correlator.runWithId(
-        corrId,
-        (inputs) => this.core.deployTeamsManifest(inputs),
-        inputs
-      );
-    } else {
-      const func: Func = {
-        namespace: "fx-solution-azure/fx-resource-appstudio",
-        method: "updateManifest",
-        params: {
-          envName: environmentManager.getDefaultEnvName(),
-        },
-      };
-      res = await Correlator.runWithId(
-        corrId,
-        (func, inputs) => this.core.executeUserTask(func, inputs),
-        func,
-        inputs
-      );
-    }
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.deployTeamsManifest(inputs),
+      inputs
+    );
 
     return standardizeResult(
       res.map((_) => {
@@ -379,10 +346,8 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<string | undefined, FxError>> {
-    if (!inputs.projectPath) {
-      return ok(undefined);
-    }
-    return ok(await coreGetProjectComponents(inputs.projectPath));
+    // No components for V5
+    return ok("");
   }
 
   public async getProjectMigrationStatusRequest(

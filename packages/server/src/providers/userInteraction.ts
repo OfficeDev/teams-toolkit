@@ -11,9 +11,7 @@ import {
   IProgressHandler,
   MultiSelectConfig,
   MultiSelectResult,
-  NotImplementedError,
   Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -22,7 +20,6 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  TaskConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 
@@ -130,13 +127,5 @@ export default class ServerUserInteraction implements UserInteraction {
       end: async (success: boolean) => {},
     };
     return handler;
-  }
-
-  async runWithProgress<T>(
-    task: RunnableTask<T>,
-    config: TaskConfig,
-    ...args: any
-  ): Promise<Result<T, FxError>> {
-    throw new NotImplementedError("FxServer", `ui/runWithProgress`);
   }
 }

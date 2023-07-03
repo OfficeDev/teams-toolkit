@@ -5,8 +5,7 @@ on:
     branches:
       - dev
       - main
-      - ga
-      - release/**
+      - hotfix/**
     paths:
       - ".github/workflows/env-checker-ci-pr.yml"
       - ".github/env-checker"
@@ -16,8 +15,7 @@ on:
     branches:
       - dev
       - main
-      - ga
-      - release/**
+      - hotfix/**
     paths:
       - ".github/workflows/env-checker-ci-pr.yml"
       - ".github/env-checker"
@@ -38,7 +36,7 @@ jobs:
       ### tl;dr: This error is not one thing, but a category of errors. It means "something broke and we didn't have a way to catch it". We will always need a lot of detail to reproduce an error like this, or we cannot ever fix it. Every instance is unique, and your cb() never called is nothing like any other.
       matrix:
         os: [windows-latest, macos-11, ubuntu-latest]
-        node-version: [14]
+        node-version: [18]
         func-version: [none]
         dotnet-version: [none]
 
@@ -50,6 +48,28 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Use node 14 to setup project
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      # https://github.com/marketplace/actions/retry-step
+      - name: Setup project with Retry
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 3
+          on_retry_command: git clean -fXd .
+          command: |
+            npm run setup
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
       - name: Uninstalling .NET on Windows
         if: ${{ runner.os == 'Windows' }}
         run: |
@@ -59,11 +79,6 @@ jobs:
         if: ${{ runner.os == 'macOS' || runner.os == 'Linux' }}
         run: |
           ./.github/env-checker/uninstall-dotnet.sh
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
 
       - name: Setup Azure Functions Core Tools For Linux
         if: ${{ runner.os == 'Linux' && matrix.func-version != 'none' }}
@@ -80,17 +95,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
-
-      # https://github.com/marketplace/actions/retry-step
-      - name: Setup project with Retry
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          retry_wait_seconds: 3
-          on_retry_command: git clean -fXd .
-          command: |
-            npm run setup
 
       ## In headless Linux CI machines xvfb is required to run VS Code
       ## https://code.visualstudio.com/api/working-with-extensions/continuous-integration#github-actions

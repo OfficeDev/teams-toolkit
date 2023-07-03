@@ -52,6 +52,16 @@ export default function CollapsibleStep(props: {
   };
   const onClose = () => {
     setIsInTransition(!isInTransition);
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.CollapseGuideStep,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: props.triggerFrom,
+          [TelemetryProperty.Identifier]: props.identifier,
+        },
+      },
+    });
   };
 
   return (

@@ -101,7 +101,10 @@ export async function executeCommand(
     const allOutputStrings: string[] = [];
     const systemEncoding = await getSystemEncoding();
     const stderrStrings: string[] = [];
+<<<<<<< HEAD
     process.env.VSLANG = undefined; // Workaroud to disable VS environment variable to void charset encoding issue for non-English characters
+=======
+>>>>>>> dev
     const cp = child_process.exec(
       run,
       {

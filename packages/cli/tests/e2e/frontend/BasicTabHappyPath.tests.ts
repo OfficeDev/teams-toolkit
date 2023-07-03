@@ -15,10 +15,11 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   setProvisionParameterValueV3,
+  removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import { Capability, EnvConstants } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { AzureScopes, environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { AzureScopes, environmentManager } from "@microsoft/teamsfx-core";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
@@ -42,73 +43,76 @@ describe("Basic Tab", function () {
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     const language = languages[i];
-    it(`Create & Provision & Deploy Basic Tab (${language})`, async function () {
-      if (!isV3Enabled()) {
-        this.skip();
+    it(
+      `Create & Provision & Deploy Basic Tab (${language})`,
+      { testPlanCaseId: language === "javascript" ? 9426074 : 24137515 },
+      async function () {
+        // Scaffold
+        await CliHelper.createProjectWithCapability(
+          appName,
+          testFolder,
+          Capability.TabNonSso,
+          process.env,
+          `--programming-language ${language}`
+        );
+
+        // Validate Scaffold
+        const indexFile = path.join(projectPath, "src", file);
+        fs.access(indexFile, fs.constants.F_OK, (err) => {
+          assert.notExists(err);
+        });
+
+        // remove teamsApp/extendToM365 in case it fails
+        removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
+
+        // Provision
+        await setProvisionParameterValueV3(projectPath, env, {
+          key: "webAppSku",
+          value: "B1",
+        });
+        await CliHelper.provisionProject(projectPath);
+
+        // Validate Provision
+        let context = await readContextMultiEnvV3(projectPath, env);
+        assert.exists(context);
+
+        const resourceId = context[EnvConstants.TAB_AZURE_APP_SERVICE_RESOURCE_ID];
+        assert.exists(resourceId);
+
+        const tokenProvider = MockAzureAccountProvider;
+        const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+        const token = (await tokenCredential?.getToken(AzureScopes))?.token;
+        assert.exists(token);
+
+        const response = await getWebappSettings(
+          subscription,
+          getResourceGroupNameFromResourceId(resourceId),
+          getSiteNameFromResourceId(resourceId),
+          token as string
+        );
+        assert.exists(response);
+        assert.equal(response["WEBSITE_NODE_DEFAULT_VERSION"], "~18");
+        assert.equal(response["WEBSITE_RUN_FROM_PACKAGE"], "1");
+        assert.equal(response["RUNNING_ON_AZURE"], "1");
+
+        // deploy
+        await CliHelper.deployAll(projectPath);
+
+        // Validate Deploy
+        context = await readContextMultiEnvV3(projectPath, env);
+        assert.exists(context);
+
+        const endpoint = context[EnvConstants.TAB_ENDPOINT];
+        assert.exists(endpoint);
+
+        const axiosInstance = axios.create();
+        try {
+          const response = await axiosInstance.get(endpoint);
+          assert.equal(response.status, 200);
+        } catch (e) {
+          assert.fail(JSON.stringify(e));
+        }
       }
-
-      // Scaffold
-      await CliHelper.createProjectWithCapability(
-        appName,
-        testFolder,
-        Capability.TabNonSso,
-        process.env,
-        `--programming-language ${language}`
-      );
-
-      // Validate Scaffold
-      const indexFile = path.join(projectPath, "src", file);
-      fs.access(indexFile, fs.constants.F_OK, (err) => {
-        assert.notExists(err);
-      });
-
-      // Provision
-      await setProvisionParameterValueV3(projectPath, env, {
-        key: "webAppSku",
-        value: "B1",
-      });
-      await CliHelper.provisionProject(projectPath);
-
-      // Validate Provision
-      let context = await readContextMultiEnvV3(projectPath, env);
-      assert.exists(context);
-
-      const resourceId = context[EnvConstants.TAB_AZURE_APP_SERVICE_RESOURCE_ID];
-      assert.exists(resourceId);
-
-      const tokenProvider = MockAzureAccountProvider;
-      const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
-      const token = (await tokenCredential?.getToken(AzureScopes))?.token;
-      assert.exists(token);
-
-      const response = await getWebappSettings(
-        subscription,
-        getResourceGroupNameFromResourceId(resourceId),
-        getSiteNameFromResourceId(resourceId),
-        token as string
-      );
-      assert.exists(response);
-      assert.equal(response["WEBSITE_NODE_DEFAULT_VERSION"], "~18");
-      assert.equal(response["WEBSITE_RUN_FROM_PACKAGE"], "1");
-      assert.equal(response["RUNNING_ON_AZURE"], "1");
-
-      // deploy
-      await CliHelper.deployAll(projectPath);
-
-      // Validate Deploy
-      context = await readContextMultiEnvV3(projectPath, env);
-      assert.exists(context);
-
-      const endpoint = context[EnvConstants.TAB_ENDPOINT];
-      assert.exists(endpoint);
-
-      const axiosInstance = axios.create();
-      try {
-        const response = await axiosInstance.get(endpoint);
-        assert.equal(response.status, 200);
-      } catch (e) {
-        assert.fail(JSON.stringify(e));
-      }
-    });
+    );
   }
 });

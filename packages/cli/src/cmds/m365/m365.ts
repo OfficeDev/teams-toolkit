@@ -5,12 +5,8 @@
 
 import { Argv } from "yargs";
 
-import { FxError, ok, Result, Void, LogLevel, err, UserError } from "@microsoft/teamsfx-api";
-import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
-import {
-  serviceEndpoint,
-  serviceScope,
-} from "@microsoft/teamsfx-core/build/common/m365/serviceConstant";
+import { FxError, LogLevel, Result, UserError, Void, err, ok } from "@microsoft/teamsfx-api";
+import { PackageService, serviceEndpoint, serviceScope } from "@microsoft/teamsfx-core";
 
 import CLILogProvider from "../../commonlib/log";
 import M365TokenProvider from "../../commonlib/m365Login";

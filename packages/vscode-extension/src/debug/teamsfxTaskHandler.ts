@@ -17,10 +17,10 @@ import {
   TelemetryMeasurements,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { getHashedEnv, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { TaskCommand } from "@microsoft/teamsfx-core/build/common/local/constants";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
+import { TaskCommand } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import {
   errorDetail,
@@ -63,13 +63,13 @@ const activeNpmInstallTasks = new Map<string, NpmInstallTaskInfo>();
  * Event emitters use this id to identify each tracked task, and `runTask` matches this id
  * to determine whether a task is terminated or not.
  */
-export let taskEndEventEmitter: vscode.EventEmitter<{
+let taskEndEventEmitter: vscode.EventEmitter<{
   id: string;
   name: string;
   exitCode?: number;
 }>;
 let taskStartEventEmitter: vscode.EventEmitter<string>;
-export const trackedTasks = new Map<string, string>();
+const trackedTasks = new Map<string, string>();
 
 function getTaskKey(task: vscode.Task): string {
   if (task === undefined) {
@@ -132,7 +132,7 @@ function isTeamsfxTask(task: vscode.Task): boolean {
       if (/(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine)) {
         return true;
       }
-      if (isV3Enabled() && /teamsfx\/script\/.*\.js/i.test(commandLine)) {
+      if (/teamsfx\/script\/.*\.js/i.test(commandLine)) {
         return true;
       }
     }
@@ -149,92 +149,6 @@ function displayTerminal(taskName: string): boolean {
   }
 
   return false;
-}
-
-export async function runTask(task: vscode.Task): Promise<number | undefined> {
-  if (task.definition.teamsfxTaskId === undefined) {
-    task.definition.teamsfxTaskId = uuid.v4();
-  }
-
-  const taskId = task.definition.teamsfxTaskId;
-  let started = false;
-
-  return new Promise<number | undefined>((resolve, reject) => {
-    // corner case but need to handle - somehow the task does not start
-    const startTimer = setTimeout(() => {
-      if (!started) {
-        reject(new Error("Task start timeout"));
-      }
-    }, 30000);
-
-    const startListener = taskStartEventEmitter.event((result) => {
-      if (taskId === result) {
-        clearTimeout(startTimer);
-        started = true;
-        startListener.dispose();
-      }
-    });
-
-    vscode.tasks.executeTask(task);
-
-    const endListener = taskEndEventEmitter.event((result) => {
-      if (taskId === result.id) {
-        endListener.dispose();
-        resolve(result.exitCode);
-      }
-    });
-  });
-}
-
-// TODO: move to local debug prerequisites checker
-async function checkCustomizedPort(component: string, componentRoot: string, checklist: RegExp[]) {
-  /*
-  const devScript = await loadTeamsFxDevScript(componentRoot);
-  if (devScript) {
-    let showWarning = false;
-    for (const check of checklist) {
-      if (!check.test(devScript)) {
-        showWarning = true;
-        break;
-      }
-    }
-
-    if (showWarning) {
-      VsCodeLogInstance.info(`Customized port detected in ${component}.`);
-      if (!globalStateGet(constants.PortWarningStateKeys.DoNotShowAgain, false)) {
-        const doNotShowAgain = "Don't Show Again";
-        const editPackageJson = "Edit package.json";
-        const learnMore = "Learn More";
-        vscode.window
-          .showWarningMessage(
-            util.format(
-              localize("teamstoolkit.localDebug.portWarning"),
-              component,
-              path.join(componentRoot, "package.json")
-            ),
-            doNotShowAgain,
-            editPackageJson,
-            learnMore
-          )
-          .then(async (selected) => {
-            if (selected === doNotShowAgain) {
-              await globalStateUpdate(constants.PortWarningStateKeys.DoNotShowAgain, true);
-            } else if (selected === editPackageJson) {
-              vscode.commands.executeCommand(
-                "vscode.open",
-                vscode.Uri.file(path.join(componentRoot, "package.json"))
-              );
-            } else if (selected === learnMore) {
-              vscode.commands.executeCommand(
-                "vscode.open",
-                vscode.Uri.parse(constants.localDebugHelpDoc)
-              );
-            }
-          });
-      }
-    }
-  }
-  */
 }
 
 function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {

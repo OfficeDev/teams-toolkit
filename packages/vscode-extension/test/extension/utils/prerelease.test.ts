@@ -4,7 +4,7 @@ import { PrereleasePage } from "../../../src/utils/prerelease";
 import { ExtensionContext, Memento } from "vscode";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as spies from "chai-spies";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
 chai.use(spies);
 const spy = chai.spy;
 const ShowWhatIsNewNotification = "show-what-is-new-notification";
@@ -48,7 +48,6 @@ describe("versionUtil", () => {
     sandbox.restore();
   });
   it("checkAndShow success", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -59,7 +58,6 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return prerelease version undefined", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
     sandbox.stub(context.globalState, "get").returns(undefined);
     const instance = new PrereleasePage(context);
@@ -70,7 +68,6 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return failed if not prerelease", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.1.0");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
@@ -80,18 +77,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow with Same version", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
-    sandbox.stub(context.globalState, "get").returns("4.99.0");
-    const instance = new PrereleasePage(context);
-    const spyChecker = sandbox.spy(context.globalState, "update");
-    await instance.checkAndShow();
-    chai.assert(spyChecker.callCount == 0);
-    spyChecker.restore();
-  });
-  it("checkAndShow failed without V3 flag", async () => {
-    sandbox.stub(commonTools, "isV3Enabled").returns(false);
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");

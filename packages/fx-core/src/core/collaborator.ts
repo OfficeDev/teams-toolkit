@@ -729,7 +729,7 @@ async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> 
   return root;
 }
 
-export async function validateEnvQuestion(inputs: Inputs): Promise<boolean> {
+async function validateEnvQuestion(inputs?: Inputs): Promise<boolean> {
   if (inputs?.env || inputs?.targetEnvName) {
     return false;
   }

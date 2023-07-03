@@ -17,11 +17,7 @@ import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 import { FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
-<<<<<<< HEAD
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-=======
 import { pathUtils } from "@microsoft/teamsfx-core";
->>>>>>> dev
 
 import VsCodeLogInstance from "../../src/commonlib/log";
 import { localTelemetryReporter } from "../../src/debug/localTelemetryReporter";
@@ -33,10 +29,8 @@ import {
   TunnelPortWithOutput,
 } from "../../src/debug/taskTerminal/devTunnelTaskTerminal";
 import { DevTunnelStateManager } from "../../src/debug/taskTerminal/utils/devTunnelStateManager";
-<<<<<<< HEAD
 import { DevTunnelManager } from "../../src/debug/taskTerminal/utils/devTunnelManager";
-=======
->>>>>>> dev
+
 import { ExtensionErrors, ExtensionSource } from "../../src/error";
 import * as globalVariables from "../../src/globalVariables";
 import { tools } from "../../src/handlers";
@@ -58,7 +52,6 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
   ): Promise<Result<OutputInfo, FxError>> {
     return super.saveTunnelToEnv(env, tunnelPorts);
   }
-<<<<<<< HEAD
 
   static create(taskDefinition: vscode.TaskDefinition): TestDevTunnelTaskTerminal {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient("teamsfx-ut", async () => {
@@ -68,8 +61,6 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
     const devTunnelStateManager = DevTunnelStateManager.create();
     return new TestDevTunnelTaskTerminal(taskDefinition, devTunnelManager, devTunnelStateManager);
   }
-=======
->>>>>>> dev
 }
 
 describe("devTunnelTaskTerminal", () => {
@@ -193,11 +184,7 @@ describe("devTunnelTaskTerminal", () => {
 
     it("happy path", async () => {
       mock();
-<<<<<<< HEAD
       const tunnelTaskTerminal = TestDevTunnelTaskTerminal.create(taskDefinition);
-=======
-      const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
->>>>>>> dev
       const resArr = await Promise.all([
         tunnelTaskTerminal.do(),
         waitDevTunnelEnabled(tunnelTaskTerminal).then(() => tunnelTaskTerminal.stop()),
@@ -223,11 +210,7 @@ describe("devTunnelTaskTerminal", () => {
       devTunnelStateManager.setTunnelState(
         Object.assign(existingTTKTunnel, { sessionId: "lastSessionId" })
       );
-<<<<<<< HEAD
       const tunnelTaskTerminal = TestDevTunnelTaskTerminal.create(taskDefinition);
-=======
-      const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
->>>>>>> dev
       const resArr = await Promise.all([
         tunnelTaskTerminal.do(),
         waitDevTunnelEnabled(tunnelTaskTerminal).then(() => tunnelTaskTerminal.stop()),
@@ -247,11 +230,7 @@ describe("devTunnelTaskTerminal", () => {
       type: "teamsfx",
     };
     const sandbox = sinon.createSandbox();
-<<<<<<< HEAD
     const tunnelTaskTerminal = TestDevTunnelTaskTerminal.create(taskDefinition);
-=======
-    const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
->>>>>>> dev
     beforeEach(async () => {
       sandbox.stub(BaseTaskTerminal, "taskDefinitionError").callsFake((argName) => {
         return new UserError(
@@ -524,11 +503,7 @@ describe("devTunnelTaskTerminal", () => {
     const taskDefinition: vscode.TaskDefinition = {
       type: "teamsfx",
     };
-<<<<<<< HEAD
     const tunnelTaskTerminal = TestDevTunnelTaskTerminal.create(taskDefinition);
-=======
-    const tunnelTaskTerminal = new TestDevTunnelTaskTerminal(taskDefinition);
->>>>>>> dev
 
     const sandbox = sinon.createSandbox();
     let filePath: string | undefined = undefined;

@@ -127,6 +127,8 @@ export namespace AppStudioClient {
   ): Promise<AppDefinition> {
     const telemetryProperties: { [key: string]: string } = {
       [TelemetryPropertyKey.OverwriteIfAppAlreadyExists]: String(overwrite),
+      // To avoid url be redacted in telemetry, get region from full base url
+      // E.g. https://dev.teams.microsoft.com/amer => amer
       [TelemetryPropertyKey.region]: String(region?.substring(32)),
     };
     sendStartEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);

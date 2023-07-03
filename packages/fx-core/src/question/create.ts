@@ -43,6 +43,7 @@ import { cloneDeep } from "lodash";
 
 export enum QuestionNames {
   Scratch = "scratch",
+  SctatchYes = "scratch-yes",
   AppName = "app-name",
   Folder = "folder",
   ProgrammingLanguage = "programming-language",
@@ -59,12 +60,14 @@ export enum QuestionNames {
   OfficeAddinManifest = "addin-project-manifest",
   OfficeAddinTemplate = "addin-template-select",
   OfficeAddinHost = "addin-host",
+  OfficeAddinImport = "addin-import",
   SkipAppName = "skip-app-name",
   Samples = "samples",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
   ReplaceBotIds = "replaceBotIds",
   SafeProjectName = "safeProjectName",
+  RepalceTabUrl = "tdp-tab-url",
 }
 
 export class ScratchOptions {
@@ -1142,7 +1145,7 @@ export const createProjectQuestion: IQTreeNode = {
   children: [
     {
       condition: { equals: ScratchOptions.yes().id },
-      data: { type: "group" },
+      data: { type: "group", name: QuestionNames.SctatchYes },
       children: [
         {
           condition: (inputs: Inputs) =>
@@ -1191,7 +1194,8 @@ export const createProjectQuestion: IQTreeNode = {
             {
               // office addin import sub-tree
               condition: { equals: CapabilityOptions.officeAddinImport().id },
-              data: { type: "group" },
+              data: { type: "group", name: QuestionNames.OfficeAddinImport },
+
               children: [
                 {
                   data: {
@@ -1233,7 +1237,7 @@ export const createProjectQuestion: IQTreeNode = {
         {
           condition: (inputs: Inputs) =>
             inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
-          data: { type: "group" },
+          data: { type: "group", name: QuestionNames.RepalceTabUrl },
           children: [
             {
               condition: (inputs: Inputs) => {
@@ -1285,17 +1289,41 @@ export function getQuestionsForCreateProject(): Result<IQTreeNode, FxError> {
 
 export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
   const node = cloneDeep(createProjectQuestion);
-  trimQuestionTreeForCliHelp(node, [QuestionNames.Runtime, QuestionNames.ProjectType]);
-  return node;
+  trimQuestionTreeForCliHelp(node, [
+    QuestionNames.Runtime,
+    QuestionNames.ProjectType,
+    QuestionNames.SkipAppName,
+    QuestionNames.OfficeAddinImport,
+    QuestionNames.OfficeAddinHost,
+    QuestionNames.RepalceTabUrl,
+    QuestionNames.ReplaceBotIds,
+    QuestionNames.Samples,
+  ]);
+  const subTree = pickSubTree(node, QuestionNames.SctatchYes);
+  return subTree!;
 }
 
-export function trimQuestionTreeForCliHelp(node: IQTreeNode, deleteNames: string[]): void {
+function trimQuestionTreeForCliHelp(node: IQTreeNode, deleteNames: string[]): void {
   if (node.children) {
     node.children = node.children.filter(
-      (child) => child.data.name && !deleteNames.includes(child.data.name)
+      (child) => !child.data.name || !deleteNames.includes(child.data.name)
     );
     for (const child of node.children) {
       trimQuestionTreeForCliHelp(child, deleteNames);
     }
   }
+}
+
+function pickSubTree(node: IQTreeNode, name: string): IQTreeNode | undefined {
+  if (node.data.name === name) {
+    return node;
+  }
+  let found;
+  if (node.children) {
+    for (const child of node.children) {
+      found = pickSubTree(child, name);
+      if (found) return found;
+    }
+  }
+  return undefined;
 }

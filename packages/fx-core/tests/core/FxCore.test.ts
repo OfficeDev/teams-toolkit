@@ -1336,12 +1336,22 @@ describe("isEnvFile", async () => {
         const node = res.value;
         const names: string[] = [];
         collectNodeNames(node!, names);
-        assert.isTrue(!names.includes(QuestionNames.Runtime));
-        assert.isTrue(!names.includes(QuestionNames.ProjectType));
+        assert.deepEqual(names, [
+          "capabilities",
+          "bot-host-type-trigger",
+          "spfx-solution",
+          "spfx-install-latest-package",
+          "spfx-framework-type",
+          "spfx-webpart-name",
+          "spfx-folder",
+          "programming-language",
+          "folder",
+          "app-name",
+        ]);
       }
     });
     function collectNodeNames(node: IQTreeNode, names: string[]) {
-      if (node.data.name) {
+      if (node.data.type !== "group") {
         names.push(node.data.name);
       }
       if (node.children) {

@@ -154,7 +154,7 @@ describe("App Studio API Test", () => {
       chai.assert.equal(res, appDef);
     });
 
-    it("Happy path - with region", async () => {
+    it("Happy path - with wrong region", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
@@ -162,7 +162,7 @@ describe("App Studio API Test", () => {
         data: appDef,
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
-      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com");
 
       const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
       chai.assert.equal(res, appDef);

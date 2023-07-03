@@ -731,10 +731,7 @@ async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> 
   return root;
 }
 
-export async function validateEnvQuestion(
-  input: any,
-  inputs?: Inputs
-): Promise<string | undefined> {
+async function validateEnvQuestion(input: any, inputs?: Inputs): Promise<string | undefined> {
   if (inputs?.env || inputs?.targetEnvName) {
     return "Env already selected";
   }

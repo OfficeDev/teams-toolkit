@@ -78,16 +78,6 @@ export const webpartNameQuestion: Question = {
   },
 };
 
-export const webpartDescriptionQuestion: Question = {
-  type: "text",
-  name: SPFXQuestionNames.webpart_desp,
-  title: "Web Part Description",
-  default: "helloworld description",
-  validation: {
-    required: true,
-  },
-};
-
 export const spfxPackageSelectQuestion: Question = {
   type: "singleSelect",
   name: SPFXQuestionNames.use_global_package_or_install_local,
@@ -124,6 +114,7 @@ export const spfxSolutionQuestion: Question = {
       label: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting"),
     },
   ],
+  default: "new",
 };
 
 export function spfxImportFolderQuestion(): Question {

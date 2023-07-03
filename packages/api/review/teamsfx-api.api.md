@@ -313,6 +313,18 @@ export interface IProgressHandler {
 }
 
 // @public (undocumented)
+export interface IQTreeNode {
+    // (undocumented)
+    children?: IQTreeNode[];
+    // (undocumented)
+    condition?: ValidationSchema & {
+        target?: string;
+    };
+    // (undocumented)
+    data: Question | Group;
+}
+
+// @public (undocumented)
 export const LocalEnvironmentName = "local";
 
 // @public
@@ -461,7 +473,7 @@ export enum Platform {
 export const ProductName = "teamsfx";
 
 // @public
-export class QTreeNode {
+export class QTreeNode implements IQTreeNode {
     constructor(data: Question | Group);
     // (undocumented)
     addChild(node: QTreeNode): QTreeNode;
@@ -479,7 +491,7 @@ export class QTreeNode {
 }
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -523,6 +535,24 @@ export interface Settings {
 // @public (undocumented)
 export const SettingsFolderName = "teamsfx";
 
+// @public (undocumented)
+export interface SingleFileOrInputConfig extends SelectFileConfig {
+    // (undocumented)
+    inputBoxConfig: InputTextConfig;
+    // (undocumented)
+    inputOptionItem: OptionItem;
+}
+
+// @public (undocumented)
+export interface SingleFileOrInputQuestion extends UserInputQuestion {
+    // (undocumented)
+    inputBoxConfig: InputTextConfig;
+    // (undocumented)
+    inputOptionItem: OptionItem;
+    // (undocumented)
+    type: "singleFileOrText";
+}
+
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
@@ -556,8 +586,6 @@ export type SingleSelectResult = InputResult<string | OptionItem>;
 
 // @public (undocumented)
 export enum Stage {
-    // (undocumented)
-    activateEnv = "activateEnv",
     // (undocumented)
     addCapability = "addCapability",
     // (undocumented)
@@ -867,7 +895,7 @@ export interface UserInputQuestion extends BaseQuestion {
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
     validation?: ValidationSchema;
     validationHelp?: string;
 }
@@ -890,6 +918,7 @@ export interface UserInteraction {
         };
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
+    selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
     selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
     selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult, FxError>>;

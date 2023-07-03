@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Ivan Jobs <ruhe@microsoft.com>
+ * @author Qianhao Dong <qidon@microsoft.com>
  */
 import { BotChannelType, IBotRegistration } from "./interfaces/IBotRegistration";
 
@@ -26,7 +26,7 @@ import { Messages } from "../messages";
 import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
 
-export function handleBotFrameworkError(e: any, apiName: string): void | undefined {
+function handleBotFrameworkError(e: any, apiName: string): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {
     return undefined; // Stands for NotFound.
   } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {

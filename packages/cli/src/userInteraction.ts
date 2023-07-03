@@ -362,7 +362,7 @@ class CLIUserInteraction implements UserInteraction {
           LogLevel.Warning,
           `Your Azure account only has one subscription (${sub}). Use it as default.`
         );
-        return ok({ type: "success", result: sub });
+        return ok({ type: "skip", result: sub });
       }
     }
     const loadRes = await this.loadOptions(config);
@@ -372,12 +372,12 @@ class CLIUserInteraction implements UserInteraction {
     if (config.options.length === 1 && config.skipSingleOption) {
       const answer = (config.options as StaticOptions)[0];
       if (config.returnObject) {
-        return ok({ type: "success", result: answer });
+        return ok({ type: "skip", result: answer });
       } else {
         if (typeof answer === "string") {
-          return ok({ type: "success", result: answer });
+          return ok({ type: "skip", result: answer });
         } else {
-          return ok({ type: "success", result: answer.id });
+          return ok({ type: "skip", result: answer.id });
         }
       }
     }
@@ -445,12 +445,12 @@ class CLIUserInteraction implements UserInteraction {
     if (config.options.length === 1 && config.skipSingleOption) {
       const answers = config.options as StaticOptions;
       if (config.returnObject) {
-        return ok({ type: "success", result: answers });
+        return ok({ type: "skip", result: answers });
       } else {
         if (typeof answers[0] === "string") {
-          return ok({ type: "success", result: answers });
+          return ok({ type: "skip", result: answers });
         } else {
-          return ok({ type: "success", result: (answers as OptionItem[]).map((a) => a.id) });
+          return ok({ type: "skip", result: (answers as OptionItem[]).map((a) => a.id) });
         }
       }
     }

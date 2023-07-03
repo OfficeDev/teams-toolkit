@@ -10,7 +10,7 @@ import {
   runDeploy,
 } from "./remotedebugContext";
 import { execCommandIfExist, createNewProject } from "../../vscodeOperation";
-import { initPage, validateTab } from "../../playwrightOperation";
+import { initPage, validateReactTab } from "../../playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 
@@ -71,7 +71,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, Env.displayName, false);
+      await validateReactTab(page, Env.displayName, true);
     }
   );
 });

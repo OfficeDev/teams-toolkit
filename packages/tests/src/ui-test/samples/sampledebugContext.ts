@@ -20,12 +20,11 @@ import {
   openExistingProject,
   stopDebugging,
 } from "../../vscodeOperation";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { TestContext } from "../testContext";
 import * as dotenv from "dotenv";
 import { CliHelper } from "../cliHelper";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
-import { getScreenshotName } from "../../utils/nameUtil";
 
 export class SampledebugContext extends TestContext {
   public readonly appName: string;
@@ -300,6 +299,7 @@ export class SampledebugContext extends TestContext {
     );
     const result = context.obj.TEAMS_APP_ID as string;
     console.log(`TEAMS APP ID: ${result}`);
+    expect(result).to.not.be.undefined;
     return result;
   }
 

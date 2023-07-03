@@ -11,8 +11,8 @@ import nock from "nock";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import { SystemError, err } from "@microsoft/teamsfx-api";
-import { AADManifest } from "../../../../src/component/resource/aadApp/interfaces/AADManifest";
-import { IAADDefinition } from "../../../../src/component/resource/aadApp/interfaces/IAADDefinition";
+import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
+import { IAADDefinition } from "../../../../src/component/driver/aad/interface/IAADDefinition";
 import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
 
 chai.use(chaiAsPromised);
@@ -345,6 +345,147 @@ describe("AadAppClient", async () => {
         .reply(204);
 
       await expect(aadAppClient.updateAadApp(mockedManifest)).not.eventually.be.rejected;
+    });
+  });
+
+  describe("getOwners", async () => {
+    let aadAppClient: AadAppClient;
+    let axiosInstance: AxiosInstance;
+
+    beforeEach(() => {
+      axiosInstance = mockAxiosCreate();
+      doNotWaitBetweenEachRetry();
+      aadAppClient = new AadAppClient(new MockedM365Provider());
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      nock.cleanAll();
+    });
+
+    it("should return user info when request success", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .get(`/applications/${expectedObjectId}/owners`)
+        .reply(200, {
+          value: [
+            {
+              id: "id",
+              displayName: "displayName",
+              mail: "mail",
+            },
+          ],
+        });
+
+      const result = await aadAppClient.getOwners(expectedObjectId);
+
+      expect(result).to.be.not.undefined;
+      expect(result!.length).to.equal(1);
+      expect(result![0].userObjectId).to.equal("id");
+    });
+
+    it("should throw error when request fail", async () => {
+      const expectedError = {
+        error: {
+          code: "Request_ResourceNotFound",
+          message: `Resource '${expectedObjectId}' does not exist or one of its queried reference-property objects are not present.",`,
+        },
+      };
+
+      // do not use nock to avoid retry
+      sinon.stub(axiosInstance, "get").rejects({
+        message: "Request failed with status code 404",
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+
+      await expect(aadAppClient.getOwners(expectedObjectId))
+        .to.eventually.be.rejectedWith("Request failed with status code 404")
+        .then((error) => {
+          expect(error.response.data).to.deep.equal(expectedError);
+        });
+    });
+
+    it("should retry when get 404 response", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .get(`/applications/${expectedObjectId}/owners`)
+        .reply(404);
+      nock("https://graph.microsoft.com/v1.0")
+        .get(`/applications/${expectedObjectId}/owners`)
+        .reply(200, {
+          value: [
+            {
+              id: "id",
+              displayName: "displayName",
+              mail: "mail",
+            },
+          ],
+        });
+
+      await expect(aadAppClient.getOwners(expectedObjectId)).not.eventually.be.rejected;
+    });
+  });
+
+  describe("addOwners", async () => {
+    let aadAppClient: AadAppClient;
+    let axiosInstance: AxiosInstance;
+    const mockedUserObjectId = "userObjectId";
+
+    beforeEach(() => {
+      axiosInstance = mockAxiosCreate();
+      doNotWaitBetweenEachRetry();
+      aadAppClient = new AadAppClient(new MockedM365Provider());
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      nock.cleanAll();
+    });
+
+    it("should return user info when request success", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .post(`/applications/${expectedObjectId}/owners/$ref`)
+        .reply(200);
+
+      await expect(aadAppClient.addOwner(expectedObjectId, mockedUserObjectId)).to.eventually.be.not
+        .rejected;
+    });
+
+    it("should throw error when request fail", async () => {
+      const expectedError = {
+        error: {
+          code: "Request_ResourceNotFound",
+          message: `Resource '${expectedObjectId}' does not exist or one of its queried reference-property objects are not present.",`,
+        },
+      };
+
+      // do not use nock to avoid retry
+      sinon.stub(axiosInstance, "post").rejects({
+        message: "Request failed with status code 404",
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+
+      await expect(aadAppClient.addOwner(expectedObjectId, mockedUserObjectId))
+        .to.eventually.be.rejectedWith("Request failed with status code 404")
+        .then((error) => {
+          expect(error.response.data).to.deep.equal(expectedError);
+        });
+    });
+
+    it("should retry when get 404 response", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .post(`applications/${expectedObjectId}/owners/$ref`)
+        .reply(404);
+      nock("https://graph.microsoft.com/v1.0")
+        .post(`/applications/${expectedObjectId}/owners/$ref`)
+        .reply(200);
+
+      await expect(aadAppClient.addOwner(expectedObjectId, mockedUserObjectId)).to.eventually.be.not
+        .rejected;
     });
   });
 });

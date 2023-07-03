@@ -16,8 +16,6 @@ import {
   MyTokenCredential,
 } from "../plugins/solution/util";
 
-const expect = chai.expect;
-
 describe("provisionUtils", () => {
   const tools = new MockTools();
   setTools(tools);
@@ -330,12 +328,7 @@ describe("provisionUtils", () => {
       const actions: string[] = [];
       const tenantId = "tid";
 
-      const res = await provisionUtils.ensureM365TenantMatchesV3(
-        actions,
-        tenantId,
-        "local",
-        "coorinator"
-      );
+      const res = await provisionUtils.ensureM365TenantMatchesV3(actions, tenantId);
 
       chai.assert.isTrue(res.isOk());
     });
@@ -344,12 +337,7 @@ describe("provisionUtils", () => {
       const actions = ["aadApp/create"];
       const tenantId = "";
 
-      const res = await provisionUtils.ensureM365TenantMatchesV3(
-        actions,
-        tenantId,
-        "local",
-        "coorinator"
-      );
+      const res = await provisionUtils.ensureM365TenantMatchesV3(actions, tenantId);
 
       chai.assert.isTrue(res.isOk());
     });
@@ -358,12 +346,7 @@ describe("provisionUtils", () => {
       const actions = ["aadApp/create"];
       const tenantId = "tid";
 
-      const res = await provisionUtils.ensureM365TenantMatchesV3(
-        actions,
-        tenantId,
-        "local",
-        "coorinator"
-      );
+      const res = await provisionUtils.ensureM365TenantMatchesV3(actions, tenantId);
 
       chai.assert.isTrue(res.isOk());
     });
@@ -375,12 +358,7 @@ describe("provisionUtils", () => {
         TEAMS_APP_TENANT_ID: "tid",
       });
 
-      const res = await provisionUtils.ensureM365TenantMatchesV3(
-        actions,
-        tenantId,
-        "local",
-        "coorinator"
-      );
+      const res = await provisionUtils.ensureM365TenantMatchesV3(actions, tenantId);
 
       chai.assert.isTrue(res.isOk());
     });
@@ -393,12 +371,7 @@ describe("provisionUtils", () => {
         AAD_APP_CLIENT_ID: "aad-id",
       });
 
-      const res = await provisionUtils.ensureM365TenantMatchesV3(
-        actions,
-        tenantId,
-        "local",
-        "coorinator"
-      );
+      const res = await provisionUtils.ensureM365TenantMatchesV3(actions, tenantId);
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -415,12 +388,7 @@ describe("provisionUtils", () => {
         BOT_ID: "bot-id",
       });
 
-      const res = await provisionUtils.ensureM365TenantMatchesV3(
-        actions,
-        tenantId,
-        "local",
-        "coorinator"
-      );
+      const res = await provisionUtils.ensureM365TenantMatchesV3(actions, tenantId);
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -437,12 +405,7 @@ describe("provisionUtils", () => {
         AAD_APP_CLIENT_ID: "aad-id",
       });
 
-      const res = await provisionUtils.ensureM365TenantMatchesV3(
-        actions,
-        tenantId,
-        "local",
-        "coorinator"
-      );
+      const res = await provisionUtils.ensureM365TenantMatchesV3(actions, tenantId);
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {

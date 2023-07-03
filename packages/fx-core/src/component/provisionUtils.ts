@@ -199,9 +199,7 @@ class ProvisionUtils {
 
   async ensureM365TenantMatchesV3(
     actions: string[],
-    tenantId: string | undefined,
-    env: string | undefined,
-    source: string
+    tenantId: string | undefined
   ): Promise<Result<undefined, FxError>> {
     if (actions.length === 0 || !tenantId) {
       return ok(undefined);

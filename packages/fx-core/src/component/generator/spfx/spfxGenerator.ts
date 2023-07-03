@@ -187,7 +187,7 @@ export class SPFxGenerator {
 
       const webpartsDir = path.join(spfxFolder, "src", "webparts");
       const webparts = (await fs.readdir(webpartsDir)).filter(async (file) =>
-        (await fs.stat(file)).isDirectory()
+        fs.statSync(path.join(webpartsDir, file)).isDirectory()
       );
       if (webparts.length > 1) {
         importDetails.push(
@@ -545,25 +545,29 @@ export class SPFxGenerator {
     const webpartsDir = path.join(spfxFolder, "src", "webparts");
     if (await fs.pathExists(webpartsDir)) {
       const webparts = (await fs.readdir(webpartsDir)).filter(async (file) =>
-        (await fs.stat(file)).isDirectory()
+        fs.statSync(path.join(webpartsDir, file)).isDirectory()
       );
       if (webparts.length < 1) {
         return undefined;
       }
 
       const webpartName = webparts[0].split(path.sep).pop();
-      const webpartManifestPath = path.join(webparts[0], `${webpartName}WebPart.manifest.json`);
-      if (!(await fs.pathExists(path.join(webpartsDir, webpartManifestPath)))) {
+      const webpartManifestPath = path.join(
+        webpartsDir,
+        webparts[0],
+        `${webpartName}WebPart.manifest.json`
+      );
+      if (!(await fs.pathExists(webpartManifestPath))) {
         throw new FileNotFoundError(
           Constants.PLUGIN_NAME,
-          path.join(webpartsDir, webpartManifestPath),
+          webpartManifestPath,
           Constants.IMPORT_HELP_LINK
         );
       }
 
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
       const manifest = JSON.parse(
-        (await fs.readFile(path.join(webpartsDir, webpartManifestPath), "utf8"))
+        (await fs.readFile(webpartManifestPath, "utf8"))
           .toString()
           .replace(matchHashComment, "")
           .trim()

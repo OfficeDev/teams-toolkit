@@ -40,6 +40,7 @@ import { YamlParser } from "../../src/component/configManager/parser";
 import {
   BotOptionItem,
   MessageExtensionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/component/constants";
@@ -556,7 +557,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.AppName]: appName,
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
@@ -593,7 +594,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.AppName]: appName,
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
@@ -1270,5 +1271,53 @@ describe("getProjectInfo", async () => {
     const core = new FxCore(tools);
     const res = await core.getProjectInfo(".", "dev");
     assert.isTrue(res.isErr());
+  });
+});
+
+describe("isEnvFile", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("file patten not match", async () => {
+    const core = new FxCore(tools);
+    const res = await core.isEnvFile(".", ".abc.dev");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isFalse(res.value);
+    }
+  });
+  it("getEnvFolderPath return error", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.isEnvFile(".", ".env.dev");
+    assert.isTrue(res.isErr());
+  });
+  it("getEnvFolderPath return undefined", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(undefined));
+    const core = new FxCore(tools);
+    const res = await core.isEnvFile(".", ".env.dev");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isFalse(res.value);
+    }
+  });
+  it("folder not match", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("/tmp"));
+    const core = new FxCore(tools);
+    const res = await core.isEnvFile("/tmp", "/tmp1/.env.dev");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isFalse(res.value);
+    }
+  });
+  it("match", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("/tmp"));
+    const core = new FxCore(tools);
+    const res = await core.isEnvFile("/tmp", "/tmp/.env.dev");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isTrue(res.value);
+    }
   });
 });

@@ -96,6 +96,7 @@ export enum CoreQuestionNames {
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
   M365Host = "m365-host",
+  BotHostTypeTrigger = "bot-host-type-trigger",
 }
 
 export const ProjectNamePattern =
@@ -318,7 +319,7 @@ export function getBotProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion
   };
 }
 
-export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+export function getTabTypeProjectQuestionNode(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     TabNonSsoItem(),
     M365SsoLaunchPageOptionItem(),
@@ -336,7 +337,7 @@ export function getTabTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQues
   };
 }
 
-export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+export function getMessageExtensionTypeProjectQuestionNode(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     LinkUnfurlingItem(),
     M365SearchAppOptionItem(),
@@ -353,7 +354,7 @@ export function getMessageExtensionTypeProjectQuestionNode(inputs?: Inputs): Sin
   };
 }
 
-export function getOutlookAddinTypeProjectQuestionNode(inputs?: Inputs): SingleSelectQuestion {
+export function getOutlookAddinTypeProjectQuestionNode(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [...OfficeAddinItems(), ImportAddinProjectItem()];
 
   return {
@@ -378,7 +379,6 @@ function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
 }
 
 export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
-  const WINDOWS_MAX_PATH_LENGTH = 260;
   return {
     type: "text",
     name: CoreQuestionNames.NewTargetEnvName,

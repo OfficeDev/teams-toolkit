@@ -19,3 +19,15 @@ export const descriptionMessageKeys = {
   create: "driver.aadApp.description.create",
   update: "driver.aadApp.description.update",
 };
+
+export const permissionsKeys = {
+  name: "Azure AD App",
+  owner: "Owner",
+  noPermission: "No Permission",
+  type: "M365",
+};
+
+export const constants = {
+  aadAppPasswordDisplayName: "default",
+  oauthAuthorityPrefix: "https://login.microsoftonline.com",
+};

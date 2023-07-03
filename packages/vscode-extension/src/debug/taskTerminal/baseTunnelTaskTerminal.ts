@@ -38,7 +38,7 @@ export type OutputInfo = {
   file: string | undefined;
 };
 
-export type EndpointInfo = {
+type EndpointInfo = {
   src: string;
   dest: string;
   keys: string[];

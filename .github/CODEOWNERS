@@ -51,9 +51,178 @@
 /packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya @SLdragon
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
+/packages/simpleauth @adashen @blackchoey @wenytang-ms
+
+/packages/function-extension @adashen @blackchoey
+
+/packages/dotnet-sdk @tecton @JerryYangKai @yiqing-zhao
+/packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu
+/packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
+
+/.github/workflows/cd.yml @adashen @LongOddCode @Siglud @qinezh @wenytang-ms
+/.github/actions @xzf0587 @wenytang-ms @blackchoey @adashen
+/.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
+/packages/server @chagong @Alive-Fish @jayzhang
+
+/Localize @HuihuiWu-Microsoft @tecton
+
+/packages/sdk-react @tecton @yiqing-zhao
+
+/templates/* @hund030 @eriolchan @huimiu
+/templates/*/dashboard-tab @hund030 @eriolchan @huimiu
+/templates/*/non-sso-tab @hund030 @eriolchan @huimiu @JerryYangKai
+/templates/*/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
+/templates/*/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/*/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/*/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/*/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
+
+/templates/*/non-sso-tab-default-bot @hund030 @yuqizhou77
+/templates/common/office-addin @1yefuwang1 @jayzhang
+/templates/ts/office-addin @1yefuwang1 @jayzhang
+/templates/ts/spfx-tab @HuihuiWu-Microsoft @nliu-ms @jayzhang
+
+/templates/*/sso-tab-with-obo-flow @KennethBWSong @adashen @SLdragon
+
+/templates/*/command-and-response @kimizhu @dooriya @swatDong
+/templates/*/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/*/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/*/notification-restify @kimizhu @dooriya @swatDong
+/templates/*/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/csharp/notification-webapi @kimizhu @dooriya @swatDong
+/templates/*/workflow @kimizhu @dooriya @swatDong
+/templates/*/m365-message-extension @kimizhu @swatDong @kuojianlu
+/templates/*/m365-tab @kimizhu @swatDong @kuojianlu
+
+/packages/fx-core/.eslintignore @LongOddCode @wenytang-ms
+/packages/fx-core/.eslintrc.js @LongOddCode @wenytang-ms
+/packages/fx-core/.gitignore @LongOddCode @wenytang-ms
+/packages/fx-core/.mocharc.js @LongOddCode @wenytang-ms
+/packages/fx-core/.nycrc @LongOddCode @wenytang-ms
+/packages/fx-core/.prettierignore @LongOddCode @wenytang-ms
+/packages/fx-core/.prettierrc.js @LongOddCode @wenytang-ms
+/packages/fx-core/.vscode/launch.json @LongOddCode @wenytang-ms
+/packages/fx-core/CONTRIBUTING.md @jayzhang @LongOddCode @wenytang-ms
+/packages/fx-core/LICENSE.txt @jayzhang @LongOddCode @wenytang-ms
+/packages/fx-core/NOTICE.txt @jayzhang @LongOddCode @wenytang-ms
+/packages/fx-core/README.md @jayzhang  @LongOddCode @wenytang-ms
+/packages/fx-core/package-lock.json @LongOddCode @wenytang-ms
+/packages/fx-core/package.json @LongOddCode @wenytang-ms
+/packages/fx-core/scripts/download-templates-zip.js @hund030 @eriolchan @huimiu
+/packages/fx-core/scripts/delete-unused-strings.js @jayzhang
+/packages/fx-core/scripts/find-unused-strings.js @jayzhang
+/packages/fx-core/scripts/generate-appdef.ps1 @nliu-ms
+
+/packages/fx-core/src/common/constants.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/constants.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/src/common/correlator.ts @chagong @jayzhang @LongOddCode
+
+/packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/common/featureFlags.test.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/src/common/globalState.ts @tecton @jayzhang @LongOddCode
+/packages/fx-core/tests/common/globalState.test.ts @tecton @jayzhang @LongOddCode
+
+/packages/fx-core/src/common/jsonUtils.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft
+/packages/fx-core/src/common/permissionInterface.ts @SLdragon @KennethBWSong
+/packages/fx-core/src/common/projectSettingsHelper.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/common/projectSettingsHelperV3.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/common/telemetry.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/common/templates-config.json @hund030 @eriolchan @huimiu
+
+/packages/fx-core/src/common/tools.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/common/tools.test.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/src/common/utils.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/common/utils.test.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/src/common/versionMetadata.ts @xzf0587 @blackchoey @adashen
+/packages/fx-core/src/failpoint @1yefuwang1 @LongOddCode
+/packages/fx-core/src/folder.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/index.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/ui/visitor.ts @jayzhang @xzf0587 @LongOddCode
+
+
+/packages/fx-core/tests/component/coordinator.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/driver/script/scriptDriver.test.ts @jayzhang @LongOddCode
+/packages/fx-core/tests/component/envUtil.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/error.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/jsonUtils.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/middleware/helper.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/middleware/middleware.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/provisionUtils.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/questionv3.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/resourceGroupHelper.test.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/tests/component/util/azureAccountMock.ts @Siglud @xiaolang124
+/packages/fx-core/tests/component/util/azureResourceOperation.test.ts @Siglud @Yukun-dong
+/packages/fx-core/tests/component/util/logProviderMock.ts @Siglud @Yukun-dong
+/packages/fx-core/tests/component/util/metadataUtil.test.ts @chagong @jayzhang
+/packages/fx-core/tests/component/utils.test.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/tests/core/FxCore.create.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/FxCore.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/callback.test.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/tests/core/middleware/ConcurrentLockerMW.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/middleware/ErrorHandlerMW.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/middleware/VideoFilterAppBlockerMW.test.ts @a1exwang
+
+/packages/fx-core/tests/core/other.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/question.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/samples_v2.zip  @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/tools.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/core/utils.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/plugins/solution/util.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/ui/qm.visitor.test.ts @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/tsconfig.json @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/webpack.config.js @jayzhang @xzf0587 @LongOddCode
+
+/packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/arm @xzf0587 @blackchoey @adashen
+/packages/fx-core/tests/component/driver/arm @xzf0587 @blackchoey @adashen
+
+/packages/fx-core/src/core/middleware/projectMigrationV3 @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/templates/core/v3Migration @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/core/middleware/migration @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/core/middleware/projectVersionChecker.test.ts @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/core/middleware/testAssets @xzf0587 @frankqianms @blackchoey @adashen
+/packages/fx-core/tests/samples/sampleV3 @xzf0587 @wenytang-ms @frankqianms @blackchoey @adashen
+
+/packages/fx-core/src/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
+/packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
+/packages/fx-core/src/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
+/packages/fx-core/tests/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
+
+/packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/core/middleware/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/deploy/azure @Siglud @Yukun-dong @JerryYangKai @eriolchan
+/packages/fx-core/src/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
+
 /packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
 /packages/fx-core/resource/yaml-schema @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
+
+/packages/fx-core/src/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
+/packages/fx-core/tests/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
+
 
 /packages/fx-core/src/question @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/src/error @jayzhang @xzf0587 @hund030 @LongOddCode
@@ -82,111 +251,26 @@
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
 
-/packages/fx-core/src/component/feature/bot @JerryYangKai  @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/component/code/botCode.ts @JerryYangKai @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/component/resource/botService @JerryYangKai @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/component/resource/azureAppService @JerryYangKai @eriolchan @Yukun-dong @Siglud @hund030
-
-/packages/fx-core/src/component/feature/tab.ts @eriolchan @hund030 @huimiu
-/packages/fx-core/src/component/code/tab @hund030 @eriolchan @huimiu
-/packages/fx-core/src/component/resource/azureStorage @hund030 @eriolchan @huimiu
-
-/packages/fx-core/src/component/feature/api @eriolchan @hund030 @huimiu
-/packages/fx-core/src/component/code/api @eriolchan @hund030 @huimiu
-/packages/fx-core/src/component/code/api/depsChecker @a1exwang @kimizhu @qinezh
-
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
-/packages/fx-core/tests/component/feature/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
-
-/templates/js/non-sso-tab @hund030 @eriolchan @huimiu
-/templates/ts/non-sso-tab @hund030 @eriolchan @huimiu
-/templates/csharp/non-sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
-/templates/csharp/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
-/templates/js/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/ts/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/js/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/ts/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/js/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/ts/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/js/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/ts/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/csharp/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/csharp/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/packages/fx-core/src/common/template-utils @hund030 @huimiu @eriolchan
-/packages/fx-core/tests/common/templateFetch.test.ts @hund030 @huimiu @eriolchan
-
-/templates/js/command-and-response @kimizhu @dooriya @swatDong
-/templates/js/notification-http-timer-trigger @kimizhu @dooriya @swatDong
-/templates/js/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/js/notification-restify @kimizhu @dooriya @swatDong
-/templates/js/notification-timer-trigger @kimizhu @dooriya @swatDong
-/templates/js/workflow @kimizhu @dooriya @swatDong
-/templates/js/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/js/m365-tab @kimizhu @swatDong @kuojianlu
-/templates/ts/command-and-response @kimizhu @dooriya @swatDong
-/templates/ts/notification-http-timer-trigger @kimizhu @dooriya @swatDong
-/templates/ts/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/ts/notification-restify @kimizhu @dooriya @swatDong
-/templates/ts/notification-timer-trigger @kimizhu @dooriya @swatDong
-/templates/ts/workflow @kimizhu @dooriya @swatDong
-/templates/ts/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/ts/m365-tab @kimizhu @swatDong @kuojianlu
-/templates/csharp/command-and-response @kimizhu @dooriya @swatDong
-/templates/csharp/notification-http-timer-trigger @kimizhu @dooriya @swatDong
-/templates/csharp/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/csharp/notification-webapi @kimizhu @dooriya @swatDong
-/templates/csharp/notification-timer-trigger @kimizhu @dooriya @swatDong
-/templates/csharp/workflow @kimizhu @dooriya @swatDong
+/packages/fx-core/tests/component/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
 
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/src/common/m365 @kimizhu @swatDong @kuojianlu
 /packages/fx-core/tests/common/m365 @kimizhu @swatDong @kuojianlu
+/packages/fx-core/src/component/resource/botService @kimizhu @swatDong @kuojianlu
+/packages/fx-core/tests/component/resource/botService @kimizhu @swatDong @kuojianlu
 
-/packages/simpleauth @adashen @blackchoey @wenytang-ms
+/packages/fx-core/tests/component/driver/teamsApp @nliu-ms @jayzhang @yuqizhou77
+/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @yuqizhou77
+/packages/fx-core/templates/plugins/resource/appstudio @nliu-ms
+/packages/fx-core/src/component/driver/middleware/updateProgress.ts @tecton @jayzhang @LongOddCode
+/packages/fx-core/tests/component/driver/middleware/updateProgress.test.ts @tecton @jayzhang @LongOddCode
 
-/packages/function-extension @adashen @blackchoey
-
-/packages/dotnet-sdk @tecton @JerryYangKai @yiqing-zhao
-/packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu
-/packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
-
-/.github/workflows/cd.yml @adashen @LongOddCode @Siglud @qinezh @wenytang-ms
-/.github/actions @xzf0587 @wenytang-ms @blackchoey @adashen
-/.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
-/packages/server @chagong @Alive-Fish @jayzhang
-
-/Localize @HuihuiWu-Microsoft @tecton
-
-/packages/sdk-react @tecton @yiqing-zhao
-
-/packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
-
-/packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
-
-/packages/fx-core/src/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
-
-/packages/fx-core/src/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
-
-/packages/fx-core/src/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/m365 @swatDong @XiaofuHuang @kuojianlu @kimizhu
-
-/packages/fx-core/src/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/devTool @swatDong @XiaofuHuang @kuojianlu @kimizhu
-
-/packages/fx-core/src/component/driver/arm @xzf0587 @blackchoey @adashen
-/packages/fx-core/tests/component/driver/arm @xzf0587 @blackchoey @adashen
-
-/packages/fx-core/src/core/middleware/projectMigrationV3 @xzf0587 @frankqianms @blackchoey @adashen
-/packages/fx-core/tests/core/middleware/migration @xzf0587 @frankqianms @blackchoey @adashen
-/packages/fx-core/tests/core/middleware/testAssets @xzf0587 @frankqianms @blackchoey @adashen
-
-/packages/fx-core/src/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
-/packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
-
-/packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
-
-/packages/fx-core/src/component/driver/deploy/azure @Siglud @Yukun-dong @JerryYangKai @eriolchan
-/packages/fx-core/src/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
+/packages/fx-core/templates/plugins/resource/aad/ @KennethBWSong @xzf0587 @adashen
+/packages/fx-core/src/component/feature/collaboration.ts @KennethBWSong @SLdragon @adashen
+/packages/fx-core/src/component/feature/createAuthFiles.ts @KennethBWSong @xzf0587 @adashen
+/packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587 @adashen
+packages/fx-core/tests/component/feature/sso.test.ts @KennethBWSong @xzf0587 @adashen
+packages/fx-core/tests/component/feature/collaborator.test.ts @KennethBWSong @SLdragon @adashen
+packages/fx-core/tests/core/collaborator.test.ts @KennethBWSong @SLdragon @adashen

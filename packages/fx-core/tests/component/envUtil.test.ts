@@ -764,4 +764,19 @@ describe("envUtils", () => {
       assert.isTrue(res._unsafeUnwrapErr() instanceof FileNotFoundError);
     });
   });
+
+  describe("extractEnvNameFromFileName", () => {
+    it("happy path", async () => {
+      const res = await envUtil.extractEnvNameFromFileName(".env.dev");
+      assert.isTrue(res === "dev");
+    });
+    it("return undefined", async () => {
+      const res = await envUtil.extractEnvNameFromFileName(".env.dev.user");
+      assert.isUndefined(res);
+    });
+    it("return undefined", async () => {
+      const res = await envUtil.extractEnvNameFromFileName(".env1.dev");
+      assert.isTrue(res === undefined);
+    });
+  });
 });

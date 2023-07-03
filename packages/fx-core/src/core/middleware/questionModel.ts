@@ -125,7 +125,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   if (triggerNodeRes.value) {
     capNode.addChild(triggerNodeRes.value);
   }
-  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
+  const spfxNode = await getSPFxScaffoldQuestion();
   if (spfxNode) {
     spfxNode.condition = { equals: TabSPFxItem().id };
     capNode.addChild(spfxNode);
@@ -138,6 +138,9 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   const defaultName = !inputs.teamsAppFromTdp?.appName
     ? undefined
     : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  if (inputs.platform !== Platform.CLI_HELP) {
+    createNew.addChild(new QTreeNode(skipAppName));
+  }
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (isFromDevPortal(inputs)) {
@@ -193,7 +196,7 @@ async function getQuestionsForCreateProjectWithDotNet(
   if (triggerNodeRes.value) {
     dotnetCapNode.addChild(triggerNodeRes.value);
   }
-  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
+  const spfxNode = await getSPFxScaffoldQuestion();
   if (spfxNode) {
     spfxNode.condition = { equals: TabSPFxItem().id };
     dotnetCapNode.addChild(spfxNode);
@@ -252,29 +255,27 @@ async function getQuestionsForCreateProjectInVSC(
   }
 
   // tab type
-  const tabTypeNode = new QTreeNode(getTabTypeProjectQuestionNode(inputs));
+  const tabTypeNode = new QTreeNode(getTabTypeProjectQuestionNode());
   tabTypeNode.condition = {
     equals: NewProjectTypeTabOptionItem().id,
   };
   typeNode.addChild(tabTypeNode);
 
-  const spfxNode = await getSPFxScaffoldQuestion(inputs.platform);
+  const spfxNode = await getSPFxScaffoldQuestion();
   if (spfxNode) {
     spfxNode.condition = { equals: TabSPFxItem().id };
     tabTypeNode.addChild(spfxNode);
   }
 
   // message extension type
-  const messageExtensionTypeNode = new QTreeNode(
-    getMessageExtensionTypeProjectQuestionNode(inputs)
-  );
+  const messageExtensionTypeNode = new QTreeNode(getMessageExtensionTypeProjectQuestionNode());
   messageExtensionTypeNode.condition = {
     equals: NewProjectTypeMessageExtensionOptionItem().id,
   };
   typeNode.addChild(messageExtensionTypeNode);
 
   // Outlook addin type
-  const outlookAddinTypeNode = new QTreeNode(getOutlookAddinTypeProjectQuestionNode(inputs));
+  const outlookAddinTypeNode = new QTreeNode(getOutlookAddinTypeProjectQuestionNode());
   outlookAddinTypeNode.condition = {
     equals: NewProjectTypeOutlookAddinOptionItem().id,
   };

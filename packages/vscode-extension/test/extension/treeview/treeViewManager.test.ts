@@ -6,6 +6,8 @@ import { AdaptiveCardCodeLensProvider } from "../../../src/codeLensProvider";
 import * as globalVariables from "../../../src/globalVariables";
 import { CommandsTreeViewProvider } from "../../../src/treeview/commandsTreeViewProvider";
 import treeViewManager from "../../../src/treeview/treeViewManager";
+import { manifestUtils } from "@microsoft/teamsfx-core";
+import { TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 
 describe("TreeViewManager", () => {
   const sandbox = sinon.createSandbox();
@@ -56,6 +58,8 @@ describe("TreeViewManager", () => {
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+    sandbox.stub(manifestUtils, "getCapabilities").returns(["tab"]);
 
     treeViewManager.registerTreeViews({
       subscriptions: [],
@@ -77,6 +81,8 @@ describe("TreeViewManager", () => {
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+    sandbox.stub(manifestUtils, "getCapabilities").returns(["tab"]);
 
     treeViewManager.registerTreeViews({
       subscriptions: [],
@@ -91,6 +97,28 @@ describe("TreeViewManager", () => {
     await treeViewManager.updateTreeViewsByContent(true);
 
     chai.assert.equal(commands.length, 3);
+  });
+
+  it("updateTreeViewsByContent that is not teams app", async () => {
+    sandbox
+      .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
+      .returns(Promise.resolve(false));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+    sandbox.stub(manifestUtils, "getCapabilities").returns([]);
+
+    treeViewManager.registerTreeViews({
+      subscriptions: [],
+    } as unknown as vscode.ExtensionContext);
+    const utilityTreeviewProvider = treeViewManager.getTreeView(
+      "teamsfx-utility"
+    ) as CommandsTreeViewProvider;
+
+    const commands = utilityTreeviewProvider.getCommands();
+    chai.assert.equal(commands.length, 3);
+
+    await treeViewManager.updateTreeViewsByContent();
+
+    chai.assert.equal(commands.length, 2);
   });
 
   it("updateTreeViewsOnSPFxChanged", async () => {

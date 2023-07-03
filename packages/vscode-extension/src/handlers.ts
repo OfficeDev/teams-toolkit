@@ -260,7 +260,8 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   let needRefresh = false;
   for (const file of files) {
     // check if file is env config
-    if (environmentManager.isEnvConfig(workspacePath, file.fsPath)) {
+    const res = await core.isEnvFile(workspacePath, file.fsPath);
+    if (res.isOk() && res.value) {
       needRefresh = true;
       break;
     }
@@ -272,14 +273,6 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
 }
 
 export function addFileSystemWatcher(workspacePath: string) {
-  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/unify-config-and-aad-manifest-change-logs.md"
-  );
-
-  unifyConfigWatcher.onDidCreate(async (event) => {
-    await openUnifyConfigMd(workspacePath, event.fsPath);
-  });
-
   if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
     const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
@@ -318,25 +311,6 @@ export async function sendSDKVersionTelemetry(filePath: string) {
       packageLockFile?.dependencies["@microsoft/teamsfx"]?.version,
     [TelemetryProperty.TeamsJSVersion]:
       packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
-  });
-}
-
-async function openUnifyConfigMd(workspacePath: string, filePath: string) {
-  const backupName = ".backup";
-  const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
-  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
-  await openPreviewMarkDown(filePath, changeLogsPath);
-}
-
-async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
-  if (changeLogsPath !== filePath) {
-    return;
-  }
-  const uri = Uri.file(changeLogsPath);
-
-  workspace.openTextDocument(uri).then(() => {
-    const PreviewMarkdownCommand = "markdown.showPreview";
-    commands.executeCommand(PreviewMarkdownCommand, uri);
   });
 }
 
@@ -449,10 +423,12 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+  const properties: { [key: string]: string } = {};
 
   try {
     const inputs = getSystemInputs();
     inputs.env = env;
+    properties[TelemetryProperty.Env] = env;
 
     const result = await core.previewWithManifest(inputs);
     if (result.isErr()) {
@@ -461,17 +437,23 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
     const url = result.value as string;
+    properties[TelemetryProperty.Hub] = hub;
 
     await openHubWebClient(hub, url);
   } catch (error) {
     const assembledError = assembleError(error);
     showError(assembledError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, assembledError);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.TreeViewPreview,
+      assembledError,
+      properties
+    );
     return err(assembledError);
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    ...properties,
   });
   return ok(null);
 }
@@ -708,6 +690,7 @@ export async function runCommand(
         if (!isImportSPFxEnabled()) {
           inputs["spfx-solution"] = "new";
         }
+        inputs["scratch"] = "yes";
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -2226,12 +2209,6 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
         env = result[1];
       }
     }
-  }
-
-  if (env && env !== "local") {
-    const inputs = getSystemInputs();
-    inputs.env = env;
-    await core.activateEnv(inputs);
   }
 
   const inputs = getSystemInputs();

@@ -9,9 +9,7 @@ import {
   defaultTryLimits,
   oldPlaceholderDelimiters,
   placeholderDelimiters,
-  templateAlphaVersion,
   templateFileExt,
-  templatePrereleaseVersion,
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
 } from "./constant";
@@ -184,7 +182,7 @@ export function renderTemplateFileData(
   return fileData;
 }
 
-export function escapeEmptyVariable(
+function escapeEmptyVariable(
   template: string,
   view: Record<string, string | undefined>,
   tags: [string, string] = placeholderDelimiters

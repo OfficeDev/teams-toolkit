@@ -137,11 +137,11 @@ describe("utils", () => {
       chai.assert.isTrue(needTab);
     });
 
-    it("static tabs without url: returns false", () => {
+    it("static tabs with reserved entity id: returns false", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mockAppId",
         tenantId: "mockTenantId",
-        staticTabs: [{ ...validStaticTab, contentUrl: "" }],
+        staticTabs: [{ ...validStaticTab, entityId: "about" }],
         bots: [validBot],
       };
 

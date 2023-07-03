@@ -39,7 +39,10 @@ import {
   OfficeAddinItems,
 } from "../../src/component/generator/officeAddin/question";
 import { environmentManager } from "../../src/core/environment";
-import { addOfficeAddinQuestions } from "../../src/core/middleware/questionModel";
+import {
+  addOfficeAddinQuestions,
+  getQuestionsForCreateProjectV2,
+} from "../../src/core/middleware/questionModel";
 import {
   CoreQuestionNames,
   createAppNameQuestion,
@@ -179,7 +182,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
 
   it("should return 4 tab type options in second layer question", () => {
     // Act
-    const question = getTabTypeProjectQuestionNode({} as Inputs);
+    const question = getTabTypeProjectQuestionNode();
     // Assert
     chai.assert.equal(question.type, "singleSelect");
     chai.assert.equal(question.name, "capabilities");
@@ -197,7 +200,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
 
   it("should return 3 message extension type options in second layer question", () => {
     // Act
-    const question = getMessageExtensionTypeProjectQuestionNode({} as Inputs);
+    const question = getMessageExtensionTypeProjectQuestionNode();
     // Assert
     chai.assert.equal(question.type, "singleSelect");
     chai.assert.equal(question.name, "capabilities");
@@ -214,7 +217,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
 
   it("should return 2 outlook type options in second layer question", () => {
     // Act
-    const question = getOutlookAddinTypeProjectQuestionNode({} as Inputs);
+    const question = getOutlookAddinTypeProjectQuestionNode();
     // Assert
     chai.assert.equal(question.type, "singleSelect");
     chai.assert.equal(question.name, "capabilities");
@@ -415,5 +418,21 @@ describe("updateAadManifestQuestion()", async () => {
     const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
     const expectRes = "Skip Current Question";
     chai.expect(res).to.equal(expectRes);
+  });
+  it("getQuestionsForCreateProjectWithoutDotNet for cli", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
+      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+    };
+
+    const questions = await getQuestionsForCreateProjectV2(inputs);
+
+    chai.expect(questions.isOk()).to.be.true;
+    if (questions.isOk()) {
+      chai.expect(questions.value?.children![0].children?.length).to.equal(3);
+    }
   });
 });

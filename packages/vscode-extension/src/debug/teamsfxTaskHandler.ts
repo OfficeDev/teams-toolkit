@@ -1,9 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProductName, UserError } from "@microsoft/teamsfx-api";
-import * as uuid from "uuid";
+import * as path from "path";
+import { performance } from "perf_hooks";
+import * as util from "util";
 import * as vscode from "vscode";
+
+import { ProductName, UserError } from "@microsoft/teamsfx-api";
+import {
+  Correlator,
+  getHashedEnv,
+  Hub,
+  isValidProject,
+  TaskCommand,
+} from "@microsoft/teamsfx-core";
+
+import VsCodeLogInstance from "../commonlib/log";
+import { ExtensionErrors, ExtensionSource } from "../error";
+import { VS_CODE_UI } from "../extension";
+import * as globalVariables from "../globalVariables";
+import {
+  TelemetryEvent,
+  TelemetryMeasurements,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
+import { localize } from "../utils/localizeUtils";
 import {
   DebugNoSessionId,
   endLocalDebugSession,
@@ -11,34 +32,16 @@ import {
   getLocalDebugSessionId,
   getNpmInstallLogInfo,
 } from "./commonUtils";
-import * as globalVariables from "../globalVariables";
-import {
-  TelemetryEvent,
-  TelemetryMeasurements,
-  TelemetryProperty,
-} from "../telemetry/extTelemetryEvents";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
-import { TaskCommand } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { isValidProject } from "@microsoft/teamsfx-core";
-import * as path from "path";
 import {
   errorDetail,
-  Hub,
   issueChooseLink,
   issueLink,
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
 } from "./constants";
-import * as util from "util";
-import VsCodeLogInstance from "../commonlib/log";
-import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
-import { localize } from "../utils/localizeUtils";
-import { VS_CODE_UI } from "../extension";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
-import { ExtensionErrors, ExtensionSource } from "../error";
-import { performance } from "perf_hooks";
 import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
+import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -63,13 +66,13 @@ const activeNpmInstallTasks = new Map<string, NpmInstallTaskInfo>();
  * Event emitters use this id to identify each tracked task, and `runTask` matches this id
  * to determine whether a task is terminated or not.
  */
-export let taskEndEventEmitter: vscode.EventEmitter<{
+let taskEndEventEmitter: vscode.EventEmitter<{
   id: string;
   name: string;
   exitCode?: number;
 }>;
 let taskStartEventEmitter: vscode.EventEmitter<string>;
-export const trackedTasks = new Map<string, string>();
+const trackedTasks = new Map<string, string>();
 
 function getTaskKey(task: vscode.Task): string {
   if (task === undefined) {
@@ -149,41 +152,6 @@ function displayTerminal(taskName: string): boolean {
   }
 
   return false;
-}
-
-export async function runTask(task: vscode.Task): Promise<number | undefined> {
-  if (task.definition.teamsfxTaskId === undefined) {
-    task.definition.teamsfxTaskId = uuid.v4();
-  }
-
-  const taskId = task.definition.teamsfxTaskId;
-  let started = false;
-
-  return new Promise<number | undefined>((resolve, reject) => {
-    // corner case but need to handle - somehow the task does not start
-    const startTimer = setTimeout(() => {
-      if (!started) {
-        reject(new Error("Task start timeout"));
-      }
-    }, 30000);
-
-    const startListener = taskStartEventEmitter.event((result) => {
-      if (taskId === result) {
-        clearTimeout(startTimer);
-        started = true;
-        startListener.dispose();
-      }
-    });
-
-    vscode.tasks.executeTask(task);
-
-    const endListener = taskEndEventEmitter.event((result) => {
-      if (taskId === result.id) {
-        endListener.dispose();
-        resolve(result.exitCode);
-      }
-    });
-  });
 }
 
 function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {
@@ -415,6 +383,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         [TelemetryProperty.DebugRemote]: debugConfig.teamsfxIsRemote + "",
         [TelemetryProperty.DebugAppId]: debugConfig.teamsfxAppId + "",
         [TelemetryProperty.Env]: env,
+        [TelemetryProperty.Hub]: debugConfig.teamsfxHub + "",
       });
       // This is the launch browser local debug session.
       if (debugConfig.request === "launch" && !debugConfig.teamsfxIsRemote) {

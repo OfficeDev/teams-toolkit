@@ -22,7 +22,6 @@ import {
 import axios from "axios";
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import { Container } from "typedi";
 import { validate as uuidValidate } from "uuid";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -30,23 +29,14 @@ import {
   AadOwner,
   AppIds,
   CollaborationState,
-  CollaborationStateResult,
   ListCollaboratorResult,
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
 import { AppStudioScopes, GraphScopes } from "../common/tools";
-import {
-  ComponentNames,
-  SOLUTION_PROVISION_SUCCEEDED,
-  SolutionError,
-  SolutionSource,
-  SolutionTelemetryProperty,
-} from "../component/constants";
+import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../component/constants";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { getUserEmailQuestion } from "../component/question";
-import { AadApp } from "../component/resource/aadApp/aadApp";
-import { AppManifest } from "../component/resource/appManifest/appManifest";
 import { FileNotFoundError } from "../error/common";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
@@ -56,6 +46,7 @@ import {
   selectEnvNode,
   selectTeamsAppManifestQuestion,
 } from "./question";
+import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -224,7 +215,7 @@ export class CollaborationUtil {
     if (teamsAppManifestFilePath && !teamsAppId) {
       const teamsAppIdRes = await this.loadManifestId(teamsAppManifestFilePath);
       if (teamsAppIdRes.isOk()) {
-        teamsAppId = await this.parseManifestId(teamsAppIdRes.value, inputs);
+        teamsAppId = await this.parseManifestId(teamsAppIdRes.value);
       } else {
         return err(teamsAppIdRes.error);
       }
@@ -233,7 +224,7 @@ export class CollaborationUtil {
     if (aadAppManifestFilePath && !aadObjectId) {
       const aadObjectIdRes = await this.loadManifestId(aadAppManifestFilePath);
       if (aadObjectIdRes.isOk()) {
-        aadObjectId = await this.parseManifestId(aadObjectIdRes.value, inputs);
+        aadObjectId = await this.parseManifestId(aadObjectIdRes.value);
       } else {
         return err(aadObjectIdRes.error);
       }
@@ -279,7 +270,7 @@ export class CollaborationUtil {
     return !!appId.match(CollaborationConstants.placeholderRegex);
   }
 
-  static async parseManifestId(appId: string, inputs: Inputs): Promise<string | undefined> {
+  static async parseManifestId(appId: string): Promise<string | undefined> {
     // Hardcoded id in manifest
     if (uuidValidate(appId)) {
       return appId;
@@ -299,7 +290,6 @@ export class CollaborationUtil {
 export async function listCollaborator(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Record<string, string>
 ): Promise<Result<ListCollaboratorResult, FxError>> {
@@ -317,20 +307,16 @@ export async function listCollaborator(
 
   const hasAad = appIds!.aadObjectId != undefined;
   const hasTeams = appIds!.teamsAppId != undefined;
-  const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-  const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+  const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
+  const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
   const appStudioRes = hasTeams
-    ? await appStudio.listCollaborator(
-        ctx,
-        inputs,
-        envInfo,
-        tokenProvider.m365TokenProvider,
-        appIds!.teamsAppId
-      )
+    ? await teamsCollaboration.listCollaborator(ctx, appIds!.teamsAppId!)
     : ok([]);
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
-  const aadRes = hasAad ? await aadPlugin.listCollaborator(ctx, appIds!.aadObjectId) : ok([]);
+  const aadRes = hasAad
+    ? await aadCollaboration.listCollaborator(ctx, appIds!.aadObjectId!)
+    : ok([]);
   if (aadRes.isErr()) return err(aadRes.error);
   const aadOwners: AadOwner[] = aadRes.value;
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
@@ -433,7 +419,6 @@ export async function listCollaborator(
 export async function checkPermission(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Record<string, string>
 ): Promise<Result<PermissionsResult, FxError>> {
@@ -469,19 +454,12 @@ export async function checkPermission(
   }
   const appIds = getAppIdsResult.value;
 
-  const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-  const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+  const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
+  const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
 
   const isTeamsActivated = appIds!.teamsAppId != undefined;
   const appStudioRes = isTeamsActivated
-    ? await appStudio.checkPermission(
-        ctx,
-        inputs,
-        envInfo,
-        tokenProvider.m365TokenProvider,
-        userInfo,
-        appIds!.teamsAppId
-      )
+    ? await teamsCollaboration.checkPermission(ctx, appIds!.teamsAppId!, userInfo)
     : ok([] as ResourcePermission[]);
   if (appStudioRes.isErr()) {
     return err(appStudioRes.error);
@@ -489,7 +467,11 @@ export async function checkPermission(
   const permissions = appStudioRes.value;
   const isAadActivated = appIds!.aadObjectId != undefined;
   if (isAadActivated) {
-    const aadRes = await aadPlugin.checkPermission(ctx, result.value, appIds!.aadObjectId);
+    const aadRes = await aadCollaboration.checkPermission(
+      ctx,
+      appIds!.aadObjectId!,
+      result.value.aadId
+    );
     if (aadRes.isErr()) return err(aadRes.error);
     aadRes.value.forEach((r: ResourcePermission) => {
       permissions.push(r);
@@ -544,9 +526,7 @@ export async function checkPermission(
 export async function grantPermission(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
-  tokenProvider: TokenProvider,
-  telemetryProps?: Record<string, string>
+  tokenProvider: TokenProvider
 ): Promise<Result<PermissionsResult, FxError>> {
   const progressBar = ctx.userInteraction.createProgressBar(
     getLocalizedString("core.collaboration.GrantingPermission"),
@@ -612,24 +592,21 @@ export async function grantPermission(
     }
     const isAadActivated = appIds!.aadObjectId != undefined;
     const isTeamsActivated = appIds!.teamsAppId != undefined;
-    const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-    const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+    const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
+    const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
     const appStudioRes = isTeamsActivated
-      ? await appStudio.grantPermission(
-          ctx,
-          inputs,
-          envInfo,
-          tokenProvider.m365TokenProvider,
-          userInfo,
-          appIds!.teamsAppId
-        )
+      ? await teamsCollaboration.grantPermission(ctx, appIds!.teamsAppId!, userInfo)
       : ok([] as ResourcePermission[]);
     if (appStudioRes.isErr()) {
       return err(appStudioRes.error);
     }
     const permissions = appStudioRes.value;
     if (isAadActivated) {
-      const aadRes = await aadPlugin.grantPermission(ctx, userInfo, appIds!.aadObjectId);
+      const aadRes = await aadCollaboration.grantPermission(
+        ctx,
+        appIds!.aadObjectId!,
+        userInfo.aadId
+      );
       if (aadRes.isErr()) return err(aadRes.error);
       aadRes.value.forEach((r: ResourcePermission) => {
         permissions.push(r);

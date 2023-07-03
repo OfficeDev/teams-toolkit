@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 
 import { ProductName, Stage, ok } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
-import { ITaskDefinition, TaskCommand } from "@microsoft/teamsfx-core";
+import { TaskCommand } from "@microsoft/teamsfx-core";
 import { isValidProjectV3 } from "@microsoft/teamsfx-core";
 
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
@@ -163,44 +163,4 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     newTask.presentationOptions.showReuseMessage = customTask.presentationshowReuseMessage;
     return newTask;
   }
-}
-
-export async function createTask(
-  taskDefinition: ITaskDefinition,
-  workspaceFolder: vscode.WorkspaceFolder,
-  env?: { [key: string]: string } | undefined,
-  definition?: vscode.TaskDefinition,
-  problemMatchers?: string | string[],
-  isSilent?: boolean
-): Promise<vscode.Task> {
-  definition = definition || {
-    type: TeamsfxTaskProvider.type,
-    command: taskDefinition.name,
-  };
-
-  const options: vscode.ShellExecutionOptions = {
-    cwd: taskDefinition.cwd,
-    env: env ?? taskDefinition.env,
-    // avoid powershell execution policy issue
-    executable: taskDefinition.execOptions.needCmd ? "cmd.exe" : undefined,
-    shellArgs: taskDefinition.execOptions.needCmd ? ["/c"] : undefined,
-  };
-
-  const execution = taskDefinition.execOptions.needShell
-    ? new vscode.ShellExecution(taskDefinition.command, options)
-    : new vscode.ProcessExecution(taskDefinition.command, taskDefinition.args ?? [], options);
-
-  const task = new vscode.Task(
-    definition,
-    workspaceFolder,
-    taskDefinition.name,
-    TeamsfxTaskProvider.type,
-    execution,
-    problemMatchers
-  );
-  task.isBackground = taskDefinition.isBackground;
-  if (isSilent) {
-    task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
-  }
-  return task;
 }

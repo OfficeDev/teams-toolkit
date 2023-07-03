@@ -20,14 +20,7 @@ import { assembleError } from "../../error/common";
 import { traverse } from "../../ui/visitor";
 import { TelemetryConstants } from "../constants";
 import { DriverContext } from "../driver/interface/commonArgs";
-import {
-  sendErrorEvent,
-  sendMigratedErrorEvent,
-  sendMigratedStartEvent,
-  sendMigratedSuccessEvent,
-  sendStartEvent,
-  sendSuccessEvent,
-} from "../telemetry";
+import { sendErrorEvent, sendStartEvent, sendSuccessEvent } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
 
 interface ActionOption {
@@ -77,12 +70,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
         if (globalVars.trackingId) telemetryProps["project-id"] = globalVars.trackingId; // add trackingId prop in telemetry
         sendStartEvent(eventName, telemetryProps);
-        sendMigratedStartEvent(
-          eventName,
-          ctx.arguments[0] as Context,
-          ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps
-        );
       }
       // run question model
       if (action.question) {
@@ -125,13 +112,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       merge(telemetryMeasures, { [TelemetryConstants.properties.timeCost]: timeCost });
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
-        sendMigratedSuccessEvent(
-          eventName,
-          ctx.arguments[0] as Context,
-          ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps,
-          telemetryMeasures
-        );
       }
       await progressBar?.end(true);
     } catch (e) {
@@ -149,13 +129,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       // send error telemetry
       if (action.enableTelemetry) {
         sendErrorEvent(eventName, fxError, telemetryProps);
-        sendMigratedErrorEvent(
-          eventName,
-          fxError,
-          ctx.arguments[0] as Context,
-          ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps
-        );
       }
       ctx.result = err(fxError);
     }

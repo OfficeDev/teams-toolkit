@@ -90,6 +90,7 @@ import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./que
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { listCollaborator, checkPermission, grantPermission } from "./collaborator";
+import { getQuestionsForCreateProjectNew } from "../question/create";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -125,12 +126,8 @@ export class FxCoreV3Implement {
     return await method.call(this, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForCreateProjectV2), ContextInjectorMW])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    inputs.stage = Stage.create;
+  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForCreateProjectNew)])
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     const context = createContextV3();
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
@@ -210,7 +207,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
@@ -298,11 +295,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
-  async executeUserTask(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
+  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
     let res: Result<any, FxError> = ok(undefined);
     const context = createDriverContext(inputs);
     if (func.method === "addSso") {
@@ -321,7 +314,7 @@ export class FxCoreV3Implement {
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
   ])
-  async addWebpart(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async addWebpart(inputs: Inputs): Promise<Result<Void, FxError>> {
     const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
     const args: AddWebPartArgs = {
       manifestPath: inputs[SPFxQuestionNames.ManifestPath],
@@ -335,10 +328,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
-  async publishInDeveloperPortal(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
@@ -358,7 +348,6 @@ export class FxCoreV3Implement {
     const res = await grantPermission(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -378,7 +367,6 @@ export class FxCoreV3Implement {
     const res = await checkPermission(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -398,7 +386,6 @@ export class FxCoreV3Implement {
     const res = await listCollaborator(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -485,10 +472,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async preProvisionForVS(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<PreProvisionResForVS, FxError>> {
+  async preProvisionForVS(inputs: Inputs): Promise<Result<PreProvisionResForVS, FxError>> {
     const context = createDriverContext(inputs);
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
@@ -500,10 +484,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async preCheckYmlAndEnvForVS(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async preCheckYmlAndEnvForVS(inputs: Inputs): Promise<Result<Void, FxError>> {
     const context = createDriverContext(inputs);
     const result = await coordinator.preCheckYmlAndEnvForVS(
       context,
@@ -597,7 +578,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     EnvLoaderMW(true),
   ])
-  async validateManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async validateManifest(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
 
     const context: DriverContext = createDriverContext(inputs);
@@ -613,7 +594,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForValidateAppPackage), ConcurrentLockerMW])
-  async validateAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async validateAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
 
     const context: DriverContext = createDriverContext(inputs);
@@ -632,7 +613,7 @@ export class FxCoreV3Implement {
     EnvLoaderMW(true),
     ConcurrentLockerMW,
   ])
-  async createAppPackage(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async createAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.createAppPackage;
 
     const context: DriverContext = createDriverContext(inputs);
@@ -678,10 +659,7 @@ export class FxCoreV3Implement {
     EnvLoaderMW(false),
     ConcurrentLockerMW,
   ])
-  async previewWithManifest(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string, FxError>> {
+  async previewWithManifest(inputs: Inputs): Promise<Result<string, FxError>> {
     inputs.stage = Stage.previewWithManifest;
 
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
@@ -693,7 +671,7 @@ export class FxCoreV3Implement {
     }
 
     const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils._getCapabilities(manifestRes.value);
+    const capabilities = manifestUtils.getCapabilities(manifestRes.value);
 
     const launchHelper = new LaunchHelper(
       this.tools.tokenProvider.m365TokenProvider,

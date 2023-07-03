@@ -1,0 +1,10 @@
+name: App Studio Service Issue Assign
+description: Duplicate Handler for App Studio Service Issue
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    required: true
+
+runs:
+  using: 'node16'
+  main: 'index.js'

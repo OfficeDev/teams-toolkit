@@ -152,9 +152,9 @@ export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | un
   return ok(addWebpart);
 }
 
-export async function getQuestionsForValidateMethod(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
+export async function getQuestionsForValidateMethod(): Promise<
+  Result<QTreeNode | undefined, FxError>
+> {
   const group = new QTreeNode({ type: "group" });
   const question: SingleSelectQuestion = {
     name: CoreQuestionNames.ValidateMethod,
@@ -177,9 +177,9 @@ export async function getQuestionsForValidateManifest(
   return ok(group);
 }
 
-export async function getQuestionsForValidateAppPackage(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
+export async function getQuestionsForValidateAppPackage(): Promise<
+  Result<QTreeNode | undefined, FxError>
+> {
   const group = new QTreeNode({ type: "group" });
   // App package path node
   const teamsAppSelectNode = new QTreeNode(selectTeamsAppPackageQuestion());
@@ -216,7 +216,7 @@ export async function getQuestionsForPreviewWithManifest(
   return ok(group);
 }
 
-export function getSPFxScaffoldQuestion(platform: Platform): QTreeNode {
+export function getSPFxScaffoldQuestion(): QTreeNode {
   const spfx_frontend_host = new QTreeNode({
     type: "group",
   });

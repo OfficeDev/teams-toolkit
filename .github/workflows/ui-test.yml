@@ -46,15 +46,18 @@ on:
         required: false
         type: string
 
+  schedule:
+    - cron: "0 18 * * *"
+
 jobs:
   setup:
     runs-on: ubuntu-latest
     env:
-      ADO_TOKEN: ${{ secrets.ADO_TOKEN }}
+      ADO_TOKEN: ${{ secrets.ADO_PAT }}
     steps:
       - name: Init GitHub CLI
         run: |
-          echo ${{ secrets.OFFICEDEV_GITHUB_TOKEN }} | gh auth login --with-token
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
 
       - name: bvt (dispatch)
         id: bvt
@@ -74,7 +77,7 @@ jobs:
           echo "npm-tag=alpha" >> $GITHUB_OUTPUT
           echo "sample-ref=dev" >> $GITHUB_OUTPUT
           echo "branch=dev" >> $GITHUB_OUTPUT
-          echo "email-receiver=vsciotadt@microsoft.com;teamsfxqa@microsoft.com" >> $GITHUB_OUTPUT
+          echo "email-receiver=teamsfxqa@microsoft.com" >> $GITHUB_OUTPUT
 
           run_id=`gh run list --workflow cd --repo OfficeDev/TeamsFx --branch dev --json event --json databaseId --json conclusion --jq '[.[] | select(.event=="schedule") | select(.conclusion=="success")][0].databaseId'`
           echo "vsix-run-id=$run_id" >> $GITHUB_ENV
@@ -105,7 +108,7 @@ jobs:
           if [ ! -z "${{ github.event.inputs.test-case }}" ]; then
             matrix='{"node-version": ${{ github.event.inputs.node-version }}, "test-case": ${{ github.event.inputs.test-case }}, "os": ${{ github.event.inputs.os }} }'
           else
-            bash ./scripts/convert-test-case.sh ./workflows/pvt.json
+            bash ./scripts/convert-test-case.sh ./scripts/pvt.json
             matrix=$(cat ./scripts/test-case-temp.json)
           fi
 
@@ -113,7 +116,7 @@ jobs:
 
       - name: Download TTK
         run: |
-          echo ${{ secrets.OFFICEDEV_GITHUB_TOKEN }} | gh auth login --with-token 
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token 
           gh run download ${{ env.vsix-run-id }} --repo OfficeDev/TeamsFx --name release
 
       - name: Export TTK version
@@ -166,27 +169,31 @@ jobs:
     needs: setup
     timeout-minutes: 50
     env:
-      CLEAN_CLIENT_ID: ${{ secrets.CLEAN_CLIENT_ID }}
-      CLEAN_CLIENT_SECRET: ${{ secrets.CLEAN_CLIENT_SECRET }}
-      CLEAN_TENANT_ID: ${{ secrets.CLEAN_TENANT_ID }}
-      ADO_TOKEN: ${{ secrets.ADO_TOKEN }}
+      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       CI_ENABLED: true
       NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
       TARGET_CLI_VERSION: ${{ needs.setup.outputs.target_cli_version }}
 
-      M365_ACCOUNT_NAME: ${{ secrets.M365_USERNAME }}
-      M365_ACCOUNT_PASSWORD: ${{ secrets.M365_PASSWORD }}
-      M365_DISPLAY_NAME: ${{ secrets.M365_DISPLAY_NAME }}
-      M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
-      M365_COLLABORATOR: ${{ secrets.M365_COLLABORATOR }}
+      CLEAN_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+      CLEAN_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      AZURE_SUBSCRIPTION_NAME: ${{ secrets.AZURE_SUBSCRIPTION_NAME }}
-      AZURE_ACCOUNT_NAME: ${{ secrets.AZURE_USERNAME }}
-      AZURE_ACCOUNT_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
+
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_M365_PASSWORD }}
+      M365_USERNAME: "test14@xxbdw.onmicrosoft.com"
+      M365_USERNAME_2: "test15@xxbdw.onmicrosoft.com"
+      M365_USERNAME_3: "test16@xxbdw.onmicrosoft.com"
+      M365_USERNAME_4: "test17@xxbdw.onmicrosoft.com"
+      M365_DISPLAY_NAME: "ttktest"
+      M365_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
+      M365_COLLABORATOR: "haolong@xxbdw.onmicrosoft.com"
+
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_SUBSCRIPTION_NAME: ${{ secrets.TEST_SUBSCRIPTION_NAME }}
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
       TEAMSFX_DEV_TUNNEL_TEST: true
       TEAMSFX_TELEMETRY_TEST: true
@@ -195,14 +202,11 @@ jobs:
       max-parallel: 50
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
-    defaults:
-      run: 
-        working-directory: packages/tests
     steps:
       - name: Set m365 account (unix)
         if: matrix.os != 'windows-latest'
         run: |
-          users=("${{ secrets.M365_USERNAME }}" "${{ secrets.M365_USERNAME_2 }}" "${{ secrets.M365_USERNAME_3 }}" "${{ secrets.M365_USERNAME_4 }}")
+          users=("${{ env.M365_USERNAME }}" "${{ env.M365_USERNAME_2 }}" "${{ env.M365_USERNAME_3 }}" "${{ env.M365_USERNAME_4 }}")
           count=${#users[@]}
           index=$((RANDOM%$count))
           echo "account index: $index"
@@ -211,12 +215,12 @@ jobs:
       - name: Set m365 account (win)
         if: matrix.os == 'windows-latest'
         run: |
-          $users=@("${{ secrets.M365_USERNAME }}","${{ secrets.M365_USERNAME_2 }}","${{ secrets.M365_USERNAME_3 }}","${{ secrets.M365_USERNAME_4 }}")
+          $users=@("${{ env.M365_USERNAME }}","${{ env.M365_USERNAME_2 }}","${{ env.M365_USERNAME_3 }}","${{ env.M365_USERNAME_4 }}")
           $index=Get-Random -min 0 -max $users.count
           $user=$users[$index]
           echo "account index: $index"
           echo "M365_ACCOUNT_NAME=$user" >> $env:GITHUB_ENV
-
+      
       - name: Checkout branch
         uses: actions/checkout@v3
         with:
@@ -261,6 +265,7 @@ jobs:
           Start-Process powershell -verb RunAs -ArgumentList $filePath -wait
 
       - name: Install npm packages
+        working-directory: packages/tests
         run: |
           npm install
 
@@ -268,25 +273,29 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ttk
-          path: ./
+          path: ./packages/tests
 
       - name: Install teamsfx cli (for migration use latest)
         if: contains(matrix.test-case,  'upgrade') && contains(matrix.test-case,  '4.0.0') == false && contains(matrix.test-case,  '3.x') == false
+        working-directory: packages/tests
         run: |
           npm install @microsoft/teamsfx-cli@1.2.6
 
       - name: Install teamsfx cli (for migration use 1.0.0)
         if: contains(matrix.test-case,  '4.0.0')
+        working-directory: packages/tests
         run: |
           npm install @microsoft/teamsfx-cli@1.0.0
 
       - name: Install teamsfx cli (for migration use 0.2.0)
         if: contains(matrix.test-case,  '3.x')
+        working-directory: packages/tests
         run: |
           npm install @microsoft/teamsfx-cli@0.2.0
 
       - name: Install teamsfx cli
         if: contains(matrix.test-case,  'upgrade') == false
+        working-directory: packages/tests
         run: |
           npm install @microsoft/teamsfx-cli@${{ needs.setup.outputs.npm-tag }}
 
@@ -296,7 +305,7 @@ jobs:
         with:
           repository: OfficeDev/TeamsFx-Samples
           ref: ${{ needs.setup.outputs.sample-ref }}
-          path: resource
+          path: ./packages/tests/resource
 
       - name: Download samples from another repo
         if: contains(matrix.test-case, 'proactive-message')
@@ -304,40 +313,47 @@ jobs:
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
           ref: main
-          path: resource
+          path: ./packages/tests/resource
 
       - name: Get VSCode & chromedriver
+        working-directory: packages/tests
         run: |
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
           npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
 
       - name: M365 Login
+        working-directory: packages/tests
         run: | # rm -r -f ~/.fx/account
           npx ts-node src/scripts/m365Login.ts -- '${{ env.M365_ACCOUNT_NAME }}' '${{ env.M365_ACCOUNT_PASSWORD }}'
 
       - name: Azure Login(win)
         if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
         run: |
           npx ts-node src/scripts/azureLogin.ts -- '${{ env.AZURE_ACCOUNT_NAME }}' '${{ env.AZURE_ACCOUNT_PASSWORD }}'
 
       - name: Build
+        working-directory: packages/tests
         run: |
           npm run build
 
       - name: Install vsix(unix)
         if: matrix.os != 'windows-latest'
+        working-directory: packages/tests
         run: |
           vsix=`find . -type f -name "*.vsix" | sed 's|.*/\(.*\)|\1|'`
           npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
       - name: Install vsix(win)
         if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
         run: |
           $vsix = (Get-ChildItem *.vsix | Select-Object -ExpandProperty Name)
           npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'
+        working-directory: packages/tests
         run: |
           sudo apt-get install xvfb
           export DISPLAY=:99.0
@@ -346,22 +362,23 @@ jobs:
 
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
+        working-directory: packages/tests
         run: |
           npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
 
       - name: Upload test result json file
         uses: actions/upload-artifact@v3
-        if: failure()
+        if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
         with:
           name: test result ${{ matrix.test-case }} ${{ matrix.os }}
-          path: ./mochawesome-report/mochawesome.json
+          path: ./packages/tests/mochawesome-report/mochawesome.json
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: screenshots ${{ matrix.test-case }} ${{ matrix.os }}
-          path: .test-resources/screenshots/
+          path: ./packages/tests/.test-resources/screenshots/
 
       - name: Upload source code
         uses: actions/upload-artifact@v3
@@ -369,8 +386,8 @@ jobs:
         with:
           name: source code ${{ matrix.test-case }} ${{ matrix.os }}
           path: |
-            **/teamsfxuitest*/*
-            !**/node_modules/*
+            ./packages/tests/**/teamsfxuitest*/*
+            !./packages/tests/**/node_modules/*
 
       - name: Upload telemetry
         uses: actions/upload-artifact@v3
@@ -385,10 +402,11 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: testplan
-          path: ./
+          path: ./packages/tests
 
       - name: Sync to Azure DevOps Test Plan
         if: always() && contains(needs.setup.outputs.ttk-version, 'alpha') == false
+        working-directory: packages/tests
         run: |
           npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json
 
@@ -402,7 +420,7 @@ jobs:
           curl \
            -X POST \
            -H "Accept: application/vnd.github+json" \
-           -H "Authorization: Bearer ${{ secrets.MIGRATION_GITHUB_TOKEN }}"\
+           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
            -H "X-GitHub-Api-Version: 2022-11-28" \
            https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
            -d '{"ref":"${{ github.ref_name }}","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
@@ -411,6 +429,9 @@ jobs:
     if: ${{ (github.event_name == 'workflow_dispatch' && needs.setup.outputs.email-receiver) || (github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5))) }}
     needs: [setup, main]
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/tests
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -427,10 +448,10 @@ jobs:
           while :
           do
             url=https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs\?per_page\=100\&page\=$page
-            resp=`curl -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.MIGRATION_GITHUB_TOKEN }} $url`
+            resp=`curl -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url`
             new_jobs=`echo $resp | jq -cr '.jobs'`
             jobs=`jq -cr --slurp 'add' <(echo "$jobs") <(echo "$new_jobs")`
-            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.MIGRATION_GITHUB_TOKEN }} $url | grep -Fi "link:" | grep "rel=\"last\"" || true`
+            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url | grep -Fi "link:" | grep "rel=\"last\"" || true`
             if [ -z "$has_next" ]; then
               break
             fi

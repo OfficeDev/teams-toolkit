@@ -18,11 +18,11 @@ import {
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
-export interface PrerequisiteArgVxTestApp {
+interface PrerequisiteArgVxTestApp {
   version: string;
 }
 
-export interface PrerequisiteArgs {
+interface PrerequisiteArgs {
   prerequisites?: string[];
   portOccupancy?: number[];
   vxTestApp?: PrerequisiteArgVxTestApp;

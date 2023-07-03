@@ -5,8 +5,8 @@ import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../vscodeOperation";
 import {
   initPage,
-  validateOutlookTab,
-  validateTab,
+  validateReactOutlookTab,
+  validateReactTab,
 } from "../../playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import { Timeout, LocalDebugTaskLabel } from "../../constants";
@@ -48,6 +48,11 @@ describe("Local Debug M365 Tests", function () {
       await startDebugging("Debug in Teams (Chrome)");
 
       await waitForTerminal(
+        LocalDebugTaskLabel.StartBackend,
+        "Worker process started and initialized"
+      );
+
+      await waitForTerminal(
         LocalDebugTaskLabel.StartFrontend,
         "Compiled successfully!"
       );
@@ -60,16 +65,16 @@ describe("Local Debug M365 Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForTab();
-      await validateTab(page, Env.displayName, false);
+      await validateReactTab(page, Env.displayName, true);
       const url = page.url();
       const pattern =
         /https:\/\/teams\.microsoft\.com\/_#\/apps\/(.*)\/sections\/index.*/;
       const result = url.match(pattern);
       const internalId = result![1];
       await page.goto(
-        `https://outlook.office.com/host/${internalId}/index0?login_hint=${Env.username}`
+        `https://outlook.office.com/host/${internalId}/index?login_hint=${Env.username}`
       );
-      await validateOutlookTab(page, Env.displayName, false);
+      await validateReactOutlookTab(page, Env.displayName, true);
     }
   );
 });

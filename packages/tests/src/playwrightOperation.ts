@@ -119,7 +119,6 @@ export async function initPage(
     await page.waitForTimeout(Timeout.shortTimeLoading);
     // verify add page is closed
     await frame?.waitForSelector("button span:has-text('Add')", {
-      timeout: Timeout.playwrightAddAppButton,
       state: "detached",
     });
     try {
@@ -278,7 +277,7 @@ export async function initTeamsPage(
         });
         throw error;
       }
-      try {
+      {
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-iframe"
         );
@@ -293,16 +292,6 @@ export async function initTeamsPage(
         await page.waitForSelector(`button:has-text("Save")`, {
           state: "detached",
         });
-      } catch (error) {
-        console.log(
-          "save button not detected because test tenant not support - skip"
-        );
-        await page.screenshot({
-          path: getPlaywrightScreenshotPath("error"),
-          fullPage: true,
-        });
-        // test tenant not support spfx app save - block
-        // throw error;
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("successful to add teams app!!!");
@@ -452,6 +441,135 @@ export async function validateTab(
         console.log("verify function info success");
       });
     }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateReactTab(
+  page: Page,
+  displayName: string,
+  includeFunction?: boolean
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-iframe"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    if (includeFunction) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          frame?.click('button:has-text("Call Azure Function")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
+        ]);
+        console.log("after popup");
+
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
+      });
+
+      console.log("verify function info");
+      const backendElement = await frame?.waitForSelector(
+        'pre:has-text("receivedHTTPRequestBody")'
+      );
+      const content = await backendElement?.innerText();
+      if (!content?.includes("User display name is"))
+        assert.fail("User display name is not found in the response");
+      console.log("verify function info success");
+    }
+
+    await frame?.waitForSelector(`b:has-text("${displayName}")`);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateReactOutlookTab(
+  page: Page,
+  displayName: string,
+  includeFunction?: boolean
+) {
+  try {
+    await page.waitForTimeout(Timeout.longTimeWait);
+    const frameElementHandle = await page.waitForSelector(
+      'iframe[data-tid="app-host-iframe"]'
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    if (includeFunction) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          frame?.click('button:has-text("Call Azure Function")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
+        ]);
+        console.log("after popup");
+
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
+      });
+
+      console.log("verify function info");
+      const backendElement = await frame?.waitForSelector(
+        'pre:has-text("receivedHTTPRequestBody")'
+      );
+      const content = await backendElement?.innerText();
+      if (!content?.includes("User display name is"))
+        assert.fail("User display name is not found in the response");
+      console.log("verify function info success");
+    }
+
+    await frame?.waitForSelector(`b:has-text("${displayName}")`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1369,16 +1487,6 @@ export async function validateGraphConnector(page: Page, displayName: string) {
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    try {
-      console.log("dismiss message");
-      await page
-        .click('button:has-text("Dismiss")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no message to dismiss");
-    }
     try {
       const startBtn = await frame?.waitForSelector('button:has-text("Start")');
       await RetryHandler.retry(async () => {

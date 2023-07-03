@@ -64,7 +64,6 @@ import {
 import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
-import { QuestionNames } from "../feature/bot/constants";
 import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
@@ -104,6 +103,7 @@ export enum TemplateNames {
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
+  SsoTabObo = "sso-tab-with-obo-flow",
   LinkUnfurling = "link-unfurling",
 }
 
@@ -125,7 +125,7 @@ const Feature2TemplateName: any = {
   [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
   [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
-  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.M365Tab,
+  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.SsoTabObo,
   [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,
@@ -234,7 +234,7 @@ class Coordinator {
         ) {
           inputs.isM365 = true;
         }
-        const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
+        const trigger = inputs[CoreQuestionNames.BotHostTypeTrigger] as string;
         const templateName = Feature2TemplateName[`${feature}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);
@@ -475,9 +475,7 @@ class Coordinator {
 
       const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
         tenantSwitchCheckActions,
-        m365tenantInfo?.tenantIdInToken,
-        inputs.env,
-        CoordinatorSource
+        m365tenantInfo?.tenantIdInToken
       );
       if (checkM365TenatRes.isErr()) {
         return err(checkM365TenatRes.error);

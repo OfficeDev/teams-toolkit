@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
-const pvtFile = path.join(__dirname, "../workflows/pvt.json");
-const casesFile = path.join(__dirname, "../workflows/randomCases.json");
+const pvtFile = path.join(__dirname, "./pvt.json");
+const casesFile = path.join(__dirname, "./randomCases.json");
 const pvtCases: TestMatrix = fs.readJSONSync(pvtFile);
 const casesIndex = fs.readJSONSync(casesFile);
 
@@ -38,7 +38,7 @@ function main() {
     });
   }
 
-  fs.writeJsonSync("../workflows/pvt.json", pvtCases, { spaces: 2 });
+  fs.writeJsonSync(path.join(__dirname, "./pvt.json"), pvtCases, { spaces: 2 });
 }
 
 main();

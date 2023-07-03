@@ -36,6 +36,7 @@ import {
   BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
+  LinkUnfurlingItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
@@ -337,7 +338,11 @@ export function getTabTypeProjectQuestionNode(): SingleSelectQuestion {
 }
 
 export function getMessageExtensionTypeProjectQuestionNode(): SingleSelectQuestion {
-  const staticOptions: StaticOptions = [M365SearchAppOptionItem(), MessageExtensionNewUIItem()];
+  const staticOptions: StaticOptions = [
+    LinkUnfurlingItem(),
+    M365SearchAppOptionItem(),
+    MessageExtensionNewUIItem(),
+  ];
 
   return {
     name: CoreQuestionNames.Capabilities,

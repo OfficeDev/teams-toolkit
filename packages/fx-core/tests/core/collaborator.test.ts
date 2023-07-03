@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ConditionFunc,
   Context,
   FuncValidation,
   InputsWithProjectPath,
@@ -1407,17 +1408,17 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
-        const teamsEnv = teamsAppNode?.children![1].condition as FuncValidation<string>;
-        const teamsEnvValidate = await teamsEnv!.validFunc("", inputs);
-        assert.equal(teamsEnvValidate, "Question not finished");
+        const teamsEnv = teamsAppNode?.children![1].condition as ConditionFunc;
+        const teamsEnvValidate = await teamsEnv(inputs);
+        assert.equal(teamsEnvValidate, false);
 
         const aadAppNode = node?.children?.[1];
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.isUndefined(aadEnvValidate);
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, true);
       }
     });
 
@@ -1445,16 +1446,16 @@ describe("Collaborator APIs for V3", () => {
         const teamsAppNode = node?.children?.[0];
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
-        const teamsEnv = teamsAppNode?.children![1].condition as FuncValidation<string>;
-        const teamsEnvValidate = await teamsEnv!.validFunc("", inputs);
-        assert.equal(teamsEnvValidate, "Env already selected");
+        const teamsEnv = teamsAppNode?.children![1].condition as ConditionFunc;
+        const teamsEnvValidate = await teamsEnv(inputs);
+        assert.equal(teamsEnvValidate, false);
 
         const aadAppNode = node?.children?.[1];
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.equal(aadEnvValidate, "Env already selected");
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, false);
       }
     });
 
@@ -1483,17 +1484,17 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
-        const teamsEnv = teamsAppNode?.children![1].condition as FuncValidation<string>;
-        const teamsEnvValidate = await teamsEnv!.validFunc("", inputs);
-        assert.equal(teamsEnvValidate, "Env question not required");
+        const teamsEnv = teamsAppNode?.children![1].condition as ConditionFunc;
+        const teamsEnvValidate = await teamsEnv(inputs);
+        assert.equal(teamsEnvValidate, false);
 
         const aadAppNode = node?.children?.[1];
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.equal(aadEnvValidate, "Env question not required");
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, false);
       }
     });
 
@@ -1524,17 +1525,17 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
-        const teamsEnv = teamsAppNode?.children![1].condition as FuncValidation<string>;
-        const teamsEnvValidate = await teamsEnv!.validFunc("", inputs);
-        assert.equal(teamsEnvValidate, "Invalid manifest");
+        const teamsEnv = teamsAppNode?.children![1].condition as ConditionFunc;
+        const teamsEnvValidate = await teamsEnv(inputs);
+        assert.equal(teamsEnvValidate, false);
 
         const aadAppNode = node?.children?.[1];
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.equal(aadEnvValidate, "Invalid manifest");
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, false);
       }
     });
 
@@ -1561,9 +1562,9 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.equal(aadEnvValidate, "Invalid manifest");
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, false);
       }
     });
 
@@ -1588,9 +1589,9 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
-        const teamsEnv = teamsAppNode?.children![1].condition as FuncValidation<string>;
-        const teamsEnvValidate = await teamsEnv!.validFunc("", inputs);
-        assert.isUndefined(teamsEnvValidate);
+        const teamsEnv = teamsAppNode?.children![1].condition as ConditionFunc;
+        const teamsEnvValidate = await teamsEnv(inputs);
+        assert.equal(teamsEnvValidate, true);
 
         const aadAppNode = node?.children?.[1];
         const aadCondition = aadAppNode?.condition as StringArrayValidation;
@@ -1620,9 +1621,9 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
         assert.equal(teamsAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
-        const teamsEnv = teamsAppNode?.children![1].condition as FuncValidation<string>;
-        const teamsEnvValidate = await teamsEnv!.validFunc("", inputs);
-        assert.equal(teamsEnvValidate, "Env already selected");
+        const teamsEnv = teamsAppNode?.children![1].condition as ConditionFunc;
+        const teamsEnvValidate = await teamsEnv(inputs);
+        assert.equal(teamsEnvValidate, false);
 
         const aadAppNode = node?.children?.[1];
         const aadCondition = aadAppNode?.condition as StringArrayValidation;
@@ -1657,9 +1658,9 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.AadAppManifestFilePath] = "teamsAppManifestPath";
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.isUndefined(aadEnvValidate);
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, true);
       }
     });
 
@@ -1689,9 +1690,9 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.AadAppManifestFilePath] = "teamsAppManifestPath";
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.equal(aadEnvValidate, "Env already selected");
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, false);
       }
     });
 
@@ -1774,17 +1775,17 @@ describe("Collaborator APIs for V3", () => {
         assert.equal(teamsAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
         inputs[CoreQuestionNames.AadAppManifestFilePath] = undefined;
-        const teamsEnv = teamsAppNode?.children![1].condition as FuncValidation<string>;
-        const teamsEnvValidate = await teamsEnv!.validFunc("", inputs);
-        assert.equal(teamsEnvValidate, "Question not finished");
+        const teamsEnv = teamsAppNode?.children![1].condition as ConditionFunc;
+        const teamsEnvValidate = await teamsEnv(inputs);
+        assert.equal(teamsEnvValidate, false);
 
         const aadAppNode = node?.children?.[1];
         assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
         assert.equal(aadAppNode?.children?.length, 2);
         inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
-        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
-        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
-        assert.isUndefined(aadEnvValidate);
+        const aadEnv = aadAppNode?.children![1].condition as ConditionFunc;
+        const aadEnvValidate = await aadEnv(inputs);
+        assert.equal(aadEnvValidate, true);
 
         const emailNode = node?.children?.[2];
         assert.equal(emailNode?.data.name, "email");

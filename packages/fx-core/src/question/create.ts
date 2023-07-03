@@ -149,7 +149,6 @@ function projectTypeQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
-      if (CLIPlatforms.includes(inputs.platform)) return [""]; //Cli skip this question
       const staticOptions: StaticOptions = [
         ProjectTypeOptions.bot(),
         ProjectTypeOptions.tab(),
@@ -1150,120 +1149,119 @@ export const createProjectQuestion: IQTreeNode = {
           data: runtimeQuestion(),
         },
         {
+          condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
           data: projectTypeQuestion(),
+        },
+        {
+          data: capabilityQuestion(),
           children: [
             {
-              data: capabilityQuestion(),
+              // Notification bot trigger sub-tree
+              condition: { equals: CapabilityOptions.notificationBot().id },
+              data: botTriggerQuestion(),
+            },
+            {
+              // SPFx sub-tree
+              condition: { equals: CapabilityOptions.SPFxTab().id },
+              data: SPFxSolutionQuestion(),
               children: [
                 {
-                  // Notification bot trigger sub-tree
-                  condition: { equals: CapabilityOptions.notificationBot().id },
-                  data: botTriggerQuestion(),
-                },
-                {
-                  // SPFx sub-tree
-                  condition: { equals: CapabilityOptions.SPFxTab().id },
-                  data: SPFxSolutionQuestion(),
-                  children: [
-                    {
-                      data: { type: "group" },
-                      children: [
-                        { data: SPFxPackageSelectQuestion() },
-                        { data: SPFxFrameworkQuestion() },
-                        { data: SPFxWebpartNameQuestion() },
-                      ],
-                      condition: { equals: "new" },
-                    },
-                    {
-                      data: SPFxImportFolderQuestion(),
-                      condition: { equals: "import" },
-                      children: [
-                        {
-                          // auto fill in "app-name" question,
-                          // TODO can we make it as a default value of "app-name" question? (need to discuss)
-                          data: fillInAppNameFuncQuestion(),
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  // office addin import sub-tree
-                  condition: { equals: CapabilityOptions.officeAddinImport().id },
                   data: { type: "group" },
                   children: [
+                    { data: SPFxPackageSelectQuestion() },
+                    { data: SPFxFrameworkQuestion() },
+                    { data: SPFxWebpartNameQuestion() },
+                  ],
+                  condition: { equals: "new" },
+                },
+                {
+                  data: SPFxImportFolderQuestion(),
+                  condition: { equals: "import" },
+                  children: [
                     {
-                      data: {
-                        type: "folder",
-                        name: QuestionNames.OfficeAddinFolder,
-                        title: "Existing add-in project folder",
-                      },
-                    },
-                    {
-                      data: {
-                        type: "singleFile",
-                        name: QuestionNames.OfficeAddinManifest,
-                        title: "Select import project manifest file",
-                      },
+                      // auto fill in "app-name" question,
+                      // TODO can we make it as a default value of "app-name" question? (need to discuss)
+                      data: fillInAppNameFuncQuestion(),
                     },
                   ],
-                },
-                {
-                  // office addin other items sub-tree
-                  condition: {
-                    enum: CapabilityOptions.officeAddinItems().map((i) => i.id),
-                  },
-                  data: officeAddinHostingQuestion(),
-                },
-                {
-                  // programming language
-                  data: programmingLanguageQuestion(),
-                },
-                {
-                  // root folder
-                  data: rootFolderQuestion(),
-                },
-                {
-                  // app name
-                  data: appNameQuestion(),
                 },
               ],
             },
             {
-              condition: (inputs: Inputs) =>
-                inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
+              // office addin import sub-tree
+              condition: { equals: CapabilityOptions.officeAddinImport().id },
               data: { type: "group" },
               children: [
                 {
-                  condition: (inputs: Inputs) => {
-                    const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-                    if (appDefinition?.staticTabs) {
-                      const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
-                        (o) => !!o.websiteUrl
-                      );
-                      if (tabsWithWebsiteUrls.length > 0) {
-                        return true;
-                      }
-                    }
-                    return false;
+                  data: {
+                    type: "folder",
+                    name: QuestionNames.OfficeAddinFolder,
+                    title: "Existing add-in project folder",
                   },
-                  data: selectTabWebsiteUrlQuestion(),
                 },
                 {
-                  //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
-                  condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
-                  data: selectTabsContentUrlQuestion(),
+                  data: {
+                    type: "singleFile",
+                    name: QuestionNames.OfficeAddinManifest,
+                    title: "Select import project manifest file",
+                  },
                 },
               ],
             },
             {
-              condition: (inputs: Inputs) => {
-                const appDef = inputs.teamsAppFromTdp as AppDefinition;
-                return appDef && needBotCode(appDef);
+              // office addin other items sub-tree
+              condition: {
+                enum: CapabilityOptions.officeAddinItems().map((i) => i.id),
               },
-              data: selectBotIdsQuestion(),
+              data: officeAddinHostingQuestion(),
+            },
+            {
+              // programming language
+              data: programmingLanguageQuestion(),
+            },
+            {
+              // root folder
+              data: rootFolderQuestion(),
+            },
+            {
+              // app name
+              data: appNameQuestion(),
             },
           ],
+        },
+        {
+          condition: (inputs: Inputs) =>
+            inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
+          data: { type: "group" },
+          children: [
+            {
+              condition: (inputs: Inputs) => {
+                const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
+                if (appDefinition?.staticTabs) {
+                  const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
+                    (o) => !!o.websiteUrl
+                  );
+                  if (tabsWithWebsiteUrls.length > 0) {
+                    return true;
+                  }
+                }
+                return false;
+              },
+              data: selectTabWebsiteUrlQuestion(),
+            },
+            {
+              //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
+              condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
+              data: selectTabsContentUrlQuestion(),
+            },
+          ],
+        },
+        {
+          condition: (inputs: Inputs) => {
+            const appDef = inputs.teamsAppFromTdp as AppDefinition;
+            return appDef && needBotCode(appDef);
+          },
+          data: selectBotIdsQuestion(),
         },
       ],
     },

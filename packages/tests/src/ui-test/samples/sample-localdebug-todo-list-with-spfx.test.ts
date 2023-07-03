@@ -9,7 +9,7 @@ import {
   LocalDebugTaskLabel,
 } from "../../constants";
 import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initTeamsPage } from "../../playwrightOperation";
+import { initTeamsPage, verifyTodoListSpfx } from "../../playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";
@@ -70,6 +70,7 @@ describe("Sample Tests", function () {
         "TodoListSPFx-local",
         "spfx"
       );
+      await verifyTodoListSpfx(page);
       console.log("debug finish!");
     }
   );

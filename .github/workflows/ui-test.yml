@@ -373,18 +373,6 @@ jobs:
           name: test result ${{ matrix.test-case }} ${{ matrix.os }}
           path: ./packages/tests/mochawesome-report/mochawesome.json
 
-      - name: check workdir
-        working-directory: packages/tests
-        run: |
-          pwd
-          ls -al
-          cd ..
-          pwd
-          ls -al
-          cd ..
-          pwd
-          ls -al
-
       - name: Upload screenshots
         uses: actions/upload-artifact@v3
         if: failure()

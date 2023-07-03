@@ -294,9 +294,11 @@ export async function initTeamsPage(
             state: "detached",
           });
         } catch (error) {
-          await page.waitForSelector(`div:has-text("Error: [HTTP]:404 - Not Found")`,);
+          await page.waitForSelector(
+            `div:has-text("Error: [HTTP]:404 - Not Found")`
+          );
           console.log("Error: [HTTP]:404 - Not Found");
-          console.log('account tenant is not supported. skip...')
+          console.log("account tenant is not supported. skip...");
         }
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1293,7 +1295,36 @@ export async function validateTodoList(page: Page, displayName: string) {
           'button:has-text("Add task")'
         );
         await addBtn?.click();
-        //TODO: verify add task
+        // TODO: verify add task
+
+        // delete tab
+        try {
+          console.log("start to delete tab...");
+          const tab = await page?.waitForSelector(
+            "a span:has-text('TodoListSPFx')"
+          );
+          await tab?.click({
+            button: "right",
+          });
+          const contextMenu = await page?.waitForSelector("ul[role='menu']");
+          const deleteBtn = await contextMenu?.waitForSelector(
+            'button span:has-text("Remove")'
+          );
+          await deleteBtn?.click();
+          const popup = await page?.waitForSelector(
+            "div.ngdialog-content button:has-text('Remove')"
+          );
+          await page.waitForTimeout(30 * 1000);
+          await popup?.click();
+          await page.waitForTimeout(30 * 1000);
+          console.log("delete tab successfully!!!");
+        } catch (error) {
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("error"),
+            fullPage: true,
+          });
+          throw error;
+        }
       });
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
@@ -1721,4 +1752,34 @@ export async function delPerson(
     `div.table-area div.line1:has-text("${displayName}")`,
     { state: "detached" }
   );
+}
+
+export async function verifyTodoListSpfx(page: Page) {
+  console.log("start to verify todo list spfx");
+  // delete tab
+  try {
+    console.log("start to delete tab...");
+    const tab = await page?.waitForSelector("a span:has-text('TodoListSPFx')");
+    await tab?.click({
+      button: "right",
+    });
+    const contextMenu = await page?.waitForSelector("ul[role='menu']");
+    const deleteBtn = await contextMenu?.waitForSelector(
+      'button span:has-text("Remove")'
+    );
+    await deleteBtn?.click();
+    const popup = await page?.waitForSelector(
+      "div.ngdialog-content button:has-text('Remove')"
+    );
+    await page.waitForTimeout(30 * 1000);
+    await popup?.click();
+    await page.waitForTimeout(30 * 1000);
+    console.log("delete tab successfully!!!");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
 }

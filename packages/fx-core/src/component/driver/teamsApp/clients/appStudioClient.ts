@@ -127,6 +127,7 @@ export namespace AppStudioClient {
   ): Promise<AppDefinition> {
     const telemetryProperties: { [key: string]: string } = {
       [TelemetryPropertyKey.OverwriteIfAppAlreadyExists]: String(overwrite),
+      [TelemetryPropertyKey.region]: String(region?.substring(32)),
     };
     sendStartEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
     try {

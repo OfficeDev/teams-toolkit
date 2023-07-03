@@ -955,18 +955,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.collaboration.error.failedToGetTeamsAppId" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to find Teams app id in your .env file. Make sure you have already run 'Provision' or correctly set the value with key '%s' in your .env file.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.env ファイルに Teams アプリ ID が見つかりません。既に [プロビジョニング]5D; を実行しているか、.env ファイルでキー '%s' を使用して値を正しく設定していることを確認してください。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to find Teams app id in your .env file. Please correctly set the value with key '%s' in your .env file.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.collaboration.error.failedToLoadDotEnvFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to load your .env File. Reason: %s]]></Val>
@@ -2815,6 +2803,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.botFramework.error.InvalidBotId" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot ID %s is invalid. It must be a GUID.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ボット ID %s は無効です。GUID である必要があります。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.botFramework.progressBar.createOrUpdateBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating or updating bot registration.]]></Val>
@@ -2992,8 +2989,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create or update JSON file.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[appsettings を作成または JSON ファイルに更新します。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[JSON ファイルを作成または更新します。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create or update appsettings to JSON file.]]></Val>
@@ -3004,8 +3001,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The json file has been generated successfully to %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[appsettings が %s に正常に生成されました。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[JSON ファイルが %s に正常に生成されました。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The appsettings have been generated successfully to %s.]]></Val>
@@ -3700,153 +3697,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.aad.CheckPermissionError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to check permission.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[アクセス許可の確認できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to check permission.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.CreateAppError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to create an app in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Azure Active Directory にアプリを作成できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to create an app in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.CreateSecretError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[`Unable to create an application secret in Azure Active Directory.`]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[`Azure Active Directory でアプリケーション シークレットを作成できません。`]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[`Failed to create an application secret in Azure Active Directory.`]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.FormatError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Invalid format for %s. Value: %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s の形式が無効です。値: %s。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GetConfigError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get configuration value "%s" for %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s の構成値 "%s" を取得できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get configuration value "%s" for %s.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GetTokenError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get user login information for %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s のユーザー ログイン情報を取得できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get user login information for %s.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GrantPermissionError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[%s: %s. Unable to grant permission.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s: %s。アクセス許可を付与できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[%s: %s. Failed to grant permission.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.ListCollaboratorError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to list collaborator.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[コラボレーターを一覧表示できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to list collaborator.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.TenantNotExistError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get tenant information from user login.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ユーザー ログインからテナント情報を取得できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get tenant information from user login.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.AppObjectIdIsNull" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Missing Object ID.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[オブジェクト ID がありません。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.CheckPermissionFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to check permission in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Azure Active Directory でアクセス許可を確認できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to check permission in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.GrantPermissionFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to grant permission in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Azure Active Directory でアクセス許可を付与できません。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to grant permission in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.ReachRetryLimit" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Exceeded retry limit.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[再試行の制限を超えました。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";error.aad.manifest.AADManifestIssues" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AAD manifest has following issues that may potentially break the Teams App:]A;]]></Val>
@@ -4489,6 +4339,9 @@
       <Item ItemId=";error.common.ReadFileError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to read file for reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[次の理由によりファイルを読み取ることができません: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4508,7 +4361,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Unable to write file for reason: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[次の理由によりファイルを書き込めません: %s]]></Val>
+            <Val><![CDATA[次の理由によりファイルを書き込むことができません: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4931,7 +4784,7 @@
         <Str Cat="Text">
           <Val><![CDATA[version %s is not supported. Supported versions: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[バージョン %sはサポートされていません。サポートされているバージョン: %s。]]></Val>
+            <Val><![CDATA[バージョン %s がサポートされていません。サポートされているバージョン: %s。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4950,15 +4803,6 @@
           <Val><![CDATA[Field '%s' should have %s type, yaml file: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[フィールド '%s' には %s 型が必要です。YAML ファイル: %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.aad.OwnerAlreadyAdded" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[User %s is already added as owner of Azure AD app %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ユーザー %s は、Azure AD アプリ %s の所有者として既に追加されています。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5244,18 +5088,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to retrieve Azure credentials.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.bot.FailedToGetAlreadyCreatedBot" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot create bot with id %s which may be taken by an existing bot. Visit %s to learn more.]A;Or API call to Developer Portal failed: Error, Request failed with status code 500, API name: create-bot, X-Correlation-ID: undefined. This may come from some intermittent service error. Please wait for a few minutes and retry.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ID %s のボットを作成できません。これは、既存のボットによって取得される可能性があります。詳細については、%s にアクセスしてください。]A;または、開発者ポータルへの API 呼び出しに失敗しました: エラー、要求が状態コード 500 で失敗しました。API 名: create-bot、X-Correlation-ID: undefined。これは、断続的なサービス エラーが発生した可能性があります。数分待ってから、もう一度お試しください。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Could not get bot with id %s which was created before. ]A;This could happen if the bot was created by another account. Visit %s to learn more.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -5669,7 +5501,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to import existing SPFx solution to Teams Toolkit: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[既存の SPFx ソリューションを Teams Toolkit にインポートできませんでした: %s]]></Val>
+            <Val><![CDATA[既存の SPFx ソリューションを Teams ツールキットにインポートできませんでした: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5762,7 +5594,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit failed to import your SPFx solution. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit で SPFx ソリューションをインポートできませんでした。インポートの詳細の完全なログは、%sにあります。]]></Val>
+            <Val><![CDATA[Teams ツールキットで SPFx ソリューションをインポートできませんでした。インポートの詳細の完全なログは %s にあります。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5771,7 +5603,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has imported your SPFx solution successfully. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit によって SPFx ソリューションが正常にインポートされました。インポートの詳細の完全なログは、%sにあります。]]></Val>
+            <Val><![CDATA[Teams ツールキットで SPFx ソリューションが正常にインポートされました。インポートの詳細の完全なログは %s にあります。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5780,7 +5612,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Your SPFx solution has been successfully imported to %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SPFx ソリューションが%sに正常にインポートされました。]]></Val>
+            <Val><![CDATA[SPFx ソリューションが %s に正常にインポートされました。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5789,7 +5621,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Importing SPFx solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SPFx ソリューションをインポートしています]]></Val>
+            <Val><![CDATA[SPFx ソリューションのインポート]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5797,6 +5629,9 @@
       <Item ItemId=";plugins.spfx.import.updateTemplates" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating templates...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[テンプレートの更新中...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5901,22 +5736,31 @@
       </Item>
       <Item ItemId=";plugins.spfx.questions.spfxSolution.createNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create New]]></Val>
+          <Val><![CDATA[Create a New SPFx Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[新しい SPFx ソリューションの作成]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.spfxSolution.importExisting" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Import Existing SPFx Solution]]></Val>
+          <Val><![CDATA[Import an Existing SPFx Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[既存の SPFx ソリューションのインポート]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Import Existing SPFx Solution]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.spfxSolution.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[SharePoint Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint ソリューション]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

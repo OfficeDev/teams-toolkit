@@ -955,18 +955,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.collaboration.error.failedToGetTeamsAppId" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to find Teams app id in your .env file. Make sure you have already run 'Provision' or correctly set the value with key '%s' in your .env file.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L’ID d’application Teams est introuvable dans votre fichier .env. Vérifiez que vous avez déjà exécuté « Provision » ou que vous avez correctement défini la valeur avec la clé '%s' dans votre fichier .env.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to find Teams app id in your .env file. Please correctly set the value with key '%s' in your .env file.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.collaboration.error.failedToLoadDotEnvFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to load your .env File. Reason: %s]]></Val>
@@ -992,7 +980,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Successfully prepared Teams app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L’application Teams a été préparée.]]></Val>
+            <Val><![CDATA[Application Teams préparée avec succès.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2815,6 +2803,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.botFramework.error.InvalidBotId" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot ID %s is invalid. It must be a GUID.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’ID de bot %s n’est pas valide. Il doit s’agir d’un GUID.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.botFramework.progressBar.createOrUpdateBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating or updating bot registration.]]></Val>
@@ -2992,8 +2989,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create or update JSON file.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Permet de créer ou de mettre à jour des paramètres d’applications dans le fichier JSON.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créez ou mettez à jour le fichier JSON.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create or update appsettings to JSON file.]]></Val>
@@ -3004,8 +3001,8 @@
       <Item ItemId=";driver.file.createOrUpdateJsonFile.summary" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The json file has been generated successfully to %s.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Les paramètres de l’application ont été générés avec succès dans %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le fichier json a été généré avec succès pour %s.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The appsettings have been generated successfully to %s.]]></Val>
@@ -3017,7 +3014,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Generating json file...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Génération du fichier JSON...]]></Val>
+            <Val><![CDATA[Génération du fichier json...]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Generating appsettings...]]></Val>
@@ -3700,153 +3697,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.aad.CheckPermissionError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to check permission.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de vérifier l’autorisation.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to check permission.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.CreateAppError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to create an app in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de créer une application dans Azure Active Directory.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to create an app in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.CreateSecretError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[`Unable to create an application secret in Azure Active Directory.`]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de créer un secret d’application dans Azure Active Directory.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[`Failed to create an application secret in Azure Active Directory.`]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.FormatError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Invalid format for %s. Value: %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Format non valide pour %s. Valeur : %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GetConfigError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get configuration value "%s" for %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[mpossible d’obtenir la valeur de configuration %s pour %s.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get configuration value "%s" for %s.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GetTokenError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get user login information for %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible d’obtenir les informations de connexion utilisateur pour %s.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get user login information for %s.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.GrantPermissionError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[%s: %s. Unable to grant permission.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s : %s. Impossible d’accorder l’autorisation.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[%s: %s. Failed to grant permission.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.ListCollaboratorError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to list collaborator.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de répertorier le collaborateur.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to list collaborator.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.TenantNotExistError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to get tenant information from user login.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible d’obtenir les informations de locataire à partir de la connexion de l’utilisateur.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to get tenant information from user login.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.AppObjectIdIsNull" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Missing Object ID.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ID de l'objet manquant]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.CheckPermissionFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to check permission in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de vérifier l’autorisation dans Azure Active Directory.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to check permission in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.GrantPermissionFailed" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Unable to grant permission in Azure Active Directory.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible d’accorder l’autorisation dans Azure Active Directory.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Failed to grant permission in Azure Active Directory.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.aad.client.ReachRetryLimit" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Exceeded retry limit.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Limite de tentatives dépassée.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";error.aad.manifest.AADManifestIssues" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AAD manifest has following issues that may potentially break the Teams App:]A;]]></Val>
@@ -4376,7 +4226,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Previous task is still running. Wait until your previous task is finished and try again.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La tâche précédente est toujours en cours d’exécution. Attendez la fin de votre tâche précédente et réessayez.]]></Val>
+            <Val><![CDATA[La tâche précédente est toujours en cours d'exécution. Attendez que votre tâche précédente soit terminée et réessayez.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4397,7 +4247,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A http client error happened while performing the %s task. The error response is: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Une erreur de client HTTP s’est produite lors de l’exécution de la tâche %s. La réponse d’erreur est : %s]]></Val>
+            <Val><![CDATA[Une erreur du client http s'est produite lors de l'exécution de la tâche %s. La réponse d'erreur est : %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4406,7 +4256,7 @@
         <Str Cat="Text">
           <Val><![CDATA[A http server error happened while performing the %s task. Please try again later. The error response is: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Une erreur de serveur HTTP s’est produite lors de l’exécution de la tâche %s. Veuillez réessayer plus tard. La réponse d’erreur est : %s]]></Val>
+            <Val><![CDATA[Une erreur de serveur http s'est produite lors de l'exécution de la tâche %s. Veuillez réessayer plus tard. La réponse d'erreur est : %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4489,6 +4339,9 @@
       <Item ItemId=";error.common.ReadFileError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to read file for reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de lire le fichier pour la raison : %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4508,7 +4361,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Unable to write file for reason: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible d’écrire le fichier pour la raison suivante : %s]]></Val>
+            <Val><![CDATA[Impossible d'écrire le fichier pour la raison : %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4931,7 +4784,7 @@
         <Str Cat="Text">
           <Val><![CDATA[version %s is not supported. Supported versions: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[version %s n’est pas prise en charge. Versions prises en charge : %s.]]></Val>
+            <Val><![CDATA[la version %s n'est pas prise en charge. Versions prises en charge : %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4950,15 +4803,6 @@
           <Val><![CDATA[Field '%s' should have %s type, yaml file: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Le '%s' de champ doit avoir %s type, fichier yaml : %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.aad.OwnerAlreadyAdded" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[User %s is already added as owner of Azure AD app %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L'utilisateur %s est déjà ajouté en tant que propriétaire de l’application Azure AD %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5244,18 +5088,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to retrieve Azure credentials.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.bot.FailedToGetAlreadyCreatedBot" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot create bot with id %s which may be taken by an existing bot. Visit %s to learn more.]A;Or API call to Developer Portal failed: Error, Request failed with status code 500, API name: create-bot, X-Correlation-ID: undefined. This may come from some intermittent service error. Please wait for a few minutes and retry.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de créer un bot avec l’ID %s qui peut être pris par un bot existant. Visitez %s pour en savoir plus.]A;Ou l’appel d’API à Developer Portal a échoué : erreur, échec de la demande avec le code d’état 500, nom de l’API : create-bot, X-Correlation-ID : non défini. Cela peut provenir d’une erreur intermittente de service. Veuillez patienter quelques minutes et réessayer.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Could not get bot with id %s which was created before. ]A;This could happen if the bot was created by another account. Visit %s to learn more.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -5669,7 +5501,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to import existing SPFx solution to Teams Toolkit: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’importation de la solution SPFx existante dans Teams Toolkit : %s]]></Val>
+            <Val><![CDATA[Échec de l'importation de la solution SPFx existante dans Teams Toolkit : %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5678,7 +5510,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to retrieve existing SPFx solution information. Please make sure your SPFx solution is valid.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la récupération des informations de la solution SPFx existante. Vérifiez que votre solution SPFx est valide.]]></Val>
+            <Val><![CDATA[Échec de la récupération des informations de la solution SPFx existante. Veuillez vous assurer que votre solution SPFx est valide.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5753,7 +5585,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Generating templates based on solution info...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Génération de modèles en fonction des informations de la solution...]]></Val>
+            <Val><![CDATA[Génération de modèles basés sur les informations de la solution...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5762,7 +5594,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit failed to import your SPFx solution. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit n’a pas pu importer votre solution SPFx. Un journal complet des détails de l’importation se trouve dans %s.]]></Val>
+            <Val><![CDATA[Teams Toolkit n'a pas réussi à importer votre solution SPFx. Un journal complet des détails d'importation peut être trouvé dans %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5771,7 +5603,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit has imported your SPFx solution successfully. A complete log of import details can be found in %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit a importé votre solution SPFx. Un journal complet des détails de l’importation se trouve dans %s.]]></Val>
+            <Val><![CDATA[Teams Toolkit a importé votre solution SPFx avec succès. Un journal complet des détails d'importation peut être trouvé dans %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5780,7 +5612,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Your SPFx solution has been successfully imported to %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Votre solution SPFx a été importée dans %s.]]></Val>
+            <Val><![CDATA[Votre solution SPFx a été importée avec succès dans %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5797,6 +5629,9 @@
       <Item ItemId=";plugins.spfx.import.updateTemplates" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating templates...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mise à jour des modèles...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5901,16 +5736,22 @@
       </Item>
       <Item ItemId=";plugins.spfx.questions.spfxSolution.createNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create New]]></Val>
+          <Val><![CDATA[Create a New SPFx Solution]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créer une solution SPFx]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.questions.spfxSolution.importExisting" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Import Existing SPFx Solution]]></Val>
+          <Val><![CDATA[Import an Existing SPFx Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Importer une solution SPFx existante]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Import Existing SPFx Solution]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5918,7 +5759,7 @@
         <Str Cat="Text">
           <Val><![CDATA[SharePoint Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SharePoint Solution]]></Val>
+            <Val><![CDATA[Solution Microsoft Office SharePoint Online]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6017,7 +5858,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Loading options ...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Options de chargement ...]]></Val>
+            <Val><![CDATA[Options de chargement...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

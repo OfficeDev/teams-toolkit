@@ -1301,7 +1301,7 @@ export async function validateTodoList(page: Page, displayName: string) {
         try {
           console.log("start to delete tab...");
           const tab = await page?.waitForSelector(
-            "a span:has-text('TodoListSPFx')"
+            "a span:has-text('Todo List')"
           );
           await tab?.click({
             button: "right",

@@ -409,7 +409,23 @@ export class CapabilityOptions {
 function capabilityQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.Capabilities,
-    title: getLocalizedString("core.createProjectQuestion.projectType.bot.title"),
+    title: (inputs: Inputs) => {
+      const projectType = inputs[QuestionNames.ProjectType];
+      switch (projectType) {
+        case ProjectTypeOptions.bot().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.bot.title");
+        case ProjectTypeOptions.tab().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.tab.title");
+        case ProjectTypeOptions.me().id:
+          return getLocalizedString(
+            "core.createProjectQuestion.projectType.messageExtension.title"
+          );
+        case ProjectTypeOptions.outlookAddin().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
+        default:
+          return "";
+      }
+    },
     type: "singleSelect",
     staticOptions: CapabilityOptions.all(),
     dynamicOptions: (inputs: Inputs) => {

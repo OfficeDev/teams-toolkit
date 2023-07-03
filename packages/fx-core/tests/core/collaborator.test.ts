@@ -1538,6 +1538,35 @@ describe("Collaborator APIs for V3", () => {
       }
     });
 
+    it("list collaborator: should return invalid manifest for aad app in env node if manifest is invalid", async () => {
+      inputs[CollaborationConstants.AadAppQuestionId] = "aadAppId";
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
+      inputs.platform = Platform.VSCode;
+
+      sandbox.stub(CollaborationUtil, "requireEnvQuestion").returns(false);
+      sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev", "test"]));
+      inputs.env = undefined;
+      sandbox
+        .stub(CollaborationUtil, "loadManifestId")
+        .resolves(err(new UserError("source", "name", "message")));
+
+      const listCollaboratorNodeRes = await getQuestionsForListCollaborator(inputs);
+      assert.isTrue(listCollaboratorNodeRes.isOk());
+      if (listCollaboratorNodeRes.isOk()) {
+        const node = listCollaboratorNodeRes.value;
+        assert.equal(node?.data.name, CollaborationConstants.AppType);
+        assert.equal(node?.children?.length, 2);
+
+        const aadAppNode = node?.children?.[1];
+        assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
+        assert.equal(aadAppNode?.children?.length, 2);
+        inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
+        const aadEnv = aadAppNode?.children![1].condition as FuncValidation<string>;
+        const aadEnvValidate = await aadEnv!.validFunc("", inputs);
+        assert.equal(aadEnvValidate, "Invalid manifest");
+      }
+    });
+
     it("list collaborator: should contain teams app node and need to select env", async () => {
       inputs[CollaborationConstants.TeamsAppQuestionId] = "teamsAppId";
       inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];

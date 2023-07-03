@@ -39,6 +39,7 @@ import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/u
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import semver from "semver";
+import { cloneDeep } from "lodash";
 
 export enum QuestionNames {
   Scratch = "scratch",
@@ -1278,8 +1279,23 @@ export const createProjectQuestion: IQTreeNode = {
   ],
 };
 
-export async function getQuestionsForCreateProjectNew(): Promise<
-  Result<IQTreeNode | undefined, FxError>
-> {
+export function getQuestionsForCreateProject(): Result<IQTreeNode, FxError> {
   return ok(createProjectQuestion);
+}
+
+export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
+  const node = cloneDeep(createProjectQuestion);
+  trimQuestionTreeForCliHelp(node, [QuestionNames.Runtime, QuestionNames.ProjectType]);
+  return node;
+}
+
+export function trimQuestionTreeForCliHelp(node: IQTreeNode, deleteNames: string[]): void {
+  if (node.children) {
+    node.children = node.children.filter(
+      (child) => child.data.name && !deleteNames.includes(child.data.name)
+    );
+    for (const child of node.children) {
+      trimQuestionTreeForCliHelp(child, deleteNames);
+    }
+  }
 }

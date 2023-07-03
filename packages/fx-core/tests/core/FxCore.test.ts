@@ -4,10 +4,12 @@
 import {
   Func,
   FxError,
+  IQTreeNode,
   Inputs,
   LogProvider,
   Ok,
   Platform,
+  QTreeNode,
   Result,
   Stage,
   SystemError,
@@ -45,7 +47,6 @@ import {
   TabSPFxItem,
 } from "../../src/component/constants";
 import { coordinator } from "../../src/component/coordinator";
-import "../../src/component/driver/aad/update";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
@@ -74,6 +75,7 @@ import {
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
+import { QuestionNames } from "../../src/question/create";
 
 const tools = new MockTools();
 
@@ -1318,6 +1320,35 @@ describe("isEnvFile", async () => {
     assert.isTrue(res.isOk());
     if (res.isOk()) {
       assert.isTrue(res.value);
+    }
+  });
+
+  describe("getQuestions", async () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const node = res.value;
+        const names: string[] = [];
+        collectNodeNames(node!, names);
+        assert.isTrue(!names.includes(QuestionNames.Runtime));
+        assert.isTrue(!names.includes(QuestionNames.ProjectType));
+      }
+    });
+    function collectNodeNames(node: IQTreeNode, names: string[]) {
+      if (node.data.name) {
+        names.push(node.data.name);
+      }
+      if (node.children) {
+        for (const child of node.children) {
+          collectNodeNames(child, names);
+        }
+      }
     }
   });
 });

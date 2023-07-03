@@ -427,7 +427,7 @@ function capabilityQuestion(): SingleSelectQuestion {
         case ProjectTypeOptions.outlookAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
         default:
-          return "";
+          return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
     },
     type: "singleSelect",
@@ -462,7 +462,7 @@ function capabilityQuestion(): SingleSelectQuestion {
         ];
       }
     },
-    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     forgetLastValue: true,
     skipSingleOption: true,
   };

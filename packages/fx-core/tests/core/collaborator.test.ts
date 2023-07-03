@@ -1377,9 +1377,6 @@ describe("Collaborator APIs for V3", () => {
       projectPath: path.join(os.tmpdir(), randomAppName()),
     };
 
-    const tools = new MockTools();
-    setTools(tools);
-
     afterEach(() => {
       sandbox.restore();
     });
@@ -1690,6 +1687,8 @@ describe("Collaborator APIs for V3", () => {
       sandbox.stub(CollaborationUtil, "loadManifestId").resolves(ok("manifestId"));
       sandbox.stub(CollaborationUtil, "requireEnvQuestion").returns(true);
       sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev", "test"]));
+      const tools = new MockTools();
+      setTools(tools);
       sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "fake_tid",

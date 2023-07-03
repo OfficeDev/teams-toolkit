@@ -69,7 +69,7 @@ describe("Sample Tests", function () {
         Env.password
       );
 
-      await validateTodoList(page, Env.displayName);
+      await validateTodoList(page, Env.displayName, "remote");
       console.log("debug finish!");
     }
   );

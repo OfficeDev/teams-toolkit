@@ -116,7 +116,7 @@ describe("Sample Tests", function () {
         Env.password,
         "toDoList-dev"
       );
-      await validateTodoList(page, Env.displayName);
+      await validateTodoList(page, Env.displayName, "remote");
       console.log("debug finish!");
     }
   );

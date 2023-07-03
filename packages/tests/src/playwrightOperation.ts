@@ -1242,7 +1242,11 @@ export async function validateStockUpdate(page: Page) {
   }
 }
 
-export async function validateTodoList(page: Page, displayName: string) {
+export async function validateTodoList(
+  page: Page,
+  displayName: string,
+  env: string
+) {
   try {
     console.log("start to verify todo list");
     const frameElementHandle = await page.waitForSelector(
@@ -1297,33 +1301,35 @@ export async function validateTodoList(page: Page, displayName: string) {
         await addBtn?.click();
         // TODO: verify add task
 
-        // delete tab
-        try {
-          console.log("start to delete tab...");
-          const tab = await page?.waitForSelector(
-            "a span:has-text('Todo List')"
-          );
-          await tab?.click({
-            button: "right",
-          });
-          const contextMenu = await page?.waitForSelector("ul[role='menu']");
-          const deleteBtn = await contextMenu?.waitForSelector(
-            'button span:has-text("Remove")'
-          );
-          await deleteBtn?.click();
-          const popup = await page?.waitForSelector(
-            "div.ngdialog-content button:has-text('Remove')"
-          );
-          await page.waitForTimeout(30 * 1000);
-          await popup?.click();
-          await page.waitForTimeout(30 * 1000);
-          console.log("delete tab successfully!!!");
-        } catch (error) {
-          await page.screenshot({
-            path: getPlaywrightScreenshotPath("error"),
-            fullPage: true,
-          });
-          throw error;
+        if (env === "remote") {
+          // delete tab
+          try {
+            console.log("start to delete tab...");
+            const tab = await page?.waitForSelector(
+              "a span:has-text('Todo List')"
+            );
+            await tab?.click({
+              button: "right",
+            });
+            const contextMenu = await page?.waitForSelector("ul[role='menu']");
+            const deleteBtn = await contextMenu?.waitForSelector(
+              'button span:has-text("Remove")'
+            );
+            await deleteBtn?.click();
+            const popup = await page?.waitForSelector(
+              "div.ngdialog-content button:has-text('Remove')"
+            );
+            await page.waitForTimeout(30 * 1000);
+            await popup?.click();
+            await page.waitForTimeout(30 * 1000);
+            console.log("delete tab successfully!!!");
+          } catch (error) {
+            await page.screenshot({
+              path: getPlaywrightScreenshotPath("error"),
+              fullPage: true,
+            });
+            throw error;
+          }
         }
       });
     } catch (e: any) {

@@ -10,6 +10,7 @@ import {
   SingleSelectQuestion,
   StaticOptions,
   StringArrayValidation,
+  SystemError,
   TokenProvider,
   UserError,
   ValidationSchema,
@@ -1602,8 +1603,8 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("list collaborator: should contain aad app node and need to select env", async () => {
-      inputs[CollaborationConstants.TeamsAppQuestionId] = "teamsAppId";
-      inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];
+      inputs[CollaborationConstants.AadAppQuestionId] = "teamsAppId";
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
       inputs.platform = Platform.VSCode;
 
       sandbox.stub(CollaborationUtil, "loadManifestId").resolves(ok("manifestId"));
@@ -1675,6 +1676,39 @@ describe("Collaborator APIs for V3", () => {
       }
     });
 
+    it("list collaborator: should skip env node if failed to get env list", async () => {
+      inputs[CollaborationConstants.TeamsAppQuestionId] = "teamsAppId";
+      inputs[CollaborationConstants.AadAppQuestionId] = "aadAppId";
+      inputs[CollaborationConstants.AppType] = [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ];
+      inputs.platform = Platform.VSCode;
+
+      sandbox.stub(CollaborationUtil, "loadManifestId").resolves(ok("manifestId"));
+      sandbox.stub(CollaborationUtil, "requireEnvQuestion").returns(true);
+      sandbox.stub(environmentManager, "listRemoteEnvConfigs").callsFake(async (projectPath) => {
+        return err(new SystemError("errorSource", "errorName", "errorMessage"));
+      });
+      inputs.env = undefined;
+
+      const listCollaboratorNodeRes = await getQuestionsForListCollaborator(inputs);
+      assert.isTrue(listCollaboratorNodeRes.isOk());
+      if (listCollaboratorNodeRes.isOk()) {
+        const node = listCollaboratorNodeRes.value;
+        assert.equal(node?.data.name, CollaborationConstants.AppType);
+        assert.equal(node?.children?.length, 2);
+
+        const teamsAppNode = node?.children?.[0];
+        assert.equal(teamsAppNode?.data.name, CoreQuestionNames.TeamsAppManifestFilePath);
+        assert.equal(teamsAppNode?.children?.length, 1);
+
+        const aadAppNode = node?.children?.[1];
+        assert.equal(aadAppNode?.data.name, CoreQuestionNames.AadAppManifestFilePath);
+        assert.equal(aadAppNode?.children?.length, 1);
+      }
+    });
+
     it("grant permission: should contain teams app and aad app node and need to select env", async () => {
       inputs[CollaborationConstants.TeamsAppQuestionId] = "teamsAppId";
       inputs[CollaborationConstants.AadAppQuestionId] = "aadAppId";
@@ -1735,6 +1769,23 @@ describe("Collaborator APIs for V3", () => {
       assert.isTrue(grantPermissionNodeRes.isOk());
       if (grantPermissionNodeRes.isOk()) {
         assert.isUndefined(grantPermissionNodeRes.value);
+      }
+    });
+
+    it("grant permission: should return error if get token failed", async () => {
+      inputs.platform = Platform.VSCode;
+      const tools = new MockTools();
+      setTools(tools);
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .callsFake(async (tokenRequest) => {
+          return err(new SystemError("errorSource", "errorName", "errorMessage"));
+        });
+
+      const grantPermissionNodeRes = await getQuestionsForGrantPermission(inputs);
+      assert.isTrue(grantPermissionNodeRes.isErr());
+      if (grantPermissionNodeRes.isErr()) {
+        assert.equal(grantPermissionNodeRes.error.name, "errorName");
       }
     });
   });

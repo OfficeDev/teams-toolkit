@@ -9,6 +9,7 @@ import {
   LogProvider,
   Ok,
   Platform,
+  QTreeNode,
   Result,
   Stage,
   SystemError,
@@ -64,6 +65,7 @@ import {
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
 import { CapabilityOptions, ScratchOptions } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
+import { QuestionNames } from "../../src/question/create";
 
 const tools = new MockTools();
 

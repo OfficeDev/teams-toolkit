@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  FuncValidation,
   Inputs,
   LocalFunc,
   MultiSelectQuestion,
@@ -11,10 +12,12 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { Runtime } from "../../src/component/constants";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import {
   CapabilityOptions,
@@ -22,13 +25,15 @@ import {
   ProjectTypeOptions,
   SPFxVersionOptionIds,
   ScratchOptions,
+  appNameQuestion,
   createProjectQuestion,
   getLanguageOptions,
   getTemplate,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
-import { MockUserInteraction } from "../core/utils";
+import { MockUserInteraction, randomAppName } from "../core/utils";
+import * as path from "path";
 
 async function callFuncs(question: Question, inputs: Inputs) {
   if (question.default && typeof question.default === "object") {
@@ -91,7 +96,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Samples,
@@ -142,7 +147,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -195,7 +200,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -255,7 +260,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -317,7 +322,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -375,7 +380,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -470,7 +475,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -541,7 +546,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -585,7 +590,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Capabilities,
@@ -637,7 +642,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion, inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Runtime,
@@ -707,6 +712,121 @@ describe("scaffold question", () => {
       inputs["capabilities"] = ["taskpane"];
       const template = getTemplate(inputs);
       assert.equal(template, "taskpane");
+    });
+  });
+
+  describe("appNameQuestion", () => {
+    const question = appNameQuestion();
+    const validFunc = (question.validation as FuncValidation<string>).validFunc;
+    it("happy path", async () => {
+      const inputs: Inputs = { platform: Platform.VSCode, folder: "./" };
+      const appName = "1234";
+      let validRes = await validFunc(appName, inputs);
+      assert.isTrue(validRes === getLocalizedString("core.QuestionAppName.validation.pattern"));
+      sandbox.stub<any, any>(fs, "pathExists").resolves(true);
+      inputs.appName = randomAppName();
+      inputs.folder = "./";
+      validRes = await validFunc(inputs.appName, inputs);
+      const expected = getLocalizedString(
+        "core.QuestionAppName.validation.pathExist",
+        path.resolve(inputs.folder, inputs.appName)
+      );
+      assert.equal(validRes, expected);
+      sandbox.restore();
+      sandbox.stub<any, any>(fs, "pathExists").resolves(false);
+      validRes = await validFunc(inputs.appName, inputs);
+      assert.isTrue(validRes === undefined);
+    });
+
+    it("app name exceed maxlength of 30", async () => {
+      const input = "SurveyMonkeyWebhookNotification";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.maxlength"));
+    });
+
+    it("app name with only letters", async () => {
+      const input = "app";
+      const result = await validFunc(input);
+
+      assert.isUndefined(result);
+    });
+
+    it("app name starting with digit", async () => {
+      const input = "123app";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+    });
+
+    it("app name count of alphanumerics less than 2", async () => {
+      const input = "a..(";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+    });
+
+    it("app name containing dot", async () => {
+      const input = "app.123";
+      const result = await validFunc(input);
+
+      assert.isUndefined(result);
+    });
+
+    it("app name containing hyphen", async () => {
+      const input = "app-123";
+      const result = await validFunc(input);
+
+      assert.isUndefined(result);
+    });
+
+    it("app name containing multiple special characters", async () => {
+      const input = "a..(1";
+      const result = await validFunc(input);
+
+      assert.isUndefined(result);
+    });
+
+    it("app name containing space", async () => {
+      const input = "app 123";
+      const result = await validFunc(input);
+
+      assert.isUndefined(result);
+    });
+
+    it("app name containing dot at the end - wrong pattern", async () => {
+      const input = "app.app.";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+    });
+
+    it("app name containing space at the end - wrong pattern", async () => {
+      const input = "app123 ";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+    });
+
+    it("app name containing invalid control code", async () => {
+      const input = "a\u0001a";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+    });
+
+    it("app name containing invalid character", async () => {
+      const input = "app<>123";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+    });
+
+    it("invalid app name containing &", async () => {
+      const input = "app&123";
+      const result = await validFunc(input);
+
+      assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
     });
   });
 });

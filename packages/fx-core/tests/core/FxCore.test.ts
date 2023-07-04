@@ -9,7 +9,6 @@ import {
   LogProvider,
   Ok,
   Platform,
-  QTreeNode,
   Result,
   Stage,
   SystemError,
@@ -56,16 +55,19 @@ import * as collaborator from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
 import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
-import { ProgrammingLanguageQuestion, QuestionNames } from "../../src/core/question";
 import {
   FileNotFoundError,
   InvalidProjectError,
   MissingEnvironmentVariablesError,
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
-import { CapabilityOptions, ScratchOptions } from "../../src/question";
+import {
+  CapabilityOptions,
+  QuestionNames,
+  ScratchOptions,
+  programmingLanguageQuestion,
+} from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
-import { QuestionNames } from "../../src/question/create";
 
 const tools = new MockTools();
 
@@ -606,6 +608,7 @@ describe("Core basic APIs", () => {
       platform: Platform.VSCode,
       [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
     };
+    const ProgrammingLanguageQuestion = programmingLanguageQuestion();
     if (
       ProgrammingLanguageQuestion.dynamicOptions &&
       ProgrammingLanguageQuestion.placeholder &&

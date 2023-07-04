@@ -45,11 +45,6 @@ import { FxCoreV3Implement } from "../../../src/core/FxCoreImplementV3";
 import { setTools } from "../../../src/core/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import {
-  CoreQuestionNames,
-  CreateNewOfficeAddinOption,
-  ScratchOptionYesVSC,
-} from "../../../src/core/question";
-import {
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
@@ -461,7 +456,7 @@ describe("component coordinator test", () => {
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.AppPackagePath]: "path",
+        [QuestionNames.AppPackagePath]: "path",
       };
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
       assert.isTrue(res.isErr());
@@ -495,7 +490,7 @@ describe("component coordinator test", () => {
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.AppPackagePath]: "path",
+        [QuestionNames.AppPackagePath]: "path",
       };
 
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
@@ -515,7 +510,7 @@ describe("component coordinator test", () => {
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.AppPackagePath]: "path",
+        [QuestionNames.AppPackagePath]: "path",
       };
 
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
@@ -582,7 +577,7 @@ describe("Office Addin", async () => {
       folder: ".",
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: CreateNewOfficeAddinOption().id,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isOk());

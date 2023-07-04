@@ -40,9 +40,13 @@ jobs:
         command: |
           npm run setup
 
-    - name: Detect missing header file
+    - name: install eslint-plugin-header
       run: |
         npm i -d eslint-plugin-header
+      working-directory: packages/${{matrix.package}}
+
+    - name: Detect missing header file
+      run: |
         npx eslint --no-eslintrc --plugin header --rule '{"header/header": [2, "../eslint-plugin-teamsfx/config/header.js"]}' --parser-options ecmaVersion:2018 --parser-options sourceType:"module" --parser '@typescript-eslint/parser' --plugin "@typescript-eslint" src/**/*.ts --format json --output-file header-check.json
         node ../eslint-plugin-teamsfx/lib/calcHeader.js
       working-directory: packages/${{matrix.package}}

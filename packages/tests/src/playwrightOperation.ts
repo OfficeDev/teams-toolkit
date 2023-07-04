@@ -1,4 +1,10 @@
-import { BrowserContext, Page, chromium, Frame } from "playwright";
+import {
+  BrowserContext,
+  Page,
+  chromium,
+  Frame,
+  ElementHandle,
+} from "playwright";
 import { assert } from "chai";
 import { Timeout, ValidationContent } from "./constants";
 import { RetryHandler } from "./utils/retryHandler";
@@ -8,6 +14,98 @@ import { SampledebugContext } from "./ui-test/samples/sampledebugContext";
 import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./utils/envUtil";
+
+export async function openBrowser(
+  context: BrowserContext,
+  username: string,
+  password: string
+): Promise<Page> {
+  let page = await context.newPage();
+  page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
+
+  console.log(`open teams page`);
+  try {
+    await Promise.all([
+      page.goto(`https://teams.microsoft.com/_#/apps`),
+      page.waitForNavigation(),
+    ]);
+
+    // input username
+    await RetryHandler.retry(async () => {
+      await page.fill("input.input[type='email']", username);
+      console.log(`fill in username ${username}`);
+
+      // next
+      await Promise.all([
+        page.click("input.button[type='submit']"),
+        page.waitForNavigation(),
+      ]);
+    });
+
+    // input password
+    console.log(`fill in password`);
+    await page.fill("input.input[type='password'][name='passwd']", password);
+
+    // sign in
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+
+    // stay signed in confirm page
+    console.log(`stay signed confirm`);
+    await Promise.all([
+      page.click("input.button[type='submit'][value='Yes']"),
+      page.waitForNavigation(),
+    ]);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  } catch (error) {
+    await RetryHandler.retry(async (retries: number) => {
+      if (retries > 0) {
+        console.log(`Retried to run adding app for ${retries} times.`);
+      }
+      await page.close();
+      console.log(`open teams page`);
+      page = await context.newPage();
+      await Promise.all([
+        page.goto(`https://teams.microsoft.com/_#/apps`),
+        page.waitForNavigation(),
+      ]);
+
+      // input username
+      await RetryHandler.retry(async () => {
+        await page.fill("input.input[type='email']", username);
+        console.log(`fill in username ${username}`);
+
+        // next
+        await Promise.all([
+          page.click("input.button[type='submit']"),
+          page.waitForNavigation(),
+        ]);
+      });
+
+      // input password
+      console.log(`fill in password`);
+      await page.fill("input.input[type='password'][name='passwd']", password);
+
+      // sign in
+      await Promise.all([
+        page.click("input.button[type='submit']"),
+        page.waitForNavigation(),
+      ]);
+
+      // stay signed in confirm page
+      console.log(`stay signed confirm`);
+      await Promise.all([
+        page.click("input.button[type='submit'][value='Yes']"),
+        page.waitForNavigation(),
+      ]);
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+    });
+  }
+  await page.waitForTimeout(Timeout.shortTimeLoading);
+  return page;
+}
 
 export async function initPage(
   context: BrowserContext,
@@ -1242,11 +1340,7 @@ export async function validateStockUpdate(page: Page) {
   }
 }
 
-export async function validateTodoList(
-  page: Page,
-  displayName: string,
-  env: string
-) {
+export async function validateTodoList(page: Page, displayName: string) {
   try {
     console.log("start to verify todo list");
     const frameElementHandle = await page.waitForSelector(
@@ -1295,42 +1389,11 @@ export async function validateTodoList(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-        const addBtn = await frame?.waitForSelector(
+        const addBtn = await page?.waitForSelector(
           'button:has-text("Add task")'
         );
         await addBtn?.click();
         // TODO: verify add task
-
-        if (env === "remote") {
-          // delete tab
-          try {
-            console.log("start to delete tab...");
-            const tab = await page?.waitForSelector(
-              "a span:has-text('Todo List')"
-            );
-            await tab?.click({
-              button: "right",
-            });
-            const contextMenu = await page?.waitForSelector("ul[role='menu']");
-            const deleteBtn = await contextMenu?.waitForSelector(
-              'button span:has-text("Remove")'
-            );
-            await deleteBtn?.click();
-            const popup = await page?.waitForSelector(
-              "div.ngdialog-content button:has-text('Remove')"
-            );
-            await page.waitForTimeout(30 * 1000);
-            await popup?.click();
-            await page.waitForTimeout(30 * 1000);
-            console.log("delete tab successfully!!!");
-          } catch (error) {
-            await page.screenshot({
-              path: getPlaywrightScreenshotPath("error"),
-              fullPage: true,
-            });
-            throw error;
-          }
-        }
       });
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
@@ -1787,5 +1850,170 @@ export async function verifyTodoListSpfx(page: Page) {
       fullPage: true,
     });
     throw error;
+  }
+}
+
+export async function cleanApp(page: Page): Promise<void> {
+  console.log("start to clean app");
+  try {
+    const appsBtn = await page.waitForSelector("button#discover-apps-button");
+    await appsBtn.click();
+    await page.waitForTimeout(30 * 1000);
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    const manageBtn = await frame?.waitForSelector(
+      'div[data-tid="store-v2-manage-apps"] button span:has-text("Manage your apps")'
+    );
+    await manageBtn?.click();
+    await page.waitForTimeout(30 * 1000);
+    // find local/dev app
+    {
+      while (true) {
+        let app: ElementHandle<SVGElement | HTMLElement> | undefined;
+        const frameElementHandle = await page.waitForSelector(
+          "iframe.embedded-page-content"
+        );
+        const frame = await frameElementHandle?.contentFrame();
+
+        try {
+          app = await frame?.waitForSelector(
+            'div[role="treeitem"] span:has-text("local")'
+          );
+        } catch (error) {
+          app = await frame?.waitForSelector(
+            'div[role="treeitem"] span:has-text("dev")'
+          );
+        }
+        console.log("start to delete app: ", app?.textContent());
+        await app?.click();
+        await page.waitForTimeout(5 * 1000);
+        {
+          const frameElementHandle = await page.waitForSelector(
+            "iframe.embedded-page-content"
+          );
+          const frame = await frameElementHandle?.contentFrame();
+          const deleteBtn = await frame?.waitForSelector(
+            'button[data-tid="uninstall-app"]'
+          );
+          await deleteBtn?.click();
+          await page.waitForTimeout(5 * 1000);
+          const popup = await frame?.waitForSelector(
+            'button span:has-text("Remove")'
+          );
+          await popup?.click();
+          await page.waitForTimeout(10 * 1000);
+          console.log("clean app successfully!!!");
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function initChannelTab(page: Page): Promise<void> {
+  // delete team
+  try {
+    console.log("start to delete team");
+    const appsBtn = await page.waitForSelector('button span:has-text("Teams")');
+    await appsBtn.click();
+    await page.waitForTimeout(10 * 1000);
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    const teamsBtn = await frame?.waitForSelector(
+      'button[data-tid="more-apps-button-tid"]'
+    );
+    await teamsBtn?.click({ button: "right" });
+    {
+      const frameElementHandle = await page.waitForSelector(
+        "iframe.embedded-page-content"
+      );
+      const frame = await frameElementHandle?.contentFrame();
+      const deleteBtn = await frame?.waitForSelector(
+        'div[role="menuitem"] span:has-text("Delete team")'
+      );
+      await deleteBtn?.click();
+      await page.waitForTimeout(10 * 1000);
+      {
+        const popup = await page?.waitForSelector(
+          'button[data-tid="confirmDialog-reconfirmBtn"] span:has-text("I understand that everything will be deleted")'
+        );
+        await popup?.click();
+        await page.waitForTimeout(5 * 1000);
+        const deleteBtn = await page?.waitForSelector(
+          'button:has-text("Delete Team")'
+        );
+        await deleteBtn?.click();
+        await page.waitForTimeout(30 * 1000);
+      }
+    }
+    console.log("delete team successfully!!!");
+  } catch (error) {
+    console.log(error);
+  }
+
+  // create team
+  try {
+    console.log("start to create team");
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    const moreBtn = await frame?.waitForSelector(
+      'button[data-tid="join-or-create-team-btn"]'
+    );
+    await moreBtn?.click();
+    await page.waitForTimeout(10 * 1000);
+    {
+      const frameElementHandle = await page.waitForSelector(
+        "iframe.embedded-page-content"
+      );
+      const frame = await frameElementHandle?.contentFrame();
+      const createTeamBtn = await frame?.waitForSelector(
+        'div[role="menuitem"] span:has-text("Create team")'
+      );
+      await createTeamBtn?.click();
+      await page.waitForTimeout(10 * 1000);
+      {
+        const frameElementHandle = await page.waitForSelector(
+          "iframe.embedded-page-content"
+        );
+        const frame = await frameElementHandle?.contentFrame();
+        const startBtn = await frame?.waitForSelector(
+          'li[role="option"] button span:has-text("Start from scratch")'
+        );
+        await startBtn?.click();
+        await page.waitForTimeout(10 * 1000);
+        {
+          const frameElementHandle = await page.waitForSelector(
+            "iframe.embedded-page-content"
+          );
+          const frame = await frameElementHandle?.contentFrame();
+          const orgScopeBtn = await frame?.waitForSelector(
+            'li[role="listitem"] button div:has-text("organization")'
+          );
+          await orgScopeBtn?.click();
+          await page.waitForTimeout(10 * 1000);
+          {
+            const frameElementHandle = await page.waitForSelector(
+              "iframe.embedded-page-content"
+            );
+            const frame = await frameElementHandle?.contentFrame();
+            const confirmBtn = await frame?.waitForSelector(
+              'button[data-tid="teamDetailsWizardStep-createButton"]'
+            );
+            await confirmBtn?.click();
+            await page.waitForTimeout(10 * 1000);
+          }
+        }
+      }
+    }
+    console.log("create team successfully!!!");
+  } catch (error) {
+    console.log(error);
   }
 }

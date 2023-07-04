@@ -84,7 +84,7 @@ describe("Sample Tests", function () {
         Env.password
       );
 
-      await validateTodoList(page, Env.displayName, "local");
+      await validateTodoList(page, Env.displayName);
       console.log("debug finish!");
     }
   );

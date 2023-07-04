@@ -712,4 +712,18 @@ describe("scaffold question", () => {
       assert.equal(template, "taskpane");
     });
   });
+
+  describe("CapabilityOptions", () => {
+    it("has 3 options in message extension type", () => {
+      // Act
+      const options = CapabilityOptions.mes();
+      // Assert
+      assert.equal(options.length, 3);
+      assert.deepEqual(options, [
+        CapabilityOptions.linkUnfurling(),
+        CapabilityOptions.m365SearchMe(),
+        CapabilityOptions.collectFormMe(),
+      ]);
+    });
+  });
 });

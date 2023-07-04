@@ -318,6 +318,18 @@ export class CapabilityOptions {
   }
 
   //message extension
+  static linkUnfurling(): OptionItem {
+    return {
+      id: "LinkUnfurling",
+      label: `${getLocalizedString("core.LinkUnfurlingOption.label")}`,
+      cliName: "link-unfurling",
+      detail: getLocalizedString("core.LinkUnfurlingOption.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.worksInOutlook"
+      ),
+    };
+  }
+
   static m365SearchMe(): OptionItem {
     return {
       id: "M365SearchApp",
@@ -375,7 +387,11 @@ export class CapabilityOptions {
   }
 
   static mes(): OptionItem[] {
-    return [CapabilityOptions.m365SearchMe(), CapabilityOptions.collectFormMe()];
+    return [
+      CapabilityOptions.linkUnfurling(),
+      CapabilityOptions.m365SearchMe(),
+      CapabilityOptions.collectFormMe(),
+    ];
   }
 
   static all(inputs?: Inputs): OptionItem[] {

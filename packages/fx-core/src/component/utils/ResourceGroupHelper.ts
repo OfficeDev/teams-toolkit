@@ -16,7 +16,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { TOOLS } from "../../core/globalVars";
 import {
-  CoreQuestionNames,
   newResourceGroupNameQuestion,
   QuestionNewResourceGroupLocation,
   QuestionSelectResourceGroup,
@@ -32,6 +31,7 @@ import {
 } from "../../error/azure";
 import { SolutionSource } from "../constants";
 import { traverse } from "../../ui/visitor";
+import { QuestionNames } from "../../question";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -268,8 +268,8 @@ class ResourceGroupHelper {
     const resourceGroupName = inputs.targetResourceGroupName;
     if (resourceGroupName === newResourceGroupOption) {
       return ok({
-        name: inputs[CoreQuestionNames.NewResourceGroupName],
-        location: inputs[CoreQuestionNames.NewResourceGroupLocation],
+        name: inputs[QuestionNames.NewResourceGroupName],
+        location: inputs[QuestionNames.NewResourceGroupLocation],
         createNewResourceGroup: true,
       });
     } else {

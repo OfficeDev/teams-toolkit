@@ -37,7 +37,6 @@ import {
 } from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
-import { CoreQuestionNames } from "../../src/core/question";
 import {
   MockedAzureAccountProvider,
   MockedM365Provider,
@@ -45,6 +44,7 @@ import {
 } from "../plugins/solution/util";
 import { MockTools, randomAppName } from "./utils";
 import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
+import { QuestionNames } from "../../src/question";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
@@ -548,8 +548,8 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .callsFake(async (manifestFilePath: string) => {
@@ -618,8 +618,8 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-      inputsCli[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
-      inputsCli[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      inputsCli[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputsCli[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .callsFake(async (manifestFilePath: string) => {
@@ -662,8 +662,8 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .resolves(err(new UserError("source", "name", "message")));
@@ -673,7 +673,7 @@ describe("Collaborator APIs for V3", () => {
 
     it("load manifest failed in aad app", async () => {
       inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .resolves(err(new UserError("source", "name", "message")));
@@ -1381,8 +1381,8 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("env node validation: select teams and aad, need select env", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
       inputs[CollaborationConstants.AppType] = [
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
@@ -1401,8 +1401,8 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("env node validation: waiting for select aad manifest", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = undefined;
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = undefined;
       inputs[CollaborationConstants.AppType] = [
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
@@ -1413,8 +1413,8 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("env node validation: select teams and aad, no need select env", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
       inputs[CollaborationConstants.AppType] = [
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
@@ -1433,8 +1433,8 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("env node validation: select teams and aad, app id hardcoded", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
       inputs[CollaborationConstants.AppType] = [
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
@@ -1453,8 +1453,8 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("env node validation: select teams and aad, invalid manifest", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
       inputs[CollaborationConstants.AppType] = [
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
@@ -1470,7 +1470,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("env node validation: select aad, invalid manifest", async () => {
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
       inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
       inputs.env = undefined;
 
@@ -1483,7 +1483,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("env node validation: select aad, need select env", async () => {
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
       inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
       inputs.env = undefined;
 
@@ -1500,8 +1500,8 @@ describe("Collaborator APIs for V3", () => {
 
     it("happy path: getQuestionsForGrantPermission", async () => {
       inputs.platform = Platform.VSCode;
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
 
       sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
         return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
@@ -1620,8 +1620,8 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path: getQuestionsForListCollaborator", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
       inputs.platform = Platform.VSCode;
       sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
         return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");

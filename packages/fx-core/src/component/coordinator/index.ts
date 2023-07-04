@@ -20,71 +20,49 @@ import {
   Result,
   Void,
 } from "@microsoft/teamsfx-api";
-import { assembleError } from "../../error/common";
+import { glob } from "glob";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { ObjectIsUndefinedError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
-import {
-  CoreQuestionNames,
-  ProjectNamePattern,
-  ScratchOptionNo,
-  ScratchOptionYes,
-} from "../../core/question";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
+  assembleError,
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
-import { convertToLangKey } from "../generator/utils";
+import {
+  AppNamePattern,
+  CapabilityOptions,
+  NotificationTriggerOptions,
+  ProjectTypeOptions,
+  ScratchOptions,
+} from "../../question/create";
+import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
-import {
-  BotOptionItem,
-  CommandAndResponseOptionItem,
-  CoordinatorSource,
-  DashboardOptionItem,
-  DefaultBotAndMessageExtensionItem,
-  LinkUnfurlingItem,
-  M365SearchAppOptionItem,
-  M365SsoLaunchPageOptionItem,
-  MessageExtensionItem,
-  NewProjectTypeOutlookAddinOptionItem,
-  NotificationOptionItem,
-  TabNonSsoAndDefaultBotItem,
-  TabNonSsoItem,
-  TabOptionItem,
-  TabSPFxItem,
-  WorkflowOptionItem,
-} from "../constants";
+import { CoordinatorSource } from "../constants";
 import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
-import {
-  AppServiceOptionItem,
-  AppServiceOptionItemForVS,
-  FunctionsHttpAndTimerTriggerOptionItem,
-  FunctionsHttpTriggerOptionItem,
-  FunctionsTimerTriggerOptionItem,
-} from "../feature/bot/question";
+import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
+import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
+import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
-import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
-import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { envUtil } from "../utils/envUtil";
 import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { glob } from "glob";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -108,28 +86,31 @@ export enum TemplateNames {
 }
 
 const Feature2TemplateName: any = {
-  [`${NotificationOptionItem().id}:${AppServiceOptionItem().id}`]:
+  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appService().id}`]:
     TemplateNames.NotificationRestify,
-  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS().id}`]:
+  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appServiceForVS().id}`]:
     TemplateNames.NotificationWebApi,
-  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem().id}`]:
-    TemplateNames.NotificationHttpTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem().id}`]:
-    TemplateNames.NotificationTimerTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem().id}`]:
-    TemplateNames.NotificationHttpTimerTrigger,
-  [`${CommandAndResponseOptionItem().id}:undefined`]: TemplateNames.CommandAndResponse,
-  [`${WorkflowOptionItem().id}:undefined`]: TemplateNames.Workflow,
-  [`${BotOptionItem().id}:undefined`]: TemplateNames.DefaultBot,
-  [`${MessageExtensionItem().id}:undefined`]: TemplateNames.MessageExtension,
-  [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
-  [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
-  [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
-  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.SsoTabObo,
-  [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
-  [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
-  [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,
-  [`${LinkUnfurlingItem().id}:undefined`]: TemplateNames.LinkUnfurling,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTrigger().id
+  }`]: TemplateNames.NotificationHttpTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTrigger().id
+  }`]: TemplateNames.NotificationTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
+  }`]: TemplateNames.NotificationHttpTimerTrigger,
+  [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
+  [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
+  [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
+  [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined`]: TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
+  [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
+  [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
+  [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
+  [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
+  [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
 };
 
 const M365Actions = [
@@ -167,13 +148,13 @@ class Coordinator {
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));
     }
-    const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
+    const scratch = inputs[QuestionNames.Scratch] as string;
     let projectPath = "";
-    if (scratch === ScratchOptionNo().id) {
+    if (scratch === ScratchOptions.no().id) {
       // create from sample
-      const sampleId = inputs[CoreQuestionNames.Samples] as string;
+      const sampleId = inputs[QuestionNames.Samples] as string;
       if (!sampleId) {
-        throw new MissingRequiredInputError(CoreQuestionNames.Samples);
+        throw new MissingRequiredInputError(QuestionNames.Samples);
       }
       projectPath = path.join(folder, sampleId);
       let suffix = 1;
@@ -188,17 +169,16 @@ class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else if (!scratch || scratch === ScratchOptionYes().id) {
+    } else if (!scratch || scratch === ScratchOptions.yes().id) {
       // create from new
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName)
-        return err(new MissingRequiredInputError(CoreQuestionNames.AppName));
+      const appName = inputs[QuestionNames.AppName] as string;
+      if (undefined === appName) return err(new MissingRequiredInputError(QuestionNames.AppName));
       const validateResult = jsonschema.validate(appName, {
-        pattern: ProjectNamePattern,
+        pattern: AppNamePattern,
       });
       if (validateResult.errors && validateResult.errors.length > 0) {
         return err(
-          new InputValidationError(CoreQuestionNames.AppName, validateResult.errors[0].message)
+          new InputValidationError(QuestionNames.AppName, validateResult.errors[0].message)
         );
       }
       projectPath = path.join(folder, appName);
@@ -207,39 +187,37 @@ class Coordinator {
       await fs.ensureDir(projectPath);
 
       // set isVS global var when creating project
-      const language = inputs[CoreQuestionNames.ProgrammingLanguage];
+      const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
-      const feature = inputs.capabilities as string;
+      const capability = inputs.capabilities as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Capabilities]: feature,
+        [TelemetryProperty.Capabilities]: capability,
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
 
-      if (feature === TabSPFxItem().id) {
+      if (capability === CapabilityOptions.SPFxTab().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
-      } else if (
-        inputs[CoreQuestionNames.ProjectType] === NewProjectTypeOutlookAddinOptionItem().id
-      ) {
+      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id) {
         const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
         }
       } else {
         if (
-          feature === M365SsoLaunchPageOptionItem().id ||
-          feature === M365SearchAppOptionItem().id
+          capability === CapabilityOptions.m365SsoLaunchPage().id ||
+          capability === CapabilityOptions.m365SearchMe().id
         ) {
           inputs.isM365 = true;
         }
-        const trigger = inputs[CoreQuestionNames.BotHostTypeTrigger] as string;
-        const templateName = Feature2TemplateName[`${feature}:${trigger}`];
+        const trigger = inputs[QuestionNames.BotTrigger] as string;
+        const templateName = Feature2TemplateName[`${capability}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);
           const safeProjectNameFromVS =
-            language === "csharp" ? inputs[CoreQuestionNames.SafeProjectName] : undefined;
+            language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
           context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
@@ -892,7 +870,7 @@ class Coordinator {
     if (!ctx.tokenProvider) {
       return err(new ObjectIsUndefinedError("tokenProvider"));
     }
-    if (!inputs[CoreQuestionNames.AppPackagePath]) {
+    if (!inputs[QuestionNames.AppPackagePath]) {
       return err(new ObjectIsUndefinedError("appPackagePath"));
     }
     const updateRes = await updateTeamsAppV3ForPublish(ctx, inputs);

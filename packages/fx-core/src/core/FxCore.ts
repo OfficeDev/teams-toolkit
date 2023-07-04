@@ -42,8 +42,8 @@ import { InvalidInputError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { CoreQuestionNames } from "./question";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
+import { QuestionNames } from "../question/questionNames";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -141,7 +141,7 @@ export class FxCore {
    */
   @hooks([QuestionMW(getQuestionsForValidateMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (inputs[CoreQuestionNames.ValidateMethod] === validateSchemaOption.id) {
+    if (inputs[QuestionNames.ValidateMethod] === validateSchemaOption.id) {
       return await this.validateManifest(inputs);
     } else {
       return await this.validateAppPackage(inputs);

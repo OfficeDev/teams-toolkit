@@ -1,14 +1,14 @@
-import * as jsonschema from "jsonschema";
-import fs from "fs-extra";
-import * as path from "path";
 import { Inputs, OptionItem, Question, Stage } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import * as path from "path";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { QuestionNames } from "../../../../question/questionNames";
+import { SPFxQuestionNames } from "../../../constants";
 import { DevEnvironmentSetupError, PathAlreadyExistsError, RetrieveSPFxInfoError } from "../error";
+import { SPFxGenerator } from "../spfxGenerator";
 import { Constants } from "./constants";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./question-helper";
-import { SPFxQuestionNames } from "../../../constants";
-import { CoreQuestionNames } from "../../../../core/question";
-import { SPFxGenerator } from "../spfxGenerator";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -136,7 +136,7 @@ export const skipAppName: Question = {
         inputs[SPFXQuestionNames.spfx_import_folder]
       );
       if (solutionName) {
-        inputs[CoreQuestionNames.AppName] = solutionName;
+        inputs[QuestionNames.AppName] = solutionName;
         if (await fs.pathExists(path.join(inputs.folder, solutionName)))
           throw PathAlreadyExistsError(path.join(inputs.folder, solutionName));
       } else {

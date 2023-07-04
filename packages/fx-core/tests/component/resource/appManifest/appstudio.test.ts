@@ -24,13 +24,13 @@ import AdmZip from "adm-zip";
 import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { RestoreFn } from "mocked-env";
-import { CoreQuestionNames } from "../../../../src/core/question";
 import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { setTools } from "../../../../src/core/globalVars";
+import { QuestionNames } from "../../../../src/question";
 
 describe("appStudio", () => {
   const tools = new MockTools();
@@ -228,7 +228,7 @@ describe("appStudio", () => {
       const info = zip.toBuffer();
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
@@ -246,7 +246,7 @@ describe("appStudio", () => {
       const info = zip.toBuffer();
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
@@ -267,7 +267,7 @@ describe("appStudio", () => {
       const info = zip.toBuffer();
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
@@ -289,7 +289,7 @@ describe("appStudio", () => {
       const info = zip.toBuffer();
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
@@ -312,7 +312,7 @@ describe("appStudio", () => {
       const info = zip.toBuffer();
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
@@ -336,7 +336,7 @@ describe("appStudio", () => {
       const info = zip.toBuffer();
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
@@ -364,7 +364,7 @@ describe("appStudio", () => {
       sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
@@ -399,7 +399,7 @@ describe("appStudio", () => {
       sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
 
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.AppPackagePath]: info,
+        [QuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };

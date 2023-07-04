@@ -37,7 +37,6 @@ import { GeneratorChecker } from "./depsChecker/generatorChecker";
 import { cpUtils } from "../../../common/deps-checker";
 import { TelemetryEvents } from "./utils/telemetryEvents";
 import { Generator } from "../generator";
-import { CoreQuestionNames } from "../../../core/question";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./utils/question-helper";
 import { SPFxQuestionNames } from "../../constants";
@@ -46,6 +45,7 @@ import { envUtil } from "../../utils/envUtil";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { EOL } from "os";
 import { FileNotFoundError } from "../../../error";
+import { QuestionNames } from "../../../question/questionNames";
 
 export class SPFxGenerator {
   @hooks([
@@ -140,9 +140,7 @@ export class SPFxGenerator {
       }
       importDetails.push(`(√) Done: Succeeded to retrieve web part manifest in SPFx solution.`);
       if (!context.templateVariables) {
-        context.templateVariables = Generator.getDefaultVariables(
-          inputs[CoreQuestionNames.AppName]
-        );
+        context.templateVariables = Generator.getDefaultVariables(inputs[QuestionNames.AppName]);
       }
       context.templateVariables["componentId"] = webpartManifest["id"];
       context.templateVariables["webpartName"] =
@@ -150,7 +148,7 @@ export class SPFxGenerator {
 
       importDetails.push(
         `(.) Processing: Generating SPFx project templates with app name: ${
-          inputs[CoreQuestionNames.AppName]
+          inputs[QuestionNames.AppName]
         }, component id: ${webpartManifest["id"]}, web part name: ${
           webpartManifest["preconfiguredEntries"][0].title.default
         }`
@@ -365,7 +363,7 @@ export class SPFxGenerator {
     try {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
-      const solutionName = inputs[CoreQuestionNames.AppName] as string;
+      const solutionName = inputs[QuestionNames.AppName] as string;
       const isAddSPFx = inputs.stage == Stage.addWebpart;
 
       const componentName = Utils.normalizeComponentName(webpartName);

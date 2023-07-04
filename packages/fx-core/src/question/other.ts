@@ -14,16 +14,15 @@ import {
   TextInputQuestion,
   ok,
 } from "@microsoft/teamsfx-api";
-import { SPFxImportFolderQuestion, SPFxWebpartNameQuestion } from "./create";
-import { QuestionNames } from "./questionNames";
-import * as path from "path";
 import fs from "fs-extra";
+import * as path from "path";
+import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { envUtil } from "../component/utils/envUtil";
 import { environmentManager } from "../core/environment";
-import { selectEnvNode } from "../core/question";
-import { ConstantString } from "../common/constants";
+import { SPFxImportFolderQuestion, SPFxWebpartNameQuestion } from "./create";
+import { QuestionNames } from "./questionNames";
 
 //// getQuestionsXXXX
 export function getQuestionsForAddWebpart(): Result<QTreeNode | undefined, FxError> {

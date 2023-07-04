@@ -106,20 +106,12 @@ export class UpdateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-<<<<<<< HEAD
-            result: err(new UnhandledUserError(new Error(message), actionName, helpLink)),
-=======
             result: err(new HttpClientError(actionName, message, helpLink)),
->>>>>>> dev
             summaries: summaries,
           };
         } else {
           return {
-<<<<<<< HEAD
-            result: err(new UnhandledError(new Error(message), actionName)),
-=======
             result: err(new HttpServerError(actionName, message)),
->>>>>>> dev
             summaries: summaries,
           };
         }

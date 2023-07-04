@@ -416,11 +416,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(HttpClientError)
       .and.property("message")
       .equals(
-<<<<<<< HEAD
-        'An unexpected error has occurred while performing the aadApp/update task. The reason for this error is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
-=======
         'A http client error happened while performing the aadApp/update task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
->>>>>>> dev
       );
   });
 
@@ -454,11 +450,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(HttpServerError)
       .and.property("message")
       .equals(
-<<<<<<< HEAD
-        'An unexpected error has occurred while performing the aadApp/update task. The reason for this error is: {"error":{"code":"InternalServerError","message":"Internal server error"}}. Welcome to report this issue by clicking on the provided "Issue Link", so that we can investigate and resolve the problem as soon as possible.'
-=======
         'A http server error happened while performing the aadApp/update task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
->>>>>>> dev
       );
   });
 

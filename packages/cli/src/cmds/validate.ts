@@ -54,36 +54,9 @@ export class ManifestValidate extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
     {
-<<<<<<< HEAD
-      let result;
-
-      if (isV3Enabled()) {
-        if (args[AppPackageFilePathParamName]) {
-          inputs.validateMethod = "validateAgainstAppPackage";
-        } else {
-          inputs.validateMethod = "validateAgainstSchema";
-          // Throw error if --env not specified
-          if (!args.env && !CLIUIInstance.interactive) {
-            const error = new EnvNotSpecified();
-            CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-            return err(error);
-          }
-        }
-        result = await core.validateApplication(inputs);
-      } else {
-        const func: Func = {
-          namespace: "fx-solution-azure",
-          method: "validateManifest",
-          params: {
-            type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-          },
-        };
-        result = await core.executeUserTask!(func, inputs);
-=======
       const validateArgsResult = this.validateArgs(args);
       if (validateArgsResult.isErr()) {
         return err(validateArgsResult.error);
->>>>>>> dev
       }
       if (!CLIUIInstance.interactive) {
         if (args[AppPackageFilePathParamName]) {

@@ -81,30 +81,16 @@ describe("Update Aad Manifest Command Tests", function () {
       env: "dev",
       "manifest-file-path": "./aad.manifest.json",
     };
-<<<<<<< HEAD
-    try {
-      await updateAadManifest!.handler(args);
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([
-        TelemetryEvent.deployAadAppStart,
-        TelemetryEvent.deployAadApp,
-      ]);
-      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("Fake_Err_name");
-      expect(e.message).equals("Fake_Err_msg");
-=======
     const result = await updateAadManifest!.runCommand(args);
     expect(result.isErr()).to.be.true;
     expect(telemetryEvents).deep.equals([
-      TelemetryEvent.UpdateAadAppStart,
-      TelemetryEvent.UpdateAadApp,
+      TelemetryEvent.deployAadAppStart,
+      TelemetryEvent.deployAadApp,
     ]);
     if (result.isErr()) {
       expect(result.error).instanceOf(UserError);
       expect(result.error.name).equals("Fake_Err_name");
       expect(result.error.message).equals("Fake_Err_msg");
->>>>>>> dev
     }
   });
 });

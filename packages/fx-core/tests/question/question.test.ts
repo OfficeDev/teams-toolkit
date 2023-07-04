@@ -2,27 +2,26 @@
 // Licensed under the MIT license.
 import { Inputs, InputsWithProjectPath, Platform, ok } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import * as fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import * as fs from "fs-extra";
-import os from "os";
+import { environmentManager } from "../../src";
 import {
   getQuestionsForAddWebpart,
   getQuestionsForCreateAppPackage,
   getQuestionsForUpdateTeamsApp,
   getQuestionsForValidateAppPackage,
   getQuestionsForValidateManifest,
-  spfxFolderQuestion,
 } from "../../src/component/question";
-import { randomAppName } from "../core/utils";
 import {
   getQuestionForDeployAadManifest,
   validateAadManifestContainsPlaceholder,
 } from "../../src/core/question";
-import { QuestionNames } from "../../src/question";
-import { environmentManager } from "../../src";
+import { QuestionNames, SPFxImportFolderQuestion } from "../../src/question";
+import { randomAppName } from "../core/utils";
 describe("question", () => {
   let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();
@@ -44,10 +43,10 @@ describe("question", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("spfxFolderQuestion", () => {
+  it("SPFxImportFolderQuestion", () => {
     const projectDir = "\\test";
 
-    const res = (spfxFolderQuestion() as any).default({ projectPath: projectDir });
+    const res = (SPFxImportFolderQuestion(true) as any).default({ projectPath: projectDir });
 
     assert.equal(path.resolve(res), path.resolve("\\test/src"));
   });

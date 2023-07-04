@@ -12,6 +12,7 @@ export enum QuestionNames {
   SPFxInstallPackage = "spfx-install-latest-package",
   SPFxFramework = "spfx-framework-type",
   SPFxWebpartName = "spfx-webpart-name",
+  SPFxWebpartDesc = "spfx-webpart-desp",
   SPFxFolder = "spfx-folder",
   OfficeAddinFolder = "addin-project-folder",
   OfficeAddinManifest = "addin-project-manifest",
@@ -45,4 +46,7 @@ export enum QuestionNames {
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
   M365Host = "m365-host",
+
+  ManifestPath = "manifest-path",
+  LocalManifestPath = "local-manifest-path",
 }

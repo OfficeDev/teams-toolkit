@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  FolderQuestion,
   FxError,
   Inputs,
   ok,
@@ -10,22 +9,15 @@ import {
   SingleSelectQuestion,
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";
-import path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   selectM365HostQuestion,
   selectTeamsAppManifestQuestion,
   selectTeamsAppPackageQuestion,
 } from "../core/question";
-import { SPFxQuestionNames, validateAppPackageOption, validateSchemaOption } from "./constants";
-import {
-  frameworkQuestion,
-  spfxImportFolderQuestion,
-  spfxPackageSelectQuestion,
-  spfxSolutionQuestion,
-  webpartNameQuestion,
-} from "./generator/spfx/utils/questions";
+import { SPFxImportFolderQuestion, SPFxWebpartNameQuestion } from "../question/create";
 import { QuestionNames } from "../question/questionNames";
+import { validateAppPackageOption, validateSchemaOption } from "./constants";
 
 export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
   let defaultUserEmail = "";
@@ -70,25 +62,13 @@ export function SelectEnvQuestion(): SingleSelectQuestion {
   };
 }
 
-export function spfxFolderQuestion(): FolderQuestion {
-  return {
-    type: "folder",
-    name: SPFxQuestionNames.SPFxFolder,
-    title: getLocalizedString("core.spfxFolder.title"),
-    placeholder: getLocalizedString("core.spfxFolder.placeholder"),
-    default: (inputs: Inputs) => {
-      return path.join(inputs.projectPath!, "src");
-    },
-  };
-}
-
 export function getQuestionsForAddWebpart(inputs: Inputs): Result<QTreeNode | undefined, FxError> {
   const addWebpart = new QTreeNode({ type: "group" });
 
-  const spfxFolder = new QTreeNode(spfxFolderQuestion());
+  const spfxFolder = new QTreeNode(SPFxImportFolderQuestion(true));
   addWebpart.addChild(spfxFolder);
 
-  const webpartName = new QTreeNode(webpartNameQuestion);
+  const webpartName = new QTreeNode(SPFxWebpartNameQuestion());
   spfxFolder.addChild(webpartName);
 
   const manifestFile = selectTeamsAppManifestQuestion(inputs);
@@ -162,31 +142,4 @@ export async function getQuestionsForPreviewWithManifest(
   group.addChild(selectM365HostQuestion());
   group.addChild(selectTeamsAppManifestQuestion(inputs));
   return ok(group);
-}
-
-export function getSPFxScaffoldQuestion(): QTreeNode {
-  const spfx_frontend_host = new QTreeNode({
-    type: "group",
-  });
-
-  const spfx_solution = new QTreeNode(spfxSolutionQuestion);
-  const spfx_solution_new = new QTreeNode({ type: "group" });
-  spfx_solution_new.condition = { equals: "new" };
-  const spfx_solution_import = new QTreeNode({ type: "group" });
-  spfx_solution_import.condition = { equals: "import" };
-  spfx_solution.addChild(spfx_solution_new);
-  spfx_solution.addChild(spfx_solution_import);
-  spfx_frontend_host.addChild(spfx_solution);
-
-  const spfx_select_package_question = new QTreeNode(spfxPackageSelectQuestion);
-  const spfx_framework_type = new QTreeNode(frameworkQuestion);
-  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-
-  spfx_solution_new.addChild(spfx_select_package_question);
-  spfx_solution_new.addChild(spfx_framework_type);
-  spfx_solution_new.addChild(spfx_webpart_name);
-
-  spfx_solution_import.addChild(new QTreeNode(spfxImportFolderQuestion()));
-
-  return spfx_frontend_host;
 }

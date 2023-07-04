@@ -782,12 +782,17 @@ export class PackageSelectOptionsHelper {
     return semver.lte(installedVersion, recommendedLowestVersion);
   }
 }
-function SPFxImportFolderQuestion(): FolderQuestion {
+export function SPFxImportFolderQuestion(hasDefault = false): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.SPFxFolder,
     title: getLocalizedString("core.spfxFolder.title"),
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+    default: hasDefault
+      ? (inputs: Inputs) => {
+          return path.join(inputs.projectPath!, "src");
+        }
+      : undefined,
   };
 }
 export const getTemplate = (inputs: Inputs): string => {
@@ -955,7 +960,7 @@ export function appNameQuestion(): TextInputQuestion {
   return question;
 }
 
-function fillInAppNameFuncQuestion(): FuncQuestion {
+export function fillInAppNameFuncQuestion(): FuncQuestion {
   const q: FuncQuestion = {
     type: "func",
     name: QuestionNames.SkipAppName,

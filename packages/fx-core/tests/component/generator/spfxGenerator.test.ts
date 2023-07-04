@@ -10,21 +10,21 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
+import { ManifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
-import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { GeneratorChecker } from "../../../src/component/generator/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/generator/spfx/depsChecker/yoChecker";
+import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
 } from "../../../src/component/generator/spfx/utils/question-helper";
-import { SPFXQuestionNames } from "../../../src/component/generator/spfx/utils/questions";
 import { Utils } from "../../../src/component/generator/spfx/utils/utils";
 import { createContextV3 } from "../../../src/component/utils";
-import { setTools } from "../../../src/core/globalVars";
-import { MockTools } from "../../core/utils";
-import { ManifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../../src/component/utils/envUtil";
+import { setTools } from "../../../src/core/globalVars";
+import { QuestionNames } from "../../../src/question";
+import { MockTools } from "../../core/utils";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -113,9 +113,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      [SPFXQuestionNames.framework_type]: "none",
-      [SPFXQuestionNames.webpart_desp]: "test",
-      [SPFXQuestionNames.webpart_name]: "hello",
+      [QuestionNames.SPFxFramework]: "none",
+      [QuestionNames.SPFxWebpartDesc]: "test",
+      [QuestionNames.SPFxWebpartName]: "hello",
       "app-name": "spfxTestApp",
       "spfx-solution": "new",
     };
@@ -131,11 +131,11 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      [SPFXQuestionNames.framework_type]: "react",
-      [SPFXQuestionNames.webpart_desp]: "test",
-      [SPFXQuestionNames.webpart_name]: "hello",
-      "app-name": "spfxTestApp",
-      "spfx-solution": "new",
+      [QuestionNames.SPFxFramework]: "react",
+      [QuestionNames.SPFxWebpartDesc]: "test",
+      [QuestionNames.SPFxWebpartName]: "hello",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "new",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -149,11 +149,11 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      [SPFXQuestionNames.framework_type]: "minimal",
-      [SPFXQuestionNames.webpart_desp]: "test",
-      [SPFXQuestionNames.webpart_name]: "hello",
-      "app-name": "spfxTestApp",
-      "spfx-solution": "new",
+      [QuestionNames.SPFxFramework]: "minimal",
+      [QuestionNames.SPFxWebpartDesc]: "test",
+      [QuestionNames.SPFxWebpartName]: "hello",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "new",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -167,12 +167,12 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      [SPFXQuestionNames.framework_type]: "minimal",
-      [SPFXQuestionNames.webpart_desp]: "test",
-      [SPFXQuestionNames.webpart_name]:
+      [QuestionNames.SPFxFramework]: "minimal",
+      [QuestionNames.SPFxWebpartDesc]: "test",
+      [QuestionNames.SPFxWebpartName]:
         "extremelylongextremelylongextremelylongextremelylongspfxwebpartname",
-      "app-name": "spfxTestApp",
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "new",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -183,9 +183,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -206,9 +206,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
@@ -237,9 +237,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -268,9 +268,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(false);
@@ -291,9 +291,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -313,9 +313,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -331,9 +331,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -356,9 +356,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.installLocally,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.installLocally,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
@@ -382,9 +382,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      [SPFXQuestionNames.use_global_package_or_install_local]: SPFxVersionOptionIds.globalPackage,
-      "spfx-solution": "new",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.globalPackage,
+      [QuestionNames.SPFxSolution]: "new",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(PackageSelectOptionsHelper, "isLowerThanRecommendedVersion").resolves(true);
@@ -406,9 +406,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      "spfx-solution": "import",
-      "spfx-folder": "c:\\test",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "import",
+      [QuestionNames.SPFxFolder]: "c:\\test",
     };
 
     sinon.stub(fs, "pathExists").resolves(true);
@@ -426,9 +426,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      "spfx-solution": "import",
-      "spfx-folder": "c:\\test",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "import",
+      [QuestionNames.SPFxFolder]: "c:\\test",
     };
 
     sinon.stub(fs, "pathExists").resolves(true);
@@ -452,9 +452,9 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: testFolder,
-      "app-name": "spfxTestApp",
-      "spfx-solution": "import",
-      "spfx-folder": "c:\\test",
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "import",
+      [QuestionNames.SPFxFolder]: "c:\\test",
     };
 
     sinon.stub(fs, "pathExists").resolves(true);

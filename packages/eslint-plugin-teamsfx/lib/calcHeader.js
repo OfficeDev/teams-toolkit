@@ -15,5 +15,5 @@ files.forEach((file) => {
   console.log(file);
 });
 if (files.length > 0) {
-  return 1;
+  process.exit(1);
 }

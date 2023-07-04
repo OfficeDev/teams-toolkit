@@ -33,8 +33,8 @@ import _ from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
-import { CoreQuestionNames } from "../../../core/question";
 import { convertProject } from "office-addin-project";
+import { QuestionNames } from "../../../question";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -83,7 +83,7 @@ export class OfficeAddinGenerator {
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
     const template = getTemplate(inputs);
-    const name = inputs[CoreQuestionNames.AppName] as string;
+    const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[AddinProjectFolderQuestion.name];
     const language = inputs[AddinLanguageQuestion.name];

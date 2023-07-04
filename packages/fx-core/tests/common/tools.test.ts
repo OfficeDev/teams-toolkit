@@ -18,13 +18,13 @@ import {
   getFixedCommonProjectSettings,
   getSPFxToken,
   getSideloadingStatus,
-  isV3Enabled,
   isVideoFilterProject,
   listDevTunnels,
   setRegion,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
+import { isV3Enabled } from "../../src/common/featureFlags";
 
 chai.use(chaiAsPromised);
 

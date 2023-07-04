@@ -27,7 +27,6 @@ import {
   ExecutionResult,
   ProjectModel,
 } from "../../../src/component/configManager/interface";
-import { NewProjectTypeOutlookAddinOptionItem } from "../../../src/component/constants";
 import { coordinator } from "../../../src/component/coordinator";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
 import * as appStudio from "../../../src/component/driver/teamsApp/appStudio";
@@ -46,15 +45,11 @@ import { FxCoreV3Implement } from "../../../src/core/FxCoreImplementV3";
 import { setTools } from "../../../src/core/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import {
-  CoreQuestionNames,
-  CreateNewOfficeAddinOption,
-  ScratchOptionYesVSC,
-} from "../../../src/core/question";
-import {
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
 } from "../../../src/error/common";
+import { ProjectTypeOptions, QuestionNames, ScratchOptions } from "../../../src/question";
 import {
   MockAzureAccountProvider,
   MockM365TokenProvider,
@@ -461,7 +456,7 @@ describe("component coordinator test", () => {
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.AppPackagePath]: "path",
+        [QuestionNames.AppPackagePath]: "path",
       };
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
       assert.isTrue(res.isErr());
@@ -495,7 +490,7 @@ describe("component coordinator test", () => {
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.AppPackagePath]: "path",
+        [QuestionNames.AppPackagePath]: "path",
       };
 
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
@@ -515,7 +510,7 @@ describe("component coordinator test", () => {
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.AppPackagePath]: "path",
+        [QuestionNames.AppPackagePath]: "path",
       };
 
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
@@ -580,9 +575,9 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
-      [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isOk());
@@ -594,9 +589,9 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.AppName]: "__invalid__",
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
+      [QuestionNames.AppName]: "__invalid__",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
@@ -609,9 +604,9 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.AppName]: undefined,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
+      [QuestionNames.AppName]: undefined,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
@@ -632,9 +627,9 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      [CoreQuestionNames.ProjectType]: NewProjectTypeOutlookAddinOptionItem().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");

@@ -40,11 +40,11 @@ import { envUtil } from "../../utils/envUtil";
 import { AppPackage } from "./interfaces/appdefinitions/appPackage";
 import { basename, extname } from "path";
 import set from "lodash/set";
-import { CoreQuestionNames } from "../../../core/question";
 import { actionName as createAppPackageActionName } from "./createAppPackage";
 import { actionName as configureTeamsAppActionName } from "./configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
 import { TelemetryUtils } from "./utils/telemetry";
+import { QuestionNames } from "../../../question";
 
 export async function checkIfAppInDifferentAcountSameTenant(
   teamsAppId: string,
@@ -238,7 +238,7 @@ export async function updateTeamsAppV3ForPublish(
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
 
   const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
-    appPackagePath: inputs[CoreQuestionNames.AppPackagePath],
+    appPackagePath: inputs[QuestionNames.AppPackagePath],
   };
 
   const zipEntries = new AdmZip(updateTeamsAppArgs.appPackagePath).getEntries();

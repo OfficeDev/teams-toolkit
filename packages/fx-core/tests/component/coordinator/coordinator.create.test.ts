@@ -1,11 +1,10 @@
 import "mocha";
 
+import { err, Inputs, ok, Platform, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import * as sinon from "sinon";
-import { err, Inputs, ok, Platform, UserError } from "@microsoft/teamsfx-api";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
-import { BotOptionItem, TabSPFxItem } from "../../../src/component/constants";
 import { coordinator, TemplateNames } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
@@ -16,10 +15,10 @@ import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
+import { QuestionNames } from "../../../src/question";
 import {
   CapabilityOptions,
   ProjectTypeOptions,
-  QuestionNames,
   ScratchOptions,
 } from "../../../src/question/create";
 import { MockTools, randomAppName } from "../../core/utils";
@@ -211,7 +210,7 @@ describe("coordinator create", () => {
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.Capabilities]: TabSPFxItem().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.SPFxSolution]: "new",
       [QuestionNames.SPFxFramework]: "none",
@@ -362,7 +361,7 @@ describe("coordinator create", () => {
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.ProjectType]: ProjectTypeOptions.bot().id,
-      [QuestionNames.Capabilities]: BotOptionItem().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       [QuestionNames.ReplaceBotIds]: ["bot"],
       teamsAppFromTdp: appDefinition,
     };

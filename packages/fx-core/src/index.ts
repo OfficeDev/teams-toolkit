@@ -35,7 +35,7 @@ export { manifestUtils } from "./component/driver/teamsApp/utils/ManifestUtils";
 export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export * from "./core/error";
-export { CoreQuestionNames } from "./core/question";
+export { QuestionNames as CoreQuestionNames } from "./question/questionNames";
 export * from "./core/types";
 export * from "./error/index";
 export * from "./ui/visitor";

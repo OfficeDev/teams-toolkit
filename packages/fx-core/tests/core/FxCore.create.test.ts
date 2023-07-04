@@ -9,12 +9,8 @@ import sinon from "sinon";
 import { AppDefinition, FxCore } from "../../src";
 import { coordinator } from "../../src/component/coordinator";
 import { setTools } from "../../src/core/globalVars";
-import {
-  CapabilityOptions,
-  ProjectTypeOptions,
-  QuestionNames,
-  ScratchOptions,
-} from "../../src/question/create";
+import { CapabilityOptions, ProjectTypeOptions, ScratchOptions } from "../../src/question/create";
+import { QuestionNames } from "../../src/question/questionNames";
 import { MockTools, randomAppName } from "./utils";
 
 describe("FxCore.createProject", () => {

@@ -11,8 +11,8 @@ import {
 import fs from "fs-extra";
 import "mocha";
 import sinon from "sinon";
-import Container from "typedi";
-import * as commonTools from "../../../../src/common/tools";
+import { Container } from "typedi";
+import * as commonTools from "../../../../src/common/featureFlags";
 import { updateManifestV3 } from "../../../../src/component/driver/teamsApp/appStudio";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";

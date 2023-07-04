@@ -4,10 +4,12 @@
 import {
   Func,
   FxError,
+  IQTreeNode,
   Inputs,
   LogProvider,
   Ok,
   Platform,
+  QTreeNode,
   Result,
   Stage,
   SystemError,
@@ -40,11 +42,11 @@ import { YamlParser } from "../../src/component/configManager/parser";
 import {
   BotOptionItem,
   MessageExtensionItem,
+  TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/component/constants";
 import { coordinator } from "../../src/component/coordinator";
-import "../../src/component/driver/aad/update";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
@@ -73,6 +75,7 @@ import {
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
+import { QuestionNames } from "../../src/question/create";
 
 const tools = new MockTools();
 
@@ -556,7 +559,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.AppName]: appName,
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
@@ -593,7 +596,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.AppName]: appName,
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Capabilities]: [TabNonSsoItem().id],
         [CoreQuestionNames.Folder]: os.tmpdir(),
         stage: Stage.create,
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
@@ -1317,6 +1320,45 @@ describe("isEnvFile", async () => {
     assert.isTrue(res.isOk());
     if (res.isOk()) {
       assert.isTrue(res.value);
+    }
+  });
+
+  describe("getQuestions", async () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const node = res.value;
+        const names: string[] = [];
+        collectNodeNames(node!, names);
+        assert.deepEqual(names, [
+          "capabilities",
+          "bot-host-type-trigger",
+          "spfx-solution",
+          "spfx-install-latest-package",
+          "spfx-framework-type",
+          "spfx-webpart-name",
+          "spfx-folder",
+          "programming-language",
+          "folder",
+          "app-name",
+        ]);
+      }
+    });
+    function collectNodeNames(node: IQTreeNode, names: string[]) {
+      if (node.data.type !== "group") {
+        names.push(node.data.name);
+      }
+      if (node.children) {
+        for (const child of node.children) {
+          collectNodeNames(child, names);
+        }
+      }
     }
   });
 });

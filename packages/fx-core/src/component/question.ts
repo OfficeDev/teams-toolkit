@@ -28,7 +28,6 @@ import {
 } from "./constants";
 import {
   createHostTypeTriggerQuestion,
-  getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import {
@@ -48,7 +47,7 @@ export async function getNotificationTriggerQuestionNode(
   if (isCLIDotNetEnabled()) {
     Object.values(Runtime).forEach((runtime) => {
       const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
-      node.condition = getConditionOfNotificationTriggerQuestion(runtime);
+      node.condition = (inputs: Inputs) => inputs["runtime"] === runtime;
       res.addChild(node);
     });
   } else {

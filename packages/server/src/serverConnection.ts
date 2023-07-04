@@ -20,10 +20,6 @@ import {
   FxCore,
   environmentManager,
   getSideloadingStatus,
-<<<<<<< HEAD
-  isV3Enabled,
-=======
->>>>>>> dev
   listDevTunnels,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";

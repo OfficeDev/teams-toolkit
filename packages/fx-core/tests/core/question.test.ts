@@ -21,6 +21,7 @@ import {
   BotOptionItem,
   CommandAndResponseOptionItem,
   DashboardOptionItem,
+  LinkUnfurlingItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionNewUIItem,
@@ -197,7 +198,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
     ]);
   });
 
-  it("should return 2 message extension type options in second layer question", () => {
+  it("should return 3 message extension type options in second layer question", () => {
     // Act
     const question = getMessageExtensionTypeProjectQuestionNode();
     // Assert
@@ -208,6 +209,7 @@ describe("New VSC UI related with createNewProjectQuestionWith2Layers()", () => 
       getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
     );
     chai.assert.deepEqual(question.staticOptions, [
+      LinkUnfurlingItem(),
       M365SearchAppOptionItem(),
       MessageExtensionNewUIItem(),
     ]);
@@ -406,16 +408,15 @@ describe("updateAadManifestQuestion()", async () => {
     );
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
-    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
-    chai.assert.isUndefined(res);
+    const res = await validateAadManifestContainsPlaceholder(inputs);
+    chai.assert.isTrue(res);
   });
   it("validateAadManifestContainsPlaceholder skip", async () => {
     inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
-    const res = await validateAadManifestContainsPlaceholder(undefined, inputs);
-    const expectRes = "Skip Current Question";
-    chai.expect(res).to.equal(expectRes);
+    const res = await validateAadManifestContainsPlaceholder(inputs);
+    chai.expect(res).to.equal(false);
   });
   it("getQuestionsForCreateProjectWithoutDotNet for cli", async () => {
     const inputs: Inputs = {

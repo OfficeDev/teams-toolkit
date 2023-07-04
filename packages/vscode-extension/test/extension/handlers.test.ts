@@ -62,14 +62,7 @@ import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { ExtensionSurvey } from "../../src/utils/survey";
-<<<<<<< HEAD
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { FileNotFoundError } from "@microsoft/teamsfx-core/build/error/common";
-import * as launch from "../../src/debug/launch";
-import { environmentManager } from "@microsoft/teamsfx-core";
-=======
 import { MockCore } from "../mocks/mockCore";
->>>>>>> dev
 
 describe("handlers", () => {
   describe("activate()", function () {

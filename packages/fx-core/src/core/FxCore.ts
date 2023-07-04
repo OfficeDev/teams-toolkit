@@ -18,6 +18,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
+import * as path from "path";
 import "reflect-metadata";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -33,6 +34,7 @@ import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
+import { getQuestionsForCreateProjectCliHelp } from "../question/create";
 import { CallbackRegistry } from "./callback";
 import { LocalCrypto } from "./crypto";
 import { environmentManager } from "./environment";
@@ -40,10 +42,8 @@ import { InvalidInputError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { CoreQuestionNames } from "./question";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
-import * as path from "path";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -186,7 +186,7 @@ export class FxCore {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     inputs.stage = Stage.getQuestions;
     if (stage === Stage.create) {
-      return await getQuestionsForCreateProjectV2(inputs);
+      return ok(getQuestionsForCreateProjectCliHelp() as QTreeNode);
     }
     return ok(undefined);
   }

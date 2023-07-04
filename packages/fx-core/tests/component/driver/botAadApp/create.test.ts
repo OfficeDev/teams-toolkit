@@ -23,7 +23,7 @@ import {
 import { CreateAADAppError } from "../../../../src/component/resource/botService/errors";
 =======
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
-import { AADApplication } from "../../../../src/component/resource/aadApp/interfaces/AADApplication";
+import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
 >>>>>>> dev
 

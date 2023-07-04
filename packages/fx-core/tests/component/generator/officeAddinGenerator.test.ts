@@ -255,7 +255,7 @@ describe("getQuestionsForScaffolding", () => {
     const q = getQuestionsForScaffolding();
     chai.expect(q.children?.length).to.eq(2);
     chai.expect(q.children?.[0].condition).is.not.undefined;
-    chai.expect(q.children?.[0].condition).has.property("validFunc");
+    chai.expect(typeof q.children?.[0].condition === "function").to.true;
   });
 
   describe("AddinLanguageQuestions", () => {

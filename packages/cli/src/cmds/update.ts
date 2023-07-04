@@ -51,13 +51,8 @@ export class UpdateAadApp extends YargsCommand {
     inputs.ignoreEnvInfo = false;
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
-<<<<<<< HEAD
-      const error = new EnvNotSpecified();
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.deployAadApp, error);
-=======
       const error = new MissingRequiredArgumentError("teamsfx aad-app", "env");
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
->>>>>>> dev
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.deployAadApp, error);
       return err(error);
     }
     // Update the aad manifest
@@ -109,13 +104,8 @@ export class UpdateTeamsApp extends YargsCommand {
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[TeamsAppManifestFilePathName];
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
-<<<<<<< HEAD
-      const error = new EnvNotSpecified();
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateTeamsApp, error);
-=======
       const error = new MissingRequiredArgumentError("teamsfx teams-app", "env");
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
->>>>>>> dev
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateTeamsApp, error);
       return err(error);
     }
 

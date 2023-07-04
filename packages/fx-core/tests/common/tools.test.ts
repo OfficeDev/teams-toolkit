@@ -8,28 +8,10 @@ import "mocha";
 import mockFs from "mock-fs";
 import Sinon, * as sinon from "sinon";
 
-<<<<<<< HEAD
-import {
-  getSideloadingStatus,
-  canAddApiConnection,
-  canAddSso,
-  getFixedCommonProjectSettings,
-  canAddCICDWorkflows,
-  getAppSPFxVersion,
-  isVideoFilterProject,
-  listDevTunnels,
-  setRegion,
-  ConvertTokenToJson,
-  getSPFxToken,
-  isV3Enabled,
-  isApiConnectEnabled,
-} from "../../src/common/tools";
-=======
 import { ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
->>>>>>> dev
 import * as telemetry from "../../src/common/telemetry";
 import {
   ConvertTokenToJson,

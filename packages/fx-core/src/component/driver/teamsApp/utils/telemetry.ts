@@ -19,6 +19,7 @@ export enum TelemetryPropertyKey {
   validationErrors = "validation-errors",
   validationWarnings = "validation-warnings",
   OverwriteIfAppAlreadyExists = "overwrite-if-app-already-exists",
+  region = "region",
 }
 
 enum TelemetryPropertyValue {

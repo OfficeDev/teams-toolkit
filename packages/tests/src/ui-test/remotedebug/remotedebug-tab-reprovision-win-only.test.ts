@@ -3,7 +3,7 @@
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../constants";
+import { Timeout, ValidationContent } from "../../constants";
 import {
   RemoteDebugTestContext,
   runProvision,
@@ -15,7 +15,7 @@ import {
   createNewProject,
   clearNotifications,
 } from "../../vscodeOperation";
-import { initPage, validateTab } from "../../playwrightOperation";
+import { initPage, validateBasicTab } from "../../playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import {
@@ -53,7 +53,7 @@ describe("Remote debug Tests", function () {
     await remoteDebugTestContext.cleanUp(
       appName,
       projectPath,
-      true,
+      false,
       false,
       false
     );
@@ -68,7 +68,7 @@ describe("Remote debug Tests", function () {
     async function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
-      await createNewProject("tab", appName);
+      await createNewProject("tabnsso", appName);
       await runProvision(appName);
       await clearNotifications();
       await cleanUpResourceGroup(appName, "dev");
@@ -84,7 +84,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, Env.displayName, false);
+      await validateBasicTab(page, ValidationContent.Tab);
     }
   );
 });

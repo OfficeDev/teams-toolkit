@@ -17,11 +17,11 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Container } from "typedi";
-import { DotenvParseOutput } from "dotenv";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -73,6 +73,8 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
+import { getQuestionsForCreateProject } from "../question/create";
+import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -80,7 +82,7 @@ import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMWV3, checkActiveResourcePlugins } from "./middleware/projectMigratorV3";
-import { QuestionModelMW, getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
+import { QuestionModelMW } from "./middleware/questionModel";
 import {
   getProjectVersionFromPath,
   getTrackingIdFromPath,
@@ -89,7 +91,6 @@ import {
 import { CoreQuestionNames, validateAadManifestContainsPlaceholder } from "./question";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { listCollaborator, checkPermission, grantPermission } from "./collaborator";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -125,12 +126,8 @@ export class FxCoreV3Implement {
     return await method.call(this, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForCreateProjectV2), ContextInjectorMW])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    inputs.stage = Stage.create;
+  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForCreateProject)])
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     const context = createContextV3();
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
@@ -219,7 +216,7 @@ export class FxCoreV3Implement {
       return err(new FileNotFoundError("deployAadManifest", manifestTemplatePath));
     }
     let manifestOutputPath: string = manifestTemplatePath;
-    if (inputs.env && !(await validateAadManifestContainsPlaceholder(undefined, inputs))) {
+    if (inputs.env && (await validateAadManifestContainsPlaceholder(inputs))) {
       await fs.ensureDir(path.join(inputs.projectPath!, "build"));
       manifestOutputPath = path.join(
         inputs.projectPath!,
@@ -351,7 +348,6 @@ export class FxCoreV3Implement {
     const res = await grantPermission(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -371,7 +367,6 @@ export class FxCoreV3Implement {
     const res = await checkPermission(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -391,7 +386,6 @@ export class FxCoreV3Implement {
     const res = await listCollaborator(
       context,
       inputs as InputsWithProjectPath,
-      undefined,
       TOOLS.tokenProvider
     );
     return res;
@@ -677,7 +671,7 @@ export class FxCoreV3Implement {
     }
 
     const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils._getCapabilities(manifestRes.value);
+    const capabilities = manifestUtils.getCapabilities(manifestRes.value);
 
     const launchHelper = new LaunchHelper(
       this.tools.tokenProvider.m365TokenProvider,

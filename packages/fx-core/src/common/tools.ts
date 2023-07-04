@@ -20,53 +20,6 @@ import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
 import * as uuid from "uuid";
-<<<<<<< HEAD
-import {
-  ConstantString,
-  FeatureFlagName,
-  TeamsClientId,
-  OfficeClientId,
-  OutlookClientId,
-  ResourcePlugins,
-} from "./constants";
-import * as crypto from "crypto";
-import { FailedToParseResourceIdError } from "../core/error";
-import { PluginNames, SolutionError, SolutionSource } from "../component/constants";
-import Mustache from "mustache";
-import {
-  HostTypeOptionAzure,
-  TabSsoItem,
-  BotSsoItem,
-  BotOptionItem,
-  TabOptionItem,
-  MessageExtensionItem,
-} from "../component/constants";
-import { TOOLS } from "../core/globalVars";
-import { LocalCrypto } from "../core/crypto";
-import { getDefaultString, getLocalizedString } from "./localizeUtils";
-import { isFeatureFlagEnabled } from "./featureFlags";
-import _ from "lodash";
-import { BotHostTypeName, BotHostTypes } from "./local/constants";
-import { isExistingTabApp } from "./projectSettingsHelper";
-import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
-import { environmentManager } from "../core/environment";
-import { NoProjectOpenedError } from "../component/feature/cicd/errors";
-import { getProjectTemplatesFolderPath } from "./utils";
-import * as path from "path";
-import { isMiniApp } from "./projectSettingsHelperV3";
-import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
-import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
-import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
-import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
-import {
-  getProjectSettingPathV2,
-  getProjectSettingPathV3,
-} from "../core/middleware/projectSettingsLoader";
-import { parse } from "yaml";
-import { Tunnel } from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
-=======
 import { parse } from "yaml";
 import { SolutionError } from "../component/constants";
 import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
@@ -80,7 +33,6 @@ import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
->>>>>>> dev
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -352,49 +304,8 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
   try {
     const settingsPath = getProjectSettingsPath(rootPath);
 
-<<<<<<< HEAD
-      if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-        // If .yml file does not exist, try to get project id from project settings of v4
-        const v4SettingsPath = getProjectSettingPathV2(rootPath);
-        if (!v4SettingsPath || !fs.pathExistsSync(v4SettingsPath)) {
-          return undefined;
-        }
-
-        const v4SettingsContent = fs.readJsonSync(v4SettingsPath);
-        return {
-          projectId: v4SettingsContent?.projectId ?? undefined,
-        };
-      }
-
-      const settingsContent = fs.readFileSync(settingsPath, "utf-8");
-      const settings = parse(settingsContent);
-      return {
-        projectId: settings?.projectId ?? undefined,
-      };
-    } else {
-      const projectSettingsPath = path.join(
-        rootPath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName,
-        ProjectSettingsFileName
-      );
-
-      if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
-        return undefined;
-      }
-
-      const projectSettings = fs.readJsonSync(projectSettingsPath);
-      return {
-        projectId: projectSettings?.projectId ?? undefined,
-        isFromSample: projectSettings?.isFromSample ?? undefined,
-        programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
-        hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
-        isM365: projectSettings?.isM365 ?? false,
-      };
-=======
     if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
       return undefined;
->>>>>>> dev
     }
 
     const settingsContent = fs.readFileSync(settingsPath, "utf-8");

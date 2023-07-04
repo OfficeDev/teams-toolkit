@@ -30,8 +30,7 @@ import { createContextV3 } from "../../src/component/utils";
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
 import { ObjectIsUndefinedError } from "../../src/core/error";
 import { setTools } from "../../src/core/globalVars";
-import { CoreQuestionNames } from "../../src/core/question";
-import { CapabilityOptions } from "../../src/question";
+import { CapabilityOptions, QuestionNames } from "../../src/question";
 import { MockTools } from "../core/utils";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
 
@@ -219,8 +218,8 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceWebsiteUrl]: ["name0"],
-        [CoreQuestionNames.ReplaceContentUrl]: ["name1"],
+        [QuestionNames.ReplaceWebsiteUrl]: ["name0"],
+        [QuestionNames.ReplaceContentUrl]: ["name1"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -362,8 +361,8 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceWebsiteUrl]: [],
-        [CoreQuestionNames.ReplaceContentUrl]: [],
+        [QuestionNames.ReplaceWebsiteUrl]: [],
+        [QuestionNames.ReplaceContentUrl]: [],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -497,7 +496,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+        [QuestionNames.ReplaceBotIds]: ["bot"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -618,7 +617,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["messageExtension"],
+        [QuestionNames.ReplaceBotIds]: ["messageExtension"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -752,7 +751,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
+        [QuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -878,7 +877,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
+        [QuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -1019,8 +1018,8 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceWebsiteUrl]: ["name0"],
-        [CoreQuestionNames.ReplaceContentUrl]: ["name1"],
+        [QuestionNames.ReplaceWebsiteUrl]: ["name0"],
+        [QuestionNames.ReplaceContentUrl]: ["name1"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",

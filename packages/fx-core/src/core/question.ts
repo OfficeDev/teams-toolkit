@@ -27,35 +27,12 @@ import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { environmentManager } from "./environment";
-
-export enum CoreQuestionNames {
-  SourceEnvName = "sourceEnvName",
-  TargetEnvName = "targetEnvName",
-  TargetResourceGroupName = "targetResourceGroupName",
-  NewResourceGroupName = "newResourceGroupName",
-  NewResourceGroupLocation = "newResourceGroupLocation",
-  NewTargetEnvName = "newTargetEnvName",
-  ExistingTabEndpoint = "existing-tab-endpoint",
-  ReplaceContentUrl = "replaceContentUrl",
-  ReplaceWebsiteUrl = "replaceWebsiteUrl",
-  AppPackagePath = "appPackagePath",
-  ReplaceBotIds = "replaceBotIds",
-  TeamsAppManifestFilePath = "manifest-path",
-  LocalTeamsAppManifestFilePath = "local-manifest-path",
-  AadAppManifestFilePath = "manifest-file-path",
-  TeamsAppPackageFilePath = "app-package-file-path",
-  ValidateMethod = "validate-method",
-  ConfirmManifest = "confirmManifest",
-  ConfirmLocalManifest = "confirmLocalManifest",
-  OutputZipPathParamName = "output-zip-path",
-  OutputManifestParamName = "output-manifest-path",
-  M365Host = "m365-host",
-}
+import { QuestionNames } from "../question/questionNames";
 
 function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
   return {
     type: "singleSelect",
-    name: CoreQuestionNames.TargetEnvName,
+    name: QuestionNames.TargetEnvName,
     title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
     staticOptions: [],
     skipSingleOption: true,
@@ -66,7 +43,7 @@ function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
 export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
   return {
     type: "text",
-    name: CoreQuestionNames.NewTargetEnvName,
+    name: QuestionNames.NewTargetEnvName,
     title: getLocalizedString("core.getQuestionNewTargetEnvironmentName.title"),
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
@@ -109,7 +86,7 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
 export function QuestionSelectSourceEnvironment(): SingleSelectQuestion {
   return {
     type: "singleSelect",
-    name: CoreQuestionNames.SourceEnvName,
+    name: QuestionNames.SourceEnvName,
     title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
     staticOptions: [],
     skipSingleOption: true,
@@ -119,7 +96,7 @@ export function QuestionSelectSourceEnvironment(): SingleSelectQuestion {
 export function QuestionSelectResourceGroup(): SingleSelectQuestion {
   return {
     type: "singleSelect",
-    name: CoreQuestionNames.TargetResourceGroupName,
+    name: QuestionNames.TargetResourceGroupName,
     title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
     staticOptions: [],
     skipSingleOption: true,
@@ -163,7 +140,7 @@ export function newResourceGroupNameQuestion(
 function QuestionNewResourceGroupName(): TextInputQuestion {
   return {
     type: "text",
-    name: CoreQuestionNames.NewResourceGroupName,
+    name: QuestionNames.NewResourceGroupName,
     title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
     placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
     // default resource group name will change with env name
@@ -174,7 +151,7 @@ function QuestionNewResourceGroupName(): TextInputQuestion {
 export function QuestionNewResourceGroupLocation(): SingleSelectQuestion {
   return {
     type: "singleSelect",
-    name: CoreQuestionNames.NewResourceGroupLocation,
+    name: QuestionNames.NewResourceGroupLocation,
     title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
     staticOptions: [],
   };
@@ -184,7 +161,7 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
   const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
 
   const aadAppManifestNode: SingleFileQuestion = {
-    name: CoreQuestionNames.AadAppManifestFilePath,
+    name: QuestionNames.AadAppManifestFilePath,
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -205,8 +182,8 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
 export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false): QTreeNode {
   const teamsAppManifestNode: SingleFileQuestion = {
     name: isLocal
-      ? CoreQuestionNames.LocalTeamsAppManifestFilePath
-      : CoreQuestionNames.TeamsAppManifestFilePath,
+      ? QuestionNames.LocalTeamsAppManifestFilePath
+      : QuestionNames.TeamsAppManifestFilePath,
     title: getLocalizedString(
       isLocal
         ? "core.selectLocalTeamsAppManifestQuestion.title"
@@ -246,7 +223,7 @@ export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false):
 
 export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   return {
-    name: CoreQuestionNames.TeamsAppPackageFilePath,
+    name: QuestionNames.TeamsAppPackageFilePath,
     title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -291,7 +268,7 @@ function confirmManifestNode(
   isLocal = false
 ): QTreeNode {
   const confirmManifestQuestion: SingleSelectQuestion = {
-    name: isLocal ? CoreQuestionNames.ConfirmLocalManifest : CoreQuestionNames.ConfirmManifest,
+    name: isLocal ? QuestionNames.ConfirmLocalManifest : QuestionNames.ConfirmManifest,
     title: isTeamsApp
       ? getLocalizedString(
           isLocal
@@ -313,19 +290,19 @@ function confirmManifestNode(
           isTeamsApp
             ? inputs[
                 isLocal
-                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
-                  : CoreQuestionNames.TeamsAppManifestFilePath
+                  ? QuestionNames.LocalTeamsAppManifestFilePath
+                  : QuestionNames.TeamsAppManifestFilePath
               ]
-            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+            : inputs[QuestionNames.AadAppManifestFilePath]
         )}`,
         description: path.dirname(
           isTeamsApp
             ? inputs[
                 isLocal
-                  ? CoreQuestionNames.LocalTeamsAppManifestFilePath
-                  : CoreQuestionNames.TeamsAppManifestFilePath
+                  ? QuestionNames.LocalTeamsAppManifestFilePath
+                  : QuestionNames.TeamsAppManifestFilePath
               ]
-            : inputs[CoreQuestionNames.AadAppManifestFilePath]
+            : inputs[QuestionNames.AadAppManifestFilePath]
         ),
       },
     ];
@@ -364,7 +341,7 @@ async function getUpdateAadManifestQuestion(inputs: Inputs): Promise<QTreeNode> 
 }
 
 export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Promise<boolean> {
-  const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
+  const aadManifestPath = inputs?.[QuestionNames.AadAppManifestFilePath];
   const placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
   const regexObj = new RegExp(placeholderRegex);
   try {
@@ -383,7 +360,7 @@ export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Pr
 
 export function selectM365HostQuestion(): QTreeNode {
   return new QTreeNode({
-    name: CoreQuestionNames.M365Host,
+    name: QuestionNames.M365Host,
     title: getLocalizedString("core.M365HostQuestion.title"),
     type: "singleSelect",
     staticOptions: [Hub.teams, Hub.outlook, Hub.office],

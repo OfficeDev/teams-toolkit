@@ -13,7 +13,6 @@ import {
 import path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
-  CoreQuestionNames,
   selectM365HostQuestion,
   selectTeamsAppManifestQuestion,
   selectTeamsAppPackageQuestion,
@@ -26,6 +25,7 @@ import {
   spfxSolutionQuestion,
   webpartNameQuestion,
 } from "./generator/spfx/utils/questions";
+import { QuestionNames } from "../question/questionNames";
 
 export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
   let defaultUserEmail = "";
@@ -105,7 +105,7 @@ export async function getQuestionsForValidateMethod(): Promise<
 > {
   const group = new QTreeNode({ type: "group" });
   const question: SingleSelectQuestion = {
-    name: CoreQuestionNames.ValidateMethod,
+    name: QuestionNames.ValidateMethod,
     title: getLocalizedString("core.selectValidateMethodQuestion.validate.selectTitle"),
     staticOptions: [validateSchemaOption, validateAppPackageOption],
     type: "singleSelect",

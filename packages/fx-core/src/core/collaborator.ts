@@ -41,12 +41,12 @@ import { FileNotFoundError } from "../error/common";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import {
-  CoreQuestionNames,
   selectAadAppManifestQuestion,
   selectEnvNode,
   selectTeamsAppManifestQuestion,
 } from "./question";
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
+import { QuestionNames } from "../question";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -209,8 +209,8 @@ export class CollaborationUtil {
     }
 
     // 3. load from env
-    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
-    const aadAppManifestFilePath = inputs?.[CoreQuestionNames.AadAppManifestFilePath] as string;
+    const teamsAppManifestFilePath = inputs?.[QuestionNames.TeamsAppManifestFilePath] as string;
+    const aadAppManifestFilePath = inputs?.[QuestionNames.AadAppManifestFilePath] as string;
 
     if (teamsAppManifestFilePath && !teamsAppId) {
       const teamsAppIdRes = await this.loadManifestId(teamsAppManifestFilePath);
@@ -737,8 +737,8 @@ export async function validateEnvQuestion(inputs: Inputs): Promise<boolean> {
   const appType = inputs?.[CollaborationConstants.AppType] as string[];
   const requireAad = appType.includes(CollaborationConstants.AadAppQuestionId);
   const requireTeams = appType.includes(CollaborationConstants.TeamsAppQuestionId);
-  const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
-  const teamsManifestPath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath];
+  const aadManifestPath = inputs?.[QuestionNames.AadAppManifestFilePath];
+  const teamsManifestPath = inputs?.[QuestionNames.TeamsAppManifestFilePath];
 
   // When both is selected, only show the question once at the end
   if ((requireAad && !aadManifestPath) || (requireTeams && !teamsManifestPath)) {

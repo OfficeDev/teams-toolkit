@@ -3,15 +3,12 @@ var content = fs.readFileSync("header-check.json", "utf8");
 var data = JSON.parse(content);
 var files = [];
 data.forEach((result) => {
-  const messages = result.messages;
-  if (messages) {
-    messages.forEach((message) => {
-      const ruleId = message.ruleId;
-      if (ruleId === "header/header") {
-        files.push(result.filePath);
-      }
-    });
-  }
+  result.messages.forEach((message) => {
+    const ruleId = message.ruleId;
+    if (ruleId === "header/header") {
+      files.push(result.filePath);
+    }
+  });
 });
 console.log(`Files with header issues: ${files.length}`);
 files.forEach((file) => {

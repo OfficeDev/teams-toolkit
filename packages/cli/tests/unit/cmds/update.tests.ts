@@ -65,8 +65,8 @@ describe("Update Aad Manifest Command Tests", function () {
     const result = await updateAadManifest!.runCommand(args);
     expect(result.isOk()).to.be.true;
     expect(telemetryEvents).deep.equals([
-      TelemetryEvent.deployAadAppStart,
-      TelemetryEvent.deployAadApp,
+      TelemetryEvent.UpdateAadAppStart,
+      TelemetryEvent.UpdateAadApp,
     ]);
   });
 
@@ -84,8 +84,8 @@ describe("Update Aad Manifest Command Tests", function () {
     const result = await updateAadManifest!.runCommand(args);
     expect(result.isErr()).to.be.true;
     expect(telemetryEvents).deep.equals([
-      TelemetryEvent.deployAadAppStart,
-      TelemetryEvent.deployAadApp,
+      TelemetryEvent.UpdateAadAppStart,
+      TelemetryEvent.UpdateAadApp,
     ]);
     if (result.isErr()) {
       expect(result.error).instanceOf(UserError);

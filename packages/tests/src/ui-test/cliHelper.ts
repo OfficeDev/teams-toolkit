@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import {
   execAsync,
   execAsyncWithRetry,
@@ -437,76 +436,6 @@ export class CliHelper {
       );
       if (e.killed && e.signal == "SIGTERM") {
         console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
-  }
-
-  static async addCapabilityToProject(
-    projectPath: string,
-    capabilityToAdd: Capability
-  ) {
-    if (isV3Enabled()) {
-      console.log("add command is not supported in v3");
-    } else {
-      const command = isPreviewFeaturesEnabled()
-        ? `teamsfx add ${capabilityToAdd}`
-        : `teamsfx capability add ${capabilityToAdd}`;
-      const timeout = 100000;
-      try {
-        const result = await execAsync(command, {
-          cwd: projectPath,
-          env: process.env,
-          timeout: timeout,
-        });
-        const message = `add capability ${capabilityToAdd} to ${projectPath}`;
-        if (result.stderr) {
-          console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
-        } else {
-          console.log(`[Successfully] ${message}`);
-        }
-      } catch (e: any) {
-        console.log(
-          `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-        );
-        if (e.killed && e.signal == "SIGTERM") {
-          console.log(`Command ${command} killed due to timeout ${timeout}`);
-        }
-      }
-    }
-  }
-
-  static async addResourceToProject(
-    projectPath: string,
-    resourceToAdd: Resource,
-    options = "",
-    processEnv?: NodeJS.ProcessEnv
-  ) {
-    if (isV3Enabled()) {
-      console.log("add command is not supported in v3");
-    } else {
-      const command = isPreviewFeaturesEnabled()
-        ? `teamsfx add ${resourceToAdd} ${options}`
-        : `teamsfx resource add ${resourceToAdd} ${options}`;
-      const timeout = 100000;
-      try {
-        const result = await execAsync(command, {
-          cwd: projectPath,
-          env: processEnv ? processEnv : process.env,
-          timeout: timeout,
-        });
-        const message = `add resource ${resourceToAdd} to ${projectPath}`;
-        if (result.stderr) {
-          console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
-        } else {
-          console.log(`[Successfully] ${message}`);
-        }
-      } catch (e: any) {
-        console.log(
-          `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-        );
-        if (e.killed && e.signal == "SIGTERM") {
-          console.log(`Command ${command} killed due to timeout ${timeout}`);
-        }
       }
     }
   }

@@ -22,6 +22,7 @@ import {
   HttpServerError,
   InvalidActionInputError,
   UnhandledError,
+  UnhandledUserError,
 } from "../../../error/common";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { AadAppClient } from "../aad/utility/aadAppClient";

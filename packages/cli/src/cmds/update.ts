@@ -40,10 +40,10 @@ export class UpdateAadApp extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.deployAadAppStart);
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateAadAppStart);
     const resultFolder = await activate(rootFolder);
     if (resultFolder.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.deployAadApp, resultFolder.error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, resultFolder.error);
       return err(resultFolder.error);
     }
     const core = resultFolder.value;
@@ -52,21 +52,21 @@ export class UpdateAadApp extends YargsCommand {
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
       const error = new MissingRequiredArgumentError("teamsfx aad-app", "env");
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.deployAadApp, error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
       return err(error);
     }
     // Update the aad manifest
     const result = await core.deployAadManifest(inputs);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.deployAadApp,
+        TelemetryEvent.UpdateAadApp,
         result.error,
         makeEnvRelatedProperty(rootFolder, inputs)
       );
 
       return err(result.error);
     }
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.deployAadApp, {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadApp, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       ...makeEnvRelatedProperty(rootFolder, inputs),
     });

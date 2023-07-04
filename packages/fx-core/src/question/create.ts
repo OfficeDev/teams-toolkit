@@ -410,18 +410,6 @@ export class CapabilityOptions {
       label: "", // No need to set display name as this option won't be shown in UI
     };
   }
-
-  static linkUnfurling(): OptionItem {
-    return {
-      id: "LinkUnfurling",
-      label: `${getLocalizedString("core.LinkUnfurlingOption.label")}`,
-      cliName: "link-unfurling",
-      detail: getLocalizedString("core.LinkUnfurlingOption.detail"),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.worksInOutlook"
-      ),
-    };
-  }
 }
 
 function capabilityQuestion(): SingleSelectQuestion {

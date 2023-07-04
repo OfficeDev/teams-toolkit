@@ -577,7 +577,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 10);
+          assert.isTrue(options.length === 11);
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
           return ok({ type: "success", result: NotificationTriggerOptions.appService().id });

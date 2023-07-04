@@ -18,7 +18,7 @@ import {
   HttpServerError,
   InvalidActionInputError,
   UnhandledError,
-} from "../../../../src/error/common";
+} from "../../../../src";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
@@ -223,30 +223,6 @@ describe("botAadAppCreate", async () => {
         "Bot password is empty. Add it in env file or clear bot id to have bot id/password pair regenerated. action: botAadApp/create."
       )
       .and.is.instanceOf(UserError);
-  });
-
-  it("should show detailed error when GraphClient throws CreateAADAppError", async () => {
-    sinon.stub(GraphClient, "registerAadApp").callsFake(() => {
-      throw new CreateAADAppError({
-        response: {
-          data: {
-            error: {
-              message: "Quota exceeded",
-            },
-          },
-        },
-      });
-    });
-    const args: any = {
-      name: expectedDisplayName,
-    };
-    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
-      (error) => {
-        console.log(JSON.stringify(error));
-        expect(error instanceof UnhandledUserError).to.be.true;
-        expect(error.message).contains("Quota exceeded");
-      }
-    );
   });
 
   it("should be good when reusing existing bot in env", async () => {

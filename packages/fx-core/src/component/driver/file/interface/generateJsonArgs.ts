@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-<<<<<<< HEAD
-export interface JsonContent {
-=======
 interface JsonContent {
->>>>>>> dev
   [key: string]: any;
 }
 

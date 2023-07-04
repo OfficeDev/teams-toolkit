@@ -7,7 +7,6 @@ import { FxError, Inputs, QTreeNode, Result, err, ok } from "@microsoft/teamsfx-
 import { traverse } from "../../ui/visitor";
 import { getQuestionsForGrantPermission, getQuestionsForListCollaborator } from "../collaborator";
 import { TOOLS } from "../globalVars";
-import { getQuestionForDeployAadManifest } from "../question";
 import { CoreHookContext } from "../types";
 
 /**
@@ -21,8 +20,6 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     getQuestionRes = await getQuestionsForGrantPermission(inputs);
   } else if (method === "listCollaborator" || method == "checkPermission") {
     getQuestionRes = await getQuestionsForListCollaborator(inputs);
-  } else if (method === "deployAadManifest") {
-    getQuestionRes = await getQuestionForDeployAadManifest(inputs);
   }
 
   if (getQuestionRes.isErr()) {

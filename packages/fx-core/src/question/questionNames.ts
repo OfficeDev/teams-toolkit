@@ -30,6 +30,7 @@ export enum QuestionNames {
   AppPackagePath = "appPackagePath",
 
   Features = "features",
+  Env = "env",
   SourceEnvName = "sourceEnvName",
   TargetEnvName = "targetEnvName",
   TargetResourceGroupName = "targetResourceGroupName",
@@ -49,4 +50,6 @@ export enum QuestionNames {
 
   ManifestPath = "manifest-path",
   LocalManifestPath = "local-manifest-path",
+
+  UserEmail = "email",
 }

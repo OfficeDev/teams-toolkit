@@ -215,15 +215,16 @@ class EnvUtil {
     }
     return ok(undefined);
   }
-  async listEnv(projectPath: string): Promise<Result<string[], FxError>> {
+  async listEnv(projectPath: string, remoteOnly = false): Promise<Result<string[], FxError>> {
     const folderRes = await pathUtils.getEnvFolderPath(projectPath);
     if (folderRes.isErr()) return err(folderRes.error);
     const envFolderPath = folderRes.value;
     if (!envFolderPath) return ok([]);
     const list = await fs.readdir(envFolderPath);
-    const envs = list
+    let envs = list
       .map((fileName) => this.extractEnvNameFromFileName(fileName))
       .filter((env) => env !== undefined) as string[];
+    if (remoteOnly) envs = envs.filter((env) => env !== "local");
     return ok(envs);
   }
   object2map(obj: DotenvOutput): Map<string, string> {

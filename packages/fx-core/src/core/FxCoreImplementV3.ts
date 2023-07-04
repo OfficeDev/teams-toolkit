@@ -58,14 +58,6 @@ import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateA
 import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import {
-  getQuestionsForAddWebpart,
-  getQuestionsForCreateAppPackage,
-  getQuestionsForPreviewWithManifest,
-  getQuestionsForUpdateTeamsApp,
-  getQuestionsForValidateAppPackage,
-  getQuestionsForValidateManifest,
-} from "../component/question";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";
@@ -90,6 +82,13 @@ import {
 import { validateAadManifestContainsPlaceholder } from "./question";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import {
+  getQuestionForDeployAadManifest,
+  getQuestionsForAddWebpart,
+  getQuestionsForPreviewWithManifest,
+  getQuestionsForSelectTeamsAppManifest,
+  getQuestionsForValidateAppPackage,
+} from "../question/other";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -201,7 +200,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionModelMW,
+    QuestionMW(getQuestionForDeployAadManifest),
     EnvLoaderMW(true, true),
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -277,7 +276,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(getQuestionsForUpdateTeamsApp),
+    QuestionMW(getQuestionsForSelectTeamsAppManifest),
     EnvLoaderMW(true),
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -573,7 +572,7 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    QuestionMW(getQuestionsForValidateManifest),
+    QuestionMW(getQuestionsForSelectTeamsAppManifest),
     ConcurrentLockerMW,
     EnvLoaderMW(true),
   ])
@@ -608,7 +607,7 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    QuestionMW(getQuestionsForCreateAppPackage),
+    QuestionMW(getQuestionsForSelectTeamsAppManifest),
     EnvLoaderMW(true),
     ConcurrentLockerMW,
   ])

@@ -35,7 +35,7 @@ import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockUserInteraction, randomAppName } from "../core/utils";
 import * as path from "path";
 
-async function callFuncs(question: Question, inputs: Inputs) {
+export async function callFuncs(question: Question, inputs: Inputs) {
   if (question.default && typeof question.default === "object") {
     await (question.default as LocalFunc<string | undefined>)(inputs);
   }

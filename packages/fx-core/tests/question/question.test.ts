@@ -1,27 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Inputs, InputsWithProjectPath, Platform, ok } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  Platform,
+  Question,
+  UserError,
+  UserInteraction,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { environmentManager } from "../../src";
+import { QuestionTreeVisitor, envUtil, traverse } from "../../src";
+import { QuestionNames, SPFxImportFolderQuestion } from "../../src/question";
 import {
   getQuestionsForAddWebpart,
-  getQuestionsForCreateAppPackage,
-  getQuestionsForUpdateTeamsApp,
+  getQuestionsForSelectTeamsAppManifest,
   getQuestionsForValidateAppPackage,
-  getQuestionsForValidateManifest,
-} from "../../src/component/question";
-import {
-  getQuestionForDeployAadManifest,
+  selectAadAppManifestQuestion,
   validateAadManifestContainsPlaceholder,
-} from "../../src/core/question";
-import { QuestionNames, SPFxImportFolderQuestion } from "../../src/question";
-import { randomAppName } from "../core/utils";
+} from "../../src/question/other";
+import { MockUserInteraction } from "../core/utils";
+import { callFuncs } from "./create.test";
+
+const ui = new MockUserInteraction();
+
 describe("question", () => {
   let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();
@@ -38,7 +45,7 @@ describe("question", () => {
       projectPath: "./test",
     };
 
-    const res = getQuestionsForAddWebpart(inputs);
+    const res = getQuestionsForAddWebpart();
 
     assert.isTrue(res.isOk());
   });
@@ -57,7 +64,7 @@ describe("question", () => {
       projectPath: ".",
       validateMethod: "validateAgainstSchema",
     };
-    const nodeRes = await getQuestionsForValidateManifest(inputs);
+    const nodeRes = await getQuestionsForSelectTeamsAppManifest();
     assert.isTrue(nodeRes.isOk());
   });
 
@@ -65,93 +72,112 @@ describe("question", () => {
     const nodeRes = await getQuestionsForValidateAppPackage();
     assert.isTrue(nodeRes.isOk());
   });
+});
 
-  it("create app package question", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
-    assert.isTrue(nodeRes.isOk());
+describe("selectAadAppManifestQuestion()", async () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
   });
 
-  it("create app package question - cli help", async () => {
+  it("traverse CLI_HELP", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI_HELP,
       projectPath: ".",
     };
-    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
-    assert.isTrue(nodeRes.isOk());
-  });
-
-  it("create app package question - vs", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VS,
-      projectPath: ".",
+    const questions: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questions.push(question.name);
+      return ok({ type: "success", result: undefined });
     };
-    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
-    assert.isTrue(nodeRes.isOk());
+    await traverse(selectAadAppManifestQuestion(), inputs, ui, undefined, visitor);
+    assert.deepEqual(questions, []);
   });
 
-  it("update Teams app question", async () => {
+  it("happy path", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
     };
-    const nodeRes = await getQuestionsForUpdateTeamsApp(inputs);
-    assert.isTrue(nodeRes.isOk());
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "local"]));
+    const questions: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questions.push(question.name);
+      await callFuncs(question, inputs);
+      if (question.name === QuestionNames.AadAppManifestFilePath) {
+        return ok({ type: "success", result: "aadAppManifest" });
+      } else if (question.name === QuestionNames.Env) {
+        return ok({ type: "success", result: "dev" });
+      } else if (question.name === QuestionNames.ConfirmManifest) {
+        return ok({ type: "success", result: "manifest" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(selectAadAppManifestQuestion(), inputs, ui, undefined, visitor);
+    console.log(questions);
+    assert.deepEqual(questions, [
+      QuestionNames.AadAppManifestFilePath,
+      QuestionNames.ConfirmManifest,
+      QuestionNames.Env,
+    ]);
   });
-});
-
-describe("updateAadManifestQuestion()", async () => {
-  const inputs: InputsWithProjectPath = {
-    platform: Platform.VSCode,
-    projectPath: path.join(os.tmpdir(), randomAppName()),
-  };
-
-  afterEach(async () => {
-    sinon.restore();
-  });
-  it("if getQuestionForDeployAadManifest not dynamic", async () => {
-    inputs.platform = Platform.CLI_HELP;
-    const nodeRes = await getQuestionForDeployAadManifest(inputs);
-    assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
-  });
-
-  it("getQuestionForDeployAadManifest happy path", async () => {
-    inputs.platform = Platform.VSCode;
-    inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs.env = "dev";
-    sinon.stub(fs, "pathExistsSync").returns(true);
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
-    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    const nodeRes = await getQuestionForDeployAadManifest(inputs);
-    assert.isTrue(nodeRes.isOk());
-    if (nodeRes.isOk()) {
-      const node = nodeRes.value;
-      assert.isTrue(node != undefined && node?.children?.length == 2);
-      const aadAppManifestQuestion = node?.children?.[0];
-      const envQuestion = node?.children?.[1];
-      assert.isNotNull(aadAppManifestQuestion);
-      assert.isNotNull(envQuestion);
-    }
-  });
-  it("getQuestionForDeployAadManifest without env", async () => {
-    inputs.platform = Platform.VSCode;
-    inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs.env = "dev";
-    sinon.stub(fs, "pathExistsSync").returns(false);
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
-    const nodeRes = await getQuestionForDeployAadManifest(inputs);
-    assert.isTrue(nodeRes.isOk());
-    if (nodeRes.isOk()) {
-      const node = nodeRes.value;
-      assert.isTrue(node != undefined && node?.children?.length == 1);
-    }
+  it("without env", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    sandbox.stub(envUtil, "listEnv").resolves(err(new UserError({})));
+    const questions: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questions.push(question.name);
+      await callFuncs(question, inputs);
+      if (question.name === QuestionNames.AadAppManifestFilePath) {
+        return ok({ type: "success", result: "aadAppManifest" });
+      } else if (question.name === QuestionNames.Env) {
+        return ok({ type: "success", result: "dev" });
+      } else if (question.name === QuestionNames.ConfirmManifest) {
+        return ok({ type: "success", result: "manifest" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(selectAadAppManifestQuestion(), inputs, ui, undefined, visitor);
+    console.log(questions);
+    assert.deepEqual(questions, [
+      QuestionNames.AadAppManifestFilePath,
+      QuestionNames.ConfirmManifest,
+      QuestionNames.Env,
+    ]);
   });
   it("validateAadManifestContainsPlaceholder return undefined", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
     inputs[QuestionNames.AadAppManifestFilePath] = path.join(
       __dirname,
       "..",
@@ -159,15 +185,19 @@ describe("updateAadManifestQuestion()", async () => {
       "sampleV3",
       "aad.manifest.json"
     );
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
     const res = await validateAadManifestContainsPlaceholder(inputs);
     assert.isTrue(res);
   });
   it("validateAadManifestContainsPlaceholder skip", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
     inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("test"));
     const res = await validateAadManifestContainsPlaceholder(inputs);
     assert.isFalse(res);
   });

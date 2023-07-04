@@ -7,14 +7,11 @@ import * as path from "path";
  * @author Huajie Zhang <zhjay23@qq.com>
  */
 import {
-  AppPackageFolderName,
-  BuildFolderName,
   DynamicPlatforms,
   FxError,
   Inputs,
   LocalEnvironmentName,
   ok,
-  Platform,
   QTreeNode,
   Result,
   SingleFileQuestion,
@@ -25,9 +22,8 @@ import {
 
 import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
-import { Hub } from "../common/m365/constants";
-import { environmentManager } from "./environment";
 import { QuestionNames } from "../question/questionNames";
+import { environmentManager } from "./environment";
 
 function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
   return {
@@ -179,69 +175,6 @@ export function selectAadAppManifestQuestion(inputs: Inputs): QTreeNode {
   return res;
 }
 
-export function selectTeamsAppManifestQuestion(inputs: Inputs, isLocal = false): QTreeNode {
-  const teamsAppManifestNode: SingleFileQuestion = {
-    name: isLocal
-      ? QuestionNames.LocalTeamsAppManifestFilePath
-      : QuestionNames.TeamsAppManifestFilePath,
-    title: getLocalizedString(
-      isLocal
-        ? "core.selectLocalTeamsAppManifestQuestion.title"
-        : "core.selectTeamsAppManifestQuestion.title"
-    ),
-    type: "singleFile",
-    default: (inputs: Inputs): string | undefined => {
-      const manifestPath = path.join(
-        inputs.projectPath!,
-        AppPackageFolderName,
-        isLocal ? "manifest.local.json" : "manifest.json"
-      );
-      if (fs.pathExistsSync(manifestPath)) {
-        return manifestPath;
-      } else {
-        return undefined;
-      }
-    },
-  };
-
-  const res = new QTreeNode(teamsAppManifestNode);
-  if (
-    inputs.platform !== Platform.CLI_HELP &&
-    inputs.platform !== Platform.CLI &&
-    inputs.platform !== Platform.VS
-  ) {
-    const manifestPath = path.join(
-      inputs.projectPath!,
-      AppPackageFolderName,
-      isLocal ? "manifest.local.json" : "manifest.json"
-    );
-    const confirmNode = confirmManifestNode(manifestPath, true, isLocal);
-    res.addChild(confirmNode);
-  }
-  return res;
-}
-
-export function selectTeamsAppPackageQuestion(): SingleFileQuestion {
-  return {
-    name: QuestionNames.TeamsAppPackageFilePath,
-    title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
-    type: "singleFile",
-    default: (inputs: Inputs): string | undefined => {
-      const appPackagePath: string = path.join(
-        inputs.projectPath!,
-        AppPackageFolderName,
-        BuildFolderName,
-        "appPackage.dev.zip"
-      );
-      if (fs.pathExistsSync(appPackagePath)) {
-        return appPackagePath;
-      } else {
-        return undefined;
-      }
-    },
-  };
-}
-
 export async function selectEnvNode(
   inputs: Inputs,
   isRemote = true
@@ -356,14 +289,4 @@ export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Pr
     return false;
   }
   return false;
-}
-
-export function selectM365HostQuestion(): QTreeNode {
-  return new QTreeNode({
-    name: QuestionNames.M365Host,
-    title: getLocalizedString("core.M365HostQuestion.title"),
-    type: "singleSelect",
-    staticOptions: [Hub.teams, Hub.outlook, Hub.office],
-    placeholder: getLocalizedString("core.M365HostQuestion.placeholder"),
-  });
 }

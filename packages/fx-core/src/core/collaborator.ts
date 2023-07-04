@@ -36,17 +36,13 @@ import {
 import { AppStudioScopes, GraphScopes } from "../common/tools";
 import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../component/constants";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
-import { getUserEmailQuestion } from "../component/question";
+import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 import { FileNotFoundError } from "../error/common";
+import { QuestionNames } from "../question";
+import { inputUserEmailQuestion, selectTeamsAppManifestQuestionNode } from "../question/other";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
-import {
-  selectAadAppManifestQuestion,
-  selectEnvNode,
-  selectTeamsAppManifestQuestion,
-} from "./question";
-import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
-import { QuestionNames } from "../question";
+import { selectAadAppManifestQuestion, selectEnvNode } from "./question";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -654,7 +650,7 @@ export async function getQuestionsForGrantPermission(
     const jsonObject = jsonObjectRes.value;
 
     const root = await getCollaborationQuestionNode(inputs);
-    root.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+    root.addChild(new QTreeNode(inputUserEmailQuestion((jsonObject as any).upn)));
     return ok(root);
   }
   return ok(undefined);
@@ -707,7 +703,7 @@ async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> 
   const root = new QTreeNode(selectAppTypeQuestion());
 
   // Teams app manifest select node
-  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
+  const teamsAppSelectNode = selectTeamsAppManifestQuestionNode() as QTreeNode;
   teamsAppSelectNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
   root.addChild(teamsAppSelectNode);
 

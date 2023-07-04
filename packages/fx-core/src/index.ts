@@ -19,7 +19,6 @@ export * from "./common/tools";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export * from "./component/constants";
 export * from "./component/migrate";
-export * from "./component/question";
 export { TelemetryUtils } from "./component/driver/teamsApp/utils/telemetry";
 export { envUtil, DotenvOutput } from "./component/utils/envUtil";
 export { metadataUtil } from "./component/utils/metadataUtil";

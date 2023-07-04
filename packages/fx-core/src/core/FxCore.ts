@@ -29,7 +29,6 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
 import { EnvLoaderMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { getQuestionsForValidateMethod } from "../component/question";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
@@ -44,6 +43,7 @@ import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
 import { QuestionNames } from "../question/questionNames";
+import { getQuestionsForValidateMethod } from "../question/other";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 

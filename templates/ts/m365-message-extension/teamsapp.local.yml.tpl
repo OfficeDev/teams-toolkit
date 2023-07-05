@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.1.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.1.0
+version: 1.0.0
 
 provision:
   # Creates a Teams app
@@ -11,7 +11,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Create or reuse an existing Azure Active Directory application for bot.
@@ -23,15 +23,7 @@ provision:
       # The Azure Active Directory application's client id created for bot.
       botId: BOT_ID
       # The Azure Active Directory application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD 
-
-  # Generate runtime appsettings to JSON file
-  - uses: file/createOrUpdateJsonFile
-    with:
-      target: ./appsettings.Development.json
-      content:
-        BOT_ID: ${{BOT_ID}}
-        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+      botPassword: SECRET_BOT_PASSWORD
 
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
@@ -70,22 +62,6 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-
-  # Create or update debug profile in lauchsettings file
-  - uses: file/createOrUpdateJsonFile
-    with:
-      target: ./Properties/launchSettings.json
-      content:
-        profiles:
-          Microsoft Teams (browser):
-            commandName: "Project"
-            dotnetRunMessages: true
-            launchBrowser: true
-            launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
-            applicationUrl: "https://localhost:7130;http://localhost:5130"
-            environmentVariables:
-              ASPNETCORE_ENVIRONMENT: "Development"
-            hotReloadProfile: "aspnetcore"
 
   # Extend your Teams app to Outlook and the Microsoft 365 app
   - uses: teamsApp/extendToM365

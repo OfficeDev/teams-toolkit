@@ -23,7 +23,7 @@ export interface Func extends FunctionRouter {
 /**
  * definition of a function that return some dynamic value
  */
-export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T> | T;
+export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
 export type OnSelectionChangeFunc = (
   currentSelectedIds: Set<string>,

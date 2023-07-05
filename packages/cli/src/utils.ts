@@ -49,7 +49,7 @@ export function getSingleOptionString(
   }
 }
 
-export function toYargsOptions(data: Question): Options {
+export async function toYargsOptions(data: Question): Promise<Options> {
   const choices = getChoicesFromQTNodeQuestion(data);
 
   let defaultValue;
@@ -60,10 +60,14 @@ export function toYargsOptions(data: Question): Options {
   } else {
     defaultValue = undefined;
   }
+  let title: any = data.title;
+  if (typeof data.title === "function") {
+    title = await data.title({ platform: Platform.CLI_HELP });
+  }
   if (defaultValue === undefined) {
     return {
       array: data.type === "multiSelect",
-      description: (data.title as string) || "",
+      description: title || "",
       choices: choices,
       hidden: !!(data as any).hide,
       global: false,
@@ -72,7 +76,7 @@ export function toYargsOptions(data: Question): Options {
   }
   return {
     array: data.type === "multiSelect",
-    description: (data.title as string) || "",
+    description: title || "",
     default: defaultValue,
     choices: choices,
     hidden: !!(data as any).hide,

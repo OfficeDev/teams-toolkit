@@ -34,7 +34,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
-import { QuestionNames } from "../../../question";
+import { QuestionNames } from "../../../question/questionNames";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";

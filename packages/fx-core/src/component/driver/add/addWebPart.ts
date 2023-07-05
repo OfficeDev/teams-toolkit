@@ -20,7 +20,7 @@ import { SPFxGenerator } from "../../generator/spfx/spfxGenerator";
 import { createContextV3 } from "../../utils";
 import { Constants } from "./utility/constants";
 import { NoConfigurationError } from "./error/noConfigurationError";
-import { QuestionNames } from "../../../question";
+import { QuestionNames } from "../../../question/questionNames";
 
 @Service(Constants.ActionName)
 export class AddWebPartDriver implements StepDriver {

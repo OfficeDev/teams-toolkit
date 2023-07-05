@@ -23,7 +23,6 @@ import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
-import { Runtime } from "../component/constants";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
@@ -440,7 +439,7 @@ function capabilityQuestion(): SingleSelectQuestion {
         }
       }
       // dotnet capabilities
-      if (getRuntime(inputs) === Runtime.dotnet) {
+      if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
         return CapabilityOptions.dotnetCaps();
       }
       // nodejs capabilities
@@ -561,13 +560,13 @@ export class NotificationTriggerOptions {
   }
 }
 
-function getRuntime(inputs: Inputs): Runtime {
-  let runtime = Runtime.nodejs;
+function getRuntime(inputs: Inputs): string {
+  let runtime = RuntimeOptions.NodeJS().id;
   if (isCLIDotNetEnabled()) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
   } else {
     if (inputs?.platform === Platform.VS) {
-      runtime = Runtime.dotnet;
+      runtime = RuntimeOptions.DotNet().id;
     }
   }
   return runtime;
@@ -582,7 +581,7 @@ function botTriggerQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       const runtime = getRuntime(inputs);
       return [
-        runtime === Runtime.dotnet
+        runtime === RuntimeOptions.DotNet().id
           ? NotificationTriggerOptions.appServiceForVS()
           : NotificationTriggerOptions.appService(),
         ...NotificationTriggerOptions.functionsTriggers(),
@@ -590,7 +589,7 @@ function botTriggerQuestion(): SingleSelectQuestion {
     },
     default: (inputs: Inputs) => {
       const runtime = getRuntime(inputs);
-      return runtime === Runtime.dotnet
+      return runtime === RuntimeOptions.DotNet().id
         ? NotificationTriggerOptions.appServiceForVS().id
         : NotificationTriggerOptions.appService().id;
     },
@@ -835,7 +834,7 @@ const officeAddinJsonData = new projectsJsonData();
 export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
-  if (runtime === Runtime.dotnet) {
+  if (runtime === RuntimeOptions.DotNet().id) {
     return [{ id: "csharp", label: "C#" }];
   }
   // office addin supports language defined in officeAddinJsonData
@@ -881,7 +880,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
     placeholder: (inputs: Inputs): string => {
       const runtime = getRuntime(inputs);
       // dotnet
-      if (runtime === Runtime.dotnet) {
+      if (runtime === RuntimeOptions.DotNet().id) {
         return "";
       }
       // office addin

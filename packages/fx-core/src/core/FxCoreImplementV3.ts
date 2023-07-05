@@ -63,7 +63,7 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { QuestionNames, questions } from "../question";
+import { QuestionNames } from "../question/questionNames";
 import { isAadMainifestContainsPlaceholder } from "../question/other";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
@@ -81,6 +81,7 @@ import {
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { SPFxVersionOptionIds } from "../question/create";
+import { questions } from "../question";
 
 export class FxCoreV3Implement {
   tools: Tools;

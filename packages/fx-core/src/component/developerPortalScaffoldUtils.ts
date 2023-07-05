@@ -40,7 +40,7 @@ import {
   needTabCode,
 } from "./driver/teamsApp/utils/utils";
 import { envUtil } from "./utils/envUtil";
-import { QuestionNames } from "../question";
+import { QuestionNames } from "../question/questionNames";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";

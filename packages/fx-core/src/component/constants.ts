@@ -50,17 +50,6 @@ export enum Scenarios {
   Api = "Api",
 }
 
-export enum Runtime {
-  nodejs = "node",
-  dotnet = "dotnet",
-}
-
-export const languageToRuntime = new Map([
-  [ProgrammingLanguage.JS, Runtime.nodejs],
-  [ProgrammingLanguage.TS, Runtime.nodejs],
-  [ProgrammingLanguage.CSharp, Runtime.dotnet],
-]);
-
 export const TelemetryConstants = {
   eventPrefix: "-start",
   properties: {

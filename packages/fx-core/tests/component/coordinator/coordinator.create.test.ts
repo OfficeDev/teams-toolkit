@@ -15,7 +15,7 @@ import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
-import { QuestionNames } from "../../../src/question";
+import { QuestionNames } from "../../../src/question/questionNames";
 import {
   CapabilityOptions,
   ProjectTypeOptions,

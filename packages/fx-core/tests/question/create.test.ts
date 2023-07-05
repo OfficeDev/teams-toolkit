@@ -17,12 +17,12 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { getLocalizedString } from "../../src/common/localizeUtils";
-import { Runtime } from "../../src/component/constants";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import {
   CapabilityOptions,
   NotificationTriggerOptions,
   ProjectTypeOptions,
+  RuntimeOptions,
   SPFxVersionOptionIds,
   ScratchOptions,
   appNameQuestion,
@@ -36,13 +36,13 @@ import { MockUserInteraction, randomAppName } from "../core/utils";
 import * as path from "path";
 
 export async function callFuncs(question: Question, inputs: Inputs) {
-  if (question.default && typeof question.default === "object") {
+  if (question.default && typeof question.default !== "string") {
     await (question.default as LocalFunc<string | undefined>)(inputs);
   }
 
   if (
     (question.type === "singleSelect" || question.type === "multiSelect") &&
-    typeof question.default === "object" &&
+    typeof question.dynamicOptions !== "object" &&
     question.dynamicOptions
   ) {
     await question.dynamicOptions(inputs);
@@ -51,7 +51,7 @@ export async function callFuncs(question: Question, inputs: Inputs) {
     await (question as any).validation.validFunc(inputs);
   }
 
-  if ((question as any).placeholder && typeof (question as any).placeholder === "object") {
+  if ((question as any).placeholder && typeof (question as any).placeholder !== "string") {
     await (question as any).placeholder(inputs);
   }
 }
@@ -627,7 +627,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.Scratch) {
           return ok({ type: "success", result: ScratchOptions.yes().id });
         } else if (question.name === QuestionNames.Runtime) {
-          return ok({ type: "success", result: Runtime.dotnet });
+          return ok({ type: "success", result: RuntimeOptions.DotNet().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -673,7 +673,7 @@ describe("scaffold question", () => {
     it("dotnet for VS", async () => {
       const options = getLanguageOptions({
         platform: Platform.VS,
-        runtime: Runtime.dotnet,
+        runtime: RuntimeOptions.DotNet().id,
       });
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });
@@ -682,7 +682,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
       const options = getLanguageOptions({
         platform: Platform.CLI,
-        runtime: Runtime.dotnet,
+        runtime: RuntimeOptions.DotNet().id,
       });
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });

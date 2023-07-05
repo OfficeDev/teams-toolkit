@@ -1396,7 +1396,7 @@ async function showLocalDebugMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
-  const appName = (await getAppName()) ?? "Teams App";
+  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
   let message = util.format(
     localize("teamstoolkit.handlers.localDebugDescription.fallback"),
@@ -1437,7 +1437,7 @@ async function showLocalPreviewMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
-  const appName = (await getAppName()) ?? "Teams App";
+  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
   let message = util.format(
     localize("teamstoolkit.handlers.localPreviewDescription.fallback"),

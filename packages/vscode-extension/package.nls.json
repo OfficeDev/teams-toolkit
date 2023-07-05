@@ -166,6 +166,7 @@
     "teamstoolkit.handlers.createProjectNotification": "You should create a new app or open an existing one to open the README file.",
     "teamstoolkit.handlers.createProjectTitle": "Create a New App",
     "teamstoolkit.handlers.editSecretTitle": "Edit the decrypted secret value",
+    "teamstoolkit.handlers.fallbackAppName": "Your App",
     "teamstoolkit.handlers.fileNotFound": "%s not found, cannot open it.",
     "teamstoolkit.handlers.findEnvFailed": "Can not find project environment %s.",
     "teamstoolkit.handlers.invalidArgs": "Invalid args: %s.",

@@ -15,18 +15,36 @@ export * from "./questionNames";
 export * from "./create";
 
 class QuestionNodes {
-  createProject: () => IQTreeNode | undefined = createProjectQuestionNode;
-  createProjectCliHelp: () => IQTreeNode | undefined = createProjectCliHelpNode;
-  addWebpart: () => IQTreeNode | undefined = addWebPartQuestionNode;
-  selectTeamsAppManifest: () => IQTreeNode | undefined = selectTeamsAppManifestQuestionNode;
-  selectTeamsAppValidationMethod: () => IQTreeNode | undefined =
-    selectTeamsAppValidationMethodQuestionNode;
-  selectTeamsAppPackage: () => IQTreeNode | undefined = selectTeamsAppPackageQuestionNode;
-  previewWithTeamsAppManifest: () => IQTreeNode | undefined =
-    previewWithTeamsAppManifestQuestionNode;
-  listCollaborator: () => IQTreeNode | undefined = listCollaboratorQuestionNode;
-  grantPermission: () => IQTreeNode | undefined = grantPermissionQuestionNode;
-  deployAadManifest: () => IQTreeNode | undefined = deployAadManifestQuestionNode;
+  createProject(): IQTreeNode | undefined {
+    return createProjectQuestionNode();
+  }
+  createProjectCliHelp(): IQTreeNode | undefined {
+    return createProjectCliHelpNode();
+  }
+  addWebpart(): IQTreeNode | undefined {
+    return addWebPartQuestionNode();
+  }
+  selectTeamsAppManifest(): IQTreeNode | undefined {
+    return selectTeamsAppManifestQuestionNode();
+  }
+  selectTeamsAppValidationMethod(): IQTreeNode | undefined {
+    return selectTeamsAppValidationMethodQuestionNode();
+  }
+  selectTeamsAppPackage(): IQTreeNode | undefined {
+    return selectTeamsAppPackageQuestionNode();
+  }
+  previewWithTeamsAppManifest(): IQTreeNode | undefined {
+    return previewWithTeamsAppManifestQuestionNode();
+  }
+  listCollaborator(): IQTreeNode | undefined {
+    return listCollaboratorQuestionNode();
+  }
+  grantPermission(): IQTreeNode | undefined {
+    return grantPermissionQuestionNode();
+  }
+  deployAadManifest(): IQTreeNode | undefined {
+    return deployAadManifestQuestionNode();
+  }
 }
 
 export const questionNodes = new QuestionNodes();

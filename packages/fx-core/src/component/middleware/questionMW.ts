@@ -2,16 +2,14 @@
 // Licensed under the MIT license.
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, IQTreeNode, MaybePromise, Result } from "@microsoft/teamsfx-api";
+import { FxError, IQTreeNode, Inputs, Result, err } from "@microsoft/teamsfx-api";
 import { TOOLS } from "../../core/globalVars";
 import { traverse } from "../../ui/visitor";
 
-export function QuestionMW(
-  question: (inputs: Inputs) => MaybePromise<Result<IQTreeNode | undefined, FxError>>
-): Middleware {
+export function QuestionMW(question: () => Result<IQTreeNode | undefined, FxError>): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const inputs = ctx.arguments[0] as Inputs;
-    const getQuestionRes = await question(inputs);
+    const getQuestionRes = question();
     if (getQuestionRes.isErr()) throw getQuestionRes.error;
     const node = getQuestionRes.value;
     if (node) {

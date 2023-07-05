@@ -66,7 +66,7 @@ import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { QuestionNames, getQuestionsForCreateProject } from "../question";
 import {
-  getQuestionForDeployAadManifest,
+  getQuestionsForDeployAadManifest,
   getQuestionsForAddWebpart,
   getQuestionsForGrantPermission,
   getQuestionsForListCollaborator,
@@ -201,7 +201,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(getQuestionForDeployAadManifest),
+    QuestionMW(getQuestionsForDeployAadManifest),
     EnvLoaderMW(true, true),
     ConcurrentLockerMW,
     ContextInjectorMW,

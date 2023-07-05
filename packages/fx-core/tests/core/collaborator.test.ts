@@ -1380,124 +1380,6 @@ describe("Collaborator APIs for V3", () => {
       sandbox.restore();
     });
 
-    it("env node validation: select teams and aad, need select env", async () => {
-      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isTrue(res);
-    });
-
-    it("env node validation: waiting for select aad manifest", async () => {
-      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[QuestionNames.AadAppManifestFilePath] = undefined;
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select teams and aad, no need select env", async () => {
-      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = "dev";
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select teams and aad, app id hardcoded", async () => {
-      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return false;
-      });
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select teams and aad, invalid manifest", async () => {
-      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-
-      sandbox
-        .stub(CollaborationUtil, "loadManifestId")
-        .resolves(err(new UserError("source", "name", "message")));
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select aad, invalid manifest", async () => {
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs.env = undefined;
-
-      sandbox
-        .stub(CollaborationUtil, "loadManifestId")
-        .resolves(err(new UserError("source", "name", "message")));
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isFalse(res);
-    });
-
-    it("env node validation: select aad, need select env", async () => {
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-
-      const res = await validateEnvQuestion(inputs);
-      assert.isTrue(res);
-    });
-
     it("happy path: getQuestionsForGrantPermission", async () => {
       inputs.platform = Platform.VSCode;
       inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
@@ -1613,12 +1495,6 @@ describe("Collaborator APIs for V3", () => {
       }
     });
 
-    it("getQuestionsForGrantPermission not dynamic", async () => {
-      inputs.platform = Platform.CLI_HELP;
-      const nodeRes = await getQuestionsForGrantPermission(inputs);
-      assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
-    });
-
     it("happy path: getQuestionsForListCollaborator", async () => {
       inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
       inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
@@ -1703,12 +1579,6 @@ describe("Collaborator APIs for V3", () => {
           assert.isUndefined(aadAppQuestionActivate);
         }
       }
-    });
-
-    it("getQuestionsForListCollaborator not dynamic", async () => {
-      inputs.platform = Platform.CLI_HELP;
-      const nodeRes = await getQuestionsForListCollaborator(inputs);
-      assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
     });
   });
 });

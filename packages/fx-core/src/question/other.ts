@@ -84,7 +84,7 @@ export function getQuestionsForGrantPermission(): Result<IQTreeNode | undefined,
   } as QTreeNode);
 }
 
-export function getQuestionForDeployAadManifest(): Result<QTreeNode | undefined, FxError> {
+export function getQuestionsForDeployAadManifest(): Result<IQTreeNode | undefined, FxError> {
   return ok({
     data: { type: "group" },
     children: [
@@ -94,8 +94,9 @@ export function getQuestionForDeployAadManifest(): Result<QTreeNode | undefined,
         children: [
           {
             condition: (inputs: Inputs) =>
+              inputs.projectPath !== undefined &&
               path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
-              path.join(inputs.projectPath!, "aad.manifest.json"),
+                path.join(inputs.projectPath, "aad.manifest.json"),
             data: confirmManifestQuestion(false, false),
           },
           {
@@ -105,7 +106,7 @@ export function getQuestionForDeployAadManifest(): Result<QTreeNode | undefined,
         ],
       },
     ],
-  } as QTreeNode);
+  });
 }
 
 export function selectTeamsAppManifestQuestionNode(): IQTreeNode {

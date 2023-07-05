@@ -31,7 +31,7 @@ export class AddWebpart extends YargsCommand {
       const node = result.value ?? EmptyQTreeNode;
       const filteredNode = node;
       const nodes = flattenNodes(filteredNode).concat([RootFolderNode]);
-      this.params = toYargsOptionsGroup(nodes);
+      this.params = await toYargsOptionsGroup(nodes);
     }
     return yargs.options(this.params);
   }

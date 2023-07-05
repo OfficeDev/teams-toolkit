@@ -245,8 +245,9 @@
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 
-/packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
-/packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
+/packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
+/packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
+/packages/fx-core/resource/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon

@@ -19,35 +19,39 @@ describe("teamsfx new template", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`${TemplateProject.DiceRoller}`, { testPlanCaseId: 24132156 }, async function () {
-    await Executor.openTemplateProject(appName, testFolder, TemplateProject.DiceRoller);
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+  it(
+    `${TemplateProject.DiceRoller}`,
+    { testPlanCaseId: 24132156, author: "v-ivanchen@microsoft.com" },
+    async function () {
+      await Executor.openTemplateProject(appName, testFolder, TemplateProject.DiceRoller);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
-    // Provision
-    {
-      const { success } = await Executor.provision(projectPath);
-      expect(success).to.be.true;
-    }
+      // Provision
+      {
+        const { success } = await Executor.provision(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // deploy
-    {
-      const { success } = await Executor.deploy(projectPath);
-      expect(success).to.be.true;
-    }
+      // deploy
+      {
+        const { success } = await Executor.deploy(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // validate
-    {
-      const { success } = await Executor.validate(projectPath);
-      expect(success).to.be.true;
-    }
+      // validate
+      {
+        const { success } = await Executor.validate(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // package
-    {
-      const { success } = await Executor.package(projectPath);
-      expect(success).to.be.true;
+      // package
+      {
+        const { success } = await Executor.package(projectPath);
+        expect(success).to.be.true;
+      }
     }
-  });
+  );
 
   after(async () => {
     await Cleaner.clean(projectPath);

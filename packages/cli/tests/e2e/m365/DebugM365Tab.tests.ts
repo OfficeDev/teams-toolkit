@@ -29,65 +29,69 @@ describe("Debug V3 m365-tab template", () => {
     await Cleaner.clean(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17449535 }, async function () {
-    {
-      const result = await Executor.createProject(
-        testFolder,
-        appName,
-        Capability.M365SsoLaunchPage,
-        ProgrammingLanguage.TS
-      );
-      expect(result.success).to.be.true;
+  it(
+    "happy path: provision and deploy",
+    { testPlanCaseId: 17449535, author: "kuojianlu@microsoft.com" },
+    async function () {
+      {
+        const result = await Executor.createProject(
+          testFolder,
+          appName,
+          Capability.M365SsoLaunchPage,
+          ProgrammingLanguage.TS
+        );
+        expect(result.success).to.be.true;
+      }
+
+      {
+        // provision
+        const result = await Executor.provision(projectPath, environmentManager.getLocalEnvName());
+        expect(result.success).to.be.true;
+
+        const context = await ProjectEnvReader.readEnvFile(
+          projectPath,
+          environmentManager.getLocalEnvName()
+        );
+        chai.assert.isDefined(context);
+
+        // validate aad
+        chai.assert.isDefined(context!.AAD_APP_OBJECT_ID);
+        chai.assert.isNotEmpty(context!.AAD_APP_OBJECT_ID);
+        const aad = AadValidator.init(context, false);
+        await AadValidator.validate(aad);
+
+        // validate teams app
+        chai.assert.isDefined(context!.TEAMS_APP_ID);
+        const teamsApp = await getTeamsApp(context!.TEAMS_APP_ID);
+        chai.assert.equal(teamsApp?.teamsAppId, context!.TEAMS_APP_ID);
+
+        // validate m365
+        chai.assert.isDefined(context!.M365_TITLE_ID);
+        chai.assert.isNotEmpty(context!.M365_TITLE_ID);
+        chai.assert.isDefined(context!.M365_APP_ID);
+        chai.assert.isNotEmpty(context!.M365_APP_ID);
+      }
+
+      {
+        // deploy
+        const result = await Executor.deploy(projectPath, environmentManager.getLocalEnvName());
+        expect(result.success).to.be.true;
+
+        const context = await ProjectEnvReader.readEnvFile(
+          projectPath,
+          environmentManager.getLocalEnvName()
+        );
+        chai.assert.isDefined(context);
+
+        // validate ssl cert
+        chai.assert.isDefined(context!.SSL_CRT_FILE);
+        chai.assert.isNotEmpty(context!.SSL_CRT_FILE);
+        chai.assert.isDefined(context!.SSL_KEY_FILE);
+        chai.assert.isNotEmpty(context!.SSL_KEY_FILE);
+
+        // validate .localConfigs
+        chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
+      }
     }
-
-    {
-      // provision
-      const result = await Executor.provision(projectPath, environmentManager.getLocalEnvName());
-      expect(result.success).to.be.true;
-
-      const context = await ProjectEnvReader.readEnvFile(
-        projectPath,
-        environmentManager.getLocalEnvName()
-      );
-      chai.assert.isDefined(context);
-
-      // validate aad
-      chai.assert.isDefined(context!.AAD_APP_OBJECT_ID);
-      chai.assert.isNotEmpty(context!.AAD_APP_OBJECT_ID);
-      const aad = AadValidator.init(context, false);
-      await AadValidator.validate(aad);
-
-      // validate teams app
-      chai.assert.isDefined(context!.TEAMS_APP_ID);
-      const teamsApp = await getTeamsApp(context!.TEAMS_APP_ID);
-      chai.assert.equal(teamsApp?.teamsAppId, context!.TEAMS_APP_ID);
-
-      // validate m365
-      chai.assert.isDefined(context!.M365_TITLE_ID);
-      chai.assert.isNotEmpty(context!.M365_TITLE_ID);
-      chai.assert.isDefined(context!.M365_APP_ID);
-      chai.assert.isNotEmpty(context!.M365_APP_ID);
-    }
-
-    {
-      // deploy
-      const result = await Executor.deploy(projectPath, environmentManager.getLocalEnvName());
-      expect(result.success).to.be.true;
-
-      const context = await ProjectEnvReader.readEnvFile(
-        projectPath,
-        environmentManager.getLocalEnvName()
-      );
-      chai.assert.isDefined(context);
-
-      // validate ssl cert
-      chai.assert.isDefined(context!.SSL_CRT_FILE);
-      chai.assert.isNotEmpty(context!.SSL_CRT_FILE);
-      chai.assert.isDefined(context!.SSL_KEY_FILE);
-      chai.assert.isNotEmpty(context!.SSL_KEY_FILE);
-
-      // validate .localConfigs
-      chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
-    }
-  });
+  );
 });

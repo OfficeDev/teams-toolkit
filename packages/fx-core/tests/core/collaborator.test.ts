@@ -60,6 +60,7 @@ describe("Collaborator APIs for V3", () => {
     });
     afterEach(() => {
       mockedEnvRestore();
+      sandbox.restore();
     });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({

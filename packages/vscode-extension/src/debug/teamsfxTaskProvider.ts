@@ -49,7 +49,7 @@ const customTasks = Object.freeze({
   },
   [TaskCommand.startLocalTunnel]: {
     createTerminal: async (d: vscode.TaskDefinition) => {
-      return new DevTunnelTaskTerminal(d);
+      return DevTunnelTaskTerminal.create(d);
     },
     presentationReveal: vscode.TaskRevealKind.Silent,
     presentationEcho: true,

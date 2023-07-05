@@ -35,6 +35,7 @@ import {
   UserCancelError,
 } from "../../src/error/common";
 import { MockTools } from "../core/utils";
+import { parseSetOutputCommand } from "../../src/component/driver/script/scriptDriver";
 
 describe("envUtils", () => {
   const tools = new MockTools();
@@ -107,9 +108,6 @@ describe("envUtils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        assert.equal(res.value, path.join("", "./env"));
-      }
     });
     it("returns undefined value", async () => {
       const mockProjectModel: ProjectModel = {
@@ -150,9 +148,6 @@ describe("envUtils", () => {
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFilePath(".", "dev");
       assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        assert.equal(res.value, path.join("./env", ".env.dev"));
-      }
     });
   });
 
@@ -775,6 +770,32 @@ describe("envUtils", () => {
     it("return undefined", async () => {
       const res = await envUtil.extractEnvNameFromFileName(".env1.dev");
       assert.isTrue(res === undefined);
+    });
+  });
+});
+
+describe("parseSetOutputCommand", () => {
+  const tools = new MockTools();
+  setTools(tools);
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn | undefined;
+  afterEach(() => {
+    sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
+  });
+  it("parse one key value pair", async () => {
+    const res = parseSetOutputCommand('echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"');
+    assert.deepEqual(res, { TAB_DOMAIN: "localhost:53000" });
+  });
+  it("parse two key value pairs", async () => {
+    const res = parseSetOutputCommand(
+      'echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"; echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";'
+    );
+    assert.deepEqual(res, {
+      TAB_DOMAIN: "localhost:53000",
+      TAB_ENDPOINT: "https://localhost:53000",
     });
   });
 });

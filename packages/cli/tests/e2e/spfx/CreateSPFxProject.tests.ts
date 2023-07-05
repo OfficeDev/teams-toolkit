@@ -35,7 +35,7 @@ describe("Start a new project", function () {
 
   it(
     "Create, provision and run SPFx project with React framework",
-    { testPlanCaseId: 15687302 },
+    { testPlanCaseId: 15687302, author: "huihuiwu@microsoft.com" },
     async function () {
       {
         const result = await Executor.createProject(

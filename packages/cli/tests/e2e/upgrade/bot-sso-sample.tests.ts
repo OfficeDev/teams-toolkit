@@ -26,33 +26,39 @@ describe("upgrade", () => {
     await Cleaner.clean(projectPath);
   });
 
-  it("sample bot sso", { testPlanCaseId: 19314244 }, async function () {
-    {
-      await Executor.installCLI(testFolder, "1.2.5", true);
-      const env = Object.assign({}, process.env);
-      env["TEAMSFX_V3"] = "false";
-      // new projiect
-      await CliHelper.createTemplateProject(
-        appName,
-        testFolder,
-        TemplateProject.HelloWorldBotSSO,
-        env
-      );
-    }
+  it(
+    "sample bot sso",
+    { testPlanCaseId: 19314244, author: "zhaofengxu@microsoft.com" },
+    async function () {
+      {
+        await Executor.installCLI(testFolder, "1.2.5", true);
+        const env = Object.assign({}, process.env);
+        env["TEAMSFX_V3"] = "false";
+        // new projiect
+        await CliHelper.createTemplateProject(
+          appName,
+          testFolder,
+          TemplateProject.HelloWorldBotSSO,
+          env
+        );
+      }
 
-    await Executor.installCLI(testFolder, "alpha", true);
-    {
-      // upgrade
-      const result = await Executor.upgrade(projectPath);
-      chai.assert.isTrue(result.success);
-      const manifestPath = path.join(
-        projectPath,
-        MetadataV3.teamsManifestFolder,
-        MetadataV3.teamsManifestFileName
-      );
-      const content = await fs.readFile(manifestPath, { encoding: "utf-8" });
-      const res = JSON.parse(content);
-      chai.assert.isTrue(res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__VALIDDOMAIN}}"));
+      await Executor.installCLI(testFolder, "alpha", true);
+      {
+        // upgrade
+        const result = await Executor.upgrade(projectPath);
+        chai.assert.isTrue(result.success);
+        const manifestPath = path.join(
+          projectPath,
+          MetadataV3.teamsManifestFolder,
+          MetadataV3.teamsManifestFileName
+        );
+        const content = await fs.readFile(manifestPath, { encoding: "utf-8" });
+        const res = JSON.parse(content);
+        chai.assert.isTrue(
+          res.validDomains.includes("${{PROVISIONOUTPUT__BOTOUTPUT__VALIDDOMAIN}}")
+        );
+      }
     }
-  });
+  );
 });

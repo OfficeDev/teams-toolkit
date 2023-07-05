@@ -77,6 +77,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.UpdateTeamsApp;
       case Stage.buildAad:
         return TelemetryEvent.BuildAadManifest;
+      case Stage.deployAad:
+        return TelemetryEvent.DeployAadManifest;
       default:
         return undefined;
     }

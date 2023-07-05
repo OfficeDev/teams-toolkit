@@ -28,7 +28,7 @@ describe("Collaboration", function () {
 
   it(
     "Collaboration: CLI with permission status and permission grant",
-    { testPlanCaseId: 10753319 },
+    { testPlanCaseId: 10753319, author: "bowen.song@microsoft.com" },
     async function () {
       while (await fs.pathExists(projectPath)) {
         appName = getUniqueAppName();

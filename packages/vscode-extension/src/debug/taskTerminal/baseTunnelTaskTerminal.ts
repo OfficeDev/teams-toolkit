@@ -283,4 +283,23 @@ export const TunnelError = Object.freeze({
       `${getDefaultString("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`,
       `${localize("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`
     ),
+  DevTunnelOperationError: (operationName: string, error?: any) =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.DevTunnelOperationError,
+      `${util.format(
+        getDefaultString("teamstoolkit.localDebug.devTunnelOperationError"),
+        operationName
+      )} ${error?.message ?? ""}`,
+      `${util.format(localize("teamstoolkit.localDebug.devTunnelOperationError"), operationName)} ${
+        error?.message ?? ""
+      }`
+    ),
+  TunnelResourceLimitExceededError: (error: any) => {
+    return new UserError(
+      ExtensionSource,
+      ExtensionErrors.TunnelResourceLimitExceededError,
+      error?.message
+    );
+  },
 });

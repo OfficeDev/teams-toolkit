@@ -48,46 +48,50 @@ describe("Deploy V3 m365-message-extension template", () => {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 17449554 }, async function () {
-    // create
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SearchApp);
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+  it(
+    "happy path: provision and deploy",
+    { testPlanCaseId: 17449554, author: "kuojianlu@microsoft.com" },
+    async function () {
+      // create
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SearchApp);
+      console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    // provision
-    const result = await createResourceGroup(resourceGroupName, "eastus");
-    chai.assert.isTrue(result);
+      // provision
+      const result = await createResourceGroup(resourceGroupName, "eastus");
+      chai.assert.isTrue(result);
 
-    await CliHelper.provisionProject(projectPath, "", "dev", {
-      ...process.env,
-      AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
-    });
-    console.log(`[Successfully] provision for ${projectPath}`);
+      await CliHelper.provisionProject(projectPath, "", "dev", {
+        ...process.env,
+        AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+      });
+      console.log(`[Successfully] provision for ${projectPath}`);
 
-    let context = await readContextMultiEnvV3(projectPath, "dev");
-    chai.assert.isDefined(context);
+      let context = await readContextMultiEnvV3(projectPath, "dev");
+      chai.assert.isDefined(context);
 
-    // validate teams app
-    chai.assert.isDefined(context.TEAMS_APP_ID);
-    const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
-    chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
+      // validate teams app
+      chai.assert.isDefined(context.TEAMS_APP_ID);
+      const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
+      chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
-    // validate bot aad
-    chai.assert.isDefined(context.BOT_ID);
-    chai.assert.isNotEmpty(context.BOT_ID);
-    const aadApp = await getAadAppByClientId(context.BOT_ID);
-    chai.assert.equal(aadApp?.id, context.BOT_ID);
+      // validate bot aad
+      chai.assert.isDefined(context.BOT_ID);
+      chai.assert.isNotEmpty(context.BOT_ID);
+      const aadApp = await getAadAppByClientId(context.BOT_ID);
+      chai.assert.equal(aadApp?.id, context.BOT_ID);
 
-    // validate m365
-    chai.assert.isDefined(context.M365_TITLE_ID);
-    chai.assert.isNotEmpty(context.M365_TITLE_ID);
-    chai.assert.isDefined(context.M365_APP_ID);
-    chai.assert.isNotEmpty(context.M365_APP_ID);
+      // validate m365
+      chai.assert.isDefined(context.M365_TITLE_ID);
+      chai.assert.isNotEmpty(context.M365_TITLE_ID);
+      chai.assert.isDefined(context.M365_APP_ID);
+      chai.assert.isNotEmpty(context.M365_APP_ID);
 
-    // deploy
-    await CliHelper.deployAll(projectPath, "", "dev");
-    console.log(`[Successfully] deploy for ${projectPath}`);
+      // deploy
+      await CliHelper.deployAll(projectPath, "", "dev");
+      console.log(`[Successfully] deploy for ${projectPath}`);
 
-    context = await readContextMultiEnvV3(projectPath, "dev");
-    chai.assert.isDefined(context);
-  });
+      context = await readContextMultiEnvV3(projectPath, "dev");
+      chai.assert.isDefined(context);
+    }
+  );
 });

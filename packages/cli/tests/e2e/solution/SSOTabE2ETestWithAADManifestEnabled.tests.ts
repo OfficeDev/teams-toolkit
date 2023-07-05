@@ -34,48 +34,53 @@ describe("SSO Tab with aad manifest enabled", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("SSO Tab E2E test with aad manifest enabled", { testPlanCaseId: 24137775 }, async () => {
-    // Arrange
-    await CliHelper.createProjectWithCapability(
-      appName,
-      testFolder,
-      Capability.M365SsoLaunchPage,
-      env
-    );
-    // Assert
-    expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.bicep"))).to.be.true;
-    expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.parameters.json"))).to.be.true;
-    expect(fs.pathExistsSync(path.join(projectPath, "teamsapp.yml"))).to.be.true;
-    expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.json"))).to.be.true;
+  it(
+    "SSO Tab E2E test with aad manifest enabled",
+    { testPlanCaseId: 24137775, author: "wenyutang@microsoft.com" },
+    async () => {
+      // Arrange
+      await CliHelper.createProjectWithCapability(
+        appName,
+        testFolder,
+        Capability.M365SsoLaunchPage,
+        env
+      );
+      // Assert
+      expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.bicep"))).to.be.true;
+      expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.parameters.json"))).to.be
+        .true;
+      expect(fs.pathExistsSync(path.join(projectPath, "teamsapp.yml"))).to.be.true;
+      expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.json"))).to.be.true;
 
-    await CliHelper.provisionProject(projectPath, "", "dev", env);
+      await CliHelper.provisionProject(projectPath, "", "dev", env);
 
-    const context = await readContextMultiEnvV3(projectPath, "dev");
+      const context = await readContextMultiEnvV3(projectPath, "dev");
 
-    // Validate Aad App
-    const aad = AadValidator.init(context, false, M365Login);
-    await AadValidator.validate(aad);
+      // Validate Aad App
+      const aad = AadValidator.init(context, false, M365Login);
+      await AadValidator.validate(aad);
 
-    // Validate Tab Frontend
-    const frontend = FrontendValidator.init(context);
-    await FrontendValidator.validateProvision(frontend);
+      // Validate Tab Frontend
+      const frontend = FrontendValidator.init(context);
+      await FrontendValidator.validateProvision(frontend);
 
-    const firstIdentifierUri = "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
-    await setAadManifestIdentifierUrisV3(projectPath, firstIdentifierUri);
+      const firstIdentifierUri = "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
+      await setAadManifestIdentifierUrisV3(projectPath, firstIdentifierUri);
 
-    // Deploy all resources without aad manifest
-    await CliHelper.deployAll(projectPath, "", "dev", env);
-    await AadValidator.validate(aad);
+      // Deploy all resources without aad manifest
+      await CliHelper.deployAll(projectPath, "", "dev", env);
+      await AadValidator.validate(aad);
 
-    // Deploy all resources include aad manifest
-    await CliHelper.updateAadManifest(projectPath, "--env dev", env);
-    await AadValidator.validate(aad, firstIdentifierUri);
+      // Deploy all resources include aad manifest
+      await CliHelper.updateAadManifest(projectPath, "--env dev", env);
+      await AadValidator.validate(aad, firstIdentifierUri);
 
-    const secondIdentifierUri = "api://second.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
-    await setAadManifestIdentifierUrisV3(projectPath, secondIdentifierUri);
+      const secondIdentifierUri = "api://second.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
+      await setAadManifestIdentifierUrisV3(projectPath, secondIdentifierUri);
 
-    // Only deploy aad manifest
-    await CliHelper.updateAadManifest(projectPath, "--env dev", env);
-    await AadValidator.validate(aad, secondIdentifierUri);
-  });
+      // Only deploy aad manifest
+      await CliHelper.updateAadManifest(projectPath, "--env dev", env);
+      await AadValidator.validate(aad, secondIdentifierUri);
+    }
+  );
 });

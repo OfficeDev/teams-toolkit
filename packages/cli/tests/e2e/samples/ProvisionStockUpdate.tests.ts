@@ -22,52 +22,56 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
-  it(`${TemplateProject.StockUpdate}`, { testPlanCaseId: 15772706 }, async function () {
-    await Executor.openTemplateProject(appName, testFolder, TemplateProject.StockUpdate);
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+  it(
+    `${TemplateProject.StockUpdate}`,
+    { testPlanCaseId: 15772706, author: "v-ivanchen@microsoft.com" },
+    async function () {
+      await Executor.openTemplateProject(appName, testFolder, TemplateProject.StockUpdate);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
-    // Provision
-    {
-      const { success } = await Executor.provision(projectPath);
-      expect(success).to.be.true;
-    }
+      // Provision
+      {
+        const { success } = await Executor.provision(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // Validate Provision
-    const context = await readContextMultiEnvV3(projectPath, env);
-
-    // Validate Bot Provision
-    const bot = new BotValidator(context, projectPath, env);
-    await bot.validateProvisionV3(false);
-
-    // deploy
-    {
-      const { success } = await Executor.deploy(projectPath);
-      expect(success).to.be.true;
-    }
-
-    // Validate deployment
-    {
-      // Get context
+      // Validate Provision
       const context = await readContextMultiEnvV3(projectPath, env);
 
-      // Validate Bot Deploy
+      // Validate Bot Provision
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateDeploy();
-    }
+      await bot.validateProvisionV3(false);
 
-    // validate
-    {
-      const { success } = await Executor.validate(projectPath);
-      expect(success).to.be.true;
-    }
+      // deploy
+      {
+        const { success } = await Executor.deploy(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // package
-    {
-      const { success } = await Executor.package(projectPath);
-      expect(success).to.be.true;
+      // Validate deployment
+      {
+        // Get context
+        const context = await readContextMultiEnvV3(projectPath, env);
+
+        // Validate Bot Deploy
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateDeploy();
+      }
+
+      // validate
+      {
+        const { success } = await Executor.validate(projectPath);
+        expect(success).to.be.true;
+      }
+
+      // package
+      {
+        const { success } = await Executor.package(projectPath);
+        expect(success).to.be.true;
+      }
     }
-  });
+  );
 
   after(async () => {
     await Cleaner.clean(projectPath);

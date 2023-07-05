@@ -11,7 +11,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 describe("Provision for Node", () => {
   it(
     "Provision Resource: func hosted notification",
-    { testPlanCaseId: 24132570 },
+    { testPlanCaseId: 24132570, author: "xiaofhua@microsoft.com" },
     async function () {
       await happyPathTest(Runtime.Node, "notification", ["http-functions"]);
     }

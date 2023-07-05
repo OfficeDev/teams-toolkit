@@ -50,7 +50,6 @@ export enum QuestionNames {
   M365Host = "m365-host",
 
   ManifestPath = "manifest-path",
-  LocalManifestPath = "local-manifest-path",
 
   UserEmail = "email",
 

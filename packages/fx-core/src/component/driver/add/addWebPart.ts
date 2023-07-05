@@ -60,7 +60,7 @@ export class AddWebPartDriver implements StepDriver {
     inputs[QuestionNames.SPFxWebpartName] = webpartName;
     inputs[QuestionNames.SPFxFolder] = spfxFolder;
     inputs[QuestionNames.ManifestPath] = manifestPath;
-    inputs[QuestionNames.LocalManifestPath] = localManifestPath;
+    inputs[QuestionNames.LocalTeamsAppManifestFilePath] = localManifestPath;
     inputs[QuestionNames.SPFxInstallPackage] = spfxPackage;
     const yeomanRes = await SPFxGenerator.doYeomanScaffold(
       createContextV3(),

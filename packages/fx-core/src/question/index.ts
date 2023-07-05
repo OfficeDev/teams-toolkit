@@ -12,6 +12,7 @@ import {
 } from "./other";
 
 export * from "./questionNames";
+export * from "./create";
 
 class QuestionNodes {
   createProject: () => IQTreeNode | undefined = createProjectQuestionNode;

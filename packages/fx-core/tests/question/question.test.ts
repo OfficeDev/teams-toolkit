@@ -36,7 +36,7 @@ describe("none scaffold questions", () => {
     sandbox.restore();
     mockedEnvRestore();
   });
-  describe("addWebpart question", async () => {
+  describe("addWebpart", async () => {
     it("happy path", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -53,23 +53,20 @@ describe("none scaffold questions", () => {
       ) => {
         questionNames.push(question.name);
         await callFuncs(question, inputs);
-        if (question.name === QuestionNames.collaborationAppType) {
+        if (QuestionNames.SPFxFolder) {
           return ok({
             type: "success",
-            result: [
-              CollaborationConstants.TeamsAppQuestionId,
-              CollaborationConstants.AadAppQuestionId,
-            ],
+            result: ".",
           });
-        } else if (question.name === QuestionNames.AadAppManifestFilePath) {
-          return ok({ type: "success", result: "aadAppManifest" });
+        } else if (QuestionNames.SPFxWebpartName) {
+          return ok({ type: "success", result: "test" });
         } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
           return ok({ type: "success", result: "teamsAppManifest" });
-        } else if (question.name === QuestionNames.Env) {
-          return ok({ type: "success", result: "dev" });
         } else if (question.name === QuestionNames.ConfirmManifest) {
           return ok({ type: "success", result: "manifest" });
-        } else if (question.name === QuestionNames.ConfirmAadManifest) {
+        } else if (question.name === QuestionNames.LocalTeamsAppManifestFilePath) {
+          return ok({ type: "success", result: "teamsAppManifest" });
+        } else if (question.name === QuestionNames.ConfirmLocalManifest) {
           return ok({ type: "success", result: "manifest" });
         }
         return ok({ type: "success", result: undefined });
@@ -80,12 +77,10 @@ describe("none scaffold questions", () => {
       if (res.isOk()) {
         await traverse(res.value!, inputs, ui, undefined, visitor);
         assert.deepEqual(questionNames, [
-          QuestionNames.collaborationAppType,
           QuestionNames.TeamsAppManifestFilePath,
           QuestionNames.ConfirmManifest,
-          QuestionNames.AadAppManifestFilePath,
-          QuestionNames.ConfirmAadManifest,
-          QuestionNames.Env,
+          QuestionNames.LocalTeamsAppManifestFilePath,
+          QuestionNames.ConfirmLocalManifest,
         ]);
       }
     });

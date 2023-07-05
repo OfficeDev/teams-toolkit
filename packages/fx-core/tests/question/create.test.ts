@@ -26,7 +26,7 @@ import {
   SPFxVersionOptionIds,
   ScratchOptions,
   appNameQuestion,
-  createProjectQuestion,
+  createProjectQuestionNode,
   getLanguageOptions,
   getTemplate,
 } from "../../src/question/create";
@@ -63,7 +63,7 @@ describe("scaffold question", () => {
     sandbox.restore();
   });
 
-  describe("createProjectQuestion", () => {
+  describe("createProjectQuestionNode", () => {
     const ui = new MockUserInteraction();
     let mockedEnvRestore: RestoreFn = () => {};
 
@@ -96,7 +96,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Samples,
@@ -133,7 +133,7 @@ describe("scaffold question", () => {
           assert.isTrue(options.length === 4);
           assert.equal(
             (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestion.projectType.bot.title")
+            getLocalizedString("core.createProjectQuestionNode.projectType.bot.title")
           );
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
@@ -147,7 +147,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -188,7 +188,7 @@ describe("scaffold question", () => {
           assert.isTrue(options.length === 2);
           assert.equal(
             (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
+            getLocalizedString("core.createProjectQuestionNode.projectType.messageExtension.title")
           );
           return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
@@ -200,7 +200,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -241,7 +241,7 @@ describe("scaffold question", () => {
           ]);
           assert.equal(
             (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
+            getLocalizedString("core.createProjectQuestionNode.projectType.outlookAddin.title")
           );
           return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
         } else if (question.name === QuestionNames.OfficeAddinFolder) {
@@ -260,7 +260,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -299,7 +299,7 @@ describe("scaffold question", () => {
           assert.isTrue(options.length === 4);
           assert.equal(
             (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestion.projectType.tab.title")
+            getLocalizedString("core.createProjectQuestionNode.projectType.tab.title")
           );
           return ok({ type: "success", result: CapabilityOptions.SPFxTab().id });
         } else if (question.name === QuestionNames.SPFxSolution) {
@@ -322,7 +322,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -380,7 +380,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -475,7 +475,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -546,7 +546,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -590,7 +590,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Capabilities,
@@ -642,7 +642,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Runtime,

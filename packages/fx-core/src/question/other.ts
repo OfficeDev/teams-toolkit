@@ -5,6 +5,7 @@ import {
   FxError,
   IQTreeNode,
   Inputs,
+  MultiSelectQuestion,
   OptionItem,
   Platform,
   QTreeNode,
@@ -47,6 +48,21 @@ export function getQuestionsForValidateAppPackage(): Result<QTreeNode | undefine
 
 export function getQuestionsForPreviewWithManifest(): Result<QTreeNode | undefined, FxError> {
   return ok(previewWithTeamsAppManifestNode() as QTreeNode);
+}
+
+export async function getQuestionsForListCollaborator(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  if (isDynamicQuestion) {
+    const root = await getCollaborationQuestionNode(inputs);
+    return ok(root);
+  }
+  return ok(undefined);
+}
+
+export function getQuestionForDeployAadManifest(): Result<QTreeNode | undefined, FxError> {
+  return ok(selectAadAppManifestQuestionNode() as QTreeNode);
 }
 
 export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
@@ -303,10 +319,6 @@ export function inputUserEmailQuestion(currentUserEmail: string): TextInputQuest
   };
 }
 
-export function getQuestionForDeployAadManifest(): Result<QTreeNode | undefined, FxError> {
-  return ok(selectAadAppManifestQuestion() as QTreeNode);
-}
-
 export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Promise<boolean> {
   const aadManifestPath = inputs?.[QuestionNames.AadAppManifestFilePath];
   const placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
@@ -325,7 +337,7 @@ export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Pr
   return false;
 }
 
-export function selectAadAppManifestQuestion(): IQTreeNode {
+export function selectAadAppManifestQuestionNode(): IQTreeNode {
   return {
     data: { type: "group" },
     children: [
@@ -356,6 +368,38 @@ export function selectAadAppManifestQuestion(): IQTreeNode {
             data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
           },
         ],
+      },
+    ],
+  };
+}
+
+function selectAppTypeQuestion(): MultiSelectQuestion {
+  return {
+    name: CollaborationConstants.AppType,
+    title: getLocalizedString("core.selectCollaborationAppTypeQuestion.title"),
+    type: "multiSelect",
+    staticOptions: [
+      {
+        id: CollaborationConstants.AadAppQuestionId,
+        label: getLocalizedString("core.aadAppQuestion.label"),
+        description: getLocalizedString("core.aadAppQuestion.description"),
+      },
+      {
+        id: CollaborationConstants.TeamsAppQuestionId,
+        label: getLocalizedString("core.teamsAppQuestion.label"),
+        description: getLocalizedString("core.teamsAppQuestion.description"),
+      },
+    ],
+  };
+}
+
+function listCollaboratorQuestionNode(): IQTreeNode {
+  return {
+    data: { type: "group" },
+    children: [
+      {
+        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
+        data: {},
       },
     ],
   };

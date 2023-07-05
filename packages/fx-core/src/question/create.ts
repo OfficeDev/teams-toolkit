@@ -1165,7 +1165,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-export function createProjectQuestion(): IQTreeNode {
+export function createProjectQuestionNode(): IQTreeNode {
   const createProjectQuestion: IQTreeNode = {
     data: scratchOrSampleQuestion(),
     children: [
@@ -1311,11 +1311,11 @@ export function createProjectQuestion(): IQTreeNode {
 }
 
 export function getQuestionsForCreateProject(): Result<IQTreeNode, FxError> {
-  return ok(createProjectQuestion());
+  return ok(createProjectQuestionNode());
 }
 
 export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
-  const node = cloneDeep(createProjectQuestion());
+  const node = cloneDeep(createProjectQuestionNode());
   trimQuestionTreeForCliHelp(node, [
     QuestionNames.Runtime,
     QuestionNames.ProjectType,

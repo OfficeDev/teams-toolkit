@@ -19,6 +19,7 @@ import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
+  CopilotPluginCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
@@ -693,6 +694,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   };
 
   const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();
+  const copilotPluginCodeLensProvider = new CopilotPluginCodeLensProvider();
   const manifestTemplateSelector = {
     language: "json",
     scheme: "file",
@@ -744,6 +746,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       manifestTemplateSelector,
       manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      manifestTemplateSelector,
+      copilotPluginCodeLensProvider
     )
   );
   context.subscriptions.push(

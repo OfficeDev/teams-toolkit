@@ -519,3 +519,32 @@ export class PermissionsJsonFileCodeLensProvider implements vscode.CodeLensProvi
     }
   }
 }
+
+export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
+  private schemaRegex = /composeExtensions/;
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    // TODO: Add feature flag
+    const codeLenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    const regex = new RegExp(this.schemaRegex);
+    const matches = regex.exec(text);
+    if (matches != null) {
+      const match = matches[0];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      const schemaCommand = {
+        title: "➕Add another API",
+        command: "fx-extension.addAPI",
+      };
+      codeLenses.push(new vscode.CodeLens(range, schemaCommand));
+      return codeLenses;
+    }
+  }
+}

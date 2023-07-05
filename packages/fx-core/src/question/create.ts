@@ -1265,23 +1265,15 @@ export function createProjectQuestionNode(): IQTreeNode {
             data: { type: "group", name: QuestionNames.RepalceTabUrl },
             children: [
               {
-                condition: (inputs: Inputs) => {
-                  const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-                  if (appDefinition?.staticTabs) {
-                    const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
-                      (o) => !!o.websiteUrl
-                    );
-                    if (tabsWithWebsiteUrls.length > 0) {
-                      return true;
-                    }
-                  }
-                  return false;
-                },
+                condition: (inputs: Inputs) =>
+                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.websiteUrl) || [])
+                    .length > 0,
                 data: selectTabWebsiteUrlQuestion(),
               },
               {
-                //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
-                condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
+                condition: (inputs: Inputs) =>
+                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.contentUrl) || [])
+                    .length > 0,
                 data: selectTabsContentUrlQuestion(),
               },
             ],

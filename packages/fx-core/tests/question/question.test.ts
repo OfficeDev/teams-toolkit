@@ -453,7 +453,7 @@ describe("getQuestionsForGrantPermission()", async () => {
       totalSteps?: number
     ) => {
       questionNames.push(question.name);
-      await callFuncs(question, inputs);
+      await callFuncs(question, inputs, "xxx@xxx.com");
       if (question.name === QuestionNames.collaborationAppType) {
         return ok({
           type: "success",

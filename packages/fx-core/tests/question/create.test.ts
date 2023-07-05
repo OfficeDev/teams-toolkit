@@ -35,7 +35,7 @@ import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockUserInteraction, randomAppName } from "../core/utils";
 import * as path from "path";
 
-export async function callFuncs(question: Question, inputs: Inputs) {
+export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
     await (question.default as LocalFunc<string | undefined>)(inputs);
   }
@@ -47,8 +47,8 @@ export async function callFuncs(question: Question, inputs: Inputs) {
   ) {
     await question.dynamicOptions(inputs);
   }
-  if ((question as any).validation?.validFunc) {
-    await (question as any).validation.validFunc(inputs);
+  if (answer && (question as any).validation?.validFunc) {
+    await (question as any).validation.validFunc(answer, inputs);
   }
 
   if ((question as any).placeholder && typeof (question as any).placeholder !== "string") {
@@ -483,7 +483,8 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      const tres = await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.isTrue(tres.isOk());
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,

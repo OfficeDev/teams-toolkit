@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-server",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
@@ -93,14 +93,14 @@
   },
   "dependencies": {
     "@azure/identity": "^3.1.3",
+    "@microsoft/dev-tunnels-contracts": "~1.0.7360",
     "@microsoft/teamsfx-api": "^0.22.3",
-    "@microsoft/teamsfx-core": "^2.0.1",
+    "@microsoft/teamsfx-core": "^2.0.3",
     "fs-extra": "^9.1.0",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
     "vscode-jsonrpc": "^6.0.0",
-    "ws": "^8.2.3",
-    "@microsoft/dev-tunnels-contracts": "~1.0.7360"
+    "ws": "^8.2.3"
   },
   "optionalDependencies": {
     "keytar": "^7.7.0"

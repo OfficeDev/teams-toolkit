@@ -18,7 +18,7 @@ import {
   HttpServerError,
   InvalidActionInputError,
   UnhandledError,
-} from "../../../../src/error/common";
+} from "../../../../src";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";

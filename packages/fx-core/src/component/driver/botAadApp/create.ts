@@ -22,6 +22,7 @@ import {
   HttpServerError,
   InvalidActionInputError,
   UnhandledError,
+  UnhandledUserError,
 } from "../../../error/common";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { AadAppClient } from "../aad/utility/aadAppClient";
@@ -135,7 +136,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         output: outputs,
         summaries: [summary],
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -153,6 +154,10 @@ export class CreateBotAadAppDriver implements StepDriver {
         } else {
           throw new HttpServerError(actionName, message);
         }
+      }
+
+      if (error.name === "AadCreateAppError") {
+        throw new UnhandledUserError(new Error(error.details[0]), actionName);
       }
 
       const message = JSON.stringify(error);

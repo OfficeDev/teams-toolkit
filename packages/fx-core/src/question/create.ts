@@ -1315,8 +1315,7 @@ export function getQuestionsForCreateProject(): Result<IQTreeNode, FxError> {
 
 export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
   const node = cloneDeep(createProjectQuestion());
-  trimQuestionTreeForCliHelp(node, [
-    QuestionNames.Runtime,
+  const deleteNames = [
     QuestionNames.ProjectType,
     QuestionNames.SkipAppName,
     QuestionNames.OfficeAddinImport,
@@ -1324,7 +1323,11 @@ export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
     QuestionNames.RepalceTabUrl,
     QuestionNames.ReplaceBotIds,
     QuestionNames.Samples,
-  ]);
+  ];
+  if (!isCLIDotNetEnabled()) {
+    deleteNames.push(QuestionNames.Runtime);
+  }
+  trimQuestionTreeForCliHelp(node, deleteNames);
   const subTree = pickSubTree(node, QuestionNames.SctatchYes);
   return subTree!;
 }

@@ -1,0 +1,24 @@
+{
+    "id": "00000000-0000-0000-0000-000000000000",
+    "addIns": [],
+    "appRoles": [],
+    "identifierUris": ["https://example.com"],
+    "informationalUrls": {
+      "termsOfService": null,
+      "support": null,
+      "privacy": null,
+      "marketing": null
+    },
+    "keyCredentials": [],
+    "knownClientApplications": [],
+    "name": "Example App",
+    "oauth2AllowIdTokenImplicitFlow": false,
+    "oauth2AllowImplicitFlow": false,
+    "oauth2Permissions": [],
+    "preAuthorizedApplications": [],
+    "replyUrlsWithType": [],
+    "requiredResourceAccess": [],
+    "signInAudience": "AzureADMyOrg",
+    "tags": []
+  }
+  

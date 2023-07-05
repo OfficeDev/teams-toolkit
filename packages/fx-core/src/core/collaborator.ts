@@ -33,7 +33,7 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { AppStudioScopes, GraphScopes } from "../common/tools";
+import { GraphScopes } from "../common/tools";
 import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../component/constants";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
@@ -41,7 +41,6 @@ import { FileNotFoundError } from "../error/common";
 import { QuestionNames } from "../question";
 import { inputUserEmailQuestion, selectTeamsAppManifestQuestionNode } from "../question/other";
 import { CoreSource } from "./error";
-import { TOOLS } from "./globalVars";
 import { selectAadAppManifestQuestion, selectEnvNode } from "./question";
 
 export class CollaborationConstants {
@@ -641,16 +640,8 @@ export async function getQuestionsForGrantPermission(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (isDynamicQuestion) {
-    const jsonObjectRes = await TOOLS.tokenProvider.m365TokenProvider.getJsonObject({
-      scopes: AppStudioScopes,
-    });
-    if (jsonObjectRes.isErr()) {
-      return err(jsonObjectRes.error);
-    }
-    const jsonObject = jsonObjectRes.value;
-
     const root = await getCollaborationQuestionNode(inputs);
-    root.addChild(new QTreeNode(inputUserEmailQuestion((jsonObject as any).upn)));
+    root.addChild(new QTreeNode(inputUserEmailQuestion()));
     return ok(root);
   }
   return ok(undefined);

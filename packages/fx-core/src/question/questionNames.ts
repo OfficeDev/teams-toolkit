@@ -52,4 +52,6 @@ export enum QuestionNames {
   LocalManifestPath = "local-manifest-path",
 
   UserEmail = "email",
+
+  collaborationAppType = "collaborationType",
 }

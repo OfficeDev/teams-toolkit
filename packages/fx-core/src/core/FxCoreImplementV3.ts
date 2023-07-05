@@ -65,6 +65,15 @@ import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../erro
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { QuestionNames, getQuestionsForCreateProject } from "../question";
+import {
+  getQuestionForDeployAadManifest,
+  getQuestionsForAddWebpart,
+  getQuestionsForGrantPermission,
+  getQuestionsForListCollaborator,
+  getQuestionsForPreviewWithManifest,
+  getQuestionsForSelectTeamsAppManifest,
+  getQuestionsForValidateAppPackage,
+} from "../question/other";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { TOOLS } from "./globalVars";
@@ -73,7 +82,6 @@ import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMWV3, checkActiveResourcePlugins } from "./middleware/projectMigratorV3";
-import { QuestionModelMW } from "./middleware/questionModel";
 import {
   getProjectVersionFromPath,
   getTrackingIdFromPath,
@@ -82,13 +90,6 @@ import {
 import { validateAadManifestContainsPlaceholder } from "./question";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import {
-  getQuestionForDeployAadManifest,
-  getQuestionsForAddWebpart,
-  getQuestionsForPreviewWithManifest,
-  getQuestionsForSelectTeamsAppManifest,
-  getQuestionsForValidateAppPackage,
-} from "../question/other";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -335,7 +336,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionModelMW,
+    QuestionMW(getQuestionsForGrantPermission),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,
@@ -354,7 +355,6 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionModelMW,
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,
@@ -373,7 +373,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionModelMW,
+    QuestionMW(getQuestionsForListCollaborator),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,

@@ -51,7 +51,6 @@ export function getSingleOptionString(
 
 export function toYargsOptions(data: Question): Options {
   const choices = getChoicesFromQTNodeQuestion(data);
-
   let defaultValue;
   if (data.default && data.default instanceof Array && data.default.length > 0) {
     defaultValue = data.default.map((item) => item.toLocaleLowerCase());

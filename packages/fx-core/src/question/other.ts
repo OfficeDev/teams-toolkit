@@ -24,45 +24,88 @@ import { envUtil } from "../component/utils/envUtil";
 import { environmentManager } from "../core/environment";
 import { SPFxImportFolderQuestion, SPFxWebpartNameQuestion } from "./create";
 import { QuestionNames } from "./questionNames";
+import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
+import { TOOLS } from "../core/globalVars";
+import { AppStudioScopes } from "../common/tools";
 
 //// getQuestionsXXXX
-export function getQuestionsForAddWebpart(): Result<QTreeNode | undefined, FxError> {
-  return ok(addWebPartQuestionNode() as QTreeNode);
+export function getQuestionsForAddWebpart(): Result<IQTreeNode | undefined, FxError> {
+  return ok(addWebPartQuestionNode());
 }
 
-export function getQuestionsForSelectTeamsAppManifest(): Result<QTreeNode | undefined, FxError> {
-  return ok(selectTeamsAppManifestQuestionNode() as QTreeNode);
+export function getQuestionsForSelectTeamsAppManifest(): Result<IQTreeNode | undefined, FxError> {
+  return ok(selectTeamsAppManifestQuestionNode());
 }
 
-export function getQuestionsForValidateMethod(): Result<QTreeNode | undefined, FxError> {
+export function getQuestionsForValidateMethod(): Result<IQTreeNode | undefined, FxError> {
   return ok({
     data: selectTeamsAppValidationMethodQuestion(),
-  } as QTreeNode);
+  });
 }
 
-export function getQuestionsForValidateAppPackage(): Result<QTreeNode | undefined, FxError> {
+export function getQuestionsForValidateAppPackage(): Result<IQTreeNode | undefined, FxError> {
   return ok({
     data: selectTeamsAppPackageQuestion(),
+  });
+}
+
+export function getQuestionsForPreviewWithManifest(): Result<IQTreeNode | undefined, FxError> {
+  return ok(previewWithTeamsAppManifestNode());
+}
+
+export function getQuestionsForListCollaborator(): Result<IQTreeNode | undefined, FxError> {
+  return ok(listCollaboratorQuestionNode());
+}
+
+export function getQuestionsForGrantPermission(): Result<IQTreeNode | undefined, FxError> {
+  const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
+  selectTeamsAppNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
+  const selectAadAppNode = selectAadAppManifestQuestionNode();
+  selectAadAppNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
+  return ok({
+    data: { type: "group" },
+    children: [
+      {
+        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
+        data: selectAppTypeQuestion(),
+        children: [
+          selectTeamsAppNode,
+          selectAadAppNode,
+          {
+            condition: envQuestionCondition,
+            data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
+          },
+          {
+            data: inputUserEmailQuestion(),
+          },
+        ],
+      },
+    ],
   } as QTreeNode);
-}
-
-export function getQuestionsForPreviewWithManifest(): Result<QTreeNode | undefined, FxError> {
-  return ok(previewWithTeamsAppManifestNode() as QTreeNode);
-}
-
-export async function getQuestionsForListCollaborator(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
-  if (isDynamicQuestion) {
-    const root = await getCollaborationQuestionNode(inputs);
-    return ok(root);
-  }
-  return ok(undefined);
 }
 
 export function getQuestionForDeployAadManifest(): Result<QTreeNode | undefined, FxError> {
-  return ok(selectAadAppManifestQuestionNode() as QTreeNode);
+  return ok({
+    data: { type: "group" },
+    children: [
+      {
+        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
+        data: selectAadManifestQuestion(),
+        children: [
+          {
+            condition: (inputs: Inputs) =>
+              path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
+              path.join(inputs.projectPath!, "aad.manifest.json"),
+            data: confirmManifestQuestion(false, false),
+          },
+          {
+            condition: isAadMainifestContainsPlaceholder,
+            data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
+          },
+        ],
+      },
+    ],
+  } as QTreeNode);
 }
 
 export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
@@ -72,6 +115,20 @@ export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => confirmCondition(inputs, false),
         data: confirmManifestQuestion(true, false),
+      },
+    ],
+  };
+}
+
+export function selectAadAppManifestQuestionNode(): IQTreeNode {
+  return {
+    data: selectAadManifestQuestion(),
+    children: [
+      {
+        condition: (inputs: Inputs) =>
+          path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
+          path.join(inputs.projectPath!, "aad.manifest.json"),
+        data: confirmManifestQuestion(false, false),
       },
     ],
   };
@@ -287,24 +344,36 @@ export function selectTargetEnvQuestion(
   };
 }
 
-export function inputUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
+async function getDefaultUserEmail() {
+  const jsonObjectRes = await TOOLS.tokenProvider.m365TokenProvider.getJsonObject({
+    scopes: AppStudioScopes,
+  });
+  if (jsonObjectRes.isErr()) {
+    throw jsonObjectRes.error;
+  }
+  const jsonObject = jsonObjectRes.value;
+  const currentUserEmail = (jsonObject as any).upn as string;
   let defaultUserEmail = "";
   if (currentUserEmail && currentUserEmail.indexOf("@") > 0) {
     defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
   }
+  return defaultUserEmail;
+}
+
+export function inputUserEmailQuestion(): TextInputQuestion {
   return {
     name: QuestionNames.UserEmail,
     type: "text",
     title: getLocalizedString("core.getUserEmailQuestion.title"),
-    default: defaultUserEmail,
+    default: getDefaultUserEmail,
     validation: {
-      validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
+      validFunc: async (input: string, previousInputs?: Inputs) => {
         if (!input || input.trim() === "") {
           return getLocalizedString("core.getUserEmailQuestion.validation1");
         }
 
         input = input.trim();
-
+        const defaultUserEmail = await getDefaultUserEmail();
         if (input === defaultUserEmail) {
           return getLocalizedString("core.getUserEmailQuestion.validation2");
         }
@@ -319,7 +388,7 @@ export function inputUserEmailQuestion(currentUserEmail: string): TextInputQuest
   };
 }
 
-export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Promise<boolean> {
+export async function isAadMainifestContainsPlaceholder(inputs: Inputs): Promise<boolean> {
   const aadManifestPath = inputs?.[QuestionNames.AadAppManifestFilePath];
   const placeholderRegex = /\$\{\{ *[a-zA-Z0-9_.-]* *\}\}/g;
   const regexObj = new RegExp(placeholderRegex);
@@ -337,45 +406,25 @@ export async function validateAadManifestContainsPlaceholder(inputs: Inputs): Pr
   return false;
 }
 
-export function selectAadAppManifestQuestionNode(): IQTreeNode {
+export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
-    data: { type: "group" },
-    children: [
-      {
-        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
-        data: {
-          name: QuestionNames.AadAppManifestFilePath,
-          title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
-          type: "singleFile",
-          default: (inputs: Inputs): string | undefined => {
-            const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
-            if (fs.pathExistsSync(manifestPath)) {
-              return manifestPath;
-            } else {
-              return undefined;
-            }
-          },
-        },
-        children: [
-          {
-            condition: (inputs: Inputs) =>
-              path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
-              path.join(inputs.projectPath!, "aad.manifest.json"),
-            data: confirmManifestQuestion(false, false),
-          },
-          {
-            condition: validateAadManifestContainsPlaceholder,
-            data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
-          },
-        ],
-      },
-    ],
+    name: QuestionNames.AadAppManifestFilePath,
+    title: getLocalizedString("core.selectAadManifestQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
+      if (fs.pathExistsSync(manifestPath)) {
+        return manifestPath;
+      } else {
+        return undefined;
+      }
+    },
   };
 }
 
 function selectAppTypeQuestion(): MultiSelectQuestion {
   return {
-    name: CollaborationConstants.AppType,
+    name: QuestionNames.collaborationAppType,
     title: getLocalizedString("core.selectCollaborationAppTypeQuestion.title"),
     type: "multiSelect",
     staticOptions: [
@@ -393,13 +442,61 @@ function selectAppTypeQuestion(): MultiSelectQuestion {
   };
 }
 
+export async function envQuestionCondition(inputs: Inputs): Promise<boolean> {
+  const appType = inputs[CollaborationConstants.AppType] as string[];
+  const requireAad = appType.includes(CollaborationConstants.AadAppQuestionId);
+  const requireTeams = appType.includes(CollaborationConstants.TeamsAppQuestionId);
+  const aadManifestPath = inputs[QuestionNames.AadAppManifestFilePath];
+  const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
+
+  // Only show env question when manifest id is referencing value from .env file
+  let requireEnv = false;
+  if (requireTeams && teamsManifestPath) {
+    const teamsAppIdRes = await CollaborationUtil.loadManifestId(teamsManifestPath);
+    if (teamsAppIdRes.isOk()) {
+      requireEnv = CollaborationUtil.requireEnvQuestion(teamsAppIdRes.value);
+      if (requireEnv) {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  if (requireAad && aadManifestPath) {
+    const aadAppIdRes = await CollaborationUtil.loadManifestId(aadManifestPath);
+    if (aadAppIdRes.isOk()) {
+      requireEnv = CollaborationUtil.requireEnvQuestion(aadAppIdRes.value);
+      if (requireEnv) {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  return false;
+}
+
 function listCollaboratorQuestionNode(): IQTreeNode {
+  const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
+  selectTeamsAppNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
+  const selectAadAppNode = selectAadAppManifestQuestionNode();
+  selectAadAppNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
   return {
     data: { type: "group" },
     children: [
       {
         condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
-        data: {},
+        data: selectAppTypeQuestion(),
+        children: [
+          selectTeamsAppNode,
+          selectAadAppNode,
+          {
+            condition: envQuestionCondition,
+            data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
+          },
+        ],
       },
     ],
   };

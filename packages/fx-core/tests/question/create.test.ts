@@ -131,9 +131,11 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 4);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestionNode.projectType.bot.title")
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.bot.title")
           );
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
@@ -186,9 +188,11 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 2);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestionNode.projectType.messageExtension.title")
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
           );
           return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
@@ -239,9 +243,11 @@ describe("scaffold question", () => {
             ...CapabilityOptions.officeAddinItems(),
             CapabilityOptions.officeAddinImport(),
           ]);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestionNode.projectType.outlookAddin.title")
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
           );
           return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
         } else if (question.name === QuestionNames.OfficeAddinFolder) {
@@ -297,9 +303,11 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 4);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
-            getLocalizedString("core.createProjectQuestionNode.projectType.tab.title")
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.tab.title")
           );
           return ok({ type: "success", result: CapabilityOptions.SPFxTab().id });
         } else if (question.name === QuestionNames.SPFxSolution) {

@@ -126,8 +126,10 @@ export function selectAadAppManifestQuestionNode(): IQTreeNode {
     children: [
       {
         condition: (inputs: Inputs) =>
+          inputs.projectPath &&
+          inputs[QuestionNames.AadAppManifestFilePath] &&
           path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
-          path.join(inputs.projectPath!, "aad.manifest.json"),
+            path.join(inputs.projectPath, "aad.manifest.json"),
         data: confirmManifestQuestion(false, false),
       },
     ],
@@ -139,9 +141,11 @@ function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
     inputs.platform !== Platform.CLI_HELP &&
     inputs.platform !== Platform.CLI &&
     inputs.platform !== Platform.VS &&
+    inputs.projectPath &&
+    inputs[QuestionNames.TeamsAppManifestFilePath] &&
     path.resolve(inputs[QuestionNames.TeamsAppManifestFilePath]) !==
       path.join(
-        inputs.projectPath!,
+        inputs.projectPath,
         AppPackageFolderName,
         isLocal ? "manifest.local.json" : "manifest.json"
       )

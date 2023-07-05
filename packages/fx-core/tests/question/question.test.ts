@@ -83,10 +83,9 @@ describe("selectAadAppManifestQuestionNode()", async () => {
     sandbox.restore();
   });
 
-  it("traverse CLI_HELP", async () => {
+  it("traverse without projectPath", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI_HELP,
-      projectPath: ".",
     };
     const questions: string[] = [];
     const visitor: QuestionTreeVisitor = async (

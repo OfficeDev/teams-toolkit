@@ -329,7 +329,7 @@ export interface IQTreeNode {
 export const LocalEnvironmentName = "local";
 
 // @public
-export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
+export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T> | T;
 
 // @public (undocumented)
 export type LoginStatus = {

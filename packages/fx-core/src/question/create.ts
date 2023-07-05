@@ -782,21 +782,22 @@ export class PackageSelectOptionsHelper {
     return semver.lte(installedVersion, recommendedLowestVersion);
   }
 }
-export function SPFxImportFolderQuestion(hasDefault = false): FolderQuestion {
+export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.SPFxFolder,
     title: getLocalizedString("core.spfxFolder.title"),
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
-    default: hasDefault
+    default: hasDefaultFunc
       ? (inputs: Inputs) => {
-          return path.join(inputs.projectPath!, "src");
+          if (inputs.projectPath) return path.join(inputs.projectPath, "src");
+          return undefined;
         }
       : undefined,
   };
 }
 export const getTemplate = (inputs: Inputs): string => {
-  const capabilities: string[] = inputs["capabilities"];
+  const capabilities: string[] = inputs[QuestionNames.Capabilities];
   const templates: string[] = officeAddinJsonData.getProjectTemplateNames();
 
   const foundTemplate = templates.find((template) => {

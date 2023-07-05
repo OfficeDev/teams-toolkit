@@ -192,8 +192,9 @@ function selectTeamsAppManifestQuestion(isLocal = false): SingleFileQuestion {
     ),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
+      if (!inputs.projectPath) return undefined;
       const manifestPath = path.join(
-        inputs.projectPath!,
+        inputs.projectPath,
         AppPackageFolderName,
         isLocal ? "manifest.local.json" : "manifest.json"
       );
@@ -297,8 +298,9 @@ function selectTeamsAppPackageQuestion(): SingleFileQuestion {
     title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
+      if (!inputs.projectPath) return undefined;
       const appPackagePath: string = path.join(
-        inputs.projectPath!,
+        inputs.projectPath,
         AppPackageFolderName,
         BuildFolderName,
         "appPackage.dev.zip"

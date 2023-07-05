@@ -10,7 +10,11 @@ import { happyPathTest } from "./NotificationBotHappyPathCommon";
 import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Provision Notification Dotnet", () => {
-  it("Provision Resource: Notification Dotnet", { testPlanCaseId: 15685831 }, async function () {
-    await happyPathTest(Runtime.Dotnet);
-  });
+  it(
+    "Provision Resource: Notification Dotnet",
+    { testPlanCaseId: 15685831, author: "fanhu@microsoft.com" },
+    async function () {
+      await happyPathTest(Runtime.Dotnet);
+    }
+  );
 });

@@ -30,7 +30,7 @@ describe("Collaboration", function () {
 
   it(
     "Collaboration: CLI with permission status and permission grant - spfx",
-    { testPlanCaseId: 12782618 },
+    { testPlanCaseId: 12782618, author: "rentu@microsoft.com" },
     async function () {
       while (await fs.pathExists(projectPath)) {
         appName = getUniqueAppName();

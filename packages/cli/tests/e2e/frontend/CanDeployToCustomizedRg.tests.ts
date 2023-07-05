@@ -37,7 +37,7 @@ describe("Deploy to customized resource group", function () {
 
   it(
     `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
-    { testPlanCaseId: 17449539 },
+    { testPlanCaseId: 17449539, author: "zhijie.huang@microsoft.com" },
     async function () {
       // Create new tab project
       await CliHelper.createProjectWithCapability(

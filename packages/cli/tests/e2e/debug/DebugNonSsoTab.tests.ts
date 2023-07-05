@@ -37,43 +37,47 @@ describe("Debug V3 tab-non-sso template", () => {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path: provision and deploy", { testPlanCaseId: 9426074 }, async function () {
-    // create
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso);
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+  it(
+    "happy path: provision and deploy",
+    { testPlanCaseId: 9426074, author: "kuojianlu@microsoft.com" },
+    async function () {
+      // create
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso);
+      console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    // remove teamsApp/extendToM365 in case it fails
-    removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.local.yml"));
+      // remove teamsApp/extendToM365 in case it fails
+      removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.local.yml"));
 
-    // provision
-    await CliHelper.provisionProject(projectPath, "", "local");
-    console.log(`[Successfully] provision for ${projectPath}`);
+      // provision
+      await CliHelper.provisionProject(projectPath, "", "local");
+      console.log(`[Successfully] provision for ${projectPath}`);
 
-    let context = await readContextMultiEnvV3(projectPath, "local");
-    chai.assert.isDefined(context);
+      let context = await readContextMultiEnvV3(projectPath, "local");
+      chai.assert.isDefined(context);
 
-    // validate aad
-    chai.assert.isUndefined(context.AAD_APP_OBJECT_ID);
+      // validate aad
+      chai.assert.isUndefined(context.AAD_APP_OBJECT_ID);
 
-    // validate teams app
-    chai.assert.isDefined(context.TEAMS_APP_ID);
-    const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
-    chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
+      // validate teams app
+      chai.assert.isDefined(context.TEAMS_APP_ID);
+      const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
+      chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
-    // deploy
-    await CliHelper.deployAll(projectPath, "", "local");
-    console.log(`[Successfully] deploy for ${projectPath}`);
+      // deploy
+      await CliHelper.deployAll(projectPath, "", "local");
+      console.log(`[Successfully] deploy for ${projectPath}`);
 
-    context = await readContextMultiEnvV3(projectPath, "local");
-    chai.assert.isDefined(context);
+      context = await readContextMultiEnvV3(projectPath, "local");
+      chai.assert.isDefined(context);
 
-    // validate ssl cert
-    chai.assert.isDefined(context.SSL_CRT_FILE);
-    chai.assert.isNotEmpty(context.SSL_CRT_FILE);
-    chai.assert.isDefined(context.SSL_KEY_FILE);
-    chai.assert.isNotEmpty(context.SSL_KEY_FILE);
+      // validate ssl cert
+      chai.assert.isDefined(context.SSL_CRT_FILE);
+      chai.assert.isNotEmpty(context.SSL_CRT_FILE);
+      chai.assert.isDefined(context.SSL_KEY_FILE);
+      chai.assert.isNotEmpty(context.SSL_KEY_FILE);
 
-    // validate .localConfigs
-    chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
-  });
+      // validate .localConfigs
+      chai.assert.isTrue(await fs.pathExists(path.join(projectPath, ".localConfigs")));
+    }
+  );
 });

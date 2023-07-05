@@ -185,7 +185,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 2);
+          assert.isTrue(options.length === 3);
           assert.equal(
             (question.title as any)!(inputs),
             getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
@@ -577,7 +577,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 10);
+          assert.isTrue(options.length === 11);
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
           return ok({ type: "success", result: NotificationTriggerOptions.appService().id });
@@ -827,6 +827,20 @@ describe("scaffold question", () => {
       const result = await validFunc(input);
 
       assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+    });
+  });
+
+  describe("CapabilityOptions", () => {
+    it("has 3 options in message extension type", () => {
+      // Act
+      const options = CapabilityOptions.mes();
+      // Assert
+      assert.equal(options.length, 3);
+      assert.deepEqual(options, [
+        CapabilityOptions.linkUnfurling(),
+        CapabilityOptions.m365SearchMe(),
+        CapabilityOptions.collectFormMe(),
+      ]);
     });
   });
 });

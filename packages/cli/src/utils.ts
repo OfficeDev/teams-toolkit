@@ -49,7 +49,7 @@ export function getSingleOptionString(
   }
 }
 
-export function toYargsOptions(data: Question): Options {
+export async function toYargsOptions(data: Question): Promise<Options> {
   const choices = getChoicesFromQTNodeQuestion(data);
 
   let defaultValue;
@@ -62,7 +62,7 @@ export function toYargsOptions(data: Question): Options {
   }
   let title: any = data.title;
   if (typeof data.title === "function") {
-    title = data.title({ platform: Platform.CLI_HELP });
+    title = await data.title({ platform: Platform.CLI_HELP });
   }
   if (defaultValue === undefined) {
     return {

@@ -15,15 +15,15 @@ import { Generator } from "../../../src/component/generator/generator";
 import { GeneratorChecker } from "../../../src/component/generator/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/generator/spfx/depsChecker/yoChecker";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
-import {
-  PackageSelectOptionsHelper,
-  SPFxVersionOptionIds,
-} from "../../../src/component/generator/spfx/utils/question-helper";
 import { Utils } from "../../../src/component/generator/spfx/utils/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
 import { setTools } from "../../../src/core/globalVars";
-import { QuestionNames } from "../../../src/question";
+import {
+  PackageSelectOptionsHelper,
+  QuestionNames,
+  SPFxVersionOptionIds,
+} from "../../../src/question";
 import { MockTools } from "../../core/utils";
 
 describe("SPFxGenerator", function () {

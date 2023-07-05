@@ -55,7 +55,6 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
-import { SPFxVersionOptionIds } from "../component/generator/spfx/utils/question-helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { createContextV3, createDriverContext } from "../component/utils";
@@ -64,7 +63,7 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { QuestionNames, questions } from "../question";
+import { QuestionNames, SPFxVersionOptionIds, questions } from "../question";
 import { isAadMainifestContainsPlaceholder } from "../question/other";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";

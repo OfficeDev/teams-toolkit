@@ -66,6 +66,7 @@ import {
   QuestionNames,
   ScratchOptions,
   programmingLanguageQuestion,
+  questionNodes,
   questions,
 } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
@@ -467,8 +468,8 @@ describe("Core basic APIs", () => {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    sandbox.stub(questions, "grantPermission").returns(ok(undefined));
-    sandbox.stub(questions, "listCollaborator").returns(ok(undefined));
+    sandbox.stub(questionNodes, "grantPermission").returns(undefined);
+    sandbox.stub(questionNodes, "listCollaborator").returns(undefined);
     sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));

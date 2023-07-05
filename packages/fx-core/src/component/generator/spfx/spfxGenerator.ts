@@ -41,7 +41,7 @@ import {
 } from "./error";
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
-import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./utils/question-helper";
+import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "../../../question/create";
 import { TelemetryEvents } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
 

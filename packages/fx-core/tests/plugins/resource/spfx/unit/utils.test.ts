@@ -16,13 +16,11 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { cpUtils } from "../../../../../src";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
-import {
-  PackageSelectOptionsHelper,
-  SPFxVersionOptionIds,
-} from "../../../../../src/component/generator/spfx/utils/question-helper";
 import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 import {
   fillInAppNameFuncQuestion,
+  PackageSelectOptionsHelper,
+  SPFxVersionOptionIds,
   QuestionNames,
   SPFxPackageSelectQuestion,
   SPFxWebpartNameQuestion,

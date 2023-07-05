@@ -2,31 +2,27 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   DynamicPlatforms,
-  FxError,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
   Platform,
-  QTreeNode,
-  Result,
   SingleFileQuestion,
   SingleSelectQuestion,
   TextInputQuestion,
-  ok,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
+import { AppStudioScopes } from "../common/tools";
 import { envUtil } from "../component/utils/envUtil";
+import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentManager } from "../core/environment";
+import { TOOLS } from "../core/globalVars";
 import { SPFxImportFolderQuestion, SPFxWebpartNameQuestion } from "./create";
 import { QuestionNames } from "./questionNames";
-import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
-import { TOOLS } from "../core/globalVars";
-import { AppStudioScopes } from "../common/tools";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();

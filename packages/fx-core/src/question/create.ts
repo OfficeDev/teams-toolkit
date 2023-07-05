@@ -2,44 +2,41 @@ import {
   CLIPlatforms,
   FolderQuestion,
   FuncQuestion,
-  FxError,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
   Platform,
-  Result,
   SingleSelectQuestion,
   Stage,
   StaticOptions,
   TextInputQuestion,
-  ok,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import { cloneDeep } from "lodash";
+import * as os from "os";
+import * as path from "path";
+import semver from "semver";
+import { ConstantString } from "../common/constants";
 import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
+import { sampleProvider } from "../common/samples";
+import { convertToAlphanumericOnly } from "../common/utils";
 import { Runtime } from "../component/constants";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
+import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
+import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
 import {
   DevEnvironmentSetupError,
   PathAlreadyExistsError,
   RetrieveSPFxInfoError,
 } from "../component/generator/spfx/error";
-import { Constants } from "../component/generator/spfx/utils/constants";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import fs from "fs-extra";
-import * as os from "os";
-import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
-import { ConstantString } from "../common/constants";
-import { convertToAlphanumericOnly } from "../common/utils";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
-import { sampleProvider } from "../common/samples";
-import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
-import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import semver from "semver";
-import { cloneDeep } from "lodash";
 import { QuestionNames } from "./questionNames";
 
 export class ScratchOptions {

@@ -38,3 +38,4 @@ export { QuestionNames as CoreQuestionNames } from "./question/questionNames";
 export * from "./core/types";
 export * from "./error/index";
 export * from "./ui/visitor";
+export * from "./question";

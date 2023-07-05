@@ -6,6 +6,7 @@
 import { OptionItem } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
+import { ProgrammingLanguage } from "../question/create";
 
 export const ComponentNames = {
   TeamsTab: "teams-tab",
@@ -47,12 +48,6 @@ export enum Scenarios {
   Tab = "Tab",
   Bot = "Bot",
   Api = "Api",
-}
-
-export enum ProgrammingLanguage {
-  JS = "javascript",
-  TS = "typescript",
-  CSharp = "csharp",
 }
 
 export enum Runtime {

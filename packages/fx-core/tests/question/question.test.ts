@@ -12,21 +12,20 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
 import { CollaborationConstants, QuestionTreeVisitor, envUtil, traverse } from "../../src";
 import { CollaborationUtil } from "../../src/core/collaborator";
+import { setTools } from "../../src/core/globalVars";
 import { QuestionNames, SPFxImportFolderQuestion, questions } from "../../src/question";
 import {
   envQuestionCondition,
-  grantPermissionQuestionNode,
   isAadMainifestContainsPlaceholder,
   selectAadAppManifestQuestionNode,
 } from "../../src/question/other";
 import { MockTools, MockUserInteraction } from "../core/utils";
 import { callFuncs } from "./create.test";
-import { setTools } from "../../src/core/globalVars";
 
 const ui = new MockUserInteraction();
 
@@ -37,16 +36,58 @@ describe("none scaffold questions", () => {
     sandbox.restore();
     mockedEnvRestore();
   });
-  describe("getQuestionsForListCollaborator()", async () => {
-    it("getQuestionsForAddWebpart", async () => {
+  describe("addWebpart question", async () => {
+    it("happy path", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: "./test",
       };
 
+      const questionNames: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questionNames.push(question.name);
+        await callFuncs(question, inputs);
+        if (question.name === QuestionNames.collaborationAppType) {
+          return ok({
+            type: "success",
+            result: [
+              CollaborationConstants.TeamsAppQuestionId,
+              CollaborationConstants.AadAppQuestionId,
+            ],
+          });
+        } else if (question.name === QuestionNames.AadAppManifestFilePath) {
+          return ok({ type: "success", result: "aadAppManifest" });
+        } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
+          return ok({ type: "success", result: "teamsAppManifest" });
+        } else if (question.name === QuestionNames.Env) {
+          return ok({ type: "success", result: "dev" });
+        } else if (question.name === QuestionNames.ConfirmManifest) {
+          return ok({ type: "success", result: "manifest" });
+        } else if (question.name === QuestionNames.ConfirmAadManifest) {
+          return ok({ type: "success", result: "manifest" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
       const res = questions.addWebpart();
 
       assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        await traverse(res.value!, inputs, ui, undefined, visitor);
+        assert.deepEqual(questionNames, [
+          QuestionNames.collaborationAppType,
+          QuestionNames.TeamsAppManifestFilePath,
+          QuestionNames.ConfirmManifest,
+          QuestionNames.AadAppManifestFilePath,
+          QuestionNames.ConfirmAadManifest,
+          QuestionNames.Env,
+        ]);
+      }
     });
   });
 

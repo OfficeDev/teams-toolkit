@@ -3,6 +3,7 @@
 
 import {
   Colors,
+  IQTreeNode,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
@@ -97,7 +98,7 @@ export function toLocaleLowerCase(arg: any): any {
   } else return arg;
 }
 
-export function flattenNodes(node: QTreeNode): QTreeNode[] {
+export function flattenNodes(node: IQTreeNode): IQTreeNode[] {
   const nodeCopy = Object.assign({}, node);
   const children = (nodeCopy.children || []).concat([]);
   nodeCopy.children = undefined;

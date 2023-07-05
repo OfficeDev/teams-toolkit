@@ -49,8 +49,9 @@ export function getSingleOptionString(
   }
 }
 
-export async function toYargsOptions(data: Question): Promise<Options> {
+export function toYargsOptions(data: Question): Options {
   const choices = getChoicesFromQTNodeQuestion(data);
+
   let defaultValue;
   if (data.default && data.default instanceof Array && data.default.length > 0) {
     defaultValue = data.default.map((item) => item.toLocaleLowerCase());
@@ -59,14 +60,10 @@ export async function toYargsOptions(data: Question): Promise<Options> {
   } else {
     defaultValue = undefined;
   }
-  let title: any = data.title;
-  if (typeof data.title === "function") {
-    title = await data.title({ platform: Platform.CLI_HELP });
-  }
   if (defaultValue === undefined) {
     return {
       array: data.type === "multiSelect",
-      description: title || "",
+      description: (data.title as string) || "",
       choices: choices,
       hidden: !!(data as any).hide,
       global: false,
@@ -75,7 +72,7 @@ export async function toYargsOptions(data: Question): Promise<Options> {
   }
   return {
     array: data.type === "multiSelect",
-    description: title || "",
+    description: (data.title as string) || "",
     default: defaultValue,
     choices: choices,
     hidden: !!(data as any).hide,

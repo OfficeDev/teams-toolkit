@@ -33,7 +33,7 @@ import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
-import { getQuestionsForCreateProjectCliHelp } from "../question/create";
+import { createProjectCliHelpNode } from "../question/create";
 import { CallbackRegistry } from "./callback";
 import { LocalCrypto } from "./crypto";
 import { environmentManager } from "./environment";
@@ -43,7 +43,7 @@ import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
 import { QuestionNames } from "../question/questionNames";
-import { getQuestionsForValidateMethod } from "../question/other";
+import { questions } from "../question";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -139,7 +139,7 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
-  @hooks([QuestionMW(getQuestionsForValidateMethod)])
+  @hooks([QuestionMW(questions.selectTeamsAppValidationMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (inputs[QuestionNames.ValidateMethod] === validateSchemaOption.id) {
       return await this.validateManifest(inputs);
@@ -186,7 +186,7 @@ export class FxCore {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     inputs.stage = Stage.getQuestions;
     if (stage === Stage.create) {
-      return ok(getQuestionsForCreateProjectCliHelp() as QTreeNode);
+      return ok(createProjectCliHelpNode() as QTreeNode);
     }
     return ok(undefined);
   }

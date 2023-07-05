@@ -57,7 +57,7 @@ const envLoaderMWImpl = async (
       await next();
       return;
     }
-    const question = selectTargetEnvQuestion(QuestionNames.Env, !withLocalEnv, false);
+    const question = selectTargetEnvQuestion(QuestionNames.Env, !withLocalEnv, true);
     const res = await traverse({ data: question }, inputs, TOOLS.ui);
     if (res.isErr()) {
       TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);

@@ -4,14 +4,10 @@
 import {
   Colors,
   Context,
-  DynamicPlatforms,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   M365TokenProvider,
-  MultiSelectQuestion,
   Platform,
-  QTreeNode,
   Result,
   SystemError,
   TokenProvider,
@@ -39,9 +35,7 @@ import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 import { FileNotFoundError } from "../error/common";
 import { QuestionNames } from "../question";
-import { inputUserEmailQuestion, selectTeamsAppManifestQuestionNode } from "../question/other";
 import { CoreSource } from "./error";
-import { selectAadAppManifestQuestion, selectEnvNode } from "./question";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -635,29 +629,6 @@ export async function grantPermission(
   }
 }
 
-export async function getQuestionsForGrantPermission(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
-  if (isDynamicQuestion) {
-    const root = await getCollaborationQuestionNode(inputs);
-    root.addChild(new QTreeNode(inputUserEmailQuestion()));
-    return ok(root);
-  }
-  return ok(undefined);
-}
-
-export async function getQuestionsForListCollaborator(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
-  if (isDynamicQuestion) {
-    const root = await getCollaborationQuestionNode(inputs);
-    return ok(root);
-  }
-  return ok(undefined);
-}
-
 function getPrintEnvMessage(env: string | undefined, message: string) {
   return env
     ? [
@@ -668,95 +639,4 @@ function getPrintEnvMessage(env: string | undefined, message: string) {
         { content: `${env}\n`, color: Colors.BRIGHT_MAGENTA },
       ]
     : [];
-}
-
-function selectAppTypeQuestion(): MultiSelectQuestion {
-  return {
-    name: CollaborationConstants.AppType,
-    title: getLocalizedString("core.selectCollaborationAppTypeQuestion.title"),
-    type: "multiSelect",
-    staticOptions: [
-      {
-        id: CollaborationConstants.AadAppQuestionId,
-        label: getLocalizedString("core.aadAppQuestion.label"),
-        description: getLocalizedString("core.aadAppQuestion.description"),
-      },
-      {
-        id: CollaborationConstants.TeamsAppQuestionId,
-        label: getLocalizedString("core.teamsAppQuestion.label"),
-        description: getLocalizedString("core.teamsAppQuestion.description"),
-      },
-    ],
-  };
-}
-
-async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> {
-  const root = new QTreeNode(selectAppTypeQuestion());
-
-  // Teams app manifest select node
-  const teamsAppSelectNode = selectTeamsAppManifestQuestionNode() as QTreeNode;
-  teamsAppSelectNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
-  root.addChild(teamsAppSelectNode);
-
-  // Aad app manifest select node
-  const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
-  aadAppSelectNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
-  root.addChild(aadAppSelectNode);
-
-  // Env select node
-  const envNode = await selectEnvNode(inputs);
-  if (!envNode) {
-    return root;
-  }
-  envNode.data.name = "env";
-  envNode.condition = validateEnvQuestion;
-  teamsAppSelectNode.addChild(envNode);
-  aadAppSelectNode.addChild(envNode);
-
-  return root;
-}
-
-export async function validateEnvQuestion(inputs: Inputs): Promise<boolean> {
-  if (inputs?.env || inputs?.targetEnvName) {
-    return false;
-  }
-
-  const appType = inputs?.[CollaborationConstants.AppType] as string[];
-  const requireAad = appType.includes(CollaborationConstants.AadAppQuestionId);
-  const requireTeams = appType.includes(CollaborationConstants.TeamsAppQuestionId);
-  const aadManifestPath = inputs?.[QuestionNames.AadAppManifestFilePath];
-  const teamsManifestPath = inputs?.[QuestionNames.TeamsAppManifestFilePath];
-
-  // When both is selected, only show the question once at the end
-  if ((requireAad && !aadManifestPath) || (requireTeams && !teamsManifestPath)) {
-    return false;
-  }
-
-  // Only show env question when manifest id is referencing value from .env file
-  let requireEnv = false;
-  if (requireTeams && teamsManifestPath) {
-    const teamsAppIdRes = await CollaborationUtil.loadManifestId(teamsManifestPath);
-    if (teamsAppIdRes.isOk()) {
-      requireEnv = CollaborationUtil.requireEnvQuestion(teamsAppIdRes.value);
-      if (requireEnv) {
-        return true;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  if (requireAad && aadManifestPath) {
-    const aadAppIdRes = await CollaborationUtil.loadManifestId(aadManifestPath);
-    if (aadAppIdRes.isOk()) {
-      requireEnv = CollaborationUtil.requireEnvQuestion(aadAppIdRes.value);
-      if (requireEnv) {
-        return true;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  return false;
 }

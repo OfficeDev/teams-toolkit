@@ -1310,11 +1310,7 @@ export function createProjectQuestionNode(): IQTreeNode {
   return createProjectQuestion;
 }
 
-export function getQuestionsForCreateProject(): Result<IQTreeNode, FxError> {
-  return ok(createProjectQuestionNode());
-}
-
-export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
+export function createProjectCliHelpNode(): IQTreeNode {
   const node = cloneDeep(createProjectQuestionNode());
   trimQuestionTreeForCliHelp(node, [
     QuestionNames.Runtime,

@@ -28,41 +28,45 @@ import { CollaborationConstants, CollaborationUtil } from "../core/collaborator"
 import { TOOLS } from "../core/globalVars";
 import { AppStudioScopes } from "../common/tools";
 
-//// getQuestionsXXXX
-export function getQuestionsForAddWebpart(): Result<IQTreeNode | undefined, FxError> {
-  return ok(addWebPartQuestionNode());
-}
-
-export function getQuestionsForSelectTeamsAppManifest(): Result<IQTreeNode | undefined, FxError> {
-  return ok(selectTeamsAppManifestQuestionNode());
-}
-
-export function getQuestionsForValidateMethod(): Result<IQTreeNode | undefined, FxError> {
-  return ok({
-    data: selectTeamsAppValidationMethodQuestion(),
-  });
-}
-
-export function getQuestionsForValidateAppPackage(): Result<IQTreeNode | undefined, FxError> {
-  return ok({
-    data: selectTeamsAppPackageQuestion(),
-  });
-}
-
-export function getQuestionsForPreviewWithManifest(): Result<IQTreeNode | undefined, FxError> {
-  return ok(previewWithTeamsAppManifestNode());
-}
-
-export function getQuestionsForListCollaborator(): Result<IQTreeNode | undefined, FxError> {
-  return ok(listCollaboratorQuestionNode());
-}
-
-export function getQuestionsForGrantPermission(): Result<IQTreeNode | undefined, FxError> {
+export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
   selectTeamsAppNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
+  selectTeamsAppNode.children!.push({
+    condition: envQuestionCondition,
+    data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
+  });
   const selectAadAppNode = selectAadAppManifestQuestionNode();
   selectAadAppNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
-  return ok({
+  selectAadAppNode.children!.push({
+    condition: envQuestionCondition,
+    data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
+  });
+  return {
+    data: { type: "group" },
+    children: [
+      {
+        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
+        data: selectAppTypeQuestion(),
+        children: [selectTeamsAppNode, selectAadAppNode],
+      },
+    ],
+  };
+}
+
+export function grantPermissionQuestionNode(): IQTreeNode {
+  const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
+  selectTeamsAppNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
+  selectTeamsAppNode.children!.push({
+    condition: envQuestionCondition,
+    data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
+  });
+  const selectAadAppNode = selectAadAppManifestQuestionNode();
+  selectAadAppNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
+  selectAadAppNode.children!.push({
+    condition: envQuestionCondition,
+    data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
+  });
+  return {
     data: { type: "group" },
     children: [
       {
@@ -72,20 +76,16 @@ export function getQuestionsForGrantPermission(): Result<IQTreeNode | undefined,
           selectTeamsAppNode,
           selectAadAppNode,
           {
-            condition: envQuestionCondition,
-            data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
-          },
-          {
             data: inputUserEmailQuestion(),
           },
         ],
       },
     ],
-  } as QTreeNode);
+  };
 }
 
-export function getQuestionsForDeployAadManifest(): Result<IQTreeNode | undefined, FxError> {
-  return ok({
+export function deployAadManifestQuestionNode(): IQTreeNode {
+  return {
     data: { type: "group" },
     children: [
       {
@@ -106,7 +106,7 @@ export function getQuestionsForDeployAadManifest(): Result<IQTreeNode | undefine
         ],
       },
     ],
-  });
+  };
 }
 
 export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
@@ -153,7 +153,7 @@ function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
   );
 }
 
-function addWebPartQuestionNode(): IQTreeNode {
+export function addWebPartQuestionNode(): IQTreeNode {
   return {
     data: SPFxImportFolderQuestion(true),
     children: [
@@ -211,8 +211,15 @@ function selectTeamsAppManifestQuestion(isLocal = false): SingleFileQuestion {
 }
 
 function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSelectQuestion {
+  const map: Record<string, string> = {
+    true_true: QuestionNames.ConfirmLocalManifest,
+    true_false: QuestionNames.ConfirmManifest,
+    false_true: QuestionNames.ConfirmAadManifest,
+    false_false: QuestionNames.ConfirmAadManifest,
+  };
+  const name = map[`${isTeamsApp}_${isLocal}`];
   return {
-    name: isLocal ? QuestionNames.ConfirmLocalManifest : QuestionNames.ConfirmManifest,
+    name: name,
     title: isTeamsApp
       ? getLocalizedString(
           isLocal
@@ -261,6 +268,12 @@ function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
   };
 }
 
+export function selectTeamsAppValidationMethodQuestionNode(): IQTreeNode {
+  return {
+    data: selectTeamsAppValidationMethodQuestion(),
+  };
+}
+
 export class TeamsAppValidationOptions {
   static schema(): OptionItem {
     return {
@@ -303,6 +316,12 @@ function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   };
 }
 
+export function selectTeamsAppPackageQuestionNode(): IQTreeNode {
+  return {
+    data: selectTeamsAppPackageQuestion(),
+  };
+}
+
 function selectM365HostQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.M365Host,
@@ -313,7 +332,7 @@ function selectM365HostQuestion(): SingleSelectQuestion {
   };
 }
 
-function previewWithTeamsAppManifestNode(): IQTreeNode {
+export function previewWithTeamsAppManifestQuestionNode(): IQTreeNode {
   return {
     data: { type: "group" },
     children: [
@@ -454,6 +473,11 @@ export async function envQuestionCondition(inputs: Inputs): Promise<boolean> {
   const aadManifestPath = inputs[QuestionNames.AadAppManifestFilePath];
   const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
 
+  // When both is selected, only show the question once at the end
+  if ((requireAad && !aadManifestPath) || (requireTeams && !teamsManifestPath)) {
+    return false;
+  }
+
   // Only show env question when manifest id is referencing value from .env file
   let requireEnv = false;
   if (requireTeams && teamsManifestPath) {
@@ -481,28 +505,4 @@ export async function envQuestionCondition(inputs: Inputs): Promise<boolean> {
   }
 
   return false;
-}
-
-function listCollaboratorQuestionNode(): IQTreeNode {
-  const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
-  selectTeamsAppNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
-  const selectAadAppNode = selectAadAppManifestQuestionNode();
-  selectAadAppNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
-  return {
-    data: { type: "group" },
-    children: [
-      {
-        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
-        data: selectAppTypeQuestion(),
-        children: [
-          selectTeamsAppNode,
-          selectAadAppNode,
-          {
-            condition: envQuestionCondition,
-            data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
-          },
-        ],
-      },
-    ],
-  };
 }

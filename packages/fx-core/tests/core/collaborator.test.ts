@@ -4,15 +4,10 @@
 import {
   Context,
   InputsWithProjectPath,
-  OptionItem,
   Platform,
-  SingleSelectQuestion,
-  StaticOptions,
   TokenProvider,
   UserError,
-  ValidationSchema,
   err,
-  getValidationFunction,
   ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -25,26 +20,21 @@ import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { CollaborationState } from "../../src/common/permissionInterface";
 import { SolutionError } from "../../src/component/constants";
+import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
 import {
   CollaborationConstants,
   CollaborationUtil,
   checkPermission,
-  getQuestionsForGrantPermission,
-  getQuestionsForListCollaborator,
   grantPermission,
   listCollaborator,
-  validateEnvQuestion,
 } from "../../src/core/collaborator";
-import { environmentManager } from "../../src/core/environment";
-import { setTools } from "../../src/core/globalVars";
+import { QuestionNames } from "../../src/question";
 import {
   MockedAzureAccountProvider,
   MockedM365Provider,
   MockedV2Context,
 } from "../plugins/solution/util";
-import { MockTools, randomAppName } from "./utils";
-import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
-import { QuestionNames } from "../../src/question";
+import { randomAppName } from "./utils";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
@@ -1366,219 +1356,6 @@ describe("Collaborator APIs for V3", () => {
       const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
       assert.isUndefined(res);
       mockedEnvRestoreForInput();
-    });
-  });
-
-  describe("getQuestions", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
-    afterEach(() => {
-      mockedEnvRestore();
-      sandbox.restore();
-    });
-
-    it("happy path: getQuestionsForGrantPermission", async () => {
-      inputs.platform = Platform.VSCode;
-      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-      sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev", "test"]));
-      sandbox.stub(fs, "pathExistsSync").returns(true);
-      const tools = new MockTools();
-      setTools(tools);
-      sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
-        ok({
-          tid: "mock_project_tenant_id",
-          oid: "fake_oid",
-          unique_name: "fake_unique_name",
-          name: "fake_name",
-        })
-      );
-
-      const nodeRes = await getQuestionsForGrantPermission(inputs);
-      assert.isTrue(nodeRes.isOk());
-      if (nodeRes.isOk()) {
-        const node = nodeRes.value;
-        assert.isTrue(node != undefined && node?.children?.length == 3);
-
-        const teamsAppManifestQuestion = node?.children?.[0];
-        const aadAppManifestQuestion = node?.children?.[1];
-
-        assert.isTrue(teamsAppManifestQuestion?.children?.length == 2);
-        assert.isTrue(aadAppManifestQuestion?.children?.length == 2);
-
-        const teamsAppConfirmNode = teamsAppManifestQuestion?.children?.[0];
-        const aadAppConfirmNode = aadAppManifestQuestion?.children?.[0];
-
-        {
-          // teamsApp & aadApp selected and env provided
-          inputs[CollaborationConstants.AppType] = [
-            CollaborationConstants.TeamsAppQuestionId,
-            CollaborationConstants.AadAppQuestionId,
-          ];
-          inputs.env = "dev";
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-
-          const teamsAppConfirmOption = (teamsAppConfirmNode?.data as SingleSelectQuestion)
-            .dynamicOptions!(inputs) as StaticOptions;
-          const aadAppConfirmOption = (aadAppConfirmNode?.data as SingleSelectQuestion)
-            .dynamicOptions!(inputs) as StaticOptions;
-          assert.isTrue(
-            (teamsAppConfirmOption[0] as OptionItem).label == "$(file) teamsAppManifest" &&
-              (aadAppConfirmOption[0] as OptionItem).label == "$(file) aadAppManifest"
-          );
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(aadAppQuestionActivate != undefined);
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(teamsAppQuestionActivate != undefined);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-        }
-      }
-    });
-
-    it("happy path: getQuestionsForListCollaborator", async () => {
-      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs.platform = Platform.VSCode;
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-      sandbox.stub(fs, "pathExistsSync").returns(true);
-      const nodeRes = await getQuestionsForListCollaborator(inputs);
-      assert.isTrue(nodeRes.isOk());
-      if (nodeRes.isOk()) {
-        const node = nodeRes.value;
-        assert.isTrue(node != undefined && node?.children?.length == 2);
-
-        const teamsAppManifestQuestion = node?.children?.[0];
-        const aadAppManifestQuestion = node?.children?.[1];
-
-        {
-          // teamsApp & aadApp selected
-          inputs[CollaborationConstants.AppType] = [
-            CollaborationConstants.TeamsAppQuestionId,
-            CollaborationConstants.AadAppQuestionId,
-          ];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(aadAppQuestionActivate != undefined);
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(teamsAppQuestionActivate != undefined);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-        }
-      }
     });
   });
 });

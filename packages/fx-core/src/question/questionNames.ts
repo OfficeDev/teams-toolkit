@@ -44,6 +44,7 @@ export enum QuestionNames {
   TeamsAppPackageFilePath = "app-package-file-path",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",
+  ConfirmAadManifest = "confirmAadManifest",
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
   M365Host = "m365-host",

@@ -10,7 +10,7 @@
       "name": "Launch new command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["new", "--interactive", "false", "--app-name", "fxE2E16885130795749b", "--capabilities", "tab-spfx", "--spfx-framework-type", "none", "--spfx-webpart-name", "helloworld", "--programming-language", "typescript"],
+      "args": ["new", "--interactive", "false"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

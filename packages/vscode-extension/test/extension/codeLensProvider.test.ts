@@ -4,6 +4,7 @@ import { envUtil } from "@microsoft/teamsfx-core";
 import { ok } from "@microsoft/teamsfx-api";
 import {
   AadAppTemplateCodeLensProvider,
+  CopilotPluginCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PlaceholderCodeLens,
@@ -165,5 +166,40 @@ describe("Crypto CodeLensProvider", () => {
     ) as vscode.CodeLens[];
 
     chai.assert.equal(codelens.length, 0);
+  });
+});
+
+describe("Copilot plugin CodeLensProvider", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("Add API", async () => {
+    const document = {
+      fileName: "manifest.json",
+      getText: () => {
+        return `"composeExtensions": {}`;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: `"composeExtensions": {}`,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    const copilotPluginCodelensProvider = new CopilotPluginCodeLensProvider();
+    const codelens: vscode.CodeLens[] = copilotPluginCodelensProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 1);
+    chai.expect(codelens[0].command).to.deep.equal({
+      title: "➕Add another API",
+      command: "fx-extension.addAPI",
+    });
   });
 });

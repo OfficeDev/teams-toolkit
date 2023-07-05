@@ -6,7 +6,6 @@
 import { OptionItem } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
-import { ProgrammingLanguage } from "../question/create";
 
 export const ComponentNames = {
   TeamsTab: "teams-tab",

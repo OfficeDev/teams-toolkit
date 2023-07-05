@@ -227,7 +227,7 @@ jobs:
         uses: actions/upload-artifact@v3
         if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
         with:
-          name: test result ${{ steps.get-report-name.outputs.name }}
+          name: test-result-${{ steps.get-report-name.outputs.name }}
           path: |
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 

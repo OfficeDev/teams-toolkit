@@ -437,7 +437,8 @@ export function selectAadManifestQuestion(): SingleFileQuestion {
     title: getLocalizedString("core.selectAadManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      const manifestPath: string = path.join(inputs.projectPath!, "aad.manifest.json");
+      if (!inputs.projectPath) return undefined;
+      const manifestPath: string = path.join(inputs.projectPath, "aad.manifest.json");
       if (fs.pathExistsSync(manifestPath)) {
         return manifestPath;
       } else {
@@ -507,7 +508,10 @@ export async function envQuestionCondition(inputs: Inputs): Promise<boolean> {
 
   return false;
 }
-async function newEnvNameValidation(input: string, inputs?: Inputs): Promise<string | undefined> {
+export async function newEnvNameValidation(
+  input: string,
+  inputs?: Inputs
+): Promise<string | undefined> {
   if (!inputs?.projectPath) return "Project path is not defined";
   const targetEnvName = input;
   const match = targetEnvName.match(environmentManager.envNameRegex);
@@ -553,23 +557,22 @@ export function newTargetEnvQuestion(): TextInputQuestion {
     placeholder: getLocalizedString("core.getQuestionNewTargetEnvironmentName.placeholder"),
   };
 }
-export const lastUsedMark = " (last used)";
-let lastUsedEnv: string | undefined;
+// export const lastUsedMark = " (last used)";
+// let lastUsedEnv: string | undefined;
+// export function reOrderEnvironments(environments: Array<string>): Array<string> {
+//   if (!lastUsedEnv) {
+//     return environments;
+//   }
 
-export function reOrderEnvironments(environments: Array<string>): Array<string> {
-  if (!lastUsedEnv) {
-    return environments;
-  }
+//   const index = environments.indexOf(lastUsedEnv);
+//   if (index === -1) {
+//     return environments;
+//   }
 
-  const index = environments.indexOf(lastUsedEnv);
-  if (index === -1) {
-    return environments;
-  }
-
-  return [lastUsedEnv + lastUsedMark]
-    .concat(environments.slice(0, index))
-    .concat(environments.slice(index + 1));
-}
+//   return [lastUsedEnv + lastUsedMark]
+//     .concat(environments.slice(0, index))
+//     .concat(environments.slice(index + 1));
+// }
 export function selectSourceEnvQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
@@ -578,14 +581,14 @@ export function selectSourceEnvQuestion(): SingleSelectQuestion {
     staticOptions: [],
     dynamicOptions: async (inputs: Inputs) => {
       if (inputs.existingEnvNames) {
-        const envList = reOrderEnvironments(inputs.existingEnvNames);
+        const envList = inputs.existingEnvNames;
         return envList;
       } else if (inputs.projectPath) {
         const envListRes = await envUtil.listEnv(inputs.projectPath, true);
         if (envListRes.isErr()) {
           throw envListRes.error;
         }
-        return reOrderEnvironments(envListRes.value);
+        return envListRes.value;
       }
       return [];
     },

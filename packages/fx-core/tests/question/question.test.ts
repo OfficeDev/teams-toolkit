@@ -20,8 +20,10 @@ import { CollaborationUtil } from "../../src/core/collaborator";
 import { setTools } from "../../src/core/globalVars";
 import { QuestionNames, SPFxImportFolderQuestion, questions } from "../../src/question";
 import {
+  createNewEnvQuestionNode,
   envQuestionCondition,
   isAadMainifestContainsPlaceholder,
+  newEnvNameValidation,
   newResourceGroupOption,
   resourceGroupQuestionNode,
   selectAadAppManifestQuestionNode,
@@ -842,5 +844,58 @@ describe("resourceGroupQuestionNode", async () => {
     };
     await traverse(node, inputs, ui, undefined, visitor);
     assert.deepEqual(questionNames, [QuestionNames.TargetResourceGroupName]);
+  });
+});
+
+describe("createNewEnvQuestionNode", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("newEnvNameValidation invalid pattern", () => {
+    const res = newEnvNameValidation("!!!!!", { platform: Platform.VSCode });
+    assert.isTrue(res !== undefined);
+  });
+  it("newEnvNameValidation invlid local", () => {
+    const res = newEnvNameValidation("local", {
+      platform: Platform.VSCode,
+    });
+    assert.isTrue(res !== undefined);
+  });
+  it("newEnvNameValidation exists", () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    const res = newEnvNameValidation("dev1", {
+      platform: Platform.VSCode,
+    });
+    assert.isTrue(res !== undefined);
+  });
+
+  it("happy path", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
+    const node = createNewEnvQuestionNode();
+    assert.isTrue(node !== undefined);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs, "dev3");
+      if (question.name === QuestionNames.NewTargetEnvName) {
+        return ok({ type: "success", result: "dev3" });
+      } else if (question.name === QuestionNames.SourceEnvName) {
+        return ok({ type: "success", result: "dev2" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(node, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [QuestionNames.NewTargetEnvName, QuestionNames.SourceEnvName]);
   });
 });

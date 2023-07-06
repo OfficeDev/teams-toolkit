@@ -20,7 +20,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
-import { CapabilityOptions, QuestionNames } from "../question";
+import { CapabilityOptions } from "../question/create";
 import { CoordinatorSource } from "./constants";
 import * as appStudio from "./driver/teamsApp/appStudio";
 import {
@@ -40,6 +40,7 @@ import {
   needTabCode,
 } from "./driver/teamsApp/utils/utils";
 import { envUtil } from "./utils/envUtil";
+import { QuestionNames } from "../question/questionNames";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";

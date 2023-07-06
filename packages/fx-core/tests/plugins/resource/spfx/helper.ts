@@ -23,7 +23,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import sinon from "sinon";
-import { SPFXQuestionNames } from "../../../../src/component/generator/spfx/utils/questions";
+import { QuestionNames } from "../../../../src/question";
 
 export class TestHelper {
   static getFakePluginContext(
@@ -40,11 +40,11 @@ export class TestHelper {
       m365TokenProvider: mockM365TokenProvider(),
       answers: {},
     } as any;
-    pluginContext.answers![SPFXQuestionNames.webpart_name] = webpartName
+    pluginContext.answers![QuestionNames.SPFxWebpartName] = webpartName
       ? webpartName
       : "helloworld";
-    pluginContext.answers![SPFXQuestionNames.webpart_desp] = "test";
-    pluginContext.answers![SPFXQuestionNames.framework_type] = framework;
+    pluginContext.answers![QuestionNames.SPFxWebpartDesc] = "test";
+    pluginContext.answers![QuestionNames.SPFxFramework] = framework;
     return pluginContext;
   }
 }

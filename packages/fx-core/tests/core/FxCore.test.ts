@@ -66,6 +66,8 @@ import {
   QuestionNames,
   ScratchOptions,
   programmingLanguageQuestion,
+  questionNodes,
+  questions,
 } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
 
@@ -464,16 +466,10 @@ describe("Core basic APIs", () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.AppName]: appName,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.ProgrammingLanguage]: "javascript",
-      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
-      [QuestionNames.Folder]: os.tmpdir(),
-      stage: Stage.listCollaborator,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
-    sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
+    sandbox.stub(questionNodes, "grantPermission").returns(undefined);
+    sandbox.stub(questionNodes, "listCollaborator").returns(undefined);
     sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));

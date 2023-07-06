@@ -134,14 +134,14 @@ describe("Utils Tests", function () {
       expect(answer.default).deep.equals(["aa"]);
     });
 
-    it("dynamic title", async () => {
+    it("dynamic title and default value", async () => {
       const question: apis.Question = {
         type: "multiSelect",
         name: "question",
         title: (inputs: apis.Inputs) => "dynamic title",
         returnObject: true,
         staticOptions: staticOptions2,
-        default: ["AA"],
+        default: (inputs: apis.Inputs) => ["AA"],
       };
       const answer = await toYargsOptions(question);
       expect(answer.choices).deep.equals(["aa", "bb", "cc"]);

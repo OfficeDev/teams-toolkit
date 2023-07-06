@@ -22,7 +22,7 @@ import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
-import { PackageSelectOptionsHelper } from "../utils/question-helper";
+import { PackageSelectOptionsHelper } from "../../../../question/create";
 
 const name = Constants.GeneratorPackageName;
 const displayName = `${name}@${Constants.LatestVersion}`;

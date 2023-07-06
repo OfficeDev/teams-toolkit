@@ -105,13 +105,11 @@ describe("SPFx question-helpers", () => {
       mockedEnvRestore();
     });
 
-    const webpartNameQuestion = SPFxWebpartNameQuestion();
-
     it("Returns undefined when web part name not duplicated in create stage", async () => {
       previousInputs.stage = Stage.create;
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc("helloworld", previousInputs);
 
       chai.expect(res).equal(undefined);
@@ -122,7 +120,7 @@ describe("SPFx question-helpers", () => {
       const input = "1";
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai
@@ -148,7 +146,7 @@ describe("SPFx question-helpers", () => {
       });
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai.expect(res).equal(undefined);
@@ -167,7 +165,7 @@ describe("SPFx question-helpers", () => {
       });
       previousInputs["spfx-folder"] = path.join(previousInputs!.projectPath!, "SPFx");
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai.expect(res).equal(undefined);
@@ -179,7 +177,7 @@ describe("SPFx question-helpers", () => {
       const input = "1";
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai
@@ -205,7 +203,7 @@ describe("SPFx question-helpers", () => {
       });
       previousInputs["spfx-folder"] = path.join(previousInputs!.projectPath!, "SPFx");
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai
@@ -224,10 +222,9 @@ describe("SPFx question-helpers", () => {
     afterEach(() => {
       sinon.restore();
     });
-    const spfxPackageSelectQuestion = SPFxPackageSelectQuestion();
     it("return undefined if choosing to install locally", async () => {
       const func = getValidationFunction<string>(
-        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
         { platform: Platform.VSCode }
       );
       const res = await func(SPFxVersionOptionIds.installLocally);
@@ -238,7 +235,7 @@ describe("SPFx question-helpers", () => {
       sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(true);
 
       const func = getValidationFunction<string>(
-        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
         { platform: Platform.VSCode }
       );
       const res = await func(SPFxVersionOptionIds.globalPackage);
@@ -249,7 +246,7 @@ describe("SPFx question-helpers", () => {
       sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(false);
 
       const func = getValidationFunction<string>(
-        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
         { platform: Platform.VSCode }
       );
       let error;

@@ -17,16 +17,16 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { getLocalizedString } from "../../src/common/localizeUtils";
-import { Runtime } from "../../src/component/constants";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import {
   CapabilityOptions,
   NotificationTriggerOptions,
   ProjectTypeOptions,
+  RuntimeOptions,
   SPFxVersionOptionIds,
   ScratchOptions,
   appNameQuestion,
-  createProjectQuestion,
+  createProjectQuestionNode,
   getLanguageOptions,
   getTemplate,
 } from "../../src/question/create";
@@ -35,23 +35,23 @@ import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockUserInteraction, randomAppName } from "../core/utils";
 import * as path from "path";
 
-async function callFuncs(question: Question, inputs: Inputs) {
-  if (question.default && typeof question.default === "object") {
+export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
+  if (question.default && typeof question.default !== "string") {
     await (question.default as LocalFunc<string | undefined>)(inputs);
   }
 
   if (
     (question.type === "singleSelect" || question.type === "multiSelect") &&
-    typeof question.default === "object" &&
+    typeof question.dynamicOptions !== "object" &&
     question.dynamicOptions
   ) {
     await question.dynamicOptions(inputs);
   }
-  if ((question as any).validation?.validFunc) {
-    await (question as any).validation.validFunc(inputs);
+  if (answer && (question as any).validation?.validFunc) {
+    await (question as any).validation.validFunc(answer, inputs);
   }
 
-  if ((question as any).placeholder && typeof (question as any).placeholder === "object") {
+  if ((question as any).placeholder && typeof (question as any).placeholder !== "string") {
     await (question as any).placeholder(inputs);
   }
 }
@@ -63,7 +63,7 @@ describe("scaffold question", () => {
     sandbox.restore();
   });
 
-  describe("createProjectQuestion", () => {
+  describe("createProjectQuestionNode", () => {
     const ui = new MockUserInteraction();
     let mockedEnvRestore: RestoreFn = () => {};
 
@@ -96,7 +96,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Samples,
@@ -131,8 +131,10 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 4);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
+            title,
             getLocalizedString("core.createProjectQuestion.projectType.bot.title")
           );
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
@@ -147,7 +149,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -186,8 +188,10 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 3);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
+            title,
             getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
           );
           return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
@@ -200,7 +204,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         "scratch",
         "project-type",
@@ -239,8 +243,10 @@ describe("scaffold question", () => {
             ...CapabilityOptions.officeAddinItems(),
             CapabilityOptions.officeAddinImport(),
           ]);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
+            title,
             getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
           );
           return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
@@ -260,7 +266,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -297,8 +303,10 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 4);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
-            (question.title as any)!(inputs),
+            title,
             getLocalizedString("core.createProjectQuestion.projectType.tab.title")
           );
           return ok({ type: "success", result: CapabilityOptions.SPFxTab().id });
@@ -322,7 +330,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -380,7 +388,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -475,7 +483,8 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      const tres = await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.isTrue(tres.isOk());
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -546,7 +555,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.ProjectType,
@@ -590,7 +599,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Capabilities,
@@ -619,7 +628,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.Scratch) {
           return ok({ type: "success", result: ScratchOptions.yes().id });
         } else if (question.name === QuestionNames.Runtime) {
-          return ok({ type: "success", result: Runtime.dotnet });
+          return ok({ type: "success", result: RuntimeOptions.DotNet().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -642,7 +651,7 @@ describe("scaffold question", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      await traverse(createProjectQuestion(), inputs, ui, undefined, visitor);
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Scratch,
         QuestionNames.Runtime,
@@ -665,7 +674,7 @@ describe("scaffold question", () => {
     it("dotnet for VS", async () => {
       const options = getLanguageOptions({
         platform: Platform.VS,
-        runtime: Runtime.dotnet,
+        runtime: RuntimeOptions.DotNet().id,
       });
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });
@@ -674,7 +683,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
       const options = getLanguageOptions({
         platform: Platform.CLI,
-        runtime: Runtime.dotnet,
+        runtime: RuntimeOptions.DotNet().id,
       });
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });

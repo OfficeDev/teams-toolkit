@@ -2,44 +2,40 @@ import {
   CLIPlatforms,
   FolderQuestion,
   FuncQuestion,
-  FxError,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
   Platform,
-  Result,
   SingleSelectQuestion,
   Stage,
   StaticOptions,
   TextInputQuestion,
-  ok,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import { cloneDeep } from "lodash";
+import * as os from "os";
+import * as path from "path";
+import semver from "semver";
+import { ConstantString } from "../common/constants";
 import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
-import { Runtime } from "../component/constants";
+import { sampleProvider } from "../common/samples";
+import { convertToAlphanumericOnly } from "../common/utils";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
+import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
+import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
 import {
   DevEnvironmentSetupError,
   PathAlreadyExistsError,
   RetrieveSPFxInfoError,
 } from "../component/generator/spfx/error";
-import { Constants } from "../component/generator/spfx/utils/constants";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import fs from "fs-extra";
-import * as os from "os";
-import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
-import { ConstantString } from "../common/constants";
-import { convertToAlphanumericOnly } from "../common/utils";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
-import { sampleProvider } from "../common/samples";
-import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
-import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import semver from "semver";
-import { cloneDeep } from "lodash";
 import { QuestionNames } from "./questionNames";
 
 export class ScratchOptions {
@@ -443,7 +439,7 @@ function capabilityQuestion(): SingleSelectQuestion {
         }
       }
       // dotnet capabilities
-      if (getRuntime(inputs) === Runtime.dotnet) {
+      if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
         return CapabilityOptions.dotnetCaps();
       }
       // nodejs capabilities
@@ -564,13 +560,13 @@ export class NotificationTriggerOptions {
   }
 }
 
-function getRuntime(inputs: Inputs): Runtime {
-  let runtime = Runtime.nodejs;
+function getRuntime(inputs: Inputs): string {
+  let runtime = RuntimeOptions.NodeJS().id;
   if (isCLIDotNetEnabled()) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
   } else {
     if (inputs?.platform === Platform.VS) {
-      runtime = Runtime.dotnet;
+      runtime = RuntimeOptions.DotNet().id;
     }
   }
   return runtime;
@@ -585,7 +581,7 @@ function botTriggerQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       const runtime = getRuntime(inputs);
       return [
-        runtime === Runtime.dotnet
+        runtime === RuntimeOptions.DotNet().id
           ? NotificationTriggerOptions.appServiceForVS()
           : NotificationTriggerOptions.appService(),
         ...NotificationTriggerOptions.functionsTriggers(),
@@ -593,7 +589,7 @@ function botTriggerQuestion(): SingleSelectQuestion {
     },
     default: (inputs: Inputs) => {
       const runtime = getRuntime(inputs);
-      return runtime === Runtime.dotnet
+      return runtime === RuntimeOptions.DotNet().id
         ? NotificationTriggerOptions.appServiceForVS().id
         : NotificationTriggerOptions.appService().id;
     },
@@ -786,16 +782,22 @@ export class PackageSelectOptionsHelper {
     return semver.lte(installedVersion, recommendedLowestVersion);
   }
 }
-function SPFxImportFolderQuestion(): FolderQuestion {
+export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.SPFxFolder,
     title: getLocalizedString("core.spfxFolder.title"),
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+    default: hasDefaultFunc
+      ? (inputs: Inputs) => {
+          if (inputs.projectPath) return path.join(inputs.projectPath, "src");
+          return undefined;
+        }
+      : undefined,
   };
 }
 export const getTemplate = (inputs: Inputs): string => {
-  const capabilities: string[] = inputs["capabilities"];
+  const capabilities: string[] = inputs[QuestionNames.Capabilities];
   const templates: string[] = officeAddinJsonData.getProjectTemplateNames();
 
   const foundTemplate = templates.find((template) => {
@@ -833,7 +835,7 @@ const officeAddinJsonData = new projectsJsonData();
 export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
-  if (runtime === Runtime.dotnet) {
+  if (runtime === RuntimeOptions.DotNet().id) {
     return [{ id: "csharp", label: "C#" }];
   }
   // office addin supports language defined in officeAddinJsonData
@@ -879,7 +881,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
     placeholder: (inputs: Inputs): string => {
       const runtime = getRuntime(inputs);
       // dotnet
-      if (runtime === Runtime.dotnet) {
+      if (runtime === RuntimeOptions.DotNet().id) {
         return "";
       }
       // office addin
@@ -959,7 +961,7 @@ export function appNameQuestion(): TextInputQuestion {
   return question;
 }
 
-function fillInAppNameFuncQuestion(): FuncQuestion {
+export function fillInAppNameFuncQuestion(): FuncQuestion {
   const q: FuncQuestion = {
     type: "func",
     name: QuestionNames.SkipAppName,
@@ -1164,7 +1166,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-export function createProjectQuestion(): IQTreeNode {
+export function createProjectQuestionNode(): IQTreeNode {
   const createProjectQuestion: IQTreeNode = {
     data: scratchOrSampleQuestion(),
     children: [
@@ -1264,23 +1266,15 @@ export function createProjectQuestion(): IQTreeNode {
             data: { type: "group", name: QuestionNames.RepalceTabUrl },
             children: [
               {
-                condition: (inputs: Inputs) => {
-                  const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-                  if (appDefinition?.staticTabs) {
-                    const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
-                      (o) => !!o.websiteUrl
-                    );
-                    if (tabsWithWebsiteUrls.length > 0) {
-                      return true;
-                    }
-                  }
-                  return false;
-                },
+                condition: (inputs: Inputs) =>
+                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.websiteUrl) || [])
+                    .length > 0,
                 data: selectTabWebsiteUrlQuestion(),
               },
               {
-                //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
-                condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
+                condition: (inputs: Inputs) =>
+                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.contentUrl) || [])
+                    .length > 0,
                 data: selectTabsContentUrlQuestion(),
               },
             ],
@@ -1309,12 +1303,8 @@ export function createProjectQuestion(): IQTreeNode {
   return createProjectQuestion;
 }
 
-export function getQuestionsForCreateProject(): Result<IQTreeNode, FxError> {
-  return ok(createProjectQuestion());
-}
-
-export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
-  const node = cloneDeep(createProjectQuestion());
+export function createProjectCliHelpNode(): IQTreeNode {
+  const node = cloneDeep(createProjectQuestionNode());
   const deleteNames = [
     QuestionNames.ProjectType,
     QuestionNames.SkipAppName,

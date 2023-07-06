@@ -5,7 +5,7 @@
 import { FolderName, npmInstallCommand } from "./constants";
 import path from "path";
 import { isWindows } from "../deps-checker/util/system";
-import { ProgrammingLanguage } from "../../component/constants";
+import { ProgrammingLanguage } from "../../question/create";
 
 export interface ITaskDefinition {
   name: string;

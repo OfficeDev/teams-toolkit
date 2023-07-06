@@ -12,6 +12,7 @@ export enum QuestionNames {
   SPFxInstallPackage = "spfx-install-latest-package",
   SPFxFramework = "spfx-framework-type",
   SPFxWebpartName = "spfx-webpart-name",
+  SPFxWebpartDesc = "spfx-webpart-desp",
   SPFxFolder = "spfx-folder",
   OfficeAddinFolder = "addin-project-folder",
   OfficeAddinManifest = "addin-project-manifest",
@@ -29,6 +30,7 @@ export enum QuestionNames {
   AppPackagePath = "appPackagePath",
 
   Features = "features",
+  Env = "env",
   SourceEnvName = "sourceEnvName",
   TargetEnvName = "targetEnvName",
   TargetResourceGroupName = "targetResourceGroupName",
@@ -42,7 +44,14 @@ export enum QuestionNames {
   TeamsAppPackageFilePath = "app-package-file-path",
   ConfirmManifest = "confirmManifest",
   ConfirmLocalManifest = "confirmLocalManifest",
+  ConfirmAadManifest = "confirmAadManifest",
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
   M365Host = "m365-host",
+
+  ManifestPath = "manifest-path",
+
+  UserEmail = "email",
+
+  collaborationAppType = "collaborationType",
 }

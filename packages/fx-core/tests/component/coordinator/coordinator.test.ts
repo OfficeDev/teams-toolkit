@@ -14,7 +14,6 @@ import {
   ok,
   Platform,
   Result,
-  SystemError,
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -34,7 +33,6 @@ import { CreateAppPackageDriver } from "../../../src/component/driver/teamsApp/c
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ValidateManifestDriver } from "../../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../../src/component/driver/teamsApp/validateAppPackage";
-import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
 import { metadataUtil } from "../../../src/component/utils/metadataUtil";
@@ -44,19 +42,9 @@ import { FxCore } from "../../../src/core/FxCore";
 import { FxCoreV3Implement } from "../../../src/core/FxCoreImplementV3";
 import { setTools } from "../../../src/core/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
-import {
-  InputValidationError,
-  MissingEnvironmentVariablesError,
-  MissingRequiredInputError,
-} from "../../../src/error/common";
-import { ProjectTypeOptions, QuestionNames, ScratchOptions } from "../../../src/question";
-import {
-  MockAzureAccountProvider,
-  MockM365TokenProvider,
-  MockTools,
-  randomAppName,
-} from "../../core/utils";
-import { MockedUserInteraction } from "../../plugins/solution/util";
+import { MissingEnvironmentVariablesError } from "../../../src/error/common";
+import { QuestionNames } from "../../../src/question";
+import { MockAzureAccountProvider, MockM365TokenProvider, MockTools } from "../../core/utils";
 
 export function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -549,89 +537,5 @@ describe("component coordinator test", () => {
       const res = await coordinator.ensureTeamsFxInCsproj(".");
       assert.isTrue(res.isOk());
     });
-  });
-});
-
-describe("Office Addin", async () => {
-  const sandbox = sinon.createSandbox();
-  const tools = new MockTools();
-  tools.ui = new MockedUserInteraction();
-  setTools(tools);
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should scaffold taskpane successfully", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox.stub(OfficeAddinGenerator, "generate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isOk());
-  });
-
-  it("should return error if app name is invalid", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.AppName]: "__invalid__",
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
-    };
-
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
-  });
-
-  it("should return error if app name is undefined", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.AppName]: undefined,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
-    };
-
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
-  });
-
-  it("should return error if OfficeAddinGenerator returns error", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
-    sandbox.stub(OfficeAddinGenerator, "generate").resolves(err(mockedError));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ trackingId: "mockId", version: V3Version }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "mockedError");
   });
 });

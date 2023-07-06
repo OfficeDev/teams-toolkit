@@ -16,7 +16,7 @@ import path from "path";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
 import { FrontendWebAppConfig } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { EnvConstants } from "../../commonlib/constants";
+import { Capability, EnvConstants } from "../../commonlib/constants";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
@@ -48,7 +48,7 @@ describe("Blazor App", function () {
     `Create Blazor app`,
     { testPlanCaseId: 15686028, author: "zhijie.huang@microsoft.com" },
     async () => {
-      await CliHelper.createDotNetProject(appName, testFolder, "tab", env);
+      await CliHelper.createDotNetProject(appName, testFolder, Capability.TabNonSso, env);
       const programCsPath = path.join(testFolder, appName, "App.razor");
       chai.assert.isTrue(await fs.pathExists(programCsPath));
     }

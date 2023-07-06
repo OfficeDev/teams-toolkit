@@ -70,6 +70,7 @@ import {
   questions,
 } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
+import { FeatureFlagName } from "../../src/common/constants";
 
 const tools = new MockTools();
 
@@ -1357,6 +1358,37 @@ describe("isEnvFile", async () => {
         ]);
       }
     });
+
+    it("happy path: copilot feature flag", async () => {
+      const restore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "true",
+      });
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const node = res.value;
+        const names: string[] = [];
+        collectNodeNames(node!, names);
+        assert.deepEqual(names, [
+          "capabilities",
+          "bot-host-type-trigger",
+          "spfx-solution",
+          "spfx-install-latest-package",
+          "spfx-framework-type",
+          "spfx-webpart-name",
+          "spfx-folder",
+          "api-spec-location",
+          "openai-plugin-manifest-location",
+          "api-operation",
+          "programming-language",
+          "folder",
+          "app-name",
+        ]);
+      }
+      restore();
+    });
+
     function collectNodeNames(node: IQTreeNode, names: string[]) {
       if (node.data.type !== "group") {
         names.push(node.data.name);

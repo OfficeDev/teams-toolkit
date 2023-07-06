@@ -8,11 +8,11 @@ import "mocha";
 import { restore, stub } from "sinon";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { GeneratorChecker } from "../../../../../src/component/generator/spfx/depsChecker/generatorChecker";
-import { PackageSelectOptionsHelper } from "../../../../../src/component/generator/spfx/utils/question-helper";
 import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
+import { PackageSelectOptionsHelper } from "../../../../../src/question/create";
 
 class StubLogger implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {

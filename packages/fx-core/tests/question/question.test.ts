@@ -1,53 +1,244 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Inputs, InputsWithProjectPath, Platform, ok } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  Platform,
+  Question,
+  UserError,
+  UserInteraction,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
-import * as fs from "fs-extra";
-import os from "os";
+import { CollaborationConstants, QuestionTreeVisitor, envUtil, traverse } from "../../src";
+import { CollaborationUtil } from "../../src/core/collaborator";
+import { setTools } from "../../src/core/globalVars";
+import { QuestionNames, SPFxImportFolderQuestion, questions } from "../../src/question";
 import {
-  getQuestionsForAddWebpart,
-  getQuestionsForCreateAppPackage,
-  getQuestionsForUpdateTeamsApp,
-  getQuestionsForValidateAppPackage,
-  getQuestionsForValidateManifest,
-  spfxFolderQuestion,
-} from "../../src/component/question";
-import { randomAppName } from "../core/utils";
-import {
-  getQuestionForDeployAadManifest,
-  validateAadManifestContainsPlaceholder,
-} from "../../src/core/question";
-import { QuestionNames } from "../../src/question";
-import { environmentManager } from "../../src";
-describe("question", () => {
-  let mockedEnvRestore: RestoreFn;
+  envQuestionCondition,
+  isAadMainifestContainsPlaceholder,
+  selectAadAppManifestQuestionNode,
+} from "../../src/question/other";
+import { MockTools, MockUserInteraction } from "../core/utils";
+import { callFuncs } from "./create.test";
+
+const ui = new MockUserInteraction();
+
+describe("none scaffold questions", () => {
+  const mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-  });
   afterEach(() => {
     sandbox.restore();
     mockedEnvRestore();
   });
-  it("getQuestionsForAddWebpart", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: "./test",
-    };
+  describe("addWebpart", async () => {
+    it("happy path", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./test",
+      };
 
-    const res = getQuestionsForAddWebpart(inputs);
+      const questionNames: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questionNames.push(question.name);
+        await callFuncs(question, inputs);
+        if (QuestionNames.SPFxFolder) {
+          return ok({
+            type: "success",
+            result: ".",
+          });
+        } else if (QuestionNames.SPFxWebpartName) {
+          return ok({ type: "success", result: "test" });
+        } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
+          return ok({ type: "success", result: "teamsAppManifest" });
+        } else if (question.name === QuestionNames.ConfirmManifest) {
+          return ok({ type: "success", result: "manifest" });
+        } else if (question.name === QuestionNames.LocalTeamsAppManifestFilePath) {
+          return ok({ type: "success", result: "teamsAppManifest" });
+        } else if (question.name === QuestionNames.ConfirmLocalManifest) {
+          return ok({ type: "success", result: "manifest" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      const res = questions.addWebpart();
 
-    assert.isTrue(res.isOk());
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        await traverse(res.value!, inputs, ui, undefined, visitor);
+        assert.deepEqual(questionNames, [
+          QuestionNames.SPFxFolder,
+          QuestionNames.SPFxWebpartName,
+          QuestionNames.TeamsAppManifestFilePath,
+          QuestionNames.ConfirmManifest,
+          QuestionNames.LocalTeamsAppManifestFilePath,
+          QuestionNames.ConfirmLocalManifest,
+        ]);
+      }
+    });
   });
 
-  it("spfxFolderQuestion", () => {
+  describe("selectTeamsAppManifest", async () => {
+    it("happy path", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./test",
+      };
+
+      const questionNames: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questionNames.push(question.name);
+        await callFuncs(question, inputs);
+        if (question.name === QuestionNames.TeamsAppManifestFilePath) {
+          return ok({ type: "success", result: "teamsAppManifest" });
+        } else if (question.name === QuestionNames.ConfirmManifest) {
+          return ok({ type: "success", result: "manifest" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      const res = questions.selectTeamsAppManifest();
+
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        await traverse(res.value!, inputs, ui, undefined, visitor);
+        assert.deepEqual(questionNames, [
+          QuestionNames.TeamsAppManifestFilePath,
+          QuestionNames.ConfirmManifest,
+        ]);
+      }
+    });
+  });
+  describe("selectTeamsAppValidationMethod", async () => {
+    it("happy path", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./test",
+      };
+
+      const questionNames: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questionNames.push(question.name);
+        await callFuncs(question, inputs);
+        if (question.name === QuestionNames.ValidateMethod) {
+          return ok({ type: "success", result: "teamsAppManifest" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      const res = questions.selectTeamsAppValidationMethod();
+
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        await traverse(res.value!, inputs, ui, undefined, visitor);
+        assert.deepEqual(questionNames, [QuestionNames.ValidateMethod]);
+      }
+    });
+  });
+  describe("selectTeamsAppPackage", async () => {
+    it("happy path", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./test",
+      };
+
+      const questionNames: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questionNames.push(question.name);
+        await callFuncs(question, inputs);
+        if (QuestionNames.SPFxFolder) {
+          return ok({
+            type: "success",
+            result: ".",
+          });
+        } else if (question.name === QuestionNames.TeamsAppPackageFilePath) {
+          return ok({ type: "success", result: "teamsAppManifest" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      const res = questions.selectTeamsAppPackage();
+
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        await traverse(res.value!, inputs, ui, undefined, visitor);
+        assert.deepEqual(questionNames, [QuestionNames.TeamsAppPackageFilePath]);
+      }
+    });
+  });
+  describe("previewWithTeamsAppManifest", async () => {
+    it("happy path", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./test",
+      };
+
+      const questionNames: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questionNames.push(question.name);
+        await callFuncs(question, inputs);
+        if (QuestionNames.SPFxFolder) {
+          return ok({
+            type: "success",
+            result: ".",
+          });
+        } else if (question.name === QuestionNames.M365Host) {
+          return ok({ type: "success", result: "test" });
+        } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
+          return ok({ type: "success", result: "test" });
+        } else if (question.name === QuestionNames.ConfirmManifest) {
+          return ok({ type: "success", result: "manifest" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      const res = questions.previewWithTeamsAppManifest();
+
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        await traverse(res.value!, inputs, ui, undefined, visitor);
+        assert.deepEqual(questionNames, [
+          QuestionNames.M365Host,
+          QuestionNames.TeamsAppManifestFilePath,
+          QuestionNames.ConfirmManifest,
+        ]);
+      }
+    });
+  });
+  it("SPFxImportFolderQuestion", () => {
     const projectDir = "\\test";
 
-    const res = (spfxFolderQuestion() as any).default({ projectPath: projectDir });
+    const res = (SPFxImportFolderQuestion(true) as any).default({ projectPath: projectDir });
 
     assert.equal(path.resolve(res), path.resolve("\\test/src"));
   });
@@ -58,101 +249,370 @@ describe("question", () => {
       projectPath: ".",
       validateMethod: "validateAgainstSchema",
     };
-    const nodeRes = await getQuestionsForValidateManifest(inputs);
+    const nodeRes = await questions.selectTeamsAppManifest();
     assert.isTrue(nodeRes.isOk());
   });
 
   it("validate app package question", async () => {
-    const nodeRes = await getQuestionsForValidateAppPackage();
-    assert.isTrue(nodeRes.isOk());
-  });
-
-  it("create app package question", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
-    assert.isTrue(nodeRes.isOk());
-  });
-
-  it("create app package question - cli help", async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI_HELP,
-      projectPath: ".",
-    };
-    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
-    assert.isTrue(nodeRes.isOk());
-  });
-
-  it("create app package question - vs", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VS,
-      projectPath: ".",
-    };
-    const nodeRes = await getQuestionsForCreateAppPackage(inputs);
-    assert.isTrue(nodeRes.isOk());
-  });
-
-  it("update Teams app question", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    const nodeRes = await getQuestionsForUpdateTeamsApp(inputs);
+    const nodeRes = await questions.selectTeamsAppValidationMethod();
     assert.isTrue(nodeRes.isOk());
   });
 });
 
-describe("updateAadManifestQuestion()", async () => {
-  const inputs: InputsWithProjectPath = {
-    platform: Platform.VSCode,
-    projectPath: path.join(os.tmpdir(), randomAppName()),
-  };
+describe("getQuestionsForListCollaborator()", async () => {
+  const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
-    sinon.restore();
+    sandbox.restore();
   });
-  it("if getQuestionForDeployAadManifest not dynamic", async () => {
-    inputs.platform = Platform.CLI_HELP;
-    const nodeRes = await getQuestionForDeployAadManifest(inputs);
-    assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
+  it("CLI_HELP", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+    };
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      return ok({ type: "success", result: undefined });
+    };
+    const res = questions.listCollaborator();
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      await traverse(res.value!, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, []);
+    }
+  });
+  it("happy path: both are selected", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
+      return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
+    });
+    sandbox.stub(CollaborationUtil, "requireEnvQuestion").resolves(true);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "local"]));
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs);
+      if (question.name === QuestionNames.collaborationAppType) {
+        return ok({
+          type: "success",
+          result: [
+            CollaborationConstants.TeamsAppQuestionId,
+            CollaborationConstants.AadAppQuestionId,
+          ],
+        });
+      } else if (question.name === QuestionNames.AadAppManifestFilePath) {
+        return ok({ type: "success", result: "aadAppManifest" });
+      } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
+        return ok({ type: "success", result: "teamsAppManifest" });
+      } else if (question.name === QuestionNames.Env) {
+        return ok({ type: "success", result: "dev" });
+      } else if (question.name === QuestionNames.ConfirmManifest) {
+        return ok({ type: "success", result: "manifest" });
+      } else if (question.name === QuestionNames.ConfirmAadManifest) {
+        return ok({ type: "success", result: "manifest" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    const res = questions.listCollaborator();
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      await traverse(res.value!, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [
+        QuestionNames.collaborationAppType,
+        QuestionNames.TeamsAppManifestFilePath,
+        QuestionNames.ConfirmManifest,
+        QuestionNames.AadAppManifestFilePath,
+        QuestionNames.ConfirmAadManifest,
+        QuestionNames.Env,
+      ]);
+    }
+  });
+  it("happy path: teams app only", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
+      return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
+    });
+    sandbox.stub(CollaborationUtil, "requireEnvQuestion").resolves(true);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "local"]));
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs);
+      if (question.name === QuestionNames.collaborationAppType) {
+        return ok({
+          type: "success",
+          result: [CollaborationConstants.TeamsAppQuestionId],
+        });
+      } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
+        return ok({ type: "success", result: "teamsAppManifest" });
+      } else if (question.name === QuestionNames.Env) {
+        return ok({ type: "success", result: "dev" });
+      } else if (question.name === QuestionNames.ConfirmManifest) {
+        return ok({ type: "success", result: "manifest" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    const res = questions.listCollaborator();
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      await traverse(res.value!, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [
+        QuestionNames.collaborationAppType,
+        QuestionNames.TeamsAppManifestFilePath,
+        QuestionNames.ConfirmManifest,
+        QuestionNames.Env,
+      ]);
+    }
+  });
+});
+describe("getQuestionsForGrantPermission()", async () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("CLI_HELP", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+    };
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      return ok({ type: "success", result: undefined });
+    };
+    const res = questions.grantPermission();
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      await traverse(res.value!, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, []);
+    }
   });
 
-  it("getQuestionForDeployAadManifest happy path", async () => {
-    inputs.platform = Platform.VSCode;
-    inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs.env = "dev";
-    sinon.stub(fs, "pathExistsSync").returns(true);
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
-    sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-    const nodeRes = await getQuestionForDeployAadManifest(inputs);
-    assert.isTrue(nodeRes.isOk());
-    if (nodeRes.isOk()) {
-      const node = nodeRes.value;
-      assert.isTrue(node != undefined && node?.children?.length == 2);
-      const aadAppManifestQuestion = node?.children?.[0];
-      const envQuestion = node?.children?.[1];
-      assert.isNotNull(aadAppManifestQuestion);
-      assert.isNotNull(envQuestion);
+  it("happy path", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
+      return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
+    });
+    sandbox.stub(CollaborationUtil, "requireEnvQuestion").resolves(true);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "test"]));
+    const tools = new MockTools();
+    setTools(tools);
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: "mock_project_tenant_id",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs, "xxx@xxx.com");
+      if (question.name === QuestionNames.collaborationAppType) {
+        return ok({
+          type: "success",
+          result: [
+            CollaborationConstants.TeamsAppQuestionId,
+            CollaborationConstants.AadAppQuestionId,
+          ],
+        });
+      } else if (question.name === QuestionNames.AadAppManifestFilePath) {
+        return ok({ type: "success", result: "aadAppManifest" });
+      } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
+        return ok({ type: "success", result: "teamsAppManifest" });
+      } else if (question.name === QuestionNames.Env) {
+        return ok({ type: "success", result: "dev" });
+      } else if (question.name === QuestionNames.ConfirmManifest) {
+        return ok({ type: "success", result: "manifest" });
+      } else if (question.name === QuestionNames.ConfirmAadManifest) {
+        return ok({ type: "success", result: "manifest" });
+      } else if (question.name === QuestionNames.UserEmail) {
+        return ok({ type: "success", result: "xxx@xxx.com" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    const res = questions.grantPermission();
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      await traverse(res.value!, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [
+        QuestionNames.collaborationAppType,
+        QuestionNames.TeamsAppManifestFilePath,
+        QuestionNames.ConfirmManifest,
+        QuestionNames.AadAppManifestFilePath,
+        QuestionNames.ConfirmAadManifest,
+        QuestionNames.Env,
+        QuestionNames.UserEmail,
+      ]);
     }
   });
-  it("getQuestionForDeployAadManifest without env", async () => {
-    inputs.platform = Platform.VSCode;
-    inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    inputs.env = "dev";
-    sinon.stub(fs, "pathExistsSync").returns(false);
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
-    const nodeRes = await getQuestionForDeployAadManifest(inputs);
-    assert.isTrue(nodeRes.isOk());
-    if (nodeRes.isOk()) {
-      const node = nodeRes.value;
-      assert.isTrue(node != undefined && node?.children?.length == 1);
+});
+describe("getQuestionForDeployAadManifest()", async () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("CLI_HELP", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+    };
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      return ok({ type: "success", result: undefined });
+    };
+    const res = questions.deployAadManifest();
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      await traverse(res.value!, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, []);
     }
   });
-  it("validateAadManifestContainsPlaceholder return undefined", async () => {
+  it("traverse without projectPath", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const questions: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questions.push(question.name);
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(selectAadAppManifestQuestionNode(), inputs, ui, undefined, visitor);
+    assert.deepEqual(questions, [QuestionNames.AadAppManifestFilePath]);
+  });
+
+  it("happy path", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "local"]));
+    const questions: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questions.push(question.name);
+      await callFuncs(question, inputs);
+      if (question.name === QuestionNames.AadAppManifestFilePath) {
+        return ok({ type: "success", result: "aadAppManifest" });
+      } else if (question.name === QuestionNames.Env) {
+        return ok({ type: "success", result: "dev" });
+      } else if (question.name === QuestionNames.ConfirmManifest) {
+        return ok({ type: "success", result: "manifest" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(selectAadAppManifestQuestionNode(), inputs, ui, undefined, visitor);
+    assert.deepEqual(questions, [
+      QuestionNames.AadAppManifestFilePath,
+      QuestionNames.ConfirmAadManifest,
+    ]);
+  });
+  it("without env", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    sandbox.stub(envUtil, "listEnv").resolves(err(new UserError({})));
+    const questions: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questions.push(question.name);
+      await callFuncs(question, inputs);
+      if (question.name === QuestionNames.AadAppManifestFilePath) {
+        return ok({ type: "success", result: "aadAppManifest" });
+      } else if (question.name === QuestionNames.Env) {
+        return ok({ type: "success", result: "dev" });
+      } else if (question.name === QuestionNames.ConfirmManifest) {
+        return ok({ type: "success", result: "manifest" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(selectAadAppManifestQuestionNode(), inputs, ui, undefined, visitor);
+    assert.deepEqual(questions, [
+      QuestionNames.AadAppManifestFilePath,
+      QuestionNames.ConfirmAadManifest,
+    ]);
+  });
+  it("isAadMainifestContainsPlaceholder return true", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
     inputs[QuestionNames.AadAppManifestFilePath] = path.join(
       __dirname,
       "..",
@@ -160,16 +620,112 @@ describe("updateAadManifestQuestion()", async () => {
       "sampleV3",
       "aad.manifest.json"
     );
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
-    const res = await validateAadManifestContainsPlaceholder(inputs);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("${{fake_placeHolder}}"));
+    const res = await isAadMainifestContainsPlaceholder(inputs);
     assert.isTrue(res);
   });
-  it("validateAadManifestContainsPlaceholder skip", async () => {
+  it("isAadMainifestContainsPlaceholder skip", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
     inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readFile").resolves(Buffer.from("test"));
-    const res = await validateAadManifestContainsPlaceholder(inputs);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from("test"));
+    const res = await isAadMainifestContainsPlaceholder(inputs);
+    assert.isFalse(res);
+  });
+});
+
+describe("envQuestionCondition", async () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("case 1", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      projectPath: ".",
+      [QuestionNames.AadAppManifestFilePath]: "aadAppManifest",
+      [QuestionNames.TeamsAppManifestFilePath]: "teamsAppManifest",
+      [QuestionNames.collaborationAppType]: [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ],
+    };
+    sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
+      return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
+    });
+    sandbox.stub(CollaborationUtil, "requireEnvQuestion").resolves(true);
+    const res = await envQuestionCondition(inputs);
+    assert.isTrue(res);
+  });
+
+  it("case 2", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      projectPath: ".",
+      [QuestionNames.AadAppManifestFilePath]: "aadAppManifest",
+      [QuestionNames.TeamsAppManifestFilePath]: "teamsAppManifest",
+      [QuestionNames.collaborationAppType]: [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ],
+    };
+    sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
+      return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
+    });
+    sandbox
+      .stub(CollaborationUtil, "requireEnvQuestion")
+      .onFirstCall()
+      .resolves(false)
+      .onSecondCall()
+      .resolves(true);
+    const res = await envQuestionCondition(inputs);
+    assert.isTrue(res);
+  });
+
+  it("case 3", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      projectPath: ".",
+      [QuestionNames.AadAppManifestFilePath]: "aadAppManifest",
+      [QuestionNames.TeamsAppManifestFilePath]: "teamsAppManifest",
+      [QuestionNames.collaborationAppType]: [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ],
+    };
+    sandbox.stub(CollaborationUtil, "loadManifestId").resolves(err(new UserError({})));
+    const res = await envQuestionCondition(inputs);
+    assert.isFalse(res);
+  });
+
+  it("case 4", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      projectPath: ".",
+      [QuestionNames.AadAppManifestFilePath]: "aadAppManifest",
+      [QuestionNames.collaborationAppType]: [CollaborationConstants.AadAppQuestionId],
+    };
+    sandbox.stub(CollaborationUtil, "loadManifestId").resolves(err(new UserError({})));
+    const res = await envQuestionCondition(inputs);
+    assert.isFalse(res);
+  });
+
+  it("case 5", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      projectPath: ".",
+      [QuestionNames.collaborationAppType]: [
+        CollaborationConstants.TeamsAppQuestionId,
+        CollaborationConstants.AadAppQuestionId,
+      ],
+    };
+    const res = await envQuestionCondition(inputs);
     assert.isFalse(res);
   });
 });

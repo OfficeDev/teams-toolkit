@@ -30,9 +30,10 @@ import { createContextV3 } from "../../src/component/utils";
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
 import { ObjectIsUndefinedError } from "../../src/core/error";
 import { setTools } from "../../src/core/globalVars";
-import { CapabilityOptions, QuestionNames } from "../../src/question";
+import { QuestionNames } from "../../src/question/questionNames";
 import { MockTools } from "../core/utils";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
+import { CapabilityOptions } from "../../src";
 
 describe("developPortalScaffoldUtils", () => {
   setTools(new MockTools());

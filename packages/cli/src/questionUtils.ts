@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  IQTreeNode,
   MultiSelectQuestion,
   OptionItem,
   QTreeNode,
@@ -117,7 +118,7 @@ function getOptionCliName(option: string | OptionItem, toLocaleLowerCase = true)
   return toLocaleLowerCase ? cliName?.toLocaleLowerCase() : cliName;
 }
 
-export async function toYargsOptionsGroup(nodes: QTreeNode[]) {
+export async function toYargsOptionsGroup(nodes: IQTreeNode[]) {
   const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");
   const params: { [_: string]: Options } = {};
   for (const node of nodesWithoutGroup) {

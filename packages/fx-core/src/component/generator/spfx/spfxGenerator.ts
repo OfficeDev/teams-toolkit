@@ -14,14 +14,24 @@ import {
   Result,
   Stage,
   SystemError,
-  TeamsAppManifest,
   UserError,
 } from "@microsoft/teamsfx-api";
-import * as path from "path";
 import fs from "fs-extra";
+import { camelCase } from "lodash";
+import { EOL } from "os";
+import * as path from "path";
+import * as util from "util";
+import { cpUtils } from "../../../common/deps-checker";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { FileNotFoundError } from "../../../error";
+import { QuestionNames } from "../../../question/questionNames";
+import { SPFxQuestionNames } from "../../constants";
+import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { ProgressHelper } from "./utils/progress-helper";
-import { SPFXQuestionNames } from "./utils/questions";
+import { envUtil } from "../../utils/envUtil";
+import { Generator } from "../generator";
+import { GeneratorChecker } from "./depsChecker/generatorChecker";
+import { YoChecker } from "./depsChecker/yoChecker";
 import {
   ImportSPFxSolutionError,
   LatestPackageInstallError,
@@ -29,23 +39,11 @@ import {
   ScaffoldError,
   YoGeneratorScaffoldError,
 } from "./error";
-import { Utils } from "./utils/utils";
-import { camelCase } from "lodash";
 import { Constants, ManifestTemplate } from "./utils/constants";
-import { YoChecker } from "./depsChecker/yoChecker";
-import { GeneratorChecker } from "./depsChecker/generatorChecker";
-import { cpUtils } from "../../../common/deps-checker";
+import { ProgressHelper } from "./utils/progress-helper";
+import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "../../../question/create";
 import { TelemetryEvents } from "./utils/telemetryEvents";
-import { Generator } from "../generator";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "./utils/question-helper";
-import { SPFxQuestionNames } from "../../constants";
-import * as util from "util";
-import { envUtil } from "../../utils/envUtil";
-import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { EOL } from "os";
-import { FileNotFoundError } from "../../../error";
-import { QuestionNames } from "../../../question/questionNames";
+import { Utils } from "./utils/utils";
 
 export class SPFxGenerator {
   @hooks([
@@ -61,7 +59,7 @@ export class SPFxGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
-    if (inputs[SPFXQuestionNames.spfx_solution] === "new") {
+    if (inputs[QuestionNames.SPFxSolution] === "new") {
       return await this.newSPFxProject(context, inputs, destinationPath);
     } else {
       return await this.importSPFxProject(context, inputs, destinationPath);
@@ -102,7 +100,7 @@ export class SPFxGenerator {
     try {
       // Copy & paste existing SPFx solution
       await importProgress.next(getLocalizedString("plugins.spfx.import.copyExistingSPFxSolution"));
-      const spfxFolder = inputs[SPFXQuestionNames.spfx_import_folder] as string;
+      const spfxFolder = inputs[QuestionNames.SPFxFolder] as string;
       const destSpfxFolder = path.join(destinationPath, "src");
       importDetails.push(
         EOL +
@@ -358,11 +356,10 @@ export class SPFxGenerator {
       inputs.stage == Stage.addWebpart
     );
     const shouldInstallLocally =
-      inputs[SPFXQuestionNames.use_global_package_or_install_local] ===
-      SPFxVersionOptionIds.installLocally;
+      inputs[QuestionNames.SPFxInstallPackage] === SPFxVersionOptionIds.installLocally;
     try {
-      const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
-      const framework = inputs[SPFXQuestionNames.framework_type] as string;
+      const webpartName = inputs[QuestionNames.SPFxWebpartName] as string;
+      const framework = inputs[QuestionNames.SPFxFramework] as string;
       const solutionName = inputs[QuestionNames.AppName] as string;
       const isAddSPFx = inputs.stage == Stage.addWebpart;
 

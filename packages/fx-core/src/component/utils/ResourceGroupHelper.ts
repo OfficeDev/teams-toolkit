@@ -31,7 +31,7 @@ import {
 } from "../../error/azure";
 import { SolutionSource } from "../constants";
 import { traverse } from "../../ui/visitor";
-import { QuestionNames } from "../../question";
+import { QuestionNames } from "../../question/questionNames";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";

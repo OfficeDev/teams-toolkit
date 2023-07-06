@@ -47,9 +47,7 @@ class ResourceGroupHelper {
     subscriptionId: string,
     location: string
   ): Promise<Result<string, FxError>> {
-    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
-    if (!azureToken) return err(new InvalidAzureCredentialError());
-    const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+    const rmClient = await this.createRmClient(azureAccountProvider, subscriptionId);
     const maybeExist = await this.checkResourceGroupExistence(resourceGroupName, rmClient);
     if (maybeExist.isErr()) {
       return err(maybeExist.error);

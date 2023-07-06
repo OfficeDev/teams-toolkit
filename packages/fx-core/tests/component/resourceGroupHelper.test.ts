@@ -22,6 +22,9 @@ describe("resouce group helper test", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
+  beforeEach(() => {
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+  });
   afterEach(() => {
     sandbox.restore();
   });

@@ -852,6 +852,10 @@ describe("createNewEnvQuestionNode", async () => {
   afterEach(() => {
     sandbox.restore();
   });
+  it("createNewEnv", () => {
+    const res = questions.createNewEnv();
+    assert.isTrue(res !== undefined);
+  });
   it("newEnvNameValidation invalid pattern", () => {
     const res = newEnvNameValidation("!!!!!", { platform: Platform.VSCode });
     assert.isTrue(res !== undefined);

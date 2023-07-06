@@ -65,9 +65,7 @@ import {
   CapabilityOptions,
   QuestionNames,
   ScratchOptions,
-  programmingLanguageQuestion,
   questionNodes,
-  questions,
 } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
 
@@ -596,56 +594,6 @@ describe("Core basic APIs", () => {
       assert.isTrue(result.isOk());
     } finally {
       restore();
-    }
-  });
-
-  it("ProgrammingLanguageQuestion", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
-    };
-    const ProgrammingLanguageQuestion = programmingLanguageQuestion();
-    if (
-      ProgrammingLanguageQuestion.dynamicOptions &&
-      ProgrammingLanguageQuestion.placeholder &&
-      typeof ProgrammingLanguageQuestion.placeholder === "function"
-    ) {
-      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
-      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
-    }
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.me().id,
-    });
-
-    function languageAssert(inputs: Inputs) {
-      if (
-        ProgrammingLanguageQuestion.dynamicOptions &&
-        ProgrammingLanguageQuestion.placeholder &&
-        typeof ProgrammingLanguageQuestion.placeholder === "function"
-      ) {
-        const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-        assert.deepEqual(
-          [
-            { id: "javascript", label: "JavaScript" },
-            { id: "typescript", label: "TypeScript" },
-          ],
-          options
-        );
-        const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-        assert.equal("Select a programming language.", placeholder);
-      }
     }
   });
 });

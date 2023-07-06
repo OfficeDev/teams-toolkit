@@ -2,13 +2,12 @@
 // Licensed under the MIT license.
 
 import { err, ok, Void } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
 import "mocha";
 import sinon from "sinon";
 import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import Upgrade from "../../../src/cmds/upgrade";
-import { NonTeamsFxProjectFolder } from "../../../src/error";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockLogProvider, mockTelemetry, mockYargs, TestFolder } from "../utils";
 
@@ -55,7 +54,7 @@ describe("Init Command Tests", () => {
   it("Command Running Check - error", async () => {
     sandbox.stub(FxCore.prototype, "phantomMigrationV3").callsFake((inputs) => {
       if (inputs.projectPath?.includes("fake"))
-        return Promise.resolve(err(NonTeamsFxProjectFolder()));
+        return Promise.resolve(err(new InvalidProjectError()));
       return Promise.resolve(ok(Void));
     });
 

@@ -31,27 +31,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.accountTree.noSubscriptions" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[No Subscriptions Discovered]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[未探索到任何訂用帳戶]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[No subscriptions discovered]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.accountTree.noSubscriptionsTooltip" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You have no subscriptions. You can't provision or deploy your resources to Azure!]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[您沒有訂用帳戶。您無法將資源佈建或部署到 Azure!]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingLearnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More]]></Val>
@@ -169,15 +148,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.accountTree.totalSubscriptions" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[%d subscriptions discovered]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[已找到 %d 個訂用帳戶]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.createM365TestingTenant" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a Microsoft 365 Testing Tenant]]></Val>
@@ -229,27 +199,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams 工具組需要 Azure 帳戶和訂用帳戶，才能為您的專案部署 Azure 資源。未進一步確認，將不會向您收費。]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.azureLogin.noSubscriptionFound" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[NoSubscriptionFound]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[NoSubscriptionFound]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.azureLogin.selectSubscription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Select a Subscription]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[選取訂用帳戶]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Select a subscription]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -505,18 +454,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commands.addFeature.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add Features]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新增功能]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Add features]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commands.azureAccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Portal]]></Val>
@@ -663,18 +600,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams: Documentation]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commands.editManifest.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Edit Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[編輯資訊清單檔]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Edit manifest file]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -847,18 +772,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commands.previewManifest.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Preview Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[預覽資訊清單檔]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Preview manifest file]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commands.provision.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Provision]]></Val>
@@ -925,31 +838,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commands.specifySubscription.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Specify Subscription]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[指定訂用帳戶]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Specify subscription]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commands.updateAadAppManifest.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Update Azure Active Directory App]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[更新 Azure Active Directory 應用程式]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Update Azure Active Directory app]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Azure Active Directory App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -1038,45 +927,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Add environment]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeature.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot run command when adding features. Try again when adding operation is finished.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新增功能時無法執行命令。新增作業完成後請再試一次。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeature.running" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Adding features...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在新增功能...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeatureDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add features to your Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新增功能至您的 Teams 應用程式]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeatureTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Add Features]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[新增功能]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Add features]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1252,15 +1102,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.emptyM365Tenant" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Tenant id from environment state file is empty, please re-provision and try again]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[來自環境狀態檔案的租用戶識別碼是空的，請重新佈建，然後再試一次]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.getStartedTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Get Started]]></Val>
@@ -1354,18 +1195,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.m365TenantNotMatch" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The Microsoft 365 tenant id(which is used to provision before) does not match the current account.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Microsoft 365 租用戶識別碼 (用於佈建前) 不符合目前的帳戶。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[The M365 tenant id(which is used to provision before) does not match the current account.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manage M365 Teams App (with AAD app) Collaborators]]></Val>
@@ -1383,45 +1212,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Manage collaborator]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditor.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot run command when opening manifest editor. Try again when manifest is opened.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[開啟資訊清單編輯器時無法執行命令。資訊清單開啟後請再試一次。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditor.running" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Opening manifest...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在開啟資訊清單...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditorDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Edit the Teams app manifest]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[編輯 Teams 應用程式資訊清單]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditorTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Edit Manifest File]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[編輯資訊清單檔]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Manifest Editor]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1803,15 +1593,6 @@
           <Val><![CDATA[Teams Toolkit failed to get your Teams app. Please try again from Developer Portal and make sure to sign in with the correct Microsoft 365 account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams 工具組無法取得您的 Teams 應用程式。請從開發人員入口網站再試一次，並務必使用正確的 Microsoft 365 帳戶登入。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.devPortalIntegration.installPreReleaseWarning" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Please switch to pre-release version of Teams Toolkit following [Pre release extensions]5D;(%s) and try again from Developer Portal.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[請在 [Pre release extensions]5D;(%s) 後切換到 Teams 工具組的發行前版本，然後從開發人員入口網站再試一次。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2269,6 +2050,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.guides.multiTenant.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable multi-Tenant support for Teams app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[啟用 Teams 應用程式的多租用戶支援。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.guides.multiTenant.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Multi-Tenant Support]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[多租用戶支援]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.guides.notificationBot.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Overview of the Notification Bot Template]]></Val>
@@ -2296,15 +2095,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Send notifications to Teams]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.automaticNpmInstall" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit will automatically install packages required for your project. Please refer to the command window prompt to view execution details. You can also disable this by clicking the button below and uncheck "Automatic NPM Install" in the settings page.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams 工具組會自動安裝專案所需的套件。請參閱命令視窗提示以檢視執行詳細資料。您也可以按一下下方按鈕，然後在設定頁面中取消核取 [自動 NPM 安裝]5D;，以停用此功能。]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2373,15 +2163,6 @@
           <Val><![CDATA[Manifest template file not found in %s. You can use CLI with your own template file.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[在 %s 中找不到資訊清單範本檔案。您可以在自己的範本檔案中使用 CLI。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.disableAutomaticNpmInstall" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Disable Auto NPM Install]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[停用自動 NPM 安裝]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2671,24 +2452,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.handlers.provisionBeforeGrantOrListPermission" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You cannot add or list owners because a Teams app is not provisioned yet, please click the Provision Resources button below to register a Teams app.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[您無法新增或列出擁有者，因為尚未佈建 Teams 應用程式，請按一下下方的 [佈建資源]5D; 按鈕以註冊 Teams 應用程式。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.provisionResourcesButton" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Provision Resources]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[佈建資源]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.handlers.referLinkForMoreDetails" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please refer to this link for more details: ]]></Val>
@@ -2770,150 +2533,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.handlers.teamsAppIdNotFound" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在 'state.%s.json' 中找不到 'fx-resource-appstudio.teamsAppId'。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.localDebug.failedCheckers" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to check: [%s]5D;. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[無法檢查狀: [%s]5D;。]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.configureOutlook" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Configure Outlook]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[設定 Outlook]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[To continue debugging your application in Outlook:]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[若要繼續在 Outlook 中偵測應用程式:]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[To continue to debug your application in Outlook, you need to follow two steps:]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.finish" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Once you have finished the above two steps, come back and click 'Continue']]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[完成上述的兩項步驟後，返回並按一下 [繼續]5D;。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Once you have finished the above two steps, please come back and click 'Continue']]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.guide1" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[First, click 'Install in Teams' to install the app in Teams.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[首先，按一下 [在 Teams 中安裝]5D; 以在 Teams 中安裝應用程式。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[First, please click 'Install in Teams' to install the app in Teams.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.guide2" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Second, click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[第二，按一下 [設定 Outlook]5D;，使用您在 Teams 工具組中使用的相同 Microsoft 365 帳戶登入入口網站。按一下入口網站中的 [儲存]5D; 按鈕，以將 Bot 連線到 Outlook 頻道。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.cancel" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cancel]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[取消]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.continue" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Continue]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[繼續]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[To continue debugging your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[若要繼續在 Outlook 或 Microsoft 365 應用程式中偵錯您的應用程式，您需要透過 Teams 手動安裝應用程式。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[To continue to debug your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.finish" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Once you have finished the installation, please come back and click 'Continue'.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[安裝完成後，請返回並按一下 [繼續]5D;。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.guide" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Click 'Install in Teams' will pop up Teams web client for you to install the app.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[按一下 [在 Teams 中安裝]5D; 會彈出 Teams Web 用戶端，以讓您安裝該應用程式。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Clicking "Install in Teams" will pop up Teams Web Client for you to install app. Once you have finished, please come back and click "Continue".]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.installInTeams" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Install in Teams]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在 Teams 中安裝]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.m365AccountInfoNotFound" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Microsoft 365 account info not found. Please sign in to Microsoft 365.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[找不到 Microsoft 365 帳戶資訊。請登入 Microsoft 365。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[M365 account info not found. Please sign in to M365.]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3028,18 +2653,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[工作 '%s' 失敗。如需詳細錯誤資訊，請參閱 '%s' 終端機視窗，或按一下 [回報問題]5D; 按鈕來回報問題。]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.npmInstallFailure" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Install npm packages task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[安裝 npm 套件工作失敗。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Install npm packages task failed. Please check the %s to see the details.]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3259,18 +2872,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.localDebug.prepareManifestFailure" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Build & upload Teams manifest task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[建立和上傳 Teams 清單工作失敗。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Build & upload Teams manifest task failed. Please check the %s to see the details.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.localDebug.prerequisitesCheckFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Prerequisites Check Failed. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
@@ -3291,42 +2892,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Validate & install prerequisites failed. Please check the %s to see the details.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.setUpBotFailure" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Set up bot task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[設定 Bot 工作失敗。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Set up bot fask failed. Please check the %s to see the details.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.setUpSSOFailure" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Set up SSO task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[設定 SSO 工作失敗。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Set up SSO task failed. Please check the %s to see the details.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.localDebug.setUpTabFailure" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Set up tab task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[設定索引標籤工作失敗。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Set up tab task failed. Please check the %s to see the details.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3605,7 +3170,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [Output panel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法更新 %d 個檔案: %s 等等。如需詳細資料，請參閱 [輸出面板]5D; (command:fx-extension.showOutputChannel)。]]></Val>
+            <Val><![CDATA[無法更新 %d 個檔案: %s 等等。如需詳細資料，請參閱 [輸出面板]5D;(command:fx-extension.showOutputChannel)。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to update %d files: %s, etc. Please refer to [output channel]5D;(command:fx-extension.showOutputChannel) for more details.]]></Val>
@@ -3672,108 +3237,6 @@
           <Val><![CDATA[Teams Toolkit will update in place the Teams Tab app you selected to use Teams client SDK v2. We recommend to use git for better tracking file changes before upgrading.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams 工具組將就地更新您選取要使用 Teams 用戶端 SDK v2 的 Teams 索引標籤應用程式。建議您在升級前使用 GIT 來更完善地追蹤檔案變更。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.installApp.bot.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[To continue to preview your application in Outlook, you need to follow two steps:]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[若要繼續在 Outlook 中預覽您的應用程式，您需要遵循兩個步驟:]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.installApp.bot.guide2" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Second, please click 'Configure Outlook', sign in to the portal with the same Azure account you used in Teams Toolkit. Select 'Outlook' in the portal and click the 'Apply' button to connect your bot to the Outlook channel.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[第二，請按一下 [設定 Outlook]5D;，透過您在 Teams 工具組中使用的相同 Azure 帳戶登入該入口網站。選取入口網站中的 [Outlook]5D;，然後按一下 [套用]5D; 按鈕以將 Bot 連線到 Outlook 頻道。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.installApp.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[To continue to preview your application in Outlook or the Microsoft 365 app, you need to install the app via Teams manually.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[若要繼續在 Outlook 或 Microsoft 365 應用程式中預覽您的應用程式，您必須先透過 Teams 手動安裝應用程式。]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.launchTeamsApp" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Preparing to launch Teams app...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在準備啟動 Teams 應用程式...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.platform.placeholder" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Select a platform to preview the app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[選取平台以預覽應用程式]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.platform.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Platform]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[平台]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.prepareTeamsApp" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Preparing Teams app registration...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在準備 Teams 應用程式註冊...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.progressHandler.getM365Title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Getting Microsoft 365 Title by Teams app id...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在根據 Teams 應用程式識別碼取得 Microsoft 365 標題...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.progressHandler.getTeamsAppId" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Getting Teams app id from manifest...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在從資訊清單取得 Teams 應用程式識別碼...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.progressHandler.openWebClient" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Opening %s web client...]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在開啟 %s Web 用戶端...]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.preview.progressHandler.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Preview App]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[預覽應用程式]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4219,18 +3682,6 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[請在系統內容變數中設定 "AAD_APP_CLIENT_SECRET" = "%s"。\n您也可以按下 [深入了解]5D; 以查看詳細資料。]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project-and-check-upgrade.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to Guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a New App]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View Samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code. It will create the backup files in case you want to roll back.]A;This upgrade is mandatory to continue using the current version of Teams Toolkit. If you don't want to upgrade now, please keep using Teams Toolkit version <=2.10.0.]A;[Upgrade Project]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[直接使用 Teams Toolkit 並取得基礎概觀。如需更多資訊，請瀏覽 [使用者入門]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)。]A;逐步說明建置真實世界 Teams 應用程式的步驟。]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[操作指南]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;建立專案或探索我們的樣本。]A;[建立新的應用程式]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[檢視樣本]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;必須將專案升級至新組態檔才能使用最新功能。升級程序不會變更您的自訂程式碼。如果想要復原，系統將會建立備份檔案。]A;若要繼續使用目前版本的 Teams Toolkit，必須進行此升級才能繼續使用目前的 Teams 工具組版本。若您不想現在升級，請繼續使用版本 <=2.10.0 的 Teams 工具組。]A;[升級專案]5D;(command:fx-extension.checkProjectUpgrade?%5B%22SideBar%22%5D)]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
-          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

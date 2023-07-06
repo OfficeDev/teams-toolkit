@@ -17,7 +17,6 @@ import {
   cleanUp,
   execAsync,
   execAsyncWithRetry,
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   mockTeamsfxMultiEnvFeatureFlag,
@@ -25,7 +24,6 @@ import {
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { EnvConstants } from "../../commonlib/constants";
 
 describe("Multi Env Happy Path for Azure", function () {
@@ -38,11 +36,8 @@ describe("Multi Env Happy Path for Azure", function () {
 
   it(
     `Can create/provision/deploy/build/validate/launch remote a azure bot project`,
-    { testPlanCaseId: 10308408 },
+    { testPlanCaseId: 24137694, author: "tianyuan@microsoft.com" },
     async function () {
-      if (!isV3Enabled()) {
-        return this.skip();
-      }
       try {
         let result;
         result = await execAsync(
@@ -161,7 +156,7 @@ describe("Multi Env Happy Path for Azure", function () {
           AppStudioValidator.provider = M365Login;
           await AppStudioValidator.validatePublish(teamsAppId!);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.log("Unexpected exception is thrown when running test: " + e);
         console.log(e.stack);
         throw e;

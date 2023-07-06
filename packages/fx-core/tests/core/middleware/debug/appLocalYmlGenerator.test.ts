@@ -4,7 +4,6 @@
 import "mocha";
 import * as chai from "chai";
 import { AppLocalYmlGenerator } from "../../../../src/core/middleware/utils/debug/appLocalYmlGenerator";
-import { ProjectSettings } from "@microsoft/teamsfx-api";
 import * as yaml from "js-yaml";
 
 describe("AppLocalYmlGenerator", () => {
@@ -72,7 +71,7 @@ describe("AppLocalYmlGenerator", () => {
   });
 });
 
-function generateProjectSettings(): ProjectSettings {
+function generateProjectSettings(): any {
   return {
     projectId: "",
     programmingLanguage: "typescript",

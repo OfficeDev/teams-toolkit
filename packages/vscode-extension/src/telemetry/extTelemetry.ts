@@ -5,11 +5,8 @@
 
 import * as vscode from "vscode";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
 import * as globalVariables from "../globalVariables";
@@ -80,6 +77,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.UpdateTeamsApp;
       case Stage.buildAad:
         return TelemetryEvent.BuildAadManifest;
+      case Stage.deployAad:
+        return TelemetryEvent.DeployAadManifest;
       default:
         return undefined;
     }
@@ -187,7 +186,7 @@ export namespace ExtTelemetry {
       eventName: eventName,
       properties: {
         [TelemetryProperty.CorrelationId]: lastCorrelationId,
-        [TelemetryProperty.ProjectId]: getProjectId(),
+        [TelemetryProperty.ProjectId]: await getProjectId(),
         [TelemetryProperty.Timestamp]: new Date().toISOString(),
         ...properties,
       },

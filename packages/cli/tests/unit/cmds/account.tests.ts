@@ -10,8 +10,8 @@ import Account, { AzureLogin, M365Login } from "../../../src/cmds/account";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedOut } from "../../../src/commonlib/common/constant";
 import M365TokenProvider from "../../../src/commonlib/m365Login";
-import { ConfigNotFoundError } from "../../../src/error";
 import { expect, mockLogProvider, mockYargs } from "../utils";
+import { FileNotFoundError, M365TokenJSONNotFoundError } from "@microsoft/teamsfx-core";
 
 describe("Account Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -77,7 +77,9 @@ describe("Account Command Tests", function () {
 
   it("Account Login M365 Command Running Check - Failed", async () => {
     sandbox.stub(M365TokenProvider, "signout");
-    sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(ConfigNotFoundError("test")));
+    sandbox
+      .stub(M365TokenProvider, "getJsonObject")
+      .resolves(err(new M365TokenJSONNotFoundError()));
     const cmd = new M365Login();
     await cmd!.runCommand({});
     expect(messages).to.be.lengthOf(1);

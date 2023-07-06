@@ -12,10 +12,6 @@ export const loggingIn = "LoggingIn";
 export const switching = "Switching";
 export const initializing = "Initializing";
 
-export const subscriptionInfoFile = "subscriptionInfo.json";
-export const envDefaultJsonFile = "env.default.json";
-export const stateDefaultJsonFile = "state.dev.json";
-
 export const m365CacheName = "appStudio";
 
 export const extensionID = "TeamsDevApp.ms-teams-vscode-extension";

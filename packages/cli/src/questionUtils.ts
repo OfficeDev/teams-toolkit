@@ -2,15 +2,16 @@
 // Licensed under the MIT license.
 
 import {
+  IQTreeNode,
   MultiSelectQuestion,
   OptionItem,
   QTreeNode,
   Question,
   SingleSelectQuestion,
   StaticOptions,
-  isAutoSkipSelect,
   validate,
 } from "@microsoft/teamsfx-api";
+import { isAutoSkipSelect } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
 import { getSingleOptionString, toYargsOptions } from "./utils";
 
@@ -117,18 +118,17 @@ function getOptionCliName(option: string | OptionItem, toLocaleLowerCase = true)
   return toLocaleLowerCase ? cliName?.toLocaleLowerCase() : cliName;
 }
 
-export function toYargsOptionsGroup(nodes: QTreeNode[]) {
+export async function toYargsOptionsGroup(nodes: IQTreeNode[]) {
   const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");
   const params: { [_: string]: Options } = {};
-  nodesWithoutGroup.forEach((node) => {
+  for (const node of nodesWithoutGroup) {
     const data = node.data as Question;
     if (isAutoSkipSelect(data) && data.type != "func") {
       // set the only option to default value so yargs will auto fill it.
       data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
       (data as any).hide = true;
     }
-    params[data.name] = toYargsOptions(data);
-  });
-
+    params[data.name] = await toYargsOptions(data);
+  }
   return params;
 }

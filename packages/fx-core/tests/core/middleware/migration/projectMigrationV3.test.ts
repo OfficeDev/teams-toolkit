@@ -38,27 +38,21 @@ import {
   errorNames,
 } from "../../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError, UpgradeCanceledError } from "../../../../src/core/error";
-import {
-  Metadata,
-  MetadataV3,
-  VersionSource,
-  VersionState,
-} from "../../../../src/common/versionMetadata";
+import { NotAllowedMigrationError } from "../../../../src/core/error";
+import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
 import {
   buildEnvUserFileName,
-  getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
   outputCancelMessage,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
-import { getProjectSettingPathV3 } from "../../../../src/core/middleware/projectSettingsLoader";
+import { getProjectSettingsPath } from "../../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../../src/core/middleware/types";
 import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { settingsUtil, SettingsUtils } from "../../../../src/component/utils/settingsUtil";
+import { settingsUtil } from "../../../../src/component/utils/settingsUtil";
 import {
   copyTestProject,
   mockMigrationContext,
@@ -72,7 +66,7 @@ import {
   getYmlTemplates,
 } from "./utils";
 import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";
@@ -1125,7 +1119,7 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(loader, "getProjectSettingPathV2").returns("");
-    sandbox.stub(loader, "getProjectSettingPathV3").returns("");
+    sandbox.stub(loader, "getProjectSettingsPath").returns("");
     sandbox.stub(fs, "pathExists").callsFake(async (path) => {
       return path ? true : false;
     });
@@ -1141,14 +1135,9 @@ describe("Migration utils", () => {
     assert.equal(state.state, VersionState.unsupported);
   });
 
-  it("UpgradeCanceledError", () => {
-    const err = UpgradeCanceledError();
-    assert.isNotNull(err);
-  });
-
   it("getTrackingIdFromPath: V2 ", async () => {
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path === getProjectSettingPathV3(projectPath)) {
+      if (path === getProjectSettingsPath(projectPath)) {
         return false;
       }
       return true;
@@ -1160,7 +1149,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 ", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(SettingsUtils.prototype, "readSettings").resolves(
+    sandbox.stub(settingsUtil, "readSettings").resolves(
       ok({
         version: MetadataV3.projectVersion,
         trackingId: mockedId,
@@ -1172,9 +1161,7 @@ describe("Migration utils", () => {
 
   it("getTrackingIdFromPath: V3 failed", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox
-      .stub(SettingsUtils.prototype, "readSettings")
-      .resolves(err(new Error("mocked error") as FxError));
+    sandbox.stub(settingsUtil, "readSettings").resolves(err(new Error("mocked error") as FxError));
     const trackingId = await getTrackingIdFromPath(projectPath);
     assert.equal(trackingId, "");
   });
@@ -1208,25 +1195,24 @@ describe("Migration utils", () => {
     );
     assert.equal(
       getVersionState({
+        version: "1.1.0",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
+        version: "2.0.0",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.unsupported
+    );
+    assert.equal(
+      getVersionState({
         version: "",
         source: VersionSource.unknown,
       }),
       VersionState.unsupported
-    );
-  });
-
-  it("getDownloadLinkByVersionAndPlatform", () => {
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VS),
-      `${Metadata.versionMatchLink}#visual-studio`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.CLI),
-      `${Metadata.versionMatchLink}#cli`
-    );
-    assert.equal(
-      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
-      `${Metadata.versionMatchLink}#vscode`
     );
   });
 
@@ -1407,10 +1393,9 @@ describe("debugMigration", () => {
   });
 });
 
-describe("updateGitignore", async () => {
+describe("updateGitignore", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
-  const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
@@ -1421,18 +1406,21 @@ describe("updateGitignore", async () => {
   });
 
   it("should update existing gitignore file", async () => {
+    const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
     await copyTestProject("happyPath", projectPath);
 
-    await generateAppYml(migrationContext);
+    await MigratorV3.updateGitignore(migrationContext);
 
     await assertFileContent(projectPath, ".gitignore", "whenGitignoreExist");
   });
 
   it("should create new gitignore file when no gitignore file exists", async () => {
+    const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
     await copyTestProject("happyPath", projectPath);
+
     await fs.remove(path.join(projectPath, ".gitignore"));
 
-    await generateAppYml(migrationContext);
+    await MigratorV3.updateGitignore(migrationContext);
 
     await assertFileContent(projectPath, ".gitignore", "whenGitignoreNotExist");
   });

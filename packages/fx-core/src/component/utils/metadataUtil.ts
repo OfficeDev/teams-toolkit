@@ -1,4 +1,4 @@
-import { FxError, Result, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { FxError, Result, TeamsAppManifest, devPreview } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { TOOLS } from "../../core/globalVars";
@@ -6,7 +6,7 @@ import { LifecycleNames, ProjectModel } from "../configManager/interface";
 import { yamlParser } from "../configManager/parser";
 import { createHash } from "crypto";
 
-export class MetadataUtil {
+class MetadataUtil {
   async parse(path: string, env: string | undefined): Promise<Result<ProjectModel, FxError>> {
     const res = await yamlParser.parse(path, true);
     const props: { [key: string]: string } = {};
@@ -24,6 +24,7 @@ export class MetadataUtil {
           .join("");
         props[name + ".actions"] = str ?? "";
       }
+      props[TelemetryProperty.YmlSchemaVersion] = res.value.version;
 
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
     }
@@ -31,7 +32,7 @@ export class MetadataUtil {
     return res;
   }
 
-  parseManifest(manifest: TeamsAppManifest): void {
+  parseManifest(manifest: TeamsAppManifest | devPreview.DevPreviewSchema): void {
     const props: { [key: string]: string } = {};
     const prefix = "manifest.";
     props[prefix + "id"] = manifest.id ?? "";
@@ -57,6 +58,8 @@ export class MetadataUtil {
         )
         .toString() ?? "";
     props[prefix + "webApplicationInfo.id"] = manifest.webApplicationInfo?.id ?? "";
+    props[prefix + "extensions"] =
+      "extensions" in manifest && manifest["extensions"]?.length != 0 ? "true" : "false";
 
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
   }

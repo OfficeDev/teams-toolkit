@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-// eslint-disable-next-line import/no-unresolved
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
-import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { manifestUtils } from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
-import { isSPFxProject } from "../globalVariables";
+import { isSPFxProject, workspaceUri } from "../globalVariables";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
@@ -51,6 +49,12 @@ class TreeViewManager {
 
   public async updateTreeViewsByContent(removeProjectRelatedCommands = false): Promise<void> {
     const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
+    let isTeamsApp = false;
+    const manifestRes = await manifestUtils.readAppManifest(workspaceUri?.fsPath || "");
+    if (manifestRes.isOk()) {
+      isTeamsApp = manifestUtils.getCapabilities(manifestRes.value).length > 0;
+    }
+
     if (removeProjectRelatedCommands) {
       const developmentTreeviewProvider = this.getTreeView(
         "teamsfx-development"
@@ -60,7 +64,8 @@ class TreeViewManager {
       developmentCommands.push(...this.getDevelopmentCommands());
       developmentCommands.splice(3);
       developmentTreeviewProvider.refresh();
-    } else if (hasAdaptiveCard) {
+    }
+    if (hasAdaptiveCard) {
       // after "Validate application" command, the adaptive card will be shown
       const utilityTreeviewProvider = this.getTreeView(
         "teamsfx-utility"
@@ -81,6 +86,21 @@ class TreeViewManager {
             { name: "eye", custom: false }
           )
         );
+      }
+      utilityTreeviewProvider.refresh();
+    }
+    if (!isTeamsApp) {
+      const utilityTreeviewProvider = this.getTreeView(
+        "teamsfx-utility"
+      ) as CommandsTreeViewProvider;
+      const utilityCommands = utilityTreeviewProvider.getCommands();
+      const validateCommandIndex = utilityCommands.findIndex(
+        (command) =>
+          command.commandId === "fx-extension.openAppManagement" ||
+          command.commandId === "fx-extension.publishInDeveloperPortal"
+      );
+      if (validateCommandIndex >= 0) {
+        utilityCommands.splice(validateCommandIndex, 1);
       }
       utilityTreeviewProvider.refresh();
     }
@@ -250,7 +270,7 @@ class TreeViewManager {
   }
 
   private registerUtility(disposables: vscode.Disposable[]) {
-    const isTdpIntegration = isTDPIntegrationEnabled();
+    const isTdpIntegration = true;
     const utilityCommands = [
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitle"),

@@ -9,13 +9,9 @@ import {
   err,
   FxError,
   ok,
-  ProjectSettings,
   SystemError,
   UserError,
-  InputConfigsFolderName,
   Platform,
-  AzureSolutionSettings,
-  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -29,17 +25,16 @@ import {
   TelemetryEvent,
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
-import { globalVars, TOOLS } from "../globalVars";
+import { TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
   MigrationError,
   AbandonedProjectError,
-  ToolkitNotSupportError,
   NotAllowedMigrationError,
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/driver/teamsApp/constants";
 import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
 import {
   readAndConvertUserdata,
@@ -100,14 +95,13 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isSPFxProject, isV3Enabled } from "../../common/tools";
+import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
-import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
-import { manifestUtils } from "../../component/resource/appManifest/utils/ManifestUtils";
+import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
+import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
 
-export const Constants = {
+const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   tasksJsonPath: ".vscode/tasks.json",
@@ -120,20 +114,21 @@ export const Constants = {
   envFilePrefix: ".env.",
 };
 
-export const Parameters = {
+const Parameters = {
   skipUserConfirm: "skipUserConfirm",
   isNonmodalMessage: "isNonmodalMessage",
   confirmOnly: "confirmOnly",
 };
 
-export const TelemetryPropertyKey = {
+const TelemetryPropertyKey = {
   button: "button",
   mode: "mode",
   upgradeVersion: "upgrade-version",
+  projectId: "project-id",
   reason: "reason",
 };
 
-export const TelemetryPropertyValue = {
+const TelemetryPropertyValue = {
   ok: "ok",
   learnMore: "learn-more",
   cancel: "cancel",
@@ -152,16 +147,19 @@ export const errorNames = {
   manifestTemplateInvalid: "ManifestTemplateInvalid",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
-export const upgradeButton = getLocalizedString("core.option.upgrade");
+const upgradeButton = getLocalizedString("core.option.upgrade");
 export const moreInfoButton = getLocalizedString("core.option.moreInfo");
 const migrationMessageButtons = [upgradeButton, moreInfoButton];
+
+const telemetryProperties = {
+  [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+};
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
   preMigration,
   manifestsMigration,
   generateAppYml,
-  generateLocalConfig,
   configsMigration,
   statesMigration,
   userdataMigration,
@@ -173,7 +171,7 @@ const subMigrations: Array<Migration> = [
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  await ensureTrackingIdInGlobal(ctx);
+  await setTelemetryProjectId(ctx);
   const versionForMigration = await checkVersionForMigration(ctx);
   // abandoned v3 project which will not be supported. Show user the message to create new project.
   if (versionForMigration.source === VersionSource.settings) {
@@ -189,16 +187,6 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
   const isValid = await checkActiveResourcePlugins(projectPath);
   const isUpgradeable = isValid && versionForMigration.state === VersionState.upgradeable;
   if (isUpgradeable) {
-    if (!isV3Enabled()) {
-      await TOOLS?.ui.showMessage(
-        "warn",
-        getLocalizedString("core.migrationV3.CreateNewProject"),
-        true
-      );
-      ctx.result = err(ToolkitNotSupportError());
-      return false;
-    }
-
     // in cli non interactive scenario, migration will return an error instead of popup dialog.
     const nonInteractive = getParameterFromCxt(ctx, "nonInteractive");
     if (nonInteractive) {
@@ -234,12 +222,10 @@ export async function wrapRunMigration(
   exec: (context: MigrationContext) => void
 ): Promise<void> {
   try {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStart, {
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-    });
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorMigrateStart);
     await exec(context);
     await showSummaryReport(context);
-    sendTelemetryEvent(
+    sendTelemetryEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorMigrate,
       context.telemetryProperties
@@ -260,7 +246,7 @@ export async function wrapRunMigration(
         displayMessage: error.message,
       });
     }
-    sendTelemetryErrorEvent(
+    sendTelemetryErrorEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorError,
       fxError,
@@ -387,8 +373,8 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   }
 }
 
-async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
+async function loadProjectSettings(projectPath: string): Promise<any> {
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {
@@ -410,8 +396,6 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
       learnMoreLink
     );
   }
-  // Backup templates/appPackage
-  await context.backup(oldAppPackageFolderPath);
 
   // Validate manifest template
   {
@@ -426,6 +410,9 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     }
   }
 
+  // Backup templates/appPackage
+  await context.backup(oldAppPackageFolderPath);
+
   // Read Bicep
   const bicepContent = await readBicepContent(context);
   if (isValidDomainForBotOutputKey(bicepContent)) {
@@ -435,14 +422,17 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   // Ensure appPackage
   await context.fsEnsureDir(AppPackageFolderName);
 
-  // Copy templates/appPackage/resources
-  const oldResourceFolderPath = path.join(oldAppPackageFolderPath, "resources");
-  const oldResourceFolderExists = await fs.pathExists(
-    path.join(context.projectPath, oldResourceFolderPath)
+  // copy other files from old path to new except manifest.template.json and aad.template.json
+  const oldAppPackageFiles = await fs.readdir(
+    path.join(context.projectPath, oldAppPackageFolderPath)
   );
-  if (oldResourceFolderExists) {
-    const resourceFolderPath = path.join(AppPackageFolderName, "resources");
-    await context.fsCopy(oldResourceFolderPath, resourceFolderPath);
+  for (const file of oldAppPackageFiles) {
+    if (file !== MANIFEST_TEMPLATE_CONSOLIDATE && file !== MetadataV2.aadTemplateFileName) {
+      await context.fsCopy(
+        path.join(oldAppPackageFolderPath, file),
+        path.join(AppPackageFolderName, file)
+      );
+    }
   }
 
   // Read capability project settings
@@ -471,14 +461,14 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   }
 
   // Read AAD app manifest and save to ./aad.manifest.json
-  const oldAadManifestPath = path.join(oldAppPackageFolderPath, "aad.template.json");
+  const oldAadManifestPath = path.join(oldAppPackageFolderPath, MetadataV2.aadTemplateFileName);
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
   );
 
-  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
-    .activeResourcePlugins;
-  const component = (projectSettings as ProjectSettingsV3).components;
+  const activeResourcePlugins = (projectSettings.solutionSettings as any)
+    .activeResourcePlugins as any[];
+  const component = (projectSettings as any).components as any[];
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
     (component &&
@@ -507,7 +497,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
 
 export async function azureParameterMigration(context: MigrationContext): Promise<void> {
   // Ensure `.fx/configs` exists
-  const configFolderPath = path.join(".fx", InputConfigsFolderName);
+  const configFolderPath = path.join(".fx", "configs");
   const configFolderPathExists = await context.fsPathExists(configFolderPath);
   if (!configFolderPathExists) {
     // Keep same practice now. Needs dicussion whether to throw error.
@@ -548,9 +538,8 @@ export async function showNotification(
   }
   const skipUserConfirm = getParameterFromCxt(ctx, Parameters.skipUserConfirm);
   if (skipUserConfirm) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.skipUserConfirm,
     });
     return true;
@@ -558,63 +547,54 @@ export async function showNotification(
   return await askUserConfirm(ctx, versionForMigration);
 }
 
-export async function askUserConfirm(
+async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-  });
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
     if (answer === moreInfoButton) {
       TOOLS?.ui!.openUrl(learnMoreLink);
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
-        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
       });
     }
   } while (answer === moreInfoButton);
   if (!answer || !migrationMessageButtons.includes(answer)) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
     ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
     [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
     [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
   });
   return true;
 }
 
-export async function showNonmodalNotification(
+async function showNonmodalNotification(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-  });
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const answer = await popupMessageNonmodal(versionForMigration);
   if (answer === moreInfoButton) {
     TOOLS?.ui!.openUrl(learnMoreLink);
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return false;
   } else if (answer === upgradeButton) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return true;
@@ -622,10 +602,8 @@ export async function showNonmodalNotification(
   return false;
 }
 
-export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart, {
-    [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
-  });
+async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
+  sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const res = await TOOLS?.ui.showMessage(
     "info",
     getLocalizedString("core.migrationV3.confirmOnly.Message"),
@@ -633,35 +611,33 @@ export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise
     "OK"
   );
   if (res?.isOk() && res.value === "OK") {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return true;
   } else {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.confirmOnly,
     });
     return false;
   }
 }
 
-export async function popupMessageModal(
+async function popupMessageModal(
   versionForMigration: VersionForMigration
 ): Promise<string | undefined> {
   return await popupMessage(versionForMigration, true);
 }
 
-export async function popupMessageNonmodal(
+async function popupMessageNonmodal(
   versionForMigration: VersionForMigration
 ): Promise<string | undefined> {
   return await popupMessage(versionForMigration, false);
 }
 
-export async function popupMessage(
+async function popupMessage(
   versionForMigration: VersionForMigration,
   isModal: boolean
 ): Promise<string | undefined> {
@@ -674,17 +650,14 @@ export async function popupMessage(
   return res?.isOk() ? res.value : undefined;
 }
 
-export async function generateLocalConfig(context: MigrationContext): Promise<void> {
-  if (!(await context.fsPathExists(path.join(".fx", "configs", "config.local.json")))) {
-    const oldProjectSettings = await loadProjectSettings(context.projectPath);
-    await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
-  }
-}
-
-export async function ensureTrackingIdInGlobal(context: CoreHookContext): Promise<void> {
+async function setTelemetryProjectId(context: CoreHookContext): Promise<void> {
   const projectPath = getParameterFromCxt(context, "projectPath", "");
-  const projectId = await getTrackingIdFromPath(projectPath);
-  globalVars.trackingId = projectId; // set trackingId to globalVars
+  try {
+    const projectId = await getTrackingIdFromPath(projectPath);
+    telemetryProperties[TelemetryPropertyKey.projectId] = projectId;
+  } catch (error) {
+    // do not set trackingId if error happens
+  }
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {
@@ -965,15 +938,13 @@ export async function checkActiveResourcePlugins(projectPath: string): Promise<b
     if (projectSettings && solutionSettings && solutionSettings.activeResourcePlugins) {
       return true;
     } else {
-      sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
-        [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+      sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
         [TelemetryPropertyKey.reason]: "solutionSettings invalid",
       });
       return false;
     }
   } catch (error: any) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
-      [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
+    sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorPrecheckFailed, {
       [TelemetryPropertyKey.reason]: error.message,
     });
     return false;
@@ -984,7 +955,7 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
   const gitignoreFile = ".gitignore";
   const ignoreFileExist: boolean = await context.backup(gitignoreFile);
   if (!ignoreFileExist) {
-    context.fsCreateFile(gitignoreFile);
+    await context.fsCreateFile(gitignoreFile);
   }
 
   let ignoreFileContent: string = await fs.readFile(
@@ -997,4 +968,24 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
   ignoreFileContent += EOL + ignoreDevToolsDir;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);
+}
+
+function sendTelemetryEventForUpgrade(
+  component: string,
+  eventName: string,
+  properties?: { [p: string]: string },
+  measurements?: { [p: string]: number }
+): void {
+  const mergedProperties = { ...properties, ...telemetryProperties };
+  sendTelemetryEvent(component, eventName, mergedProperties, measurements);
+}
+
+function sendTelemetryErrorEventForUpgrade(
+  component: string,
+  eventName: string,
+  fxError: FxError,
+  properties?: { [p: string]: string }
+): void {
+  const mergedProperties = { ...properties, ...telemetryProperties };
+  sendTelemetryErrorEvent(component, eventName, fxError, mergedProperties);
 }

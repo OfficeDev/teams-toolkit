@@ -8,7 +8,7 @@ import {
   MemberExpression,
   memberExpression,
 } from "jscodeshift";
-import { ExpressionKind } from "ast-types/gen/kinds";
+import type { ExpressionKind } from "ast-types/gen/kinds";
 import { Collection } from "jscodeshift/src/Collection";
 import { FunctionReplacement, TargetFunctionReplacement } from "./replacement";
 import { buildFunctionReplacement, buildTargetReplacement } from "./replacementsGenerator";

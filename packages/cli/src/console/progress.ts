@@ -18,12 +18,15 @@ export default class Progress implements IProgressHandler {
     this.rows.push(ScreenManager.addProgress(instance.wholeMessage.bind(instance)));
   }
 
-  private static finish(instance: Progress) {
+  private static finish(instance: Progress, hideAfterFinish = false) {
     const idx = this.findIndex(instance);
     if (idx > -1) {
       this.rows[idx].update();
       this.rows[idx].removeCB();
-      this.finishedRows.push(this.rows[idx]);
+      if (!hideAfterFinish) this.finishedRows.push(this.rows[idx]);
+      else {
+        ScreenManager.delete(this.rows[idx]);
+      }
       this.instances.splice(idx, 1);
       this.rows.splice(idx, 1);
     }
@@ -68,11 +71,11 @@ export default class Progress implements IProgressHandler {
     }
   }
 
-  async end(success: boolean) {
+  async end(success: boolean, hideAfterFinish = false) {
     this.status = success ? "done" : "error";
     if (success) this.currentPercentage = 100;
     if (Progress.findIndex(this) > -1) {
-      Progress.finish(this);
+      Progress.finish(this, hideAfterFinish);
     }
   }
 

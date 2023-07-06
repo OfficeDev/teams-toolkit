@@ -10,7 +10,6 @@ import {
 } from "../../src/codeLensProvider";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
-import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import * as globalVariables from "../../src/globalVariables";
 
 describe("Manifest codelens", () => {
@@ -18,30 +17,7 @@ describe("Manifest codelens", () => {
     sinon.restore();
   });
 
-  it("Template codelens", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(false);
-    const document = <vscode.TextDocument>{
-      fileName: "manifest.template.json",
-      getText: () => {
-        return "";
-      },
-    };
-
-    const manifestProvider = new ManifestTemplateCodeLensProvider();
-    const codelens: vscode.CodeLens[] = manifestProvider.provideCodeLenses(
-      document
-    ) as vscode.CodeLens[];
-
-    chai.assert.equal(codelens.length, 1);
-    chai.expect(codelens[0].command).to.deep.equal({
-      title: "🖼️Preview",
-      command: "fx-extension.openPreviewFile",
-      arguments: [{ fsPath: document.fileName }],
-    });
-  });
-
   it("Template codelens - V3", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     const url =
       "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json";
     const document = {
@@ -74,7 +50,6 @@ describe("Manifest codelens", () => {
   });
 
   it("ResolveEnvironmentVariableCodelens", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
@@ -93,7 +68,6 @@ describe("Manifest codelens", () => {
   });
 
   it("ResolveEnvironmentVariableCodelens for AAD manifest", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
@@ -112,7 +86,6 @@ describe("Manifest codelens", () => {
   });
 
   it("ComputeTemplateCodeLenses for AAD manifest", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
     const document = <vscode.TextDocument>{
       fileName: "./aad.manifest.json",
@@ -126,33 +99,6 @@ describe("Manifest codelens", () => {
     chai.assert.isTrue(
       res != null && res[0].command!.command === "fx-extension.openPreviewAadFile"
     );
-  });
-
-  it("Preview codelens", async () => {
-    sinon.stub(commonTools, "isV3Enabled").returns(false);
-    const document = <vscode.TextDocument>{
-      fileName: "manifest.dev.json",
-      getText: () => {
-        return "";
-      },
-    };
-
-    const manifestProvider = new ManifestTemplateCodeLensProvider();
-    const codelens: vscode.CodeLens[] = manifestProvider.provideCodeLenses(
-      document
-    ) as vscode.CodeLens[];
-
-    chai.assert.equal(codelens.length, 2);
-    chai.expect(codelens[0].command).to.deep.equal({
-      title: "🔄Update to Teams platform",
-      command: "fx-extension.updatePreviewFile",
-      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
-    });
-    chai.expect(codelens[1].command).to.deep.equal({
-      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
-      command: "fx-extension.editManifestTemplate",
-      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
-    });
   });
 });
 

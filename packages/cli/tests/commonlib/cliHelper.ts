@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import { execAsync, execAsyncWithRetry, editDotEnvFile } from "../e2e/commonUtils";
 import { TemplateProject, Resource, ResourceToDeploy, Capability } from "./constants";
 import path from "path";
-import { isV3Enabled } from "@microsoft/teamsfx-core/src/common/tools";
-import fs from "fs-extra";
 
 export class CliHelper {
   static async setSubscription(
@@ -215,7 +212,7 @@ export class CliHelper {
   static async createDotNetProject(
     appName: string,
     testFolder: string,
-    capability: "tab" | "bot",
+    capability: Capability,
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ): Promise<void> {
@@ -293,21 +290,10 @@ export class CliHelper {
       console.log(error);
       throw new Error(`Failed to open project: ${newPath}`);
     }
-    if (isV3Enabled()) {
-      const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
-      const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
-      editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
-      editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
-    } else {
-      await execAsync(
-        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json `,
-        {
-          cwd: testFolder,
-          env: processEnv ? processEnv : process.env,
-          timeout: timeout,
-        }
-      );
-    }
+    const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+    const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+    editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+    editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
   }
 
   static async createTemplateProject(
@@ -331,21 +317,11 @@ export class CliHelper {
         env: processEnv ? processEnv : process.env,
         timeout: timeout,
       });
-      if (isV3Enabled()) {
-        const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
-        const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
-        editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
-        editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
-      } else {
-        await execAsync(
-          `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json `,
-          {
-            cwd: testFolder,
-            env: processEnv ? processEnv : process.env,
-            timeout: timeout,
-          }
-        );
-      }
+
+      const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
+      const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+      editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
+      editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
 
       const message = `scaffold project to ${path.resolve(
         testFolder,
@@ -365,9 +341,7 @@ export class CliHelper {
   }
 
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
-    const command = isPreviewFeaturesEnabled()
-      ? `teamsfx add ${capabilityToAdd}`
-      : `teamsfx capability add ${capabilityToAdd}`;
+    const command = `teamsfx add ${capabilityToAdd}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -395,9 +369,7 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = isPreviewFeaturesEnabled()
-      ? `teamsfx add ${resourceToAdd} ${options}`
-      : `teamsfx resource add ${resourceToAdd} ${options}`;
+    const command = `teamsfx add ${resourceToAdd} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -451,77 +423,5 @@ export class CliHelper {
       }
     }
     return value;
-  }
-
-  static async initDebug(
-    appName: string,
-    testFolder: string,
-    editor: "vsc" | "vs",
-    capability: "tab" | "bot",
-    spfx: "true" | "false" | undefined,
-    processEnv?: NodeJS.ProcessEnv,
-    options = ""
-  ) {
-    const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${
-      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-    } ${options}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
-      const message = `teamsfx init debug to ${path.resolve(
-        testFolder,
-        appName
-      )} with editor=${editor}, capability=${capability}, spfx=${spfx}`;
-      if (result.stderr) {
-        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    } catch (e) {
-      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
-  }
-
-  static async initInfra(
-    appName: string,
-    testFolder: string,
-    editor: "vsc" | "vs",
-    capability: "tab" | "bot",
-    spfx: "true" | "false" | undefined,
-    processEnv?: NodeJS.ProcessEnv,
-    options = ""
-  ) {
-    const command = `teamsfx init infra --interactive false --editor ${editor} --capability ${capability} ${
-      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-    } ${options}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
-      const message = `teamsfx init infra to ${path.resolve(
-        testFolder,
-        appName
-      )} with editor=${editor}, capability=${capability}, spfx=${spfx}`;
-      if (result.stderr) {
-        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    } catch (e) {
-      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
   }
 }

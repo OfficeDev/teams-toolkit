@@ -9,7 +9,6 @@ import { Argv } from "yargs";
 import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { NotFoundInputedFolder } from "../error";
 import { filterQTreeNode, toYargsOptionsGroup } from "../questionUtils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -19,7 +18,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
+import { FileNotFoundError } from "@microsoft/teamsfx-core";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -42,7 +41,7 @@ export default class New extends YargsCommand {
       const node = result.value ?? constants.EmptyQTreeNode;
       const filteredNode = await filterQTreeNode(node, "scratch", "yes");
       const nodes = flattenNodes(filteredNode).concat(constants.RootFolderNode);
-      this.params = toYargsOptionsGroup(nodes);
+      this.params = await toYargsOptionsGroup(nodes);
     }
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
@@ -73,8 +72,6 @@ export default class New extends YargsCommand {
         });
         return err(result.error);
       }
-
-      await automaticNpmInstallHandler(result.value, false, false, false);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
@@ -121,11 +118,9 @@ class NewTemplate extends YargsCommand {
   }): Promise<Result<null, FxError>> {
     const folder = path.resolve((args.folder as string) || "./");
     if (!fs.pathExistsSync(folder)) {
-      CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.DownloadSample,
-        NotFoundInputedFolder(folder)
-      );
-      return err(NotFoundInputedFolder(folder));
+      const error = new FileNotFoundError(constants.cliSource, folder);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error);
+      return err(error);
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
 

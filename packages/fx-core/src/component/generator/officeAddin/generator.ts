@@ -13,7 +13,7 @@ import {
   err,
   ManifestUtil,
   devPreview,
-  ContextV3,
+  Context,
 } from "@microsoft/teamsfx-api";
 import { join } from "path";
 import {
@@ -33,8 +33,8 @@ import _ from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
-import { CoreQuestionNames } from "../../../core/question";
 import { convertProject } from "office-addin-project";
+import { QuestionNames } from "../../../question/questionNames";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -50,7 +50,7 @@ export class OfficeAddinGenerator {
     }),
   ])
   static async generate(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
@@ -78,12 +78,12 @@ export class OfficeAddinGenerator {
   }
 
   public static async doScaffolding(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
     const template = getTemplate(inputs);
-    const name = inputs[CoreQuestionNames.AppName] as string;
+    const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[AddinProjectFolderQuestion.name];
     const language = inputs[AddinLanguageQuestion.name];

@@ -29,7 +29,7 @@ const EligibleKeys: EligibleKeySettings = {
   TEAMS_APP_TENANT_ID: false,
 };
 
-export class EnvUtil {
+class EnvUtil {
   /**
    * read .env file and set to process.env (if loadToProcessEnv = true)
    * if silent = true, no error will return if .env file is not available, this function returns ok({ TEAMSFX_ENV: env })
@@ -215,15 +215,16 @@ export class EnvUtil {
     }
     return ok(undefined);
   }
-  async listEnv(projectPath: string): Promise<Result<string[], FxError>> {
+  async listEnv(projectPath: string, remoteOnly = false): Promise<Result<string[], FxError>> {
     const folderRes = await pathUtils.getEnvFolderPath(projectPath);
     if (folderRes.isErr()) return err(folderRes.error);
     const envFolderPath = folderRes.value;
     if (!envFolderPath) return ok([]);
     const list = await fs.readdir(envFolderPath);
-    const envs = list
-      .filter((fileName) => fileName.startsWith(".env.") && !fileName.endsWith(".user"))
-      .map((fileName) => fileName.substring(5));
+    let envs = list
+      .map((fileName) => this.extractEnvNameFromFileName(fileName))
+      .filter((env) => env !== undefined) as string[];
+    if (remoteOnly) envs = envs.filter((env) => env !== "local");
     return ok(envs);
   }
   object2map(obj: DotenvOutput): Map<string, string> {
@@ -240,6 +241,13 @@ export class EnvUtil {
     }
     return obj;
   }
+
+  extractEnvNameFromFileName(inputFileName: string): string | undefined {
+    const regex = /^\.env\.(\w+)$/;
+    const matches = inputFileName.match(regex);
+    const envName = matches && matches[1];
+    return envName || undefined;
+  }
 }
 
 export const envUtil = new EnvUtil();
@@ -248,12 +256,12 @@ const NEW_LINE_SPLITTER = /\r?\n/;
 type DotenvParsedLine =
   | string
   | { key: string; value: string; comment?: string; quote?: '"' | "'" };
-export interface DotenvParseResult {
+interface DotenvParseResult {
   lines?: DotenvParsedLine[];
   obj: DotenvOutput;
 }
 
-export class DotenvUtil {
+class DotenvUtil {
   deserialize(src: string | Buffer): DotenvParseResult {
     const lines: DotenvParsedLine[] = [];
     const obj: DotenvOutput = {};

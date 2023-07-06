@@ -3,7 +3,7 @@
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { validateAppPackageOption, validateSchemaOption } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -14,7 +14,7 @@ import {
   RootFolderOptions,
   ValidateApplicationOptions,
 } from "../constants";
-import { EnvNotSpecified, NotValidInputValue } from "../error";
+import { ArgumentConflictError, MissingRequiredArgumentError } from "../error";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -87,16 +87,17 @@ export class ManifestValidate extends YargsCommand {
   private validateArgs(args: { [argName: string]: string }): Result<any, FxError> {
     // Throw error when --manifest-path and --app-package-file-path are both provided
     if (args[AppPackageFilePathParamName] && args[ManifestFilePathParamName]) {
-      const error = NotValidInputValue(
+      const error = new ArgumentConflictError(
         "teamsfx validate",
-        `Do not provide both --${AppPackageFilePathParamName} and --${ManifestFilePathParamName} options`
+        AppPackageFilePathParamName,
+        ManifestFilePathParamName
       );
       return err(error);
     }
 
     // Throw error if --env not specified
     if (args[ManifestFilePathParamName] && !args.env && !CLIUIInstance.interactive) {
-      const error = new EnvNotSpecified();
+      const error = new MissingRequiredArgumentError("teamsfx validate", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
       return err(error);
     }

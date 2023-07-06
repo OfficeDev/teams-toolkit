@@ -142,34 +142,6 @@ export function NpmInstallFailed(): UserError {
   return new UserError(constants.cliSource, "NpmInstallFailed", "Npm install failed.");
 }
 
-export function M365AccountInfoNotFound(): UserError {
-  return new SystemError(
-    constants.cliSource,
-    "M365AccountInfoNotFound",
-    "Microsoft 365 account info not found"
-  );
-}
-
-export function GetTeamsAppInstallationFailed(error: Error): SystemError {
-  return new SystemError({
-    source: constants.cliSource,
-    name: "GetTeamsAppInstallationFailed",
-    error,
-  });
-}
-
-export function NotM365Project(): UserError {
-  return new UserError(constants.cliSource, "NotM365Project", "Not a Microsoft 365 project.");
-}
-
-export function OnlyLaunchPageSupportedInOffice(): UserError {
-  return new UserError(
-    constants.cliSource,
-    "OnlyLaunchPageSupportedByOffice",
-    "Only launch page is supported in the Microsoft 365 app. Message extension is not supported in the Microsoft 365 app."
-  );
-}
-
 export function CannotDetectRunCommand(): UserError {
   return new UserError(
     constants.cliSource,

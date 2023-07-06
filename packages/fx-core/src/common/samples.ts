@@ -1,8 +1,7 @@
-import sampleConfig from "./samples-config.json";
-import sampleConfigV3 from "./samples-config-v3.json";
-import { isV3Enabled, isVideoFilterEnabled } from "./tools";
-import { sendRequestWithTimeout } from "../component/generator/utils";
 import axios from "axios";
+import { sendRequestWithTimeout } from "../component/generator/utils";
+import sampleConfigV3 from "./samples-config-v3.json";
+import { isVideoFilterEnabled } from "./featureFlags";
 
 class configInfo {
   static readonly owner = "OfficeDev";
@@ -25,7 +24,7 @@ export interface SampleInfo {
   relativePath?: string;
 }
 
-export interface SampleCollection {
+interface SampleCollection {
   samples: SampleInfo[];
 }
 

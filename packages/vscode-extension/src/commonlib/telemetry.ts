@@ -9,10 +9,11 @@ import {
   getPackageVersion,
   isFeatureFlagEnabled,
   FeatureFlags,
+  anonymizeFilePaths,
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import * as os from "os";
 import * as path from "path";
@@ -99,6 +100,18 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
+    if (TelemetryProperty.ErrorMessage in properties) {
+      properties[TelemetryProperty.ErrorMessage] = anonymizeFilePaths(
+        properties[TelemetryProperty.ErrorMessage]
+      );
+    }
+
+    if (TelemetryProperty.ErrorStack in properties) {
+      properties[TelemetryProperty.ErrorStack] = anonymizeFilePaths(
+        properties[TelemetryProperty.ErrorStack]
+      );
+    }
+
     if (this.testFeatureFlag) {
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     } else {
@@ -162,10 +175,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage]
-    ) {
+    if (!properties[TelemetryProperty.ProjectId]) {
       const fixedProjectSettings = getFixedCommonProjectSettings(
         globalVariables.workspaceUri?.fsPath
       );
@@ -173,13 +183,6 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
         this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
       }
     }
   }

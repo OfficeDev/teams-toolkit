@@ -10,8 +10,11 @@ on:
   schedule:
     - cron: "0 22 * * *"
 
+  pull_request_target:
+
 jobs:
   setup:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
     runs-on: ubuntu-latest
     outputs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
@@ -82,6 +85,16 @@ jobs:
             echo "cases=$inputCases" >> $GITHUB_OUTPUT
           fi
 
+      - name: List cases for pull request
+        id: pr-cases
+        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        working-directory: packages/cli/tests/e2e
+        run: |
+          cases=`find ./bot ./frontend -path "*.tests.ts" -and \
+            -not '(' -path '*/*.dotnet.tests.ts' -or -path '*/Blazor*' ')' \
+            | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+          echo "cases=$cases" >> $GITHUB_OUTPUT
+
       - name: E2E Test clean
         working-directory: packages/cli
         run: |
@@ -151,8 +164,15 @@ jobs:
             npm run setup
 
       - name: Link CLI
+        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         run: |
           npm link --force
+
+      - name: Update CLI and legacy-peer-deps for PR cases
+        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        run: |
+          npm install -g @microsoft/teamsfx-cli@latest
+          npm config set legacy-peer-deps false
 
       - name: print system info
         run: |
@@ -173,7 +193,7 @@ jobs:
           repository: OfficeDev/TeamsFx-Samples
           ref: v3
           path: packages/cli/tests/e2e/resource
-      
+
       - name: Download samples from another repo
         if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage')
         uses: actions/checkout@v3
@@ -207,12 +227,12 @@ jobs:
         uses: actions/upload-artifact@v3
         if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
         with:
-          name: ${{ steps.get-report-name.outputs.name }}
+          name: test-result-${{ steps.get-report-name.outputs.name }}
           path: |
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
-    if: ${{ always() }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
     needs: execute-case
     runs-on: ubuntu-latest
     env:
@@ -228,7 +248,7 @@ jobs:
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     steps:
-      - name: Checkout
+      - name: Checkout (dev)
         uses: actions/checkout@v3
 
       - name: Setup node
@@ -255,7 +275,7 @@ jobs:
 
   rerun:
     needs: tear-down
-    if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
+    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
     steps:
       - name: rerun

@@ -1,0 +1,15 @@
+name: Api2teams CD
+run-name: Api2teams-${{ github.run_id }}-${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/api2teams' }}
+        run: |
+          echo It's not allowed to run CD on other branch except api2teams.
+          exit 1

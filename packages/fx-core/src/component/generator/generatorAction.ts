@@ -70,7 +70,6 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
       __dirname,
       "../../../../../",
       "templates",
-      "scenarios",
       context.name
     );
 

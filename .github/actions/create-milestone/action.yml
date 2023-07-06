@@ -1,0 +1,19 @@
+name: Create Sprint Milestone
+description: Create Sprint Milestone
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    required: true
+  milestone-prefix:
+    description: 'the specific milestones prefix to create work item'
+    required: true
+  milestone-days:
+    description: 'the due days of sprint milestone'
+    required: true
+  advanced-days:
+    description: 'advanced days before creating new one'
+    required: true
+
+runs:
+  using: 'node16'
+  main: 'index.js'

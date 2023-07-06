@@ -106,6 +106,13 @@ describe("Screen Manager", function () {
     expect(ScreenManager["rows"].length).equals(0);
   });
 
+  it("delete", () => {
+    const row = new Row(() => "Test delete");
+    ScreenManager["rows"] = [row];
+    ScreenManager.delete(row);
+    expect(ScreenManager["rows"].length).equals(0);
+  });
+
   it("pause", () => {
     const clearScreenStub = sandbox.stub<any, any>(ScreenManager, "clearScreen");
     ScreenManager.pause();

@@ -24,29 +24,33 @@ describe("upgrade", () => {
     await fs.remove(projectPath);
   });
 
-  it("sample incoming webhook notification", { testPlanCaseId: 19298763 }, async function () {
-    {
-      await Executor.installCLI(testFolder, "1.2.5", false);
-      const env = Object.assign({}, process.env);
-      env["TEAMSFX_V3"] = "false";
-      // new projiect
-      await CliHelper.createTemplateProject(
-        appName,
-        testFolder,
-        TemplateProject.IncomingWebhook,
-        env
-      );
-    }
+  it(
+    "sample incoming webhook notification",
+    { testPlanCaseId: 19298763, author: "zhaofengxu@microsoft.com" },
+    async function () {
+      {
+        await Executor.installCLI(testFolder, "1.2.5", true);
+        const env = Object.assign({}, process.env);
+        env["TEAMSFX_V3"] = "false";
+        // new projiect
+        await CliHelper.createTemplateProject(
+          appName,
+          testFolder,
+          TemplateProject.IncomingWebhook,
+          env
+        );
+      }
 
-    await Executor.installCLI(testFolder, "alpha", false);
-    {
-      // provision
-      const result = await Executor.provision(projectPath);
-      chai.assert.isFalse(result.success);
-      chai.assert.include(
-        result.stderr,
-        "This command only works for project created by Teams Toolkit"
-      );
+      await Executor.installCLI(testFolder, "alpha", true);
+      {
+        // provision
+        const result = await Executor.provision(projectPath);
+        chai.assert.isFalse(result.success);
+        chai.assert.include(
+          result.stderr,
+          "This command only works for project created by Teams Toolkit"
+        );
+      }
     }
-  });
+  );
 });

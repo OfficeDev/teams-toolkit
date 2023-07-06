@@ -3,14 +3,15 @@
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance, AxiosError } from "axios";
-import { IAADDefinition } from "../../../resource/aadApp/interfaces/IAADDefinition";
-import { AADApplication } from "../../../resource/aadApp/interfaces/AADApplication";
-import { AADManifest } from "../../../resource/aadApp/interfaces/AADManifest";
-import { AadManifestHelper } from "../../../resource/aadApp/utils/aadManifestHelper";
+import { IAADDefinition } from "../interface/IAADDefinition";
+import { AADApplication } from "../interface/AADApplication";
+import { AADManifest } from "../interface/AADManifest";
+import { AadManifestHelper } from "./aadManifestHelper";
 import { GraphScopes } from "../../../../common/tools";
-import { Constants } from "../../../resource/aadApp/constants";
+import { constants } from "./constants";
 import axiosRetry from "axios-retry";
 import { SignInAudience } from "../interface/signInAudience";
+import { AadOwner } from "../../../../common/permissionInterface";
 
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
@@ -65,7 +66,7 @@ export class AadAppClient {
   public async generateClientSecret(objectId: string): Promise<string> {
     const requestBody = {
       passwordCredential: {
-        displayName: Constants.aadAppPasswordDisplayName,
+        displayName: constants.aadAppPasswordDisplayName,
       },
     };
 
@@ -95,6 +96,49 @@ export class AadAppClient {
           axiosRetry.isRetryableError(error) ||
           this.is404Error(error) || // also retry 404 error since AAD need sometime to sync created AAD app data
           this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
+      },
+    });
+  }
+
+  public async getOwners(objectId: string): Promise<AadOwner[] | undefined> {
+    const response = await this.axios.get(`applications/${objectId}/owners`, {
+      "axios-retry": {
+        retries: this.retryNumber,
+        retryDelay: axiosRetry.exponentialDelay,
+        retryCondition: (error) =>
+          axiosRetry.isNetworkError(error) ||
+          axiosRetry.isRetryableError(error) ||
+          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
+      },
+    });
+
+    const aadOwners: AadOwner[] = [];
+    for (const aadOwner of response.data.value) {
+      aadOwners.push({
+        userObjectId: aadOwner.id,
+        resourceId: objectId,
+        displayName: aadOwner.displayName,
+        // For guest account, aadOwner.userPrincipalName will contains "EXT", thus use mail instead.
+        userPrincipalName: aadOwner.mail ?? aadOwner.userPrincipalName,
+      });
+    }
+
+    return aadOwners;
+  }
+
+  public async addOwner(objectId: string, userObjectId: string): Promise<void> {
+    const requestBody = {
+      "@odata.id": `${this.axios.defaults.baseURL}/directoryObjects/${userObjectId}`,
+    };
+
+    await this.axios.post(`applications/${objectId}/owners/$ref`, requestBody, {
+      "axios-retry": {
+        retries: this.retryNumber,
+        retryDelay: axiosRetry.exponentialDelay,
+        retryCondition: (error) =>
+          axiosRetry.isNetworkError(error) ||
+          axiosRetry.isRetryableError(error) ||
+          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
       },
     });
   }

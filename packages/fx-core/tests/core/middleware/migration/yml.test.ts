@@ -4,10 +4,7 @@
 /**
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
-import {
-  generateAppYml,
-  generateLocalConfig,
-} from "../../../../src/core/middleware/projectMigratorV3";
+import { generateAppYml } from "../../../../src/core/middleware/projectMigratorV3";
 import { MigrationContext } from "../../../../src/core/middleware/utils/migrationContext";
 import { randomAppName } from "../../utils";
 import fs from "fs-extra";
@@ -324,12 +321,6 @@ describe("generateAppYml-csharp", () => {
 
   afterEach(async () => {
     await fs.remove(projectPath);
-  });
-
-  it("should success for local sso tab project", async () => {
-    await copyTestProject("csharpSsoTab", projectPath);
-
-    await generateLocalConfig(migrationContext);
   });
 });
 

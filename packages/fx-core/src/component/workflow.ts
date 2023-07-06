@@ -1,29 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Component, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 import { Scenarios } from "./constants";
 
-export function getComponent(
-  projectSettings: ProjectSettingsV3,
-  resourceType: string
-): Component | undefined {
-  return projectSettings.components?.find((r) => r.name === resourceType);
-}
-
-export function getComponents(
-  projectSettings: ProjectSettingsV3,
-  resourceType: string
-): Component[] | undefined {
-  return projectSettings.components?.filter((r) => r.name === resourceType);
+export function getComponent(projectSettings: any, resourceType: string): any | undefined {
+  return projectSettings.components?.find((r: any) => r.name === resourceType);
 }
 
 export function getComponentByScenario(
-  projectSetting: ProjectSettingsV3,
+  projectSetting: any,
   resourceType: string,
   scenario?: Scenarios
-): Component | undefined {
+): any | undefined {
   return scenario
-    ? projectSetting.components?.find((r) => r.name === resourceType && r.scenario === scenario)
+    ? projectSetting.components?.find(
+        (r: any) => r.name === resourceType && r.scenario === scenario
+      )
     : getComponent(projectSetting, resourceType);
 }

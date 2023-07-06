@@ -8,7 +8,7 @@
  * Represents a UUID as defined by rfc4122.
  */
 
-export interface UUID {
+interface UUID {
   /**
    * @returns the canonical representation in sets of hexadecimal numbers separated by dashes.
    */
@@ -99,13 +99,13 @@ class V4UUID extends ValueUUID {
   }
 }
 
-export function v4(): UUID {
+function v4(): UUID {
   return new V4UUID();
 }
 
 const _UUIDPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function isUUID(value: string): boolean {
+function isUUID(value: string): boolean {
   return _UUIDPattern.test(value);
 }
 
@@ -113,7 +113,7 @@ export function isUUID(value: string): boolean {
  * Parses a UUID that is of the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
  * @param value A uuid string.
  */
-export function parse(value: string): UUID {
+function parse(value: string): UUID {
   if (!isUUID(value)) {
     throw new Error("invalid uuid");
   }

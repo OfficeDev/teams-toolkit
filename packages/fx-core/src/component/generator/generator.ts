@@ -2,16 +2,18 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { ActionContext, ContextV3, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { BaseComponentInnerError } from "../error/componentError";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
-  errorSource,
-  componentName,
   commonTemplateName,
+  componentName,
+  errorSource,
   sampleDefaultTimeoutInMs,
 } from "./constant";
 import {
@@ -23,12 +25,11 @@ import {
   UnzipError,
 } from "./error";
 import {
-  SampleActionSeq,
-  GeneratorAction,
-  TemplateActionSeq,
-  GeneratorContext,
-  GeneratorActionName,
   DownloadDirectoryActionSeq,
+  GeneratorAction,
+  GeneratorActionName,
+  GeneratorContext,
+  TemplateActionSeq,
 } from "./generatorAction";
 import {
   getSampleInfoFromName,
@@ -36,9 +37,6 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import { isDownloadDirectoryEnabled } from "../../common/tools";
-import { BaseComponentInnerError } from "../error/componentError";
-import fs from "fs-extra";
 
 export class Generator {
   public static getDefaultVariables(
@@ -63,7 +61,7 @@ export class Generator {
     }),
   ])
   public static async generateTemplate(
-    ctx: ContextV3,
+    ctx: Context,
     destinationPath: string,
     scenario: string,
     language?: string,
@@ -104,14 +102,14 @@ export class Generator {
     }),
   ])
   public static async generateSample(
-    ctx: ContextV3,
+    ctx: Context,
     destinationPath: string,
     sampleName: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleName]: sampleName,
-      [TelemetryProperty.SampleDownloadDirectory]: isDownloadDirectoryEnabled().toString(),
+      [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
@@ -119,13 +117,13 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      url: isDownloadDirectoryEnabled() ? sample.url : sample.link,
+      url: sample.url,
       timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
-    const actionSeq = isDownloadDirectoryEnabled() ? DownloadDirectoryActionSeq : SampleActionSeq;
+    const actionSeq = DownloadDirectoryActionSeq;
     await this.generate(generatorContext, actionSeq);
     return ok(undefined);
   }

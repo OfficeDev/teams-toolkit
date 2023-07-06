@@ -4,6 +4,7 @@ import "./sampleDetailPage.scss";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { Watch, Setting } from "./resources";
 import { Commands } from "./Commands";
+import { SampleDetailProps } from "./ISamples";
 import {
   TelemetryEvent,
   TelemetryProperty,

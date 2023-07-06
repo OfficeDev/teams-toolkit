@@ -178,6 +178,17 @@ export class ScreenManager {
     }
   }
 
+  /**
+   * delete one row
+   * @param row
+   */
+  delete(row: Row) {
+    const idx = this.rows.findIndex((r) => r === row);
+    if (idx > -1) {
+      this.rows.splice(idx, 1);
+    }
+  }
+
   pause() {
     this.paused = true;
     this.clearScreen();

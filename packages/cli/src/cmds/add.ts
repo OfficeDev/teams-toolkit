@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { err, FxError, ok, Result, Stage } from "@microsoft/teamsfx-api";
-import { getQuestionsForAddWebpart } from "@microsoft/teamsfx-core/build/component/question";
+import { questions } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
-import { CLIHelpInputs, EmptyQTreeNode, RootFolderNode } from "../constants";
+import { EmptyQTreeNode, RootFolderNode } from "../constants";
 import { toYargsOptionsGroup } from "../questionUtils";
 import cliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -24,14 +24,14 @@ export class AddWebpart extends YargsCommand {
 
   public override async builder(yargs: Argv): Promise<Argv<any>> {
     {
-      const result = await getQuestionsForAddWebpart(CLIHelpInputs);
+      const result = await questions.addWebpart();
       if (result.isErr()) {
         throw result.error;
       }
       const node = result.value ?? EmptyQTreeNode;
       const filteredNode = node;
       const nodes = flattenNodes(filteredNode).concat([RootFolderNode]);
-      this.params = toYargsOptionsGroup(nodes);
+      this.params = await toYargsOptionsGroup(nodes);
     }
     return yargs.options(this.params);
   }

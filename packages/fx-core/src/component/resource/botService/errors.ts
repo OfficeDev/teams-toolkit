@@ -2,29 +2,22 @@
 // Licensed under the MIT license.
 
 /**
- * @author zhijie <zhihuan@microsoft.com>
+ * @author Qianhao Dong <qidon@microsoft.com>
  */
 import { ErrorNames } from "./constants";
 import { Messages } from "./messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { err, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
-import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
-import { CreateAppError, CreateSecretError } from "../aadApp/errors";
-import { GraphErrorCodes } from "../aadApp/errorCodes";
-import { HelpLinks } from "../../../common/constants";
-import { CommonStrings } from "./strings";
 
-export const ErrorType = {
+const ErrorType = {
   USER: "User",
   SYSTEM: "System",
 } as const;
 
-export type ErrorType = typeof ErrorType[keyof typeof ErrorType];
+type ErrorType = typeof ErrorType[keyof typeof ErrorType];
 
-export type InnerError = HttpError | Error | ErrorWithMessage | ErrorWithCode | unknown;
+type InnerError = HttpError | Error | ErrorWithMessage | ErrorWithCode | unknown;
 
-export type HttpError = {
+type HttpError = {
   response: {
     status?: number;
     data?: {
@@ -38,54 +31,15 @@ export type HttpError = {
   };
 };
 
-export type ErrorWithMessage = {
+type ErrorWithMessage = {
   message: string;
 };
 
-export type ErrorWithCode = {
+type ErrorWithCode = {
   code: string;
 };
 
-export function isHttpError(e: InnerError): e is HttpError {
-  return e instanceof Object && "response" in e;
-}
-
-export function isErrorWithMessage(e: InnerError): e is ErrorWithMessage {
-  return e instanceof Object && "message" in e;
-}
-
-export function isPluginError(e: unknown): e is PluginError {
-  return e instanceof Object && "innerError" in e;
-}
-
-function resolveInnerError(target: PluginError, helpLinkMap: Map<string, string>): void {
-  if (!target.innerError) return;
-
-  const statusCode = isHttpError(target.innerError) ? target.innerError.response?.status : 500;
-  if (statusCode) {
-    if (statusCode >= 400 && statusCode < 500) {
-      target.errorType = ErrorType.USER;
-    } else {
-      target.errorType = ErrorType.SYSTEM;
-    }
-  }
-
-  if (isHttpError(target.innerError)) {
-    const errorCode = target.innerError.response?.data?.error?.code;
-    if (errorCode) {
-      const helpLink = helpLinkMap.get(errorCode);
-      if (helpLink) target.helpLink = helpLink;
-    }
-    // Try to concat error messages in response payload to expose specific reasons.
-    // Based on https://learn.microsoft.com/en-us/graph/errors
-    const errorMessage = target.innerError.response.data?.error?.message;
-    if (errorMessage) {
-      target.details[0] += errorMessage;
-    }
-  }
-}
-
-export class PluginError extends Error {
+class PluginError extends Error {
   public name: string;
   public details: [string, string];
   public suggestions: string[];
@@ -127,20 +81,6 @@ export class PluginError extends Error {
   }
 }
 
-export class CreateAADAppError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(ErrorType.USER, CreateAppError.name, CreateAppError.message(), [], innerError);
-    resolveInnerError(this, GraphErrorCodes);
-  }
-}
-
-export class CreateAADSecretError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(ErrorType.USER, CreateSecretError.name, CreateSecretError.message(), [], innerError);
-    resolveInnerError(this, GraphErrorCodes);
-  }
-}
-
 export class ProvisionError extends PluginError {
   constructor(resource: string, innerError?: InnerError) {
     super(
@@ -177,60 +117,6 @@ export class BotRegistrationNotFoundError extends PluginError {
   }
 }
 
-//! context and name are only for telemetry, they may be empty if sendTelemetry is false
-export function wrapError(e: InnerError): FxResult {
-  let errorMsg = isErrorWithMessage(e) ? e.message : "";
-  const innerError = isPluginError(e) ? e.innerError : undefined;
-  if (innerError) {
-    errorMsg += getLocalizedString(
-      "plugins.bot.DetailedError",
-      isErrorWithMessage(innerError) ? innerError.message : ""
-    );
-    if (isHttpError(innerError)) {
-      if (innerError.response?.data?.errorMessage) {
-        errorMsg += getLocalizedString(
-          "plugins.bot.DetailedErrorReason",
-          innerError.response?.data?.errorMessage
-        );
-      } else if (innerError.response?.data?.error?.message) {
-        // For errors return from Graph API
-        errorMsg += getLocalizedString(
-          "plugins.bot.DetailedErrorReason",
-          innerError.response?.data?.error?.message
-        );
-      } else if (innerError.response?.data?.errors) {
-        // For errors return from App Studio API
-        errorMsg += getLocalizedString(
-          "plugins.bot.DetailedErrorReason",
-          JSON.stringify(innerError.response?.data?.errors)
-        );
-      }
-    }
-  }
-  if (e instanceof UserError || e instanceof SystemError) {
-    const res = err(e);
-    return res;
-  }
-  if (e instanceof PluginError || e instanceof CommonHostingError) {
-    const message = e.genMessage();
-    const displayMessage = e.genDisplayMessage();
-    const result =
-      e instanceof PluginError && e.errorType === ErrorType.SYSTEM
-        ? ResultFactory.SystemError(e.name, [message, displayMessage], e.innerError)
-        : ResultFactory.UserError(
-            e.name,
-            [message, displayMessage],
-            e.innerError,
-            e instanceof PluginError ? e.helpLink : ""
-          );
-    return result;
-  } else {
-    // Unrecognized Exception.
-    const UnhandledErrorCode = "UnhandledError";
-    return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
-  }
-}
-
 export class BotFrameworkNotAllowedToAcquireTokenError extends PluginError {
   constructor() {
     super(
@@ -264,20 +150,17 @@ export class BotFrameworkConflictResultError extends PluginError {
   }
 }
 
-export const AlreadyCreatedBotNotExist = (botId: string | undefined, innerError: any) => {
-  return new UserError({
-    source: "RegisterBot",
-    name: "AlreadyCreatedBotNotExist",
-    message: getLocalizedString(
-      "plugins.bot.FailedToGetAlreadyCreatedBot",
-      botId,
-      HelpLinks.SwitchAccountOrSub
-    ),
-    displayMessage: getLocalizedString(
-      "plugins.bot.FailedToGetAlreadyCreatedBot",
-      botId,
-      HelpLinks.SwitchAccountOrSub
-    ),
-    error: innerError,
-  });
-};
+class PreconditionError extends PluginError {
+  constructor(name: string) {
+    super(ErrorType.USER, ErrorNames.PRECONDITION_ERROR, Messages.SomethingIsMissing(name), [
+      Messages.RetryTheCurrentStep,
+    ]);
+  }
+}
+
+export function CheckThrowSomethingMissing<T>(name: string, value: T | undefined): T {
+  if (!value) {
+    throw new PreconditionError(name);
+  }
+  return value;
+}

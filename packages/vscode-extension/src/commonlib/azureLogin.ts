@@ -4,22 +4,19 @@
 
 "use strict";
 
-import { TokenCredential } from "@azure/core-auth";
+import type { TokenCredential } from "@azure/core-auth";
 import {
   AzureAccountProvider,
   UserError,
   SubscriptionInfo,
   SingleSelectConfig,
   OptionItem,
-  ok,
-  ConfigFolderName,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccountExtensionApi as AzureAccount } from "./azure-account.api";
 import { ConvertTokenToJson, LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
-import * as identity from "@azure/identity";
 import {
   initializing,
   loggedIn,
@@ -28,7 +25,6 @@ import {
   signedIn,
   signedOut,
   signingIn,
-  subscriptionInfoFile,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as util from "util";
@@ -42,15 +38,8 @@ import {
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as commonUtils from "../debug/commonUtils";
-import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import * as globalVariables from "../globalVariables";
-import accountTreeViewProviderInstance from "../treeview/account/accountTreeViewProvider";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AccessToken, GetTokenOptions, useIdentityPlugin } from "@azure/identity";
 import { vsCodePlugin } from "@azure/identity-vscode";
@@ -120,18 +109,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     return AzureAccountManager.instance;
-  }
-
-  /**
-   * Update TeamsFx project subscription information.
-   */
-  public async updateSubscriptionInfo(): Promise<void> {
-    if (AzureAccountManager.currentStatus === "LoggedIn") {
-      const subscriptioninfo = await this.readSubscription();
-      if (subscriptioninfo) {
-        this.setSubscription(subscriptioninfo.subscriptionId);
-      }
-    }
   }
 
   /**
@@ -301,7 +278,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       await vscode.commands.executeCommand("azure-account.logout");
       AzureAccountManager.tenantId = undefined;
       AzureAccountManager.subscriptionId = undefined;
-      this.clearSubscription();
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -365,14 +341,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
           AzureAccountManager.subscriptionName = item.subscription.displayName;
-          const subscriptionInfo = {
-            subscriptionId: item.subscription.subscriptionId!,
-            subscriptionName: item.subscription.displayName!,
-            tenantId: item.session.tenantId,
-          };
-          if (!isV3Enabled()) {
-            await this.saveSubscription(subscriptionInfo);
-          }
           return;
         }
       }
@@ -423,17 +391,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
-    await this.updateSubscriptionInfo();
     azureAccount.onStatusChanged(async (event: string | undefined) => {
       if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {
           AzureAccountManager.currentStatus = event;
-          if (AzureAccountManager.currentStatus === "LoggedIn") {
-            const subscriptioninfo = await this.readSubscription();
-            if (subscriptioninfo) {
-              this.setSubscription(subscriptioninfo.subscriptionId);
-            }
-          }
           return;
         }
         AzureAccountManager.currentStatus = event;
@@ -451,10 +412,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       } else {
         if (AzureAccountManager.currentStatus === initializing) {
           if (event === loggedIn) {
-            const subscriptioninfo = await this.readSubscription();
-            if (subscriptioninfo) {
-              this.setSubscription(subscriptioninfo.subscriptionId);
-            }
             AzureAccountManager.currentStatus = event;
           } else if (event === loggedOut) {
             AzureAccountManager.currentStatus = event;
@@ -551,63 +508,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         const subId = result.value.result as string;
         await this.setSubscription(subId);
       }
-    }
-  }
-
-  async saveSubscription(subscriptionInfo: SubscriptionInfo): Promise<void> {
-    const subscriptionFilePath = await this.getSubscriptionInfoPath();
-    if (!subscriptionFilePath) {
-      return;
-    } else {
-      await fs.writeFile(subscriptionFilePath, JSON.stringify(subscriptionInfo, null, 4));
-    }
-  }
-
-  async clearSubscription(): Promise<void> {
-    const subscriptionFilePath = await this.getSubscriptionInfoPath();
-    if (!subscriptionFilePath) {
-      return;
-    } else {
-      await fs.writeFile(subscriptionFilePath, "");
-    }
-  }
-
-  async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    const subscriptionFilePath = await this.getSubscriptionInfoPath();
-    if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
-      const solutionSubscriptionInfo = await getSubscriptionInfoFromEnv(
-        environmentManager.getDefaultEnvName()
-      );
-      if (solutionSubscriptionInfo) {
-        await this.saveSubscription(solutionSubscriptionInfo);
-        return solutionSubscriptionInfo;
-      }
-      return undefined;
-    } else {
-      const content = (await fs.readFile(subscriptionFilePath)).toString();
-      if (content.length == 0) {
-        return undefined;
-      }
-      const subcriptionJson = JSON.parse(content);
-      return {
-        subscriptionId: subcriptionJson.subscriptionId,
-        tenantId: subcriptionJson.tenantId,
-        subscriptionName: subcriptionJson.subscriptionName,
-      };
-    }
-  }
-
-  async getSubscriptionInfoPath(): Promise<string | undefined> {
-    if (!isV3Enabled() && globalVariables.workspaceUri) {
-      const workspacePath: string = globalVariables.workspaceUri.fsPath;
-      if (!globalVariables.isTeamsFxProject) {
-        return undefined;
-      }
-      const configRoot = await commonUtils.getProjectRoot(workspacePath, `.${ConfigFolderName}`);
-      const subscriptionFile = path.join(configRoot!, subscriptionInfoFile);
-      return subscriptionFile;
-    } else {
-      return undefined;
     }
   }
 

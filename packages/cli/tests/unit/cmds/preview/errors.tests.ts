@@ -49,10 +49,6 @@ describe("errors", () => {
       errors.PrerequisitesValidationNodejsError("test", "test");
       errors.PrerequisitesValidationM365AccountError("test", "test");
       errors.NpmInstallFailed();
-      errors.M365AccountInfoNotFound();
-      errors.GetTeamsAppInstallationFailed(new Error("test"));
-      errors.NotM365Project();
-      errors.OnlyLaunchPageSupportedInOffice();
       errors.CannotDetectRunCommand();
     } catch (error) {
       actualError = error;

@@ -66,14 +66,19 @@ export interface UIConfig<T> {
  */
 export interface SingleSelectConfig extends UIConfig<string> {
   /**
-   * option array
+   * option array or a callback function which returns option array
    */
-  options: StaticOptions;
+  options: StaticOptions | (() => Promise<StaticOptions>);
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an `OptionItem` object; otherwise, the answer value is the `id` string of the `OptionItem`.
    * In case of option items with `string[]` type, whether `returnObject` is true or false, the returned answer value is always a string.
    */
   returnObject?: boolean;
+
+  /**
+   * whether skip selection if there is only one option, default is false
+   */
+  skipSingleOption?: boolean;
 }
 
 /**
@@ -81,9 +86,9 @@ export interface SingleSelectConfig extends UIConfig<string> {
  */
 export interface MultiSelectConfig extends UIConfig<string[]> {
   /**
-   * option array
+   * option array or a callback function which returns option array
    */
-  options: StaticOptions;
+  options: StaticOptions | (() => Promise<StaticOptions>);
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an array of `OptionItem` objects; otherwise, the answer value is an array of `id` strings.
    * In case of option items with `string[]` type, whether `returnObject` is true or false, the returned answer value is always a string array.
@@ -96,6 +101,11 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
    * @returns the final selected option ids
    */
   onDidChangeSelection?: OnSelectionChangeFunc;
+
+  /**
+   * whether skip selection if there is only one option, default is false
+   */
+  skipSingleOption?: boolean;
 }
 
 /**
@@ -163,6 +173,11 @@ export type SelectFolderConfig = UIConfig<string>;
 export interface ExecuteFuncConfig extends UIConfig<string> {
   func: LocalFunc<any>;
   inputs: Inputs;
+}
+
+export interface SingleFileOrInputConfig extends SelectFileConfig {
+  inputOptionItem: OptionItem;
+  inputBoxConfig: InputTextConfig;
 }
 
 /**
@@ -315,6 +330,16 @@ export interface UserInteraction {
     timeout?: number;
     env?: { [k: string]: string };
   }): Promise<Result<string, FxError>>;
+
+  /**
+   * Shows two options to user, one will open a dialog to the user which allows to select a single file, another one will show an input box asking to enter a value
+   * @param config config to select local file or enter a value
+   * @returns A promise that resolves to the local file path or the value entered by user or FxError
+   * @throws FxError
+   */
+  selectFileOrInput?(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>>;
 }
 
 export interface IProgressHandler {
@@ -337,5 +362,5 @@ export interface IProgressHandler {
    * End the progress bar and tell if success. After calling it, the progress bar will disappear. This handler
    * can be reused after calling end().
    */
-  end: (success: boolean) => Promise<void>;
+  end: (success: boolean, hideAfterFinish?: boolean) => Promise<void>;
 }

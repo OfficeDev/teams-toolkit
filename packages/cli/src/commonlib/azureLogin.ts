@@ -14,18 +14,12 @@ import {
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
-import {
-  CodeFlowLogin,
-  LoginFailureError,
-  ConvertTokenToJson,
-  checkIsOnline,
-} from "./codeFlowLogin";
+import { CodeFlowLogin, ConvertTokenToJson, checkIsOnline } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
 import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
-import { NotFoundSubscriptionId } from "../error";
 import {
   changeLoginTenantMessage,
   env,
@@ -47,7 +41,7 @@ import CLIUIInstance from "../userInteraction";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { isWorkspaceSupported } from "../utils";
-import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -388,13 +382,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
-        if (!isV3Enabled()) {
-          await this.saveSubscription({
-            subscriptionId: item.subscriptionId,
-            subscriptionName: item.subscriptionName,
-            tenantId: item.tenantId,
-          });
-        }
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.teamsFxTokenCredential.setTenantId(item.tenantId);
         AzureAccountManager.subscriptionId = item.subscriptionId;
@@ -402,7 +389,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         return;
       }
     }
-    throw NotFoundSubscriptionId();
+    throw new InvalidAzureSubscriptionError(subscriptionId);
   }
 
   getAccountInfo(): Record<string, string> | undefined {
@@ -481,29 +468,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    if (isV3Enabled()) {
-      return undefined;
-    }
-    const subscriptionFilePath = await this.getSubscriptionInfoPath();
-    if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
-      const solutionSubscriptionInfo = await this.getSubscriptionInfoFromEnv();
-      if (solutionSubscriptionInfo) {
-        await this.saveSubscription(solutionSubscriptionInfo);
-        return solutionSubscriptionInfo;
-      }
-      return undefined;
-    } else {
-      const content = (await fs.readFile(subscriptionFilePath)).toString();
-      if (content.length == 0) {
-        return undefined;
-      }
-      const subcriptionJson = JSON.parse(content);
-      return {
-        subscriptionId: subcriptionJson.subscriptionId,
-        tenantId: subcriptionJson.tenantId,
-        subscriptionName: subcriptionJson.subscriptionName,
-      };
-    }
+    return undefined;
   }
 
   async getSubscriptionInfoPath(): Promise<string | undefined> {
@@ -576,6 +541,7 @@ async function listAll<T>(
 
 import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
 import AzureLoginCI from "./azureLoginCI";
+import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
 
 const ciEnabled = process.env.CI_ENABLED;
 // todo delete ciEnabled

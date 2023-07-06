@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProgressMessages } from "../messages";
-
 export class DeployConstant {
   // deploy error type
   public static readonly DEPLOY_ERROR_TYPE = "DeployError";

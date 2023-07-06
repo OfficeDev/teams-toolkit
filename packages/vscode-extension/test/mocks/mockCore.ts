@@ -1,19 +1,17 @@
 import {
-  Core,
   Inputs,
   Result,
   FxError,
   ok,
   QTreeNode,
-  FunctionRouter,
   Stage,
   Func,
   Void,
   CoreCallbackEvent,
-  CoreCallbackFunc,
 } from "@microsoft/teamsfx-api";
+import { CoreCallbackFunc } from "@microsoft/teamsfx-core";
 
-export class MockCore implements Core {
+export class MockCore {
   constructor() {}
 
   public on(event: CoreCallbackEvent, callback: CoreCallbackFunc): void {
@@ -60,18 +58,7 @@ export class MockCore implements Core {
     return ok("");
   }
 
-  async activateEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-
   async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(new QTreeNode({ type: "group" }));
-  }
-
-  async getQuestionsForUserTask(
-    router: FunctionRouter,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
     return ok(new QTreeNode({ type: "group" }));
   }
 
@@ -92,14 +79,6 @@ export class MockCore implements Core {
   }
 
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
-    return ok("");
-  }
-
-  async getProjectConfig(inputs: Inputs): Promise<Result<any, FxError>> {
-    return ok("");
-  }
-
-  async getProjectConfigV3(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
 
@@ -132,5 +111,32 @@ export class MockCore implements Core {
   }
   async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
     return ok("");
+  }
+  async getProjectId(projectPath: string): Promise<Result<string, FxError>> {
+    return ok("");
+  }
+  async getTeamsAppName(projectPath: string): Promise<Result<string, FxError>> {
+    return ok("");
+  }
+  async getProjectInfo(
+    projectPath: string,
+    env: string
+  ): Promise<
+    Result<
+      {
+        projectId: string;
+        teamsAppId: string;
+        teamsAppName: string;
+        m365TenantId: string;
+      },
+      FxError
+    >
+  > {
+    return ok({
+      projectId: "",
+      teamsAppId: "",
+      teamsAppName: "",
+      m365TenantId: "",
+    });
   }
 }

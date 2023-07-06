@@ -28,7 +28,9 @@ describe("resouce group helper test", () => {
   it("askResourceGroupInfoV3", async () => {
     sandbox.stub(resourceGroupHelper, "listResourceGroups").resolves(ok([["rg1", "loc1"]]));
     sandbox.stub(resourceGroupHelper, "getLocations").resolves(ok(["loc1"]));
-    sandbox.stub(TOOLS.ui, "selectOption").resolves(ok({ type: "success", result: "rg1" }));
+    sandbox
+      .stub(TOOLS.ui, "selectOption")
+      .resolves(ok({ type: "success", result: { id: "rg1", label: "loc1" } }));
     const mockResourceManagementClient = new ResourceManagementClient(
       new MyTokenCredential(),
       "id"

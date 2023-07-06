@@ -116,6 +116,9 @@
 /packages/fx-core/src/common/constants.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/constants.ts @jayzhang @xzf0587 @LongOddCode
 
+/packages/fx-core/src/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77
+/packages/fx-core/tests/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77
+
 /packages/fx-core/src/common/correlator.ts @chagong @jayzhang @LongOddCode
 
 /packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587 @LongOddCode
@@ -153,7 +156,6 @@
 /packages/fx-core/tests/component/middleware/helper.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/middleware/middleware.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/provisionUtils.test.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/tests/component/questionv3.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/resourceGroupHelper.test.ts @jayzhang @xzf0587 @LongOddCode
 
 /packages/fx-core/tests/component/util/azureAccountMock.ts @Siglud @xiaolang124
@@ -171,7 +173,6 @@
 /packages/fx-core/tests/core/middleware/VideoFilterAppBlockerMW.test.ts @a1exwang
 
 /packages/fx-core/tests/core/other.test.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/tests/core/question.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/samples_v2.zip  @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/tools.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/utils.ts @jayzhang @xzf0587 @LongOddCode
@@ -238,8 +239,6 @@
 /packages/fx-core/src/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/tests/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 
-
-/packages/fx-core/src/question @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/src/error @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode

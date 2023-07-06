@@ -1280,6 +1280,9 @@ function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
       id: "input",
       label: getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
     },
+    filters: {
+      files: ["json", "yml", "yaml"],
+    },
   };
 }
 

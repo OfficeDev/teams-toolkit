@@ -535,18 +535,20 @@ export interface Settings {
 export const SettingsFolderName = "teamsfx";
 
 // @public (undocumented)
-export interface SingleFileOrInputConfig extends SelectFileConfig {
-    // (undocumented)
+export interface SingleFileOrInputConfig extends UIConfig<string> {
+    filters?: {
+        [name: string]: string[];
+    };
     inputBoxConfig: InputTextConfig;
-    // (undocumented)
     inputOptionItem: OptionItem;
 }
 
 // @public (undocumented)
 export interface SingleFileOrInputQuestion extends UserInputQuestion {
-    // (undocumented)
+    filters?: {
+        [name: string]: string[];
+    };
     inputBoxConfig: InputTextConfig;
-    // (undocumented)
     inputOptionItem: OptionItem;
     // (undocumented)
     type: "singleFileOrText";
@@ -555,6 +557,9 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
+    filters?: {
+        [name: string]: string[];
+    };
     // (undocumented)
     type: "singleFile";
     validation?: FuncValidation<string>;

@@ -123,6 +123,7 @@ export interface InputTextConfig extends UIConfig<string> {
  */
 export type SelectFileConfig = UIConfig<string> & {
   /**
+   * This will only take effect in VSC.
    * A set of file filters that are used by the dialog. Each entry is a human-readable label,
    * like "TypeScript", and an array of extensions, e.g.
    * ```ts
@@ -150,6 +151,7 @@ export type SelectFileConfig = UIConfig<string> & {
  */
 export type SelectFilesConfig = UIConfig<string[]> & {
   /**
+   * This will only take effect in VSC.
    * A set of file filters that are used by the dialog. Each entry is a human-readable label,
    * like "TypeScript", and an array of extensions, e.g.
    * ```ts
@@ -175,9 +177,29 @@ export interface ExecuteFuncConfig extends UIConfig<string> {
   inputs: Inputs;
 }
 
-export interface SingleFileOrInputConfig extends SelectFileConfig {
+export interface SingleFileOrInputConfig extends UIConfig<string> {
+  /**
+   * An item shown in the list in VSC that user can click to input text.
+   */
   inputOptionItem: OptionItem;
+
+  /**
+   * Config for the input box.
+   */
   inputBoxConfig: InputTextConfig;
+
+  /**
+   * This will only take effect in VSC.
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
 }
 
 /**
@@ -332,7 +354,8 @@ export interface UserInteraction {
   }): Promise<Result<string, FxError>>;
 
   /**
-   * Shows two options to user, one will open a dialog to the user which allows to select a single file, another one will show an input box asking to enter a value
+   * In VSC, it shows two options to user, one will open a dialog to the user which allows to select a single file, another one will show an input box asking to enter a value.
+   * If CLI, it will directly asks user to enter a value.
    * @param config config to select local file or enter a value
    * @returns A promise that resolves to the local file path or the value entered by user or FxError
    * @throws FxError

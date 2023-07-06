@@ -512,7 +512,6 @@ export async function newEnvNameValidation(
   input: string,
   inputs?: Inputs
 ): Promise<string | undefined> {
-  if (!inputs?.projectPath) return "Project path is not defined";
   const targetEnvName = input;
   const match = targetEnvName.match(environmentManager.envNameRegex);
   if (!match) {
@@ -525,7 +524,7 @@ export async function newEnvNameValidation(
       LocalEnvironmentName
     );
   }
-
+  if (!inputs?.projectPath) return "Project path is not defined";
   const envListRes = await envUtil.listEnv(inputs.projectPath, true);
   if (envListRes.isErr()) {
     return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation4");

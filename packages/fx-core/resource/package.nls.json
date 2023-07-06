@@ -376,8 +376,6 @@
   "plugins.bot.FailRetrieveAzureCredentials": "Unable to retrieve Azure credentials.",
   "plugins.bot.ProvisionBotRegistration": "Provisioning bot registration.",
   "plugins.bot.ProvisionBotRegistrationSuccess": "Successfully provisioned bot registration.",
-  "plugins.bot.CheckCommandOutput": "Please check the command output and try to fix it.",
-  "plugins.bot.RunFailedCommand": "Please run failed command '%s' in the folder: '%s'.",
   "plugins.bot.CheckLogAndFix": "Please check log in Output panel and try to fix this issue.",
   "plugins.bot.AppStudioBotRegistration": "Developer Portal bot registration",
   "plugins.function.getTemplateFromLocal": "Unable to get newest template from github, trying to use the local template.",

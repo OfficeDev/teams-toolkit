@@ -525,7 +525,6 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    // TODO: Add feature flag
     const codeLenses: vscode.CodeLens[] = [];
     const text = document.getText();
     const regex = new RegExp(this.schemaRegex);
@@ -541,7 +540,7 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
       );
       const schemaCommand = {
         title: "➕Add another API",
-        command: "fx-extension.addAPI",
+        command: "fx-extension.copilotPluginAddAPI",
       };
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
       return codeLenses;

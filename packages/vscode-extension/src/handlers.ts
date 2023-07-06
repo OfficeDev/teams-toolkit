@@ -2231,22 +2231,7 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
   return result;
 }
 
-export async function editManifestTemplate(args: any[]) {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.EditManifestTemplate,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-
-  if (args && args.length > 0) {
-    const segments = args[0].fsPath.split(".");
-    const env = segments[segments.length - 2] === "local" ? "local" : "remote";
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
-    });
-  }
-}
+export async function copilotPluginAddAPIHandler(args: any[]) {}
 
 export async function editAadManifestTemplate(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(

@@ -220,6 +220,22 @@ describe("User Interaction Tests", function () {
         expect(result.value.result).equals("a");
       }
     });
+
+    it("invalid option", async () => {
+      sandbox.stub(UI, "singleSelect").resolves(ok("c"));
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isErr());
+      if (result.isErr()) {
+        expect(result.error.name).equals("InputValidationError");
+      }
+    });
   });
 
   describe("Multi Select Options", () => {
@@ -342,6 +358,22 @@ describe("User Interaction Tests", function () {
       expect(result.isOk());
       if (result.isOk()) {
         expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("invalid options", async () => {
+      sandbox.stub(UI, "multiSelect").resolves(ok(["c"]));
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isErr());
+      if (result.isErr()) {
+        expect(result.error.name).equals("InputValidationError");
       }
     });
   });

@@ -349,6 +349,7 @@ export class CapabilityOptions {
     return [
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
+      CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       CapabilityOptions.me(),
     ];

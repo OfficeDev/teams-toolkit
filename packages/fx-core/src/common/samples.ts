@@ -2,7 +2,7 @@ import axios from "axios";
 import { sendRequestWithTimeout } from "../component/generator/utils";
 import sampleConfigV3 from "./samples-config-v3.json";
 import { isVideoFilterEnabled } from "./featureFlags";
-import * as packageJson from "../../package.json";
+const packageJson = require("../../package.json");
 
 class configInfo {
   static readonly owner = "OfficeDev";

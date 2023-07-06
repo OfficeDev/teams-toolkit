@@ -167,7 +167,6 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
             title={sample.title}
             description={sample.fullDescription}
             sampleAppFolder={sample.id}
-            sampleAppUrl={sample.link}
             suggested={sample.suggested}
             order={index + 1}
             highlightSample={this.props.highlightSample}

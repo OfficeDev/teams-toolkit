@@ -116,8 +116,8 @@
 /packages/fx-core/src/common/constants.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/constants.ts @jayzhang @xzf0587 @LongOddCode
 
-/packages/fx-core/src/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77
-/packages/fx-core/tests/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77
+/packages/fx-core/src/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77 @tecton
+/packages/fx-core/tests/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77 @tecton
 
 /packages/fx-core/src/common/correlator.ts @chagong @jayzhang @LongOddCode
 

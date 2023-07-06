@@ -1,9 +1,11 @@
 import {
   AppPackageFolderName,
+  AzureAccountProvider,
   BuildFolderName,
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
+  LocalEnvironmentName,
   MultiSelectQuestion,
   OptionItem,
   Platform,
@@ -17,6 +19,7 @@ import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { AppStudioScopes } from "../common/tools";
+import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentManager } from "../core/environment";
@@ -503,4 +506,227 @@ export async function envQuestionCondition(inputs: Inputs): Promise<boolean> {
   }
 
   return false;
+}
+async function newEnvNameValidation(input: string, inputs?: Inputs): Promise<string | undefined> {
+  if (!inputs?.projectPath) return "Project path is not defined";
+  const targetEnvName = input;
+  const match = targetEnvName.match(environmentManager.envNameRegex);
+  if (!match) {
+    return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
+  }
+
+  if (targetEnvName === LocalEnvironmentName) {
+    return getLocalizedString(
+      "core.getQuestionNewTargetEnvironmentName.validation3",
+      LocalEnvironmentName
+    );
+  }
+
+  const envListRes = await envUtil.listEnv(inputs.projectPath, true);
+  if (envListRes.isErr()) {
+    return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation4");
+  }
+
+  inputs!.existingEnvNames = envListRes.value; //cache existing env names
+
+  const found =
+    envListRes.value.find(
+      (env) => env.localeCompare(targetEnvName, undefined, { sensitivity: "base" }) === 0
+    ) !== undefined;
+  if (found) {
+    return getLocalizedString(
+      "core.getQuestionNewTargetEnvironmentName.validation5",
+      targetEnvName
+    );
+  } else {
+    return undefined;
+  }
+}
+export function newTargetEnvQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.NewTargetEnvName,
+    title: getLocalizedString("core.getQuestionNewTargetEnvironmentName.title"),
+    validation: {
+      validFunc: newEnvNameValidation,
+    },
+    placeholder: getLocalizedString("core.getQuestionNewTargetEnvironmentName.placeholder"),
+  };
+}
+export const lastUsedMark = " (last used)";
+let lastUsedEnv: string | undefined;
+
+export function reOrderEnvironments(environments: Array<string>): Array<string> {
+  if (!lastUsedEnv) {
+    return environments;
+  }
+
+  const index = environments.indexOf(lastUsedEnv);
+  if (index === -1) {
+    return environments;
+  }
+
+  return [lastUsedEnv + lastUsedMark]
+    .concat(environments.slice(0, index))
+    .concat(environments.slice(index + 1));
+}
+export function selectSourceEnvQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.SourceEnvName,
+    title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
+    staticOptions: [],
+    dynamicOptions: async (inputs: Inputs) => {
+      if (inputs.existingEnvNames) {
+        const envList = reOrderEnvironments(inputs.existingEnvNames);
+        return envList;
+      } else if (inputs.projectPath) {
+        const envListRes = await envUtil.listEnv(inputs.projectPath, true);
+        if (envListRes.isErr()) {
+          throw envListRes.error;
+        }
+        return reOrderEnvironments(envListRes.value);
+      }
+      return [];
+    },
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
+
+export function createNewEnvQuestionNode(): IQTreeNode {
+  return {
+    data: newTargetEnvQuestion(),
+    children: [
+      {
+        data: selectSourceEnvQuestion(),
+      },
+    ],
+  };
+}
+
+export const newResourceGroupOption = "+ New resource group";
+
+/**
+ * select existing resource group or create new resource group
+ */
+function selectResourceGroupQuestion(
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string
+): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.TargetResourceGroupName,
+    title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
+    staticOptions: [{ id: newResourceGroupOption, label: newResourceGroupOption }],
+    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+      const rmClient = await resourceGroupHelper.createRmClient(
+        azureAccountProvider,
+        subscriptionId
+      );
+      const listRgRes = await resourceGroupHelper.listResourceGroups(rmClient);
+      if (listRgRes.isErr()) throw listRgRes.error;
+      const rgList = listRgRes.value;
+      const options: OptionItem[] = rgList.map((rg) => {
+        return {
+          id: rg[0],
+          label: rg[0],
+          description: rg[1],
+        };
+      });
+      const existingResourceGroupNames = rgList.map((rg) => rg[0]);
+      inputs.existingResourceGroupNames = existingResourceGroupNames; // cache existing resource group names for valiation usage
+      return [{ id: newResourceGroupOption, label: newResourceGroupOption }, ...options];
+    },
+    skipSingleOption: true,
+    returnObject: true,
+    forgetLastValue: true,
+  };
+}
+
+export function validateResourceGroupName(input: string, inputs?: Inputs): string | undefined {
+  const name = input as string;
+  // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
+  const match = name.match(/^[-\w._()]+$/);
+  if (!match) {
+    return getLocalizedString("core.QuestionNewResourceGroupName.validation");
+  }
+
+  // To avoid the issue in CLI that using async func for validation and filter will make users input answers twice,
+  // we check the existence of a resource group from the list rather than call the api directly for now.
+  // Bug: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/15066282
+  // GitHub issue: https://github.com/SBoudrias/Inquirer.js/issues/1136
+  if (inputs?.existingResourceGroupNames) {
+    const maybeExist =
+      inputs.existingResourceGroupNames.findIndex(
+        (o: string) => o.toLowerCase() === input.toLowerCase()
+      ) >= 0;
+    if (maybeExist) {
+      return `resource group already exists: ${name}`;
+    }
+  }
+  return undefined;
+}
+
+export function newResourceGroupNameQuestion(defaultResourceGroupName: string): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.NewResourceGroupName,
+    title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
+    placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
+    // default resource group name will change with env name
+    forgetLastValue: true,
+    default: defaultResourceGroupName,
+    validation: {
+      validFunc: validateResourceGroupName,
+    },
+  };
+}
+
+function selectResourceGroupLocationQuestion(
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string
+): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.NewResourceGroupLocation,
+    title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
+    staticOptions: [],
+    dynamicOptions: async (inputs: Inputs) => {
+      const rmClient = await resourceGroupHelper.createRmClient(
+        azureAccountProvider,
+        subscriptionId
+      );
+      const getLocationsRes = await resourceGroupHelper.getLocations(
+        azureAccountProvider,
+        rmClient
+      );
+      if (getLocationsRes.isErr()) {
+        throw getLocationsRes.error;
+      }
+      return getLocationsRes.value;
+    },
+    default: "East US",
+  };
+}
+
+export function resourceGroupQuestionNode(
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string,
+  defaultResourceGroupName: string
+): IQTreeNode {
+  return {
+    data: selectResourceGroupQuestion(azureAccountProvider, subscriptionId),
+    children: [
+      {
+        condition: { equals: newResourceGroupOption },
+        data: newResourceGroupNameQuestion(defaultResourceGroupName),
+        children: [
+          {
+            data: selectResourceGroupLocationQuestion(azureAccountProvider, subscriptionId),
+          },
+        ],
+      },
+    ],
+  };
 }

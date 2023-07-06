@@ -64,7 +64,7 @@ import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../erro
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { QuestionNames } from "../question/questionNames";
-import { isAadMainifestContainsPlaceholder } from "../question/other";
+import { isAadMainifestContainsPlaceholder, lastUsedMark } from "../question/other";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError, ObjectIsUndefinedError } from "./error";
 import { TOOLS } from "./globalVars";
@@ -483,24 +483,16 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
-  async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!ctx || !inputs.projectPath)
-      return err(new ObjectIsUndefinedError("createEnv input stuff"));
-
-    const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
-    if (
-      !createEnvCopyInput ||
-      !createEnvCopyInput.targetEnvName ||
-      !createEnvCopyInput.sourceEnvName
-    ) {
-      return err(new UserCancelError("core"));
+  @hooks([ErrorHandlerMW, QuestionMW(questions.createNewEnv), ConcurrentLockerMW])
+  async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
+    let sourceEnvName = inputs[QuestionNames.SourceEnvName] as string;
+    if (sourceEnvName?.endsWith(lastUsedMark)) {
+      sourceEnvName = sourceEnvName.slice(0, sourceEnvName.indexOf(lastUsedMark));
     }
-
     return this.createEnvCopyV3(
-      createEnvCopyInput.targetEnvName,
-      createEnvCopyInput.sourceEnvName,
-      inputs.projectPath
+      inputs[QuestionNames.NewTargetEnvName]!,
+      sourceEnvName,
+      inputs.projectPath!
     );
   }
 

@@ -22,10 +22,16 @@ import { QuestionNames, SPFxImportFolderQuestion, questions } from "../../src/qu
 import {
   envQuestionCondition,
   isAadMainifestContainsPlaceholder,
+  newResourceGroupOption,
+  resourceGroupQuestionNode,
   selectAadAppManifestQuestionNode,
+  validateResourceGroupName,
 } from "../../src/question/other";
 import { MockTools, MockUserInteraction } from "../core/utils";
 import { callFuncs } from "./create.test";
+import { MockedAzureTokenProvider } from "../core/other.test";
+import { ResourceManagementClient } from "@azure/arm-resources";
+import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 
 const ui = new MockUserInteraction();
 
@@ -727,5 +733,114 @@ describe("envQuestionCondition", async () => {
     };
     const res = await envQuestionCondition(inputs);
     assert.isFalse(res);
+  });
+});
+
+describe("resourceGroupQuestionNode", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("validateResourceGroupName invalid pattern", () => {
+    const res = validateResourceGroupName("!!!!!", { platform: Platform.VSCode });
+    assert.isTrue(res !== undefined);
+  });
+  it("validateResourceGroupName already exists", () => {
+    const res = validateResourceGroupName("myrg123", {
+      platform: Platform.VSCode,
+      existingResourceGroupNames: ["myrg123"],
+    });
+    assert.isTrue(res !== undefined);
+  });
+  it("create new resource group success", async () => {
+    sandbox.stub(resourceGroupHelper, "listResourceGroups").resolves(
+      ok([
+        ["g1", "East US"],
+        ["g2", "Center US"],
+      ])
+    );
+    sandbox.stub(resourceGroupHelper, "getLocations").resolves(ok(["East US", "Center US"]));
+    const mockSubscriptionId = "mockSub";
+    const defaultRG = "defaultRG";
+    const accountProvider = new MockedAzureTokenProvider();
+    const mockToken = await accountProvider.getIdentityCredentialAsync();
+    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
+    sandbox.stub(resourceGroupHelper, "createRmClient").resolves(mockRmClient);
+    const node = resourceGroupQuestionNode(accountProvider, mockSubscriptionId, defaultRG);
+    assert.isTrue(node !== undefined);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs, "testrg123");
+      if (question.name === QuestionNames.TargetResourceGroupName) {
+        return ok({
+          type: "success",
+          result: { id: newResourceGroupOption, label: newResourceGroupOption },
+        });
+      } else if (question.name === QuestionNames.NewResourceGroupName) {
+        return ok({ type: "success", result: "testrg123" });
+      } else if (question.name === QuestionNames.NewResourceGroupLocation) {
+        return ok({ type: "success", result: "East US" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(node, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [
+      QuestionNames.TargetResourceGroupName,
+      QuestionNames.NewResourceGroupName,
+      QuestionNames.NewResourceGroupLocation,
+    ]);
+  });
+
+  it("select existing resource group", async () => {
+    sandbox.stub(resourceGroupHelper, "listResourceGroups").resolves(
+      ok([
+        ["g1", "East US"],
+        ["g2", "Center US"],
+      ])
+    );
+    const mockSubscriptionId = "mockSub";
+    const defaultRG = "defaultRG";
+    const accountProvider = new MockedAzureTokenProvider();
+    const mockToken = await accountProvider.getIdentityCredentialAsync();
+    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
+    sandbox.stub(resourceGroupHelper, "createRmClient").resolves(mockRmClient);
+    const node = resourceGroupQuestionNode(accountProvider, mockSubscriptionId, defaultRG);
+    assert.isTrue(node !== undefined);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs);
+      if (question.name === QuestionNames.TargetResourceGroupName) {
+        return ok({
+          type: "success",
+          result: { id: "g1", label: newResourceGroupOption },
+        });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    await traverse(node, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [QuestionNames.TargetResourceGroupName]);
   });
 });

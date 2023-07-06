@@ -11,12 +11,6 @@ class configInfo {
   static readonly file = ".config/samples-config-v3.json";
 }
 
-class preReleaseConfig {
-  static readonly baseUrl = "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/";
-  static readonly defaultPackageLink =
-    "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip";
-}
-
 export interface SampleInfo {
   id: string;
   title: string;
@@ -69,12 +63,7 @@ class SampleProvider {
         time: sample.time,
         configuration: sample.configuration,
         suggested: sample.suggested,
-        url: (sample as any).url
-          ? (sample as any).url
-          : `${
-              (this.isStableRelease() ? this.sampleConfigs ?? sampleConfigV3 : preReleaseConfig)
-                .baseUrl
-            }${sample.id}`,
+        url: (sample as any).url ? (sample as any).url : `${this.getBaseSampleUrl()}${sample.id}`,
       } as SampleInfo;
     });
 
@@ -94,12 +83,15 @@ class SampleProvider {
     return this.sampleCollection;
   }
 
-  private isStableRelease(): boolean {
-    const version = packageJson.version;
-    if (version.includes("alpha") || version.includes("beta") || version.includes("rc")) {
-      return false;
+  private getBaseSampleUrl(): string {
+    const version: string = packageJson.version;
+    if (version.includes("alpha")) {
+      return "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/";
     }
-    return true;
+    if (version.includes("rc")) {
+      return "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/";
+    }
+    return this.sampleConfigs ?? sampleConfigV3.baseUrl;
   }
 }
 

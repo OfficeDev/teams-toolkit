@@ -485,19 +485,17 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        for (const index of indexes) {
-          if (index < 0) {
-            const error = new InputValidationError(
-              config.name,
-              util.format(
-                strings["error.InvalidOptionErrorReason"],
-                result.value,
-                choices.map((choice) => choice.name).join(",")
-              )
-            );
-            error.source = cliSource;
-            resolve(err(error));
-          }
+        if (indexes.length === 0) {
+          const error = new InputValidationError(
+            config.name,
+            util.format(
+              strings["error.InvalidOptionErrorReason"],
+              result.value.join(","),
+              choices.map((choice) => choice.name).join(",")
+            )
+          );
+          error.source = cliSource;
+          resolve(err(error));
         }
         const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
         if (config.returnObject) {

@@ -58,7 +58,6 @@ describe("Samples", () => {
       suggested: false,
       url: "https://faked-external-sample",
       packageLink: "https://faked-external-sample/archive/refs/heads/main.zip",
-      relativePath: "faked-external-sample",
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
@@ -67,7 +66,6 @@ describe("Samples", () => {
     chai.expect(faked).exist;
     chai.expect(faked?.url).equals(fakedExternalSample.url);
     chai.expect(faked?.link).equals(fakedExternalSample.packageLink);
-    chai.expect(faked?.relativePath).equals(fakedExternalSample.relativePath);
 
     restore();
     (sampleProvider as any).sampleCollection = undefined;

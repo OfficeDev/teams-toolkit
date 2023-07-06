@@ -120,8 +120,6 @@ export default class SampleGallery extends React.Component<any, any> {
             title={hightSample.title}
             description={hightSample.fullDescription}
             sampleAppFolder={hightSample.id}
-            sampleAppUrl={hightSample.link}
-            relativePath={hightSample.relativePath}
             highlightSample={this.highlightSample}
           ></SampleDetailPage>
         )}

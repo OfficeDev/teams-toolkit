@@ -25,10 +25,8 @@ export interface SampleInfo {
   tags: string[];
   time: string;
   configuration: string;
-  link: string;
   suggested: boolean;
   url: string;
-  relativePath?: string;
 }
 
 interface SampleCollection {
@@ -70,19 +68,13 @@ class SampleProvider {
         tags: sample.tags,
         time: sample.time,
         configuration: sample.configuration,
-        link:
-          (sample as any).packageLink ??
-          (this.isStableRelease() ? this.sampleConfigs ?? sampleConfigV3 : preReleaseConfig)
-            .defaultPackageLink,
         suggested: sample.suggested,
-        url:
-          (sample as any).relativePath && (sample as any).url
-            ? (sample as any).url
-            : `${
-                (this.isStableRelease() ? this.sampleConfigs ?? sampleConfigV3 : preReleaseConfig)
-                  .baseUrl
-              }${sample.id}`,
-        relativePath: (sample as any).relativePath,
+        url: (sample as any).url
+          ? (sample as any).url
+          : `${
+              (this.isStableRelease() ? this.sampleConfigs ?? sampleConfigV3 : preReleaseConfig)
+                .baseUrl
+            }${sample.id}`,
       } as SampleInfo;
     });
 

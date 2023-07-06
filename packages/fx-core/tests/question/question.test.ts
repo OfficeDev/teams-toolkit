@@ -874,7 +874,14 @@ describe("createNewEnvQuestionNode", async () => {
     });
     assert.isTrue(res !== undefined);
   });
-
+  it("newEnvNameValidation listEnv return error", () => {
+    sandbox.stub(envUtil, "listEnv").resolves(err(new UserError({})));
+    const res = newEnvNameValidation("dev1", {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    });
+    assert.isTrue(res !== undefined);
+  });
   it("happy path", async () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev1", "dev2"]));
     const node = createNewEnvQuestionNode();

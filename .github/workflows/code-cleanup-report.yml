@@ -48,12 +48,7 @@ jobs:
     - name: Detect missing header file
       continue-on-error: true
       run: |
-        npx eslint --no-eslintrc --plugin header --rule '{"header/header": [2, "../eslint-plugin-teamsfx/config/header.js"]}' --parser-options ecmaVersion:2018 --parser-options sourceType:"module" --parser '@typescript-eslint/parser' --plugin "@typescript-eslint" src/**/*.ts --format json --output-file header-check.json
-      working-directory: packages/${{matrix.package}}
-
-    - name:  Calculate missing header
-      run: |
-        node ../eslint-plugin-teamsfx/lib/calcHeader.js
+        npx eslint --no-eslintrc --plugin header --rule '{"header/header": [2, "../eslint-plugin-teamsfx/config/header.js"]}' --parser-options ecmaVersion:2018 --parser-options sourceType:"module" --parser '@typescript-eslint/parser' --plugin "@typescript-eslint" src/**/*.ts --format unix
       working-directory: packages/${{matrix.package}}
 
 

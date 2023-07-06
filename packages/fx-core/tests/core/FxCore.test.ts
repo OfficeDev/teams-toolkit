@@ -1260,6 +1260,7 @@ describe("isEnvFile", async () => {
       mockedEnvRestore();
     });
     it("happy path", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
       assert.isTrue(res.isOk());

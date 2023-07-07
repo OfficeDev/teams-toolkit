@@ -51,7 +51,6 @@ jobs:
       working-directory: packages/${{matrix.package}}
 
     - name: Detect missing header file
-      continue-on-error: true
       run: |
         npx eslint  src/**/*.ts --format unix
       working-directory: packages/${{matrix.package}}

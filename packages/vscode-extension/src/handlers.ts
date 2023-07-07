@@ -13,40 +13,21 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import {
-  commands,
-  window,
-  workspace,
-  Uri,
-  QuickPickItem,
-  env,
-  debug,
-  ExtensionContext,
-} from "vscode";
-import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
   CoreCallbackEvent,
-  EnvConfigFileNameTemplate,
-  EnvNamePlaceholder,
-  EnvStateFileNameTemplate,
-  err,
   Func,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   M365TokenProvider,
-  ok,
   OptionItem,
   Platform,
-  ProjectConfigV3,
-  ProjectSettingsFileName,
   Result,
   SelectFileConfig,
   SelectFolderConfig,
   SingleSelectConfig,
   Stage,
-  StatesFolderName,
   StaticOptions,
   SubscriptionInfo,
   SystemError,
@@ -55,37 +36,37 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
+import * as commonTools from "@microsoft/teamsfx-core";
 import {
+  TelemetryUtils as AppManifestUtils,
+  AppStudioClient,
   AppStudioScopes,
+  AuthSvcScopes,
+  ConcurrentError,
+  CoreQuestionNames,
+  Correlator,
+  DepsManager,
+  DepsType,
   FxCore,
+  Hub,
+  InvalidProjectError,
   askSubscription,
+  assembleError,
+  environmentManager,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  isUserCancelError,
-  isV3Enabled,
-  assembleError,
-  ConcurrentError,
-  setRegion,
-  AuthSvcScopes,
-  isImportSPFxEnabled,
-} from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import {
   globalStateGet,
   globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
-import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
-import { TelemetryUtils as AppManifestUtils } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/telemetry";
-import { pathUtils } from "@microsoft/teamsfx-core/build/component/utils/pathUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
-import { InvalidProjectError } from "@microsoft/teamsfx-core/build/error/common";
+  isImportSPFxEnabled,
+  isUserCancelError,
+  isValidProject,
+  pathUtils,
+  setRegion,
+} from "@microsoft/teamsfx-core";
+import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -93,15 +74,10 @@ import { signedIn, signedOut } from "./commonlib/common/constant";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
-  AadManifestDeployConstants,
-  AzureAssignRoleHelpUrl,
   AzurePortalUrl,
-  CLI_FOR_M365,
   DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
-  SpfxManageSiteAdminUrl,
-  SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
@@ -138,8 +114,6 @@ import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   anonymizeFilePaths,
   getAppName,
-  getM365TenantFromEnv,
-  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
@@ -150,7 +124,6 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { compare } from "./utils/versionUtil";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -287,7 +260,8 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   let needRefresh = false;
   for (const file of files) {
     // check if file is env config
-    if (environmentManager.isEnvConfig(workspacePath, file.fsPath)) {
+    const res = await core.isEnvFile(workspacePath, file.fsPath);
+    if (res.isOk() && res.value) {
       needRefresh = true;
       break;
     }
@@ -299,14 +273,6 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
 }
 
 export function addFileSystemWatcher(workspacePath: string) {
-  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-    "**/unify-config-and-aad-manifest-change-logs.md"
-  );
-
-  unifyConfigWatcher.onDidCreate(async (event) => {
-    await openUnifyConfigMd(workspacePath, event.fsPath);
-  });
-
   if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
     const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
@@ -348,31 +314,12 @@ export async function sendSDKVersionTelemetry(filePath: string) {
   });
 }
 
-async function openUnifyConfigMd(workspacePath: string, filePath: string) {
-  const backupName = ".backup";
-  const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
-  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
-  await openPreviewMarkDown(filePath, changeLogsPath);
-}
-
-async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
-  if (changeLogsPath !== filePath) {
-    return;
-  }
-  const uri = Uri.file(changeLogsPath);
-
-  workspace.openTextDocument(uri).then(() => {
-    const PreviewMarkdownCommand = "markdown.showPreview";
-    commands.executeCommand(PreviewMarkdownCommand, uri);
-  });
-}
-
 async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePath: string) {
   const projectSettingsPath = path.resolve(
     workspacePath,
     `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
+    "configs",
+    "projectSettings.json"
   );
 
   // check if file is project config
@@ -476,10 +423,12 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
 
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+  const properties: { [key: string]: string } = {};
 
   try {
     const inputs = getSystemInputs();
     inputs.env = env;
+    properties[TelemetryProperty.Env] = env;
 
     const result = await core.previewWithManifest(inputs);
     if (result.isErr()) {
@@ -488,17 +437,23 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
     const url = result.value as string;
+    properties[TelemetryProperty.Hub] = hub;
 
     await openHubWebClient(hub, url);
   } catch (error) {
     const assembledError = assembleError(error);
     showError(assembledError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, assembledError);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.TreeViewPreview,
+      assembledError,
+      properties
+    );
     return err(assembledError);
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    ...properties,
   });
   return ok(null);
 }
@@ -735,6 +690,7 @@ export async function runCommand(
         if (!isImportSPFxEnabled()) {
           inputs["spfx-solution"] = "new";
         }
+        inputs["scratch"] = "yes";
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -779,10 +735,6 @@ export async function runCommand(
       }
       case Stage.createEnv: {
         result = await core.createEnv(inputs);
-        break;
-      }
-      case Stage.listCollaborator: {
-        result = await core.listCollaborator(inputs);
         break;
       }
       case Stage.publishInDeveloperPortal: {
@@ -916,7 +868,7 @@ async function processResult(
 
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.env);
+    const appInfo = await getTeamsAppTelemetryInfoByEnv(inputs.env);
     if (appInfo) {
       envProperty[TelemetryProperty.AppId] = appInfo.appId;
       envProperty[TelemetryProperty.TenantId] = appInfo.tenantId;
@@ -999,14 +951,12 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
-  if (isV3Enabled()) {
-    try {
-      await commonUtils.triggerV3Migration();
-      return undefined;
-    } catch (error: any) {
-      showError(error);
-      return "1";
-    }
+  try {
+    await commonUtils.triggerV3Migration();
+    return undefined;
+  } catch (error: any) {
+    showError(error);
+    return "1";
   }
 }
 
@@ -1021,14 +971,12 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  if (isV3Enabled()) {
-    try {
-      await commonUtils.triggerV3Migration();
-      return undefined;
-    } catch (error: any) {
-      showError(error);
-      return "1";
-    }
+  try {
+    await commonUtils.triggerV3Migration();
+    return undefined;
+  } catch (error: any) {
+    showError(error);
+    return "1";
   }
 }
 
@@ -1036,14 +984,12 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
  * Prompt window to let user install the app in Teams
  */
 export async function installAppInTeams(): Promise<string | undefined> {
-  if (isV3Enabled()) {
-    try {
-      await commonUtils.triggerV3Migration();
-      return undefined;
-    } catch (error: any) {
-      showError(error);
-      return "1";
-    }
+  try {
+    await commonUtils.triggerV3Migration();
+    return undefined;
+  } catch (error: any) {
+    showError(error);
+    return "1";
   }
 }
 
@@ -1069,14 +1015,12 @@ export async function validateGetStartedPrerequisitesHandler(
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
-  if (isV3Enabled()) {
-    try {
-      await commonUtils.triggerV3Migration();
-      return undefined;
-    } catch (error: any) {
-      showError(error);
-      return "1";
-    }
+  try {
+    await commonUtils.triggerV3Migration();
+    return undefined;
+  } catch (error: any) {
+    showError(error);
+    return "1";
   }
 }
 
@@ -1112,14 +1056,12 @@ export async function getDotnetPathHandler(): Promise<string> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
-  if (isV3Enabled()) {
-    try {
-      await commonUtils.triggerV3Migration();
-      return undefined;
-    } catch (error: any) {
-      showError(error);
-      return "1";
-    }
+  try {
+    await commonUtils.triggerV3Migration();
+    return undefined;
+  } catch (error: any) {
+    showError(error);
+    return "1";
   }
 }
 
@@ -1228,32 +1170,27 @@ export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, 
 }
 
 export async function checkUpgrade(args?: any[]) {
-  if (isV3Enabled()) {
-    const triggerFrom = getTriggerFromProperty(args);
-    const input = getSystemInputs();
-    if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
-      input["isNonmodalMessage"] = true;
-      // not await here to avoid blocking the UI.
-      core.phantomMigrationV3(input).then((result) => {
-        if (result.isErr()) {
-          showError(result.error);
-        }
-      });
-      return;
-    } else if (
-      triggerFrom[TelemetryProperty.TriggerFrom] &&
-      (triggerFrom[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar ||
-        triggerFrom[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.CommandPalette)
-    ) {
-      input["skipUserConfirm"] = true;
-    }
-    const result = await core.phantomMigrationV3(input);
-    if (result.isErr()) {
-      showError(result.error);
-    }
-  } else {
-    // just for triggering upgrade check for multi-env && bicep.
-    await runCommand(Stage.listCollaborator);
+  const triggerFrom = getTriggerFromProperty(args);
+  const input = getSystemInputs();
+  if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
+    input["isNonmodalMessage"] = true;
+    // not await here to avoid blocking the UI.
+    core.phantomMigrationV3(input).then((result) => {
+      if (result.isErr()) {
+        showError(result.error);
+      }
+    });
+    return;
+  } else if (
+    triggerFrom[TelemetryProperty.TriggerFrom] &&
+    (triggerFrom[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.SideBar ||
+      triggerFrom[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.CommandPalette)
+  ) {
+    input["skipUserConfirm"] = true;
+  }
+  const result = await core.phantomMigrationV3(input);
+  if (result.isErr()) {
+    showError(result.error);
   }
 }
 
@@ -1459,7 +1396,7 @@ async function showLocalDebugMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
-  const appName = getAppName() ?? "Teams App";
+  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
   let message = util.format(
     localize("teamstoolkit.handlers.localDebugDescription.fallback"),
@@ -1500,7 +1437,7 @@ async function showLocalPreviewMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
-  const appName = getAppName() ?? "Teams App";
+  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
   let message = util.format(
     localize("teamstoolkit.handlers.localPreviewDescription.fallback"),
@@ -2111,57 +2048,6 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
   }
 }
 
-export async function openPreviewManifest(args: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, getTriggerFromProperty(args));
-
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
-  const validProject = isValidProject(workspacePath);
-  if (!validProject) {
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.PreviewManifestFile,
-      new InvalidProjectError()
-    );
-    return err(new InvalidProjectError());
-  }
-
-  let isLocalDebug = false;
-  let envName = "";
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, selectedEnv.error);
-    return err(selectedEnv.error);
-  }
-  envName = selectedEnv.value;
-  isLocalDebug = envName === "local";
-
-  const res = await buildPackageHandler(isLocalDebug ? ["localDebug"] : ["remote", envName]);
-  if (res.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-    return err(res.error);
-  }
-  const manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${
-    isLocalDebug ? "local" : envName
-  }.json`;
-
-  if (fs.existsSync(manifestFile)) {
-    workspace.openTextDocument(manifestFile).then((document) => {
-      window.showTextDocument(document);
-    });
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
-    return ok(manifestFile);
-  } else {
-    const error = new SystemError(
-      ExtensionSource,
-      "FileNotFound",
-      util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
-    );
-    showError(error);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, error);
-    return err(error);
-  }
-}
 export async function openConfigStateFile(args: any[]): Promise<any> {
   let telemetryStartName = TelemetryEvent.OpenManifestConfigStateStart;
   let telemetryName = TelemetryEvent.OpenManifestConfigState;
@@ -2210,13 +2096,13 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
 
     if (args[0].type === "config") {
       sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env)
+        `${workspacePath}/.${ConfigFolderName}/configs/`,
+        `config.${env}.json`
       );
     } else if (args[0].type === "state") {
       sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
+        `${workspacePath}/.${ConfigFolderName}/states/`,
+        `state.${env}.json`
       );
     } else {
       // Load env folder from yml
@@ -2323,12 +2209,6 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
         env = result[1];
       }
     }
-  }
-
-  if (env && env !== "local") {
-    const inputs = getSystemInputs();
-    inputs.env = env;
-    await core.activateEnv(inputs);
   }
 
   const inputs = getSystemInputs();
@@ -2624,26 +2504,7 @@ export async function openLifecycleTreeview(args?: any[]) {
 export async function updateAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
-  if (isV3Enabled()) {
-    return await runCommand(Stage.deployAad, inputs);
-  }
-  inputs[AadManifestDeployConstants.INCLUDE_AAD_MANIFEST] = "yes";
-
-  if (args && args.length > 1 && args[1] === "CodeLens") {
-    const segments = args[0].fsPath.split(".");
-    const env = segments[segments.length - 2];
-    inputs.env = env;
-  } else {
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DeployAadManifest, selectedEnv.error);
-      return err(selectedEnv.error);
-    }
-    const envName = selectedEnv.value;
-    inputs.env = envName;
-  }
-
-  return await runCommand(Stage.deploy, inputs);
+  return await runCommand(Stage.deployAad, inputs);
 }
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {
@@ -2651,243 +2512,129 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   const config: SingleSelectConfig = {
     name: "tutorialName",
     title: localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
-    options:
-      isV3Enabled() && globalVariables.isSPFxProject
-        ? [
-            {
-              id: "cicdPipeline",
-              label: `${localize("teamstoolkit.guides.cicdPipeline.label")}`,
-              detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
-              groupName: localize("teamstoolkit.guide.development"),
-              data: "https://aka.ms/teamsfx-add-cicd-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-          ]
-        : [
-            {
-              id: "cardActionResponse",
-              label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,
-              detail: localize("teamstoolkit.guides.cardActionResponse.detail"),
-              groupName: localize("teamstoolkit.guide.scenario"),
-              data: "https://aka.ms/teamsfx-workflow-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "sendNotification",
-              label: `${localize("teamstoolkit.guides.sendNotification.label")}`,
-              detail: localize("teamstoolkit.guides.sendNotification.detail"),
-              groupName: localize("teamstoolkit.guide.scenario"),
-              data: "https://aka.ms/teamsfx-notification-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "commandAndResponse",
-              label: `${localize("teamstoolkit.guides.commandAndResponse.label")}`,
-              detail: localize("teamstoolkit.guides.commandAndResponse.detail"),
-              groupName: localize("teamstoolkit.guide.scenario"),
-              data: "https://aka.ms/teamsfx-command-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "dashboardApp",
-              label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
-              detail: localize("teamstoolkit.guides.dashboardApp.detail"),
-              groupName: localize("teamstoolkit.guide.scenario"),
-              data: "https://aka.ms/teamsfx-dashboard-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addTab",
-              label: `${localize("teamstoolkit.guides.addTab.label")}`,
-              detail: localize("teamstoolkit.guides.addTab.detail"),
-              groupName: localize("teamstoolkit.guide.capability"),
-              data: "https://aka.ms/teamsfx-add-tab",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addBot",
-              label: `${localize("teamstoolkit.guides.addBot.label")}`,
-              detail: localize("teamstoolkit.guides.addBot.detail"),
-              groupName: localize("teamstoolkit.guide.capability"),
-              data: "https://aka.ms/teamsfx-add-bot",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addME",
-              label: `${localize("teamstoolkit.guides.addME.label")}`,
-              detail: localize("teamstoolkit.guides.addME.detail"),
-              groupName: localize("teamstoolkit.guide.capability"),
-              data: "https://aka.ms/teamsfx-add-message-extension",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            ...[
+    options: globalVariables.isSPFxProject
+      ? [
+          {
+            id: "cicdPipeline",
+            label: `${localize("teamstoolkit.guides.cicdPipeline.label")}`,
+            detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
+            groupName: localize("teamstoolkit.guide.development"),
+            data: "https://aka.ms/teamsfx-add-cicd-new",
+            buttons: [
               {
-                id: "addOutlookAddin",
-                label: `${localize("teamstoolkit.guides.addOutlookAddin.label")}`,
-                detail: localize("teamstoolkit.guides.addOutlookAddin.detail"),
-                groupName: localize("teamstoolkit.guide.capability"),
-                data: "https://aka.ms/teamsfx-add-outlook-add-in",
-                buttons: [
-                  {
-                    iconPath: "file-symlink-file",
-                    tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                    command: "fx-extension.openTutorial",
-                  },
-                ],
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
               },
             ],
+          },
+        ]
+      : [
+          {
+            id: "cardActionResponse",
+            label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,
+            detail: localize("teamstoolkit.guides.cardActionResponse.detail"),
+            groupName: localize("teamstoolkit.guide.scenario"),
+            data: "https://aka.ms/teamsfx-workflow-new",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "sendNotification",
+            label: `${localize("teamstoolkit.guides.sendNotification.label")}`,
+            detail: localize("teamstoolkit.guides.sendNotification.detail"),
+            groupName: localize("teamstoolkit.guide.scenario"),
+            data: "https://aka.ms/teamsfx-notification-new",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "commandAndResponse",
+            label: `${localize("teamstoolkit.guides.commandAndResponse.label")}`,
+            detail: localize("teamstoolkit.guides.commandAndResponse.detail"),
+            groupName: localize("teamstoolkit.guide.scenario"),
+            data: "https://aka.ms/teamsfx-command-new",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "dashboardApp",
+            label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
+            detail: localize("teamstoolkit.guides.dashboardApp.detail"),
+            groupName: localize("teamstoolkit.guide.scenario"),
+            data: "https://aka.ms/teamsfx-dashboard-new",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "addTab",
+            label: `${localize("teamstoolkit.guides.addTab.label")}`,
+            detail: localize("teamstoolkit.guides.addTab.detail"),
+            groupName: localize("teamstoolkit.guide.capability"),
+            data: "https://aka.ms/teamsfx-add-tab",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "addBot",
+            label: `${localize("teamstoolkit.guides.addBot.label")}`,
+            detail: localize("teamstoolkit.guides.addBot.detail"),
+            groupName: localize("teamstoolkit.guide.capability"),
+            data: "https://aka.ms/teamsfx-add-bot",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "addME",
+            label: `${localize("teamstoolkit.guides.addME.label")}`,
+            detail: localize("teamstoolkit.guides.addME.detail"),
+            groupName: localize("teamstoolkit.guide.capability"),
+            data: "https://aka.ms/teamsfx-add-message-extension",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          ...[
             {
-              id: "addSso",
-              label: `${localize("teamstoolkit.guides.addSso.label")}`,
-              detail: localize("teamstoolkit.guides.addSso.detail"),
-              groupName: localize("teamstoolkit.guide.development"),
-              data: "https://aka.ms/teamsfx-add-sso-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "connectApi",
-              label: `${localize("teamstoolkit.guides.connectApi.label")}`,
-              detail: localize("teamstoolkit.guides.connectApi.detail"),
-              groupName: localize("teamstoolkit.guide.development"),
-              data: "https://aka.ms/teamsfx-add-api-connection-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "cicdPipeline",
-              label: `${localize("teamstoolkit.guides.cicdPipeline.label")}`,
-              detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
-              groupName: localize("teamstoolkit.guide.development"),
-              data: "https://aka.ms/teamsfx-add-cicd-new",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "mobilePreview",
-              label: `${localize("teamstoolkit.guides.mobilePreview.label")}`,
-              detail: localize("teamstoolkit.guides.mobilePreview.detail"),
-              groupName: localize("teamstoolkit.guide.development"),
-              data: "https://aka.ms/teamsfx-mobile",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addAzureFunction",
-              label: localize("teamstoolkit.guides.addAzureFunction.label"),
-              detail: localize("teamstoolkit.guides.addAzureFunction.detail"),
-              groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
-              data: "https://aka.ms/teamsfx-add-azure-function",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addAzureSql",
-              label: localize("teamstoolkit.guides.addAzureSql.label"),
-              detail: localize("teamstoolkit.guides.addAzureSql.detail"),
-              groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
-              data: "https://aka.ms/teamsfx-add-azure-sql",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addAzureAPIM",
-              label: localize("teamstoolkit.guides.addAzureAPIM.label"),
-              detail: localize("teamstoolkit.guides.addAzureAPIM.detail"),
-              groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
-              data: "https://aka.ms/teamsfx-add-azure-apim",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-            {
-              id: "addAzureKeyVault",
-              label: localize("teamstoolkit.guides.addAzureKeyVault.label"),
-              detail: localize("teamstoolkit.guides.addAzureKeyVault.detail"),
-              groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
-              data: "https://aka.ms/teamsfx-add-azure-keyvault",
+              id: "addOutlookAddin",
+              label: `${localize("teamstoolkit.guides.addOutlookAddin.label")}`,
+              detail: localize("teamstoolkit.guides.addOutlookAddin.detail"),
+              groupName: localize("teamstoolkit.guide.capability"),
+              data: "https://aka.ms/teamsfx-add-outlook-add-in",
               buttons: [
                 {
                   iconPath: "file-symlink-file",
@@ -2897,6 +2644,133 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
               ],
             },
           ],
+          {
+            id: "addSso",
+            label: `${localize("teamstoolkit.guides.addSso.label")}`,
+            detail: localize("teamstoolkit.guides.addSso.detail"),
+            groupName: localize("teamstoolkit.guide.development"),
+            data: "https://aka.ms/teamsfx-add-sso-new",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "connectApi",
+            label: `${localize("teamstoolkit.guides.connectApi.label")}`,
+            detail: localize("teamstoolkit.guides.connectApi.detail"),
+            groupName: localize("teamstoolkit.guide.development"),
+            data: "https://aka.ms/teamsfx-add-api-connection-new",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "cicdPipeline",
+            label: `${localize("teamstoolkit.guides.cicdPipeline.label")}`,
+            detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
+            groupName: localize("teamstoolkit.guide.development"),
+            data: "https://aka.ms/teamsfx-add-cicd-new",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "mobilePreview",
+            label: `${localize("teamstoolkit.guides.mobilePreview.label")}`,
+            detail: localize("teamstoolkit.guides.mobilePreview.detail"),
+            groupName: localize("teamstoolkit.guide.development"),
+            data: "https://aka.ms/teamsfx-mobile",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "multiTenant",
+            label: `${localize("teamstoolkit.guides.multiTenant.label")}`,
+            detail: localize("teamstoolkit.guides.multiTenant.detail"),
+            groupName: localize("teamstoolkit.guide.development"),
+            data: "https://aka.ms/teamsfx-multi-tenant",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "addAzureFunction",
+            label: localize("teamstoolkit.guides.addAzureFunction.label"),
+            detail: localize("teamstoolkit.guides.addAzureFunction.detail"),
+            groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+            data: "https://aka.ms/teamsfx-add-azure-function",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "addAzureSql",
+            label: localize("teamstoolkit.guides.addAzureSql.label"),
+            detail: localize("teamstoolkit.guides.addAzureSql.detail"),
+            groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+            data: "https://aka.ms/teamsfx-add-azure-sql",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "addAzureAPIM",
+            label: localize("teamstoolkit.guides.addAzureAPIM.label"),
+            detail: localize("teamstoolkit.guides.addAzureAPIM.detail"),
+            groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+            data: "https://aka.ms/teamsfx-add-azure-apim",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+          {
+            id: "addAzureKeyVault",
+            label: localize("teamstoolkit.guides.addAzureKeyVault.label"),
+            detail: localize("teamstoolkit.guides.addAzureKeyVault.detail"),
+            groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+            data: "https://aka.ms/teamsfx-add-azure-keyvault",
+            buttons: [
+              {
+                iconPath: "file-symlink-file",
+                tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                command: "fx-extension.openTutorial",
+              },
+            ],
+          },
+        ],
     returnObject: true,
   };
   if (TreatmentVariableValue.inProductDoc && !globalVariables.isSPFxProject) {
@@ -2970,9 +2844,6 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
     case "fx-extension.create":
     case "fx-extension.openSamples": {
       return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-create-project");
-    }
-    case "fx-extension.openManifest": {
-      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-edit-manifest");
     }
     case "fx-extension.provision": {
       return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-provision-cloud-resource");

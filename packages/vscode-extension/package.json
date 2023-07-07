@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "private": true,
@@ -191,13 +191,6 @@
       ]
     },
     "menus": {
-      "explorer/context": [
-        {
-          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isV3Enabled",
-          "group": "deploy@0"
-        }
-      ],
       "view/title": [
         {
           "command": "fx-extension.addEnvironmentWithIcon",
@@ -348,10 +341,6 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.deployManifestFromCtxMenu",
           "when": "false"
         },
@@ -405,10 +394,6 @@
         },
         {
           "command": "fx-extension.openPreviewAadFile",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.openPreviewFile",
           "when": "false"
         },
         {
@@ -577,12 +562,6 @@
         "category": "Teams"
       },
       {
-        "command": "fx-extension.openManifest",
-        "title": "%teamstoolkit.commands.editManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled && !fx-extension.commandLocked",
-        "category": "Teams"
-      },
-      {
         "command": "fx-extension.openReportIssues",
         "title": "%teamstoolkit.commands.reportIssue.title%",
         "enablement": "fx-extension.isTeamsFx",
@@ -621,11 +600,6 @@
         "command": "fx-extension.createAccount",
         "title": "%teamstoolkit.commands.createAccount.title%",
         "icon": "$(add)"
-      },
-      {
-        "command": "fx-extension.updateAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%",
-        "enablement": "!fx-extension.isV3Enabled"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",
@@ -699,12 +673,6 @@
         "icon": "$(file-code)"
       },
       {
-        "command": "fx-extension.openPreviewFile",
-        "title": "%teamstoolkit.commands.previewManifest.title%",
-        "icon": "$(file-code)",
-        "enablement": "!fx-extension.isV3Enabled"
-      },
-      {
         "command": "fx-extension.openResourceGroupInPortal",
         "title": "%teamstoolkit.commands.openInPortal.title%",
         "icon": "$(ports-open-browser-icon)"
@@ -750,7 +718,7 @@
       {
         "command": "fx-extension.addWebpart",
         "title": "%teamstoolkit.commmands.addWebpart.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isV3Enabled && !fx-extension.commandLocked",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
       }
     ],
@@ -1230,21 +1198,18 @@
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^5.0.0",
-    "@azure/eslint-plugin-azure-sdk": "^2.0.1",
+    "@azure/core-auth": "^1.4.0",
     "@azure/identity-vscode": "^1.0.0",
-    "@commitlint/cli": "^14.0.1",
-    "@commitlint/config-conventional": "^12.0.1",
+    "@azure/ms-rest-azure-env": "^2.0.0",
     "@fluentui/react": "^8.5.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@microsoft/eslint-plugin-teamsfx": "^0.0.3",
-    "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
     "@types/detect-port": "^1.3.2",
     "@types/express": "^4.17.14",
     "@types/fs-extra": "^9.0.5",
-    "@types/glob": "^7.2.0",
     "@types/jscodeshift": "^0.11.2",
     "@types/keytar": "^4.4.2",
     "@types/lodash": "^4.14.181",
@@ -1256,16 +1221,13 @@
     "@types/react-router-dom": "^5.1.7",
     "@types/react-syntax-highlighter": "^15.5.5",
     "@types/sinon": "^9.0.9",
-    "@types/tmp": "^0.2.0",
-    "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
     "@types/validator": "^13.1.1",
     "@types/vscode": "^1.66.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "@vscode/codicons": "0.0.21",
-    "@vscode/vsce": "^2.19.0",
-    "adm-zip": "^0.5.4",
+    "@vscode/codicons": "0.0.33",
+    "ast-types": "^0.14.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
@@ -1277,18 +1239,13 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
-    "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
-    "glob": "^8.0.3",
     "html-webpack-plugin": "^5.3.1",
     "kill-port-process": "^3.0.1",
     "lint-staged": "^11.2.6",
     "mocha": "^10.0.0",
-    "mocha-junit-reporter": "^2.0.2",
     "mocha-multi-reporters": "^1.5.1",
     "mock-require": "^3.0.3",
-    "ms-rest": "^2.5.4",
-    "node-loader": "^2.0.0",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "react": "^17.0.2",
@@ -1300,11 +1257,9 @@
     "sass": "^1.32.8",
     "sass-loader": "^10.0.1",
     "sinon": "^9.2.2",
-    "source-map-support": "^0.5.19",
     "style-loader": "^2.0.0",
     "svgtofont": "^3.23.1",
     "terser-webpack-plugin": "^4.2.3",
-    "tmp": "^0.2.1",
     "ts-loader": "^8.0.3",
     "ts-node": "^9.1.1",
     "ts-sinon": "^2.0.2",
@@ -1314,10 +1269,9 @@
     "umd-compat-loader": "^2.1.2",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
-    "verdaccio": "^5.18.0",
+    "verdaccio": "^5.25.0",
     "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.2",
-    "winston": "^3.3.3"
+    "webpack-cli": "^4.7.2"
   },
   "dependencies": {
     "@azure/identity": "^3.1.3",
@@ -1328,30 +1282,23 @@
     "@microsoft/dev-tunnels-management": "~1.0.7360",
     "@microsoft/dev-tunnels-ssh": "~3.11.1",
     "@microsoft/teamsfx-api": "^0.22.3",
-    "@microsoft/teamsfx-core": "^2.0.1",
+    "@microsoft/teamsfx-core": "^2.0.2",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",
-    "ajv": "^8.5.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.18.2",
     "jscodeshift": "^0.14.0",
     "jsonc-parser": "^3.0.0",
-    "jsonschema": "^1.4.0",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
     "node-rsa": "^1.1.1",
-    "open": "^8.4.0",
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
-    "sudo-prompt": "^9.2.1",
-    "tree-kill": "^1.2.2",
-    "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.47",
-    "yaml": "^2.2.1"
+    "vscode-tas-client": "^0.1.47"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account",

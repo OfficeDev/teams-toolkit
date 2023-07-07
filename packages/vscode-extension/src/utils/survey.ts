@@ -1,16 +1,12 @@
 import * as vscode from "vscode";
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "./localizeUtils";
 import * as extensionPackage from "../../package.json";
 
-const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 const SURVEY_URL_V3 = "https://aka.ms/ttk-feedback";
 
 enum ExtensionSurveyStateKeys {

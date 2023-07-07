@@ -16,16 +16,20 @@ describe("teamsfx new template", function () {
   const sampleName = "todo-list-with-Azure-backend";
   const projectPath = path.resolve(testFolder, sampleName);
 
-  it(`${sampleName}`, { testPlanCaseId: 24137474 }, async function () {
-    await execAsync(`teamsfx new template ${sampleName}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+  it(
+    `${sampleName}`,
+    { testPlanCaseId: 24137474, author: "zhiyou@microsoft.com" },
+    async function () {
+      await execAsync(`teamsfx new template ${sampleName}`, {
+        cwd: testFolder,
+        env: process.env,
+        timeout: 0,
+      });
 
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
-    expect(fs.pathExistsSync(path.resolve(projectPath, "teamsapp.yml"))).to.be.true;
-  });
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "teamsapp.yml"))).to.be.true;
+    }
+  );
 
   after(async () => {
     // clean up

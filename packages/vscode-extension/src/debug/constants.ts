@@ -2,11 +2,9 @@
 // Licensed under the MIT license.
 import * as util from "util";
 
-import { TaskLabel } from "@microsoft/teamsfx-core/build/common/local";
+import { Hub, TaskLabel } from "@microsoft/teamsfx-core";
 import { ExtensionErrors } from "../error";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-
-export const localSettingsJsonName = "localSettings.json";
 
 export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
@@ -38,26 +36,7 @@ export const errorDetail = `
 **Error detail**
 `;
 
-export enum PortWarningStateKeys {
-  DoNotShowAgain = "localDebugPortWarning/doNotShowAgain",
-}
-
-export const localDebugHelpDoc = "https://aka.ms/teamsfx-localdebug";
-export const portInUseHelpLink = "https://aka.ms/teamsfx-port-in-use";
-export const skipNgrokHelpLink = "https://aka.ms/teamsfx-skip-ngrok";
-export const trustDevCertHelpLink = "https://aka.ms/teamsfx-trust-dev-cert";
 export const m365AppsPrerequisitesHelpLink = "https://aka.ms/teamsfx-m365-apps-prerequisites";
-
-export const skipNgrokRetiredNotification =
-  "Property 'skipNgrok' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.ngrok' in VSCode settings instead.";
-export const trustDevCertRetiredNotification =
-  "Property 'trustDevCert' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.devCert' in VSCode settings instead.";
-
-export enum Hub {
-  teams = "Teams",
-  outlook = "Outlook",
-  office = "the Microsoft 365 app",
-}
 
 export enum Host {
   teams = "teams.microsoft.com",
@@ -129,29 +108,6 @@ export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = {
   errorHelpLink: "https://aka.ms/teamsfx-get-started-prerequisite",
   durationMessage: (duration: number) =>
     `Finished prerequisite check in ${duration.toFixed(2)} seconds.`,
-};
-
-export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
-  taskName: TaskLabel.PrerequisiteCheck,
-  title: "Running 'Validate & install prerequisites' Visual Studio Code task.",
-  checkNumber: (n: number) =>
-    `${stepPrefix(
-      n
-    )} Teams Toolkit is checking if all required prerequisites are installed and will install them if not.`,
-  summary: "Summary:",
-  learnMore: (link: string) =>
-    `Visit ${link} to learn more about 'Validate & install prerequisites' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
-  errorName: ExtensionErrors.PrerequisitesValidationError,
-  errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
-  errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
-  showDetailMessage: openOutputMessage,
-  showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
-  durationMessage: (duration: number) =>
-    `Finished 'Validate & install prerequisites' Visual Studio Code task in ${duration.toFixed(
-      2
-    )} seconds.`,
 };
 
 export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {

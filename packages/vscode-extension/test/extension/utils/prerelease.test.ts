@@ -4,7 +4,7 @@ import { PrereleasePage } from "../../../src/utils/prerelease";
 import { ExtensionContext, Memento } from "vscode";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as spies from "chai-spies";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
 chai.use(spies);
 const spy = chai.spy;
 const ShowWhatIsNewNotification = "show-what-is-new-notification";

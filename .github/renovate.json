@@ -21,8 +21,6 @@
         "botbuilder-core",
         "@microsoft/teams-js",
         "@microsoft/microsoft-graph-client",
-        "@fluentui/react-components",
-        "@fluentui/react",
         "@microsoft/mgt-element",
         "@microsoft/mgt-react",
         "@microsoft/mgt-teamsfx-provider"
@@ -36,10 +34,6 @@
         "botframework-schema",
         "botbuilder-core"
       ]
-    },
-    {
-      "groupName": "fluentui",
-      "matchPackageNames": ["@fluentui/react-components", "@fluentui/react"]
     },
     {
       "groupName": "graph toolkit",
@@ -57,8 +51,6 @@
         "botbuilder-core",
         "@microsoft/teams-js",
         "@microsoft/microsoft-graph-client",
-        "@fluentui/react-components",
-        "@fluentui/react",
         "@microsoft/mgt-element",
         "@microsoft/mgt-react",
         "@microsoft/mgt-teamsfx-provider"

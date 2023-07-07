@@ -42,6 +42,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   StaticOptions,
@@ -115,16 +116,7 @@ function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
   }
 }
 
-function toIdSet(items: ({ id: string } | string)[]): Set<string> {
-  const set = new Set<string>();
-  for (const i of items) {
-    if (typeof i === "string") set.add(i);
-    else set.add(i.id);
-  }
-  return set;
-}
-
-export function cloneSet(set: Set<string>): Set<string> {
+function cloneSet(set: Set<string>): Set<string> {
   const res = new Set<string>();
   for (const e of set) res.add(e);
   return res;
@@ -185,6 +177,7 @@ export class VsCodeUI implements UserInteraction {
         async (resolve): Promise<void> => {
           // set items
           let options: StaticOptions = [];
+          let isSkip = false;
           if (typeof option.options === "function") {
             quickPick.busy = true;
             quickPick.placeholder = loadingOptionsPlaceholder();
@@ -195,6 +188,11 @@ export class VsCodeUI implements UserInteraction {
                 quickPick.items = convertToFxQuickPickItems(options);
                 quickPick.busy = false;
                 quickPick.placeholder = option.placeholder;
+                if (option.skipSingleOption && options.length === 1) {
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  isSkip = true;
+                  onDidAccept();
+                }
               })
               .catch((error) => {
                 resolve(err(assembleError(error)));
@@ -245,7 +243,7 @@ export class VsCodeUI implements UserInteraction {
                   }
                 }
               } else result = getOptionItem(item);
-              resolve(ok({ type: "success", result: result }));
+              resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
             }
           };
 
@@ -305,7 +303,7 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    if (option.options.length === 0) {
+    if (typeof option.options === "object" && option.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,
@@ -334,6 +332,7 @@ export class VsCodeUI implements UserInteraction {
         async (resolve): Promise<void> => {
           // set items
           let options: StaticOptions = [];
+          let isSkip = false;
           if (typeof option.options === "function") {
             quickPick.busy = true;
             quickPick.placeholder = loadingOptionsPlaceholder();
@@ -344,6 +343,11 @@ export class VsCodeUI implements UserInteraction {
                 quickPick.items = convertToFxQuickPickItems(options);
                 quickPick.busy = false;
                 quickPick.placeholder = option.placeholder;
+                if (option.skipSingleOption && options.length === 1) {
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  isSkip = true;
+                  onDidAccept();
+                }
               })
               .catch((error) => {
                 resolve(err(assembleError(error)));
@@ -388,7 +392,7 @@ export class VsCodeUI implements UserInteraction {
             )
               result = strArray;
             else result = quickPick.selectedItems.map((i) => getOptionItem(i));
-            resolve(ok({ type: "success", result: result }));
+            resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
           };
 
           disposables.push(
@@ -724,6 +728,37 @@ export class VsCodeUI implements UserInteraction {
         else resolve(err(internalUIError));
       });
     });
+  }
+
+  async selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
+    const selectFileConfig: SelectFileConfig = {
+      ...config,
+      possibleFiles: [config.inputOptionItem],
+    };
+
+    while (true) {
+      const selectFileOrItemRes = await this.selectFile(selectFileConfig);
+      if (selectFileOrItemRes.isOk()) {
+        if (selectFileOrItemRes.value.result === config.inputOptionItem.id) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {
+            [TelemetryProperty.SelectedOption]: selectFileOrItemRes.value.result,
+          });
+          const inputRes = await this.inputText(config.inputBoxConfig);
+          if (inputRes.isOk()) {
+            if (inputRes.value.type === "back") continue;
+            return ok(inputRes.value);
+          } else {
+            return err(inputRes.error);
+          }
+        } else {
+          return ok(selectFileOrItemRes.value);
+        }
+      } else {
+        return err(selectFileOrItemRes.error);
+      }
+    }
   }
 
   public async showMessage(

@@ -3,8 +3,6 @@
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 export class CommonStrings {
-  public static readonly AAD_APP = getLocalizedString("plugins.bot.AadApp");
-  public static readonly AAD_CLIENT_SECRET = getLocalizedString("plugins.bot.AadClientSecret");
   public static readonly APP_STUDIO_BOT_REGISTRATION = getLocalizedString(
     "plugins.bot.AppStudioBotRegistration"
   );

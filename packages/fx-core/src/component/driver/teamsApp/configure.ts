@@ -11,11 +11,11 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
-import { AppStudioResultFactory } from "../../resource/appManifest/results";
-import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
-import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
-import { AppStudioError } from "../../resource/appManifest/errors";
+import { AppStudioClient } from "./clients/appStudioClient";
+import { AppStudioResultFactory } from "./results";
+import { TelemetryUtils } from "./utils/telemetry";
+import { manifestUtils } from "./utils/ManifestUtils";
+import { AppStudioError } from "./errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TelemetryProperty } from "../../../common/telemetry";
@@ -97,7 +97,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     if (manifest.isErr()) {
       return err(manifest.error);
     }
-    const capabilities = manifestUtils._getCapabilities(manifest.value).map((x) => {
+    const capabilities = manifestUtils.getCapabilities(manifest.value).map((x) => {
       if (x == "staticTab" || x == "configurableTab") {
         return "Tab";
       } else {
@@ -157,7 +157,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppUpdateFailedError.name,
-          AppStudioError.TeamsAppUpdateFailedError.message(teamsAppId),
+          AppStudioError.TeamsAppUpdateFailedError.message(teamsAppId, e),
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );

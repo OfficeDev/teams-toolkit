@@ -13,93 +13,7 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
-interface AADApp extends AzureResource {
-    // (undocumented)
-    applicationIdUris: string;
-    // (undocumented)
-    clientId: string;
-    // (undocumented)
-    clientSecret: string;
-    // (undocumented)
-    oauth2PermissionScopeId: string;
-    // (undocumented)
-    oauthAuthority: string;
-    // (undocumented)
-    oauthHost: string;
-    // (undocumented)
-    objectId: string;
-    // (undocumented)
-    secretFields: "clientSecret"[];
-    // (undocumented)
-    tenantId: string;
-}
-
-// @public (undocumented)
-export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
-
-// @public
-export interface ActionBase {
-    condition?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<boolean, FxError>>;
-    // (undocumented)
-    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
-    // (undocumented)
-    inputs?: Json;
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    plan?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
-    // (undocumented)
-    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
-    // (undocumented)
-    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
-    // (undocumented)
-    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    type: "group" | "shell" | "call" | "function";
-}
-
-// @public (undocumented)
-export interface ActionContext {
-    // (undocumented)
-    progressBar?: IProgressHandler;
-    // (undocumented)
-    telemetryMeasures?: Record<string, number>;
-    // (undocumented)
-    telemetryProps?: Record<string, string>;
-}
-
-// @public (undocumented)
 export const AdaptiveCardsFolderName = "adaptiveCards";
-
-// @public (undocumented)
-interface APIM extends AzureResource {
-    // (undocumented)
-    apimClientAADClientId: string;
-    // (undocumented)
-    apimClientAADClientSecret: string;
-    // (undocumented)
-    apimClientAADObjectId: string;
-    // (undocumented)
-    authServerResourceId: string;
-    // (undocumented)
-    productResourceId: string;
-    // (undocumented)
-    secretFields: "apimClientAADClientSecret"[];
-    // (undocumented)
-    serviceResourceId: string;
-}
-
-// @public (undocumented)
-interface AppManifestProvider {
-    // (undocumented)
-    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ManifestCapability[]) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    capabilityExceedLimit: (ctx: Context_2, inputs: InputsWithProjectPath, capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo") => Promise<Result<boolean, FxError>>;
-    // (undocumented)
-    deleteCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    updateCapability: (ctx: Context_2, inputs: InputsWithProjectPath, capability: ManifestCapability) => Promise<Result<Void, FxError>>;
-}
 
 // @public (undocumented)
 export const AppPackageFolderName = "appPackage";
@@ -122,30 +36,6 @@ export interface AzureAccountProvider {
 }
 
 // @public (undocumented)
-interface AzureBot extends AzureResource {
-    // (undocumented)
-    appServicePlanName: string;
-    // (undocumented)
-    botId: string;
-    // (undocumented)
-    botPassword: string;
-    // (undocumented)
-    botWebAppResourceId: string;
-    // (undocumented)
-    objectId: string;
-    // (undocumented)
-    secretFields: "botPassword"[];
-    // (undocumented)
-    siteEndpoint: string;
-    // (undocumented)
-    siteName: string;
-    // (undocumented)
-    skuName: string;
-    // (undocumented)
-    validDomain: string;
-}
-
-// @public (undocumented)
 export type AzureCredential = {
     type: "AuthorizationCode";
     username: string;
@@ -162,73 +52,6 @@ export type AzureCredential = {
     clientId: string;
     certificatePath: string;
 };
-
-// @public (undocumented)
-interface AzureFunction extends AzureResource {
-    // (undocumented)
-    functionAppResourceId: string;
-    // (undocumented)
-    functionEndpoint: string;
-}
-
-// @public (undocumented)
-interface AzureIdentity extends AzureResource {
-    // (undocumented)
-    identityClientId: string;
-    // (undocumented)
-    identityName: string;
-    // (undocumented)
-    identityResourceId: string;
-}
-
-// @public (undocumented)
-type AzureResource = CloudResource_2;
-
-// @public
-interface AzureSolutionConfig extends Json {
-    // (undocumented)
-    location: string;
-    // (undocumented)
-    needCreateResourceGroup: boolean;
-    // (undocumented)
-    provisionSucceeded: boolean;
-    // (undocumented)
-    resourceGroupName: string;
-    // (undocumented)
-    resourceNameSuffix: string;
-    // (undocumented)
-    subscriptionId: string;
-    // (undocumented)
-    subscriptionName: string;
-    // (undocumented)
-    teamsAppTenantId: string;
-    // (undocumented)
-    tenantId: string;
-}
-
-// @public (undocumented)
-export interface AzureSolutionSettings extends SolutionSettings {
-    // (undocumented)
-    activeResourcePlugins: string[];
-    // (undocumented)
-    azureResources: string[];
-    // (undocumented)
-    capabilities: string[];
-    // (undocumented)
-    hostType: string;
-}
-
-// @public (undocumented)
-interface AzureSQL extends AzureResource {
-    // (undocumented)
-    admin: string;
-    // (undocumented)
-    databaseName: string;
-    // (undocumented)
-    sqlEndpoint: string;
-    // (undocumented)
-    sqlResourceId: string;
-}
 
 // @public
 export interface BaseQuestion {
@@ -261,74 +84,10 @@ export abstract class BasicLogin {
 }
 
 // @public (undocumented)
-export interface Bicep {
-    // (undocumented)
-    Configuration?: ConfigurationBicep;
-    // (undocumented)
-    Parameters?: Record<string, string>;
-    // (undocumented)
-    Provision?: ProvisionBicep;
-    // (undocumented)
-    type: "bicep";
-}
-
-// @public (undocumented)
 export const BuildFolderName = "build";
-
-// @public
-export interface CallAction extends ActionBase {
-    // (undocumented)
-    required: boolean;
-    // (undocumented)
-    targetAction: string;
-    // (undocumented)
-    type: "call";
-}
-
-// @public (undocumented)
-export interface CallServiceEffect {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    remarks?: string;
-    // (undocumented)
-    response?: string;
-    // (undocumented)
-    type: "service";
-}
 
 // @public (undocumented)
 export const CLIPlatforms: Platform[];
-
-// @public (undocumented)
-export interface CloudResource {
-    // (undocumented)
-    configure?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
-    // (undocumented)
-    deploy?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
-    // (undocumented)
-    readonly description?: string;
-    // (undocumented)
-    readonly finalOutputKeys: string[];
-    // (undocumented)
-    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<Bicep[], FxError>>;
-    // (undocumented)
-    readonly name: string;
-    // (undocumented)
-    readonly outputs: ResourceOutputs;
-    // (undocumented)
-    provision?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
-    // (undocumented)
-    readonly secretKeys?: string[];
-}
-
-// @public (undocumented)
-interface CloudResource_2 extends Json {
-    endpoint?: string | string[];
-    resourceId?: string;
-    resourceName?: string;
-    secretFields?: string[];
-}
 
 // @public
 export enum Colors {
@@ -342,138 +101,29 @@ export enum Colors {
 }
 
 // @public (undocumented)
-export interface Component extends Json {
-    // (undocumented)
-    artifactFolder?: string;
-    // (undocumented)
-    build?: boolean;
-    // (undocumented)
-    code?: string;
-    // (undocumented)
-    connections?: string[];
-    // (undocumented)
-    deploy?: boolean;
-    // (undocumented)
-    deployType?: "folder" | "zip";
-    // (undocumented)
-    folder?: string;
-    // (undocumented)
-    hosting?: string;
-    // (undocumented)
-    language?: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    provision?: boolean;
-    // (undocumented)
-    sso?: boolean;
-}
+export type ConditionFunc = (inputs: Inputs) => boolean | Promise<boolean>;
 
 // @public (undocumented)
 export const ConfigFolderName = "fx";
 
 // @public (undocumented)
-export class ConfigMap extends Map<string, ConfigValue> {
-    constructor(entries?: readonly (readonly [string, ConfigValue])[] | null);
-    // (undocumented)
-    static fromJSON(obj?: Json): ConfigMap | undefined;
-    // (undocumented)
-    getBoolean(k: string, defaultValue?: boolean): boolean | undefined;
-    // (undocumented)
-    getBooleanArray(k: string, defaultValue?: boolean[]): boolean[] | undefined;
-    // (undocumented)
-    getNumber(k: string, defaultValue?: number): number | undefined;
-    // (undocumented)
-    getNumberArray(k: string, defaultValue?: number[]): number[] | undefined;
-    // (undocumented)
-    getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined;
-    // (undocumented)
-    getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined;
-    // (undocumented)
-    getString(k: string, defaultValue?: string): string | undefined;
-    // (undocumented)
-    getStringArray(k: string, defaultValue?: string[]): string[] | undefined;
-    // (undocumented)
-    toJSON(): Json;
-}
-
-// @public (undocumented)
-export interface ConfigurationBicep {
-    // (undocumented)
-    Modules?: {
-        [moduleFileName: string]: string;
-    };
-    // (undocumented)
-    Orchestration?: string;
-}
-
-// @public (undocumented)
-export type ConfigValue = any;
-
-// @public (undocumented)
 export interface Context {
-    // (undocumented)
-    answers?: Inputs;
-    // (undocumented)
-    azureAccountProvider?: AzureAccountProvider;
-    // (undocumented)
-    cryptoProvider: CryptoProvider;
-    // (undocumented)
-    expServiceProvider?: ExpServiceProvider;
-    // (undocumented)
-    localSettings?: LocalSettings;
-    // (undocumented)
-    logProvider?: LogProvider;
-    // (undocumented)
-    m365TokenProvider?: M365TokenProvider;
-    // (undocumented)
-    permissionRequestProvider?: PermissionRequestProvider;
-    // (undocumented)
-    projectSettings?: ProjectSettings;
-    // (undocumented)
-    root: string;
-    // (undocumented)
-    telemetryReporter?: TelemetryReporter;
-    // (undocumented)
-    treeProvider?: TreeProvider;
-    // (undocumented)
-    ui?: UserInteraction;
-}
-
-// @public (undocumented)
-interface Context_2 {
-    // (undocumented)
-    cryptoProvider: CryptoProvider;
     // (undocumented)
     expServiceProvider?: ExpServiceProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
-    permissionRequestProvider?: PermissionRequestProvider;
-    // (undocumented)
-    projectSetting: ProjectSettings;
-    // (undocumented)
-    telemetryReporter: TelemetryReporter;
-    // (undocumented)
-    userInteraction: UserInteraction;
-}
-
-// @public (undocumented)
-export interface ContextV3 extends Context_2 {
-    // (undocumented)
-    envInfo?: EnvInfoV3;
-    // (undocumented)
-    manifestProvider: AppManifestProvider;
-    // (undocumented)
     projectPath?: string;
     // (undocumented)
-    projectSetting: ProjectSettingsV3;
+    telemetryReporter: TelemetryReporter;
     // (undocumented)
     templateVariables?: {
         [key: string]: string;
     };
     // (undocumented)
     tokenProvider?: TokenProvider;
+    // (undocumented)
+    userInteraction: UserInteraction;
 }
 
 // @public
@@ -491,7 +141,7 @@ export interface CryptoProvider {
 }
 
 // @public (undocumented)
-type DeepReadonly<T> = {
+export type DeepReadonly<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
@@ -504,91 +154,6 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
 
-// @public (undocumented)
-export type Effect = string | FileEffect | CallServiceEffect | Bicep | ShellAction;
-
-// @public
-export interface EnvConfig {
-    // (undocumented)
-    $schema?: string;
-    // (undocumented)
-    [k: string]: unknown;
-    auth?: {
-        clientId?: string;
-        clientSecret?: string;
-        objectId?: string;
-        accessAsUserScopeId?: string;
-        frontendDomain?: string;
-        botId?: string;
-        botEndpoint?: string;
-        [k: string]: unknown;
-    };
-    azure?: {
-        subscriptionId?: string;
-        resourceGroupName?: string;
-        [k: string]: unknown;
-    };
-    bot?: {
-        appId?: string;
-        appPassword?: string;
-        [k: string]: unknown;
-    };
-    // (undocumented)
-    description?: string;
-    manifest: {
-        appName: {
-            short: string;
-            full?: string;
-            [k: string]: unknown;
-        };
-        description?: {
-            short?: string;
-            full?: string;
-            [k: string]: unknown;
-        };
-        icons?: {
-            color?: string;
-            outline?: string;
-            [k: string]: unknown;
-        };
-        [k: string]: unknown;
-    };
-    skipAddingSqlUser?: boolean;
-}
-
-// @public (undocumented)
-export const EnvConfigFileNameTemplate: string;
-
-declare namespace EnvConfigSchema {
-    export {
-
-    }
-}
-export { EnvConfigSchema }
-
-// @public (undocumented)
-export interface EnvInfo {
-    // (undocumented)
-    config: EnvConfig;
-    // (undocumented)
-    envName: string;
-    // (undocumented)
-    state: Map<string, any>;
-}
-
-// @public (undocumented)
-type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & {
-    state: Json;
-} & {
-    config: Json;
-};
-
-// @public (undocumented)
-interface EnvInfoV3 extends EnvInfoV2 {
-    // (undocumented)
-    state: ResourceStates;
-}
-
 // @public
 export interface EnvMeta {
     // (undocumented)
@@ -598,15 +163,6 @@ export interface EnvMeta {
     // (undocumented)
     sideloading: boolean;
 }
-
-// @public (undocumented)
-export const EnvNamePlaceholder = "@envName";
-
-// @public (undocumented)
-export const EnvStateFileNameTemplate: string;
-
-// @public (undocumented)
-export type ErrorHandler = (error: any, telemetryProps: Record<string, string>) => FxError;
 
 // @public (undocumented)
 export interface ErrorOptionBase {
@@ -639,37 +195,12 @@ export interface ExpServiceProvider {
 }
 
 // @public (undocumented)
-export interface FileEffect {
-    // (undocumented)
-    filePath: string | string[];
-    // (undocumented)
-    operate: FileOperation;
-    // (undocumented)
-    remarks?: string;
-    // (undocumented)
-    type: "file";
-}
-
-// @public
-export type FileOperation = "create" | "replace" | "append" | "delete" | "skipCreate" | "skipReplace";
-
-// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
     type: "folder";
     validation?: FuncValidation<string>;
     value?: string;
-}
-
-// @public (undocumented)
-interface FrontendHostingResource extends AzureResource {
-    // (undocumented)
-    domain: string;
-    // (undocumented)
-    endpoint: string;
-    // (undocumented)
-    storageResourceId: string;
 }
 
 // @public (undocumented)
@@ -683,37 +214,6 @@ export interface FuncQuestion extends BaseQuestion {
     func: LocalFunc<any>;
     // (undocumented)
     type: "func";
-}
-
-// @public
-export interface FunctionAction extends ActionBase {
-    // (undocumented)
-    enableProgressBar?: boolean;
-    // (undocumented)
-    enableTelemetry?: boolean;
-    // (undocumented)
-    errorHandler?: ErrorHandler;
-    // (undocumented)
-    errorHelpLink?: string;
-    // (undocumented)
-    errorIssueLink?: string;
-    // (undocumented)
-    errorSource?: string;
-    execute: (context: ContextV3, inputs: InputsWithProjectPath, progress?: IProgressHandler, telemetryProps?: Record<string, string>) => MaybePromise<Result<Effect[], FxError>>;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    progressSteps?: number;
-    // (undocumented)
-    progressTitle?: string;
-    // (undocumented)
-    telemetryComponentName?: string;
-    // (undocumented)
-    telemetryEventName?: string;
-    // (undocumented)
-    telemetryProps?: Record<string, string>;
-    // (undocumented)
-    type: "function";
 }
 
 // @public (undocumented)
@@ -750,25 +250,13 @@ export interface Group {
 }
 
 // @public
-export interface GroupAction extends ActionBase {
-    // (undocumented)
-    actions: Action[];
-    mode?: "sequential" | "parallel";
-    // (undocumented)
-    type: "group";
-}
-
-// @public (undocumented)
-export const InputConfigsFolderName = "configs";
-
-// @public
 export interface InputResult<T> {
     result?: T;
     type: "success" | "skip" | "back";
 }
 
 // @public (undocumented)
-export interface Inputs extends Json {
+export interface Inputs extends Record<string, any> {
     // (undocumented)
     env?: string;
     // (undocumented)
@@ -828,41 +316,20 @@ export interface IProgressHandler {
 }
 
 // @public (undocumented)
-export type Json = Record<string, any>;
+export interface IQTreeNode {
+    // (undocumented)
+    children?: IQTreeNode[];
+    // (undocumented)
+    condition?: StringValidation | StringArrayValidation | ConditionFunc;
+    // (undocumented)
+    data: Question | Group;
+}
 
 // @public (undocumented)
 export const LocalEnvironmentName = "local";
 
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
-
-// @public
-export interface LocalSettings {
-    // (undocumented)
-    auth?: ConfigMap;
-    // (undocumented)
-    backend?: ConfigMap;
-    // (undocumented)
-    bot?: ConfigMap;
-    // (undocumented)
-    frontend?: ConfigMap;
-    // (undocumented)
-    teamsApp?: ConfigMap;
-}
-
-// @public (undocumented)
-interface LocalSettings_2 extends Json {
-    // (undocumented)
-    auth?: Record<string, string>;
-    // (undocumented)
-    backend?: Record<string, string>;
-    // (undocumented)
-    bot?: Record<string, string>;
-    // (undocumented)
-    frontend?: Record<string, string>;
-    // (undocumented)
-    teamsApp: Record<string, string>;
-}
 
 // @public (undocumented)
 export type LoginStatus = {
@@ -907,7 +374,7 @@ export interface M365TokenProvider {
 }
 
 // @public (undocumented)
-type ManifestCapability = {
+export type ManifestCapability = {
     name: "staticTab";
     snippet?: IStaticTab;
     existingApp?: boolean;
@@ -1004,101 +471,17 @@ export enum Platform {
 }
 
 // @public (undocumented)
-export type PluginConfig = ConfigMap;
-
-// @public (undocumented)
-export interface PluginContext extends Context {
-    // (undocumented)
-    config: PluginConfig;
-    // (undocumented)
-    envInfo: EnvInfo;
-}
-
-// @public (undocumented)
-export type PluginIdentity = string;
-
-// @public (undocumented)
 export const ProductName = "teamsfx";
 
-// @public (undocumented)
-export interface ProjectConfig {
-    // (undocumented)
-    config?: Json;
-    // (undocumented)
-    settings?: ProjectSettings;
-}
-
-// @public (undocumented)
-export interface ProjectConfigV3 {
-    // (undocumented)
-    envInfos: {
-        [key: string]: EnvInfoV3;
-    };
-    // (undocumented)
-    projectSettings: ProjectSettings;
-}
-
 // @public
-export interface ProjectSettings {
-    // (undocumented)
-    appName?: string;
-    // (undocumented)
-    defaultFunctionName?: string;
-    // (undocumented)
-    isFromSample?: boolean;
-    // (undocumented)
-    isM365?: boolean;
-    pluginSettings?: Json;
-    // (undocumented)
-    programmingLanguage?: string;
-    // (undocumented)
-    projectId: string;
-    // (undocumented)
-    solutionSettings?: SolutionSettings;
-    // (undocumented)
-    version?: string;
-}
-
-// @public (undocumented)
-export const ProjectSettingsFileName = "projectSettings.json";
-
-// @public (undocumented)
-export interface ProjectSettingsV3 extends ProjectSettings {
-    // (undocumented)
-    components: Component[];
-}
-
-// @public
-export interface ProjectStates {
-    // (undocumented)
-    resources: {
-        [k: string]: Record<string, ConfigValue>;
-    };
-    // (undocumented)
-    solution: Record<string, ConfigValue>;
-}
-
-// @public (undocumented)
-export interface ProvisionBicep {
-    // (undocumented)
-    Modules?: {
-        [moduleFileName: string]: string;
-    };
-    // (undocumented)
-    Orchestration?: string;
-}
-
-// @public
-export class QTreeNode {
+export class QTreeNode implements IQTreeNode {
     constructor(data: Question | Group);
     // (undocumented)
     addChild(node: QTreeNode): QTreeNode;
     // (undocumented)
     children?: QTreeNode[];
     // (undocumented)
-    condition?: ValidationSchema & {
-        target?: string;
-    };
+    condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
     trim(): QTreeNode | undefined;
@@ -1107,63 +490,7 @@ export class QTreeNode {
 }
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
-
-// @public (undocumented)
-export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
-
-// @public (undocumented)
-export type ReadonlyResourceConfig = Readonly<ResourceConfig>;
-
-// @public (undocumented)
-export type ReadonlyResourceConfigs = Readonly<{
-    [k: string]: ReadonlyResourceConfig | undefined;
-}>;
-
-// @public (undocumented)
-export type ReadonlySolutionConfig = ReadonlyMap<PluginIdentity, ReadonlyPluginConfig>;
-
-// @public (undocumented)
-export type ResourceConfig = ResourceTemplate;
-
-// @public (undocumented)
-export type ResourceConfigs = ResourceTemplates;
-
-// @public (undocumented)
-export interface ResourceContextV3 extends ContextV3 {
-    // (undocumented)
-    envInfo: EnvInfoV3;
-    // (undocumented)
-    tokenProvider: TokenProvider;
-}
-
-// @public (undocumented)
-export interface ResourceOutput {
-    // (undocumented)
-    bicepVariable?: string;
-    // (undocumented)
-    key: string;
-}
-
-// @public (undocumented)
-export interface ResourceOutputs {
-    // (undocumented)
-    [k: string]: ResourceOutput;
-}
-
-// @public
-interface ResourceStates {
-    [key: string]: CloudResource_2;
-    solution: Json;
-}
-
-// @public (undocumented)
-export type ResourceTemplate = Record<string, ConfigValue>;
-
-// @public (undocumented)
-export type ResourceTemplates = {
-    [k: string]: ResourceTemplate | undefined;
-};
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -1207,35 +534,32 @@ export interface Settings {
 // @public (undocumented)
 export const SettingsFolderName = "teamsfx";
 
-// @public
-export interface ShellAction extends ActionBase {
-    // (undocumented)
-    async?: boolean;
-    // (undocumented)
-    captureStderr?: boolean;
-    // (undocumented)
-    captureStdout?: boolean;
-    // (undocumented)
-    command: string;
-    // (undocumented)
-    cwd?: string;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    type: "shell";
+// @public (undocumented)
+export interface SingleFileOrInputConfig extends UIConfig<string> {
+    filters?: {
+        [name: string]: string[];
+    };
+    inputBoxConfig: InputTextConfig;
+    inputOptionItem: OptionItem;
 }
 
 // @public (undocumented)
-interface SimpleAuth extends AzureResource {
+export interface SingleFileOrInputQuestion extends UserInputQuestion {
+    filters?: {
+        [name: string]: string[];
+    };
+    inputBoxConfig: InputTextConfig;
+    inputOptionItem: OptionItem;
     // (undocumented)
-    endpoint: string;
-    // (undocumented)
-    webAppResourceId: string;
+    type: "singleFileOrText";
 }
 
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
+    filters?: {
+        [name: string]: string[];
+    };
     // (undocumented)
     type: "singleFile";
     validation?: FuncValidation<string>;
@@ -1265,25 +589,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
 export type SingleSelectResult = InputResult<string | OptionItem>;
 
 // @public (undocumented)
-export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
-
-// @public (undocumented)
-export interface SolutionContext extends Context {
-    // (undocumented)
-    envInfo: EnvInfo;
-}
-
-// @public
-export interface SolutionSettings extends Json {
-    // (undocumented)
-    name: string;
-    version?: string;
-}
-
-// @public (undocumented)
 export enum Stage {
-    // (undocumented)
-    activateEnv = "activateEnv",
     // (undocumented)
     addCapability = "addCapability",
     // (undocumented)
@@ -1350,9 +656,6 @@ export enum Stage {
     validateApplication = "validateApplication"
 }
 
-// @public (undocumented)
-export const StatesFolderName = "states";
-
 // @public
 export type StaticOptions = string[] | OptionItem[];
 
@@ -1383,6 +686,7 @@ export interface StringValidation extends StaticValidation {
     endsWith?: string;
     enum?: string[];
     equals?: string;
+    excludesEnum?: string[];
     includes?: string;
     maxLength?: number;
     minLength?: number;
@@ -1414,19 +718,6 @@ export class SystemError extends Error implements FxError {
 export interface SystemErrorOptions extends ErrorOptionBase {
     // (undocumented)
     issueLink?: string;
-}
-
-// @public (undocumented)
-interface TeamsAppResource extends AzureResource {
-    teamsAppId: string;
-    tenantId: string;
-}
-
-// @public (undocumented)
-interface TeamsFxAzureResourceStates extends ResourceStates {
-    // (undocumented)
-    [key: string]: AzureResource;
-    solution: AzureSolutionConfig;
 }
 
 // @public (undocumented)
@@ -1609,7 +900,7 @@ export interface UserInputQuestion extends BaseQuestion {
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
     validation?: ValidationSchema;
     validationHelp?: string;
 }
@@ -1632,6 +923,7 @@ export interface UserInteraction {
         };
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
+    selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
     selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
     selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult, FxError>>;
@@ -1643,42 +935,8 @@ export interface UserInteraction {
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
 
-declare namespace v2 {
-    export {
-        Context_2 as Context,
-        LocalSettings_2 as LocalSettings,
-        InputsWithProjectPath,
-        EnvInfoV2,
-        DeepReadonly
-    }
-}
-export { v2 }
-
-declare namespace v3 {
-    export {
-        EnvInfoV3,
-        ManifestCapability,
-        CloudResource_2 as CloudResource,
-        ResourceStates,
-        AzureResource,
-        AzureSolutionConfig,
-        TeamsAppResource,
-        TeamsFxAzureResourceStates,
-        AppManifestProvider,
-        AzureIdentity,
-        FrontendHostingResource,
-        AzureSQL,
-        AzureBot,
-        AADApp,
-        AzureFunction,
-        APIM,
-        SimpleAuth
-    }
-}
-export { v3 }
-
 // @public
-export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
+export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema | ConditionFunc, value: T, inputs?: Inputs): Promise<string | undefined>;
 
 // @public (undocumented)
 export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;

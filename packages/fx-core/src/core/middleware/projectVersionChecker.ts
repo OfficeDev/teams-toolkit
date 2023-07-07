@@ -12,15 +12,12 @@ import { CoreHookContext } from "../types";
 import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
 import { getProjectVersion } from "./utils/v3MigrationUtils";
 
-let userCancelFlag = false;
-const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
-
 export const ProjectVersionCheckerMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
   const versionInfo = await getProjectVersion(ctx);
-  if ((await needToShowUpdateDialog(ctx, versionInfo)) && checkMethod(ctx)) {
+  if (needToShowUpdateDialog(versionInfo)) {
     const errRes = await showDialog(ctx);
     ctx.result = err(errRes);
     return;
@@ -29,7 +26,7 @@ export const ProjectVersionCheckerMW: Middleware = async (
   await next();
 };
 
-async function needToShowUpdateDialog(ctx: CoreHookContext, versionInfo: VersionInfo) {
+function needToShowUpdateDialog(versionInfo: VersionInfo) {
   if (versionInfo.source === VersionSource.teamsapp && semver.gte(versionInfo.version, "2.0.0")) {
     return true;
   }
@@ -62,10 +59,4 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
     });
     return IncompatibleProjectError(messageKey);
   }
-}
-
-function checkMethod(ctx: CoreHookContext): boolean {
-  if (ctx.method && methods.has(ctx.method) && userCancelFlag) return false;
-  userCancelFlag = ctx.method != undefined && methods.has(ctx.method);
-  return true;
 }

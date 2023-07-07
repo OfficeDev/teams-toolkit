@@ -3,6 +3,7 @@ import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
+import { SampleCardProps, SampleCollection, SampleInfo, SampleListProps } from "./ISamples";
 import InMeetingApp from "../../img/webview/sample/in-meeting-app.png";
 import ShareNow from "../../img/webview/sample/share-now.gif";
 import ToDoList from "../../img/webview/sample/to-do-list.gif";
@@ -13,6 +14,7 @@ import HelloWorldTabWithBackend from "../../img/webview/sample/helloWorld-tab-wi
 import { Watch, Setting } from "./resources";
 import GraphToolkitContactExporter from "../../img/webview/sample/graph-toolkit-contact-exporter.gif";
 import GraphToolkitOneProductivityHub from "../../img/webview/sample/graph-toolkit-one-productivity-hub.gif";
+import BOTSSO from "../../img/webview/sample/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
 import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
@@ -43,6 +45,7 @@ const imageMapping: { [p: string]: any } = {
   "NPM-search-connector-M365": NpmSearchConnectorM365,
   "hello-world-tab-with-backend": HelloWorldTabWithBackend,
   "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
+  "bot-sso": BOTSSO,
   "graph-connector-app": GraphConnector,
   "adaptive-card-notification": AdaptiveCardNotification,
   "incoming-webhook-notification": IncomingWebhook,

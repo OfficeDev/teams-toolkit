@@ -23,10 +23,22 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.DeployManifest] = "true";
 }
 
-export function isBotNotificationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
-}
-
 export function isCLIDotNetEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
+}
+
+export function isV3Enabled(): boolean {
+  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
+}
+
+export function isVideoFilterEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
+}
+
+export function isImportSPFxEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
+}
+
+export function isCopilotPluginEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
 }

@@ -4,15 +4,16 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import {
+  AppStudioScopes,
+  Correlator,
+  environmentManager,
+  envUtil,
+  Hub,
   isValidProject,
   isValidProjectV3,
-} from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { MissingEnvironmentVariablesError } from "@microsoft/teamsfx-core/build/error/common";
+  MissingEnvironmentVariablesError,
+} from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
@@ -20,7 +21,7 @@ import { ExtensionSource } from "../error";
 import { core, getSystemInputs, showError } from "../handlers";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import * as commonUtils from "./commonUtils";
-import { accountHintPlaceholder, Host, Hub, sideloadingDisplayMessages } from "./constants";
+import { accountHintPlaceholder, Host, sideloadingDisplayMessages } from "./constants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 
@@ -59,10 +60,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
 
       if (typeof debugConfiguration.url !== "string") {
-        return debugConfiguration;
-      }
-
-      if (!isV3Enabled()) {
         return debugConfiguration;
       }
 
@@ -111,13 +108,27 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         !debugConfiguration.name.startsWith("Launch Remote");
       telemetryIsRemote = !isLocal;
 
+      // Put env and hub in `debugConfiguration` so debug handlers can retrieve it and send telemetry
+      debugConfiguration.teamsfxIsRemote = !isLocal;
+      debugConfiguration.teamsfxEnv = env;
+      if (host === Host.teams) {
+        debugConfiguration.teamsfxHub = Hub.teams;
+      } else if (host === Host.outlook) {
+        debugConfiguration.teamsfxHub = Hub.outlook;
+      } else if (host === Host.office) {
+        debugConfiguration.teamsfxHub = Hub.office;
+      }
+
       // Attach correlation-id to DebugConfiguration so concurrent debug sessions are correctly handled in this stage.
       // For backend and bot debug sessions, debugConfiguration.url is undefined so we need to set correlation id early.
       debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
 
       const result = await localTelemetryReporter.runWithTelemetryExceptionProperties(
         TelemetryEvent.DebugProviderResolveDebugConfiguration,
-        { [TelemetryProperty.DebugRemote]: (!isLocal).toString() },
+        {
+          [TelemetryProperty.DebugRemote]: (!isLocal).toString(),
+          [TelemetryProperty.Hub]: debugConfiguration.teamsfxHub + "",
+        },
         async () => {
           if (debugConfiguration.timeout === undefined) {
             debugConfiguration.timeout = 20000;
@@ -147,17 +158,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
               accountHintPlaceholder,
               await generateAccountHint(host === Host.teams)
             );
-          }
-
-          // Put env and hub in `debugConfiguration` so debug handlers can retrieve it and send telemetry
-          debugConfiguration.teamsfxIsRemote = !isLocal;
-          debugConfiguration.teamsfxEnv = env;
-          if (host === Host.teams) {
-            debugConfiguration.teamsfxHub = Hub.teams;
-          } else if (host === Host.outlook) {
-            debugConfiguration.teamsfxHub = Hub.outlook;
-          } else if (host === Host.office) {
-            debugConfiguration.teamsfxHub = Hub.office;
           }
 
           return url;
@@ -201,7 +201,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   }
 }
 
-export async function generateAccountHint(includeTenantId = true): Promise<string> {
+async function generateAccountHint(includeTenantId = true): Promise<string> {
   let tenantId = undefined,
     loginHint = undefined;
   const accountInfo = M365TokenInstance.getCachedAccountInfo();

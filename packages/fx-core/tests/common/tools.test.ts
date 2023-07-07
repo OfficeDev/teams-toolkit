@@ -18,13 +18,13 @@ import {
   getFixedCommonProjectSettings,
   getSPFxToken,
   getSideloadingStatus,
-  isApiConnectEnabled,
-  isV3Enabled,
   isVideoFilterProject,
+  listDevTunnels,
   setRegion,
 } from "../../src/common/tools";
-import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
+import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
+import { isV3Enabled } from "../../src/common/featureFlags";
 
 chai.use(chaiAsPromised);
 
@@ -190,17 +190,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     it("Can recognize normal video filter project", async () => {
       // Arrange
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
       const manifest = {
         meetingExtensionDefinition: {
           videoFiltersConfigurationUrl: "https://a.b.c/",
         },
       };
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          JSON.stringify(manifest),
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify(manifest),
       });
 
       // Act
@@ -209,13 +205,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.true;
-      restore();
     });
 
     it("Should not recognize tab project as video filter", async () => {
-      const restore = mockedEnv({
-        TEAMSFX_V3: "false",
-      });
       // Arrange
       const manifest = {
         $schema:
@@ -268,8 +260,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
         validDomains: ["{{state.fx-resource-frontend-hosting.domain}}"],
       };
       mockFs({
-        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
-          JSON.stringify(manifest),
+        [path.join(mockProjectRoot, "appPackage", "manifest.json")]: JSON.stringify(manifest),
       });
 
       // Act
@@ -278,7 +269,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
-      restore();
     });
   });
 
@@ -335,15 +325,19 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const res = isV3Enabled();
       chai.expect(res).false;
     });
-    it("should return false if no TEAMSFX_API_CONNECT_ENABLE set", () => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-      const res = isApiConnectEnabled();
-      chai.expect(res).false;
+  });
+
+  describe("listDevTunnels", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
     });
-    it("should return true if TEAMSFX_API_CONNECT_ENABLE set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_API_CONNECT_ENABLE: "true" }, { clear: true });
-      const res = isApiConnectEnabled();
-      chai.expect(res).true;
+
+    it("should return an error when the API call fails", async () => {
+      const token = "test-token";
+
+      const result = await listDevTunnels(token);
+      chai.assert.isTrue(result.isErr());
     });
   });
 });

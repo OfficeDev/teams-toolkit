@@ -1,9 +1,12 @@
 import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { Action } from '../common/Action';
-import { DevopsClient } from '../common/azdo';
+import { DevopsClient } from './azdo';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { context } from '@actions/github';
 import { getInput } from '@actions/core';
+import { getEmail } from '../teamsfx-utils/utils';
+import * as WorkItemTrackingInterfaces from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
+
 
 const githubToken = getRequiredInput('token');
 const milestonePrefix = getRequiredInput('milestone-prefix');
@@ -23,38 +26,44 @@ class Milestoned extends Action {
 
 	async onMilestoned(issue: OctoKitIssue) {
 		const content = await issue.getIssue();
-		if (content.milestone?.startsWith(milestonePrefix)) {
-			safeLog(`the issue ${content.number} is milestoned with ${content.milestone}`);
+		const milestoneTitle = content.milestone?.title ?? "";
+		if (milestoneTitle.startsWith(milestonePrefix)) {
+			safeLog(`the issue ${content.number} is milestoned with ${milestoneTitle}`);
 			let client = await this.createClient();
-			const users = getAccounts;
-			let asignee = undefined;
-			if (content.assignee && users[content.assignee]) {
-				asignee = users[content.assignee];
-				asignee += '@microsoft.com';
+			const asignee = getEmail(content.assignee);
+			if (!asignee) {
+				safeLog(`the issue ${content.number} assignee:${content.assignee} is not associated with email address, ignore.`);
 			}
 			const url = this.issueUrl(content.number);
-			const title = titlePreix + `[${content.milestone}]` + content.title;
+			const title = titlePreix + `[${milestoneTitle}]` + content.title;
+			let workItem: WorkItemTrackingInterfaces.WorkItem;
 			if (featureLabel && content.labels.includes(featureLabel)) {
 				safeLog(`issue labeled with ${featureLabel}. Feature work item will be created.`);
-				await client.createFeatureItem(title, asignee, undefined, url);
+				workItem = await client.createFeatureItem(title, asignee, undefined, url);
 			} else if (content.labels.includes(bugLabel)) {
 				safeLog(`issue labeled with ${bugLabel}. Bug work item will be created.`);
-				await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url);
 			} else {
 				safeLog(
 					`issue labeled without feature label(${featureLabel}) and bug label(${bugLabel}). Default bug work item will be created.`,
 				);
-				await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url);
 			}
 			safeLog(`finished to create work item.`);
+			const workItemUrl = workItem._links?.html?.href;
+			if (workItemUrl) {
+				await issue.postComment(`The issue is milestoned with sprint milestone ${milestoneTitle} and a work item created: ${workItemUrl}`);
+			} else {
+				safeLog(`no work item url found, ignore to post comment.`);
+			}
 		} else {
 			safeLog(`the issue ${content.number} is not milestoned with prefix ${milestonePrefix}, ignore.`);
 		}
 	}
 	async onTriggered(_: OctoKit) {
-		safeLog(`start manually create work item`);
-		const issueNumber = +getRequiredInput('issue-number');
-		const issue = await new OctoKitIssue(githubToken, context.repo, { number: issueNumber });
+		const issueNumber = process.env.ISSUE_NUMBER;
+		safeLog(`start manually create work item for issue ${issueNumber}`);
+		const issue = new OctoKitIssue(githubToken, context.repo, { number: parseInt(issueNumber || "0") });
 		await this.onMilestoned(issue);
 	}
 
@@ -76,9 +85,5 @@ class Milestoned extends Action {
 		return `https://github.com/${context.repo.owner}/${context.repo.repo}/issues/${id}`;
 	}
 }
-
-const getAccounts = (() => {
-	return fs.readJsonSync(path.join(__dirname, '../..', '.github', 'accounts.json'));
-})();
 
 new Milestoned().run(); // eslint-disable-line

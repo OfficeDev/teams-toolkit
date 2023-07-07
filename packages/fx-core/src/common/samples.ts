@@ -1,7 +1,7 @@
 import axios from "axios";
 import { sendRequestWithTimeout } from "../component/generator/utils";
 import sampleConfigV3 from "./samples-config-v3.json";
-import { isVideoFilterEnabled } from "./tools";
+import { isVideoFilterEnabled } from "./featureFlags";
 
 class configInfo {
   static readonly owner = "OfficeDev";
@@ -24,7 +24,7 @@ export interface SampleInfo {
   relativePath?: string;
 }
 
-export interface SampleCollection {
+interface SampleCollection {
   samples: SampleInfo[];
 }
 

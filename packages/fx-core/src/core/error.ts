@@ -2,14 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import {
-  FxError,
-  Inputs,
-  SystemError,
-  UserError,
-  EnvConfigFileNameTemplate,
-  EnvNamePlaceholder,
-} from "@microsoft/teamsfx-api";
+import { FxError, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export const CoreSource = "Core";
@@ -68,17 +61,6 @@ export function ProjectEnvAlreadyExistError(env: string): FxError {
     "ProjectEnvAlreadyExistError",
     getDefaultString("error.ProjectEnvAlreadyExistError", env),
     getLocalizedString("error.ProjectEnvAlreadyExistError", env)
-  );
-}
-
-export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
-  const param1 = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env);
-  const param2 = errorMsg;
-  return new UserError(
-    CoreSource,
-    "InvalidEnvConfigError",
-    getDefaultString("error.InvalidEnvConfigError", param1, param2),
-    getLocalizedString("error.InvalidEnvConfigError", param1, param2)
   );
 }
 

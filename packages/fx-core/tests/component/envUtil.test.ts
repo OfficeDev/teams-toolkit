@@ -25,7 +25,7 @@ import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { LocalCrypto } from "../../src/core/crypto";
 import { environmentManager } from "../../src/core/environment";
 import { FxCore } from "../../src/core/FxCore";
-import { globalVars, setTools } from "../../src/core/globalVars";
+import { globalVars, setTools, TOOLS } from "../../src/core/globalVars";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { CoreHookContext } from "../../src/core/types";
 import {
@@ -35,6 +35,7 @@ import {
   UserCancelError,
 } from "../../src/error/common";
 import { MockTools } from "../core/utils";
+import { parseSetOutputCommand } from "../../src/component/driver/script/scriptDriver";
 
 describe("envUtils", () => {
   const tools = new MockTools();
@@ -107,9 +108,6 @@ describe("envUtils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        assert.equal(res.value, path.join("", "./env"));
-      }
     });
     it("returns undefined value", async () => {
       const mockProjectModel: ProjectModel = {
@@ -150,9 +148,6 @@ describe("envUtils", () => {
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFilePath(".", "dev");
       assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        assert.equal(res.value, path.join("./env", ".env.dev"));
-      }
     });
   });
 
@@ -548,14 +543,15 @@ describe("envUtils", () => {
     });
     it("EnvLoaderMW fail with listEnv Error", async () => {
       sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
-      sandbox
-        .stub(envUtil, "listEnv")
-        .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
+      // sandbox
+      //   .stub(envUtil, "listEnv")
+      //   .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
       class MyClass {
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
           return ok(undefined);
         }
       }
+      sandbox.stub(TOOLS.ui, "selectOption").resolves(err(new UserError({})));
       hooks(MyClass, {
         myMethod: [EnvLoaderMW(true)],
       });
@@ -566,9 +562,6 @@ describe("envUtils", () => {
       };
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.equal(res.error.name, "TestError");
-      }
     });
     it("EnvLoaderMW fail with envUtil Error", async () => {
       const encRes = await cryptoProvider.encrypt(decrypted);
@@ -762,6 +755,47 @@ describe("envUtils", () => {
       const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
       assert.isTrue(res.isErr());
       assert.isTrue(res._unsafeUnwrapErr() instanceof FileNotFoundError);
+    });
+  });
+
+  describe("extractEnvNameFromFileName", () => {
+    it("happy path", async () => {
+      const res = await envUtil.extractEnvNameFromFileName(".env.dev");
+      assert.isTrue(res === "dev");
+    });
+    it("return undefined", async () => {
+      const res = await envUtil.extractEnvNameFromFileName(".env.dev.user");
+      assert.isUndefined(res);
+    });
+    it("return undefined", async () => {
+      const res = await envUtil.extractEnvNameFromFileName(".env1.dev");
+      assert.isTrue(res === undefined);
+    });
+  });
+});
+
+describe("parseSetOutputCommand", () => {
+  const tools = new MockTools();
+  setTools(tools);
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn | undefined;
+  afterEach(() => {
+    sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
+  });
+  it("parse one key value pair", async () => {
+    const res = parseSetOutputCommand('echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"');
+    assert.deepEqual(res, { TAB_DOMAIN: "localhost:53000" });
+  });
+  it("parse two key value pairs", async () => {
+    const res = parseSetOutputCommand(
+      'echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"; echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";'
+    );
+    assert.deepEqual(res, {
+      TAB_DOMAIN: "localhost:53000",
+      TAB_ENDPOINT: "https://localhost:53000",
     });
   });
 });

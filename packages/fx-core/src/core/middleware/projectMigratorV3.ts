@@ -9,13 +9,9 @@ import {
   err,
   FxError,
   ok,
-  ProjectSettings,
   SystemError,
   UserError,
-  InputConfigsFolderName,
   Platform,
-  AzureSolutionSettings,
-  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -38,7 +34,7 @@ import {
 } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/driver/teamsApp/constants";
 import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
 import {
   readAndConvertUserdata,
@@ -101,10 +97,9 @@ import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
-import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { HubName, LaunchBrowser, LaunchUrl } from "../../component/debug/constants";
-import { manifestUtils } from "../../component/resource/appManifest/utils/ManifestUtils";
+import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
+import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -125,7 +120,7 @@ const Parameters = {
   confirmOnly: "confirmOnly",
 };
 
-export const TelemetryPropertyKey = {
+const TelemetryPropertyKey = {
   button: "button",
   mode: "mode",
   upgradeVersion: "upgrade-version",
@@ -133,7 +128,7 @@ export const TelemetryPropertyKey = {
   reason: "reason",
 };
 
-export const TelemetryPropertyValue = {
+const TelemetryPropertyValue = {
   ok: "ok",
   learnMore: "learn-more",
   cancel: "cancel",
@@ -165,7 +160,6 @@ const subMigrations: Array<Migration> = [
   preMigration,
   manifestsMigration,
   generateAppYml,
-  generateLocalConfig,
   configsMigration,
   statesMigration,
   userdataMigration,
@@ -379,8 +373,8 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
   }
 }
 
-async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
+async function loadProjectSettings(projectPath: string): Promise<any> {
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {
@@ -472,9 +466,9 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     path.join(context.projectPath, oldAadManifestPath)
   );
 
-  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
-    .activeResourcePlugins;
-  const component = (projectSettings as ProjectSettingsV3).components;
+  const activeResourcePlugins = (projectSettings.solutionSettings as any)
+    .activeResourcePlugins as any[];
+  const component = (projectSettings as any).components as any[];
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
     (component &&
@@ -503,7 +497,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
 
 export async function azureParameterMigration(context: MigrationContext): Promise<void> {
   // Ensure `.fx/configs` exists
-  const configFolderPath = path.join(".fx", InputConfigsFolderName);
+  const configFolderPath = path.join(".fx", "configs");
   const configFolderPathExists = await context.fsPathExists(configFolderPath);
   if (!configFolderPathExists) {
     // Keep same practice now. Needs dicussion whether to throw error.
@@ -553,7 +547,7 @@ export async function showNotification(
   return await askUserConfirm(ctx, versionForMigration);
 }
 
-export async function askUserConfirm(
+async function askUserConfirm(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
@@ -585,7 +579,7 @@ export async function askUserConfirm(
   return true;
 }
 
-export async function showNonmodalNotification(
+async function showNonmodalNotification(
   ctx: CoreHookContext,
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
@@ -608,7 +602,7 @@ export async function showNonmodalNotification(
   return false;
 }
 
-export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
+async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const res = await TOOLS?.ui.showMessage(
     "info",
@@ -631,19 +625,19 @@ export async function showConfirmOnlyNotification(ctx: CoreHookContext): Promise
   }
 }
 
-export async function popupMessageModal(
+async function popupMessageModal(
   versionForMigration: VersionForMigration
 ): Promise<string | undefined> {
   return await popupMessage(versionForMigration, true);
 }
 
-export async function popupMessageNonmodal(
+async function popupMessageNonmodal(
   versionForMigration: VersionForMigration
 ): Promise<string | undefined> {
   return await popupMessage(versionForMigration, false);
 }
 
-export async function popupMessage(
+async function popupMessage(
   versionForMigration: VersionForMigration,
   isModal: boolean
 ): Promise<string | undefined> {
@@ -656,14 +650,7 @@ export async function popupMessage(
   return res?.isOk() ? res.value : undefined;
 }
 
-export async function generateLocalConfig(context: MigrationContext): Promise<void> {
-  if (!(await context.fsPathExists(path.join(".fx", "configs", "config.local.json")))) {
-    const oldProjectSettings = await loadProjectSettings(context.projectPath);
-    await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
-  }
-}
-
-export async function setTelemetryProjectId(context: CoreHookContext): Promise<void> {
+async function setTelemetryProjectId(context: CoreHookContext): Promise<void> {
   const projectPath = getParameterFromCxt(context, "projectPath", "");
   try {
     const projectId = await getTrackingIdFromPath(projectPath);

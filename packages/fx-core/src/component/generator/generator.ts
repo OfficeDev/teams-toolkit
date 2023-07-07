@@ -2,16 +2,18 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { ActionContext, ContextV3, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { BaseComponentInnerError } from "../error/componentError";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
-  errorSource,
-  componentName,
   commonTemplateName,
+  componentName,
+  errorSource,
   sampleDefaultTimeoutInMs,
 } from "./constant";
 import {
@@ -23,12 +25,11 @@ import {
   UnzipError,
 } from "./error";
 import {
-  SampleActionSeq,
-  GeneratorAction,
-  TemplateActionSeq,
-  GeneratorContext,
-  GeneratorActionName,
   DownloadDirectoryActionSeq,
+  GeneratorAction,
+  GeneratorActionName,
+  GeneratorContext,
+  TemplateActionSeq,
 } from "./generatorAction";
 import {
   getSampleInfoFromName,
@@ -36,8 +37,6 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import { BaseComponentInnerError } from "../error/componentError";
-import fs from "fs-extra";
 
 export class Generator {
   public static getDefaultVariables(
@@ -62,7 +61,7 @@ export class Generator {
     }),
   ])
   public static async generateTemplate(
-    ctx: ContextV3,
+    ctx: Context,
     destinationPath: string,
     scenario: string,
     language?: string,
@@ -103,7 +102,7 @@ export class Generator {
     }),
   ])
   public static async generateSample(
-    ctx: ContextV3,
+    ctx: Context,
     destinationPath: string,
     sampleName: string,
     actionContext?: ActionContext

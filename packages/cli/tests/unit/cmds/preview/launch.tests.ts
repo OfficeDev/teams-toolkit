@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler } from "@microsoft/teamsfx-api";
-import * as constants from "@microsoft/teamsfx-core/build/common/m365/constants";
+import * as constants from "@microsoft/teamsfx-core";
 import * as sinon from "sinon";
 import { expect } from "../../utils";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";

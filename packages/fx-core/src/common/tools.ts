@@ -1,16 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
+import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
 import {
-  AppPackageFolderName,
   AzureAccountProvider,
-  AzureSolutionSettings,
-  ConfigFolderName,
-  ConfigMap,
   FxError,
-  Json,
   M365TokenProvider,
   OptionItem,
-  ProjectSettings,
   Result,
   SubscriptionInfo,
   SystemError,
@@ -20,29 +16,23 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { ExecOptions, exec } from "child_process";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
-import _ from "lodash";
-import Mustache from "mustache";
-import * as path from "path";
-import { promisify } from "util";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { SolutionError } from "../component/constants";
-import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
-import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
-import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
-import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
+import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
+import { AuthSvcClient } from "../component/driver/teamsApp/clients/authSvcClient";
+import { getAppStudioEndpoint } from "../component/driver/teamsApp/constants";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
 import { FailedToParseResourceIdError } from "../core/error";
-import { getProjectSettingPathV3 } from "../core/middleware/projectSettingsLoader";
+import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
-import { getProjectTemplatesFolderPath } from "./utils";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -56,191 +46,7 @@ Handlebars.registerHelper("equals", (value, target) => {
   return value === target ? this : "";
 });
 
-export const Executor = {
-  async execCommandAsync(command: string, options?: ExecOptions) {
-    const execAsync = promisify(exec);
-    return await execAsync(command, options);
-  },
-};
-
-export async function npmInstall(path: string) {
-  await Executor.execCommandAsync("npm install", {
-    cwd: path,
-  });
-}
-
-export async function ensureUniqueFolder(folderPath: string): Promise<string> {
-  let folderId = 1;
-  let testFolder = folderPath;
-
-  let pathExists = await fs.pathExists(testFolder);
-  while (pathExists) {
-    testFolder = `${folderPath}${folderId}`;
-    folderId++;
-
-    pathExists = await fs.pathExists(testFolder);
-  }
-
-  return testFolder;
-}
-
-/**
- * Convert a `Map` to a Json recursively.
- * @param {Map} map to convert.
- * @returns {Json} converted Json.
- */
-export function mapToJson(map?: Map<any, any>): Json {
-  if (!map) return {};
-  const out: Json = {};
-  for (const entry of map.entries()) {
-    if (entry[1] instanceof Map) {
-      out[entry[0]] = mapToJson(entry[1]);
-    } else {
-      out[entry[0]] = entry[1];
-    }
-  }
-  return out;
-}
-
-/**
- * Convert an `Object` to a Map recursively
- * @param {Json} Json to convert.
- * @returns {Map} converted Json.
- */
-export function objectToMap(o: Json): Map<any, any> {
-  const m = new Map();
-  for (const entry of Object.entries(o)) {
-    if (entry[1] instanceof Array) {
-      m.set(entry[0], entry[1]);
-    } else if (entry[1] instanceof Object) {
-      m.set(entry[0], objectToConfigMap(entry[1] as Json));
-    } else {
-      m.set(entry[0], entry[1]);
-    }
-  }
-  return m;
-}
-
-/**
- * @param {Json} Json to convert.
- * @returns {Map} converted Json.
- */
-export function objectToConfigMap(o?: Json): ConfigMap {
-  const m = new ConfigMap();
-  if (o) {
-    for (const entry of Object.entries(o)) {
-      {
-        m.set(entry[0], entry[1]);
-      }
-    }
-  }
-  return m;
-}
-
-const SecretDataMatchers = [
-  "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-simple-auth.filePath",
-  "fx-resource-simple-auth.environmentVariableParams",
-  "fx-resource-local-debug.*",
-  "fx-resource-bot.botPassword",
-  "fx-resource-apim.apimClientAADClientSecret",
-  "fx-resource-azure-sql.adminPassword",
-];
-
-export const CryptoDataMatchers = new Set([
-  "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientSecret",
-  "fx-resource-simple-auth.environmentVariableParams",
-  "fx-resource-bot.botPassword",
-  "fx-resource-bot.localBotPassword",
-  "fx-resource-apim.apimClientAADClientSecret",
-  "fx-resource-azure-sql.adminPassword",
-]);
-
-export const AzurePortalUrl = "https://portal.azure.com";
-
-/**
- * Only data related to secrets need encryption.
- * @param key - the key name of data in user data file
- * @returns whether it needs encryption
- */
-export function dataNeedEncryption(key: string): boolean {
-  return CryptoDataMatchers.has(key);
-}
-
-export function separateSecretData(configJson: Json): Record<string, string> {
-  const res: Record<string, string> = {};
-  for (const matcher of SecretDataMatchers) {
-    const splits = matcher.split(".");
-    const resourceId = splits[0];
-    const item = splits[1];
-    const resourceConfig: any = configJson[resourceId];
-    if (!resourceConfig) continue;
-    if ("*" !== item) {
-      const configValue = resourceConfig[item];
-      if (configValue) {
-        const keyName = `${resourceId}.${item}`;
-        res[keyName] = configValue;
-        resourceConfig[item] = `{{${keyName}}}`;
-      }
-    } else {
-      for (const itemName of Object.keys(resourceConfig)) {
-        const configValue = resourceConfig[itemName];
-        if (configValue !== undefined) {
-          const keyName = `${resourceId}.${itemName}`;
-          res[keyName] = configValue;
-          resourceConfig[itemName] = `{{${keyName}}}`;
-        }
-      }
-    }
-  }
-  return res;
-}
-
-export function convertDotenvToEmbeddedJson(dict: Record<string, string>): Json {
-  const result: Json = {};
-  for (const key of Object.keys(dict)) {
-    const array = key.split(".");
-    let obj = result;
-    for (let i = 0; i < array.length - 1; ++i) {
-      const subKey = array[i];
-      let subObj = obj[subKey];
-      if (!subObj) {
-        subObj = {};
-        obj[subKey] = subObj;
-      }
-      obj = subObj;
-    }
-    obj[array[array.length - 1]] = dict[key];
-  }
-  return result;
-}
-
-export function replaceTemplateWithUserData(
-  template: string,
-  userData: Record<string, string>
-): string {
-  const view = convertDotenvToEmbeddedJson(userData);
-  Mustache.escape = (t: string) => {
-    if (!t) {
-      return t;
-    }
-    const str = JSON.stringify(t);
-    return str.substr(1, str.length - 2);
-    // return t;
-  };
-  const result = Mustache.render(template, view);
-  return result;
-}
-
-export function serializeDict(dict: Record<string, string>): string {
-  const array: string[] = [];
-  for (const key of Object.keys(dict)) {
-    const value = dict[key];
-    array.push(`${key}=${value}`);
-  }
-  return array.join("\n");
-}
+const AzurePortalUrl = "https://portal.azure.com";
 
 export const deepCopy = <T>(target: T): T => {
   if (target === null) {
@@ -354,81 +160,15 @@ export function getResourceGroupInPortal(
   }
 }
 
-// TODO: move other feature flags to featureFlags.ts to prevent import loop
-export function isBicepEnvCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
-}
-
-export function isAadManifestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.AadManifest, false);
-}
-
-export function isDeployManifestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.DeployManifest, false);
-}
-
-export function isM365AppEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.M365App, false);
-}
-
-export function isApiConnectEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
-}
-
-export function isV3Enabled(): boolean {
-  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
-}
-
-export function isVideoFilterEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
-}
-
-export function isImportSPFxEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
-}
-
 export function compileHandlebarsTemplateString(templateString: string, context: any): string {
   const template = Handlebars.compile(templateString);
   return template(context);
-}
-
-export async function getAppDirectory(projectRoot: string): Promise<string> {
-  const REMOTE_MANIFEST = "manifest.source.json";
-  const appDirNewLocForMultiEnv = path.resolve(
-    await getProjectTemplatesFolderPath(projectRoot),
-    AppPackageFolderName
-  );
-  const appDirNewLoc = path.join(projectRoot, AppPackageFolderName);
-  const appDirOldLoc = path.join(projectRoot, `.${ConfigFolderName}`);
-  if (await fs.pathExists(appDirNewLocForMultiEnv)) {
-    return appDirNewLocForMultiEnv;
-  } else if (await fs.pathExists(path.join(appDirNewLoc, REMOTE_MANIFEST))) {
-    return appDirNewLoc;
-  } else {
-    return appDirOldLoc;
-  }
-}
-
-export function getSiteNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
-  if (!result) {
-    throw FailedToParseResourceIdError("site name", resourceId);
-  }
-  return result;
 }
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
     throw FailedToParseResourceIdError("resource group name", resourceId);
-  }
-  return result;
-}
-
-export function getSubscriptionIdFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
-  if (!result) {
-    throw FailedToParseResourceIdError("subscription id", resourceId);
   }
   return result;
 }
@@ -446,8 +186,8 @@ export function getUuid(): string {
   return uuid.v4();
 }
 
-export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
-  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+export function isSPFxProject(projectSettings?: any): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as any;
   if (solutionSettings) {
     const selectedPlugins = solutionSettings.activeResourcePlugins;
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
@@ -475,19 +215,6 @@ export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
 }
 
-export function getAllowedAppIds(): string[] {
-  return [
-    TeamsClientId.MobileDesktop,
-    TeamsClientId.Web,
-    OfficeClientId.Desktop,
-    OfficeClientId.Web1,
-    OfficeClientId.Web2,
-    OutlookClientId.Desktop,
-    OutlookClientId.Web1,
-    OutlookClientId.Web2,
-  ];
-}
-
 export function getAllowedAppMaps(): Record<string, string> {
   return {
     [TeamsClientId.MobileDesktop]: getLocalizedString("core.common.TeamsMobileDesktopClientName"),
@@ -503,10 +230,6 @@ export function getAllowedAppMaps(): Record<string, string> {
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   return AppStudioClient.getSideloadingStatus(token);
-}
-
-export function getPropertyByPath(obj: any, path: string, defaultValue?: string) {
-  return _.get(obj, path, defaultValue);
 }
 
 export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
@@ -567,7 +290,7 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
     return undefined;
   }
   try {
-    const settingsPath = getProjectSettingPathV3(rootPath);
+    const settingsPath = getProjectSettingsPath(rootPath);
 
     if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
       return undefined;
@@ -580,5 +303,27 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
     };
   } catch {
     return undefined;
+  }
+}
+
+// this function will be deleted after VS has added get dev tunnel and list dev tunnels API
+const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
+export async function listDevTunnels(token: string): Promise<Result<Tunnel[], FxError>> {
+  try {
+    const tunnelManagementClientImpl = new TunnelManagementHttpClient(
+      TunnelManagementUserAgent,
+      async () => {
+        const res = `Bearer ${token}`;
+        return res;
+      }
+    );
+
+    const options = {
+      includeAccessControl: true,
+    };
+    const tunnels = await tunnelManagementClientImpl.listTunnels(undefined, undefined, options);
+    return ok(tunnels);
+  } catch (error) {
+    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", (error as any).message));
   }
 }

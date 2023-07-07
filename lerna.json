@@ -13,7 +13,7 @@
     "packages/adaptivecards-tools-sdk",
     "packages/manifest",
     "packages/eslint-plugin-teamsfx",
-    "packages/extra-shot-mocha",
+    "packages/tests",
     "templates"
   ],
   "command": {

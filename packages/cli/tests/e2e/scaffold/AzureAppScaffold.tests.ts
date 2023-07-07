@@ -34,15 +34,19 @@ describe("Azure App Scaffold", function () {
     await Cleaner.clean(testFolder);
   });
 
-  it(`Tab + Bot + Function in TypeScript`, { testPlanCaseId: 24137753 }, async function () {
-    {
-      const result = await Executor.createProject(
-        testFolder,
-        appName,
-        Capability.TabNonSso,
-        ProgrammingLanguage.TS
-      );
-      expect(result.success).to.be.true;
+  it(
+    `Tab + Bot + Function in TypeScript`,
+    { testPlanCaseId: 24137753, author: "zhijie.huang@microsoft.com" },
+    async function () {
+      {
+        const result = await Executor.createProject(
+          testFolder,
+          appName,
+          Capability.TabNonSso,
+          ProgrammingLanguage.TS
+        );
+        expect(result.success).to.be.true;
+      }
     }
-  });
+  );
 });

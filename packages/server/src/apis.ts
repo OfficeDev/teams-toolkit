@@ -24,7 +24,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   NotificationType2,
@@ -34,6 +34,7 @@ import {
   RequestType1,
   RequestType4,
 } from "vscode-jsonrpc";
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 
 export enum Namespaces {
   /**
@@ -88,6 +89,14 @@ export interface IServerConnection {
       FxError
     >
   >;
+  preCheckYmlAndEnvForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>>;
+  validateManifestForVSRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>>;
   deployArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken
@@ -140,6 +149,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  listDevTunnelsRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Tunnel[], FxError>>;
 }
 
 /**

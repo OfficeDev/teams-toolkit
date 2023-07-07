@@ -2,7 +2,7 @@ import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { FileNotFoundError, JSONSyntaxError, ReadFileError, UnhandledError } from "../error/common";
 import fs from "fs-extra";
 
-export class JSONUtils {
+class JSONUtils {
   parseJSON(content: string): Result<any, FxError> {
     try {
       const obj = JSON.parse(content);

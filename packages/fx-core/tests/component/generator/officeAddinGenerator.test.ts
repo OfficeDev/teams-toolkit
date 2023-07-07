@@ -6,7 +6,7 @@
  */
 
 import {
-  ContextV3,
+  Context,
   devPreview,
   err,
   Inputs,
@@ -38,12 +38,12 @@ import {
   OfficeHostQuestion,
 } from "../../../src/component/generator/officeAddin/question";
 import * as childProcess from "child_process";
-import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
+import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
-import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import EventEmitter from "events";
 import proxyquire from "proxyquire";
@@ -51,7 +51,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
-  let context: ContextV3;
+  let context: Context;
   let mockedEnvRestore: RestoreFn;
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
@@ -255,7 +255,7 @@ describe("getQuestionsForScaffolding", () => {
     const q = getQuestionsForScaffolding();
     chai.expect(q.children?.length).to.eq(2);
     chai.expect(q.children?.[0].condition).is.not.undefined;
-    chai.expect(q.children?.[0].condition).has.property("validFunc");
+    chai.expect(typeof q.children?.[0].condition === "function").to.true;
   });
 
   describe("AddinLanguageQuestions", () => {

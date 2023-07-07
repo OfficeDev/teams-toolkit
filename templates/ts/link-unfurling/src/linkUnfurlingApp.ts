@@ -8,11 +8,8 @@ import {
 import helloWorldCard from "./adaptiveCards/helloWorldCard.json";
 
 export class LinkUnfurlingApp extends TeamsActivityHandler {
-  constructor() {
-    super();
-  }
-
   // Link Unfurling.
+  // This function can be triggered after this app is installed.
   public async handleTeamsAppBasedLinkQuery(
     context: TurnContext,
     query: AppBasedLinkQuery
@@ -43,6 +40,7 @@ export class LinkUnfurlingApp extends TeamsActivityHandler {
   }
 
   // Zero Install Link Unfurling
+  // This function can be triggered if this app sets "supportsAnonymizedPayloads": true in manifest and is uploaded to org's app catalog.
   public async handleTeamsAnonymousAppBasedLinkQuery(
     context: TurnContext,
     query: AppBasedLinkQuery

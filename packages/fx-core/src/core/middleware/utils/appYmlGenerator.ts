@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  AppPackageFolderName,
-  ProjectSettingsV3,
-  ProjectSettings,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName } from "@microsoft/teamsfx-api";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -18,7 +13,7 @@ import { hasFunctionBot } from "../../../common/projectSettingsHelperV3";
 import { convertProjectSettingsV2ToV3 } from "../../../component/migrate";
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
-  constructor(protected oldProjectSettings: ProjectSettings) {}
+  constructor(protected oldProjectSettings: any) {}
 
   protected async buildHandlebarsTemplate(templateName: string): Promise<string> {
     const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", templateName);
@@ -44,11 +39,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     dotnetPath: string | undefined;
     isM365: boolean | undefined;
   };
-  constructor(
-    oldProjectSettings: ProjectSettings,
-    private bicepContent: string,
-    private projectPath: string
-  ) {
+  constructor(oldProjectSettings: any, private bicepContent: string, private projectPath: string) {
     super(oldProjectSettings);
     this.handlebarsContext = {
       activePlugins: {},
@@ -70,7 +61,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
   public async generateAppYml(): Promise<string> {
     await this.generateCommonHandlerbarsContext();
 
-    const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings = this.oldProjectSettings.solutionSettings as any;
     if (solutionSettings.hostType.toLowerCase() === "azure") {
       await this.generateAzureHandlebarsContext();
       switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
@@ -92,7 +83,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.handlebarsContext.placeholderMappings = placeholderMappings as any;
     await this.generateAzureHandlebarsContext();
 
-    const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    const solutionSettings = this.oldProjectSettings.solutionSettings as any;
     if (solutionSettings.hostType === "Azure") {
       switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
         case "csharp":
@@ -108,7 +99,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     // project setting information
     this.handlebarsContext.appName = this.oldProjectSettings.appName;
 
-    const azureSolutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = this.oldProjectSettings.solutionSettings as any;
     for (const activePlugin of azureSolutionSettings.activeResourcePlugins) {
       this.handlebarsContext.activePlugins[activePlugin] = true; // convert array items to object properties to simplify handlebars template
     }
@@ -152,7 +143,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
 
   private async generateAzureHandlebarsContext(): Promise<void> {
     // isFunctionBot
-    const projectSettings: ProjectSettingsV3 = convertProjectSettingsV2ToV3(
+    const projectSettings: any = convertProjectSettingsV2ToV3(
       this.oldProjectSettings,
       this.projectPath
     );

@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { OpeningBrowserFailed } from "./errors";
-import CLIUIInstance from "../../userInteraction";
-import * as constants from "./constants";
+import { Colors, FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Hub } from "@microsoft/teamsfx-core";
 import cliLogger from "../../commonlib/log";
-import * as commonUtils from "./commonUtils";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { Colors, LogLevel, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
+import CLIUIInstance from "../../userInteraction";
 import { getColorizedString } from "../../utils";
+import * as commonUtils from "./commonUtils";
+import * as constants from "./constants";
+import { OpeningBrowserFailed } from "./errors";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 
 export async function openHubWebClientNew(
   hub: Hub,

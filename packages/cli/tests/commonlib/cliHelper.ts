@@ -212,7 +212,7 @@ export class CliHelper {
   static async createDotNetProject(
     appName: string,
     testFolder: string,
-    capability: "tab" | "bot",
+    capability: Capability,
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ): Promise<void> {

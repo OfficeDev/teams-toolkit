@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -105,7 +105,7 @@ export class UpdateTeamsApp extends YargsCommand {
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
       const error = new MissingRequiredArgumentError("teamsfx teams-app", "env");
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateTeamsApp, error);
       return err(error);
     }
 

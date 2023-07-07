@@ -18,7 +18,7 @@ import {
 } from "../../../src/component/configManager/interface";
 import { yamlParser } from "../../../src/component/configManager/parser";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { MetadataUtil } from "../../../src/component/utils/metadataUtil";
+import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { createHash } from "crypto";
@@ -86,16 +86,14 @@ describe("metadata util", () => {
 
   it("should return YamlParsingError", async () => {
     sandbox.stub(yamlParser, "parse").resolves(err(mockedError));
-    const util = new MetadataUtil();
-    const result = await util.parse(".", "dev");
+    const result = await metadataUtil.parse(".", "dev");
     assert(result.isErr() && result.error.name === "mockedError");
   });
 
   it("local config file", async () => {
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
-    const util = new MetadataUtil();
-    const result = await util.parse(".", "local");
+    const result = await metadataUtil.parse(".", "local");
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
         [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
@@ -113,8 +111,7 @@ describe("metadata util", () => {
   it("dev config file", async () => {
     sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
-    const util = new MetadataUtil();
-    const result = await util.parse(".", "dev");
+    const result = await metadataUtil.parse(".", "dev");
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
         [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
@@ -130,9 +127,8 @@ describe("metadata util", () => {
   });
 
   it("parseManifest with empty manifest", () => {
-    const util = new MetadataUtil();
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
-    util.parseManifest({} as TeamsAppManifest);
+    metadataUtil.parseManifest({} as TeamsAppManifest);
 
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
@@ -144,12 +140,13 @@ describe("metadata util", () => {
         "manifest.staticTabs.contentUrl": "",
         "manifest.configurableTabs.configurationUrl": "",
         "manifest.webApplicationInfo.id": "",
+        "manifest.extensions": "false",
       })
     );
   });
 
   it("parseManifest with full manifest", () => {
-    const manifest = {
+    const manifest: any = {
       id: "test-id",
       version: "1.0",
       manifestVersion: "1.0",
@@ -161,11 +158,12 @@ describe("metadata util", () => {
       ],
       configurableTabs: [{ configurationUrl: "https://example.com/config1" }],
       webApplicationInfo: { id: "web-app-id" },
+      extensions: [{}],
     };
-    const util = new MetadataUtil();
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
 
-    util.parseManifest(manifest as TeamsAppManifest);
+    manifest.extensions = [{}];
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
 
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
@@ -182,6 +180,53 @@ describe("metadata util", () => {
           .update(manifest.configurableTabs[0].configurationUrl)
           .digest("base64")}`,
         "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "true",
+      })
+    );
+
+    // If extensions is empty, it should report false in telemetry event
+    manifest.extensions = [];
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+
+    assert.isTrue(
+      spy.calledWith(TelemetryEvent.MetaData, {
+        "manifest.id": "test-id",
+        "manifest.version": "1.0",
+        "manifest.manifestVersion": "1.0",
+        "manifest.bots": "bot1,bot2",
+        "manifest.composeExtensions": "bot1,bot2",
+        "manifest.staticTabs.contentUrl": `${[
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+        ].toString()}`,
+        "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
+          .update(manifest.configurableTabs[0].configurationUrl)
+          .digest("base64")}`,
+        "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "false",
+      })
+    );
+
+    // If extensions is undefined, it should report false in telemetry event
+    manifest.extensions = undefined;
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+
+    assert.isTrue(
+      spy.calledWith(TelemetryEvent.MetaData, {
+        "manifest.id": "test-id",
+        "manifest.version": "1.0",
+        "manifest.manifestVersion": "1.0",
+        "manifest.bots": "bot1,bot2",
+        "manifest.composeExtensions": "bot1,bot2",
+        "manifest.staticTabs.contentUrl": `${[
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+        ].toString()}`,
+        "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
+          .update(manifest.configurableTabs[0].configurationUrl)
+          .digest("base64")}`,
+        "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "false",
       })
     );
   });

@@ -18,8 +18,8 @@ export type Question = inquirer.ListQuestionOptions<inquirer.Answers>;
 
 export default class CustomizedListPrompt extends ListPrompt {
   constructor(questions: Question, rl: ReadlineInterface, answers: inquirer.Answers) {
+    questions.loop = false;
     super(questions, rl, answers);
-    (this.paginator as any).isInfinite = false;
   }
 
   /**

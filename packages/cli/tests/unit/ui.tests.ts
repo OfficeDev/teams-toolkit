@@ -78,6 +78,10 @@ describe("User Interaction Tests", function () {
   });
 
   describe("Single Select Option", async () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("(Hardcode) Subscription: EmptySubConfigOptions Error", async () => {
       const config: SingleSelectConfig = {
         name: "subscription",
@@ -146,9 +150,101 @@ describe("User Interaction Tests", function () {
         expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
       }
     });
+    it("Auto skip for single option (return object = true)", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals({
+          id: "a",
+          cliName: "aa",
+          label: "aaa",
+        });
+      }
+    });
+    it("Auto skip for single option (return object = false)", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Auto skip for single option 1", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("invalid option", async () => {
+      sandbox.stub(UI, "singleSelect").resolves(ok("c"));
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isErr());
+      if (result.isErr()) {
+        expect(result.error.name).equals("InputValidationError");
+      }
+    });
   });
 
   describe("Multi Select Options", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("Get Value from Preset Answers", async () => {
       UI.updatePresetAnswer("resources", ["c"]);
       const config: MultiSelectConfig = {
@@ -191,6 +287,97 @@ describe("User Interaction Tests", function () {
         UI.updatePresetAnswer("resources", ["bb", "cc"]);
         const result = await UI.selectOptions(config);
         expect(result.isOk() ? result.value.result : result.error).deep.equals(["b", "c"]);
+      }
+    });
+
+    it("Auto skip for single option (return object = true)", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals([
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ]);
+      }
+    });
+    it("Auto skip for single option (return object = false)", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("Auto skip for single option 1", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("invalid options", async () => {
+      sandbox.stub(UI, "multiSelect").resolves(ok(["c"]));
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isErr());
+      if (result.isErr()) {
+        expect(result.error.name).equals("InputValidationError");
       }
     });
   });

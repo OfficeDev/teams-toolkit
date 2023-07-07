@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Ivan He <ruhe@microsoft.com>
+ * @author Qianhao Dong <qidon@microsoft.com>
  */
 export enum BotChannelType {
   MicrosoftTeams = "msteams",

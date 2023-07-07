@@ -6,12 +6,11 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
-  ContextV3,
+  Context,
   err,
   FxError,
   LogProvider,
   ok,
-  PluginContext,
   Result,
   SystemError,
   UserError,
@@ -23,7 +22,7 @@ import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
-import { PackageSelectOptionsHelper } from "../utils/question-helper";
+import { PackageSelectOptionsHelper } from "../../../../question/create";
 
 const name = Constants.GeneratorPackageName;
 const displayName = `${name}@${Constants.LatestVersion}`;
@@ -36,9 +35,7 @@ export class GeneratorChecker implements DependencyChecker {
     this._logger = logger;
   }
 
-  public async ensureLatestDependency(
-    ctx: PluginContext | ContextV3
-  ): Promise<Result<boolean, FxError>> {
+  public async ensureLatestDependency(ctx: Context): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart);
 
     try {

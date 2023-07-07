@@ -1,10 +1,10 @@
 import * as chai from "chai";
 import "mocha";
-import { AppDefinition } from "../../../../src/component/resource/appManifest/interfaces/appDefinition";
-import { Bot } from "../../../../src/component/resource/appManifest/interfaces/bot";
-import { ConfigurableTab } from "../../../../src/component/resource/appManifest/interfaces/configurableTab";
-import { MessagingExtension } from "../../../../src/component/resource/appManifest/interfaces/messagingExtension";
-import { StaticTab } from "../../../../src/component/resource/appManifest/interfaces/staticTab";
+import { AppDefinition } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { Bot } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/bot";
+import { ConfigurableTab } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/configurableTab";
+import { MessagingExtension } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/messagingExtension";
+import { StaticTab } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import {
   CommandScope,
   containsUnsupportedFeature,
@@ -13,7 +13,7 @@ import {
   MeetingsContext,
   needBotCode,
   needTabCode,
-} from "../../../../src/component/resource/appManifest/utils/utils";
+} from "../../../../src/component/driver/teamsApp/utils/utils";
 
 describe("utils", () => {
   const validBot: Bot = {
@@ -137,11 +137,11 @@ describe("utils", () => {
       chai.assert.isTrue(needTab);
     });
 
-    it("static tabs without url: returns false", () => {
+    it("static tabs with reserved entity id: returns false", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mockAppId",
         tenantId: "mockTenantId",
-        staticTabs: [{ ...validStaticTab, contentUrl: "" }],
+        staticTabs: [{ ...validStaticTab, entityId: "about" }],
         bots: [validBot],
       };
 

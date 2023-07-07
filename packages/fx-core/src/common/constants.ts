@@ -37,20 +37,6 @@ export class OutlookClientId {
   static readonly Web1 = "00000002-0000-0ff1-ce00-000000000000";
   static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
 }
-
-export class ResourcePlugins {
-  static readonly Aad = "fx-resource-aad-app-for-teams";
-  static readonly FrontendHosting = "fx-resource-frontend-hosting";
-  static readonly SimpleAuth = "fx-resource-simple-auth";
-  static readonly Bot = "fx-resource-bot";
-  static readonly LocalDebug = "fx-resource-local-debug";
-  static readonly AzureSQL = "fx-resource-azure-sql";
-  static readonly Function = "fx-resource-function";
-  static readonly Identity = "fx-resource-identity";
-  static readonly Apim = "fx-resource-apim";
-  static readonly SPFx = "fx-resource-spfx";
-  static readonly AppStudio = "fx-resource-appstudio";
-}
 export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   // This will default to true and this environment is only for tests. It does not expose to user.
@@ -65,20 +51,10 @@ export class FeatureFlagName {
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
-  static readonly TDPIntegration = "TDP_INTEGRATION";
   static readonly V3 = "TEAMSFX_V3";
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly ImportSPFx = "IMPORT_SPFX";
-}
-
-export class ManifestVariables {
-  static readonly DeveloperWebsiteUrl = "developerWebsiteUrl";
-  static readonly DeveloperPrivacyUrl = "developerPrivacyUrl";
-  static readonly DeveloperTermsOfUseUrl = "developerTermsOfUseUrl";
-  static readonly TabContentUrl = "tabContentUrl";
-  static readonly TabWebsiteUrl = "tabWebsiteUrl";
-  static readonly TabConfigurationUrl = "tabConfigurationUrl";
-  static readonly BotId = "botId";
+  static readonly CopilotPlugin = "COPILOT_PLUGIN";
 }

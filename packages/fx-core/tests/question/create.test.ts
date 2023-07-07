@@ -760,6 +760,8 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 3);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginApiSpec().id });
           } else if (question.name === QuestionNames.ApiSpecLocation) {
+            const validRes = await (question as any).inputBoxConfig.validation("https://test.com");
+            assert.isUndefined(validRes);
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
             return ok({ type: "success", result: ["testOperation1"] });
@@ -819,6 +821,8 @@ describe("scaffold question", () => {
               result: CapabilityOptions.copilotPluginOpenAIPlugin().id,
             });
           } else if (question.name === QuestionNames.OpenAIPluginManifestLocation) {
+            const validRes = await (question as any).validation.validFunc("https://test.com");
+            assert.isUndefined(validRes);
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
             return ok({ type: "success", result: ["testOperation1"] });

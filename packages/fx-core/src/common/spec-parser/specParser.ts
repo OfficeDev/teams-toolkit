@@ -19,6 +19,7 @@ import { ConstantString } from "./constants";
  */
 export class SpecParser {
   private specPath: string;
+  private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
 
   /**
    * Creates a new instance of the SpecParser class.
@@ -71,22 +72,8 @@ export class SpecParser {
    */
   async list(): Promise<string[]> {
     try {
-      const apis = await SwaggerParser.validate(this.specPath);
-      const paths = apis.paths;
-      const result: string[] = [];
-      for (const path in paths) {
-        const methods = paths[path];
-        for (const method in methods) {
-          // only list get and post method without auth
-          if (
-            (method === ConstantString.GetMethod || method === ConstantString.PostMethod) &&
-            !methods[method].security
-          ) {
-            result.push(`${method.toUpperCase()} ${path}`);
-          }
-        }
-      }
-      return result;
+      const apiMap = await this.getAllSupportedApi(this.specPath);
+      return Array.from(Object.keys(apiMap));
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
     }
@@ -111,5 +98,30 @@ export class SpecParser {
     }
 
     // TODO: implementation
+  }
+
+  private async getAllSupportedApi(
+    specPath: string
+  ): Promise<{ [key: string]: OpenAPIV3.OperationObject }> {
+    if (this.apiMap !== undefined) {
+      return this.apiMap;
+    }
+    const apis = await SwaggerParser.validate(specPath);
+    const paths = apis.paths;
+    const result: { [key: string]: OpenAPIV3.OperationObject } = {};
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        // only list get and post method without auth
+        if (
+          (method === ConstantString.GetMethod || method === ConstantString.PostMethod) &&
+          !methods[method].security
+        ) {
+          result[`${method.toUpperCase()} ${path}`] = methods[method] as OpenAPIV3.OperationObject;
+        }
+      }
+    }
+    this.apiMap = result;
+    return result;
   }
 }

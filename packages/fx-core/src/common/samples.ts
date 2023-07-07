@@ -91,7 +91,7 @@ class SampleProvider {
     if (version.includes("rc")) {
       return "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/";
     }
-    return this.sampleConfigs ?? sampleConfigV3.baseUrl;
+    return (this.sampleConfigs ?? sampleConfigV3).baseUrl;
   }
 }
 

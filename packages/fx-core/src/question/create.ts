@@ -39,7 +39,7 @@ import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { QuestionNames } from "./questionNames";
 import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
-import { isValidUrl } from "./util";
+import { isValidHttpUrl } from "./util";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1271,7 +1271,7 @@ function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
       name: "input-api-spec-url",
       step: 2, // Add "back" button
       validation: async (input: string): Promise<string | undefined> => {
-        return isValidUrl(input)
+        return isValidHttpUrl(input)
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
       },
@@ -1295,7 +1295,7 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
-        return isValidUrl(input)
+        return isValidHttpUrl(input)
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
       },

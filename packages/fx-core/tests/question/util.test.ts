@@ -3,16 +3,26 @@
 
 import "mocha";
 import * as chai from "chai";
-import { isValidUrl } from "../../src/question/util";
+import { isValidHttpUrl } from "../../src/question/util";
 
-describe("isValidUrl", () => {
-  it("valid url", () => {
+describe("isValidHttpUrl", () => {
+  it("valid https url", () => {
     const url = "https://www.bing.com";
-    chai.expect(isValidUrl(url)).equals(true);
+    chai.expect(isValidHttpUrl(url)).equals(true);
+  });
+
+  it("valid http url", () => {
+    const url = "http://www.bing.com";
+    chai.expect(isValidHttpUrl(url)).equals(true);
   });
 
   it("invalid url", () => {
     const url = "abc";
-    chai.expect(isValidUrl(url)).equals(false);
+    chai.expect(isValidHttpUrl(url)).equals(false);
+  });
+
+  it("invalid protocol", () => {
+    const url = "vscode://www.bing.com";
+    chai.expect(isValidHttpUrl(url)).equals(false);
   });
 });

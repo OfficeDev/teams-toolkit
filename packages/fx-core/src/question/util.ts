@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { URL } from "url";
 
-export function isValidUrl(url: string): boolean {
+export function isValidHttpUrl(input: string): boolean {
+  let url;
   try {
-    new URL(url);
-    return true;
+    url = new URL(input);
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch (e) {
     return false;
   }

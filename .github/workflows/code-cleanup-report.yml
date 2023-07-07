@@ -52,7 +52,7 @@ jobs:
 
     - name: Detect missing header file
       run: |
-        npx eslint  src/**/*.ts --format unix
+        npx eslint src --ext ts --format unix
       working-directory: packages/${{matrix.package}}
 
 

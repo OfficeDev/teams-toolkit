@@ -20,7 +20,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ["src/**/*.ts"],
+      files: ["*.ts"],
       rules: {
         "header/header": [
           "error",

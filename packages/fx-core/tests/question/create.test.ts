@@ -376,8 +376,6 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: "import" });
         } else if (question.name === QuestionNames.SPFxFolder) {
           return ok({ type: "success", result: "" });
-        } else if (question.name === QuestionNames.SkipAppName) {
-          return ok({ type: "success", result: "" });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -397,7 +395,6 @@ describe("scaffold question", () => {
         QuestionNames.Capabilities,
         QuestionNames.SPFxSolution,
         QuestionNames.SPFxFolder,
-        QuestionNames.SkipAppName,
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,

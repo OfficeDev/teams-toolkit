@@ -18,12 +18,12 @@ import { cpUtils } from "../../../../../src";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
 import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 import {
-  fillInAppNameFuncQuestion,
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
   QuestionNames,
   SPFxPackageSelectQuestion,
   SPFxWebpartNameQuestion,
+  appNameQuestion,
 } from "../../../../../src/question";
 
 describe("utils", () => {
@@ -234,39 +234,19 @@ describe("utils", () => {
     chai.expect(res.length === 0).to.be.true;
   });
 
-  it("Returns error when path already exists", async () => {
+  it("Returns solution name as default app name", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: "c:\\testApp",
-      [QuestionNames.AppName]: "",
       [QuestionNames.SPFxFolder]: "c:\\test",
+      [QuestionNames.SPFxSolution]: "import",
     };
     sinon
       .stub(fs, "readJson")
       .resolves({ "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } });
     sinon.stub(fs, "pathExists").resolves(true);
 
-    try {
-      await (fillInAppNameFuncQuestion() as any).func(inputs);
-    } catch (e) {
-      chai.expect(e.name).equal("PathAlreadyExists");
-    }
-  });
-
-  it("Returns error when invalid SPFx solution", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.AppName]: "",
-      [QuestionNames.SPFxSolution]: "import",
-      [QuestionNames.SPFxFolder]: "c:\\test",
-    };
-    sinon.stub(fs, "readJson").resolves({ "@microsoft/generator-sharepoint": {} });
-    sinon.stub(fs, "pathExists").resolves(true);
-
-    try {
-      await (fillInAppNameFuncQuestion() as any).func(inputs);
-    } catch (e) {
-      chai.expect(e.name).equal("RetrieveSPFxInfoFailed");
-    }
+    const defaultName = await (appNameQuestion() as any).default(inputs);
+    chai.expect(defaultName).equal("fakedSolutionName");
   });
 });

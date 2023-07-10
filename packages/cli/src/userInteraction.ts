@@ -485,7 +485,8 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
-        if (indexes.length === 0) {
+        if (result.value.length > 0 && indexes.length === 0) {
+          // the condition means the user input is invalid, none of the choices is in the provided values
           const error = new InputValidationError(
             config.name,
             util.format(

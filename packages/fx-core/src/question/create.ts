@@ -1,7 +1,9 @@
 import {
   CLIPlatforms,
+  Context,
   FolderQuestion,
   FuncQuestion,
+  FxError,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
@@ -11,7 +13,9 @@ import {
   SingleSelectQuestion,
   Stage,
   StaticOptions,
+  SystemError,
   TextInputQuestion,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
@@ -40,6 +44,11 @@ import { Utils } from "../component/generator/spfx/utils/utils";
 import { QuestionNames } from "./questionNames";
 import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
 import { isValidHttpUrl } from "./util";
+import { SpecParser } from "../common/spec-parser/specParser";
+import { ErrorType, ValidationStatus } from "../common/spec-parser/interfaces";
+import { createContextV3 } from "../component/utils";
+import { TOOLS } from "../core/globalVars";
+import { assembleError } from "../error";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1315,12 +1324,23 @@ function apiOperationQuestion(): MultiSelectQuestion {
       minItems: 1,
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      // TODO: will update whe API Spec Parser is ready. For now, return a static options.
-      await sleep(2000);
-      return [
-        { id: "listRepairs", label: "GET repairs" },
-        { id: "createRepair", label: "POST repairs" },
-      ];
+      const specParser = new SpecParser(inputs[QuestionNames.ApiSpecLocation] as string);
+      const validationRes = await specParser.validate();
+      if (validationRes.status === ValidationStatus.Error) {
+        // TODO: handle errors based on error type
+        return [];
+      }
+
+      try {
+        // success or warning
+        const operations = await specParser.list();
+        return operations.map((operation) => {
+          return { id: operation, label: operation };
+        });
+      } catch (e) {
+        const error = assembleError(e);
+        throw error;
+      }
     },
   };
 }

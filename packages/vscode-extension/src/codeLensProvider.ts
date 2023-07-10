@@ -145,20 +145,24 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
 }
 
 export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
+  private static SEARCH_TERM = "adaptivecards.io/schemas/adaptive-card.json";
+
   public static async detectedAdaptiveCards(): Promise<boolean> {
-    const searchTerm = "adaptivecards.io/schemas/adaptive-card.json";
     const files: vscode.Uri[] = await vscode.workspace.findFiles(
       `**/${AdaptiveCardsFolderName}/*.json`
     );
     for (const file of files) {
       const content = await fs.readFile(file.fsPath, "utf8");
-      if (content.includes(searchTerm)) {
+      if (content.includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {
         return true;
       }
     }
     return false;
   }
-  provideCodeLenses(_document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
+  provideCodeLenses(document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
+    if (!document.getText().includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {
+      return [];
+    }
     const codeLenses: vscode.CodeLens[] = [];
     const topOfFile = new vscode.Range(0, 0, 0, 0);
     const command = {

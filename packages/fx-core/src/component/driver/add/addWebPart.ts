@@ -20,8 +20,7 @@ import { SPFxGenerator } from "../../generator/spfx/spfxGenerator";
 import { createContextV3 } from "../../utils";
 import { Constants } from "./utility/constants";
 import { NoConfigurationError } from "./error/noConfigurationError";
-import { SPFxQuestionNames } from "../../constants";
-import { SPFXQuestionNames } from "../../generator/spfx/utils/questions";
+import { QuestionNames } from "../../../question/questionNames";
 
 @Service(Constants.ActionName)
 export class AddWebPartDriver implements StepDriver {
@@ -58,11 +57,11 @@ export class AddWebPartDriver implements StepDriver {
     }
 
     const inputs: Inputs = { platform: context.platform, stage: Stage.addWebpart };
-    inputs[SPFxQuestionNames.WebPartName] = webpartName;
-    inputs[SPFxQuestionNames.SPFxFolder] = spfxFolder;
-    inputs[SPFxQuestionNames.ManifestPath] = manifestPath;
-    inputs[SPFxQuestionNames.LocalManifestPath] = localManifestPath;
-    inputs[SPFXQuestionNames.use_global_package_or_install_local] = spfxPackage;
+    inputs[QuestionNames.SPFxWebpartName] = webpartName;
+    inputs[QuestionNames.SPFxFolder] = spfxFolder;
+    inputs[QuestionNames.ManifestPath] = manifestPath;
+    inputs[QuestionNames.LocalTeamsAppManifestFilePath] = localManifestPath;
+    inputs[QuestionNames.SPFxInstallPackage] = spfxPackage;
     const yeomanRes = await SPFxGenerator.doYeomanScaffold(
       createContextV3(),
       inputs,

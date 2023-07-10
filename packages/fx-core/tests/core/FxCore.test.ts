@@ -21,7 +21,7 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -65,9 +65,10 @@ import {
   CapabilityOptions,
   QuestionNames,
   ScratchOptions,
-  programmingLanguageQuestion,
+  questionNodes,
 } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
+import { FeatureFlagName } from "../../src/common/constants";
 
 const tools = new MockTools();
 
@@ -464,16 +465,10 @@ describe("Core basic APIs", () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.AppName]: appName,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.ProgrammingLanguage]: "javascript",
-      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
-      [QuestionNames.Folder]: os.tmpdir(),
-      stage: Stage.listCollaborator,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    sandbox.stub(collaborator, "getQuestionsForGrantPermission").resolves(ok(undefined));
-    sandbox.stub(collaborator, "getQuestionsForListCollaborator").resolves(ok(undefined));
+    sandbox.stub(questionNodes, "grantPermission").returns(undefined);
+    sandbox.stub(questionNodes, "listCollaborator").returns(undefined);
     sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));
@@ -600,56 +595,6 @@ describe("Core basic APIs", () => {
       assert.isTrue(result.isOk());
     } finally {
       restore();
-    }
-  });
-
-  it("ProgrammingLanguageQuestion", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
-    };
-    const ProgrammingLanguageQuestion = programmingLanguageQuestion();
-    if (
-      ProgrammingLanguageQuestion.dynamicOptions &&
-      ProgrammingLanguageQuestion.placeholder &&
-      typeof ProgrammingLanguageQuestion.placeholder === "function"
-    ) {
-      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
-      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
-    }
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.me().id,
-    });
-
-    function languageAssert(inputs: Inputs) {
-      if (
-        ProgrammingLanguageQuestion.dynamicOptions &&
-        ProgrammingLanguageQuestion.placeholder &&
-        typeof ProgrammingLanguageQuestion.placeholder === "function"
-      ) {
-        const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-        assert.deepEqual(
-          [
-            { id: "javascript", label: "JavaScript" },
-            { id: "typescript", label: "TypeScript" },
-          ],
-          options
-        );
-        const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-        assert.equal("Select a programming language.", placeholder);
-      }
     }
   });
 });
@@ -1310,10 +1255,13 @@ describe("isEnvFile", async () => {
 
   describe("getQuestions", async () => {
     const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
       sandbox.restore();
+      mockedEnvRestore();
     });
     it("happy path", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
       assert.isTrue(res.isOk());
@@ -1335,6 +1283,61 @@ describe("isEnvFile", async () => {
         ]);
       }
     });
+    it("happy path with runtime", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const node = res.value;
+        const names: string[] = [];
+        collectNodeNames(node!, names);
+        assert.deepEqual(names, [
+          "runtime",
+          "capabilities",
+          "bot-host-type-trigger",
+          "spfx-solution",
+          "spfx-install-latest-package",
+          "spfx-framework-type",
+          "spfx-webpart-name",
+          "spfx-folder",
+          "programming-language",
+          "folder",
+          "app-name",
+        ]);
+      }
+    });
+
+    it("happy path: copilot feature flag", async () => {
+      const restore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "true",
+      });
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const node = res.value;
+        const names: string[] = [];
+        collectNodeNames(node!, names);
+        assert.deepEqual(names, [
+          "capabilities",
+          "bot-host-type-trigger",
+          "spfx-solution",
+          "spfx-install-latest-package",
+          "spfx-framework-type",
+          "spfx-webpart-name",
+          "spfx-folder",
+          "api-spec-location",
+          "openai-plugin-manifest-location",
+          "api-operation",
+          "programming-language",
+          "folder",
+          "app-name",
+        ]);
+      }
+      restore();
+    });
+
     function collectNodeNames(node: IQTreeNode, names: string[]) {
       if (node.data.type !== "group") {
         names.push(node.data.name);

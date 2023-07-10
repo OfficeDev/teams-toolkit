@@ -2,7 +2,7 @@ import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
-import { CapabilityOptions } from "../question";
+import { CapabilityOptions } from "../question/create";
 import { ComponentNames } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";

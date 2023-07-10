@@ -3,6 +3,7 @@
 
 import {
   Colors,
+  IQTreeNode,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
@@ -51,19 +52,23 @@ export function getSingleOptionString(
 
 export async function toYargsOptions(data: Question): Promise<Options> {
   const choices = getChoicesFromQTNodeQuestion(data);
-
-  let defaultValue;
-  if (data.default && data.default instanceof Array && data.default.length > 0) {
-    defaultValue = data.default.map((item) => item.toLocaleLowerCase());
-  } else if (data.default && typeof data.default === "string") {
-    defaultValue = data.default.toLocaleLowerCase();
-  } else {
-    defaultValue = undefined;
+  let defaultValue = data.default;
+  if (typeof data.default === "function") {
+    defaultValue = await data.default({ platform: Platform.CLI_HELP });
   }
   let title: any = data.title;
   if (typeof data.title === "function") {
     title = await data.title({ platform: Platform.CLI_HELP });
   }
+
+  if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
+    defaultValue = defaultValue.map((item) => item.toLocaleLowerCase());
+  } else if (defaultValue && typeof defaultValue === "string") {
+    defaultValue = defaultValue.toLocaleLowerCase();
+  } else {
+    defaultValue = undefined;
+  }
+
   if (defaultValue === undefined) {
     return {
       array: data.type === "multiSelect",
@@ -93,7 +98,7 @@ export function toLocaleLowerCase(arg: any): any {
   } else return arg;
 }
 
-export function flattenNodes(node: QTreeNode): QTreeNode[] {
+export function flattenNodes(node: IQTreeNode): IQTreeNode[] {
   const nodeCopy = Object.assign({}, node);
   const children = (nodeCopy.children || []).concat([]);
   nodeCopy.children = undefined;

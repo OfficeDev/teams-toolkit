@@ -281,17 +281,4 @@ describe("Other test case", () => {
       mockedEnvRestore();
     }
   });
-  it("getQuestionsForResourceGroup", async () => {
-    const mockSubscriptionId = "mockSub";
-    const accountProvider = new MockedAzureTokenProvider();
-    const mockToken = await accountProvider.getIdentityCredentialAsync();
-    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
-    const node = await resourceGroupHelper.getQuestionsForResourceGroup(
-      "defaultRG",
-      [["g1", "East US"]],
-      ["East US", "Center US"],
-      mockRmClient
-    );
-    assert.isTrue(node !== undefined);
-  });
 });

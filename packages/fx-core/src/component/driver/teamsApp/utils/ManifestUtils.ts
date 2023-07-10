@@ -18,7 +18,7 @@ import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
-import { CapabilityOptions } from "../../../../question";
+import { CapabilityOptions } from "../../../../question/create";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";

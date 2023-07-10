@@ -2,45 +2,44 @@ import {
   CLIPlatforms,
   FolderQuestion,
   FuncQuestion,
-  FxError,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
   Platform,
-  Result,
+  SingleFileOrInputQuestion,
   SingleSelectQuestion,
   Stage,
   StaticOptions,
   TextInputQuestion,
-  ok,
 } from "@microsoft/teamsfx-api";
-import { isCLIDotNetEnabled } from "../common/featureFlags";
+import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import { cloneDeep } from "lodash";
+import * as os from "os";
+import * as path from "path";
+import semver from "semver";
+import { ConstantString } from "../common/constants";
+import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
-import { Runtime } from "../component/constants";
+import { sampleProvider } from "../common/samples";
+import { convertToAlphanumericOnly } from "../common/utils";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
+import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
+import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
 import {
   DevEnvironmentSetupError,
   PathAlreadyExistsError,
   RetrieveSPFxInfoError,
 } from "../component/generator/spfx/error";
-import { Constants } from "../component/generator/spfx/utils/constants";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import fs from "fs-extra";
-import * as os from "os";
-import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
-import { ConstantString } from "../common/constants";
-import { convertToAlphanumericOnly } from "../common/utils";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
-import { sampleProvider } from "../common/samples";
-import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
-import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import semver from "semver";
-import { cloneDeep } from "lodash";
 import { QuestionNames } from "./questionNames";
+import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
+import { isValidHttpUrl } from "./util";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -96,6 +95,16 @@ export class ProjectTypeOptions {
       detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
     };
   }
+
+  static copilotPlugin(): OptionItem {
+    return {
+      id: "copilot-plugin-type",
+      label: `$(sparkle) ${getLocalizedString(
+        "core.createProjectQuestion.projectType.copilotPlugin.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
+    };
+  }
 }
 
 function scratchOrSampleQuestion(): SingleSelectQuestion {
@@ -125,11 +134,23 @@ function projectTypeQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
-      const staticOptions: StaticOptions = [
-        ProjectTypeOptions.bot(),
-        ProjectTypeOptions.tab(),
-        ProjectTypeOptions.me(),
-      ];
+      let staticOptions: StaticOptions;
+
+      if (isCopilotPluginEnabled()) {
+        staticOptions = [
+          ProjectTypeOptions.copilotPlugin(),
+          ProjectTypeOptions.bot(),
+          ProjectTypeOptions.tab(),
+          ProjectTypeOptions.me(),
+        ];
+      } else {
+        staticOptions = [
+          ProjectTypeOptions.bot(),
+          ProjectTypeOptions.tab(),
+          ProjectTypeOptions.me(),
+        ];
+      }
+
       if (isFromDevPortal(inputs)) {
         const projectType = getTemplateId(inputs.teamsAppFromTdp)?.projectType;
         if (projectType) {
@@ -353,6 +374,7 @@ export class CapabilityOptions {
     return [
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
+      CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       CapabilityOptions.me(),
     ];
@@ -366,12 +388,25 @@ export class CapabilityOptions {
     ];
   }
 
-  static all(inputs?: Inputs): OptionItem[] {
+  static copilotPlugins(): OptionItem[] {
     return [
+      CapabilityOptions.copilotPluginNewApi(),
+      CapabilityOptions.copilotPluginApiSpec(),
+      CapabilityOptions.copilotPluginOpenAIPlugin(),
+    ];
+  }
+
+  static all(inputs?: Inputs): OptionItem[] {
+    const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
     ];
+
+    if (isCopilotPluginEnabled()) {
+      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+    }
+    return capabilityOptions;
   }
 
   static officeAddinImport(): OptionItem {
@@ -410,6 +445,43 @@ export class CapabilityOptions {
       label: "", // No need to set display name as this option won't be shown in UI
     };
   }
+
+  // copilot plugin
+  static copilotPluginNewApi(): OptionItem {
+    return {
+      id: "copilot-new-api",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail"
+      ),
+    };
+  }
+
+  static copilotPluginApiSpec(): OptionItem {
+    return {
+      id: "copilot-api-spec",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
+      ),
+    };
+  }
+
+  static copilotPluginOpenAIPlugin(): OptionItem {
+    return {
+      id: "copilot-ai-plugin",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginAIPluginOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginAIPluginOption.detail"
+      ),
+    };
+  }
 }
 
 function capabilityQuestion(): SingleSelectQuestion {
@@ -428,6 +500,8 @@ function capabilityQuestion(): SingleSelectQuestion {
           );
         case ProjectTypeOptions.outlookAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
+        case ProjectTypeOptions.copilotPlugin().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
@@ -443,7 +517,7 @@ function capabilityQuestion(): SingleSelectQuestion {
         }
       }
       // dotnet capabilities
-      if (getRuntime(inputs) === Runtime.dotnet) {
+      if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
         return CapabilityOptions.dotnetCaps();
       }
       // nodejs capabilities
@@ -456,15 +530,29 @@ function capabilityQuestion(): SingleSelectQuestion {
         return CapabilityOptions.mes();
       } else if (projectType === ProjectTypeOptions.outlookAddin().id) {
         return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
+      } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
+        return CapabilityOptions.copilotPlugins();
       } else {
-        return [
+        const capabilityOptions = [
           ...CapabilityOptions.bots(inputs),
           ...CapabilityOptions.tabs(),
           ...CapabilityOptions.mes(),
         ];
+
+        if (isCopilotPluginEnabled()) {
+          capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+        }
+        return capabilityOptions;
       }
     },
-    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    placeholder: (inputs: Inputs) => {
+      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.copilotPlugin().id) {
+        return getLocalizedString(
+          "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
+        );
+      }
+      return getLocalizedString("core.createCapabilityQuestion.placeholder");
+    },
     forgetLastValue: true,
     skipSingleOption: true,
   };
@@ -564,13 +652,13 @@ export class NotificationTriggerOptions {
   }
 }
 
-function getRuntime(inputs: Inputs): Runtime {
-  let runtime = Runtime.nodejs;
+function getRuntime(inputs: Inputs): string {
+  let runtime = RuntimeOptions.NodeJS().id;
   if (isCLIDotNetEnabled()) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
   } else {
     if (inputs?.platform === Platform.VS) {
-      runtime = Runtime.dotnet;
+      runtime = RuntimeOptions.DotNet().id;
     }
   }
   return runtime;
@@ -585,7 +673,7 @@ function botTriggerQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       const runtime = getRuntime(inputs);
       return [
-        runtime === Runtime.dotnet
+        runtime === RuntimeOptions.DotNet().id
           ? NotificationTriggerOptions.appServiceForVS()
           : NotificationTriggerOptions.appService(),
         ...NotificationTriggerOptions.functionsTriggers(),
@@ -593,7 +681,7 @@ function botTriggerQuestion(): SingleSelectQuestion {
     },
     default: (inputs: Inputs) => {
       const runtime = getRuntime(inputs);
-      return runtime === Runtime.dotnet
+      return runtime === RuntimeOptions.DotNet().id
         ? NotificationTriggerOptions.appServiceForVS().id
         : NotificationTriggerOptions.appService().id;
     },
@@ -786,16 +874,22 @@ export class PackageSelectOptionsHelper {
     return semver.lte(installedVersion, recommendedLowestVersion);
   }
 }
-function SPFxImportFolderQuestion(): FolderQuestion {
+export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.SPFxFolder,
     title: getLocalizedString("core.spfxFolder.title"),
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
+    default: hasDefaultFunc
+      ? (inputs: Inputs) => {
+          if (inputs.projectPath) return path.join(inputs.projectPath, "src");
+          return undefined;
+        }
+      : undefined,
   };
 }
 export const getTemplate = (inputs: Inputs): string => {
-  const capabilities: string[] = inputs["capabilities"];
+  const capabilities: string[] = inputs[QuestionNames.Capabilities];
   const templates: string[] = officeAddinJsonData.getProjectTemplateNames();
 
   const foundTemplate = templates.find((template) => {
@@ -828,12 +922,13 @@ function officeAddinHostingQuestion(): SingleSelectQuestion {
   };
   return OfficeHostQuestion;
 }
+
 const officeAddinJsonData = new projectsJsonData();
 
 export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
-  if (runtime === Runtime.dotnet) {
+  if (runtime === RuntimeOptions.DotNet().id) {
     return [{ id: "csharp", label: "C#" }];
   }
   // office addin supports language defined in officeAddinJsonData
@@ -879,7 +974,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
     placeholder: (inputs: Inputs): string => {
       const runtime = getRuntime(inputs);
       // dotnet
-      if (runtime === Runtime.dotnet) {
+      if (runtime === RuntimeOptions.DotNet().id) {
         return "";
       }
       // office addin
@@ -959,7 +1054,7 @@ export function appNameQuestion(): TextInputQuestion {
   return question;
 }
 
-function fillInAppNameFuncQuestion(): FuncQuestion {
+export function fillInAppNameFuncQuestion(): FuncQuestion {
   const q: FuncQuestion = {
     type: "func",
     name: QuestionNames.SkipAppName,
@@ -1164,7 +1259,73 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-export function createProjectQuestion(): IQTreeNode {
+function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+  return {
+    type: "singleFileOrText",
+    name: QuestionNames.ApiSpecLocation,
+    title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
+    forgetLastValue: true,
+    inputBoxConfig: {
+      title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
+      placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.placeholder"),
+      name: "input-api-spec-url",
+      step: 2, // Add "back" button
+      validation: async (input: string): Promise<string | undefined> => {
+        return isValidHttpUrl(input)
+          ? undefined
+          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+      },
+    },
+    inputOptionItem: {
+      id: "input",
+      label: getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
+    },
+    filters: {
+      files: ["json", "yml", "yaml"],
+    },
+  };
+}
+
+function openAIPluginManifestLocationQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.OpenAIPluginManifestLocation,
+    title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
+    placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
+    forgetLastValue: true,
+    validation: {
+      validFunc: async (input: string): Promise<string | undefined> => {
+        return isValidHttpUrl(input)
+          ? undefined
+          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+      },
+    },
+  };
+}
+
+function apiOperationQuestion(): MultiSelectQuestion {
+  return {
+    type: "multiSelect",
+    name: QuestionNames.ApiOperation,
+    title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder"),
+    forgetLastValue: true,
+    staticOptions: [],
+    validation: {
+      minItems: 1,
+    },
+    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+      // TODO: will update whe API Spec Parser is ready. For now, return a static options.
+      await sleep(2000);
+      return [
+        { id: "listRepairs", label: "GET repairs" },
+        { id: "createRepair", label: "POST repairs" },
+      ];
+    },
+  };
+}
+
+export function createProjectQuestionNode(): IQTreeNode {
   const createProjectQuestion: IQTreeNode = {
     data: scratchOrSampleQuestion(),
     children: [
@@ -1245,8 +1406,37 @@ export function createProjectQuestion(): IQTreeNode {
                 data: officeAddinHostingQuestion(),
               },
               {
+                // Copilot plugin from API spec or AI Plugin
+                condition: {
+                  enum: [
+                    CapabilityOptions.copilotPluginApiSpec().id,
+                    CapabilityOptions.copilotPluginOpenAIPlugin().id,
+                  ],
+                },
+                data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
+                children: [
+                  {
+                    condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
+                    data: apiSpecLocationQuestion(),
+                  },
+                  {
+                    condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
+                    data: openAIPluginManifestLocationQuestion(),
+                  },
+                  {
+                    data: apiOperationQuestion(),
+                  },
+                ],
+              },
+              {
                 // programming language
                 data: programmingLanguageQuestion(),
+                condition: {
+                  excludesEnum: [
+                    CapabilityOptions.copilotPluginApiSpec().id,
+                    CapabilityOptions.copilotPluginOpenAIPlugin().id,
+                  ],
+                },
               },
               {
                 // root folder
@@ -1264,23 +1454,15 @@ export function createProjectQuestion(): IQTreeNode {
             data: { type: "group", name: QuestionNames.RepalceTabUrl },
             children: [
               {
-                condition: (inputs: Inputs) => {
-                  const appDefinition = inputs.teamsAppFromTdp as AppDefinition;
-                  if (appDefinition?.staticTabs) {
-                    const tabsWithWebsiteUrls = appDefinition.staticTabs.filter(
-                      (o) => !!o.websiteUrl
-                    );
-                    if (tabsWithWebsiteUrls.length > 0) {
-                      return true;
-                    }
-                  }
-                  return false;
-                },
+                condition: (inputs: Inputs) =>
+                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.websiteUrl) || [])
+                    .length > 0,
                 data: selectTabWebsiteUrlQuestion(),
               },
               {
-                //isPersonalApp(appDef) already garanteed that the contentUrl is not empty
-                condition: (inputs: Inputs) => inputs.teamsAppFromTdp?.staticTabs.length > 0,
+                condition: (inputs: Inputs) =>
+                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.contentUrl) || [])
+                    .length > 0,
                 data: selectTabsContentUrlQuestion(),
               },
             ],
@@ -1309,14 +1491,9 @@ export function createProjectQuestion(): IQTreeNode {
   return createProjectQuestion;
 }
 
-export function getQuestionsForCreateProject(): Result<IQTreeNode, FxError> {
-  return ok(createProjectQuestion());
-}
-
-export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
-  const node = cloneDeep(createProjectQuestion());
-  trimQuestionTreeForCliHelp(node, [
-    QuestionNames.Runtime,
+export function createProjectCliHelpNode(): IQTreeNode {
+  const node = cloneDeep(createProjectQuestionNode());
+  const deleteNames = [
     QuestionNames.ProjectType,
     QuestionNames.SkipAppName,
     QuestionNames.OfficeAddinImport,
@@ -1324,7 +1501,14 @@ export function getQuestionsForCreateProjectCliHelp(): IQTreeNode {
     QuestionNames.RepalceTabUrl,
     QuestionNames.ReplaceBotIds,
     QuestionNames.Samples,
-  ]);
+  ];
+  if (!isCLIDotNetEnabled()) {
+    deleteNames.push(QuestionNames.Runtime);
+  }
+  if (!isCopilotPluginEnabled()) {
+    deleteNames.push(QuestionNames.CopilotPluginExistingApi);
+  }
+  trimQuestionTreeForCliHelp(node, deleteNames);
   const subTree = pickSubTree(node, QuestionNames.SctatchYes);
   return subTree!;
 }

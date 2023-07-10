@@ -1015,10 +1015,13 @@ export function appNameQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.AppName,
     title: "Application name",
-    default: (inputs: Inputs) => {
-      const defaultName = !inputs.teamsAppFromTdp?.appName
-        ? undefined
-        : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+    default: async (inputs: Inputs) => {
+      let defaultName = undefined;
+      if (inputs.teamsAppFromTdp?.appName) {
+        defaultName = convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+      } else if (inputs[QuestionNames.SPFxSolution] == "import") {
+        defaultName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
+      }
       return defaultName;
     },
     validation: {
@@ -1052,27 +1055,6 @@ export function appNameQuestion(): TextInputQuestion {
     placeholder: "Application name",
   };
   return question;
-}
-
-export function fillInAppNameFuncQuestion(): FuncQuestion {
-  const q: FuncQuestion = {
-    type: "func",
-    name: QuestionNames.SkipAppName,
-    title: "Set app name to skip",
-    func: async (inputs: Inputs) => {
-      if (inputs[QuestionNames.SPFxSolution] == "import") {
-        const solutionName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
-        if (solutionName) {
-          inputs[QuestionNames.AppName] = solutionName;
-          if (await fs.pathExists(path.join(inputs.folder, solutionName)))
-            throw PathAlreadyExistsError(path.join(inputs.folder, solutionName));
-        } else {
-          throw RetrieveSPFxInfoError();
-        }
-      }
-    },
-  };
-  return q;
 }
 
 function sampleSelectQuestion(): SingleSelectQuestion {
@@ -1367,13 +1349,6 @@ export function createProjectQuestionNode(): IQTreeNode {
                   {
                     data: SPFxImportFolderQuestion(),
                     condition: { equals: "import" },
-                    children: [
-                      {
-                        // auto fill in "app-name" question,
-                        // TODO can we make it as a default value of "app-name" question? (need to discuss)
-                        data: fillInAppNameFuncQuestion(),
-                      },
-                    ],
                   },
                 ],
               },
@@ -1495,7 +1470,6 @@ export function createProjectCliHelpNode(): IQTreeNode {
   const node = cloneDeep(createProjectQuestionNode());
   const deleteNames = [
     QuestionNames.ProjectType,
-    QuestionNames.SkipAppName,
     QuestionNames.OfficeAddinImport,
     QuestionNames.OfficeAddinHost,
     QuestionNames.RepalceTabUrl,

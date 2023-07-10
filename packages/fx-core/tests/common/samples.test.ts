@@ -57,7 +57,6 @@ describe("Samples", () => {
       configuration: "Ready for debug",
       suggested: false,
       url: "https://faked-external-sample",
-      packageLink: "https://faked-external-sample/archive/refs/heads/main.zip",
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
@@ -65,7 +64,6 @@ describe("Samples", () => {
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
     chai.expect(faked?.url).equals(fakedExternalSample.url);
-    chai.expect(faked?.link).equals(fakedExternalSample.packageLink);
 
     restore();
     (sampleProvider as any).sampleCollection = undefined;
@@ -86,7 +84,6 @@ describe("Samples", () => {
       time: "5min to run",
       configuration: "Ready for debug",
       suggested: false,
-      packageLink: "https://faked-external-sample/archive/refs/heads/main.zip",
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
@@ -94,7 +91,6 @@ describe("Samples", () => {
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
     chai.expect(faked?.url).equals(sampleConfigV3.baseUrl + fakedExternalSample.id);
-    chai.expect(faked?.link).equals(fakedExternalSample.packageLink);
 
     restore();
     (sampleProvider as any).sampleCollection = undefined;
@@ -120,8 +116,6 @@ describe("Samples", () => {
     const sha = "fakedsha";
     const fakedSampleConfig = {
       baseUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.1.0/",
-      defaultPackageLink:
-        "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v1.1.0.zip",
       samples: [
         {
           id: "hello-world-tab-with-backend",

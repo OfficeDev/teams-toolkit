@@ -1305,7 +1305,8 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
-function apiOperationQuestion(): MultiSelectQuestion {
+export function apiOperationQuestion(): MultiSelectQuestion {
+  // export for unit test
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,

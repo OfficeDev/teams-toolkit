@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 import {
   FuncValidation,
+  FxError,
   Inputs,
   LocalFunc,
   MultiSelectQuestion,
+  OptionItem,
   Platform,
   Question,
   SingleSelectQuestion,
@@ -25,6 +27,7 @@ import {
   RuntimeOptions,
   SPFxVersionOptionIds,
   ScratchOptions,
+  apiOperationQuestion,
   appNameQuestion,
   createProjectQuestionNode,
   getLanguageOptions,
@@ -36,6 +39,8 @@ import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockUserInteraction, randomAppName } from "../core/utils";
 import * as path from "path";
 import { FeatureFlagName } from "../../src/common/constants";
+import { SpecParser } from "../../src/common/spec-parser/specParser";
+import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -889,6 +894,67 @@ describe("scaffold question", () => {
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
+      });
+
+      describe("validate and list operations", async () => {
+        it("valid api spec and list operations successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+
+          assert.isTrue(options.length === 2);
+          assert.isTrue(options[0].id === "operation1");
+          assert.isTrue(options[1].id === "operation2");
+        });
+
+        it("valid api spec and list operations error", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").throws(new Error("error1"));
+          let fxError: FxError;
+          try {
+            await question.dynamicOptions!(inputs);
+          } catch (e) {
+            fxError = e;
+          }
+
+          assert.isTrue(fxError!.message.includes("error1"));
+        });
+
+        it("invalid api spec", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Error,
+            errors: [
+              {
+                type: ErrorType.SpecNotValid,
+                content: "error",
+              },
+            ],
+            warnings: [],
+          });
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+          assert.isTrue(options.length === 0);
+        });
       });
     });
   });

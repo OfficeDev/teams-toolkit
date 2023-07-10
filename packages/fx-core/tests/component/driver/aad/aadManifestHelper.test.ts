@@ -3,7 +3,6 @@
 
 import "mocha";
 import * as chai from "chai";
-import * as util from "util";
 import { AadManifestHelper } from "../../../../src/component/driver/aad/utility/aadManifestHelper";
 import { AadManifestErrorMessage } from "../../../../src/component/driver/aad/error/aadManifestError";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
@@ -130,7 +129,7 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithInvalidSting);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAppId, "Invalid Id"));
+      .to.throw("Unknown resourceAppId Invalid Id");
   });
 
   it("processRequiredResourceAccessInManifest with no requiredResourceAccess", async () => {

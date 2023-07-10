@@ -5,8 +5,15 @@ import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import isUUID from "validator/lib/isUUID";
 import { getPermissionMap } from "../permissions";
-import { AadManifestErrorMessage } from "../error/aadManifestError";
-import * as util from "util";
+import {
+  AadManifestErrorMessage,
+  UnknownResourceAccessIdUserError,
+  UnknownResourceAccessTypeUserError,
+  UnknownResourceAppIdUserError,
+} from "../error/aadManifestError";
+
+const componentName = "AadManifestHelper";
+
 export class AadManifestHelper {
   public static manifestToApplication(manifest: AADManifest): AADApplication {
     const result: AADApplication = {
@@ -213,9 +220,7 @@ export class AadManifestHelper {
       if (!isUUID(resourceIdOrName)) {
         resourceId = map[resourceIdOrName]?.id;
         if (!resourceId) {
-          throw new Error(
-            util.format(AadManifestErrorMessage.UnknownResourceAppId, resourceIdOrName)
-          );
+          throw new UnknownResourceAppIdUserError(componentName, resourceIdOrName);
         }
         requiredResourceAccessItem.resourceAppId = resourceId;
       }
@@ -229,18 +234,11 @@ export class AadManifestHelper {
           } else if (resourceAccessItem.type === "Role") {
             resourceAccessId = map[resourceId].roles[resourceAccessItem.id];
           } else {
-            throw new Error(
-              util.format(
-                AadManifestErrorMessage.UnknownResourceAccessType,
-                resourceAccessItem.type
-              )
-            );
+            throw new UnknownResourceAccessTypeUserError(componentName, resourceAccessItem.type);
           }
 
           if (!resourceAccessId) {
-            throw new Error(
-              util.format(AadManifestErrorMessage.UnknownResourceAccessId, resourceAccessItem.id)
-            );
+            throw new UnknownResourceAccessIdUserError(componentName, resourceAccessItem.id);
           }
           resourceAccessItem.id = resourceAccessId;
         }

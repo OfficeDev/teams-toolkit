@@ -11,6 +11,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "./cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export function makeEnvRelatedProperty(
   projectDir: string,
@@ -63,7 +64,7 @@ export class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-
+    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
@@ -92,7 +93,7 @@ export class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-
+    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
@@ -129,7 +130,7 @@ export class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-
+    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }

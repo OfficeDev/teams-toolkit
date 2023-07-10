@@ -44,7 +44,8 @@ export function listCollaboratorQuestionNode(): IQTreeNode {
     data: { type: "group" },
     children: [
       {
-        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
+        condition: (inputs: Inputs) =>
+          DynamicPlatforms.includes(inputs.platform) && inputs.nonInteractive != true,
         data: selectAppTypeQuestion(),
         children: [selectTeamsAppNode, selectAadAppNode],
       },
@@ -69,7 +70,8 @@ export function grantPermissionQuestionNode(): IQTreeNode {
     data: { type: "group" },
     children: [
       {
-        condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
+        condition: (inputs: Inputs) =>
+          DynamicPlatforms.includes(inputs.platform) && inputs.nonInteractive != true,
         data: selectAppTypeQuestion(),
         children: [
           selectTeamsAppNode,

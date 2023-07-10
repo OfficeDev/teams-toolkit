@@ -19,7 +19,6 @@ import {
 import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import { FileNotFoundError } from "@microsoft/teamsfx-core";
-import CLIUIInstance from "../userInteraction";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -53,9 +52,7 @@ export default class New extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
-      [TelemetryProperty.Interactive]: CLIUIInstance.interactive + "",
-    });
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
 
     const result = await activate();
     if (result.isErr()) {
@@ -72,7 +69,6 @@ export default class New extends YargsCommand {
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error, {
           [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
-          [TelemetryProperty.Interactive]: CLIUIInstance.interactive + "",
         });
         return err(result.error);
       }
@@ -82,7 +78,6 @@ export default class New extends YargsCommand {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       [TelemetryProperty.NewProjectId]: inputs.projectId,
       [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
-      [TelemetryProperty.Interactive]: CLIUIInstance.interactive + "",
     });
     return ok(null);
   }

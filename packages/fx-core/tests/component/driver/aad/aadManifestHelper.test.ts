@@ -192,7 +192,9 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "User.Read"));
+      .to.throw(
+        "Unknown resourceAccess id: User.Read, if you're using permission as resourceAccess id, please try to use permission id instead."
+      );
 
     manifest = {
       requiredResourceAccess: [
@@ -212,7 +214,9 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "Sites.Read.All"));
+      .to.throw(
+        "Unknown resourceAccess id: Sites.Read.All, if you're using permission as resourceAccess id, please try to use permission id instead."
+      );
   });
 });
 

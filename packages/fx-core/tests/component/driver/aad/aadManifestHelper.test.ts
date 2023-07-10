@@ -174,14 +174,14 @@ describe("AAD manifest helper Test", () => {
       .to.not.throw();
   });
 
-  it("processRequiredResourceAccessInManifest with no id mapping for given scope", async () => {
-    const manifest: any = {
+  it("processRequiredResourceAccessInManifest with non-exist resource app id", async () => {
+    let manifest: any = {
       requiredResourceAccess: [
         {
-          resourceAppId: "Microsoft Graph",
+          resourceAppId: "00000000-0000-0000-0000-000000000000", // Non-exist resource app id
           resourceAccess: [
             {
-              id: "NonExistScope",
+              id: "User.Read",
               type: "Scope",
             },
           ],
@@ -193,17 +193,15 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "NonExistScope"));
-  });
+      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "User.Read"));
 
-  it("processRequiredResourceAccessInManifest with no id mapping for given role", async () => {
-    const manifest: any = {
+    manifest = {
       requiredResourceAccess: [
         {
-          resourceAppId: "Microsoft Graph",
+          resourceAppId: "00000000-0000-0000-0000-000000000000", // Non-exist resource app id
           resourceAccess: [
             {
-              id: "NonExistRole",
+              id: "Sites.Read.All",
               type: "Role",
             },
           ],
@@ -215,7 +213,7 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "NonExistRole"));
+      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "Sites.Read.All"));
   });
 });
 

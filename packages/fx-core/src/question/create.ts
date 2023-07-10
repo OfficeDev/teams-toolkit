@@ -1086,7 +1086,6 @@ function sampleSelectQuestion(): SingleSelectQuestion {
         label: sample.title,
         description: `${sample.time} • ${sample.configuration}`,
         detail: sample.shortDescription,
-        data: sample.link,
       } as OptionItem;
     }),
     placeholder: getLocalizedString("core.SampleSelect.placeholder"),

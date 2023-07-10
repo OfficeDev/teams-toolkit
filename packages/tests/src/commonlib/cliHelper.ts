@@ -6,12 +6,8 @@ import {
   execAsyncWithRetry,
   editDotEnvFile,
 } from "../e2e/commonUtils";
-import {
-  TemplateProject,
-  Resource,
-  ResourceToDeploy,
-  Capability,
-} from "./constants";
+import { TemplateProject, Resource, ResourceToDeploy } from "./constants";
+import { Capability } from "../utils/constants";
 import path from "path";
 
 export class CliHelper {

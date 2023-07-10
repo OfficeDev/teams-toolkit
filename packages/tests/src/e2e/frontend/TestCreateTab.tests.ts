@@ -15,7 +15,7 @@ import path from "path";
 import M365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
 import { AadValidator, FrontendValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../commonlib/constants";
+import { Capability } from "../../utils/constants";
 import { Cleaner } from "../../utils/cleaner";
 import {
   execAsyncWithRetry,

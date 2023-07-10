@@ -10,7 +10,7 @@ import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../commonlib/constants";
+import { Capability } from "../../utils/constants";
 import { Cleaner } from "../../utils/cleaner";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";

@@ -17,7 +17,8 @@ import {
   setProvisionParameterValueV3,
   removeTeamsAppExtendToM365,
 } from "../commonUtils";
-import { Capability, EnvConstants } from "../../commonlib/constants";
+import { EnvConstants } from "../../commonlib/constants";
+import { Capability } from "../../utils/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { AzureScopes, environmentManager } from "@microsoft/teamsfx-core";
 import {

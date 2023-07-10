@@ -16,7 +16,8 @@ import path from "path";
 import MockAzureAccountProvider from "@microsoft/teamsfx-cli/src/commonlib/azureLoginUserPassword";
 import { FrontendWebAppConfig } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, EnvConstants } from "../../commonlib/constants";
+import { EnvConstants } from "../../commonlib/constants";
+import { Capability } from "../../utils/constants";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,

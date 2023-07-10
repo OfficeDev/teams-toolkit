@@ -13,7 +13,7 @@ import * as path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../commonlib/constants";
+import { Capability } from "../../utils/constants";
 import {
   cleanUpLocalProject,
   getTestFolder,

@@ -14,7 +14,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import m365Provider from "@microsoft/teamsfx-cli/src/commonlib/m365LoginUserPassword";
 import { AadValidator } from "../../commonlib/aadValidate";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../commonlib/constants";
+import { Capability } from "../../utils/constants";
 import { FrontendValidator } from "../../commonlib/frontendValidator";
 import {
   cleanUpLocalProject,

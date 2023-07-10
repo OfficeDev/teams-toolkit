@@ -345,7 +345,7 @@ jobs:
               continue
             fi
 
-            file="tests/e2e/$case"
+            file="src/e2e/$case"
             elegant_path="${file//.\//}"
 
             started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`

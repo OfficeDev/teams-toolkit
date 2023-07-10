@@ -31,7 +31,7 @@ export class GetPublishingCredentialsError extends UserError {
         "error.deploy.GetPublishingCredentialsError",
         appName,
         resourceGroup,
-        JSON.stringify(error) || "",
+        JSON.stringify(error, Object.getOwnPropertyNames(error)) || "",
         "https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/list-publishing-credentials#code-try-0"
       ),
       displayMessage: getLocalizedString(
@@ -51,7 +51,7 @@ export class DeployZipPackageError extends UserError {
       message: getDefaultString(
         "error.deploy.DeployZipPackageError",
         endpoint,
-        JSON.stringify(error) || "",
+        JSON.stringify(error, Object.getOwnPropertyNames(error)) || "",
         "https://learn.microsoft.com/azure/app-service/deploy-zip?tabs=cli"
       ),
       displayMessage: getLocalizedString(
@@ -70,7 +70,7 @@ export class CheckDeploymentStatusError extends UserError {
       message: getDefaultString(
         "error.deploy.CheckDeploymentStatusError",
         location,
-        JSON.stringify(error) || ""
+        JSON.stringify(error, Object.getOwnPropertyNames(error)) || ""
       ),
       displayMessage: getLocalizedString(
         "error.deploy.CheckDeploymentStatusError",
@@ -89,7 +89,7 @@ export class AzureStorageClearBlobsError extends UserError {
       message: getDefaultString(
         "error.deploy.AzureStorageClearBlobsError",
         storageName,
-        JSON.stringify(errorResponse, undefined, 4)
+        JSON.stringify(errorResponse, Object.getOwnPropertyNames(errorResponse), 4)
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageClearBlobsError.Notification",
@@ -113,7 +113,7 @@ export class AzureStorageUploadFilesError extends UserError {
         "error.deploy.AzureStorageUploadFilesError",
         localFolder,
         storageName,
-        JSON.stringify(errorResponse, undefined, 4)
+        JSON.stringify(errorResponse, Object.getOwnPropertyNames(errorResponse), 4)
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageUploadFilesError.Notification",
@@ -133,7 +133,7 @@ export class AzureStorageGetContainerError extends UserError {
         "error.deploy.AzureStorageGetContainerError",
         containerName,
         storageName,
-        JSON.stringify(error)
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageGetContainerError.Notification",
@@ -154,7 +154,7 @@ export class AzureStorageGetContainerPropertiesError extends UserError {
         "error.deploy.AzureStorageGetContainerPropertiesError",
         containerName,
         storageName,
-        JSON.stringify(error)
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageGetContainerPropertiesError.Notification",
@@ -175,7 +175,7 @@ export class AzureStorageSetContainerPropertiesError extends UserError {
         "error.deploy.AzureStorageSetContainerPropertiesError",
         containerName,
         storageName,
-        JSON.stringify(error)
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageSetContainerPropertiesError.Notification",

@@ -376,8 +376,6 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: "import" });
         } else if (question.name === QuestionNames.SPFxFolder) {
           return ok({ type: "success", result: "" });
-        } else if (question.name === QuestionNames.SkipAppName) {
-          return ok({ type: "success", result: "" });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -397,7 +395,6 @@ describe("scaffold question", () => {
         QuestionNames.Capabilities,
         QuestionNames.SPFxSolution,
         QuestionNames.SPFxFolder,
-        QuestionNames.SkipAppName,
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,
@@ -1082,53 +1079,86 @@ describe("scaffold question", () => {
     });
   });
 
-  it("ProgrammingLanguageQuestion", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
-    };
-    const ProgrammingLanguageQuestion = programmingLanguageQuestion();
-    if (
-      ProgrammingLanguageQuestion.dynamicOptions &&
-      ProgrammingLanguageQuestion.placeholder &&
-      typeof ProgrammingLanguageQuestion.placeholder === "function"
-    ) {
-      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
-      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
-    }
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.me().id,
-    });
-
-    function languageAssert(inputs: Inputs) {
-      if (
-        ProgrammingLanguageQuestion.dynamicOptions &&
-        ProgrammingLanguageQuestion.placeholder &&
-        typeof ProgrammingLanguageQuestion.placeholder === "function"
-      ) {
-        const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-        assert.deepEqual(
-          [
-            { id: "javascript", label: "JavaScript" },
-            { id: "typescript", label: "TypeScript" },
-          ],
-          options
-        );
-        const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-        assert.equal("Select a programming language.", placeholder);
+  describe("programmingLanguageQuestion", () => {
+    const question = programmingLanguageQuestion();
+    it("office addin: should have typescript as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [{ label: "TypeScript", id: "TypeScript" }]);
       }
-    }
+    });
+
+    it("office addin: should default to TypeScript for taskpane projects", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+      assert.isDefined(question.default);
+      const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
+      assert.equal(lang, "TypeScript");
+    });
+
+    it("SPFxTab", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+      };
+      if (
+        question.dynamicOptions &&
+        question.placeholder &&
+        typeof question.placeholder === "function"
+      ) {
+        const options = question.dynamicOptions(inputs);
+        assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
+        const placeholder = question.placeholder(inputs);
+        assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
+      }
+
+      languageAssert({
+        platform: Platform.VSCode,
+        [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+      });
+      languageAssert({
+        platform: Platform.VSCode,
+        [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
+      });
+      languageAssert({
+        platform: Platform.VSCode,
+        [QuestionNames.Capabilities]: CapabilityOptions.me().id,
+      });
+
+      function languageAssert(inputs: Inputs) {
+        if (
+          question.dynamicOptions &&
+          question.placeholder &&
+          typeof question.placeholder === "function"
+        ) {
+          const options = question.dynamicOptions(inputs);
+          assert.deepEqual(
+            [
+              { id: "javascript", label: "JavaScript" },
+              { id: "typescript", label: "TypeScript" },
+            ],
+            options
+          );
+          const placeholder = question.placeholder(inputs);
+          assert.equal("Select a programming language.", placeholder);
+        }
+      }
+    });
+  });
+
+  describe("getTemplate", () => {
+    it("should find taskpane template", () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+      };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      const template = getTemplate(inputs);
+      assert.equal(template, "taskpane");
+    });
   });
 });

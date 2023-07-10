@@ -31,12 +31,7 @@ import {
   GeneratorContext,
   TemplateActionSeq,
 } from "./generatorAction";
-import {
-  getSampleInfoFromName,
-  getSampleRelativePath,
-  renderTemplateFileData,
-  renderTemplateFileName,
-} from "./utils";
+import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
 
 export class Generator {
   public static getDefaultVariables(
@@ -119,7 +114,6 @@ export class Generator {
       logProvider: ctx.logProvider,
       url: sample.url,
       timeoutInMs: sampleDefaultTimeoutInMs,
-      relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));

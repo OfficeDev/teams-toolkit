@@ -267,7 +267,7 @@ describe("none scaffold questions", () => {
   });
 });
 
-describe("getQuestionsForListCollaborator()", async () => {
+describe("listCollaborator", async () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -401,7 +401,7 @@ describe("getQuestionsForListCollaborator()", async () => {
     }
   });
 });
-describe("getQuestionsForGrantPermission()", async () => {
+describe("grantPermission", async () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -501,7 +501,7 @@ describe("getQuestionsForGrantPermission()", async () => {
     }
   });
 });
-describe("getQuestionForDeployAadManifest()", async () => {
+describe("deployAadManifest", async () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {

@@ -62,7 +62,7 @@ export class AadManifestHelper {
       parentalControlSettings: manifest.parentalControlSettings,
       publicClient: {
         redirectUris: manifest.replyUrlsWithType
-          .filter((item) => item.type === "InstalledClient")
+          ?.filter((item) => item.type === "InstalledClient")
           .map((item) => item.url),
       },
       requiredResourceAccess: manifest.requiredResourceAccess,
@@ -70,7 +70,7 @@ export class AadManifestHelper {
         homePageUrl: manifest.signInUrl,
         logoutUrl: manifest.logoutUrl,
         redirectUris: manifest.replyUrlsWithType
-          .filter((item) => item.type === "Web")
+          ?.filter((item) => item.type === "Web")
           .map((item) => item.url),
         implicitGrantSettings: {
           enableIdTokenIssuance: manifest.oauth2AllowIdTokenImplicitFlow,
@@ -79,7 +79,7 @@ export class AadManifestHelper {
       },
       spa: {
         redirectUris: manifest.replyUrlsWithType
-          .filter((item) => item.type === "Spa")
+          ?.filter((item) => item.type === "Spa")
           .map((item) => item.url),
       },
     };
@@ -225,14 +225,14 @@ export class AadManifestHelper {
         requiredResourceAccessItem.resourceAppId = resourceId;
       }
 
-      requiredResourceAccessItem.resourceAccess.forEach((resourceAccessItem) => {
+      requiredResourceAccessItem.resourceAccess?.forEach((resourceAccessItem) => {
         const resourceAccessIdOrName = resourceAccessItem.id;
         if (!isUUID(resourceAccessIdOrName)) {
           let resourceAccessId;
           if (resourceAccessItem.type === "Scope") {
-            resourceAccessId = map[resourceId].scopes[resourceAccessItem.id];
+            resourceAccessId = map[resourceId]?.scopes[resourceAccessItem.id];
           } else if (resourceAccessItem.type === "Role") {
-            resourceAccessId = map[resourceId].roles[resourceAccessItem.id];
+            resourceAccessId = map[resourceId]?.roles[resourceAccessItem.id];
           } else {
             throw new UnknownResourceAccessTypeUserError(componentName, resourceAccessItem.type);
           }

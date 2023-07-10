@@ -14,7 +14,6 @@ import { AADManifest } from "../interface/AADManifest";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { getUuid } from "../../../../common/tools";
 import { MissingEnvironmentVariablesError } from "../../../../error/common";
-import { isNullOrUndefined } from "../../util/utils";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -90,66 +89,11 @@ async function loadManifest(
     }
     const manifest: AADManifest = JSON.parse(manifestString);
     AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
-    validateManifest(manifest);
     return manifest;
   } finally {
     if (generatedNewPermissionId) {
       // restore environment variable to avoid impact to other code
       delete process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID;
     }
-  }
-}
-
-function validateManifest(manifest: AADManifest): void {
-  const missingProperties: string[] = [];
-
-  if (isNullOrUndefined(manifest.addIns)) {
-    missingProperties.push("addIns");
-  }
-  if (isNullOrUndefined(manifest.appRoles)) {
-    missingProperties.push("appRoles");
-  }
-  if (isNullOrUndefined(manifest.identifierUris)) {
-    missingProperties.push("identifierUris");
-  }
-  if (isNullOrUndefined(manifest.informationalUrls)) {
-    missingProperties.push("informationalUrls");
-  }
-  if (isNullOrUndefined(manifest.keyCredentials)) {
-    missingProperties.push("keyCredentials");
-  }
-  if (isNullOrUndefined(manifest.knownClientApplications)) {
-    missingProperties.push("knownClientApplications");
-  }
-  if (isNullOrUndefined(manifest.name)) {
-    missingProperties.push("name");
-  }
-  if (isNullOrUndefined(manifest.oauth2AllowIdTokenImplicitFlow)) {
-    missingProperties.push("oauth2AllowIdTokenImplicitFlow");
-  }
-  if (isNullOrUndefined(manifest.oauth2AllowImplicitFlow)) {
-    missingProperties.push("oauth2AllowImplicitFlow");
-  }
-  if (isNullOrUndefined(manifest.oauth2Permissions)) {
-    missingProperties.push("oauth2Permissions");
-  }
-  if (isNullOrUndefined(manifest.preAuthorizedApplications)) {
-    missingProperties.push("preAuthorizedApplications");
-  }
-  if (isNullOrUndefined(manifest.replyUrlsWithType)) {
-    missingProperties.push("replyUrlsWithType");
-  }
-  if (isNullOrUndefined(manifest.requiredResourceAccess)) {
-    missingProperties.push("requiredResourceAccess");
-  }
-  if (isNullOrUndefined(manifest.signInAudience)) {
-    missingProperties.push("signInAudience");
-  }
-  if (isNullOrUndefined(manifest.tags)) {
-    missingProperties.push("tags");
-  }
-
-  if (missingProperties.length > 0) {
-    throw new MissingFieldInManifestUserError(actionName, missingProperties, helpLink);
   }
 }

@@ -1,9 +1,7 @@
 import {
   CLIPlatforms,
-  Context,
   FolderQuestion,
   FuncQuestion,
-  FxError,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
@@ -13,9 +11,7 @@ import {
   SingleSelectQuestion,
   Stage,
   StaticOptions,
-  SystemError,
   TextInputQuestion,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
@@ -42,12 +38,9 @@ import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { QuestionNames } from "./questionNames";
-import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
 import { isValidHttpUrl } from "./util";
 import { SpecParser } from "../common/spec-parser/specParser";
-import { ErrorType, ValidationStatus } from "../common/spec-parser/interfaces";
-import { createContextV3 } from "../component/utils";
-import { TOOLS } from "../core/globalVars";
+import { ValidationStatus } from "../common/spec-parser/interfaces";
 import { assembleError } from "../error";
 
 export class ScratchOptions {

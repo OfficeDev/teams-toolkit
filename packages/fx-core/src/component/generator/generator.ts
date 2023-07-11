@@ -38,10 +38,12 @@ export class Generator {
     appName: string,
     safeProjectNameFromVS?: string
   ): { [key: string]: string } {
+    const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
     return {
       appName: appName,
       ProjectName: appName,
-      SafeProjectName: safeProjectNameFromVS ?? convertToAlphanumericOnly(appName),
+      SafeProjectName: safeProjectName,
+      SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
     };
   }
   @hooks([

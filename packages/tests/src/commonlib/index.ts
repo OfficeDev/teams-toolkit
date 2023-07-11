@@ -9,7 +9,6 @@ export * from "./simpleAuthValidator";
 export * from "./sqlValidator";
 export * from "./aadManager";
 export * from "./resourceGroupManager";
-export * from "./apimValidator";
 export * from "./functionValidator";
 export * from "./botValidator";
 export * from "./frontendValidator";

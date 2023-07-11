@@ -407,7 +407,7 @@ describe("serverConnections", () => {
   it("setRegionRequest", () => {
     const connection = new ServerConnection(msgConn);
     const accountToken = {
-      token: "fake token",
+      token: "fakeToken",
     };
 
     const fakeAxiosInstance = axios.create();

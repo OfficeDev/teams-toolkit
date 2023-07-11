@@ -10,6 +10,11 @@
       "skipLibCheck": true,
       "strict": true /* enable all strict type-checking options */,
       "jsx": "react",
+      "noEmitOnError": true,
+      "useUnknownInCatchVariables": false,
+      "experimentalDecorators": true,
+      "allowSyntheticDefaultImports": true,
+      "emitDecoratorMetadata": true,
       "esModuleInterop": true
     },
     "include": ["src"],

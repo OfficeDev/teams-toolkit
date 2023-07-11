@@ -3,7 +3,8 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "./commonUtils";
-import { Capability, TemplateProject } from "../constants";
+import { TemplateProject } from "../commonlib/constants";
+import { Capability } from "../utils/constants";
 import path from "path";
 
 export class Executor {
@@ -82,8 +83,7 @@ export class Executor {
     const command =
       `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
-      ` --local-manifest-path ${localManifestPath}` +
-      ` --spfx-install-latest-package true`;
+      ` --local-manifest-path ${localManifestPath}`;
     return this.execute(command, workspace);
   }
 

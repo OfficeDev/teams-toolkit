@@ -156,7 +156,6 @@ jobs:
       matrix:
         package:
         - fx-core
-        - server
         - vscode-extension
         - manifest
         - api
@@ -200,7 +199,6 @@ jobs:
       matrix:
         package:
         - fx-core
-        - server
         - vscode-extension
         - manifest
         - api
@@ -244,7 +242,6 @@ jobs:
       matrix:
         package:
         - fx-core
-        - server
         - vscode-extension
         - manifest
         - api

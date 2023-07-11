@@ -77,7 +77,7 @@
   "plugins.spfx.questions.packageSelect.installLocally.noVersion.label": "Install the latest SPFx locally in Teams Toolkit directory ",
   "plugins.spfx.questions.spfxSolution.title": "SharePoint Solution",
   "plugins.spfx.questions.spfxSolution.createNew": "Create a New SPFx Solution",
-  "plugins.spfx.questions.spfxSolution.createNew.detail": "Use the Teams Toolkit to create a new Teams application with SPFx",
+  "plugins.spfx.questions.spfxSolution.createNew.detail": "Create a Teams Tab application using SPFx web parts",
   "plugins.spfx.questions.spfxSolution.importExisting": "Import an Existing SPFx Solution",
   "plugins.spfx.questions.spfxSolution.importExisting.detail": "Expose SPFx client-side web part as Microsoft Teams tab or personal app",
   "plugins.spfx.deployNotice": "SharePoint package %s has been successfully deployed to [%s](%s).",

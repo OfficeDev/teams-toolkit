@@ -304,5 +304,5 @@ packages/fx-core/tests/helpers.ts @jayzhang @MSFT-yiz
 
 packages/manifest/ @1yefuwang1 @MSFT-yiz
 
-packages/fx-core/src/common/spec-parser/ @rentu @adashen
-packages/fx-core/tests/common/spec-parser/ @rentu @adashen
+packages/fx-core/src/common/spec-parser/ @SLdragon @adashen
+packages/fx-core/tests/common/spec-parser/ @SLdragon @adashen

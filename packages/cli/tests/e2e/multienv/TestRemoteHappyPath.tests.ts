@@ -36,7 +36,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
   it(
     `Can create/provision/deploy/build/validate/launch remote a azure bot project`,
-    { testPlanCaseId: 24137694 },
+    { testPlanCaseId: 24137694, author: "tianyuan@microsoft.com" },
     async function () {
       try {
         let result;

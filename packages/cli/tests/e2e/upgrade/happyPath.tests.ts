@@ -25,40 +25,44 @@ describe("upgrade", () => {
     await Cleaner.clean(projectPath);
   });
 
-  it("upgrade project", { testPlanCaseId: 17184119 }, async function () {
-    {
-      await Executor.installCLI(testFolder, "1.2.5", true);
-      const env = Object.assign({}, process.env);
-      env["TEAMSFX_V3"] = "false";
-      // new a project ( tab only )
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso, env);
-    }
+  it(
+    "upgrade project",
+    { testPlanCaseId: 17184119, author: "zhaofengxu@microsoft.com" },
+    async function () {
+      {
+        await Executor.installCLI(testFolder, "1.2.5", true);
+        const env = Object.assign({}, process.env);
+        env["TEAMSFX_V3"] = "false";
+        // new a project ( tab only )
+        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso, env);
+      }
 
-    await Executor.installCLI(testFolder, "alpha", true);
-    {
-      // upgrade
-      const result = await Executor.upgrade(projectPath);
-      chai.assert.isTrue(result.success);
-      const ymlFile = path.join(projectPath, "teamsapp.yml");
-      await checkYmlHeader(ymlFile);
-    }
+      await Executor.installCLI(testFolder, "alpha", true);
+      {
+        // upgrade
+        const result = await Executor.upgrade(projectPath);
+        chai.assert.isTrue(result.success);
+        const ymlFile = path.join(projectPath, "teamsapp.yml");
+        await checkYmlHeader(ymlFile);
+      }
 
-    // {
-    //   // preview
-    //   const result = await Executor.preview(projectPath);
-    //   chai.assert.isTrue(result.success);
-    // }
+      // {
+      //   // preview
+      //   const result = await Executor.preview(projectPath);
+      //   chai.assert.isTrue(result.success);
+      // }
 
-    {
-      // provision
-      const result = await Executor.provision(projectPath);
-      chai.assert.isTrue(result.success);
-    }
+      {
+        // provision
+        const result = await Executor.provision(projectPath);
+        chai.assert.isTrue(result.success);
+      }
 
-    {
-      // deploy
-      const result = await Executor.deploy(projectPath);
-      chai.assert.isTrue(result.success);
+      {
+        // deploy
+        const result = await Executor.deploy(projectPath);
+        chai.assert.isTrue(result.success);
+      }
     }
-  });
+  );
 });

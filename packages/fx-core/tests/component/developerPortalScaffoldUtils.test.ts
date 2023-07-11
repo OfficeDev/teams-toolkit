@@ -2,44 +2,38 @@
  * @author Yuqi Zhou <yuqzho@microsoft.com>
  */
 import { err, Inputs, ok, Platform, TeamsAppManifest, UserError } from "@microsoft/teamsfx-api";
-import "mocha";
 import chai from "chai";
+import fs from "fs-extra";
+import { merge } from "lodash";
+import "mocha";
+import path from "path";
 import * as sinon from "sinon";
-import { createContextV3 } from "../../src/component/utils";
-import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
-import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
 import {
   developerPortalScaffoldUtils,
   getTemplateId,
 } from "../../src/component/developerPortalScaffoldUtils";
-import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { ObjectIsUndefinedError } from "../../src/core/error";
-import fs from "fs-extra";
-import path from "path";
-import { CoreQuestionNames } from "../../src/core/question";
+import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
 import {
   BOTS_TPL_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
   DEFAULT_DESCRIPTION,
   DEFAULT_DEVELOPER,
 } from "../../src/component/driver/teamsApp/constants";
-import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { Bot } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/bot";
 import { ConfigurableTab } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/configurableTab";
-import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsApp/utils/utils";
-import { StaticTab } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import { MessagingExtension } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/messagingExtension";
-import {
-  BotOptionItem,
-  DefaultBotAndMessageExtensionItem,
-  MessageExtensionNewUIItem,
-  TabNonSsoAndDefaultBotItem,
-  TabNonSsoItem,
-} from "../../src/component/constants";
-import { MockTools } from "../core/utils";
-import { setTools } from "../../src/core/globalVars";
+import { StaticTab } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsApp/utils/utils";
+import { createContextV3 } from "../../src/component/utils";
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
-import { merge } from "lodash";
+import { ObjectIsUndefinedError } from "../../src/core/error";
+import { setTools } from "../../src/core/globalVars";
+import { QuestionNames } from "../../src/question/questionNames";
+import { MockTools } from "../core/utils";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
+import { CapabilityOptions } from "../../src";
 
 describe("developPortalScaffoldUtils", () => {
   setTools(new MockTools());
@@ -225,8 +219,8 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceWebsiteUrl]: ["name0"],
-        [CoreQuestionNames.ReplaceContentUrl]: ["name1"],
+        [QuestionNames.ReplaceWebsiteUrl]: ["name0"],
+        [QuestionNames.ReplaceContentUrl]: ["name1"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -368,8 +362,8 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceWebsiteUrl]: [],
-        [CoreQuestionNames.ReplaceContentUrl]: [],
+        [QuestionNames.ReplaceWebsiteUrl]: [],
+        [QuestionNames.ReplaceContentUrl]: [],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -503,7 +497,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+        [QuestionNames.ReplaceBotIds]: ["bot"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -624,7 +618,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["messageExtension"],
+        [QuestionNames.ReplaceBotIds]: ["messageExtension"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -758,7 +752,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
+        [QuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -884,7 +878,7 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
+        [QuestionNames.ReplaceBotIds]: ["bot", "messageExtension"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -1025,8 +1019,8 @@ describe("developPortalScaffoldUtils", () => {
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [CoreQuestionNames.ReplaceWebsiteUrl]: ["name0"],
-        [CoreQuestionNames.ReplaceContentUrl]: ["name1"],
+        [QuestionNames.ReplaceWebsiteUrl]: ["name0"],
+        [QuestionNames.ReplaceContentUrl]: ["name1"],
       };
       const manifest: TeamsAppManifest = {
         manifestVersion: "version",
@@ -1127,7 +1121,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res?.templateId, TabNonSsoAndDefaultBotItem().id);
+      chai.assert.equal(res?.templateId, CapabilityOptions.nonSsoTabAndBot().id);
       chai.assert.equal(res?.projectType, "tab-bot-type");
     });
 
@@ -1138,7 +1132,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res?.templateId, TabNonSsoItem().id);
+      chai.assert.equal(res?.templateId, CapabilityOptions.nonSsoTab().id);
       chai.assert.equal(res?.projectType, "tab-type");
     });
 
@@ -1150,7 +1144,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res?.templateId, DefaultBotAndMessageExtensionItem().id);
+      chai.assert.equal(res?.templateId, CapabilityOptions.botAndMe().id);
       chai.assert.equal(res?.projectType, "bot-me-type");
     });
 
@@ -1161,7 +1155,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res?.templateId, MessageExtensionNewUIItem().id);
+      chai.assert.equal(res?.templateId, CapabilityOptions.me().id);
       chai.assert.equal(res?.projectType, "me-type");
     });
 
@@ -1172,7 +1166,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res?.templateId, BotOptionItem().id);
+      chai.assert.equal(res?.templateId, CapabilityOptions.basicBot().id);
       chai.assert.equal(res?.projectType, "bot-type");
     });
 

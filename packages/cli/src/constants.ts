@@ -127,7 +127,7 @@ export const templates = sampleProvider.SampleCollection.samples.map((sample) =>
     title: sample.title,
     description: sample.shortDescription,
     sampleAppName: sample.id,
-    sampleAppUrl: sample.link,
+    sampleAppUrl: sample.url,
   };
 });
 

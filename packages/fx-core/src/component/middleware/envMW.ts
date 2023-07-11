@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Middleware, NextFunction } from "@feathersjs/hooks";
-import { err, Inputs, QTreeNode } from "@microsoft/teamsfx-api";
+import { Inputs, err } from "@microsoft/teamsfx-api";
 import _ from "lodash";
 import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
-import { SelectEnvQuestion } from "../question";
-import { envUtil } from "../utils/envUtil";
+import { QuestionNames } from "../../question/questionNames";
+import { selectTargetEnvQuestion } from "../../question/other";
 import { traverse } from "../../ui/visitor";
+import { envUtil } from "../utils/envUtil";
 
 /**
  *
@@ -56,29 +57,12 @@ const envLoaderMWImpl = async (
       await next();
       return;
     }
-    const question = SelectEnvQuestion();
-    const envListRes = await envUtil.listEnv(projectPath);
-    if (envListRes.isErr()) {
-      ctx.result = err(envListRes.error);
+    const question = selectTargetEnvQuestion(QuestionNames.Env, !withLocalEnv, true);
+    const res = await traverse({ data: question }, inputs, TOOLS.ui);
+    if (res.isErr()) {
+      TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
+      ctx.result = err(res.error);
       return;
-    }
-    if (withLocalEnv) {
-      question.staticOptions = envListRes.value;
-    } else {
-      question.staticOptions = envListRes.value.filter(
-        (p) => p !== environmentManager.getLocalEnvName()
-      );
-    }
-    if (question.staticOptions.length === 0) {
-      // if env folder is not available or env folder is empty, then default env = dev
-      inputs.env = environmentManager.getDefaultEnvName();
-    } else {
-      const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
-      if (res.isErr()) {
-        TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
-        ctx.result = err(res.error);
-        return;
-      }
     }
   }
   const res = await envUtil.readEnv(projectPath, inputs.env!);

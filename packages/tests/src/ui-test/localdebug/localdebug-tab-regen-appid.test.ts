@@ -7,9 +7,14 @@ import {
   stopDebugging,
   waitForTerminal,
 } from "../../vscodeOperation";
-import { initPage, validateTab } from "../../playwrightOperation";
+import { initPage, validateBasicTab } from "../../playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel, DebugItemSelect } from "../../constants";
+import {
+  Timeout,
+  LocalDebugTaskLabel,
+  DebugItemSelect,
+  ValidationContent,
+} from "../../constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
@@ -22,7 +27,7 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("tab");
+    localDebugTestContext = new LocalDebugTestContext("tabnsso");
     await localDebugTestContext.before();
   });
 
@@ -42,13 +47,13 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.jsx");
+      validateFileExist(projectPath, "src/app.js");
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(
-        LocalDebugTaskLabel.StartFrontend,
-        "Compiled successfully!"
+        LocalDebugTaskLabel.StartApplication,
+        "restify listening to"
       );
 
       await stopDebugging();
@@ -58,8 +63,8 @@ describe("Local Debug Tests", function () {
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(
-        LocalDebugTaskLabel.StartFrontend,
-        "Compiled successfully!"
+        LocalDebugTaskLabel.StartApplication,
+        "restify listening to"
       );
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
@@ -69,8 +74,7 @@ describe("Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await localDebugTestContext.validateLocalStateForTab();
-      await validateTab(page, Env.displayName, false);
+      await validateBasicTab(page, ValidationContent.Tab);
     }
   );
 });

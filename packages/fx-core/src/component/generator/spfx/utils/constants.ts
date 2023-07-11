@@ -34,7 +34,7 @@ export class Constants {
   public static readonly DevProgramLink =
     "https://developer.microsoft.com/en-us/microsoft-365/dev-program";
   public static readonly YO_RC_SOLUTION_NAME = "solutionName";
-  public static readonly IMPORT_HELP_LINK = "www.bing.com";
+  public static readonly IMPORT_HELP_LINK = "https://aka.ms/teamsfx-spfx-help-v5";
 }
 
 export class TelemetryKey {

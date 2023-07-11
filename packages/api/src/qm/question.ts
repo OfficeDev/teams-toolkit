@@ -2,7 +2,9 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem } from "../types";
+import { InputTextConfig } from "./ui";
 import {
+  ConditionFunc,
   FuncValidation,
   StringArrayValidation,
   StringValidation,
@@ -97,7 +99,14 @@ export interface UserInputQuestion extends BaseQuestion {
   /**
    * question type
    */
-  type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text";
+  type:
+    | "singleSelect"
+    | "multiSelect"
+    | "singleFile"
+    | "multiFile"
+    | "folder"
+    | "text"
+    | "singleFileOrText";
   /**
    * title is required for human input question
    */
@@ -260,6 +269,19 @@ export interface SingleFileQuestion extends UserInputQuestion {
    * validation function
    */
   validation?: FuncValidation<string>;
+
+  /**
+   * This will only take effect in VSC.
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
 }
 
 export interface MultiFileQuestion extends UserInputQuestion {
@@ -306,6 +328,32 @@ export interface FuncQuestion extends BaseQuestion {
   func: LocalFunc<any>;
 }
 
+export interface SingleFileOrInputQuestion extends UserInputQuestion {
+  type: "singleFileOrText";
+  /**
+   * An item shown in the list in VSC that user can click to input text.
+   */
+  inputOptionItem: OptionItem;
+
+  /**
+   * Config for the input box.
+   */
+  inputBoxConfig: InputTextConfig;
+
+  /**
+   * This will only take effect in VSC.
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
+}
+
 /**
  * `Group` is a virtual node in the question tree that wraps a group of questions, which share the same activation condition in this group.
  */
@@ -322,7 +370,8 @@ export type Question =
   | MultiFileQuestion
   | FolderQuestion
   | FuncQuestion
-  | SingleFileQuestion;
+  | SingleFileQuestion
+  | SingleFileOrInputQuestion;
 
 /**
  * QTreeNode is the tree node data structure, which have three main properties:
@@ -330,9 +379,9 @@ export type Question =
  * - condition: trigger condition for this node to be activated;
  * - children: child questions that will be activated according their trigger condition.
  */
-export class QTreeNode {
+export class QTreeNode implements IQTreeNode {
   data: Question | Group;
-  condition?: ValidationSchema & { target?: string };
+  condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: QTreeNode[];
   addChild(node: QTreeNode): QTreeNode {
     if (!this.children) {
@@ -376,4 +425,10 @@ export class QTreeNode {
   constructor(data: Question | Group) {
     this.data = data;
   }
+}
+
+export interface IQTreeNode {
+  data: Question | Group;
+  condition?: StringValidation | StringArrayValidation | ConditionFunc;
+  children?: IQTreeNode[];
 }

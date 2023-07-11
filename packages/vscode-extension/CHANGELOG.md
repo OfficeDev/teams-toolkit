@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.0.1 - June 20, 2023
+
+Incremental version for Teams Toolkit with multiple bug fixes:
+
+- Fixed an issue where older versions of Teams Toolkit CLI and Node.js were referenced in CI/CD templates. ([#8972](https://github.com/OfficeDev/TeamsFx/pull/8972))
+- Fixed an issue [#8929](https://github.com/OfficeDev/TeamsFx/issues/8929) in [`teamsApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#teamsappcreate) and [`teamsApp/update`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#teamsappupdate) actions where detailed error messages were not printed in output channel when Teams Toolkit failed to create or update app in Teams Developer Portal. ([#8967](https://github.com/OfficeDev/TeamsFx/pull/8967))
+- Fixed an issue in [`script`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#script) action where not all env output pairs were parsed. ([#8811](https://github.com/OfficeDev/TeamsFx/pull/8811))
+- Fixed an issue in [`script`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#script) action where charset encoding were not properly handled. ([#8769](https://github.com/OfficeDev/TeamsFx/pull/8769))
+- Fixed an issue where the app might fail to start the dev tunnel for local development due to an unexpected token error. ([#8980](https://github.com/OfficeDev/TeamsFx/pull/8980))
+- Fixed an issue where migration failed due to the expected path of the `.gitignore` file. ([#8912](https://github.com/OfficeDev/TeamsFx/pull/8912))
+- Fixed an issue [#8853](https://github.com/OfficeDev/TeamsFx/issues/8853) in [`botAadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#botaadappcreate) action where no detailed errors were printed when Teams Toolkit failed to create the app in Azure Active Directory. ([#8910](https://github.com/OfficeDev/TeamsFx/pull/8910))
+- Fixed an issue in [`aadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappcreate) and [`aadApp/update`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappupdate) actions where no detailed error messages were printed when Teams Toolkit failed to create or update the app in Azure Active Directory. ([#8911](https://github.com/OfficeDev/TeamsFx/pull/8911))
+- Fixed an issue where you might see multiple login prompts when Teams Toolkit failed to retrieve the token by automatically clearing the cache. ([#9026](https://github.com/OfficeDev/TeamsFx/pull/9026))
+
 ## 5.0.0 - May 16, 2023
 
 This major version update of Teams Toolkit addresses your top feedback requests with new features and bug fixes, including a new way to customize the automation with composable actions, integrated tunneling support for debugging using Dev Tunnels, simpler project structure and template options, and much more. We previously shared these incremental changes in the prerelease version and through a series of blog posts:

@@ -135,6 +135,8 @@ export enum TelemetryEvent {
   LaunchWebClientTask = "launch-web-client",
   DebugDevTunnelCleanNotificationStart = "debug-dev-tunnel-clean-notification-start",
   DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
+  DebugDevTunnelOperationStart = "debug-dev-tunnel-operation-start",
+  DebugDevTunnelOperation = "debug-dev-tunnel-operation",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -228,6 +230,9 @@ export enum TelemetryEvent {
 
   // Update SDK packages
   UpdateSDKPackages = "update-sdk-packages",
+
+  // Select to input a value when choosing between browsing local file or proceeding to input
+  ContinueToInput = "continue-to-input",
 }
 
 export enum TelemetryProperty {
@@ -245,6 +250,7 @@ export enum TelemetryProperty {
   ErrorMessage = "error-message",
   ErrorStack = "error-stack",
   Errors = "errors",
+  Hub = "hub",
   DebugSessionId = "session-id",
   DebugType = "type",
   DebugRequest = "request",
@@ -275,6 +281,7 @@ export enum TelemetryProperty {
   DebugTaskArgs = "debug-task-args",
   DebugLifecycle = "debug-lifecycle",
   DebugPrelaunchTaskInfo = "debug-prelaunch-task-info",
+  DebugDevTunnelOperationName = "debug-dev-tunnel-operation-name",
   DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",
   DebugDevTunnelNum = "debug-dev-tunnel-num",

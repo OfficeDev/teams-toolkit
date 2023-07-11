@@ -6,10 +6,8 @@ export interface SampleInfo {
   tags: string[];
   time: string;
   configuration: string;
-  link: string;
   suggested: boolean;
   url: string;
-  relativePath?: string;
 }
 
 export interface SampleCollection {
@@ -35,7 +33,5 @@ export type SampleDetailProps = {
   title: string;
   description: string;
   sampleAppFolder: string;
-  sampleAppUrl: string;
-  relativePath?: string;
   highlightSample: (id: string) => void;
 };

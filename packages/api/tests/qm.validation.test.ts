@@ -1,18 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as chai from "chai";
+import "mocha";
 import {
-  StringArrayValidation,
-  StringValidation,
   Inputs,
   Platform,
-  VsCodeEnv,
   QTreeNode,
+  StringArrayValidation,
+  StringValidation,
+  VsCodeEnv,
 } from "../src/index";
-import * as chai from "chai";
 import { FuncValidation, validate } from "../src/qm/validation";
-import "mocha";
-import { group } from "console";
 
 describe("Question Model - Validation Test", () => {
   const inputs: Inputs = {
@@ -176,6 +175,19 @@ describe("Question Model - Validation Test", () => {
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 === undefined);
     });
+
+    it("excludesEnum", async () => {
+      const validation: StringValidation = { excludesEnum: ["1", "2", "3"] };
+      const value1 = "1";
+      const res1 = await validate(validation, value1, inputs);
+      chai.assert.isTrue(res1 !== undefined);
+      const value2 = "3";
+      const res2 = await validate(validation, value2, inputs);
+      chai.assert.isTrue(res2 !== undefined);
+      const value3 = "4";
+      const res3 = await validate(validation, value3, inputs);
+      chai.assert.isUndefined(res3);
+    });
   });
 
   describe("StringArrayValidation", () => {
@@ -307,6 +319,24 @@ describe("Question Model - Validation Test", () => {
     chai.assert.isTrue(res2 === undefined);
     const value3 = "";
     const res3 = await validate(validation, value3, inputs);
+    chai.assert.isTrue(res3 === undefined);
+  });
+  it("FuncValidation 2", async () => {
+    const validation = (inputs: Inputs) => {
+      const input = inputs.input as string;
+      return input.length <= 5;
+    };
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    inputs.input = "123456";
+    const res1 = await validate(validation, "", inputs);
+    chai.assert.isTrue(res1 !== undefined);
+    inputs.input = "12345";
+    const res2 = await validate(validation, "", inputs);
+    chai.assert.isTrue(res2 === undefined);
+    inputs.input = "";
+    const res3 = await validate(validation, "", inputs);
     chai.assert.isTrue(res3 === undefined);
   });
 });

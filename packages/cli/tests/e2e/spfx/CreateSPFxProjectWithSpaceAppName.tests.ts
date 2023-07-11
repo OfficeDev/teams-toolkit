@@ -26,7 +26,7 @@ describe("Start a new project", function () {
 
   it(
     "Create SPFx project with app name that contains space",
-    { testPlanCaseId: 24137851 },
+    { testPlanCaseId: 24137851, author: "huihuiwu@microsoft.com" },
     async function () {
       {
         const result = await Executor.createProject(

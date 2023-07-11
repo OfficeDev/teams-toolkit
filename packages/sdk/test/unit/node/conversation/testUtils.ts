@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Storage, StoreItems, TurnContext } from "botbuilder";
-import { Activity, InvokeResponse, StatusCodes } from "botframework-schema";
+import { Activity, InvokeResponse } from "botframework-schema";
 import {
   AdaptiveCardResponse,
   CommandMessage,
@@ -17,7 +17,6 @@ import {
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
 
-import { v4 as uuidv4 } from "uuid";
 import { InvokeResponseFactory } from "../../../../src/conversation/invokeResponseFactory";
 import { TeamsBotSsoPromptTokenResponse } from "../../../../src";
 

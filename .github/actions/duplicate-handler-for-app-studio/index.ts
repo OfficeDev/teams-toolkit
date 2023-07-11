@@ -60,7 +60,7 @@ class DuplicateHandler extends Action {
 	async onTriggered(_: OctoKit) {
 		const issueNumber = process.env.ISSUE_NUMBER;
 		safeLog(`start manually trigger issue ${issueNumber}`);
-		const issue = new OctoKitIssue(githubToken, context.repo, { number: issueNumber });
+		const issue = new OctoKitIssue(githubToken, context.repo, { number: parseInt(issueNumber || "0") });
 		await this.onOpened(issue);
 	}
 

@@ -18,13 +18,8 @@ import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
-import {
-  BotScenario,
-  CommandAndResponseOptionItem,
-  DashboardOptionItem,
-  NotificationOptionItem,
-  WorkflowOptionItem,
-} from "../../../constants";
+import { CapabilityOptions } from "../../../../question/create";
+import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import {
@@ -112,7 +107,7 @@ export class ManifestUtils {
               appManifest.staticTabs.push(template);
             } else {
               const tabManifest =
-                inputs.features === DashboardOptionItem().id
+                inputs.features === CapabilityOptions.dashboardTab().id
                   ? STATIC_TABS_TPL_V3[1]
                   : STATIC_TABS_TPL_V3[0];
               const template = cloneDeep(tabManifest);
@@ -150,12 +145,12 @@ export class ManifestUtils {
               if (inputs.features) {
                 const feature = inputs.features;
                 if (
-                  feature === CommandAndResponseOptionItem().id ||
-                  feature == WorkflowOptionItem().id
+                  feature === CapabilityOptions.commandBot().id ||
+                  feature == CapabilityOptions.workflowBot().id
                 ) {
                   // command and response bot or workflow bot
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-                } else if (feature === NotificationOptionItem().id) {
+                } else if (feature === CapabilityOptions.notificationBot().id) {
                   // notification
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
                 } else {
@@ -241,7 +236,7 @@ export class ManifestUtils {
         return false;
     }
   }
-  _getCapabilities(template: TeamsAppManifest): string[] {
+  public getCapabilities(template: TeamsAppManifest): string[] {
     const capabilities: string[] = [];
     if (template.staticTabs && template.staticTabs!.length > 0) {
       capabilities.push("staticTab");

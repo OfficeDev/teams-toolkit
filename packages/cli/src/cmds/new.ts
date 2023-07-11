@@ -41,7 +41,7 @@ export default class New extends YargsCommand {
       const node = result.value ?? constants.EmptyQTreeNode;
       const filteredNode = await filterQTreeNode(node, "scratch", "yes");
       const nodes = flattenNodes(filteredNode).concat(constants.RootFolderNode);
-      this.params = toYargsOptionsGroup(nodes);
+      this.params = await toYargsOptionsGroup(nodes);
     }
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

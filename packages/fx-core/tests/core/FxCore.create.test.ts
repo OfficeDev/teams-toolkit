@@ -1,161 +1,106 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, ok, Platform, Stage } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
-import * as path from "path";
 import sinon from "sinon";
-import fs from "fs-extra";
-import { FxCore } from "../../src";
-import {
-  CoreQuestionNames,
-  ScratchOptionNoVSC,
-  ScratchOptionYesVSC,
-} from "../../src/core/question";
-import { BotOptionItem, TabOptionItem, TabSPFxItem } from "../../src/component/constants";
-import { deleteFolder, MockTools, randomAppName } from "./utils";
-import { SPFXQuestionNames } from "../../src/component/generator/spfx/utils/questions";
+import { AppDefinition, FxCore } from "../../src";
+import { coordinator } from "../../src/component/coordinator";
 import { setTools } from "../../src/core/globalVars";
-import { environmentManager } from "../../src/core/environment";
-import { Generator } from "../../src/component/generator/generator";
+import { CapabilityOptions, ProjectTypeOptions, ScratchOptions } from "../../src/question/create";
+import { QuestionNames } from "../../src/question/questionNames";
+import { MockTools, randomAppName } from "./utils";
 
-describe("Core basic APIs for v3", () => {
+describe("FxCore.createProject", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let appName = randomAppName();
-  let projectPath = path.resolve(os.tmpdir(), appName);
-  beforeEach(() => {
-    sandbox.restore();
-    setTools(tools);
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
-    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-  });
-
+  setTools(tools);
+  beforeEach(() => {});
   afterEach(() => {
     sandbox.restore();
-    deleteFolder(projectPath);
   });
-  it("create from new (VSC, Tab)", async () => {
-    appName = randomAppName();
+  it("happy path", async () => {
+    sandbox.stub(coordinator, "create").resolves(ok(""));
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AppName]: randomAppName(),
     };
-    const core = new FxCore(tools);
-    const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk());
-    projectPath = inputs.projectPath!;
-  });
-  it("create from new (VSC, Tab+Bot)", async () => {
-    appName = randomAppName();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem().id, BotOptionItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-    };
-    const core = new FxCore(tools);
-    const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk());
-  });
-  it("create from new (VS, Tab+Bot)", async () => {
-    appName = randomAppName();
-    const inputs: Inputs = {
-      platform: Platform.VS,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      projectPath: projectPath,
-      stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem().id, BotOptionItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-    };
-    const core = new FxCore(tools);
-    const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk());
-    projectPath = inputs.projectPath!;
-  });
-  it("create from new (VSC, SPFx)", async () => {
-    appName = randomAppName();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
-      [SPFXQuestionNames.framework_type]: "react",
-      [SPFXQuestionNames.webpart_name]: "helloworld",
-      [SPFXQuestionNames.webpart_desp]: "helloworld",
-    };
-    const core = new FxCore(tools);
-    const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk());
-    projectPath = inputs.projectPath!;
-  });
-
-  it("Import existing SPFx solution (VSC, SPFx)", async () => {
-    appName = randomAppName();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
-      stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
-      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
-      [SPFXQuestionNames.spfx_solution]: "import",
-      [SPFXQuestionNames.spfx_import_folder]: "c:\\test",
-    };
-    sandbox
-      .stub(fs, "readJson")
-      .resolves({ "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } });
-    sandbox.stub(fs, "pathExists").callsFake((directory: string) => {
-      if (directory.includes(".yo-rc.json")) return true;
-      else return false;
-    });
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
   });
 
-  it("create from sample (CLI)", async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
-      [CoreQuestionNames.Samples]: "todo-list-SPFx",
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      stage: Stage.create,
-    };
-    const core = new FxCore(tools);
-    const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk());
-    projectPath = inputs.projectPath!;
-  });
-
-  it("create from sample (VSC)", async () => {
+  it("coordinator error", async () => {
+    sandbox.stub(coordinator, "create").resolves(err(new UserError({})));
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
-      [CoreQuestionNames.Samples]: "todo-list-SPFx",
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      stage: Stage.create,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AppName]: randomAppName(),
     };
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk());
-    projectPath = inputs.projectPath!;
+    assert.isTrue(res.isErr());
+  });
+
+  it("TDP input error", async () => {
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+      staticTabs: [
+        {
+          name: "tab1",
+          entityId: "tab1",
+          contentUrl: "mock-contentUrl",
+          websiteUrl: "mock-websiteUrl",
+          context: [],
+          scopes: [],
+        },
+      ],
+      bots: [
+        {
+          botId: "mock-bot-id",
+          isNotificationOnly: false,
+          needsChannelSelector: false,
+          supportsCalling: false,
+          supportsFiles: false,
+          supportsVideo: false,
+          scopes: [],
+          teamCommands: [],
+          groupChatCommands: [],
+          personalCommands: [],
+        },
+      ],
+      connectors: [
+        {
+          name: "connector1",
+          configurationUrl: "https://test.com",
+          scopes: [],
+        },
+      ],
+    };
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AppName]: randomAppName(),
+      teamsAppFromTdp: appDefinition,
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isErr());
   });
 });

@@ -101,6 +101,9 @@ export enum Colors {
 }
 
 // @public (undocumented)
+export type ConditionFunc = (inputs: Inputs) => boolean | Promise<boolean>;
+
+// @public (undocumented)
 export const ConfigFolderName = "fx";
 
 // @public (undocumented)
@@ -313,6 +316,16 @@ export interface IProgressHandler {
 }
 
 // @public (undocumented)
+export interface IQTreeNode {
+    // (undocumented)
+    children?: IQTreeNode[];
+    // (undocumented)
+    condition?: StringValidation | StringArrayValidation | ConditionFunc;
+    // (undocumented)
+    data: Question | Group;
+}
+
+// @public (undocumented)
 export const LocalEnvironmentName = "local";
 
 // @public
@@ -461,16 +474,14 @@ export enum Platform {
 export const ProductName = "teamsfx";
 
 // @public
-export class QTreeNode {
+export class QTreeNode implements IQTreeNode {
     constructor(data: Question | Group);
     // (undocumented)
     addChild(node: QTreeNode): QTreeNode;
     // (undocumented)
     children?: QTreeNode[];
     // (undocumented)
-    condition?: ValidationSchema & {
-        target?: string;
-    };
+    condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
     trim(): QTreeNode | undefined;
@@ -479,7 +490,7 @@ export class QTreeNode {
 }
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -523,9 +534,32 @@ export interface Settings {
 // @public (undocumented)
 export const SettingsFolderName = "teamsfx";
 
+// @public (undocumented)
+export interface SingleFileOrInputConfig extends UIConfig<string> {
+    filters?: {
+        [name: string]: string[];
+    };
+    inputBoxConfig: InputTextConfig;
+    inputOptionItem: OptionItem;
+}
+
+// @public (undocumented)
+export interface SingleFileOrInputQuestion extends UserInputQuestion {
+    filters?: {
+        [name: string]: string[];
+    };
+    inputBoxConfig: InputTextConfig;
+    inputOptionItem: OptionItem;
+    // (undocumented)
+    type: "singleFileOrText";
+}
+
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
+    filters?: {
+        [name: string]: string[];
+    };
     // (undocumented)
     type: "singleFile";
     validation?: FuncValidation<string>;
@@ -652,6 +686,7 @@ export interface StringValidation extends StaticValidation {
     endsWith?: string;
     enum?: string[];
     equals?: string;
+    excludesEnum?: string[];
     includes?: string;
     maxLength?: number;
     minLength?: number;
@@ -865,7 +900,7 @@ export interface UserInputQuestion extends BaseQuestion {
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
     validation?: ValidationSchema;
     validationHelp?: string;
 }
@@ -888,6 +923,7 @@ export interface UserInteraction {
         };
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
+    selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;
     selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
     selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
     selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult, FxError>>;
@@ -900,7 +936,7 @@ export interface UserInteraction {
 }
 
 // @public
-export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
+export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema | ConditionFunc, value: T, inputs?: Inputs): Promise<string | undefined>;
 
 // @public (undocumented)
 export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;

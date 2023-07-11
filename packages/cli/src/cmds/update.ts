@@ -105,7 +105,7 @@ export class UpdateTeamsApp extends YargsCommand {
     // Throw error if --env not specified
     if (!args.env && !CLIUIInstance.interactive) {
       const error = new MissingRequiredArgumentError("teamsfx teams-app", "env");
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateTeamsApp, error);
       return err(error);
     }
 

@@ -4,15 +4,10 @@
 import {
   Context,
   InputsWithProjectPath,
-  OptionItem,
   Platform,
-  SingleSelectQuestion,
-  StaticOptions,
   TokenProvider,
   UserError,
-  ValidationSchema,
   err,
-  getValidationFunction,
   ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -22,33 +17,25 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
 import { CollaborationState } from "../../src/common/permissionInterface";
-import { ComponentNames, SolutionError } from "../../src/component/constants";
-import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
+import { SolutionError } from "../../src/component/constants";
+import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
 import {
   CollaborationConstants,
   CollaborationUtil,
   checkPermission,
-  getQuestionsForGrantPermission,
-  getQuestionsForListCollaborator,
   grantPermission,
   listCollaborator,
-  validateEnvQuestion,
 } from "../../src/core/collaborator";
-import { environmentManager } from "../../src/core/environment";
-import { setTools } from "../../src/core/globalVars";
-import { CoreQuestionNames } from "../../src/core/question";
+import { QuestionNames } from "../../src/question";
 import {
   MockedAzureAccountProvider,
   MockedM365Provider,
   MockedV2Context,
 } from "../plugins/solution/util";
-import { MockTools, randomAppName } from "./utils";
-import "../../src/component/resource/appManifest/appManifest";
-import "../../src/component/resource/aadApp/aadApp";
+import { randomAppName } from "./utils";
+
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
   const ctx = new MockedV2Context() as Context;
@@ -73,6 +60,7 @@ describe("Collaborator APIs for V3", () => {
     });
     afterEach(() => {
       mockedEnvRestore();
+      sandbox.restore();
     });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
@@ -82,22 +70,12 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: {} },
-        config: {},
-      };
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
     it("should return error if cannot get user info", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: { provisionSucceeded: true } },
-        config: {},
-      };
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
 
@@ -110,15 +88,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
@@ -131,9 +101,8 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
-        .stub(appStudio, "listCollaborator")
+        .stub(TeamsCollaboration.prototype, "listCollaborator")
         .resolves(
           err(
             new UserError(
@@ -143,29 +112,12 @@ describe("Collaborator APIs for V3", () => {
             )
           )
         );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       inputs.platform = Platform.CLI;
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("happy path", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -174,9 +126,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -186,7 +136,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -196,19 +146,11 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("happy path without aad", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -217,8 +159,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -228,7 +169,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
   });
@@ -249,25 +190,15 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: {} },
-        config: {},
-      };
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("should return error if cannot get user info", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: { provisionSucceeded: true } },
-        config: {},
-      };
       sandbox
         .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(err(new UserError("source", "name", "message")));
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
 
@@ -280,15 +211,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.state === CollaborationState.OK);
     });
 
@@ -301,35 +224,17 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
-        .stub(appStudio, "checkPermission")
+        .stub(TeamsCollaboration.prototype, "checkPermission")
         .resolves(
           err(
             new UserError("AppStudioPlugin", "FailedToCheckPermission", "List collaborator failed.")
           )
         );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
     it("happy path", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -338,9 +243,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -350,7 +253,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -361,7 +264,7 @@ describe("Collaborator APIs for V3", () => {
         ])
       );
       inputs.platform = Platform.CLI;
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
   });
@@ -381,24 +284,14 @@ describe("Collaborator APIs for V3", () => {
         displayName: "displayName",
         isAdministrator: true,
       });
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: {} },
-        config: {},
-      };
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr());
     });
     it("should return error if cannot get current user info", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: { solution: { provisionSucceeded: true } },
-        config: {},
-      };
       sandbox
         .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(err(new UserError("source", "name", "message")));
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
     it("should return M365TenantNotMatch state if tenant is not match", async () => {
@@ -410,15 +303,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr());
     });
     it("should return error if user email is undefined", async () => {
@@ -435,15 +320,7 @@ describe("Collaborator APIs for V3", () => {
         )
         .onCall(1)
         .resolves(undefined);
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.EmailCannotBeEmptyOrSame);
     });
     it("should return error if cannot find user from email", async () => {
@@ -460,16 +337,8 @@ describe("Collaborator APIs for V3", () => {
         )
         .onCall(1)
         .resolves(undefined);
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       inputs.email = "your_collaborator@yourcompany.com";
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(
         result.isErr() && result.error.name === SolutionError.CannotFindUserInCurrentTenant
       );
@@ -515,28 +384,18 @@ describe("Collaborator APIs for V3", () => {
           isAdministrator: true,
         });
 
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
-        .stub(appStudio, "grantPermission")
+        .stub(TeamsCollaboration.prototype, "grantPermission")
         .resolves(
           err(
             new UserError("AppStudioPlugin", "FailedToGrantPermission", "Grant permission failed.")
           )
         );
       inputs.email = "your_collaborator@yourcompany.com";
-      const result = await grantPermission(ctx, inputs, {}, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
     it("happy path", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
-
       sandbox
         .stub(CollaborationUtil, "getUserInfo")
         .onCall(0)
@@ -555,9 +414,7 @@ describe("Collaborator APIs for V3", () => {
           displayName: "displayName2",
           isAdministrator: true,
         });
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -567,7 +424,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -579,19 +436,11 @@ describe("Collaborator APIs for V3", () => {
       );
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.platform = Platform.CLI;
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("happy path without aad", async () => {
-      const envInfo: any = {
-        envName: "dev",
-        state: {
-          solution: { provisionSucceeded: true },
-          "app-manifest": { tenantId: "mock_project_tenant_id" },
-        },
-        config: {},
-      };
       sandbox
         .stub(CollaborationUtil, "getUserInfo")
         .onCall(0)
@@ -610,8 +459,7 @@ describe("Collaborator APIs for V3", () => {
           displayName: "displayName2",
           isAdministrator: true,
         });
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -622,7 +470,7 @@ describe("Collaborator APIs for V3", () => {
         ])
       );
       inputs.email = "your_collaborator@yourcompany.com";
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
   });
@@ -691,8 +539,8 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .callsFake(async (manifestFilePath: string) => {
@@ -702,7 +550,7 @@ describe("Collaborator APIs for V3", () => {
             return ok("teamsAppId");
           }
         });
-      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId, inputs) => {
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
         return appId;
       });
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
@@ -761,8 +609,8 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-      inputsCli[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
-      inputsCli[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      inputsCli[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputsCli[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .callsFake(async (manifestFilePath: string) => {
@@ -772,7 +620,7 @@ describe("Collaborator APIs for V3", () => {
             return ok("teamsAppId");
           }
         });
-      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId, inputs) => {
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
         return appId;
       });
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
@@ -805,8 +653,8 @@ describe("Collaborator APIs for V3", () => {
         CollaborationConstants.TeamsAppQuestionId,
         CollaborationConstants.AadAppQuestionId,
       ];
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .resolves(err(new UserError("source", "name", "message")));
@@ -816,7 +664,7 @@ describe("Collaborator APIs for V3", () => {
 
     it("load manifest failed in aad app", async () => {
       inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadManifestPath";
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadManifestPath";
       sandbox
         .stub(CollaborationUtil, "loadManifestId")
         .resolves(err(new UserError("source", "name", "message")));
@@ -845,9 +693,7 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("listCollaborator: happy path", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -857,7 +703,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -877,14 +723,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.VSCode;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("listCollaborator: happy path with Teams only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -894,7 +738,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -914,14 +758,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.VSCode;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("listCollaborator: happy path with AAD only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -931,7 +773,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -951,14 +793,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.VSCode;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk());
     });
 
     it("list collaborator: failed to read teams app id", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "listCollaborator").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -968,7 +808,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+      sandbox.stub(AadCollaboration.prototype, "listCollaborator").resolves(
         ok([
           {
             userObjectId: "fake-aad-user-object-id",
@@ -985,14 +825,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
 
     it("grantPermission: happy path", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1002,7 +840,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1041,14 +879,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.env = "dev";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
 
     it("grantPermission: happy path with Teams only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1058,7 +894,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1097,14 +933,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.env = "dev";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
     it("grantPermission: happy path with AAD only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1114,7 +948,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1153,14 +987,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       inputs.env = "dev";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
     it("grantPermission: failed to read teams app id", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "grantPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1170,7 +1002,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "grantPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "grantPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1206,14 +1038,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.env = "dev";
       inputs.email = "your_collaborator@yourcompany.com";
 
-      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await grantPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
 
     it("checkPermission: happy path", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1223,7 +1053,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1261,14 +1091,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
 
     it("checkPermission: happy path with Teams only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1278,7 +1106,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1316,14 +1144,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
     it("checkPermission: happy path with AAD only", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1333,7 +1159,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1371,14 +1197,12 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
     });
 
     it("checkPermission: failed to read teams app id", async () => {
-      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-      sandbox.stub(appStudio, "checkPermission").resolves(
+      sandbox.stub(TeamsCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "teams_app",
@@ -1388,7 +1212,7 @@ describe("Collaborator APIs for V3", () => {
           },
         ])
       );
-      sandbox.stub(aadPlugin, "checkPermission").resolves(
+      sandbox.stub(AadCollaboration.prototype, "checkPermission").resolves(
         ok([
           {
             name: "aad_app",
@@ -1423,7 +1247,7 @@ describe("Collaborator APIs for V3", () => {
       inputs.platform == Platform.CLI;
       inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
+      const result = await checkPermission(ctx, inputs, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
   });
@@ -1510,375 +1334,29 @@ describe("Collaborator APIs for V3", () => {
 
     it("happy path: hardcode", async () => {
       inputs.env = "dev";
-      const res = await CollaborationUtil.parseManifestId(
-        "00000000-0000-0000-0000-000000000000",
-        inputs
-      );
+      const res = await CollaborationUtil.parseManifestId("00000000-0000-0000-0000-000000000000");
       assert.equal(res, "00000000-0000-0000-0000-000000000000");
     });
 
     it("happy path: read from env", async () => {
       inputs.env = "dev";
       const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: "teamsAppId" });
-      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
+      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
       assert.equal(res, "teamsAppId");
       mockedEnvRestoreForInput();
     });
 
     it("return undefined when invalid", async () => {
-      const res = await CollaborationUtil.parseManifestId("TEST", inputs);
+      const res = await CollaborationUtil.parseManifestId("TEST");
       assert.isUndefined(res);
     });
 
     it("return undefined when empty env", async () => {
       inputs.env = "dev";
       const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: undefined });
-      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}", inputs);
+      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
       assert.isUndefined(res);
       mockedEnvRestoreForInput();
-    });
-  });
-
-  describe("getQuestions", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
-    afterEach(() => {
-      mockedEnvRestore();
-      sandbox.restore();
-    });
-
-    it("env node validation: select teams and aad, need select env", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.isUndefined(res);
-    });
-
-    it("env node validation: waiting for select aad manifest", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = undefined;
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Question not finished");
-    });
-
-    it("env node validation: select teams and aad, no need select env", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = "dev";
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Env already selected");
-    });
-
-    it("env node validation: select teams and aad, app id hardcoded", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return false;
-      });
-
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Env question not required");
-    });
-
-    it("env node validation: select teams and aad, invalid manifest", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [
-        CollaborationConstants.TeamsAppQuestionId,
-        CollaborationConstants.AadAppQuestionId,
-      ];
-      inputs.env = undefined;
-
-      sandbox
-        .stub(CollaborationUtil, "loadManifestId")
-        .resolves(err(new UserError("source", "name", "message")));
-
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Invalid manifest");
-    });
-
-    it("env node validation: select aad, invalid manifest", async () => {
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs.env = undefined;
-
-      sandbox
-        .stub(CollaborationUtil, "loadManifestId")
-        .resolves(err(new UserError("source", "name", "message")));
-
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.equal(res, "Invalid manifest");
-    });
-
-    it("env node validation: select aad, need select env", async () => {
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-      inputs.env = undefined;
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-
-      const res = await validateEnvQuestion(undefined, inputs);
-      assert.isUndefined(res);
-    });
-
-    it("happy path: getQuestionsForGrantPermission", async () => {
-      inputs.platform = Platform.VSCode;
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-      sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev", "test"]));
-      sandbox.stub(fs, "pathExistsSync").returns(true);
-      const tools = new MockTools();
-      setTools(tools);
-      sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
-        ok({
-          tid: "mock_project_tenant_id",
-          oid: "fake_oid",
-          unique_name: "fake_unique_name",
-          name: "fake_name",
-        })
-      );
-
-      const nodeRes = await getQuestionsForGrantPermission(inputs);
-      assert.isTrue(nodeRes.isOk());
-      if (nodeRes.isOk()) {
-        const node = nodeRes.value;
-        assert.isTrue(node != undefined && node?.children?.length == 3);
-
-        const teamsAppManifestQuestion = node?.children?.[0];
-        const aadAppManifestQuestion = node?.children?.[1];
-
-        assert.isTrue(teamsAppManifestQuestion?.children?.length == 2);
-        assert.isTrue(aadAppManifestQuestion?.children?.length == 2);
-
-        const teamsAppConfirmNode = teamsAppManifestQuestion?.children?.[0];
-        const aadAppConfirmNode = aadAppManifestQuestion?.children?.[0];
-
-        {
-          // teamsApp & aadApp selected and env provided
-          inputs[CollaborationConstants.AppType] = [
-            CollaborationConstants.TeamsAppQuestionId,
-            CollaborationConstants.AadAppQuestionId,
-          ];
-          inputs.env = "dev";
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-
-          const teamsAppConfirmOption = (teamsAppConfirmNode?.data as SingleSelectQuestion)
-            .dynamicOptions!(inputs) as StaticOptions;
-          const aadAppConfirmOption = (aadAppConfirmNode?.data as SingleSelectQuestion)
-            .dynamicOptions!(inputs) as StaticOptions;
-          assert.isTrue(
-            (teamsAppConfirmOption[0] as OptionItem).label == "$(file) teamsAppManifest" &&
-              (aadAppConfirmOption[0] as OptionItem).label == "$(file) aadAppManifest"
-          );
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(aadAppQuestionActivate != undefined);
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(teamsAppQuestionActivate != undefined);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-        }
-      }
-    });
-
-    it("getQuestionsForGrantPermission not dynamic", async () => {
-      inputs.platform = Platform.CLI_HELP;
-      const nodeRes = await getQuestionsForGrantPermission(inputs);
-      assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
-    });
-
-    it("happy path: getQuestionsForListCollaborator", async () => {
-      inputs[CoreQuestionNames.TeamsAppManifestFilePath] = "teamsAppManifest";
-      inputs[CoreQuestionNames.AadAppManifestFilePath] = "aadAppManifest";
-      inputs.platform = Platform.VSCode;
-      sandbox.stub(CollaborationUtil, "loadManifestId").callsFake(async (manifestFilePath) => {
-        return manifestFilePath == "teamsAppManifest" ? ok("teamsAppId") : ok("aadAppId");
-      });
-      sandbox.stub(CollaborationUtil, "requireEnvQuestion").callsFake((appId) => {
-        return true;
-      });
-      sandbox.stub(fs, "pathExistsSync").returns(true);
-      const nodeRes = await getQuestionsForListCollaborator(inputs);
-      assert.isTrue(nodeRes.isOk());
-      if (nodeRes.isOk()) {
-        const node = nodeRes.value;
-        assert.isTrue(node != undefined && node?.children?.length == 2);
-
-        const teamsAppManifestQuestion = node?.children?.[0];
-        const aadAppManifestQuestion = node?.children?.[1];
-
-        {
-          // teamsApp & aadApp selected
-          inputs[CollaborationConstants.AppType] = [
-            CollaborationConstants.TeamsAppQuestionId,
-            CollaborationConstants.AadAppQuestionId,
-          ];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(teamsAppQuestionActivate);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(aadAppQuestionActivate != undefined);
-        }
-        {
-          // teamsApp selected
-          inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
-          const teamsAppValidFunc = getValidationFunction(
-            teamsAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const teamsAppQuestionActivate = await teamsAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isTrue(teamsAppQuestionActivate != undefined);
-          const aadAppValidFunc = getValidationFunction(
-            aadAppManifestQuestion?.condition as ValidationSchema,
-            inputs
-          );
-          const aadAppQuestionActivate = await aadAppValidFunc(
-            inputs[CollaborationConstants.AppType]
-          );
-          assert.isUndefined(aadAppQuestionActivate);
-        }
-      }
-    });
-
-    it("getQuestionsForListCollaborator not dynamic", async () => {
-      inputs.platform = Platform.CLI_HELP;
-      const nodeRes = await getQuestionsForListCollaborator(inputs);
-      assert.isTrue(nodeRes.isOk() && nodeRes.value == undefined);
     });
   });
 });

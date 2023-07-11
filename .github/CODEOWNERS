@@ -115,6 +115,9 @@
 /packages/fx-core/src/common/constants.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/constants.ts @jayzhang @xzf0587 @LongOddCode
 
+/packages/fx-core/src/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77 @tecton
+/packages/fx-core/tests/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77 @tecton
+
 /packages/fx-core/src/common/correlator.ts @chagong @jayzhang @LongOddCode
 
 /packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587 @LongOddCode
@@ -152,7 +155,6 @@
 /packages/fx-core/tests/component/middleware/helper.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/middleware/middleware.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/provisionUtils.test.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/tests/component/questionv3.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/resourceGroupHelper.test.ts @jayzhang @xzf0587 @LongOddCode
 
 /packages/fx-core/tests/component/util/azureAccountMock.ts @Siglud @xiaolang124
@@ -170,7 +172,6 @@
 /packages/fx-core/tests/core/middleware/VideoFilterAppBlockerMW.test.ts @a1exwang
 
 /packages/fx-core/tests/core/other.test.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/tests/core/question.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/samples_v2.zip  @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/tools.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/utils.ts @jayzhang @xzf0587 @LongOddCode
@@ -210,26 +211,41 @@
 /packages/fx-core/tests/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/core/middleware/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/component/driver/deploy/azure @Siglud @Yukun-dong @JerryYangKai @eriolchan
 /packages/fx-core/src/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
 
 /packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
+/packages/fx-core/resource/package.nls.cs.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.de.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.es.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.fr.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.it.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.ja.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.ko.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.pl.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.pt-BR.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.ru.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.tr.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.zh-Hans.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.zh-Hant.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.zh-cn.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.zh-tw.json @HuihuiWu-Microsoft @chagong @jayzhang
 /packages/fx-core/resource/yaml-schema @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
 
 /packages/fx-core/src/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/tests/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 
-
-/packages/fx-core/src/question @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/src/error @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 
-/packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
-/packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
+/packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
+/packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
+/packages/fx-core/resource/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
@@ -244,8 +260,10 @@
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
-/packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang
+/packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang @LongOddCode
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
+/packages/fx-core/tests/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
 
@@ -262,3 +280,13 @@
 /packages/fx-core/tests/component/driver/teamsApp @nliu-ms @jayzhang @yuqizhou77
 /packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @yuqizhou77
 /packages/fx-core/templates/plugins/resource/appstudio @nliu-ms
+/packages/fx-core/src/component/driver/middleware/updateProgress.ts @tecton @jayzhang @LongOddCode
+/packages/fx-core/tests/component/driver/middleware/updateProgress.test.ts @tecton @jayzhang @LongOddCode
+
+/packages/fx-core/templates/plugins/resource/aad/ @KennethBWSong @xzf0587 @adashen
+/packages/fx-core/src/component/feature/collaboration.ts @KennethBWSong @SLdragon @adashen
+/packages/fx-core/src/component/feature/createAuthFiles.ts @KennethBWSong @xzf0587 @adashen
+/packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587 @adashen
+packages/fx-core/tests/component/feature/sso.test.ts @KennethBWSong @xzf0587 @adashen
+packages/fx-core/tests/component/feature/collaborator.test.ts @KennethBWSong @SLdragon @adashen
+packages/fx-core/tests/core/collaborator.test.ts @KennethBWSong @SLdragon @adashen

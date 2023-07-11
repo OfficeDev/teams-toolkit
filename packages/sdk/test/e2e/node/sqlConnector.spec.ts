@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import axios from "axios";
 import { assert, use as chaiUse } from "chai";
-import { SqlManagementClient } from "@azure/arm-sql";
 import * as chaiPromises from "chai-as-promised";
 import { Connection, Request } from "tedious";
 import { getTediousConnectionConfig, TeamsFx } from "../../../src";

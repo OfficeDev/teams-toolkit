@@ -1,7 +1,5 @@
 {
     "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.1.0/",
-    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v2.1.0.zip",
-    "baseFolderName": "TeamsFx-Samples-2.1.0",
     "samples": [
         {
             "id": "hello-world-tab-with-backend",
@@ -94,9 +92,7 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false,
-            "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/bot-proactive-messaging-teamsfx",
-            "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip",
-            "relativePath": "Microsoft-Teams-Samples-main/samples/bot-proactive-messaging-teamsfx"
+            "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/bot-proactive-messaging-teamsfx"
         },
         {
             "id": "adaptive-card-notification",
@@ -211,9 +207,7 @@
           "time": "5min to run",
           "configuration": "Ready for debug",
           "suggested": false,
-          "url": "https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature",
-          "packageLink": "https://github.com/OfficeDev/Office-Add-in-samples/archive/refs/heads/main.zip",
-          "relativePath": "Office-Add-in-samples-main/Samples/outlook-set-signature"
+          "url": "https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature"
         },
         {
             "id": "developer-assist-dashboard",

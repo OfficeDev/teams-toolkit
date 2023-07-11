@@ -23,6 +23,8 @@ import {
   IBotRegistration,
 } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
 import { InvalidActionInputError, UnhandledError } from "../../../error/common";
+import isUUID from "validator/lib/isUUID";
+import { InvalidBotIdUserError } from "./error/invalidBotIdError";
 
 const actionName = "botFramework/create";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
@@ -76,6 +78,10 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
   }> {
     try {
       this.validateArgs(args);
+
+      if (!isUUID(args.botId)) {
+        throw new InvalidBotIdUserError(actionName, args.botId, helpLink);
+      }
 
       let callingEndpoint: string | undefined = undefined;
       let configuredChannels: BotChannelType[] | undefined = undefined;

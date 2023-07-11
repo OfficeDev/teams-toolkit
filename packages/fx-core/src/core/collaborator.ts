@@ -4,14 +4,10 @@
 import {
   Colors,
   Context,
-  DynamicPlatforms,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   M365TokenProvider,
-  MultiSelectQuestion,
   Platform,
-  QTreeNode,
   Result,
   SystemError,
   TokenProvider,
@@ -22,7 +18,6 @@ import {
 import axios from "axios";
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
-import { Container } from "typedi";
 import { validate as uuidValidate } from "uuid";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -30,34 +25,17 @@ import {
   AadOwner,
   AppIds,
   CollaborationState,
-  CollaborationStateResult,
   ListCollaboratorResult,
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { AppStudioScopes, GraphScopes } from "../common/tools";
-import {
-  ComponentNames,
-  SOLUTION_PROVISION_SUCCEEDED,
-  SolutionError,
-  SolutionSource,
-  SolutionTelemetryProperty,
-} from "../component/constants";
+import { GraphScopes } from "../common/tools";
+import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../component/constants";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
-import { getUserEmailQuestion } from "../component/question";
-import { AadApp } from "../component/resource/aadApp/aadApp";
-import { AppManifest } from "../component/resource/appManifest/appManifest";
+import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 import { FileNotFoundError } from "../error/common";
+import { QuestionNames } from "../question/questionNames";
 import { CoreSource } from "./error";
-import { TOOLS } from "./globalVars";
-import {
-  CoreQuestionNames,
-  selectAadAppManifestQuestion,
-  selectEnvNode,
-  selectTeamsAppManifestQuestion,
-} from "./question";
-import "../component/resource/appManifest/appManifest";
-import "../component/resource/aadApp/aadApp";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -220,13 +198,13 @@ export class CollaborationUtil {
     }
 
     // 3. load from env
-    const teamsAppManifestFilePath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath] as string;
-    const aadAppManifestFilePath = inputs?.[CoreQuestionNames.AadAppManifestFilePath] as string;
+    const teamsAppManifestFilePath = inputs?.[QuestionNames.TeamsAppManifestFilePath] as string;
+    const aadAppManifestFilePath = inputs?.[QuestionNames.AadAppManifestFilePath] as string;
 
     if (teamsAppManifestFilePath && !teamsAppId) {
       const teamsAppIdRes = await this.loadManifestId(teamsAppManifestFilePath);
       if (teamsAppIdRes.isOk()) {
-        teamsAppId = await this.parseManifestId(teamsAppIdRes.value, inputs);
+        teamsAppId = await this.parseManifestId(teamsAppIdRes.value);
       } else {
         return err(teamsAppIdRes.error);
       }
@@ -235,7 +213,7 @@ export class CollaborationUtil {
     if (aadAppManifestFilePath && !aadObjectId) {
       const aadObjectIdRes = await this.loadManifestId(aadAppManifestFilePath);
       if (aadObjectIdRes.isOk()) {
-        aadObjectId = await this.parseManifestId(aadObjectIdRes.value, inputs);
+        aadObjectId = await this.parseManifestId(aadObjectIdRes.value);
       } else {
         return err(aadObjectIdRes.error);
       }
@@ -281,7 +259,7 @@ export class CollaborationUtil {
     return !!appId.match(CollaborationConstants.placeholderRegex);
   }
 
-  static async parseManifestId(appId: string, inputs: Inputs): Promise<string | undefined> {
+  static async parseManifestId(appId: string): Promise<string | undefined> {
     // Hardcoded id in manifest
     if (uuidValidate(appId)) {
       return appId;
@@ -301,7 +279,6 @@ export class CollaborationUtil {
 export async function listCollaborator(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Record<string, string>
 ): Promise<Result<ListCollaboratorResult, FxError>> {
@@ -319,20 +296,16 @@ export async function listCollaborator(
 
   const hasAad = appIds!.aadObjectId != undefined;
   const hasTeams = appIds!.teamsAppId != undefined;
-  const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-  const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+  const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
+  const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
   const appStudioRes = hasTeams
-    ? await appStudio.listCollaborator(
-        ctx,
-        inputs,
-        envInfo,
-        tokenProvider.m365TokenProvider,
-        appIds!.teamsAppId
-      )
+    ? await teamsCollaboration.listCollaborator(ctx, appIds!.teamsAppId!)
     : ok([]);
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
-  const aadRes = hasAad ? await aadPlugin.listCollaborator(ctx, appIds!.aadObjectId) : ok([]);
+  const aadRes = hasAad
+    ? await aadCollaboration.listCollaborator(ctx, appIds!.aadObjectId!)
+    : ok([]);
   if (aadRes.isErr()) return err(aadRes.error);
   const aadOwners: AadOwner[] = aadRes.value;
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
@@ -435,7 +408,6 @@ export async function listCollaborator(
 export async function checkPermission(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Record<string, string>
 ): Promise<Result<PermissionsResult, FxError>> {
@@ -471,19 +443,12 @@ export async function checkPermission(
   }
   const appIds = getAppIdsResult.value;
 
-  const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-  const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+  const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
+  const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
 
   const isTeamsActivated = appIds!.teamsAppId != undefined;
   const appStudioRes = isTeamsActivated
-    ? await appStudio.checkPermission(
-        ctx,
-        inputs,
-        envInfo,
-        tokenProvider.m365TokenProvider,
-        userInfo,
-        appIds!.teamsAppId
-      )
+    ? await teamsCollaboration.checkPermission(ctx, appIds!.teamsAppId!, userInfo)
     : ok([] as ResourcePermission[]);
   if (appStudioRes.isErr()) {
     return err(appStudioRes.error);
@@ -491,7 +456,11 @@ export async function checkPermission(
   const permissions = appStudioRes.value;
   const isAadActivated = appIds!.aadObjectId != undefined;
   if (isAadActivated) {
-    const aadRes = await aadPlugin.checkPermission(ctx, result.value, appIds!.aadObjectId);
+    const aadRes = await aadCollaboration.checkPermission(
+      ctx,
+      appIds!.aadObjectId!,
+      result.value.aadId
+    );
     if (aadRes.isErr()) return err(aadRes.error);
     aadRes.value.forEach((r: ResourcePermission) => {
       permissions.push(r);
@@ -546,9 +515,7 @@ export async function checkPermission(
 export async function grantPermission(
   ctx: Context,
   inputs: InputsWithProjectPath,
-  envInfo: any | undefined,
-  tokenProvider: TokenProvider,
-  telemetryProps?: Record<string, string>
+  tokenProvider: TokenProvider
 ): Promise<Result<PermissionsResult, FxError>> {
   const progressBar = ctx.userInteraction.createProgressBar(
     getLocalizedString("core.collaboration.GrantingPermission"),
@@ -614,24 +581,21 @@ export async function grantPermission(
     }
     const isAadActivated = appIds!.aadObjectId != undefined;
     const isTeamsActivated = appIds!.teamsAppId != undefined;
-    const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-    const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+    const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
+    const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
     const appStudioRes = isTeamsActivated
-      ? await appStudio.grantPermission(
-          ctx,
-          inputs,
-          envInfo,
-          tokenProvider.m365TokenProvider,
-          userInfo,
-          appIds!.teamsAppId
-        )
+      ? await teamsCollaboration.grantPermission(ctx, appIds!.teamsAppId!, userInfo)
       : ok([] as ResourcePermission[]);
     if (appStudioRes.isErr()) {
       return err(appStudioRes.error);
     }
     const permissions = appStudioRes.value;
     if (isAadActivated) {
-      const aadRes = await aadPlugin.grantPermission(ctx, userInfo, appIds!.aadObjectId);
+      const aadRes = await aadCollaboration.grantPermission(
+        ctx,
+        appIds!.aadObjectId!,
+        userInfo.aadId
+      );
       if (aadRes.isErr()) return err(aadRes.error);
       aadRes.value.forEach((r: ResourcePermission) => {
         permissions.push(r);
@@ -665,37 +629,6 @@ export async function grantPermission(
   }
 }
 
-export async function getQuestionsForGrantPermission(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
-  if (isDynamicQuestion) {
-    const jsonObjectRes = await TOOLS.tokenProvider.m365TokenProvider.getJsonObject({
-      scopes: AppStudioScopes,
-    });
-    if (jsonObjectRes.isErr()) {
-      return err(jsonObjectRes.error);
-    }
-    const jsonObject = jsonObjectRes.value;
-
-    const root = await getCollaborationQuestionNode(inputs);
-    root.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
-    return ok(root);
-  }
-  return ok(undefined);
-}
-
-export async function getQuestionsForListCollaborator(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
-  if (isDynamicQuestion) {
-    const root = await getCollaborationQuestionNode(inputs);
-    return ok(root);
-  }
-  return ok(undefined);
-}
-
 function getPrintEnvMessage(env: string | undefined, message: string) {
   return env
     ? [
@@ -706,100 +639,4 @@ function getPrintEnvMessage(env: string | undefined, message: string) {
         { content: `${env}\n`, color: Colors.BRIGHT_MAGENTA },
       ]
     : [];
-}
-
-function selectAppTypeQuestion(): MultiSelectQuestion {
-  return {
-    name: CollaborationConstants.AppType,
-    title: getLocalizedString("core.selectCollaborationAppTypeQuestion.title"),
-    type: "multiSelect",
-    staticOptions: [
-      {
-        id: CollaborationConstants.AadAppQuestionId,
-        label: getLocalizedString("core.aadAppQuestion.label"),
-        description: getLocalizedString("core.aadAppQuestion.description"),
-      },
-      {
-        id: CollaborationConstants.TeamsAppQuestionId,
-        label: getLocalizedString("core.teamsAppQuestion.label"),
-        description: getLocalizedString("core.teamsAppQuestion.description"),
-      },
-    ],
-  };
-}
-
-async function getCollaborationQuestionNode(inputs: Inputs): Promise<QTreeNode> {
-  const root = new QTreeNode(selectAppTypeQuestion());
-
-  // Teams app manifest select node
-  const teamsAppSelectNode = selectTeamsAppManifestQuestion(inputs);
-  teamsAppSelectNode.condition = { contains: CollaborationConstants.TeamsAppQuestionId };
-  root.addChild(teamsAppSelectNode);
-
-  // Aad app manifest select node
-  const aadAppSelectNode = selectAadAppManifestQuestion(inputs);
-  aadAppSelectNode.condition = { contains: CollaborationConstants.AadAppQuestionId };
-  root.addChild(aadAppSelectNode);
-
-  // Env select node
-  const envNode = await selectEnvNode(inputs);
-  if (!envNode) {
-    return root;
-  }
-  envNode.data.name = "env";
-  envNode.condition = {
-    validFunc: validateEnvQuestion,
-  };
-  teamsAppSelectNode.addChild(envNode);
-  aadAppSelectNode.addChild(envNode);
-
-  return root;
-}
-
-export async function validateEnvQuestion(
-  input: any,
-  inputs?: Inputs
-): Promise<string | undefined> {
-  if (inputs?.env || inputs?.targetEnvName) {
-    return "Env already selected";
-  }
-
-  const appType = inputs?.[CollaborationConstants.AppType] as string[];
-  const requireAad = appType.includes(CollaborationConstants.AadAppQuestionId);
-  const requireTeams = appType.includes(CollaborationConstants.TeamsAppQuestionId);
-  const aadManifestPath = inputs?.[CoreQuestionNames.AadAppManifestFilePath];
-  const teamsManifestPath = inputs?.[CoreQuestionNames.TeamsAppManifestFilePath];
-
-  // When both is selected, only show the question once at the end
-  if ((requireAad && !aadManifestPath) || (requireTeams && !teamsManifestPath)) {
-    return "Question not finished";
-  }
-
-  // Only show env question when manifest id is referencing value from .env file
-  let requireEnv = false;
-  if (requireTeams && teamsManifestPath) {
-    const teamsAppIdRes = await CollaborationUtil.loadManifestId(teamsManifestPath);
-    if (teamsAppIdRes.isOk()) {
-      requireEnv = CollaborationUtil.requireEnvQuestion(teamsAppIdRes.value);
-      if (requireEnv) {
-        return undefined;
-      }
-    } else {
-      return "Invalid manifest";
-    }
-  }
-
-  if (requireAad && aadManifestPath) {
-    const aadAppIdRes = await CollaborationUtil.loadManifestId(aadManifestPath);
-    if (aadAppIdRes.isOk()) {
-      requireEnv = CollaborationUtil.requireEnvQuestion(aadAppIdRes.value);
-      if (requireEnv) {
-        return undefined;
-      }
-    } else {
-      return "Invalid manifest";
-    }
-  }
-
-  return "Env question not required";
 }

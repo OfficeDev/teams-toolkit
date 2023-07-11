@@ -45,7 +45,10 @@ describe("Basic Tab", function () {
     const language = languages[i];
     it(
       `Create & Provision & Deploy Basic Tab (${language})`,
-      { testPlanCaseId: language === "javascript" ? 9426074 : 24137515 },
+      {
+        testPlanCaseId: language === "javascript" ? 9426074 : 24137515,
+        author: "zhihuan@microsoft.com",
+      },
       async function () {
         // Scaffold
         await CliHelper.createProjectWithCapability(

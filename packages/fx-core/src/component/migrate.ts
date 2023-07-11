@@ -2,7 +2,8 @@ import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
-import { ComponentNames, MessageExtensionNewUIItem } from "./constants";
+import { CapabilityOptions } from "../question/create";
+import { ComponentNames } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
 
@@ -98,7 +99,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: any, projectPath: strin
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
       let botCapabilities = settingsV2.pluginSettings?.["fx-resource-bot"]?.["capabilities"];
       if (
-        solutionSettings.capabilities.includes(MessageExtensionNewUIItem().id) &&
+        solutionSettings.capabilities.includes(CapabilityOptions.me().id) &&
         !botCapabilities?.includes("message-extension")
       ) {
         botCapabilities = botCapabilities || [];

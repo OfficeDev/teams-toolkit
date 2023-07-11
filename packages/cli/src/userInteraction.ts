@@ -48,7 +48,8 @@ import { cliSource } from "./constants";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
-
+import * as util from "util";
+import { strings } from "./resource";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
@@ -225,7 +226,7 @@ class CLIUserInteraction implements UserInteraction {
     };
   }
 
-  private async singleSelect(
+  async singleSelect(
     name: string,
     message: string,
     choices: ChoiceOptions[],
@@ -237,7 +238,7 @@ class CLIUserInteraction implements UserInteraction {
     );
   }
 
-  private async multiSelect(
+  async multiSelect(
     name: string,
     message: string,
     choices: ChoiceOptions[],
@@ -362,7 +363,7 @@ class CLIUserInteraction implements UserInteraction {
           LogLevel.Warning,
           `Your Azure account only has one subscription (${sub}). Use it as default.`
         );
-        return ok({ type: "success", result: sub });
+        return ok({ type: "skip", result: sub });
       }
     }
     const loadRes = await this.loadOptions(config);
@@ -372,12 +373,12 @@ class CLIUserInteraction implements UserInteraction {
     if (config.options.length === 1 && config.skipSingleOption) {
       const answer = (config.options as StaticOptions)[0];
       if (config.returnObject) {
-        return ok({ type: "success", result: answer });
+        return ok({ type: "skip", result: answer });
       } else {
         if (typeof answer === "string") {
-          return ok({ type: "success", result: answer });
+          return ok({ type: "skip", result: answer });
         } else {
-          return ok({ type: "success", result: answer.id });
+          return ok({ type: "skip", result: answer.id });
         }
       }
     }
@@ -399,6 +400,18 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
+        if (index < 0) {
+          const error = new InputValidationError(
+            config.name,
+            util.format(
+              strings["error.InvalidOptionErrorReason"],
+              result.value,
+              choices.map((choice) => choice.name).join(",")
+            )
+          );
+          error.source = cliSource;
+          resolve(err(error));
+        }
         const anwser = (config.options as StaticOptions)[index];
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwser }));
@@ -445,12 +458,12 @@ class CLIUserInteraction implements UserInteraction {
     if (config.options.length === 1 && config.skipSingleOption) {
       const answers = config.options as StaticOptions;
       if (config.returnObject) {
-        return ok({ type: "success", result: answers });
+        return ok({ type: "skip", result: answers });
       } else {
         if (typeof answers[0] === "string") {
-          return ok({ type: "success", result: answers });
+          return ok({ type: "skip", result: answers });
         } else {
-          return ok({ type: "success", result: (answers as OptionItem[]).map((a) => a.id) });
+          return ok({ type: "skip", result: (answers as OptionItem[]).map((a) => a.id) });
         }
       }
     }
@@ -472,6 +485,19 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
+        if (result.value.length > 0 && indexes.length === 0) {
+          // the condition means the user input is invalid, none of the choices is in the provided values
+          const error = new InputValidationError(
+            config.name,
+            util.format(
+              strings["error.InvalidOptionErrorReason"],
+              result.value.join(","),
+              choices.map((choice) => choice.name).join(",")
+            )
+          );
+          error.source = cliSource;
+          resolve(err(error));
+        }
         const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwers }));

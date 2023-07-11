@@ -19,34 +19,38 @@ describe("teamsfx new template", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`${TemplateProject.ProactiveMessaging}`, { testPlanCaseId: 1277473 }, async function () {
-    await Executor.openTemplateProject(appName, testFolder, TemplateProject.ProactiveMessaging);
-    expect(fs.pathExistsSync(projectPath)).to.be.true;
+  it(
+    `${TemplateProject.ProactiveMessaging}`,
+    { testPlanCaseId: 1277473, author: "v-ivanchen@microsoft.com" },
+    async function () {
+      await Executor.openTemplateProject(appName, testFolder, TemplateProject.ProactiveMessaging);
+      expect(fs.pathExistsSync(projectPath)).to.be.true;
 
-    // Provision
-    {
-      const { success } = await Executor.provision(projectPath);
-      expect(success).to.be.true;
-    }
+      // Provision
+      {
+        const { success } = await Executor.provision(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // deploy
-    {
-      const { success } = await Executor.deploy(projectPath);
-      expect(success).to.be.true;
-    }
+      // deploy
+      {
+        const { success } = await Executor.deploy(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // validate
-    {
-      const { success } = await Executor.validate(projectPath);
-      expect(success).to.be.true;
-    }
+      // validate
+      {
+        const { success } = await Executor.validate(projectPath);
+        expect(success).to.be.true;
+      }
 
-    // package
-    {
-      const { success } = await Executor.package(projectPath);
-      expect(success).to.be.true;
+      // package
+      {
+        const { success } = await Executor.package(projectPath);
+        expect(success).to.be.true;
+      }
     }
-  });
+  );
 
   after(async () => {
     await Cleaner.clean(projectPath);

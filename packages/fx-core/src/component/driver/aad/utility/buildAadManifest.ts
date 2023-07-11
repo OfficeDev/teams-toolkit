@@ -1,16 +1,23 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT
+
 import { UpdateAadAppOutput } from "../interface/updateAadAppOutput";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AadManifestHelper } from "../../../resource/aadApp/utils/aadManifestHelper";
+import { AadManifestHelper } from "./aadManifestHelper";
 import { MissingFieldInManifestUserError } from "../error/invalidFieldInManifestError";
 import isUUID from "validator/lib/isUUID";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { logMessageKeys } from "../utility/constants";
 import { DriverContext } from "../../interface/commonArgs";
-import { AADManifest } from "../../../resource/aadApp/interfaces/AADManifest";
+import { AADManifest } from "../interface/AADManifest";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { getUuid } from "../../../../common/tools";
-import { MissingEnvironmentVariablesError } from "../../../../error/common";
+import {
+  FileNotFoundError,
+  JSONSyntaxError,
+  MissingEnvironmentVariablesError,
+} from "../../../../error/common";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -22,6 +29,9 @@ export async function buildAadManifest(
   state?: UpdateAadAppOutput
 ): Promise<AADManifest> {
   const manifestAbsolutePath = getAbsolutePath(manifestPath, context.projectPath);
+  if (!(await fs.pathExists(manifestAbsolutePath))) {
+    throw new FileNotFoundError(actionName, manifestAbsolutePath, helpLink);
+  }
   const manifest = await loadManifest(manifestAbsolutePath, state);
   const warningMessage = AadManifestHelper.validateManifest(manifest);
   if (warningMessage) {
@@ -84,7 +94,13 @@ async function loadManifest(
       );
       throw error;
     }
-    const manifest: AADManifest = JSON.parse(manifestString);
+    let manifest: AADManifest;
+    try {
+      manifest = JSON.parse(manifestString);
+    } catch (error) {
+      // JSON.parse only throws SyntaxError per doc, which is a subsclass of Error
+      throw new JSONSyntaxError(manifestPath, error as Error, actionName);
+    }
     AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
     return manifest;
   } finally {

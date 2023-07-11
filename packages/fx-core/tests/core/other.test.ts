@@ -3,14 +3,7 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { TokenCredential } from "@azure/identity";
-import {
-  AzureAccountProvider,
-  FuncValidation,
-  Inputs,
-  Platform,
-  Settings,
-  SubscriptionInfo,
-} from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, Settings, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -21,13 +14,11 @@ import sinon from "sinon";
 import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
 import { execPowerShell, execShell } from "../../src/common/local/process";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
-import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { createAppNameQuestion } from "../../src/core/question";
+import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
-import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
 
 export class MockedAzureTokenProvider implements AzureAccountProvider {
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
@@ -94,39 +85,6 @@ describe("Other test case", () => {
 
   afterEach(() => {
     sandbox.restore();
-  });
-  it("question: app name question validation", async () => {
-    const folder = os.tmpdir();
-    const inputs: Inputs = { platform: Platform.VSCode, folder: folder };
-    let appName = "1234";
-    const appNameQuestion = createAppNameQuestion();
-    let validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
-      appName,
-      inputs
-    );
-
-    assert.isTrue(validRes === getLocalizedString("core.QuestionAppName.validation.pattern"));
-
-    appName = randomAppName();
-    const projectPath = path.resolve(folder, appName);
-
-    sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
-    inputs.folder = folder;
-    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
-      appName,
-      inputs
-    );
-    assert.isTrue(
-      validRes === getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath)
-    );
-
-    sandbox.restore();
-    sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(false);
-    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
-      appName,
-      inputs
-    );
-    assert.isTrue(validRes === undefined);
   });
 
   it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
@@ -322,18 +280,5 @@ describe("Other test case", () => {
     } finally {
       mockedEnvRestore();
     }
-  });
-  it("getQuestionsForResourceGroup", async () => {
-    const mockSubscriptionId = "mockSub";
-    const accountProvider = new MockedAzureTokenProvider();
-    const mockToken = await accountProvider.getIdentityCredentialAsync();
-    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
-    const node = await resourceGroupHelper.getQuestionsForResourceGroup(
-      "defaultRG",
-      [["g1", "East US"]],
-      ["East US", "Center US"],
-      mockRmClient
-    );
-    assert.isTrue(node !== undefined);
   });
 });

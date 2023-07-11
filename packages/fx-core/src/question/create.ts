@@ -695,10 +695,15 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
     staticOptions: [
-      { id: "new", label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew") },
+      {
+        id: "new",
+        label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew"),
+        detail: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew.detail"),
+      },
       {
         id: "import",
         label: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting"),
+        detail: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting.detail"),
       },
     ],
     default: "new",

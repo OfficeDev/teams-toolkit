@@ -3,7 +3,6 @@
 
 import "mocha";
 import * as chai from "chai";
-import * as util from "util";
 import { AadManifestHelper } from "../../../../src/component/driver/aad/utility/aadManifestHelper";
 import { AadManifestErrorMessage } from "../../../../src/component/driver/aad/error/aadManifestError";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
@@ -145,7 +144,7 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithInvalidSting);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAppId, "Invalid Id"));
+      .to.throw("Unknown resourceAppId Invalid Id");
   });
 
   it("processRequiredResourceAccessInManifest with no requiredResourceAccess", async () => {
@@ -193,7 +192,9 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "User.Read"));
+      .to.throw(
+        "Unknown resourceAccess id: User.Read, if you're using permission as resourceAccess id, please try to use permission id instead."
+      );
 
     manifest = {
       requiredResourceAccess: [
@@ -213,7 +214,9 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAccessId, "Sites.Read.All"));
+      .to.throw(
+        "Unknown resourceAccess id: Sites.Read.All, if you're using permission as resourceAccess id, please try to use permission id instead."
+      );
   });
 });
 

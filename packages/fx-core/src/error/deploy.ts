@@ -31,7 +31,7 @@ export class GetPublishingCredentialsError extends UserError {
         "error.deploy.GetPublishingCredentialsError",
         appName,
         resourceGroup,
-        JSON.stringify(error, Object.getOwnPropertyNames(error)) || "",
+        JSON.stringify(error, Object.getOwnPropertyNames(error)),
         "https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/list-publishing-credentials#code-try-0"
       ),
       displayMessage: getLocalizedString(
@@ -51,7 +51,7 @@ export class DeployZipPackageError extends UserError {
       message: getDefaultString(
         "error.deploy.DeployZipPackageError",
         endpoint,
-        JSON.stringify(error, Object.getOwnPropertyNames(error)) || "",
+        JSON.stringify(error, Object.getOwnPropertyNames(error)),
         "https://learn.microsoft.com/azure/app-service/deploy-zip?tabs=cli"
       ),
       displayMessage: getLocalizedString(
@@ -70,7 +70,7 @@ export class CheckDeploymentStatusError extends UserError {
       message: getDefaultString(
         "error.deploy.CheckDeploymentStatusError",
         location,
-        JSON.stringify(error, Object.getOwnPropertyNames(error)) || ""
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
       ),
       displayMessage: getLocalizedString(
         "error.deploy.CheckDeploymentStatusError",

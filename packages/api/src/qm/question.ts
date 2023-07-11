@@ -269,6 +269,19 @@ export interface SingleFileQuestion extends UserInputQuestion {
    * validation function
    */
   validation?: FuncValidation<string>;
+
+  /**
+   * This will only take effect in VSC.
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
 }
 
 export interface MultiFileQuestion extends UserInputQuestion {
@@ -317,8 +330,28 @@ export interface FuncQuestion extends BaseQuestion {
 
 export interface SingleFileOrInputQuestion extends UserInputQuestion {
   type: "singleFileOrText";
+  /**
+   * An item shown in the list in VSC that user can click to input text.
+   */
   inputOptionItem: OptionItem;
+
+  /**
+   * Config for the input box.
+   */
   inputBoxConfig: InputTextConfig;
+
+  /**
+   * This will only take effect in VSC.
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
 }
 
 /**

@@ -175,6 +175,19 @@ describe("Question Model - Validation Test", () => {
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 === undefined);
     });
+
+    it("excludesEnum", async () => {
+      const validation: StringValidation = { excludesEnum: ["1", "2", "3"] };
+      const value1 = "1";
+      const res1 = await validate(validation, value1, inputs);
+      chai.assert.isTrue(res1 !== undefined);
+      const value2 = "3";
+      const res2 = await validate(validation, value2, inputs);
+      chai.assert.isTrue(res2 !== undefined);
+      const value3 = "4";
+      const res3 = await validate(validation, value3, inputs);
+      chai.assert.isUndefined(res3);
+    });
   });
 
   describe("StringArrayValidation", () => {

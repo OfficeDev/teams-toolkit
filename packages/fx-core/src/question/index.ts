@@ -2,6 +2,7 @@ import { FxError, IQTreeNode, Result, ok } from "@microsoft/teamsfx-api";
 import { createProjectCliHelpNode, createProjectQuestionNode } from "./create";
 import {
   addWebPartQuestionNode,
+  createNewEnvQuestionNode,
   deployAadManifestQuestionNode,
   grantPermissionQuestionNode,
   listCollaboratorQuestionNode,
@@ -44,6 +45,9 @@ class QuestionNodes {
   }
   deployAadManifest(): IQTreeNode | undefined {
     return deployAadManifestQuestionNode();
+  }
+  createNewEnv(): IQTreeNode | undefined {
+    return createNewEnvQuestionNode();
   }
 }
 
@@ -88,6 +92,10 @@ class Questions {
 
   deployAadManifest(): Result<IQTreeNode | undefined, FxError> {
     return ok(questionNodes.deployAadManifest());
+  }
+
+  createNewEnv(): Result<IQTreeNode | undefined, FxError> {
+    return ok(questionNodes.createNewEnv());
   }
 }
 

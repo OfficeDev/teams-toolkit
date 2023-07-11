@@ -46,7 +46,6 @@ const mockedSampleInfo: SampleInfo = {
   tags: [],
   time: "",
   configuration: "test-configuration",
-  link: "test-link",
   suggested: false,
   url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
 };

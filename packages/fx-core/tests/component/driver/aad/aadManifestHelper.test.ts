@@ -3,7 +3,6 @@
 
 import "mocha";
 import * as chai from "chai";
-import * as util from "util";
 import { AadManifestHelper } from "../../../../src/component/driver/aad/utility/aadManifestHelper";
 import { AadManifestErrorMessage } from "../../../../src/component/driver/aad/error/aadManifestError";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
@@ -12,6 +11,21 @@ describe("AAD manifest helper Test", () => {
   it("manifestToApplication", async () => {
     const aadApp = AadManifestHelper.manifestToApplication(fakeAadManifest);
     chai.expect(aadApp).to.deep.equal(fakeAadApp);
+  });
+
+  it("manifestToApplication with no reply url", () => {
+    const manifest = JSON.parse(JSON.stringify(fakeAadManifest));
+    delete manifest.replyUrlsWithType;
+    console.log(JSON.stringify(manifest));
+
+    const expectedAadApp = JSON.parse(JSON.stringify(fakeAadApp));
+    expectedAadApp.web.redirectUris = undefined;
+    expectedAadApp.spa.redirectUris = undefined;
+    expectedAadApp.publicClient.redirectUris = undefined;
+    console.log(JSON.stringify(expectedAadApp));
+
+    const aadApp = AadManifestHelper.manifestToApplication(manifest);
+    chai.expect(aadApp).to.deep.equal(expectedAadApp);
   });
 
   it("applicationToManifest", async () => {
@@ -130,7 +144,7 @@ describe("AAD manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithInvalidSting);
       })
-      .to.throw(util.format(AadManifestErrorMessage.UnknownResourceAppId, "Invalid Id"));
+      .to.throw("Unknown resourceAppId Invalid Id");
   });
 
   it("processRequiredResourceAccessInManifest with no requiredResourceAccess", async () => {
@@ -141,6 +155,68 @@ describe("AAD manifest helper Test", () => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
       .to.not.throw();
+  });
+
+  it("processRequiredResourceAccessInManifest with no resourceAccess", async () => {
+    const manifest: any = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "00000003-0000-0000-c000-000000000000",
+        },
+      ],
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
+      })
+      .to.not.throw();
+  });
+
+  it("processRequiredResourceAccessInManifest with non-exist resource app id", async () => {
+    let manifest: any = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "00000000-0000-0000-0000-000000000000", // Non-exist resource app id
+          resourceAccess: [
+            {
+              id: "User.Read",
+              type: "Scope",
+            },
+          ],
+        },
+      ],
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
+      })
+      .to.throw(
+        "Unknown resourceAccess id: User.Read, if you're using permission as resourceAccess id, please try to use permission id instead."
+      );
+
+    manifest = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "00000000-0000-0000-0000-000000000000", // Non-exist resource app id
+          resourceAccess: [
+            {
+              id: "Sites.Read.All",
+              type: "Role",
+            },
+          ],
+        },
+      ],
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
+      })
+      .to.throw(
+        "Unknown resourceAccess id: Sites.Read.All, if you're using permission as resourceAccess id, please try to use permission id instead."
+      );
   });
 });
 

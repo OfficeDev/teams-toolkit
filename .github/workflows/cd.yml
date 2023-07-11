@@ -1,5 +1,5 @@
 name: CD
-run-name: CD-${{ github.run_id }}-${{ github.ref_name }}-${{ inputs.preid }}
+run-name: CD-${{ github.run_id }}-${{ github.ref_name }}-${{ inputs.preid }}-${{ inputs.series }}
 on:
   workflow_dispatch:
     inputs:
@@ -7,6 +7,10 @@ on:
         description: "preid name(alpha, beta, rc, stable)"
         required: true
         default: "rc"
+      series:
+        description: "release sprint series name"
+        required: false
+        default: ""
       skip-version-rc:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false

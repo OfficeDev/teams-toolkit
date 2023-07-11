@@ -60,17 +60,18 @@ import { QuestionMW } from "../component/middleware/questionMW";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";
-import { FileNotFoundError, InvalidProjectError, UserCancelError } from "../error/common";
+import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { QuestionNames } from "../question/questionNames";
+import { questions } from "../question";
+import { SPFxVersionOptionIds } from "../question/create";
 import { isAadMainifestContainsPlaceholder } from "../question/other";
+import { QuestionNames } from "../question/questionNames";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
-import { InvalidInputError, ObjectIsUndefinedError } from "./error";
+import { InvalidInputError } from "./error";
 import { TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMWV3, checkActiveResourcePlugins } from "./middleware/projectMigratorV3";
 import {
@@ -80,8 +81,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { SPFxVersionOptionIds } from "../question/create";
-import { questions } from "../question";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -483,24 +482,12 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
-  async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!ctx || !inputs.projectPath)
-      return err(new ObjectIsUndefinedError("createEnv input stuff"));
-
-    const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
-    if (
-      !createEnvCopyInput ||
-      !createEnvCopyInput.targetEnvName ||
-      !createEnvCopyInput.sourceEnvName
-    ) {
-      return err(new UserCancelError("core"));
-    }
-
+  @hooks([ErrorHandlerMW, QuestionMW(questions.createNewEnv), ConcurrentLockerMW])
+  async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.createEnvCopyV3(
-      createEnvCopyInput.targetEnvName,
-      createEnvCopyInput.sourceEnvName,
-      inputs.projectPath
+      inputs[QuestionNames.NewTargetEnvName]!,
+      inputs[QuestionNames.SourceEnvName]!,
+      inputs.projectPath!
     );
   }
 

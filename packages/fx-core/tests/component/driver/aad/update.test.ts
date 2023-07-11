@@ -19,9 +19,11 @@ import * as fs from "fs-extra";
 import { MissingFieldInManifestUserError } from "../../../../src/component/driver/aad/error/invalidFieldInManifestError";
 import { cwd } from "process";
 import {
+  FileNotFoundError,
   HttpClientError,
   HttpServerError,
   InvalidActionInputError,
+  JSONSyntaxError,
   MissingEnvironmentVariablesError,
 } from "../../../../src/error/common";
 import { Platform, ok, err } from "@microsoft/teamsfx-api";
@@ -111,6 +113,28 @@ describe("aadAppUpdate", async () => {
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
+  });
+
+  it("should throw error if manifest file does not exist", async () => {
+    const args: any = {
+      manifestPath: "invalidpath.json",
+      outputFilePath: "./build/aad.manifest.dev.json",
+    };
+
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(FileNotFoundError);
+  });
+
+  it("should throw error if manifest file is invalid", async () => {
+    const args: any = {
+      manifestPath: path.join(testAssetsRoot, "invalidJson.json"),
+      outputFilePath: "./build/aad.manifest.dev.json",
+    };
+
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(JSONSyntaxError);
   });
 
   it("should success with valid manifest", async () => {

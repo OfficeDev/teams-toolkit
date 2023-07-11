@@ -19,7 +19,6 @@ export enum QuestionNames {
   OfficeAddinTemplate = "addin-template-select",
   OfficeAddinHost = "addin-host",
   OfficeAddinImport = "addin-import",
-  SkipAppName = "skip-app-name",
   Samples = "samples",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
@@ -28,6 +27,10 @@ export enum QuestionNames {
   RepalceTabUrl = "tdp-tab-url",
   ValidateMethod = "validate-method",
   AppPackagePath = "appPackagePath",
+  CopilotPluginExistingApi = "copilot-plugin-existing-api", // group name for creating a Copilot plugin from existing api
+  ApiSpecLocation = "api-spec-location",
+  OpenAIPluginManifestLocation = "openai-plugin-manifest-location",
+  ApiOperation = "api-operation",
 
   Features = "features",
   Env = "env",

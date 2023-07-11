@@ -80,12 +80,32 @@ export function YoGeneratorScaffoldError(): UserError {
   });
 }
 
+export function CopyExistingSPFxSolutionError(e: Error): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "CopyExistingSPFxSolutioinFailed",
+    message: getDefaultString("plugins.spfx.error.import.copySPFxSolution", e.message),
+    displayMessage: getLocalizedString("plugins.spfx.error.import.copySPFxSolution", e.message),
+    helpLink: Constants.IMPORT_HELP_LINK,
+  });
+}
+
 export function RetrieveSPFxInfoError(): UserError {
   return new UserError({
     source: Constants.PLUGIN_NAME,
     name: "RetrieveSPFxInfoFailed",
     message: getDefaultString("plugins.spfx.error.import.retrieveSolutionInfo"),
     displayMessage: getLocalizedString("plugins.spfx.error.import.retrieveSolutionInfo"),
+    helpLink: Constants.IMPORT_HELP_LINK,
+  });
+}
+
+export function UpdateSPFxTemplateError(e: Error): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "UpdateSPFxTemplateFailed",
+    message: getDefaultString("plugins.spfx.error.import.updateSPFxTemplate", e.message),
+    displayMessage: getLocalizedString("plugins.spfx.error.import.updateSPFxTemplate", e.message),
     helpLink: Constants.IMPORT_HELP_LINK,
   });
 }

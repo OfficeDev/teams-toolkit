@@ -1174,7 +1174,7 @@
     "lint:staged": "lint-staged",
     "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
-    "copy-md-files": "copyfiles WHATISNEW.md out/resource",
+    "copy-md-files": "copyfiles CHANGELOG.md out/resource",
     "compile": "tsc -p ./ && npm run copy-files && npm run copy-md-files",
     "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
     "build-failpoint": "rimraf out && npx ttsc -p ./",

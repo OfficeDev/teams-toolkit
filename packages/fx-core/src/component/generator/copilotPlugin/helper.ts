@@ -1,3 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+/**
+ * @author yuqzho@microsoft.com
+ */
+
 import {
   Context,
   OpenAIManifestAuthType,

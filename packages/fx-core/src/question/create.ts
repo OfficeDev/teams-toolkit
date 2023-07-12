@@ -1320,33 +1320,7 @@ export function apiOperationQuestion(): MultiSelectQuestion {
       minItems: 1,
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      // let apiSpecUrl = inputs[QuestionNames.ApiSpecLocation];
-      // if(inputs[QuestionNames.OpenAIPluginManifestLocation]) {
-      //   const manifest = await OpenAIManifestHelper.loadOpenAIPluginManifest(inputs[QuestionNames.OpenAIPluginManifestLocation] as string);
-      //   apiSpecUrl = manifest.api.url;
-      //   inputs.openAIPluginManifest = manifest;
-      // }
-
-      // const specParser = new SpecParser(apiSpecUrl);        // load()
-      // const validationRes = await specParser.validate();    // validate( object   ): validationRes {   }
-
-      // if (validationRes.status === ValidationStatus.Error) {
-      //   // TODO: handle errors based on error type
-      //   return [];
-      // }
-
-      // try {
-      //   // success or warning
-      //   const operations = await specParser.list();
-      //   return operations.map((operation) => {
-      //     return { id: operation, label: operation };
-      //   });
-      // } catch (e) {
-      //   const error = assembleError(e);
-      //   throw error;
-      // }
       let manifest;
-      const apiSpecUrl = inputs[QuestionNames.ApiSpecLocation];
       if (inputs[QuestionNames.OpenAIPluginManifestLocation]) {
         manifest = await OpenAIManifestHelper.loadOpenAIPluginManifest(
           inputs[QuestionNames.OpenAIPluginManifestLocation] as string
@@ -1355,7 +1329,7 @@ export function apiOperationQuestion(): MultiSelectQuestion {
       }
       const context = createContextV3();
       try {
-        const res = await listOperations(context, manifest, apiSpecUrl);
+        const res = await listOperations(context, manifest, inputs[QuestionNames.ApiSpecLocation]);
         if (res.isOk()) {
           return res.value.map((operation) => {
             return { id: operation, label: operation };

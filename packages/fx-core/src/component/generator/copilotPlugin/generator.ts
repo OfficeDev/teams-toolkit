@@ -58,6 +58,7 @@ export class CopilotPluginGenerator {
       await OpenAIManifestHelper.updateManifest(inputs.openAIPluginManifest, manifestPath);
     }
 
+    // TODO: log warnings
     return ok(undefined);
   }
 }

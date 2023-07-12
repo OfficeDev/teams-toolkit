@@ -392,12 +392,12 @@ export default class ServerConnection implements IServerConnection {
       token: string;
     },
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<any, FxError>> {
     const authSvcToken: string = accountToken.token;
     if (authSvcToken) {
       await setRegion(authSvcToken);
     }
-    return ok(Void);
+    return ok(true);
   }
 
   public async listDevTunnelsRequest(

@@ -5,8 +5,15 @@ import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import isUUID from "validator/lib/isUUID";
 import { getPermissionMap } from "../permissions";
-import { AadManifestErrorMessage } from "../error/aadManifestError";
-import * as util from "util";
+import {
+  AadManifestErrorMessage,
+  UnknownResourceAccessIdUserError,
+  UnknownResourceAccessTypeUserError,
+  UnknownResourceAppIdUserError,
+} from "../error/aadManifestError";
+
+const componentName = "AadManifestHelper";
+
 export class AadManifestHelper {
   public static manifestToApplication(manifest: AADManifest): AADApplication {
     const result: AADApplication = {
@@ -55,7 +62,7 @@ export class AadManifestHelper {
       parentalControlSettings: manifest.parentalControlSettings,
       publicClient: {
         redirectUris: manifest.replyUrlsWithType
-          .filter((item) => item.type === "InstalledClient")
+          ?.filter((item) => item.type === "InstalledClient")
           .map((item) => item.url),
       },
       requiredResourceAccess: manifest.requiredResourceAccess,
@@ -63,7 +70,7 @@ export class AadManifestHelper {
         homePageUrl: manifest.signInUrl,
         logoutUrl: manifest.logoutUrl,
         redirectUris: manifest.replyUrlsWithType
-          .filter((item) => item.type === "Web")
+          ?.filter((item) => item.type === "Web")
           .map((item) => item.url),
         implicitGrantSettings: {
           enableIdTokenIssuance: manifest.oauth2AllowIdTokenImplicitFlow,
@@ -72,7 +79,7 @@ export class AadManifestHelper {
       },
       spa: {
         redirectUris: manifest.replyUrlsWithType
-          .filter((item) => item.type === "Spa")
+          ?.filter((item) => item.type === "Spa")
           .map((item) => item.url),
       },
     };
@@ -213,34 +220,25 @@ export class AadManifestHelper {
       if (!isUUID(resourceIdOrName)) {
         resourceId = map[resourceIdOrName]?.id;
         if (!resourceId) {
-          throw new Error(
-            util.format(AadManifestErrorMessage.UnknownResourceAppId, resourceIdOrName)
-          );
+          throw new UnknownResourceAppIdUserError(componentName, resourceIdOrName);
         }
         requiredResourceAccessItem.resourceAppId = resourceId;
       }
 
-      requiredResourceAccessItem.resourceAccess.forEach((resourceAccessItem) => {
+      requiredResourceAccessItem.resourceAccess?.forEach((resourceAccessItem) => {
         const resourceAccessIdOrName = resourceAccessItem.id;
         if (!isUUID(resourceAccessIdOrName)) {
           let resourceAccessId;
           if (resourceAccessItem.type === "Scope") {
-            resourceAccessId = map[resourceId].scopes[resourceAccessItem.id];
+            resourceAccessId = map[resourceId]?.scopes[resourceAccessItem.id];
           } else if (resourceAccessItem.type === "Role") {
-            resourceAccessId = map[resourceId].roles[resourceAccessItem.id];
+            resourceAccessId = map[resourceId]?.roles[resourceAccessItem.id];
           } else {
-            throw new Error(
-              util.format(
-                AadManifestErrorMessage.UnknownResourceAccessType,
-                resourceAccessItem.type
-              )
-            );
+            throw new UnknownResourceAccessTypeUserError(componentName, resourceAccessItem.type);
           }
 
           if (!resourceAccessId) {
-            throw new Error(
-              util.format(AadManifestErrorMessage.UnknownResourceAccessId, resourceAccessItem.id)
-            );
+            throw new UnknownResourceAccessIdUserError(componentName, resourceAccessItem.id);
           }
           resourceAccessItem.id = resourceAccessId;
         }

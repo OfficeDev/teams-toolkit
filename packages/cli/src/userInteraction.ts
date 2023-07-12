@@ -48,7 +48,8 @@ import { cliSource } from "./constants";
 import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
-
+import * as util from "util";
+import { strings } from "./resource";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
@@ -225,7 +226,7 @@ class CLIUserInteraction implements UserInteraction {
     };
   }
 
-  private async singleSelect(
+  async singleSelect(
     name: string,
     message: string,
     choices: ChoiceOptions[],
@@ -237,7 +238,7 @@ class CLIUserInteraction implements UserInteraction {
     );
   }
 
-  private async multiSelect(
+  async multiSelect(
     name: string,
     message: string,
     choices: ChoiceOptions[],
@@ -399,6 +400,18 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
+        if (index < 0) {
+          const error = new InputValidationError(
+            config.name,
+            util.format(
+              strings["error.InvalidOptionErrorReason"],
+              result.value,
+              choices.map((choice) => choice.name).join(",")
+            )
+          );
+          error.source = cliSource;
+          resolve(err(error));
+        }
         const anwser = (config.options as StaticOptions)[index];
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwser }));
@@ -472,6 +485,19 @@ class CLIUserInteraction implements UserInteraction {
           choices.map((choice) => choice.name),
           result.value
         );
+        if (result.value.length > 0 && indexes.length === 0) {
+          // the condition means the user input is invalid, none of the choices is in the provided values
+          const error = new InputValidationError(
+            config.name,
+            util.format(
+              strings["error.InvalidOptionErrorReason"],
+              result.value.join(","),
+              choices.map((choice) => choice.name).join(",")
+            )
+          );
+          error.source = cliSource;
+          resolve(err(error));
+        }
         const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
         if (config.returnObject) {
           resolve(ok({ type: "success", result: anwers }));

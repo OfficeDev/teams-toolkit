@@ -74,7 +74,6 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "ensureFile").resolves();
     sinon.stub(fs, "writeJSON").resolves();
     sinon.stub(fs, "ensureDir").resolves();
-    sinon.stub(fs, "copy").resolves();
   });
 
   afterEach(async () => {
@@ -413,12 +412,70 @@ describe("SPFxGenerator", function () {
 
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readdir").resolves([]);
+    sinon.stub(fs, "copy").resolves();
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
     chai.expect(result.isErr()).to.eq(true);
     if (result.isErr()) {
       chai.expect(result.error.name).to.eq("RetrieveSPFxInfoFailed");
+    }
+  });
+
+  it("Copy existing SPFx solution failed when import SPFx solution", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").resolves([]);
+    sinon.stub(fs, "copy").throwsException("Failed to copy");
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).to.eq("CopyExistingSPFxSolutioinFailed");
+    }
+  });
+
+  it("Update SPFx template failed when import SPFx solution", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else {
+        return ["helloworld", "second"] as any;
+      }
+    });
+    sinon.stub(fs, "stat").resolves({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    sinon.stub(fs, "copy").resolves();
+    sinon.stub(Generator, "generateTemplate" as any).resolves(ok(undefined));
+    sinon
+      .stub(ManifestUtils.prototype, "_readAppManifest")
+      .throwsException("Failed to read manifest");
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).to.eq("UpdateSPFxTemplateFailed");
     }
   });
 
@@ -441,6 +498,7 @@ describe("SPFxGenerator", function () {
     const generateTemplateStub = sinon
       .stub(Generator, "generateTemplate" as any)
       .resolves(err(undefined));
+    sinon.stub(fs, "copy").resolves();
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -481,6 +539,7 @@ describe("SPFxGenerator", function () {
       .stub(ManifestUtils.prototype, "_writeAppManifest")
       .resolves();
     const writeEnvStub = sinon.stub(envUtil, "writeEnv");
+    sinon.stub(fs, "copy").resolves();
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 

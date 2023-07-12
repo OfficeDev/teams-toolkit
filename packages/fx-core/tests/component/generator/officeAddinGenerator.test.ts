@@ -10,44 +10,36 @@ import {
   devPreview,
   err,
   Inputs,
-  LocalFunc,
   ManifestUtil,
   ok,
   Platform,
   SystemError,
 } from "@microsoft/teamsfx-api";
+import axios from "axios";
 import * as chai from "chai";
+import * as childProcess from "child_process";
+import EventEmitter from "events";
 import fs from "fs";
 import * as fse from "fs-extra";
-import axios from "axios";
 import "mocha";
 import mockfs from "mock-fs";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { OfficeAddinManifest } from "office-addin-manifest";
 import * as path from "path";
+import proxyquire from "proxyquire";
 import * as sinon from "sinon";
-import * as uuid from "uuid";
 import * as unzip from "unzipper";
+import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
+import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
+import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
-import {
-  AddinLanguageQuestion,
-  AddinProjectFolderQuestion,
-  AddinProjectManifestQuestion,
-  getQuestionsForScaffolding,
-  getTemplate,
-  OfficeHostQuestion,
-} from "../../../src/component/generator/officeAddin/question";
-import * as childProcess from "child_process";
+import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
+import { QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
-import { OfficeAddinManifest } from "office-addin-manifest";
-import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
-import EventEmitter from "events";
-import proxyquire from "proxyquire";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -141,8 +133,8 @@ describe("OfficeAddinGenerator", function () {
       "app-name": "office-addin-test",
     };
     inputs["capabilities"] = ["taskpane"];
-    inputs[AddinProjectFolderQuestion.name] = undefined;
-    inputs[AddinLanguageQuestion.name] = "TypeScript";
+    inputs[QuestionNames.OfficeAddinFolder] = undefined;
+    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
@@ -159,9 +151,9 @@ describe("OfficeAddinGenerator", function () {
       "app-name": "office-addin-test",
     };
     inputs["capabilities"] = ["taskpane"];
-    inputs[AddinProjectFolderQuestion.name] = "somepath";
-    inputs[AddinLanguageQuestion.name] = "TypeScript";
-    inputs[AddinProjectManifestQuestion.name] = "manifest.json";
+    inputs[QuestionNames.OfficeAddinFolder] = "somepath";
+    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.OfficeAddinManifest] = "manifest.json";
 
     const copyAddinFilesStub = sinon
       .stub(HelperMethods, "copyAddinFiles")
@@ -189,7 +181,7 @@ describe("OfficeAddinGenerator", function () {
     chai.expect(result.isOk()).to.eq(true);
     chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
     chai.expect(updateManifestStub.calledOnce).to.be.true;
-    chai.expect(inputs[OfficeHostQuestion.name]).to.eq("Outlook");
+    chai.expect(inputs[QuestionNames.OfficeAddinHost]).to.eq("Outlook");
   });
 
   it("should copy addin files and convert manifest if addin folder is specified with xml manifest", async () => {
@@ -199,9 +191,9 @@ describe("OfficeAddinGenerator", function () {
       "app-name": "office-addin-test",
     };
     inputs["capabilities"] = ["taskpane"];
-    inputs[AddinProjectFolderQuestion.name] = "somepath";
-    inputs[AddinLanguageQuestion.name] = "TypeScript";
-    inputs[AddinProjectManifestQuestion.name] = "manifest.xml";
+    inputs[QuestionNames.OfficeAddinFolder] = "somepath";
+    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.OfficeAddinManifest] = "manifest.xml";
 
     const copyAddinFilesStub = sinon
       .stub(HelperMethods, "copyAddinFiles")
@@ -241,51 +233,12 @@ describe("OfficeAddinGenerator", function () {
     chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
     chai.expect(updateManifestStub.calledOnce).to.be.true;
     chai.expect(convertProjectStub.calledOnce).to.be.true;
-    chai.expect(inputs[OfficeHostQuestion.name]).to.eq("Outlook");
+    chai.expect(inputs[QuestionNames.OfficeAddinHost]).to.eq("Outlook");
   });
 
   afterEach(async () => {
     sinon.restore();
     mockedEnvRestore();
-  });
-});
-
-describe("getQuestionsForScaffolding", () => {
-  it("should contain all questions", () => {
-    const q = getQuestionsForScaffolding();
-    chai.expect(q.children?.length).to.eq(2);
-    chai.expect(q.children?.[0].condition).is.not.undefined;
-    chai.expect(typeof q.children?.[0].condition === "function").to.true;
-  });
-
-  describe("AddinLanguageQuestions", () => {
-    it("should have typescript as options", async () => {
-      const inputs: Inputs = { platform: Platform.CLI };
-      inputs["capabilities"] = ["taskpane"];
-      chai.assert.isDefined(AddinLanguageQuestion.dynamicOptions);
-      const options = await AddinLanguageQuestion.dynamicOptions!(inputs);
-      chai.assert.deepEqual(options, [{ label: "TypeScript", id: "TypeScript" }]);
-    });
-
-    it("should default to TypeScript for taskpane projects", async () => {
-      const inputs: Inputs = { platform: Platform.CLI };
-      inputs["capabilities"] = ["taskpane"];
-      chai.assert.isDefined(AddinLanguageQuestion.default);
-      const lang = await (AddinLanguageQuestion.default as LocalFunc<string | undefined>)(inputs);
-      chai.assert.equal(lang, "TypeScript");
-    });
-  });
-});
-
-describe("getTemplate", () => {
-  it("should find taskpane template", () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-    };
-    inputs["capabilities"] = ["taskpane"];
-
-    const template = getTemplate(inputs);
-    chai.expect(template).to.eq("taskpane");
   });
 });
 

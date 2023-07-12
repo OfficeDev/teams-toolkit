@@ -65,11 +65,10 @@ import {
   CapabilityOptions,
   QuestionNames,
   ScratchOptions,
-  programmingLanguageQuestion,
   questionNodes,
-  questions,
 } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
+import { FeatureFlagName } from "../../src/common/constants";
 
 const tools = new MockTools();
 
@@ -596,56 +595,6 @@ describe("Core basic APIs", () => {
       assert.isTrue(result.isOk());
     } finally {
       restore();
-    }
-  });
-
-  it("ProgrammingLanguageQuestion", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
-    };
-    const ProgrammingLanguageQuestion = programmingLanguageQuestion();
-    if (
-      ProgrammingLanguageQuestion.dynamicOptions &&
-      ProgrammingLanguageQuestion.placeholder &&
-      typeof ProgrammingLanguageQuestion.placeholder === "function"
-    ) {
-      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
-      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
-    }
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: CapabilityOptions.me().id,
-    });
-
-    function languageAssert(inputs: Inputs) {
-      if (
-        ProgrammingLanguageQuestion.dynamicOptions &&
-        ProgrammingLanguageQuestion.placeholder &&
-        typeof ProgrammingLanguageQuestion.placeholder === "function"
-      ) {
-        const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-        assert.deepEqual(
-          [
-            { id: "javascript", label: "JavaScript" },
-            { id: "typescript", label: "TypeScript" },
-          ],
-          options
-        );
-        const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-        assert.equal("Select a programming language.", placeholder);
-      }
     }
   });
 });
@@ -1312,6 +1261,7 @@ describe("isEnvFile", async () => {
       mockedEnvRestore();
     });
     it("happy path", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
       assert.isTrue(res.isOk());
@@ -1357,6 +1307,37 @@ describe("isEnvFile", async () => {
         ]);
       }
     });
+
+    it("happy path: copilot feature flag", async () => {
+      const restore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "true",
+      });
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const node = res.value;
+        const names: string[] = [];
+        collectNodeNames(node!, names);
+        assert.deepEqual(names, [
+          "capabilities",
+          "bot-host-type-trigger",
+          "spfx-solution",
+          "spfx-install-latest-package",
+          "spfx-framework-type",
+          "spfx-webpart-name",
+          "spfx-folder",
+          "api-spec-location",
+          "openai-plugin-manifest-location",
+          "api-operation",
+          "programming-language",
+          "folder",
+          "app-name",
+        ]);
+      }
+      restore();
+    });
+
     function collectNodeNames(node: IQTreeNode, names: string[]) {
       if (node.data.type !== "group") {
         names.push(node.data.name);

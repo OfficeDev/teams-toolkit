@@ -67,7 +67,7 @@ jobs:
       - name: List cases for schedule
         id: schedule-cases
         if: ${{  github.event_name == 'schedule' }}
-        working-directory: packages/cli/tests/e2e
+        working-directory: packages/tests/src/e2e
         run: |
           cases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
           echo "cases=$cases" >> $GITHUB_OUTPUT
@@ -75,7 +75,7 @@ jobs:
       - name: List cases for dispatch
         id: dispatch-cases
         if: ${{  github.event_name == 'workflow_dispatch' }}
-        working-directory: packages/cli/tests/e2e
+        working-directory: packages/tests/src/e2e
         run: |
           inputCases='${{ github.event.inputs.cases }}'
           if [ -z "$inputCases" ]; then
@@ -88,7 +88,7 @@ jobs:
       - name: List cases for pull request
         id: pr-cases
         if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
-        working-directory: packages/cli/tests/e2e
+        working-directory: packages/tests/src/e2e
         run: |
           cases=`find ./bot ./frontend -path "*.tests.ts" -and \
             -not '(' -path '*/*.dotnet.tests.ts' -or -path '*/Blazor*' ')' \
@@ -96,7 +96,7 @@ jobs:
           echo "cases=$cases" >> $GITHUB_OUTPUT
 
       - name: E2E Test clean
-        working-directory: packages/cli
+        working-directory: packages/tests
         run: |
           npm run test:e2e:clean
 
@@ -184,7 +184,7 @@ jobs:
         with:
           repository: OfficeDev/TeamsFx-Samples
           ref: dev
-          path: packages/cli/tests/e2e/resource
+          path: packages/tests/src/e2e/resource
 
       - name: Download samples(rc)
         if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false
@@ -192,7 +192,7 @@ jobs:
         with:
           repository: OfficeDev/TeamsFx-Samples
           ref: v3
-          path: packages/cli/tests/e2e/resource
+          path: packages/tests/src/e2e/resource
 
       - name: Download samples from another repo
         if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage')
@@ -200,10 +200,10 @@ jobs:
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
           ref: main
-          path: packages/cli/tests/e2e/resource
+          path: packages/tests/e2e/src/resource
 
       - name: run test
-        working-directory: packages/cli/tests/e2e
+        working-directory: packages/tests/src/e2e
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ -z "$file" ]; then
@@ -229,7 +229,7 @@ jobs:
         with:
           name: test-result-${{ steps.get-report-name.outputs.name }}
           path: |
-            ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
+            ./packages/tests/src/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
@@ -269,7 +269,7 @@ jobs:
             npm run setup
 
       - name: E2E Test clean
-        working-directory: packages/cli
+        working-directory: packages/tests
         run: |
           npm run test:e2e:clean
 
@@ -306,7 +306,7 @@ jobs:
 
       - name: List jobs
         id: list-jobs
-        working-directory: packages/cli
+        working-directory: packages/tests
         run: |
           page=1
           jobs="[]"
@@ -345,7 +345,7 @@ jobs:
               continue
             fi
 
-            file="tests/e2e/$case"
+            file="src/e2e/$case"
             elegant_path="${file//.\//}"
 
             started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`

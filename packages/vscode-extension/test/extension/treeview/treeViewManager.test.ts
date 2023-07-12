@@ -138,4 +138,24 @@ describe("TreeViewManager", () => {
 
     chai.assert.equal(commands.length, 5);
   });
+
+  it("should detected adaptive card", async () => {
+    const provider = new AdaptiveCardCodeLensProvider();
+    const res = await provider.provideCodeLenses({
+      getText(range?: Range): string {
+        return '"$schema": "http://adaptivecards.io/schemas/adaptive-card.json",';
+      },
+    } as vscode.TextDocument);
+    chai.assert.isNotEmpty(res);
+  });
+
+  it("adaptive card is not detected", async () => {
+    const provider = new AdaptiveCardCodeLensProvider();
+    const res = await provider.provideCodeLenses({
+      getText(range?: Range): string {
+        return "";
+      },
+    } as vscode.TextDocument);
+    chai.assert.equal(res?.length, 0);
+  });
 });

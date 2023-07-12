@@ -7,6 +7,7 @@
   "error.prefix": "(x) Error: ",
   "error.MissingRequiredArgumentError": "The command '%s' can not be executed for missing required argument '%s'. Provide the argument via '--%s' and try again.",
   "error.ArgumentConflictError": "The command '%s' is designed to accept either argument '%s' or argument '%s', but not both simultaneously. Keep either of the two arguments and try again.",
+  "error.InvalidOptionErrorReason": "'%s' is not in the valid option list: %s.",
   "success.prefix": "(✓) Success: ",
   "warning.prefix": "(!) Warning: ",
   "command": {

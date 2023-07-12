@@ -738,23 +738,26 @@ export class VsCodeUI implements UserInteraction {
       possibleFiles: [config.inputOptionItem],
     };
 
-    const selectFileOrItemRes = await this.selectFile(selectFileConfig);
-    if (selectFileOrItemRes.isOk()) {
-      if (selectFileOrItemRes.value.result === config.inputOptionItem.id) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {
-          [TelemetryProperty.SelectedOption]: selectFileOrItemRes.value.result,
-        });
-        const inputRes = await this.inputText(config.inputBoxConfig);
-        if (inputRes.isOk()) {
-          return ok(inputRes.value);
+    while (true) {
+      const selectFileOrItemRes = await this.selectFile(selectFileConfig);
+      if (selectFileOrItemRes.isOk()) {
+        if (selectFileOrItemRes.value.result === config.inputOptionItem.id) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {
+            [TelemetryProperty.SelectedOption]: selectFileOrItemRes.value.result,
+          });
+          const inputRes = await this.inputText(config.inputBoxConfig);
+          if (inputRes.isOk()) {
+            if (inputRes.value.type === "back") continue;
+            return ok(inputRes.value);
+          } else {
+            return err(inputRes.error);
+          }
         } else {
-          return err(inputRes.error);
+          return ok(selectFileOrItemRes.value);
         }
       } else {
-        return ok(selectFileOrItemRes.value);
+        return err(selectFileOrItemRes.error);
       }
-    } else {
-      return err(selectFileOrItemRes.error);
     }
   }
 

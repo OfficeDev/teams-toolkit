@@ -625,5 +625,42 @@ describe("UI Unit Tests", async () => {
       }
       sinon.restore();
     });
+
+    it("inputs a value back and then sucessfully", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleFileOrInputConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        inputOptionItem: {
+          id: "input",
+          label: "input",
+        },
+        inputBoxConfig: {
+          prompt: "prompt",
+          title: "title",
+          name: "input name",
+        },
+      };
+
+      sinon
+        .stub(VsCodeUI.prototype, "selectFile")
+        .resolves(ok({ type: "success", result: "input" }));
+      sinon
+        .stub(VsCodeUI.prototype, "inputText")
+        .onFirstCall()
+        .resolves(ok({ type: "back" }))
+        .onSecondCall()
+        .resolves(ok({ type: "success", result: "testUrl" }));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectFileOrInput(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("testUrl");
+      }
+      sinon.restore();
+    });
   });
 });

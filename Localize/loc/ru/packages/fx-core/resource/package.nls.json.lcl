@@ -82,24 +82,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.BotSso.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Single Sign On for Bot]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Единый вход для бота]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.BotSso.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Enable Single Sign On in your Teams Bot app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Включение единого входа в приложении бота Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.CommandAndResponseOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Trigger work with custom chat commands in Teams chats]]></Val>
@@ -145,6 +127,24 @@
           <Prev Cat="Text">
             <Val><![CDATA[Dashboard tab]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.LinkUnfurlingOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Display information and actions when a URL is pasted into the compose message area]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Отображать сведения и действия при вставке URL-адреса в область создания сообщения]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.LinkUnfurlingOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Link Unfurling]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Разворачивание ссылки]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -252,30 +252,6 @@
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Message extension]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.NewOfficeAddinOptionVSC.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Use the Teams Toolkit to create a new Outlook add-in application.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Используйте набор средств Teams для создания приложения надстройки Outlook.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Use the Teams Toolkit to create a new Office add-in application.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.NewOfficeAddinOptionVSC.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Start with an Outlook add-in]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Начните с надстройки Outlook]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Create a new Office add-in]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -487,24 +463,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.ScratchOptionNoVSC.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Use an existing sample as a starting point for your new application.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Используйте существующий пример в качестве отправной точки для нового приложения.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.ScratchOptionNoVSC.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Start from a sample]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Начать с примера]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.ScratchOptionYes.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use the Teams Toolkit to create a new Teams application.]]></Val>
@@ -526,27 +484,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Teams app]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.ScratchOptionYesVSC.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Use the Teams Toolkit to create a new Teams application.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Используйте набор средств Teams для создания нового приложения Teams.]]></Val>
-          </Tgt>
-          <Prev Cat="Text">
-            <Val><![CDATA[Use the Teams Toolkit to create a new application.]]></Val>
-          </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.ScratchOptionYesVSC.officeAddin.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Start with a Teams capability]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Начните с компонента Teams]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -640,24 +577,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[SPFx tab]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.TabSso.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Single Sign On for Tab]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Единый вход для вкладки]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.TabSso.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Enable Single Sign On in your Teams Tab app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Включение единого входа в приложении Teams]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1102,15 +1021,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Select at least 1 capability]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.createCapabilityQuestion.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Select capabilities]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Выбор возможностей]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1680,15 +1590,6 @@
           <Val><![CDATA[Additional features]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Дополнительные функции]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.options.separator.scenario" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Scenario-based Teams apps]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Приложения Teams на основе сценария]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3999,24 +3900,24 @@
       </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to create Teams app in Developer Portal, due to %s]]></Val>
+          <Val><![CDATA[Unable to create Teams app in Teams Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось создать приложение Teams на портале разработчика из-за %s]]></Val>
+            <Val><![CDATA[Не удалось создать приложение Teams на портале разработчика Teams из-за %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
+            <Val><![CDATA[Unable to create Teams app in Developer Portal, due to %s]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.appstudio.teamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to update Teams app with ID %s.]]></Val>
+          <Val><![CDATA[Unable to update Teams app with ID %s in Teams Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось обновить приложение Teams с идентификатором %s.]]></Val>
+            <Val><![CDATA[Не удалось обновить приложение Teams с идентификатором %s на портале разработчика Teams из-за %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Failed to update Teams app with ID %s.]]></Val>
+            <Val><![CDATA[Unable to update Teams app with ID %s.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -5746,7 +5647,7 @@
       <Item ItemId=";plugins.spfx.questions.spfxSolution.importExisting" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Import an Existing SPFx Solution]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Импорт существующего решения SPFx]]></Val>
           </Tgt>
           <Prev Cat="Text">

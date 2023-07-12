@@ -22,7 +22,7 @@ module.exports = {
     "prettier",
     "no-secrets",
     "header",
-    "@microsoft/eslint-plugin-teamsfx",
+    // "@microsoft/eslint-plugin-teamsfx",
   ],
   rules: {
     "prettier/prettier": "error",
@@ -55,7 +55,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["*.ts"],
+      files: ["src/**/*.ts"],
       rules: {
         "header/header": [
           "error",

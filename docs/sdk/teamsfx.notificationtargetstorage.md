@@ -4,6 +4,11 @@
 
 ## NotificationTargetStorage interface
 
+> Warning: This API is now obsolete.
+> 
+> Use ConversationReferenceStore to customize the way to persist bot notification connections instead.
+> 
+
 Interface for a storage provider that stores and retrieves notification target references.
 
 <b>Signature:</b>

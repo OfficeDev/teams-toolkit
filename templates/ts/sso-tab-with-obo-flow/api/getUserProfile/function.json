@@ -1,0 +1,26 @@
+{
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ],
+      "route": "getUserProfile"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    },
+    {
+      "direction": "in",
+      "name": "teamsfxContext",
+      "type": "TeamsFx"
+    }
+  ],
+  "scriptFile": "../dist/getUserProfile/index.js"
+}

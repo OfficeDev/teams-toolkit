@@ -1,18 +1,16 @@
 const path = require('path')
 const semver = require('semver')
 const fse = require('fs-extra')
+const fs = require('fs')
 
 const repoRoot = path.join(__dirname, "../..");
 
 function updateTemplatesDeps(templateDir, templateList) {
     let depPkgs = [];
     for (let subTempDir of templateList) {
-        packageFileCandidates = ["package.json", "package.json.tpl"];
-        packageFileCandidates.forEach((file) => {
-            const subTempPath = path.join(templateDir, subTempDir, file)
-            if (fse.existsSync(subTempPath)) {
+        const pkgFiles = walkDir(path.join(templateDir,subTempDir));
+        pkgFiles.forEach((subTempPath) => {
                 depPkgs.push(subTempPath)
-            }
         });
     }
     const pkgDirs = require(path.join(repoRoot, "lerna.json")).packages;
@@ -21,7 +19,7 @@ function updateTemplatesDeps(templateDir, templateList) {
         const pkgPath = path.join(repoRoot, pkgDir, "package.json");
         const pkgName = require(pkgPath).name;
         const pkgVersion = require(pkgPath).version;
-        console.log('====================== updateTemplatesDeps: ', pkgName, " ver:",pkgVersion);
+        console.log('====================== updateTemplatesDeps: ', pkgName, " ver:", pkgVersion);
         templatesDeps[`${pkgName}`] = pkgVersion;
     }
     for (let file of depPkgs) {
@@ -29,13 +27,21 @@ function updateTemplatesDeps(templateDir, templateList) {
     }
 }
 
-function getSdkDeps() {
-    const pkgPath = path.join(repoRoot, "packages", "sdk", "package.json");
-    const sdkName = require(pkgPath).name;
-    const sdkVer = require(pkgPath).version;
-    const dep = {}
-    dep[sdkName] = sdkVer;
-    return dep;
+function walkDir(dir) {
+    var results = [];
+    var list = fs.readdirSync(dir);
+    list.forEach(function(file) {
+        file = dir + '/' + file;
+        var stat = fs.statSync(file);
+        if (stat && stat.isDirectory()) { 
+            results = results.concat(walkDir(file));
+        } else { 
+            if(path.basename(file).startsWith('package.json')){
+                results.push(file);
+            }
+        }
+    });
+    return results;
 }
 
 function updateFileDeps(file, deps) {
@@ -48,7 +54,7 @@ function updateFileDeps(file, deps) {
                 continue;
             }
             fileChange = true;
-            if(semver.prerelease(value) && semver.prerelease(value)[0] === "alpha"){
+            if (semver.prerelease(value) && semver.prerelease(value)[0] === "alpha") {
                 dep_[key] = value;
             } else {
                 dep_[key] = `^${value}`;
@@ -63,21 +69,10 @@ function updateFileDeps(file, deps) {
 
 function main() {
     const pathInput = process.argv[2];
-    console.log('=================', __filename, " pathInput: ", pathInput);
-    if (pathInput) {
-        console.log('syncup ', pathInput);
-        const content = getSdkDeps();
-        const configFilePath = path.join(pathInput, "package.json");
-        updateFileDeps(configFilePath, content);
-    } else {
-        console.log('syncup templates')
-        const templateDir = path.join(__dirname, "../../templates");
-        const templateV3Dir = path.join(templateDir, "scenarios");
-        const templateList = require(path.join(templateDir, "package.json")).templates;
-        const templateV3List = require(path.join(templateDir, "package.json")).templatesV3;
-        updateTemplatesDeps(templateDir, templateList);
-        updateTemplatesDeps(templateV3Dir, templateV3List);
-    }
+    console.log('================= syncup templates', __filename)
+    const templateDir = path.join(__dirname, "../../templates");
+    const templateList = require(path.join(templateDir, "package.json")).templates;
+    updateTemplatesDeps(templateDir, templateList);
 }
 
 main()

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import sinon from "sinon";
 import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
 import ServerConnection from "../src/serverConnection";
@@ -175,30 +175,10 @@ describe("serverConnections", () => {
     });
   });
 
-  it("deployTeamsAppManifestRequest should return {}", async () => {
-    sandbox.stub(tools, "isV3Enabled").returns(false);
-    const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(ok("test"));
-    sandbox.replace(connection["core"], "executeUserTask", fake);
-    const inputs = {
-      platform: "vs",
-    };
-    const token = {};
-    const res = await connection.deployTeamsAppManifestRequest(
-      inputs as Inputs,
-      token as CancellationToken
-    );
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      assert.deepEqual(res.value, {});
-    }
-  });
-
   it("deployTeamsAppManifestRequest - v3", async () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.resolves(ok("test"));
     sandbox.replace(connection["core"], "deployTeamsManifest", fake);
-    sandbox.stub(tools, "isV3Enabled").returns(true);
     const inputs = {
       platform: "vs",
     };
@@ -214,26 +194,10 @@ describe("serverConnections", () => {
     sandbox.restore();
   });
 
-  it("buildArtifactsRequest", () => {
-    const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns("test");
-    sandbox.replace(connection["core"], "executeUserTask", fake);
-    sandbox.stub(tools, "isV3Enabled").returns(false);
-    const inputs = {
-      platform: "vs",
-    };
-    const token = {};
-    const res = connection.buildArtifactsRequest(inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok("test"));
-    });
-  });
-
   it("buildArtifactsRequest - V3", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.resolves(ok("test"));
     sandbox.replace(connection["core"], "createAppPackage", fake);
-    sandbox.stub(tools, "isV3Enabled").returns(true);
     const inputs = {
       platform: "vs",
       projectPath: ".",
@@ -357,6 +321,18 @@ describe("serverConnections", () => {
     });
   });
 
+  it("getProjectComponents", () => {
+    const connection = new ServerConnection(msgConn);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.getProjectComponents(inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok(""));
+    });
+  });
+
   it("getProjectMigrationStatusRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns({
@@ -423,6 +399,19 @@ describe("serverConnections", () => {
       inputs as Inputs,
       token as CancellationToken
     );
+    res.then((data) => {
+      assert.equal(data.isOk(), true);
+    });
+  });
+
+  it("setRegionRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const accountToken = {
+      token: "fakeToken",
+    };
+    sinon.stub(tools, "setRegion").callsFake(async () => {});
+
+    const res = connection.setRegionRequest(accountToken, {} as CancellationToken);
     res.then((data) => {
       assert.equal(data.isOk(), true);
     });

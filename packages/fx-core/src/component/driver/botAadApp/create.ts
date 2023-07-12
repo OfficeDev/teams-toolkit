@@ -10,20 +10,23 @@ import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api"
 import { performance } from "perf_hooks";
 import axios from "axios";
 import { wrapRun } from "../../utils/common";
-import {
-  BotRegistration,
-  BotAadCredentials,
-} from "../../resource/botService/botRegistration/botRegistration";
-import { RemoteBotRegistration } from "../../resource/botService/botRegistration/remoteBotRegistration";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { logMessageKeys } from "./utility/constants";
+import { logMessageKeys, progressBarKeys } from "./utility/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { progressBarKeys } from "../../resource/botService/botRegistration/constants";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { updateProgress } from "../middleware/updateProgress";
 import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
-import { InvalidActionInputError, UnhandledError, UnhandledUserError } from "../../../error/common";
+import {
+  HttpClientError,
+  HttpServerError,
+  InvalidActionInputError,
+  UnhandledError,
+  UnhandledUserError,
+} from "../../../error/common";
+import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
+import { AadAppClient } from "../aad/utility/aadAppClient";
+import { SignInAudience } from "../aad/interface/signInAudience";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -32,11 +35,6 @@ const successRegisterBotAad = `${actionName}/success`;
 const propertyKeys = {
   reusingExistingBotAad: "reuse-existing-bot-aad",
   registerBotAadTime: "register-bot-aad-time",
-};
-
-const defaultOutputEnvVarNames = {
-  botId: "BOT_ID",
-  botPassword: "SECRET_BOT_PASSWORD",
 };
 
 @Service(actionName) // DO NOT MODIFY the service name
@@ -86,47 +84,44 @@ export class CreateBotAadAppDriver implements StepDriver {
   }> {
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
+
       this.validateArgs(args);
-      // TODO: Remove this logic when config manager forces schema validation
       if (!outputEnvVarNames) {
-        outputEnvVarNames = new Map(Object.entries(defaultOutputEnvVarNames));
+        throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
+      const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const botAadAppState: CreateBotAadAppOutput = loadStateFromEnv(outputEnvVarNames);
+      const isReusingExisting = !(!botAadAppState.botId || !botAadAppState.botPassword);
 
       // If it's the case of a valid bot id with an empty bot password, then throw an error
       if (botAadAppState.botId && !botAadAppState.botPassword) {
         throw new UnexpectedEmptyBotPasswordError(actionName, helpLink);
       }
 
-      const botConfig: BotAadCredentials = {
-        botId: botAadAppState.botId ?? "",
-        botPassword: botAadAppState.botPassword ?? "",
-      };
-      const botRegistration: BotRegistration = new RemoteBotRegistration();
-
       const startTime = performance.now();
-      const createRes = await botRegistration.createBotRegistration(
-        context.m365TokenProvider,
-        args.name,
-        args.name,
-        botConfig,
-        context.logProvider
-      );
-      const durationMilliSeconds = performance.now() - startTime;
-      if (createRes.isErr()) {
-        throw createRes.error;
+      if (!botAadAppState.botId) {
+        context.logProvider?.info(getLocalizedString(logMessageKeys.startCreateBotAadApp));
+        const aadApp = await aadAppClient.createAadApp(
+          args.name,
+          SignInAudience.AzureADMultipleOrgs
+        );
+        botAadAppState.botId = aadApp.appId!;
+        botAadAppState.botPassword = await aadAppClient.generateClientSecret(aadApp.id!);
+        context.logProvider?.info(getLocalizedString(logMessageKeys.successCreateBotAadApp));
+      } else {
+        context.logProvider?.info(getLocalizedString(logMessageKeys.skipCreateBotAadApp));
       }
-      botAadAppState.botId = createRes.value.botId;
-      botAadAppState.botPassword = createRes.value.botPassword;
+      const durationMilliSeconds = performance.now() - startTime;
+
       const outputs = mapStateToEnv(botAadAppState, outputEnvVarNames);
-      const isReusingExisting = !(!botConfig.botId || !botConfig.botPassword);
+
       const successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
-        createRes.value.botId
+        botAadAppState.botId
       );
       const useExistingBotAadLog = getLocalizedString(
         logMessageKeys.useExistingBotAad,
-        botConfig.botId
+        botAadAppState.botId
       );
       const summary = isReusingExisting ? useExistingBotAadLog : successCreateBotAadLog;
       context.logProvider?.info(summary);
@@ -155,9 +150,9 @@ export class CreateBotAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new UnhandledUserError(new Error(error.response!.data), actionName, helpLink);
+          throw new HttpClientError(actionName, message, helpLink);
         } else {
-          throw new UnhandledError(new Error(error.response!.data), actionName);
+          throw new HttpServerError(actionName, message);
         }
       }
 

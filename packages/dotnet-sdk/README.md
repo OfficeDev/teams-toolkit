@@ -479,7 +479,7 @@ In this release, TeamsFx SDK add supports for Graph SDK v5 and remove `framework
    var photoStream = await graph.Me.Photo.Content.GetAsync();
    ```
 
-4. Download `auth-start.html` and `auth-end.html` from [GitHub Repo](https://github.com/OfficeDev/TeamsFx/tree/dev/templates/scenarios/csharp/sso-tab/wwwroot) to `{ProjectDirectory}/wwwroot`.
+4. Download `auth-start.html` and `auth-end.html` from [GitHub Repo](https://github.com/OfficeDev/TeamsFx/tree/dev/templates/csharp/sso-tab/wwwroot) to `{ProjectDirectory}/wwwroot`.
 
 5. Update `appsetting.json` and `appsettings.Development.json` to add `InitiateLoginEndpoint`.
 

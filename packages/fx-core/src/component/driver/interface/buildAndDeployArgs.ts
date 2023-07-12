@@ -8,11 +8,6 @@ import {
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 
-export type Step = {
-  driver: "scriptDriver" | "azureAppServiceDriver" | "azureFunctionDriver" | "azureStorageDriver";
-  args: unknown;
-};
-
 export type DeployArgs = {
   workingDirectory?: string;
   artifactFolder: string;
@@ -50,28 +45,28 @@ export type AzureUploadConfig = {
   timeout: number;
 };
 
-export type AxiosOnlyStatusResult = {
+type AxiosOnlyStatusResult = {
   status?: number;
 };
 
-export type AxiosHeaderWithLocation = {
+type AxiosHeaderWithLocation = {
   headers: {
     location: string;
   };
 };
 
 export type DeployResult = {
-  id: string;
-  status: number;
-  message: string;
-  received_time: string;
-  start_time: string;
-  end_time: string;
-  last_success_end_time: string;
-  complete: boolean;
-  active: boolean;
-  is_readonly: boolean;
-  site_name: string;
+  id?: string;
+  status?: number;
+  message?: string;
+  received_time?: string;
+  start_time?: string;
+  end_time?: string;
+  last_success_end_time?: string;
+  complete?: boolean;
+  active?: boolean;
+  is_readonly?: boolean;
+  site_name?: string;
 };
 
 export type AxiosZipDeployResult = AxiosHeaderWithLocation & AxiosOnlyStatusResult;

@@ -63,6 +63,11 @@ export interface StringValidation extends StaticValidation {
    * An instance validates successfully against this keyword if its value is not equal to the value of the keyword.
    */
   notEquals?: string;
+
+  /**
+   * A string instance validates successfully against this keyword if its value does not equal to any of the elements in this keyword's array value.
+   */
+  excludesEnum?: string[];
 }
 
 /**
@@ -127,6 +132,8 @@ export interface FuncValidation<
   validFunc: ValidateFunc<T>;
 }
 
+export type ConditionFunc = (inputs: Inputs) => boolean | Promise<boolean>;
+
 /**
  * Definition of validation schema, which is a union of `StringValidation`, `StringArrayValidation` and `FuncValidation<any>`
  */
@@ -156,7 +163,7 @@ export function getValidationFunction<T extends string | string[] | undefined>(
  * Return `undefined` when 'value' is valid.
  */
 export async function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(
-  validSchema: ValidationSchema,
+  validSchema: ValidationSchema | ConditionFunc,
   value: T,
   inputs?: Inputs
 ): Promise<string | undefined> {
@@ -166,6 +173,10 @@ export async function validate<T extends string | string[] | OptionItem | Option
     if (funcValidation.validFunc) {
       const res = await funcValidation.validFunc(value, inputs);
       return res as string;
+    } else if (typeof funcValidation === "function") {
+      const res = await (funcValidation as ConditionFunc)(inputs!);
+      if (res) return undefined;
+      return "condition function is not met.";
     }
   }
 
@@ -215,6 +226,12 @@ export async function validate<T extends string | string[] | OptionItem | Option
       if (stringValidation.notEquals && typeof strToValidate === "string") {
         if (strToValidate === stringValidation.notEquals) {
           return `'${strToValidate}' does not meet notEquals:'${stringValidation.notEquals}'`;
+        }
+      }
+
+      if (stringValidation.excludesEnum && typeof strToValidate === "string") {
+        if (stringValidation.excludesEnum.includes(strToValidate)) {
+          return `'${strToValidate}' does not meet excludesEnum:'${stringValidation.excludesEnum}'`;
         }
       }
     }

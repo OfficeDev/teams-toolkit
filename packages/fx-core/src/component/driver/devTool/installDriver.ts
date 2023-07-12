@@ -8,13 +8,7 @@ import * as path from "path";
 import semver from "semver";
 import { Service } from "typedi";
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import {
-  DependencyStatus,
-  DepsManager,
-  DepsType,
-  EmptyLogger,
-  EmptyTelemetry,
-} from "../../../common/deps-checker";
+import { DependencyStatus, EmptyLogger, EmptyTelemetry } from "../../../common/deps-checker";
 import {
   LocalCertificate,
   LocalCertificateManager,
@@ -39,6 +33,7 @@ import { updateProgress } from "../middleware/updateProgress";
 import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
+import { DotnetChecker } from "../../../common/deps-checker/internal/dotnetChecker";
 
 const ACTION_NAME = "devTool/install";
 const helpLink = "https://aka.ms/teamsfx-actions/devtool-install";
@@ -54,39 +49,40 @@ const outputKeys = {
 export class ToolsInstallDriver implements StepDriver {
   description = toolsInstallDescription();
 
-  @hooks([
-    addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME),
-    updateProgress(getLocalizedString("driver.prerequisite.progressBar")),
-  ])
   async run(
     args: InstallToolArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(async () => {
-      const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
-      const impl = new ToolsInstallDriverImpl(wrapContext);
-      return await impl.run(args);
-    });
+    const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
+    return await this._run(args, wrapContext);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME),
-    updateProgress(getLocalizedString("driver.prerequisite.progressBar")),
-  ])
   async execute(
     args: InstallToolArgs,
     context: DriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
-    const result = await wrapRun(async () => {
-      const impl = new ToolsInstallDriverImpl(wrapContext);
-      return await impl.run(args, outputEnvVarNames);
-    });
+    const result = await this._run(args, wrapContext, outputEnvVarNames);
     return {
       result: result,
       summaries: wrapContext.summaries,
     };
+  }
+
+  @hooks([
+    addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME),
+    updateProgress(getLocalizedString("driver.prerequisite.progressBar")),
+  ])
+  async _run(
+    args: InstallToolArgs,
+    wrapContext: WrapDriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<Result<Map<string, string>, FxError>> {
+    return wrapRun(async () => {
+      const impl = new ToolsInstallDriverImpl(wrapContext);
+      return await impl.run(args, outputEnvVarNames);
+    });
   }
 }
 
@@ -175,7 +171,7 @@ export class ToolsInstallDriverImpl {
     this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
 
     if (!funcStatus.isInstalled && funcStatus.error) {
-      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
+      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error, funcStatus.error.helpLink);
     } else if (funcStatus.error) {
       this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(
@@ -197,13 +193,17 @@ export class ToolsInstallDriverImpl {
 
   async resolveDotnet(outputEnvVarNames?: Map<string, string>): Promise<Map<string, string>> {
     const res = new Map<string, string>();
-    const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
-    const dotnetStatus = await depsManager.ensureDependency(DepsType.Dotnet, true);
+    const dotnetChecker = new DotnetChecker(new EmptyLogger(), new EmptyTelemetry());
+    const dotnetStatus = await dotnetChecker.resolve();
 
     this.setDepsCheckTelemetry(TelemetryProperties.dotnetStatus, dotnetStatus);
 
     if (!dotnetStatus.isInstalled && dotnetStatus.error) {
-      throw new DotnetInstallationUserError(ACTION_NAME, dotnetStatus.error);
+      throw new DotnetInstallationUserError(
+        ACTION_NAME,
+        dotnetStatus.error,
+        dotnetStatus.error.helpLink
+      );
     } else if (dotnetStatus.error) {
       this.context.logProvider.warning(dotnetStatus.error?.message);
       this.context.addSummary(dotnetStatus.error?.message);

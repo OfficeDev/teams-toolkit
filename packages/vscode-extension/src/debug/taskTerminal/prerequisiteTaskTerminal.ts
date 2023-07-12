@@ -4,17 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";
-import {
-  DebugSessionExists,
-  prerequisiteCheckTaskDisplayMessages,
-  v3PrerequisiteCheckTaskDisplayMessages,
-} from "../constants";
+import { DebugSessionExists, v3PrerequisiteCheckTaskDisplayMessages } from "../constants";
 import {
   localTelemetryReporter,
   maskArrayValue,
@@ -23,11 +18,11 @@ import {
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
-export interface PrerequisiteArgVxTestApp {
+interface PrerequisiteArgVxTestApp {
   version: string;
 }
 
-export interface PrerequisiteArgs {
+interface PrerequisiteArgs {
   prerequisites?: string[];
   portOccupancy?: number[];
   vxTestApp?: PrerequisiteArgVxTestApp;
@@ -86,13 +81,10 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     const res = await checkAndInstallForTask(
       this.args.prerequisites ?? [],
       this.args.portOccupancy,
-      this.args.vxTestApp,
       telemetryProperties
     );
     const duration = this.getDurationInSeconds();
-    const displayMessages = isV3Enabled()
-      ? v3PrerequisiteCheckTaskDisplayMessages
-      : prerequisiteCheckTaskDisplayMessages;
+    const displayMessages = v3PrerequisiteCheckTaskDisplayMessages;
     if (res.isOk() && duration) {
       VsCodeLogInstance.info(displayMessages.durationMessage(duration));
     }

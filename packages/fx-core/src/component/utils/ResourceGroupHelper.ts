@@ -10,20 +10,10 @@ import {
   ok,
   OptionItem,
   Platform,
-  QTreeNode,
   Result,
-  traverse,
   UserError,
-  v2,
 } from "@microsoft/teamsfx-api";
-import { PluginDisplayName } from "../../common/constants";
 import { TOOLS } from "../../core/globalVars";
-import {
-  CoreQuestionNames,
-  newResourceGroupNameQuestion,
-  QuestionNewResourceGroupLocation,
-  QuestionSelectResourceGroup,
-} from "../../core/question";
 import {
   CheckResourceGroupExistenceError,
   CreateResourceGroupError,
@@ -33,17 +23,14 @@ import {
   ListResourceGroupsError,
   ResourceGroupConflictError,
 } from "../../error/azure";
+import { resourceGroupQuestionNode } from "../../question/other";
+import { QuestionNames } from "../../question/questionNames";
+import { traverse } from "../../ui/visitor";
 import { SolutionSource } from "../constants";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
 
-export type AzureSubscription = {
-  displayName: string;
-  subscriptionId: string;
-};
-
-export const DefaultResourceGroupLocation = "East US";
 export type ResourceGroupInfo = {
   createNewResourceGroup: boolean;
   name: string;
@@ -53,16 +40,14 @@ export type ResourceGroupInfo = {
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 
-export class ResourceGroupHelper {
+class ResourceGroupHelper {
   async createNewResourceGroup(
     resourceGroupName: string,
     azureAccountProvider: AzureAccountProvider,
     subscriptionId: string,
     location: string
   ): Promise<Result<string, FxError>> {
-    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
-    if (!azureToken) return err(new InvalidAzureCredentialError());
-    const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+    const rmClient = await this.createRmClient(azureAccountProvider, subscriptionId);
     const maybeExist = await this.checkResourceGroupExistence(resourceGroupName, rmClient);
     if (maybeExist.isErr()) {
       return err(maybeExist.error);
@@ -144,12 +129,11 @@ export class ResourceGroupHelper {
     try {
       const results: [string, string][] = [];
       const res = rmClient.resourceGroups.list();
-      let result = await res.next();
-      if (result.value.name) results.push([result.value.name, result.value.location]);
-      while (!result.done) {
-        if (result.value.name) results.push([result.value.name, result.value.location]);
+      let result;
+      do {
         result = await res.next();
-      }
+        if (result.value?.name) results.push([result.value.name, result.value.location]);
+      } while (!result.done);
       return ok(results);
     } catch (e: any) {
       return err(
@@ -169,12 +153,11 @@ export class ResourceGroupHelper {
     try {
       const res = subscriptionClient.subscriptions.listLocations(askSubRes!.subscriptionId);
       const locations: string[] = [];
-      let result = await res.next();
-      if (result.value.displayName) locations.push(result.value.displayName);
-      while (!result.done) {
-        if (result.value.displayName) locations.push(result.value.displayName);
+      let result;
+      do {
         result = await res.next();
-      }
+        if (result.value?.displayName) locations.push(result.value.displayName);
+      } while (!result.done);
       const providerData = await rmClient.providers.get(MsResources);
       const resourceTypeData = providerData.resourceTypes?.find(
         (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
@@ -197,58 +180,6 @@ export class ResourceGroupHelper {
     }
   }
 
-  async getQuestionsForResourceGroup(
-    defaultResourceGroupName: string,
-    existingResourceGroupNameLocations: [string, string][],
-    availableLocations: string[],
-    rmClient: ResourceManagementClient
-  ): Promise<QTreeNode | undefined> {
-    const selectResourceGroup = QuestionSelectResourceGroup();
-    const staticOptions: OptionItem[] = [
-      { id: newResourceGroupOption, label: newResourceGroupOption },
-    ];
-    selectResourceGroup.staticOptions = staticOptions.concat(
-      existingResourceGroupNameLocations.map((item) => {
-        return {
-          id: item[0],
-          label: item[0],
-          description: item[1],
-        };
-      })
-    );
-
-    const node = new QTreeNode(selectResourceGroup);
-
-    const existingResourceGroupNames = existingResourceGroupNameLocations.map((item) => item[0]);
-    const inputNewResourceGroupName = newResourceGroupNameQuestion(existingResourceGroupNames);
-    inputNewResourceGroupName.default = defaultResourceGroupName;
-    const newResourceGroupNameNode = new QTreeNode(inputNewResourceGroupName);
-    newResourceGroupNameNode.condition = { equals: newResourceGroupOption };
-    node.addChild(newResourceGroupNameNode);
-
-    const selectLocation = QuestionNewResourceGroupLocation();
-    // TODO: maybe lazily load locations
-    selectLocation.staticOptions = availableLocations;
-    selectLocation.default = "East US";
-    const newResourceGroupLocationNode = new QTreeNode(selectLocation);
-    newResourceGroupNameNode.addChild(newResourceGroupLocationNode);
-
-    return node.trim();
-  }
-
-  /**
-   * Ask user to create a new resource group or use an existing resource group
-   */
-  async askResourceGroupInfo(
-    ctx: v2.Context,
-    inputs: Inputs,
-    azureAccountProvider: AzureAccountProvider,
-    rmClient: ResourceManagementClient,
-    defaultResourceGroupName: string
-  ): Promise<Result<ResourceGroupInfo, FxError>> {
-    return this.askResourceGroupInfoV3(azureAccountProvider, rmClient, defaultResourceGroupName);
-  }
-
   /**
    * Ask user to create a new resource group or use an existing resource group  V3
    */
@@ -257,19 +188,10 @@ export class ResourceGroupHelper {
     rmClient: ResourceManagementClient,
     defaultResourceGroupName: string
   ): Promise<Result<ResourceGroupInfo, FxError>> {
-    const listRgRes = await this.listResourceGroups(rmClient);
-    if (listRgRes.isErr()) return err(listRgRes.error);
-
-    const getLocationsRes = await this.getLocations(azureAccountProvider, rmClient);
-    if (getLocationsRes.isErr()) {
-      return err(getLocationsRes.error);
-    }
-
-    const node = await this.getQuestionsForResourceGroup(
-      defaultResourceGroupName,
-      listRgRes.value,
-      getLocationsRes.value,
-      rmClient
+    const node = resourceGroupQuestionNode(
+      azureAccountProvider,
+      rmClient.subscriptionId,
+      defaultResourceGroupName
     );
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -277,34 +199,44 @@ export class ResourceGroupHelper {
     if (node) {
       const res = await traverse(node, inputs, TOOLS.ui);
       if (res.isErr()) {
-        TOOLS.logProvider?.debug(
-          `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
-        );
         return err(res.error);
       }
     }
-    const targetResourceGroupName = inputs.targetResourceGroupName;
+
+    const targetResourceGroupNameOptionItem = inputs[
+      QuestionNames.TargetResourceGroupName
+    ] as unknown as OptionItem;
+
+    const targetResourceGroupName = targetResourceGroupNameOptionItem.id;
     if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
       return err(
         new UserError(SolutionSource, "InvalidInputError", "Invalid targetResourceGroupName")
       );
     }
-    const resourceGroupName = inputs.targetResourceGroupName;
-    if (resourceGroupName === newResourceGroupOption) {
+    if (targetResourceGroupName === newResourceGroupOption) {
       return ok({
-        name: inputs[CoreQuestionNames.NewResourceGroupName],
-        location: inputs[CoreQuestionNames.NewResourceGroupLocation],
+        name: inputs[QuestionNames.NewResourceGroupName],
+        location: inputs[QuestionNames.NewResourceGroupLocation],
         createNewResourceGroup: true,
       });
     } else {
-      const target = listRgRes.value.find((item) => item[0] == targetResourceGroupName);
-      const location = target![1]; // location must exist because the user can only select from this list.
+      const location = targetResourceGroupNameOptionItem.description!; // location must exist because the user can only select from this list.
       return ok({
         createNewResourceGroup: false,
         name: targetResourceGroupName,
         location: location,
       });
     }
+  }
+
+  async createRmClient(azureAccountProvider: AzureAccountProvider, subscriptionId: string) {
+    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
+    if (azureToken === undefined) {
+      throw new InvalidAzureCredentialError();
+    }
+    await azureAccountProvider.setSubscription(subscriptionId);
+    const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+    return rmClient;
   }
 }
 

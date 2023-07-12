@@ -2,20 +2,17 @@
 // Licensed under the MIT license.
 
 import {
-  QTreeNode,
-  Inputs,
-  Platform,
-  StaticOptions,
-  Question,
-  validate,
-  OptionItem,
-  isAutoSkipSelect,
+  IQTreeNode,
   MultiSelectQuestion,
+  OptionItem,
+  QTreeNode,
+  Question,
   SingleSelectQuestion,
+  StaticOptions,
+  validate,
 } from "@microsoft/teamsfx-api";
+import { isAutoSkipSelect } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
-import { EmptyQTreeNode } from "./constants";
-
 import { getSingleOptionString, toYargsOptions } from "./utils";
 
 export async function filterQTreeNode(
@@ -40,50 +37,31 @@ export async function filterQTreeNode(
       });
     }
   }
-  if (!searchedNode || searchedNode.data.type === "group") return EmptyQTreeNode;
+  /// if not searched, return the original tree
+  if (!searchedNode || searchedNode.data.type === "group") return root;
 
   /// checks the answer is valid
   const searchedNodeAns = await calculateByGivenAns(searchedNode.data, value);
-  if (searchedNodeAns === undefined) return EmptyQTreeNode;
+  /// if invalid, return the original tree
+  if (searchedNodeAns === undefined) return root;
   searchedNode.data.value = searchedNodeAns;
   (searchedNode.data as any).hide = true;
-
-  /// gets its ancestors and calculate their answers
-  const ancestorsWithAns: QTreeNode[] = [searchedNode];
-  let currentNode = searchedNode;
-  while (parentMap.has(currentNode)) {
-    /// TODO: add later
-    throw Error("Not implemented");
-  }
-  const inputs: Inputs = { platform: Platform.CLI_HELP };
-  ancestorsWithAns.forEach((node) => {
-    if (node.data.type !== "group" && node.data.name && node.data.value)
-      inputs[node.data.name] = node.data.value;
-  });
 
   /// gets the children which conditions match the parent's answer
   const matchedChildren: QTreeNode[] = [];
   if (searchedNode.children) {
     for (const child of searchedNode.children) {
       if (child && child.condition) {
-        const validRes = await validate(child.condition, searchedNodeAns, inputs);
+        const validRes = await validate(child.condition, searchedNodeAns);
         if (validRes === undefined) {
           matchedChildren.push(child);
         }
       }
     }
+    searchedNode.children = matchedChildren;
   }
 
-  /// generates a new tree
-  const newRoot = Object.assign({}, ancestorsWithAns.pop()!);
-  currentNode = newRoot;
-  while (ancestorsWithAns.length > 0) {
-    const nextNode = ancestorsWithAns.pop()!;
-    currentNode.children = [nextNode];
-    currentNode = nextNode;
-  }
-  currentNode.children = matchedChildren.map((child) => Object.assign({}, child));
-  return newRoot;
+  return root;
 }
 
 async function calculateByGivenAns(ques: Question, ans: any, caseSensitive = false) {
@@ -140,18 +118,17 @@ function getOptionCliName(option: string | OptionItem, toLocaleLowerCase = true)
   return toLocaleLowerCase ? cliName?.toLocaleLowerCase() : cliName;
 }
 
-export function toYargsOptionsGroup(nodes: QTreeNode[]) {
+export async function toYargsOptionsGroup(nodes: IQTreeNode[]) {
   const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");
   const params: { [_: string]: Options } = {};
-  nodesWithoutGroup.forEach((node) => {
+  for (const node of nodesWithoutGroup) {
     const data = node.data as Question;
     if (isAutoSkipSelect(data) && data.type != "func") {
       // set the only option to default value so yargs will auto fill it.
       data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
       (data as any).hide = true;
     }
-    params[data.name] = toYargsOptions(data);
-  });
-
+    params[data.name] = await toYargsOptions(data);
+  }
   return params;
 }

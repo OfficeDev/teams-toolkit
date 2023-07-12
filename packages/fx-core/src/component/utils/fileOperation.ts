@@ -46,10 +46,11 @@ export async function zipFolderAsync(
     sourceDir,
     (itemPath: string, stats: fs.Stats) => {
       const relativePath: string = path.relative(sourceDir, itemPath);
+      const zipPath = path.normalize(relativePath).split("\\").join("/");
       if (relativePath && !stats.isDirectory()) {
-        zipFiles.add(relativePath);
+        zipFiles.add(zipPath);
 
-        const entry = zip.getEntry(relativePath);
+        const entry = zip.getEntry(zipPath);
         if (entry) {
           // The header is an object, the ts declare of adm-zip is wrong.
           const header = entry.header;
@@ -65,12 +66,13 @@ export async function zipFolderAsync(
           }
 
           // Delete the entry because the file has been updated.
-          zip.deleteFile(relativePath);
+          zip.deleteFile(zipPath);
         }
 
         // If fail to reuse cached entry, load it from disk.
+        // path doesn't work properly under windows
         const fullPath = path.join(sourceDir, relativePath);
-        const task = addFileIntoZip(zip, fullPath, relativePath, stats);
+        const task = addFileIntoZip(zip, fullPath, zipPath, stats);
         tasks.push(task);
       }
     },
@@ -131,35 +133,4 @@ async function readZip(cache: string): Promise<AdmZip | undefined> {
     // Failed to load cache, it doesn't block deployment.
   }
   return undefined;
-}
-
-/**
- * Recursively list all files that match a naming pattern in a specified directory
- * @param directoryPath base dir
- * @param matchPattern filename pattern
- * @param ignorePattern filename ignore pattern
- */
-export async function listFilePaths(
-  directoryPath: string,
-  matchPattern = "**",
-  ignorePattern?: string
-): Promise<string[]> {
-  return new Promise<string[]>((resolve, reject) => {
-    const ignore: string = ignorePattern ? path.join(directoryPath, ignorePattern) : "";
-    glob(
-      path.join(directoryPath, matchPattern),
-      {
-        dot: true, // Include .dot files
-        nodir: true, // Only match files
-        ignore,
-      },
-      (error, filePaths) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(filePaths);
-        }
-      }
-    );
-  });
 }

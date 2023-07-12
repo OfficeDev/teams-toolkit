@@ -5,16 +5,17 @@
   "account.show.m365": "Your Microsoft 365 account is: %s.",
   "account.show.info": "Your %s account is: %s.",
   "error.prefix": "(x) Error: ",
-  "error.NotAllowedMigrationErrorMessage": "Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run \"teamsfx upgrade\" to upgrade your project first.",
-  "error.NotFoundSubscriptionId": "Cannot find selected subscription. Ensure your signed-in account has access to this subscription.",
+  "error.MissingRequiredArgumentError": "The command '%s' can not be executed for missing required argument '%s'. Provide the argument via '--%s' and try again.",
+  "error.ArgumentConflictError": "The command '%s' is designed to accept either argument '%s' or argument '%s', but not both simultaneously. Keep either of the two arguments and try again.",
+  "error.InvalidOptionErrorReason": "'%s' is not in the valid option list: %s.",
   "success.prefix": "(✓) Success: ",
   "warning.prefix": "(!) Warning: ",
   "command": {
     "provision": {
-      "description": "Run the provision stage in teamsapp.yml."
+      "description": "Run the provision stage in teamsapp.yml or teamsapp.local.yml."
     },
     "deploy": {
-      "description": "Run the deploy stage in teamsapp.yml."
+      "description": "Run the deploy stage in teamsapp.yml or teamsapp.local.yml."
     },
     "publish": {
       "description": "Run the publish stage in teamsapp.yml."

@@ -22,10 +22,6 @@ export const Messages = {
   noSentinelFile: () => getLocalizedString("depChecker.noSentinelFile"),
   funcVersionNotMatch: (funcVersion: string, expectedFuncVersion: string) =>
     getLocalizedString("depChecker.funcVersionNotMatch", funcVersion, expectedFuncVersion),
-  startInstallNgrok: () => getLocalizedString("depChecker.startInstallNgrok"),
-  finishInstallNgrok: () => getLocalizedString("depChecker.finishInstallNgrok"),
-  needInstallNgrok: () => getLocalizedString("depChecker.needInstallNgrok"),
-  failToValidateNgrok: () => getLocalizedString("depChecker.failToValidateNgrok"),
 
   downloadDotnet: () => getLocalizedString("depChecker.downloadDotnet"),
   finishInstallDotnet: () => getLocalizedString("depChecker.finishInstallDotnet"),
@@ -34,8 +30,6 @@ export const Messages = {
   dotnetInstallErrorCode: () => getLocalizedString("depChecker.dotnetInstallErrorCode"),
 
   NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound", nodeInstallationLink),
-  // TODO: remove this message after clean useless code
-  NodeNotSupported: () => getLocalizedString("depChecker.NodeNotSupported"),
 
   // In v3, the message will be displayed in the output.
   // TODO: add localized string to FxError.displayMessage

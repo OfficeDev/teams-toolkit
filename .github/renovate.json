@@ -1,0 +1,68 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base"],
+  "username": "teamsfx-renovate[bot]",
+  "gitAuthor": "teamsfx-renovate<134346904+teamsfx-renovate[bot]@users.noreply.github.com>",
+  "dependencyDashboard": false,
+  "repositories": ["OfficeDev/TeamsFx"],
+  "includePaths": ["packages/sdk/**", "packages/sdk-react/**", "templates/**"],
+  "enabledManagers": ["npm"],
+  "npm": {
+    "fileMatch": ["(^|/)package\\.json.tpl$"]
+  },
+  "packageRules": [
+    {
+      "enabled": false,
+      "matchDepPatterns": ["*"],
+      "excludeDepNames": [
+        "botbuilder",
+        "botbuilder-dialogs",
+        "botframework-schema",
+        "botbuilder-core",
+        "@microsoft/teams-js",
+        "@microsoft/microsoft-graph-client",
+        "@microsoft/mgt-element",
+        "@microsoft/mgt-react",
+        "@microsoft/mgt-teamsfx-provider"
+      ]
+    },
+    {
+      "groupName": "botbuilder",
+      "matchPackageNames": [
+        "botbuilder",
+        "botbuilder-dialogs",
+        "botframework-schema",
+        "botbuilder-core"
+      ]
+    },
+    {
+      "groupName": "graph toolkit",
+      "matchPackageNames": [
+        "@microsoft/mgt-element",
+        "@microsoft/mgt-react",
+        "@microsoft/mgt-teamsfx-provider"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "botbuilder",
+        "botbuilder-dialogs",
+        "botframework-schema",
+        "botbuilder-core",
+        "@microsoft/teams-js",
+        "@microsoft/microsoft-graph-client",
+        "@microsoft/mgt-element",
+        "@microsoft/mgt-react",
+        "@microsoft/mgt-teamsfx-provider"
+      ],
+      "matchPaths": [
+        "packages/sdk/package.json",
+        "packages/sdk/package-lock.json",
+        "packages/sdk-react/package.json",
+        "packages/sdk-react/package-lock.json",
+        "templates/**/package.json.tpl"
+      ],
+      "rangeStrategy": "bump"
+    }
+  ]
+}

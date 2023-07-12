@@ -4,6 +4,7 @@ import "./sampleDetailPage.scss";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { Watch, Setting } from "./resources";
 import { Commands } from "./Commands";
+import { SampleDetailProps } from "./ISamples";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -64,7 +65,6 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
       command: Commands.CloneSampleApp,
       data: {
         appName: this.props.title,
-        appUrl: this.props.sampleAppUrl,
         appFolder: this.props.sampleAppFolder,
       },
     });

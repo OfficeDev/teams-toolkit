@@ -1,26 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Argv } from "yargs";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import path from "path";
-import {
-  FxError,
-  err,
-  ok,
-  Result,
-  Func,
-  AppPackageFolderName,
-  BuildFolderName,
-} from "@microsoft/teamsfx-api";
-import { isV3Enabled, environmentManager } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core/build/core/question";
+import { Argv } from "yargs";
 import activate from "../activate";
-import {
-  RootFolderOptions,
-  EnvOptions,
-  BuildPackageOptions,
-  ManifestFilePathParamName,
-} from "../constants";
+import { BuildPackageOptions, EnvOptions, RootFolderOptions } from "../constants";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -36,9 +21,12 @@ export default class Package extends YargsCommand {
   public readonly description = "Build your Teams app into a package for publishing.";
 
   public builder(yargs: Argv): Argv<any> {
-    if (isV3Enabled()) yargs.options(RootFolderOptions).options(BuildPackageOptions);
-    else yargs.options(RootFolderOptions);
-    return yargs.hide("interactive").version(false).options(EnvOptions);
+    return yargs
+      .hide("interactive")
+      .version(false)
+      .options(RootFolderOptions)
+      .options(BuildPackageOptions)
+      .options(EnvOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -54,20 +42,7 @@ export default class Package extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
     {
-      let result;
-      if (isV3Enabled()) {
-        result = await core.createAppPackage(inputs);
-      } else {
-        const func: Func = {
-          namespace: "fx-solution-azure",
-          method: "buildPackage",
-          params: {
-            type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-          },
-        };
-        result = await core.executeUserTask!(func, inputs);
-      }
-
+      const result = await core.createAppPackage(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.Build,

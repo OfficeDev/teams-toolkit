@@ -46,7 +46,6 @@ const mockedSampleInfo: SampleInfo = {
   tags: [],
   time: "",
   configuration: "test-configuration",
-  link: "test-link",
   suggested: false,
   url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
 };
@@ -74,11 +73,11 @@ describe("Generator utils", () => {
     assert.isTrue(url.includes("0.0.0-rc"));
   });
 
-  it("alpha or prerelease should return error to use fallback", async () => {
+  it("set useLocalTemplate flag to true", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_TEMPLATE_PRERELEASE: "",
     });
-    sandbox.replace(templateConfig, "version", "0.0.0-alpha");
+    sandbox.replace(templateConfig, "useLocalTemplate", true);
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     try {
@@ -435,7 +434,6 @@ describe("Generator happy path", async () => {
   const context = createContextV3();
   const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
-
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
@@ -444,11 +442,13 @@ describe("Generator happy path", async () => {
   });
 
   it("external sample", async () => {
-    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
-    sandbox
-      .stub(generatorUtils, "getSampleInfoFromName")
-      .returns({ link: "test", relativePath: "test" } as SampleInfo);
+    const axiosStub = sandbox.stub(axios, "get");
     const sampleName = "bot-proactive-messaging-teamsfx";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
   });

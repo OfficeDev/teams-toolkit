@@ -210,9 +210,10 @@ export class OnBehalfOfUserCredential implements TokenCredential {
         "Failed to get access token from AAD server, interaction required: " + errorMessage;
       internalLogger.warn(fullErrorMsg);
       return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
-    } else if (errorMessage && errorMessage.indexOf("AADSTS500133") >= 0) {
+    } else if (errorMessage && errorMessage.indexOf("AADSTS50013") >= 0) {
       const fullErrorMsg =
-        "Failed to get access token from AAD server, sso token expired: " + errorMessage;
+        "Failed to get access token from AAD server, assertion is invalid because of various reasons: " +
+        errorMessage;
       internalLogger.error(fullErrorMsg);
       return new ErrorWithCode(fullErrorMsg, ErrorCode.TokenExpiredError);
     } else {

@@ -14,10 +14,6 @@ export const doctorConstant = {
   RestartVSCode:
     "Restart all your Visual Studio Code instances after the installation is finished.",
   NodeNotFound: `Cannot find Node.js. ${InstallNode}`,
-  NodeNotSupported: (isV3Enabled: boolean) =>
-    `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions). Your project may continue to work but we recommend to install the supported version. ${
-      isV3Enabled ? InstallNodeV3 : InstallNode
-    }`,
   NodeSuccess: `Node.js version (@Version) is installed`,
   SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading permission is enabled`,
   SignInSuccessWithNewAccount: `You are now using a different Microsoft 365 tenant. Microsoft 365 Account (@account) is logged in and sideloading permission is enabled`,

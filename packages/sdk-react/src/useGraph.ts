@@ -30,7 +30,7 @@ type GraphOptionWithCredential = {
  * @param options - teamsfx instance and OAuth resource scope.
  * @returns data, loading status, error and reload function
  *
- * @beta
+ * @public
  */
 export function useGraph<T>(
   fetchGraphDataAsync: (graph: Client, teamsfx: TeamsFx, scope: string[]) => Promise<T>,
@@ -78,7 +78,7 @@ export function useGraph<T>(
  * @param options - Authentication configuration and OAuth resource scope.
  * @returns data, loading status, error and reload function
  *
- * @beta
+ * @public
  */
 export function useGraphWithCredential<T>(
   fetchGraphDataAsync: (

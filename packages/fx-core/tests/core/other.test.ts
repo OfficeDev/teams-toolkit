@@ -3,19 +3,7 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { TokenCredential } from "@azure/identity";
-import {
-  AzureAccountProvider,
-  FuncValidation,
-  Inputs,
-  Json,
-  Platform,
-  ProjectSettings,
-  Settings,
-  Stage,
-  SubscriptionInfo,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, Settings, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -23,25 +11,12 @@ import mockedEnv from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
 import { execPowerShell, execShell } from "../../src/common/local/process";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
-import { getLocalizedString } from "../../src/common/localizeUtils";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
-import {
-  FetchSampleError,
-  ProjectFolderExistError,
-  ReadFileError,
-  WriteFileError,
-} from "../../src/core/error";
-import {
-  upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage,
-} from "../../src/core/middleware/envInfoLoaderV3";
-import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
+import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
 
@@ -111,67 +86,6 @@ describe("Other test case", () => {
   afterEach(() => {
     sandbox.restore();
   });
-  it("question: app name question validation", async () => {
-    const folder = os.tmpdir();
-    const inputs: Inputs = { platform: Platform.VSCode, folder: folder };
-    let appName = "1234";
-    const appNameQuestion = createAppNameQuestion();
-    let validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
-      appName,
-      inputs
-    );
-
-    assert.isTrue(validRes === getLocalizedString("core.QuestionAppName.validation.pattern"));
-
-    appName = randomAppName();
-    const projectPath = path.resolve(folder, appName);
-
-    sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
-    inputs.folder = folder;
-    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
-      appName,
-      inputs
-    );
-    assert.isTrue(
-      validRes === getLocalizedString("core.QuestionAppName.validation.pathExist", projectPath)
-    );
-
-    sandbox.restore();
-    sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(false);
-    validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
-      appName,
-      inputs
-    );
-    assert.isTrue(validRes === undefined);
-  });
-
-  it("error: ProjectFolderExistError", async () => {
-    const error = new ProjectFolderExistError(os.tmpdir());
-    assert.isTrue(error.name === "ProjectFolderExistError");
-    assert.isTrue(
-      error.message === `Path ${os.tmpdir()} already exists. Select a different folder.`
-    );
-  });
-
-  it("error: WriteFileError", async () => {
-    const msg = "file not exist";
-    const error = WriteFileError(new Error(msg));
-    assert.isTrue(error.name === "WriteFileError");
-    assert.isTrue(error.message === msg);
-  });
-
-  it("error: ReadFileError", async () => {
-    const msg = "file not exist";
-    const error = ReadFileError(new Error(msg));
-    assert.isTrue(error.name === "ReadFileError");
-    assert.isTrue(error.message === msg);
-  });
-
-  it("error: FetchSampleError", async () => {
-    const error = new FetchSampleError("hello world app");
-    assert.isTrue(error.name === "FetchSampleError");
-    assert.isTrue(error.message.includes("hello world app"));
-  });
 
   it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
     const featureFlagName = "FEATURE_FLAG_UNIT_TEST";
@@ -225,25 +139,16 @@ describe("Other test case", () => {
     restore();
   });
 
-  it("parseTeamsAppTenantId", async () => {
-    const res1 = parseTeamsAppTenantId({ tid: "123" });
-    assert.isTrue(res1.isOk());
-    const res2 = parseTeamsAppTenantId();
-    assert.isTrue(res2.isErr());
-    const res3 = parseTeamsAppTenantId({ abd: "123" });
-    assert.isTrue(res3.isErr());
-  });
-
   it("executeCommand", async () => {
     {
       try {
-        const res = await executeCommand("ls", []);
+        const res = await cpUtils.executeCommand(undefined, undefined, undefined, "ls");
         assert.isTrue(res !== undefined);
       } catch (e) {}
     }
     {
       try {
-        const res = await tryExecuteCommand("ls", []);
+        const res = await cpUtils.tryExecuteCommand(undefined, undefined, undefined, "ls");
         assert.isTrue(res !== undefined);
       } catch (e) {}
     }
@@ -317,7 +222,7 @@ describe("Other test case", () => {
     }
   });
   it("isValidProject: true", async () => {
-    const projectSettings: ProjectSettings = {
+    const projectSettings: any = {
       appName: "myapp",
       version: "1.0.0",
       projectId: "123",
@@ -375,40 +280,5 @@ describe("Other test case", () => {
     } finally {
       mockedEnvRestore();
     }
-  });
-  it("getQuestionsForResourceGroup", async () => {
-    const mockSubscriptionId = "mockSub";
-    const accountProvider = new MockedAzureTokenProvider();
-    const mockToken = await accountProvider.getIdentityCredentialAsync();
-    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
-    const node = await resourceGroupHelper.getQuestionsForResourceGroup(
-      "defaultRG",
-      [["g1", "East US"]],
-      ["East US", "Center US"],
-      mockRmClient
-    );
-    assert.isTrue(node !== undefined);
-  });
-  it("upgradeProgrammingLanguage", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state: Json = { solution: { programmingLanguage: "javascript" } };
-    upgradeProgrammingLanguage(state, projectSettings);
-    assert.equal(projectSettings.programmingLanguage, "javascript");
-    assert.isUndefined(state.solution.programmingLanguage);
-  });
-  it("upgradeDefaultFunctionName", async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "myapp",
-      version: "1.0.0",
-      projectId: "123",
-    };
-    const state = { solution: { defaultFunctionName: "getUserProfile" } };
-    upgradeDefaultFunctionName(state, projectSettings);
-    assert.equal(projectSettings.defaultFunctionName, "getUserProfile");
-    assert.isUndefined(state.solution.defaultFunctionName);
   });
 });

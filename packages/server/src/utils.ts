@@ -4,7 +4,6 @@
 import { HandlerResult, ResponseError } from "vscode-jsonrpc";
 
 import {
-  assembleError,
   err,
   FxError,
   MultiSelectConfig,
@@ -16,7 +15,7 @@ import {
   UIConfig,
   UserError,
 } from "@microsoft/teamsfx-api";
-
+import { assembleError } from "@microsoft/teamsfx-core";
 import { CustomizeFuncRequestType, IServerFxError } from "./apis";
 import { setFunc } from "./customizedFuncAdapter";
 
@@ -113,14 +112,6 @@ export function standardizeResult<R>(result: Result<R, FxError>): Result<R, FxEr
   return ok(result.value);
 }
 
-export function convertToHandlerResult<R>(result: Result<R, FxError>): HandlerResult<R, FxError> {
-  if (result.isOk()) return result.value;
-  else {
-    const fxError: FxError = result.error;
-    return new ResponseError(-32000, fxError.message, fxError);
-  }
-}
-
 export const deepCopy = <T>(target: T): T => {
   if (target === null) {
     return target;
@@ -135,7 +126,7 @@ export const deepCopy = <T>(target: T): T => {
     });
     return cp.map((n: any) => deepCopy<any>(n)) as any;
   }
-  if (typeof target === "object" && target !== {}) {
+  if (typeof target === "object" && Object.keys(target).length > 0) {
     const cp = { ...(target as { [key: string]: any }) } as {
       [key: string]: any;
     };

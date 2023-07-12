@@ -190,19 +190,23 @@ describe("ExtTelemetry", () => {
   });
 
   describe("deactivate event", () => {
-    it("cacheTelemetryEventAsync", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("cacheTelemetryEventAsync", async () => {
       const clock = sinon.useFakeTimers();
       let state = "";
-      sinon.stub(telemetryModule, "lastCorrelationId").value("correlation-id");
-      sinon.stub(commonUtils, "getProjectId").returns("project-id");
-      const globalStateUpdateStub = sinon
+      sandbox.stub(telemetryModule, "lastCorrelationId").value("correlation-id");
+      sandbox.stub(commonUtils, "getProjectId").resolves("project-id");
+      const globalStateUpdateStub = sandbox
         .stub(globalState, "globalStateUpdate")
         .callsFake(async (key, value) => (state = value));
       const eventName = "deactivate";
 
-      ExtTelemetry.cacheTelemetryEventAsync(eventName);
+      await ExtTelemetry.cacheTelemetryEventAsync(eventName);
 
-      sinon.assert.calledOnce(globalStateUpdateStub);
+      sandbox.assert.calledOnce(globalStateUpdateStub);
       const telemetryEvents = {
         eventName: eventName,
         properties: {
@@ -214,7 +218,6 @@ describe("ExtTelemetry", () => {
       const newValue = JSON.stringify(telemetryEvents);
       chai.expect(state).equals(newValue);
       clock.restore();
-      sinon.restore();
     });
 
     it("sendCachedTelemetryEventsAsync", async () => {
@@ -228,8 +231,8 @@ describe("ExtTelemetry", () => {
         },
       };
       const telemetryData = JSON.stringify(telemetryEvents);
-      sinon.stub(globalState, "globalStateGet").callsFake(async () => telemetryData);
-      sinon.stub(globalState, "globalStateUpdate");
+      sandbox.stub(globalState, "globalStateGet").callsFake(async () => telemetryData);
+      sandbox.stub(globalState, "globalStateUpdate");
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
 
       await ExtTelemetry.sendCachedTelemetryEventsAsync();
@@ -239,7 +242,6 @@ describe("ExtTelemetry", () => {
         "project-id": "project-id",
         timestamp: timestamp,
       });
-      sinon.restore();
     });
   });
 });

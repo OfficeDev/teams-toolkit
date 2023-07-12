@@ -24,7 +24,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
-import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
+import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   NotificationType2,
@@ -147,6 +147,12 @@ export interface IServerConnection {
   ) => Promise<Result<boolean, FxError>>;
   publishInDeveloperPortalRequest: (
     inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
+  setRegionRequest: (
+    accountToken: {
+      token: string;
+    },
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
   listDevTunnelsRequest: (

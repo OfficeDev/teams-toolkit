@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FeatureFlagName } from "./constants";
-import { isV3Enabled } from "./tools";
 
 // Determine whether feature flag is enabled based on environment variable setting
 export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
@@ -17,35 +16,30 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
  * Update all preview feature flags.
  */
 export function initializePreviewFeatureFlags(): void {
-  if (isPreviewFeaturesEnabled()) {
-    process.env[FeatureFlagName.BotNotification] = "true";
-    process.env[FeatureFlagName.M365App] = "true";
-    process.env[FeatureFlagName.AadManifest] = "true";
-    process.env[FeatureFlagName.ApiConnect] = "true";
-    process.env[FeatureFlagName.DeployManifest] = "true";
-  }
-}
-
-export function isBotNotificationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BotNotification, false);
-}
-
-export function isPreviewFeaturesEnabled(): boolean {
-  return true;
+  process.env[FeatureFlagName.BotNotification] = "true";
+  process.env[FeatureFlagName.M365App] = "true";
+  process.env[FeatureFlagName.AadManifest] = "true";
+  process.env[FeatureFlagName.ApiConnect] = "true";
+  process.env[FeatureFlagName.DeployManifest] = "true";
 }
 
 export function isCLIDotNetEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
 }
 
-export function isSPFxMultiTabEnabled(): boolean {
+export function isV3Enabled(): boolean {
+  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
+}
+
+export function isVideoFilterEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
+}
+
+export function isImportSPFxEnabled(): boolean {
   return true;
+  //return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
 }
 
-export function isTDPIntegrationEnabled(): boolean {
-  return isV3Enabled();
-}
-
-export function isOfficeAddinEnabled(): boolean {
-  return isV3Enabled();
+export function isCopilotPluginEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
 }

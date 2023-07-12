@@ -10,8 +10,8 @@ import { ValidateManifestDriver } from "../../../../src/component/driver/teamsAp
 import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
 import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
 import { ValidateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
-import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import {
   MockedLogProvider,
   MockedM365Provider,
@@ -20,7 +20,7 @@ import {
 import * as tools from "../../../../src/common/tools";
 import { Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import { Constants } from "../../../../src/component/resource/appManifest/constants";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
 import { InvalidActionInputError } from "../../../../src/error/common";
 
@@ -123,6 +123,26 @@ describe("teamsApp/validateManifest", async () => {
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
+    }
+  });
+
+  it("validation error - cli", async () => {
+    const args: ValidateManifestArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.invalid.manifest.json",
+    };
+
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);

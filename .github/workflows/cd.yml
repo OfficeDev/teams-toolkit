@@ -1,12 +1,16 @@
 name: CD
-run-name: CD-${{ github.run_id }}-${{ github.ref_name }}-${{ inputs.preid }}
+run-name: CD-${{ github.run_id }}-${{ github.ref_name }}-${{ inputs.preid }}-${{ inputs.series }}
 on:
   workflow_dispatch:
     inputs:
       preid:
-        description: "preid name(alpha, prerelease, rc, stable)"
+        description: "preid name(alpha, beta, rc, stable)"
         required: true
         default: "rc"
+      series:
+        description: "release sprint series name"
+        required: false
+        default: ""
       skip-version-rc:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
@@ -23,11 +27,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: true
+      PREID: ${{ github.event.inputs.preid }}
     steps:
       - name: Validate CD branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/prerelease' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' }}
         run: |
-          echo It's not allowed to run CD on other branch except main, dev and prerelease.
+          echo It's not allowed to run CD on other branch except main and dev.
           exit 1
 
       - name: Validate inputs for main or hotfix
@@ -90,7 +95,7 @@ jobs:
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
 
       - name: release beta packages to npmjs.org
-        if: ${{ (github.ref == 'refs/heads/prerelease' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'prerelease' }}
+        if: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta' }}
         run: |
           npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --allow-branch ${GITHUB_REF#refs/*/} --yes
 
@@ -114,15 +119,10 @@ jobs:
         run: |
           echo "CHANGED=$(git tag --points-at HEAD | xargs)" >> $GITHUB_OUTPUT
           echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_OUTPUT
-          echo "EXTENSION_VERSION_NUM=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)" >> $GITHUB_OUTPUT
           echo "EXTENSION_VERSION=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)" >> $GITHUB_OUTPUT
-          echo "SERVER_VERSION_NUM=$(git tag --points-at HEAD | grep @microsoft/teamsfx-server@ | cut -d '@' -f3)" >> $GITHUB_OUTPUT
-          echo "SERVER_VERSION=$(git tag --points-at HEAD| grep @microsoft/teamsfx-server@)" >> $GITHUB_OUTPUT
-          echo "SIMPLEAUTH_VERSION=$(git tag --points-at HEAD | grep simpleauth)" >> $GITHUB_OUTPUT
-          echo "SIMPLEAUTH_VERSION_NUM=$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)" >> $GITHUB_OUTPUT
           if git tag --points-at HEAD | grep templates | grep rc;
           then
-              git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
+              git push -d origin $TEMPLATE_VERSION
           fi
 
       - name: generate templates v3
@@ -134,21 +134,21 @@ jobs:
         env:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
-      - name: update templates prerelease tag
+      - name: update templates beta tag
         uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
         with:
-          tag_name: "templates-0.0.0-prerelease"
+          tag_name: "templates-0.0.0-beta"
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
-      - name: release templates' prerelease version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/prerelease' }}
+      - name: release templates' beta version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
-          tag: "templates-0.0.0-prerelease"
+          tag: "templates-0.0.0-beta"
           artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           allowUpdates: true
           removeArtifacts: true
@@ -197,15 +197,6 @@ jobs:
           tag: "template-tag-list"
           allowUpdates: true
 
-      - name: download simpleauth to fx-core
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            bash ./.github/scripts/download-simpleauth.sh
-
       - name: replace sideloading placeholders
         run: bash .github/scripts/sideloading-replace.sh
         env:
@@ -247,9 +238,9 @@ jobs:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish beta release to npm org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'prerelease' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta' }}
         run: |
-          npx lerna publish from-package --dist-tag=beta --yes --allow-branch prerelease
+          npx lerna publish from-package --dist-tag=beta --yes
         env:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
@@ -280,7 +271,7 @@ jobs:
             npm run package
 
       - name: pack vsix
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid != 'prerelease' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
         uses: nick-invision/retry@v2
@@ -292,7 +283,11 @@ jobs:
             sleep 20
             cd ./packages/vscode-extension
             npm install --only=production
-            npx vsce package
+            if [ "$PREID" == "beta" ]; then
+              npx vsce package --pre-release
+            else
+              npx vsce package
+            fi
 
       - name: release stable VSCode extension to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -303,42 +298,6 @@ jobs:
           artifacts: ./packages/**/*.vsix
           artifactErrorsFailBuild: true
           bodyFile: ./CHANGELOG.md
-
-      - name: Calculate Version Num
-        id: preview-version
-        working-directory: packages/vscode-extension
-        run: |
-          DATE_WITH_TIME=`date "+%Y%m%d%H"`
-          PRERELEASE_VERSION=4.99
-          TTK_VERSION=$PRERELEASE_VERSION.$DATE_WITH_TIME
-          echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
-          echo $TTK_VERSION
-
-      - name: set vsc version for prerelease
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'prerelease' }}
-        uses: jossef/action-set-json-field@v1
-        with:
-          file: ./packages/vscode-extension/package.json
-          field: version
-          value: ${{ steps.preview-version.outputs.version }}
-
-      - name: pack vsix for preview
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.preid == 'prerelease' }}
-        env:
-          RELEASE: preview
-          NODE_OPTIONS: "--max_old_space_size=4096"
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            sleep 20
-            cd ./packages/vscode-extension
-            touch test.vsix
-            rm *.vsix
-            npm install --only=production
-            npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
 
       - name: save release info
         run: |

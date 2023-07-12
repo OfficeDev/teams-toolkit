@@ -5,15 +5,14 @@ import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
 import { FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { isValidProject } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 import * as globalVariables from "../globalVariables";
 import { DynamicNode } from "./dynamicNode";
 import { EnvironmentNode } from "./environmentTreeItem";
 
-export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
+class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
   private static instance: EnvironmentTreeViewProvider;
   private _onDidChangeTreeData: vscode.EventEmitter<DynamicNode | undefined | void> =
     new vscode.EventEmitter<DynamicNode | undefined | void>();

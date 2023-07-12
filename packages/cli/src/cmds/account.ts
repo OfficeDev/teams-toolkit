@@ -1,18 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Colors,
-  FxError,
-  LogLevel,
-  Question,
-  Result,
-  UserError,
-  err,
-  ok,
-} from "@microsoft/teamsfx-api";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core";
-import chalk from "chalk";
+import { FxError, LogLevel, Result, UserError, err, ok } from "@microsoft/teamsfx-api";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import { Argv, Options } from "yargs";
 import { TextType, colorize } from "../colorize";
 import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
@@ -29,44 +19,25 @@ import CLILogProvider from "../commonlib/log";
 import M365TokenProvider from "../commonlib/m365Login";
 import * as constants from "../constants";
 import { strings } from "../resource";
-import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
+import { toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
+import CliTelemetry from "../telemetry/cliTelemetry";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
   const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
   if (result) {
     const username = (result as any).upn;
-    if (isV3Enabled()) {
-      if (commandType === "login") {
-        CLILogProvider.outputSuccess(strings["account.login.m365"]);
-      }
-      CLILogProvider.outputInfo(
-        strings["account.show.m365"],
-        colorize(username, TextType.Important)
-      );
-      return Promise.resolve(true);
-    }
     if (commandType === "login") {
-      const message = [
-        {
-          content: `[${constants.cliSource}] Successfully signed in to Microsoft 365.`,
-          color: Colors.BRIGHT_GREEN,
-        },
-        { content: " Your username is ", color: Colors.BRIGHT_WHITE },
-        { content: username, color: Colors.BRIGHT_MAGENTA },
-      ];
-      CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
-    } else {
-      const message = [
-        {
-          content: `[${constants.cliSource}] Your Microsoft 365 Account is: `,
-          color: Colors.BRIGHT_GREEN,
-        },
-        { content: username, color: Colors.BRIGHT_MAGENTA },
-      ];
-      CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
+      CLILogProvider.outputSuccess(strings["account.login.m365"]);
     }
+    CLILogProvider.outputInfo(strings["account.show.m365"], colorize(username, TextType.Important));
+    return Promise.resolve(true);
   } else {
     if (commandType === "login") {
       CLILogProvider.necessaryLog(
@@ -94,72 +65,15 @@ async function outputAzureInfo(
   if (result) {
     const subscriptions = await azureProvider.listSubscriptions();
     const username = (result as any).upn;
-    if (isV3Enabled()) {
-      if (commandType === "login") {
-        CLILogProvider.outputSuccess(strings["account.login.azure"]);
-      }
-      CLILogProvider.outputInfo(
-        strings["account.show.azure"],
-        colorize(username, TextType.Important),
-        JSON.stringify(subscriptions, null, 2)
-      );
-      return Promise.resolve(true);
-    }
     if (commandType === "login") {
-      const message = [
-        {
-          content: `[${constants.cliSource}] Successfully signed in to Azure.`,
-          color: Colors.BRIGHT_GREEN,
-        },
-        { content: " Your username is ", color: Colors.BRIGHT_WHITE },
-        { content: username, color: Colors.BRIGHT_MAGENTA },
-      ];
-      CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
-      CLILogProvider.necessaryLog(
-        LogLevel.Info,
-        `[${constants.cliSource}] Your subscriptions are:`
-      );
-      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
-    } else {
-      try {
-        azureProvider.setRootPath("./");
-        const subscriptionInfo = await azureProvider.readSubscription();
-        if (subscriptionInfo) {
-          CLILogProvider.necessaryLog(
-            LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(username)}` +
-              ` and current active subscription id is: ${chalk.magentaBright(
-                subscriptionInfo.subscriptionId
-              )}.`
-          );
-        } else {
-          CLILogProvider.necessaryLog(
-            LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(username)}.`
-          );
-          CLILogProvider.necessaryLog(
-            LogLevel.Info,
-            `[${constants.cliSource}] Below is a list of all subscriptions we found` + isV3Enabled()
-              ? "."
-              : `, use \`teamsfx account set\` to set an active subscription.`
-          );
-          CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
-        }
-      } catch (e) {
-        if ((e as Error).name === "ConfigNotFound") {
-          CLILogProvider.necessaryLog(
-            LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(username)}.`
-          );
-          CLILogProvider.necessaryLog(
-            LogLevel.Warning,
-            "WARN: Azure subscription is set on project level. Run `teamsfx account show` command in a TeamsFx project folder to check active subscription information."
-          );
-        } else {
-          throw e;
-        }
-      }
+      CLILogProvider.outputSuccess(strings["account.login.azure"]);
     }
+    CLILogProvider.outputInfo(
+      strings["account.show.azure"],
+      colorize(username, TextType.Important),
+      JSON.stringify(subscriptions, null, 2)
+    );
+    return Promise.resolve(true);
   } else {
     if (commandType === "login") {
       CLILogProvider.necessaryLog(
@@ -189,9 +103,11 @@ class AccountShow extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountShowStart);
     const m365StatusRes = await M365TokenProvider.getStatus({ scopes: AppStudioScopes });
     if (m365StatusRes.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AccountShow, m365StatusRes.error);
       return err(m365StatusRes.error);
     }
     const m365Status = m365StatusRes.value;
@@ -214,7 +130,9 @@ class AccountShow extends YargsCommand {
         "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
       );
     }
-
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountShow, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
     return ok(null);
   }
 }
@@ -234,7 +152,7 @@ class AccountLogin extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }
@@ -248,7 +166,8 @@ export class M365Login extends YargsCommand {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountShowStart);
     await M365TokenProvider.signout();
     await outputM365Info("login");
 
@@ -370,30 +289,6 @@ class AccountLogout extends YargsCommand {
   }
 }
 
-class AccountSet extends YargsCommand {
-  public readonly commandHead = `set`;
-  public readonly command = `${this.commandHead}`;
-  public readonly description = "Update account settings.";
-
-  public builder(yargs: Argv): Argv<any> {
-    const folderOption = toYargsOptions(constants.RootFolderNode.data as Question);
-    const subsOption = toYargsOptions(constants.SubscriptionNode.data as Question);
-    return yargs
-      .options("folder", folderOption)
-      .options("subscription", subsOption)
-      .demandOption("subscription");
-  }
-
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const result = await setSubscriptionId(args.subscription, args.folder);
-    if (result.isErr()) {
-      return result;
-    }
-    await outputAzureInfo("show");
-    return ok(null);
-  }
-}
-
 export default class Account extends YargsCommand {
   public readonly commandHead = `account`;
   public readonly command = `${this.commandHead} <action>`;
@@ -404,7 +299,6 @@ export default class Account extends YargsCommand {
     new AccountShow(),
     new AccountLogin(),
     new AccountLogout(),
-    ...(isV3Enabled() ? [] : [new AccountSet()]),
   ];
 
   public builder(yargs: Argv): Argv<any> {
@@ -420,7 +314,7 @@ export default class Account extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }

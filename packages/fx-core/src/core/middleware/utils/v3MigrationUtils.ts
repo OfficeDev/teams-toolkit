@@ -7,19 +7,11 @@ import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
-import {
-  AppPackageFolderName,
-  AzureSolutionSettings,
-  Inputs,
-  Platform,
-  ProjectSettings,
-  ProjectSettingsV3,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import semver from "semver";
-import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
+import { getProjectSettingPathV2, getProjectSettingsPath } from "../projectSettingsLoader";
 import {
-  Metadata,
   MetadataV2,
   MetadataV3,
   MetadataV3Abandoned,
@@ -32,7 +24,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
 import * as dotenv from "dotenv";
-import { manifestUtils } from "../../../component/resource/appManifest/utils/ManifestUtils";
+import { manifestUtils } from "../../../component/driver/teamsApp/utils/ManifestUtils";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -126,19 +118,8 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   return res;
 }
 
-export function getDownloadLinkByVersionAndPlatform(version: string, platform: Platform): string {
-  let anchorInLink = "vscode";
-  if (platform === Platform.VS) {
-    anchorInLink = "visual-studio";
-  } else if (platform === Platform.CLI) {
-    anchorInLink = "cli";
-  }
-  return `${Metadata.versionMatchLink}#${anchorInLink}`;
-}
-
 export function outputCancelMessage(version: string, platform: Platform): void {
   TOOLS?.logProvider.warning(`Upgrade cancelled.`);
-  const link = getDownloadLinkByVersionAndPlatform(version, platform);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
       `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
@@ -155,7 +136,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
     );
     TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
-      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit ${MetadataV2.platformVersion[platform]}.`
+      `If you are not ready to upgrade, please continue to use the old version Teams Toolkit.`
     );
   } else {
     TOOLS?.logProvider.warning(
@@ -169,7 +150,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
 }
 
 export async function getProjectVersionFromPath(projectPath: string): Promise<VersionInfo> {
-  const v3path = getProjectSettingPathV3(projectPath);
+  const v3path = getProjectSettingsPath(projectPath);
   if (await fs.pathExists(v3path)) {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
     if (readSettingsResult.isOk()) {
@@ -207,7 +188,7 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
 }
 
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
-  const v3path = getProjectSettingPathV3(projectPath);
+  const v3path = getProjectSettingsPath(projectPath);
   if (await fs.pathExists(v3path)) {
     const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
     if (readSettingsResult.isOk()) {
@@ -252,16 +233,12 @@ export function getParameterFromCxt(
   return value;
 }
 
-export function getToolkitVersionLink(platform: Platform, projectVersion: string): string {
-  return Metadata.versionMatchLink;
-}
-
-export function getCapabilityStatus(projectSettings: ProjectSettings): {
+export function getCapabilityStatus(projectSettings: any): {
   TabSso: boolean;
   BotSso: boolean;
   Tab: boolean;
 } {
-  const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
+  const capabilities = (projectSettings.solutionSettings as any).capabilities;
   const tabSso = capabilities.includes("TabSSO");
   const botSso = capabilities.includes("BotSSO");
   const tab = capabilities.includes("Tab");
@@ -403,7 +380,7 @@ export function tryExtractEnvFromUserdata(filename: string): string {
   return "";
 }
 
-export function buildFileName(...parts: string[]): string {
+function buildFileName(...parts: string[]): string {
   return parts.join(".");
 }
 export function buildEnvFileName(envName: string): string {

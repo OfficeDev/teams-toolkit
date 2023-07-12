@@ -1,35 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import { FxError, LogLevel, Question, Result, Stage, err, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
+import * as uuid from "uuid";
 import { Argv } from "yargs";
-
-import { FxError, err, ok, Result, Question, LogLevel, Stage } from "@microsoft/teamsfx-api";
-
 import activate from "../activate";
+import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import {
-  NotFoundInputedFolder,
-  SampleAppDownloadFailed,
-  ProjectFolderExist,
-  InvalidTemplateName,
-} from "../error";
-import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs, toLocaleLowerCase } from "../utils";
+import { filterQTreeNode, toYargsOptionsGroup } from "../questionUtils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import CLIUIInstance from "../userInteraction";
-import CLILogProvider from "../commonlib/log";
-import HelpParamGenerator from "../helpParamGenerator";
-import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
-import * as uuid from "uuid";
+import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
+import { YargsCommand } from "../yargsCommand";
+import { FileNotFoundError } from "@microsoft/teamsfx-core";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -38,15 +27,26 @@ export default class New extends YargsCommand {
 
   public readonly subCommands: YargsCommand[] = [new NewTemplate()];
 
-  public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.create);
+  public async builder(yargs: Argv): Promise<Argv<any>> {
+    const result = await activate();
+    if (result.isErr()) {
+      throw result.error;
+    }
+    const core = result.value;
+    {
+      const result = await core.getQuestions(Stage.create, constants.CLIHelpInputs);
+      if (result.isErr()) {
+        throw result.error;
+      }
+      const node = result.value ?? constants.EmptyQTreeNode;
+      const filteredNode = await filterQTreeNode(node, "scratch", "yes");
+      const nodes = flattenNodes(filteredNode).concat(constants.RootFolderNode);
+      this.params = await toYargsOptionsGroup(nodes);
+    }
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    if (this.params) {
-      yargs.options(this.params);
-    }
-    return yargs.version(false);
+    return yargs.version(false).options(this.params);
   }
 
   public async runCommand(args: {
@@ -72,8 +72,6 @@ export default class New extends YargsCommand {
         });
         return err(result.error);
       }
-
-      await automaticNpmInstallHandler(result.value, false, false, false);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
@@ -120,11 +118,9 @@ class NewTemplate extends YargsCommand {
   }): Promise<Result<null, FxError>> {
     const folder = path.resolve((args.folder as string) || "./");
     if (!fs.pathExistsSync(folder)) {
-      CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.DownloadSample,
-        NotFoundInputedFolder(folder)
-      );
-      return err(NotFoundInputedFolder(folder));
+      const error = new FileNotFoundError(constants.cliSource, folder);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error);
+      return err(error);
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
 

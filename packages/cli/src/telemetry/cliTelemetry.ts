@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-"use strict";
 
-import { CliTelemetryReporter } from "../commonlib/telemetry";
-import {
-  TelemetryProperty,
-  TelemetryComponentType,
-  TelemetrySuccess,
-  TelemetryErrorType,
-} from "./cliTelemetryEvents";
 import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
-import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
-import { getIsM365, getSettingsVersion, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
+import { CliTelemetryReporter } from "../commonlib/telemetry";
+import { getSettingsVersion } from "../utils";
+import {
+  TelemetryComponentType,
+  TelemetryErrorType,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "./cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export function makeEnvRelatedProperty(
   projectDir: string,
@@ -20,11 +20,6 @@ export function makeEnvRelatedProperty(
   const properties: { [key: string]: string } = {};
   if (inputs.env) {
     properties[TelemetryProperty.Env] = getHashedEnv(inputs.env);
-    const appInfo = getTeamsAppTelemetryInfoByEnv(projectDir, inputs.env);
-    if (appInfo) {
-      properties[TelemetryProperty.AppId] = appInfo.appId;
-      properties[TelemetryProperty.TenantId] = appInfo.tenantId;
-    }
   }
   return properties;
 }
@@ -69,7 +64,7 @@ export class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-
+    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
@@ -81,11 +76,6 @@ export class CliTelemetry {
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
-    }
-
-    const isM365 = getIsM365(CliTelemetry.rootFolder);
-    if (isM365 !== undefined) {
-      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     CliTelemetry.reporter
@@ -103,7 +93,7 @@ export class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-
+    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
@@ -115,11 +105,6 @@ export class CliTelemetry {
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
-    }
-
-    const isM365 = getIsM365(CliTelemetry.rootFolder);
-    if (isM365 !== undefined) {
-      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
@@ -145,7 +130,7 @@ export class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-
+    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
@@ -157,11 +142,6 @@ export class CliTelemetry {
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
-    }
-
-    const isM365 = getIsM365(CliTelemetry.rootFolder);
-    if (isM365 !== undefined) {
-      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     CliTelemetry.reporter

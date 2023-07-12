@@ -1,124 +1,53 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import fs from "fs-extra";
-import * as jsonschema from "jsonschema";
-import * as path from "path";
-import { Container } from "typedi";
-import * as uuid from "uuid";
 import { hooks } from "@feathersjs/hooks";
 import {
-  AppPackageFolderName,
-  BuildFolderName,
-  ConfigFolderName,
   CoreCallbackEvent,
-  CoreCallbackFunc,
-  DefaultReadme,
+  CryptoProvider,
   err,
   Func,
-  FunctionRouter,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   InputsWithProjectPath,
   ok,
-  Platform,
-  ProjectConfig,
-  ProjectConfigV3,
-  ProjectSettings,
-  ProjectSettingsV3,
   QTreeNode,
   Result,
-  Settings,
   Stage,
-  StatesFolderName,
   Tools,
-  UserCancelError,
-  v2,
-  v3,
   Void,
 } from "@microsoft/teamsfx-api";
-
-import { getLocalizedString } from "../common/localizeUtils";
-import { localSettingsFileName } from "../common/localSettingsProvider";
-import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
-import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context, isV3Enabled } from "../common/tools";
-import { getTemplatesFolder } from "../folder";
-import {
-  ApiConnectionOptionItem,
-  AzureSolutionQuestionNames,
-  CicdOptionItem,
-  ExistingTabOptionItem,
-  SingleSignOnOptionItem,
-  ComponentNames,
-} from "../component/constants";
-import { CallbackRegistry } from "./callback";
-import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
-import { LocalCrypto } from "./crypto";
-import { environmentManager, newEnvInfoV3 } from "./environment";
-import {
-  CopyFileError,
-  InvalidInputError,
-  NotImplementedError,
-  ObjectIsUndefinedError,
-  OperationNotPermittedError,
-  ProjectFolderExistError,
-  WriteFileError,
-} from "./error";
-import { setCurrentStage, setTools, TOOLS } from "./globalVars";
-import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
-import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
-import { ContextInjectorMW } from "./middleware/contextInjector";
-import { askNewEnvironment, EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
-import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
-import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectMigratorMW } from "./middleware/projectMigrator";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
-import { CoreQuestionNames, ProjectNamePattern } from "./question";
-import {
-  CoreTelemetryComponentName,
-  CoreTelemetryEvent,
-  CoreTelemetryProperty,
-  CoreTelemetrySuccess,
-  sendErrorTelemetryThenReturnError,
-} from "./telemetry";
-import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { createContextV3 } from "../component/utils";
-import { preCheck } from "../component/core";
-import {
-  FeatureId,
-  getQuestionsForAddFeatureSubCommand,
-  getQuestionsForAddFeatureV3,
-  getQuestionsForAddResourceV3,
-  getQuestionsForDeployV3,
-  getQuestionsForInit,
-  getQuestionsForProvisionV3,
-} from "../component/question";
-import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
-import { addCicdQuestion } from "../component/feature/cicd/cicd";
-import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
-import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
-import { createEnvWithName } from "../component/envManager";
-import { getProjectTemplatesFolderPath } from "../common/utils";
-import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import { copyParameterJson } from "../component/arm";
-import { ProjectSettingsHelper } from "../common/local";
-import "../component/driver/index";
-import "../component/driver/script/scriptDriver";
-import "reflect-metadata";
-import { DriverContext } from "../component/driver/interface/commonArgs";
-import { envUtil } from "../component/utils/envUtil";
-import { YamlParser } from "../component/configManager/parser";
-import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { DotenvParseOutput } from "dotenv";
-import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
+import * as path from "path";
+import "reflect-metadata";
+import { TelemetryReporterInstance } from "../common/telemetry";
+import { ILifecycle, LifecycleName } from "../component/configManager/interface";
+import { YamlParser } from "../component/configManager/parser";
+import { validateSchemaOption } from "../component/constants";
+import "../component/driver/index";
+import { DriverContext } from "../component/driver/interface/commonArgs";
+import "../component/driver/script/scriptDriver";
+import { EnvLoaderMW } from "../component/middleware/envMW";
+import { QuestionMW } from "../component/middleware/questionMW";
+import { envUtil } from "../component/utils/envUtil";
+import { metadataUtil } from "../component/utils/metadataUtil";
+import { pathUtils } from "../component/utils/pathUtils";
+import { settingsUtil } from "../component/utils/settingsUtil";
+import { createProjectCliHelpNode } from "../question/create";
+import { CallbackRegistry } from "./callback";
+import { LocalCrypto } from "./crypto";
+import { environmentManager } from "./environment";
+import { InvalidInputError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
+import { setTools, TOOLS } from "./globalVars";
+import { ErrorHandlerMW } from "./middleware/errorHandler";
+import { PreProvisionResForVS, VersionCheckRes } from "./types";
+import { QuestionNames } from "../question/questionNames";
+import { questions } from "../question";
 
-export class FxCore implements v3.ICore {
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
+
+export class FxCore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
@@ -143,153 +72,23 @@ export class FxCore implements v3.ICore {
    * lifecycle command: create new project
    */
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
-    if (isV3Enabled()) return this.v3Implement.dispatch(this.createProject, inputs);
-    else return this.createProjectOld(inputs);
-  }
-
-  /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return this.v3Implement.dispatch(this.initInfra, inputs);
-  }
-
-  /**
-   * @deprecated  Not used any more but still referenced by CLI code
-   */
-  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    return this.v3Implement.dispatch(this.initDebug, inputs);
-  }
-
-  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    setCurrentStage(Stage.create);
-    inputs.stage = Stage.create;
-    const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx.projectSettings = context.projectSetting;
-    inputs.projectPath = context.projectPath;
-    return ok(context.projectPath!);
+    return this.v3Implement.dispatch(this.createProject, inputs);
   }
 
   /**
    * lifecycle commands: provision
    */
   async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (isV3Enabled()) {
-      return this.v3Implement.dispatch(this.provisionResources, inputs);
-    } else {
-      return this.provisionResourcesOld(inputs);
-    }
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    VideoFilterAppBlockerMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async provisionResourcesOld(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.provision);
-    inputs.stage = Stage.provision;
-    const context = createContextV3();
-    context.envInfo = ctx!.envInfoV3!;
-    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
-    context.tokenProvider = TOOLS.tokenProvider;
-    if (context.envInfo.envName === "local") {
-      context.envInfo.config.isLocalDebug = true;
-    }
-    const fx = Container.get("fx") as any;
-    const res = await fx.provision(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    ctx!.envInfoV3 = context.envInfo;
-    return ok(Void);
-  }
-
-  /**
-   * Only used to provision Teams app with user provided app package in CLI
-   * @returns teamsAppId on provision success
-   */
-  async provisionTeamsAppForCLI(inputs: Inputs): Promise<Result<string, FxError>> {
-    if (!inputs.appPackagePath) {
-      return err(InvalidInputError("appPackagePath is not defined", inputs));
-    }
-    const projectSettings: ProjectSettings = {
-      appName: "fake",
-      projectId: uuid.v4(),
-    };
-    const context: v2.Context = {
-      userInteraction: TOOLS.ui,
-      logProvider: TOOLS.logProvider,
-      telemetryReporter: TOOLS.telemetryReporter!,
-      cryptoProvider: new LocalCrypto(projectSettings.projectId),
-      permissionRequestProvider: TOOLS.permissionRequest,
-      projectSetting: projectSettings,
-    };
-    const appStudioV3 = Container.get<AppManifest>(ComponentNames.AppManifest);
-    return appStudioV3.provisionForCLI(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      newEnvInfoV3(),
-      TOOLS.tokenProvider
-    );
+    return this.v3Implement.dispatch(this.provisionResources, inputs);
   }
 
   /**
    * lifecycle commands: deploy
    */
   async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (isV3Enabled()) {
-      return this.v3Implement.dispatch(this.deployArtifacts, inputs);
-    } else {
-      return this.deployArtifactsOld(inputs);
-    }
+    return this.v3Implement.dispatch(this.deployArtifacts, inputs);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    VideoFilterAppBlockerMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async deployArtifactsOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.deploy);
-    inputs.stage = Stage.deploy;
-    const context = createContextV3();
-    context.envInfo = ctx!.envInfoV3!;
-    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
-    context.tokenProvider = TOOLS.tokenProvider;
-    const fx = Container.get("fx") as any;
-    const res = await fx.deploy(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    return ok(Void);
-  }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
     inputs.env = environmentManager.getLocalEnvName();
     return this.provisionResources(inputs);
@@ -313,156 +112,14 @@ export class FxCore implements v3.ICore {
    * lifecycle command: publish
    */
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (isV3Enabled()) {
-      return this.v3Implement.dispatch(this.publishApplication, inputs);
-    } else {
-      return this.publishApplicationOld(inputs);
-    }
-  }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    VideoFilterAppBlockerMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async publishApplicationOld(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.publish);
-    inputs.stage = Stage.publish;
-    const context = createContextV3();
-    context.envInfo = ctx!.envInfoV3!;
-    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
-    context.tokenProvider = TOOLS.tokenProvider;
-    const appManifest = Container.get(ComponentNames.AppManifest) as any;
-    const res = await appManifest.publish(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    return ok(Void);
-  }
-
-  /**
-   * @deprecated not used in v3 any more
-   */
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async addFeature(
-    inputs: v2.InputsWithProjectPath,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
-    inputs.stage = Stage.addFeature;
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const fx = Container.get("fx") as any;
-    const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    return ok(res.value);
+    return this.v3Implement.dispatch(this.publishApplication, inputs);
   }
 
   /**
    * most commands will be deprecated in V3
    */
-  async executeUserTask(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
-    return isV3Enabled()
-      ? this.v3Implement.dispatchUserTask(this.executeUserTask, func, inputs)
-      : this.executeUserTaskOld(func, inputs);
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    VideoFilterAppBlockerMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async executeUserTaskOld(
-    func: Func,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<any, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("executeUserTask context"));
-    let res: Result<any, FxError> = ok(undefined);
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    if (ctx?.envInfoV3) {
-      context.envInfo = ctx.envInfoV3;
-      if (context.envInfo.envName === "local") {
-        context.envInfo.config.isLocalDebug = true;
-      }
-    }
-    if (func.method === "addCICDWorkflows") {
-      const component = Container.get("cicd") as any;
-      inputs[AzureSolutionQuestionNames.Features] = CicdOptionItem.id;
-      res = await component.add(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "connectExistingApi") {
-      const component = Container.get("api-connector") as any;
-      inputs[AzureSolutionQuestionNames.Features] = ApiConnectionOptionItem.id;
-      res = await component.add(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "addSso") {
-      inputs.stage = Stage.addFeature;
-      inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
-      const component = Container.get("sso") as any;
-      res = await component.add(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "addFeature") {
-      inputs.stage = Stage.addFeature;
-      const fx = Container.get("fx") as any;
-      res = await fx.addFeature(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "getManifestTemplatePath") {
-      const path = await manifestUtils.getTeamsAppManifestPath(
-        (inputs as InputsWithProjectPath).projectPath
-      );
-      res = ok(path);
-    } else if (func.method === "validateManifest") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.validate(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "buildPackage") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.build(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "updateManifest") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.deploy(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "buildAadManifest") {
-      const component = Container.get("aad-app") as any;
-      res = await component.buildAadManifest(context, inputs as InputsWithProjectPath);
-    } else {
-      return err(new NotImplementedError(func.method));
-    }
-    if (res) {
-      if (res.isErr()) return err(res.error);
-      ctx!.projectSettings = context.projectSetting;
-      return res;
-    }
-    return res;
+  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
+    return await this.v3Implement.dispatchUserTask(this.executeUserTask, func, inputs);
   }
 
   /**
@@ -482,8 +139,9 @@ export class FxCore implements v3.ICore {
   /**
    * v3 only none lifecycle command
    */
+  @hooks([QuestionMW(questions.selectTeamsAppValidationMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (inputs.validateMethod === "validateAgainstSchema") {
+    if (inputs[QuestionNames.ValidateMethod] === validateSchemaOption.id) {
       return await this.validateManifest(inputs);
     } else {
       return await this.validateAppPackage(inputs);
@@ -527,310 +185,190 @@ export class FxCore implements v3.ICore {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     inputs.stage = Stage.getQuestions;
-    setCurrentStage(Stage.getQuestions);
-    const context = createContextV3();
-    if (stage === Stage.publish) {
-      return await publishQuestion(inputs);
-    } else if (stage === Stage.create) {
-      return await getQuestionsForCreateProjectV2(inputs);
-    } else if (stage === Stage.deploy) {
-      return await getQuestionsForDeployV3(context, inputs);
-    } else if (stage === Stage.provision) {
-      return await getQuestionsForProvisionV3(inputs);
-    } else if (stage === Stage.initDebug) {
-      return await getQuestionsForInit("debug", inputs);
-    } else if (stage === Stage.initInfra) {
-      return await getQuestionsForInit("infra", inputs);
+    if (stage === Stage.create) {
+      return ok(createProjectCliHelpNode() as QTreeNode);
     }
     return ok(undefined);
   }
 
   /**
-   * @deprecated
+   * get all dot envs
    */
-  async getQuestionsForAddFeature(
-    featureId: FeatureId,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
-    return res;
-  }
-
-  @hooks([ErrorHandlerMW])
-  async getQuestionsForUserTask(
-    func: FunctionRouter,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    inputs.stage = Stage.getQuestions;
-    setCurrentStage(Stage.getQuestions);
-    const context = createContextV3();
-    if (func.method === "addFeature") {
-      return await getQuestionsForAddFeatureV3(context, inputs);
-    } else if (func.method === "addResource") {
-      return await getQuestionsForAddResourceV3(context, inputs);
-    } else if (func.method === "addCICDWorkflows") {
-      return await addCicdQuestion(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "connectExistingApi") {
-      const apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
-      return await apiConnectorImpl.generateQuestion(context, inputs as InputsWithProjectPath);
-    }
-    return ok(undefined);
-  }
-
-  /**
-   * v3 only API, not command
-   */
-  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
-    return this.v3Implement.dispatch(this.getSettings, inputs);
-  }
-
-  /**
-   * v3 only API, not command
-   */
-  async getDotEnv(
+  async getDotEnvs(
     inputs: InputsWithProjectPath
-  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
-    return this.v3Implement.dispatch(this.getDotEnv, inputs);
+  ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
+    return this.v3Implement.dispatch(this.getDotEnvs, inputs);
   }
 
   /**
-   * @deprecated in V3
+   * given projectPath and filePath, return whether the filePath is a env file
    */
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-  ])
-  async getProjectConfig(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<ProjectConfig | undefined, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
-    inputs.stage = Stage.getProjectConfig;
-    setCurrentStage(Stage.getProjectConfig);
-    return ok({
-      settings: ctx.projectSettings,
-      config: ctx.envInfoV3?.state,
-    });
+  async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
+    const inputFileName = path.basename(inputFile);
+    const envName = envUtil.extractEnvNameFromFileName(inputFileName);
+    if (!envName) return ok(false);
+    const folderRes = await pathUtils.getEnvFolderPath(projectPath);
+    if (folderRes.isErr()) return err(folderRes.error);
+    const envFolderPath = folderRes.value;
+    if (!envFolderPath) return ok(false);
+    const inputFileDir = path.dirname(inputFile);
+    if (path.resolve(inputFileDir) !== path.resolve(envFolderPath)) return ok(false);
+    return ok(true);
   }
 
   /**
-   * @deprecated in V3
+   * get projectId
    */
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    ContextInjectorMW,
-  ])
-  async getProjectConfigV3(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<ProjectConfigV3 | undefined, FxError>> {
-    if (!ctx || !ctx.projectSettings)
-      return err(new ObjectIsUndefinedError("getProjectConfigV3 input stuff"));
-    if (!inputs.projectPath) return ok(undefined);
-    inputs.stage = Stage.getProjectConfig;
-    setCurrentStage(Stage.getProjectConfig);
-    const config: ProjectConfigV3 = {
-      projectSettings: ctx.projectSettings,
-      envInfos: {},
-    };
-    const envNamesRes = await environmentManager.listAllEnvConfigs(inputs.projectPath);
-    if (envNamesRes.isErr()) {
-      return err(envNamesRes.error);
+  async getProjectId(projectPath: string): Promise<Result<string, FxError>> {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
+    const maybeProjectModel = await metadataUtil.parse(ymlPath, "dev");
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
     }
-    for (const env of envNamesRes.value) {
-      const result = await loadEnvInfoV3(
-        inputs as v2.InputsWithProjectPath,
-        ctx.projectSettings,
-        env,
-        false
+    const projectModel = maybeProjectModel.value as any;
+    return ok(projectModel.projectId || "");
+  }
+
+  /**
+   * get Teams App Name from yml
+   */
+  async getTeamsAppName(projectPath: string): Promise<Result<string, FxError>> {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
+    const maybeProjectModel = await metadataUtil.parse(ymlPath, "dev");
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value as any;
+    if (projectModel.provision) {
+      const teamsAppCreate = projectModel.provision?.driverDefs.find(
+        (d: any) => d.uses === "teamsApp/create"
       );
-      if (result.isErr()) {
-        return err(result.error);
+      if (teamsAppCreate) {
+        const name = (teamsAppCreate.with as any).name;
+        if (name) {
+          return ok(name.replace("-${{TEAMSFX_ENV}}", "") || "");
+        }
       }
-      config.envInfos[env] = result.value;
     }
-    return ok(config);
+    return ok("");
+  }
+
+  /**
+   * get project info
+   */
+  async getProjectInfo(
+    projectPath: string,
+    env: string
+  ): Promise<
+    Result<
+      {
+        projectId: string;
+        teamsAppId: string;
+        teamsAppName: string;
+        m365TenantId: string;
+      },
+      FxError
+    >
+  > {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, env);
+    const maybeProjectModel = await metadataUtil.parse(ymlPath, env);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const readEnvRes = await envUtil.readEnv(projectPath, env, false, true);
+    if (readEnvRes.isErr()) {
+      return err(readEnvRes.error);
+    }
+    const envObject = readEnvRes.value;
+    const res: {
+      projectId: string;
+      teamsAppId: string;
+      teamsAppName: string;
+      m365TenantId: string;
+    } = {
+      projectId: (projectModel as any).projectId || "",
+      teamsAppId: "",
+      teamsAppName: "",
+      m365TenantId: envObject.TEAMS_APP_TENANT_ID || "",
+    };
+    if (projectModel.provision) {
+      const teamsAppCreate = projectModel.provision.driverDefs.find(
+        (d) => d.uses === "teamsApp/create"
+      );
+      if (teamsAppCreate) {
+        const teamsAppIdEnvName = teamsAppCreate.writeToEnvironmentFile?.teamsAppId;
+        if (teamsAppIdEnvName) {
+          const teamsAppId = envObject[teamsAppIdEnvName];
+          res.teamsAppId = teamsAppId;
+        }
+        const name = (teamsAppCreate.with as any).name;
+        if (name) {
+          res.teamsAppName = name.replace("-${{TEAMSFX_ENV}}", "") || "";
+        }
+      }
+    }
+    return ok(res);
   }
 
   async grantPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (isV3Enabled()) {
-      return this.v3Implement.dispatch(this.grantPermission, inputs);
-    } else {
-      return this.grantPermissionOld(inputs);
-    }
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
-    QuestionModelMW,
-    ConcurrentLockerMW,
-    ContextInjectorMW,
-  ])
-  async grantPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return grantPermissionFunc(inputs, ctx);
+    return this.v3Implement.dispatch(this.grantPermission, inputs);
   }
 
   /**
    * none lifecycle command
    */
   async checkPermission(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (isV3Enabled()) {
-      return this.v3Implement.dispatch(this.checkPermission, inputs);
-    } else {
-      return this.checkPermissionOld(inputs);
-    }
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
-    QuestionModelMW,
-    ContextInjectorMW,
-  ])
-  async checkPermissionOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return checkPermissionFunc(inputs, ctx);
+    return this.v3Implement.dispatch(this.checkPermission, inputs);
   }
 
   /**
    * none lifecycle command
    */
   async listCollaborator(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (isV3Enabled()) {
-      return this.v3Implement.dispatch(this.listCollaborator, inputs);
-    } else {
-      return this.listCollaboratorOld(inputs);
-    }
+    return this.v3Implement.dispatch(this.listCollaborator, inputs);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false, true),
-    QuestionModelMW,
-    ConcurrentLockerMW,
-    ContextInjectorMW,
-  ])
-  async listCollaboratorOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    return listCollaboratorFunc(inputs, ctx);
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-  ])
-  async getSelectedEnv(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string | undefined, FxError>> {
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false)])
+  async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
     return ok(inputs.env); //work for both v2 and v3
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
-  async encrypt(
-    plaintext: string,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
-    if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
-    return ctx.contextV2.cryptoProvider.encrypt(plaintext);
+  async createLocalCrypto(projectPath: string): Promise<Result<CryptoProvider, FxError>> {
+    const settingsRes = await settingsUtil.readSettings(projectPath);
+    if (settingsRes.isErr()) {
+      return err(settingsRes.error);
+    }
+    const projectId = settingsRes.value.trackingId;
+    const cryptoProvider = new LocalCrypto(projectId);
+    return ok(cryptoProvider);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
-  async decrypt(
-    ciphertext: string,
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<string, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("ctx"));
-    if (!ctx.contextV2) return err(new ObjectIsUndefinedError("ctx.contextV2"));
-    return ctx.contextV2.cryptoProvider.decrypt(ciphertext);
+  /**
+   * only for vs code extension
+   */
+  @hooks([ErrorHandlerMW])
+  async encrypt(plaintext: string, inputs: Inputs): Promise<Result<string, FxError>> {
+    const res = await this.createLocalCrypto(inputs.projectPath!);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return res.value.encrypt(plaintext);
+  }
+  /**
+   * only for vs code extension
+   */
+  @hooks([ErrorHandlerMW])
+  async decrypt(ciphertext: string, inputs: Inputs): Promise<Result<string, FxError>> {
+    const res = await this.createLocalCrypto(inputs.projectPath!);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return res.value.decrypt(ciphertext);
   }
 
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (isV3Enabled()) {
-      return this.v3Implement.dispatch(this.createEnv, inputs);
-    } else {
-      return this.createEnvOld(inputs);
-    }
-  }
-
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
-  async createEnvOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!ctx || !inputs.projectPath)
-      return err(new ObjectIsUndefinedError("createEnv input stuff"));
-    const projectSettings = ctx.projectSettings;
-    if (!projectSettings) {
-      return ok(Void);
-    }
-
-    const core = ctx!.self as FxCore;
-    const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
-
-    if (
-      !createEnvCopyInput ||
-      !createEnvCopyInput.targetEnvName ||
-      !createEnvCopyInput.sourceEnvName
-    ) {
-      return err(UserCancelError);
-    }
-
-    const createEnvResult = await this.createEnvCopy(
-      createEnvCopyInput.targetEnvName,
-      createEnvCopyInput.sourceEnvName,
-      inputs,
-      core
-    );
-
-    if (createEnvResult.isErr()) {
-      return createEnvResult;
-    }
-
-    inputs.sourceEnvName = createEnvCopyInput.sourceEnvName;
-    inputs.targetEnvName = createEnvCopyInput.targetEnvName;
-
-    if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
-      await copyParameterJson(
-        inputs.projectPath!,
-        ctx.projectSettings!.appName!,
-        inputs.targetEnvName!,
-        inputs.sourceEnvName!
-      );
-    }
-
-    return ok(Void);
+    return this.v3Implement.dispatch(this.createEnv, inputs);
   }
 
   // a phantom migration method for V3
@@ -842,40 +380,6 @@ export class FxCore implements v3.ICore {
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     return this.v3Implement.dispatch(this.projectVersionCheck, inputs);
   }
-
-  async createEnvCopy(
-    targetEnvName: string,
-    sourceEnvName: string,
-    inputs: Inputs,
-    core: FxCore
-  ): Promise<Result<Void, FxError>> {
-    // copy env config file
-    const targetEnvConfigFilePath = environmentManager.getEnvConfigPath(
-      targetEnvName,
-      inputs.projectPath!
-    );
-    const sourceEnvConfigFilePath = environmentManager.getEnvConfigPath(
-      sourceEnvName,
-      inputs.projectPath!
-    );
-
-    try {
-      await fs.copy(sourceEnvConfigFilePath, targetEnvConfigFilePath);
-    } catch (e) {
-      return err(CopyFileError(e as Error));
-    }
-
-    TOOLS.logProvider.debug(
-      `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
-    );
-
-    return ok(Void);
-  }
-
-  async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-
   // apply the given yaml template to current project.
   async apply(
     inputs: Inputs,
@@ -966,125 +470,6 @@ export class FxCore implements v3.ICore {
     }
   }
 
-  async _init(
-    inputs: Inputs,
-    ctx?: CoreHookContext,
-    isInitExistingApp = false
-  ): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    // validate app name
-    const appName = inputs[CoreQuestionNames.AppName] as string;
-    const validateResult = jsonschema.validate(appName, {
-      pattern: ProjectNamePattern,
-    });
-    if (validateResult.errors && validateResult.errors.length > 0) {
-      return err(InvalidInputError("invalid app-name", inputs));
-    }
-
-    const projectPath = inputs.folder;
-    if (!projectPath) {
-      return err(InvalidInputError("projectPath is empty", inputs));
-    }
-
-    if (isInitExistingApp) {
-      const folderExist = await fs.pathExists(projectPath);
-      if (folderExist) {
-        return err(new ProjectFolderExistError(projectPath));
-      }
-    } else {
-      const isValid = isValidProject(projectPath);
-      if (isValid) {
-        return err(
-          new OperationNotPermittedError("initialize a project in existing teamsfx project")
-        );
-      }
-    }
-
-    await fs.ensureDir(projectPath);
-    inputs.projectPath = projectPath;
-
-    // create ProjectSettings
-    const projectSettings = newProjectSettings();
-    projectSettings.appName = appName;
-    (projectSettings as ProjectSettingsV3).components = [];
-    ctx.projectSettings = projectSettings;
-
-    // create folder structure
-    await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(
-      path.join(await getProjectTemplatesFolderPath(projectPath), `${AppPackageFolderName}`)
-    );
-    const basicFolderRes = await ensureBasicFolderStructure(inputs, false);
-    if (basicFolderRes.isErr()) {
-      return err(basicFolderRes.error);
-    }
-
-    // create contextV2
-    const context = createV2Context(projectSettings);
-    ctx.contextV2 = context;
-
-    const appStudioComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
-
-    // pre-check before initialize
-    const preCheckResult = await preCheck(projectPath);
-    if (preCheckResult.isErr()) {
-      return err(preCheckResult.error);
-    }
-
-    // init manifest
-    const manifestInitRes = await appStudioComponent.init(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      isInitExistingApp
-    );
-    if (manifestInitRes.isErr()) return err(manifestInitRes.error);
-
-    const manifestAddcapRes = await appStudioComponent.addCapability(
-      inputs as v2.InputsWithProjectPath,
-      [{ name: "staticTab", existingApp: true }]
-    );
-    if (manifestAddcapRes.isErr()) return err(manifestAddcapRes.error);
-
-    // create env config with existing tab's endpoint
-    const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;
-    const createEnvResult = await createEnvWithName(
-      environmentManager.getDefaultEnvName(),
-      projectSettings.appName,
-      inputs as InputsWithProjectPath,
-      isInitExistingApp ? endpoint : undefined
-    );
-    if (createEnvResult.isErr()) {
-      return err(createEnvResult.error);
-    }
-    const createLocalEnvResult = await createEnvWithName(
-      environmentManager.getLocalEnvName(),
-      projectSettings.appName,
-      inputs as InputsWithProjectPath,
-      isInitExistingApp ? endpoint : undefined
-    );
-    if (createLocalEnvResult.isErr()) {
-      return err(createLocalEnvResult.error);
-    }
-    const sourceReadmePath = path.join(getTemplatesFolder(), "core", DefaultReadme);
-    if (await fs.pathExists(sourceReadmePath)) {
-      const targetReadmePath = path.join(projectPath, DefaultReadme);
-      await fs.copy(sourceReadmePath, targetReadmePath);
-    }
-    return ok(inputs.projectPath!);
-  }
-
-  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    const result = await this._init(inputs, ctx);
-    if (result.isOk()) {
-      TOOLS.ui.showMessage("info", getLocalizedString("core.init.successNotice"), false);
-    }
-
-    return result;
-  }
-
   async preProvisionForVS(inputs: Inputs): Promise<Result<PreProvisionResForVS, FxError>> {
     return this.v3Implement.dispatch(this.preProvisionForVS, inputs);
   }
@@ -1096,152 +481,4 @@ export class FxCore implements v3.ICore {
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }
-}
-
-export async function ensureBasicFolderStructure(
-  inputs: Inputs,
-  createPackageJson = true
-): Promise<Result<null, FxError>> {
-  if (!inputs.projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  try {
-    if (createPackageJson) {
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (inputs.platform !== Platform.VS) {
-        const packageJsonFilePath = path.join(inputs.projectPath, `package.json`);
-        const exists = await fs.pathExists(packageJsonFilePath);
-        if (!exists) {
-          await fs.writeFile(
-            packageJsonFilePath,
-            JSON.stringify(
-              {
-                name: appName,
-                version: "0.0.1",
-                description: "",
-                author: "",
-                scripts: {
-                  test: 'echo "Error: no test specified" && exit 1',
-                },
-                devDependencies: {
-                  "@microsoft/teamsfx-cli": "1.*",
-                },
-                license: "MIT",
-              },
-              null,
-              4
-            )
-          );
-        }
-      }
-    }
-    {
-      const gitIgnoreFilePath = path.join(inputs.projectPath, `.gitignore`);
-      let lines: string[] = [];
-      const exists = await fs.pathExists(gitIgnoreFilePath);
-      if (exists) {
-        const content = await fs.readFile(gitIgnoreFilePath, { encoding: "utf8" });
-        lines = content.split("\n");
-        for (let i = 0; i < lines.length; ++i) {
-          lines[i] = lines[i].trim();
-        }
-      }
-      const gitIgnoreContent = [
-        "\n# TeamsFx files",
-        "node_modules",
-        `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
-        `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
-        ".DS_Store",
-        ".env.teamsfx.local",
-        "subscriptionInfo.json",
-        BuildFolderName,
-      ];
-      gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
-      gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
-      if (inputs.platform === Platform.VS) {
-        gitIgnoreContent.push("appsettings.Development.json");
-      }
-      gitIgnoreContent.forEach((line) => {
-        if (!lines.includes(line.trim())) {
-          lines.push(line.trim());
-        }
-      });
-      await fs.writeFile(gitIgnoreFilePath, lines.join("\n"), { encoding: "utf8" });
-    }
-  } catch (e) {
-    return err(WriteFileError(e));
-  }
-  return ok(null);
-}
-
-export async function listCollaboratorFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.listCollaborator);
-  inputs.stage = Stage.listCollaborator;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await listCollaborator(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
-}
-
-export async function checkPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.checkPermission);
-  inputs.stage = Stage.checkPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await checkPermission(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
-}
-
-export async function grantPermissionFunc(
-  inputs: Inputs,
-  ctx?: CoreHookContext
-): Promise<Result<any, FxError>> {
-  setCurrentStage(Stage.grantPermission);
-  inputs.stage = Stage.grantPermission;
-  const projectPath = inputs.projectPath;
-  if (!projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-  if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
-    const res = await grantPermission(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      ctx.envInfoV3,
-      TOOLS.tokenProvider
-    );
-    return res;
-  }
-  return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
 }

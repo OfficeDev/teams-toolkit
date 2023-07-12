@@ -9,9 +9,7 @@ import {
   defaultTryLimits,
   oldPlaceholderDelimiters,
   placeholderDelimiters,
-  templateAlphaVersion,
   templateFileExt,
-  templatePrereleaseVersion,
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
 } from "./constant";
@@ -30,10 +28,10 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
+  const useLocal = templateConfig.useLocalTemplate;
   const versionPattern = preRelease || templateVersion;
 
-  // To avoid incompatible, alpha release does not download latest template.
-  if ([templateAlphaVersion, templatePrereleaseVersion].includes(versionPattern)) {
+  if (useLocal.toString() === "true") {
     throw new CancelDownloading();
   }
 
@@ -184,7 +182,7 @@ export function renderTemplateFileData(
   return fileData;
 }
 
-export function escapeEmptyVariable(
+function escapeEmptyVariable(
   template: string,
   view: Record<string, string | undefined>,
   tags: [string, string] = placeholderDelimiters
@@ -226,10 +224,6 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
     throw Error(`invalid sample name: '${sampleName}'`);
   }
   return sample;
-}
-
-export function getSampleRelativePath(sampleName: string): string {
-  return `${sampleConfig.baseFolderName}/${sampleName}/`;
 }
 
 export function zipFolder(folderPath: string): AdmZip {
@@ -310,7 +304,7 @@ export async function runWithLimitedConcurrency<T>(
   items: T[],
   callback: (arg: T) => any,
   concurrencyLimit: number
-) {
+): Promise<void> {
   const queue: any[] = [];
   for (const item of items) {
     // fire the async function, add its promise to the queue, and remove
@@ -331,4 +325,19 @@ export async function runWithLimitedConcurrency<T>(
   }
   // wait for the rest of the calls to finish
   await Promise.all(queue);
+}
+
+export function convertToLangKey(programmingLanguage: string): string {
+  switch (programmingLanguage) {
+    case "javascript": {
+      return "js";
+    }
+    case "typescript": {
+      return "ts";
+    }
+    case "csharp": {
+      return "csharp";
+    }
+  }
+  return programmingLanguage;
 }

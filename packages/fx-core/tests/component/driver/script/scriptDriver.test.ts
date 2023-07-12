@@ -12,6 +12,7 @@ import * as tools from "../../../../src/common/tools";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import {
   convertScriptErrorToFxError,
+  parseSetOutputCommand,
   scriptDriver,
 } from "../../../../src/component/driver/script/scriptDriver";
 import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
@@ -30,23 +31,7 @@ describe("Script Driver test", () => {
     sandbox.restore();
   });
   it("execute success: set-output and append to file", async () => {
-    // sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
     const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
-    // const cp = {
-    //   stdout: {
-    //     on: sandbox.stub() as any,
-    //   },
-    //   stderr: {
-    //     on: sandbox.stub() as any,
-    //   },
-    // };
-    // sandbox
-    //   .stub(child_process, "exec")
-    //   .callsArgWith(2, null)
-    //   .returns(cp as child_process.ChildProcess);
-    // cp.stdout.on.callsFake((event: string, callback: (data: string) => void) => {
-    //   callback("::set-output MY_KEY=MY_VALUE");
-    // });
     const args = {
       workingDirectory: "./",
       run: `echo '::set-output MY_KEY=MY_VALUE'`,
@@ -64,9 +49,6 @@ describe("Script Driver test", () => {
       projectPath: "./",
     } as DriverContext;
     const res = await scriptDriver.execute(args, context);
-    if (res.result.isErr()) {
-      console.log(res.result.error);
-    }
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
       const output = res.result.value;
@@ -161,5 +143,21 @@ describe("getSystemEncoding", () => {
     sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
     const result = await getSystemEncoding();
     assert.equal(result, DefaultEncoding);
+  });
+});
+
+describe("parseSetOutputCommand", () => {
+  it("parse one key value pair", async () => {
+    const res = parseSetOutputCommand('echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"');
+    assert.deepEqual(res, { TAB_DOMAIN: "localhost:53000" });
+  });
+  it("parse two key value pairs", async () => {
+    const res = parseSetOutputCommand(
+      'echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000"; echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";'
+    );
+    assert.deepEqual(res, {
+      TAB_DOMAIN: "localhost:53000",
+      TAB_ENDPOINT: "https://localhost:53000",
+    });
   });
 });

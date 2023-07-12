@@ -4,6 +4,10 @@
 
 export enum TelemetryEvent {
   //TODO: define CLI telemetry event
+
+  AccountShowStart = "account-show-start",
+  AccountShow = "account-show",
+
   AccountLoginStart = "login-start",
   AccountLogin = "login",
 
@@ -37,8 +41,8 @@ export enum TelemetryEvent {
   UpdateTeamsAppStart = "update-teams-app-start",
   UpdateTeamsApp = "update-teams-app",
 
-  deployAadAppStart = "deploy-aad-manifest-start",
-  deployAadApp = "deploy-aad-manifest",
+  UpdateAadAppStart = "update-aad-app-start",
+  UpdateAadApp = "update-aad-app",
 
   BuildStart = "build-start",
   Build = "build",
@@ -71,19 +75,8 @@ export enum TelemetryEvent {
   PreviewService = "preview-service",
   PreviewSideloading = "preview-sideloading",
   PreviewSideloadingStart = "preview-sideloading-start",
-  PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
-  PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
-  PreviewPrerequisites = "preview-prerequisites",
-  PreviewPrereqsCheckNode = "preview-prereqs-check-node",
   PreviewPrereqsCheckM365Account = "preview-prereqs-check-m365-account",
-  PreviewPrereqsCheckCert = "preview-prereqs-check-cert",
-  PreviewPrereqsCheckDependencies = "preview-prereqs-check-dependencies",
-  PreviewPrereqsCheckPorts = "preview-prereqs-check-ports",
-  PreviewPrepareDevEnv = "preview-prepare-dev-env",
   PreviewStartServices = "preview-start-services",
-
-  AutomaticNpmInstallStart = "automatic-npm-install-start",
-  AutomaticNpmInstall = "automatic-npm-install",
 
   ConfigGet = "config-get",
   ConfigSet = "config-set",
@@ -127,7 +120,6 @@ export enum TelemetryProperty {
   Resources = "resources",
   Internal = "internal",
   InternalAlias = "internal-alias",
-  PreviewAppId = "preview-appid",
   PreviewType = "preview-type",
   PreviewBrowser = "preview-browser",
   PreviewHub = "preview-hub",
@@ -138,12 +130,6 @@ export enum TelemetryProperty {
   PreviewNpmInstallNpmVersion = "preview-npm-install-npm-version",
   PreviewNpmInstallErrorMessage = "preview-npm-install-error-message",
   PreviewServiceName = "preview-service-name",
-  PreviewOSArch = "preview-os-arch",
-  PreviewOSRelease = "preview-os-release",
-  PreviewProjectComponents = "preview-project-components",
-  PreviewCheckResults = "preview-check-results",
-  PreviewPortsInUse = "preview-ports-in-use",
-  PreviewDevCertStatus = "preview-dev-cert-status",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",
@@ -154,6 +140,7 @@ export enum TelemetryProperty {
   IsFromSample = "is-from-sample",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
+  Interactive = "interactive",
 }
 
 export enum TelemetrySuccess {
@@ -164,18 +151,6 @@ export enum TelemetrySuccess {
 export enum TelemetryErrorType {
   UserError = "user",
   SystemError = "system",
-}
-
-export enum TelemetryAccountType {
-  Azure = "azure",
-  M365 = "m365",
-}
-
-export enum TelemetryPreviewDevCertStatus {
-  Disabled = "disabled",
-  AlreadyTrusted = "already-trusted",
-  Trusted = "trusted",
-  NotTrusted = "not-trusted",
 }
 
 export const TelemetryComponentType = "cli";

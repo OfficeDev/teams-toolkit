@@ -6,7 +6,7 @@ import { CommentArray, CommentJSONValue, CommentObject, assign, parse } from "co
 import { FileType, namingConverterV3 } from "../MigrationUtils";
 import { MigrationContext } from "../migrationContext";
 import { readBicepContent } from "../v3MigrationUtils";
-import { AzureSolutionSettings, ProjectSettings, SettingsFolderName } from "@microsoft/teamsfx-api";
+import { SettingsFolderName } from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
 import * as os from "os";
 import * as path from "path";
@@ -57,19 +57,19 @@ export async function getPlaceholderMappings(
 }
 
 export class OldProjectSettingsHelper {
-  public static includeTab(oldProjectSettings: ProjectSettings): boolean {
+  public static includeTab(oldProjectSettings: any): boolean {
     return this.includePlugin(oldProjectSettings, "fx-resource-frontend-hosting");
   }
 
-  public static includeBot(oldProjectSettings: ProjectSettings): boolean {
+  public static includeBot(oldProjectSettings: any): boolean {
     return this.includePlugin(oldProjectSettings, "fx-resource-bot");
   }
 
-  public static includeFunction(oldProjectSettings: ProjectSettings): boolean {
+  public static includeFunction(oldProjectSettings: any): boolean {
     return this.includePlugin(oldProjectSettings, "fx-resource-function");
   }
 
-  public static includeFuncHostedBot(oldProjectSettings: ProjectSettings): boolean {
+  public static includeFuncHostedBot(oldProjectSettings: any): boolean {
     return (
       this.includePlugin(oldProjectSettings, "fx-resource-bot") &&
       ["azure-function", "azure-functions"].includes(
@@ -78,16 +78,16 @@ export class OldProjectSettingsHelper {
     );
   }
 
-  public static includeSSO(oldProjectSettings: ProjectSettings): boolean {
+  public static includeSSO(oldProjectSettings: any): boolean {
     return this.includePlugin(oldProjectSettings, "fx-resource-aad-app-for-teams");
   }
 
-  public static getFunctionName(oldProjectSettings: ProjectSettings): string | undefined {
+  public static getFunctionName(oldProjectSettings: any): string | undefined {
     return oldProjectSettings.defaultFunctionName;
   }
 
-  private static includePlugin(oldProjectSettings: ProjectSettings, pluginName: string): boolean {
-    const azureSolutionSettings = oldProjectSettings.solutionSettings as AzureSolutionSettings;
+  private static includePlugin(oldProjectSettings: any, pluginName: string): boolean {
+    const azureSolutionSettings = oldProjectSettings.solutionSettings as any;
     return azureSolutionSettings.activeResourcePlugins.includes(pluginName);
   }
 }

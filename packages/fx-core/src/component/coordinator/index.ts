@@ -4,105 +4,59 @@ import * as jsonschema from "jsonschema";
 import { camelCase, merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
-import { Container } from "typedi";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  ActionContext,
-  assembleError,
   Colors,
-  ContextV3,
+  Context,
   err,
   FxError,
   Inputs,
   InputsWithProjectPath,
   ok,
   Platform,
-  ResourceContextV3,
   Result,
-  UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
-
-import { globalStateUpdate } from "../../common/globalState";
+import { glob } from "glob";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { downloadSampleHook } from "../../core/downloadSample";
-import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
+import { ObjectIsUndefinedError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
-import {
-  CoreQuestionNames,
-  ProjectNamePattern,
-  ScratchOptionNo,
-  ScratchOptionYes,
-} from "../../core/question";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
+  assembleError,
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
-import { convertToLangKey } from "../code/utils";
+import {
+  AppNamePattern,
+  CapabilityOptions,
+  NotificationTriggerOptions,
+  ProjectTypeOptions,
+  ScratchOptions,
+} from "../../question/create";
+import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
-import {
-  ApiConnectionOptionItem,
-  AzureResourceApim,
-  AzureResourceFunctionNewUI,
-  AzureResourceKeyVaultNewUI,
-  AzureResourceSQLNewUI,
-  AzureSolutionQuestionNames,
-  BotFeatureIds,
-  BotOptionItem,
-  CicdOptionItem,
-  CommandAndResponseOptionItem,
-  ComponentNames,
-  CoordinatorSource,
-  DashboardOptionItem,
-  DefaultBotAndMessageExtensionItem,
-  M365SearchAppOptionItem,
-  M365SsoLaunchPageOptionItem,
-  MessageExtensionItem,
-  NewProjectTypeOutlookAddinOptionItem,
-  NotificationOptionItem,
-  SingleSignOnOptionItem,
-  TabFeatureIds,
-  TabNonSsoAndDefaultBotItem,
-  TabNonSsoItem,
-  TabOptionItem,
-  TabSPFxNewUIItem,
-  WorkflowOptionItem,
-} from "../constants";
-import { getBotTroubleShootMessage } from "../core";
+import { CoordinatorSource } from "../constants";
 import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
-import { QuestionNames } from "../feature/bot/constants";
-import {
-  AppServiceOptionItem,
-  AppServiceOptionItemForVS,
-  FunctionsHttpAndTimerTriggerOptionItem,
-  FunctionsHttpTriggerOptionItem,
-  FunctionsTimerTriggerOptionItem,
-} from "../feature/bot/question";
+import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
+import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { SPFxGenerator } from "../generator/spfxGenerator";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
+import { convertToLangKey } from "../generator/utils";
+import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
-import {
-  getQuestionsForAddFeatureV3,
-  InitEditorVS,
-  InitEditorVSCode,
-  InitOptionNo,
-} from "../question";
-import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
-import { AppStudioScopes, Constants } from "../resource/appManifest/constants";
 import { envUtil } from "../utils/envUtil";
 import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
@@ -127,43 +81,36 @@ export enum TemplateNames {
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
+  SsoTabObo = "sso-tab-with-obo-flow",
+  LinkUnfurling = "link-unfurling",
 }
 
-export const Feature2TemplateName: any = {
-  [`${NotificationOptionItem().id}:${AppServiceOptionItem().id}`]:
+const Feature2TemplateName: any = {
+  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appService().id}`]:
     TemplateNames.NotificationRestify,
-  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS().id}`]:
+  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appServiceForVS().id}`]:
     TemplateNames.NotificationWebApi,
-  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem().id}`]:
-    TemplateNames.NotificationHttpTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem().id}`]:
-    TemplateNames.NotificationTimerTrigger,
-  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem().id}`]:
-    TemplateNames.NotificationHttpTimerTrigger,
-  [`${CommandAndResponseOptionItem().id}:undefined`]: TemplateNames.CommandAndResponse,
-  [`${WorkflowOptionItem().id}:undefined`]: TemplateNames.Workflow,
-  [`${BotOptionItem().id}:undefined`]: TemplateNames.DefaultBot,
-  [`${MessageExtensionItem().id}:undefined`]: TemplateNames.MessageExtension,
-  [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
-  [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
-  [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
-  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.M365Tab,
-  [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
-  [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
-  [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,
-};
-
-export const InitTemplateName: any = {
-  ["debug:vsc:tab:true"]: "init-debug-vsc-spfx-tab",
-  ["debug:vsc:tab:false"]: "init-debug-vsc-tab",
-  ["debug:vs:tab:undefined"]: "init-debug-vs-tab",
-  ["debug:vsc:bot:undefined"]: "init-debug-vsc-bot",
-  ["debug:vs:bot:undefined"]: "init-debug-vs-bot",
-  ["infra:vsc:tab:true"]: "init-infra-vsc-spfx-tab",
-  ["infra:vsc:tab:false"]: "init-infra-vsc-tab",
-  ["infra:vs:tab:undefined"]: "init-infra-vs-tab",
-  ["infra:vsc:bot:undefined"]: "init-infra-vsc-bot",
-  ["infra:vs:bot:undefined"]: "init-infra-vs-bot",
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTrigger().id
+  }`]: TemplateNames.NotificationHttpTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTrigger().id
+  }`]: TemplateNames.NotificationTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
+  }`]: TemplateNames.NotificationHttpTimerTrigger,
+  [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
+  [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
+  [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
+  [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined`]: TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
+  [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
+  [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
+  [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
+  [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
+  [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
 };
 
 const M365Actions = [
@@ -183,7 +130,7 @@ const AzureDeployActions = [
 ];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
-export class Coordinator {
+class Coordinator {
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -193,7 +140,7 @@ export class Coordinator {
     }),
   ])
   async create(
-    context: ContextV3,
+    context: Context,
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
@@ -201,14 +148,13 @@ export class Coordinator {
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));
     }
-    const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
+    const scratch = inputs[QuestionNames.Scratch] as string;
     let projectPath = "";
-    const automaticNpmInstall = "automaticNpmInstall";
-    if (scratch === ScratchOptionNo().id) {
+    if (scratch === ScratchOptions.no().id) {
       // create from sample
-      const sampleId = inputs[CoreQuestionNames.Samples] as string;
+      const sampleId = inputs[QuestionNames.Samples] as string;
       if (!sampleId) {
-        throw new MissingRequiredInputError(CoreQuestionNames.Samples);
+        throw new MissingRequiredInputError(QuestionNames.Samples);
       }
       projectPath = path.join(folder, sampleId);
       let suffix = 1;
@@ -223,17 +169,16 @@ export class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else if (!scratch || scratch === ScratchOptionYes().id) {
+    } else if (!scratch || scratch === ScratchOptions.yes().id) {
       // create from new
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName)
-        return err(new MissingRequiredInputError(CoreQuestionNames.AppName));
+      const appName = inputs[QuestionNames.AppName] as string;
+      if (undefined === appName) return err(new MissingRequiredInputError(QuestionNames.AppName));
       const validateResult = jsonschema.validate(appName, {
-        pattern: ProjectNamePattern,
+        pattern: AppNamePattern,
       });
       if (validateResult.errors && validateResult.errors.length > 0) {
         return err(
-          new InputValidationError(CoreQuestionNames.AppName, validateResult.errors[0].message)
+          new InputValidationError(QuestionNames.AppName, validateResult.errors[0].message)
         );
       }
       projectPath = path.join(folder, appName);
@@ -242,40 +187,37 @@ export class Coordinator {
       await fs.ensureDir(projectPath);
 
       // set isVS global var when creating project
-      const language = inputs[CoreQuestionNames.ProgrammingLanguage];
+      const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
-      const feature = inputs.capabilities as string;
+      const capability = inputs.capabilities as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Capabilities]: feature,
+        [TelemetryProperty.Capabilities]: capability,
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
 
-      if (feature === TabSPFxNewUIItem().id) {
+      if (capability === CapabilityOptions.SPFxTab().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
-      } else if (
-        inputs[CoreQuestionNames.ProjectType] === NewProjectTypeOutlookAddinOptionItem().id
-      ) {
+      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id) {
         const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
         }
       } else {
         if (
-          feature === M365SsoLaunchPageOptionItem().id ||
-          feature === M365SearchAppOptionItem().id
+          capability === CapabilityOptions.m365SsoLaunchPage().id ||
+          capability === CapabilityOptions.m365SearchMe().id
         ) {
-          context.projectSetting.isM365 = true;
           inputs.isM365 = true;
         }
-        const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
-        const templateName = Feature2TemplateName[`${feature}:${trigger}`];
+        const trigger = inputs[QuestionNames.BotTrigger] as string;
+        const templateName = Feature2TemplateName[`${capability}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);
           const safeProjectNameFromVS =
-            language === "csharp" ? inputs[CoreQuestionNames.SafeProjectName] : undefined;
+            language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
           context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
@@ -291,9 +233,6 @@ export class Coordinator {
       inputs.projectId = ensureRes.value;
     }
 
-    if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(automaticNpmInstall, true);
-    }
     context.projectPath = projectPath;
 
     if (inputs.teamsAppFromTdp) {
@@ -307,47 +246,6 @@ export class Coordinator {
       }
     }
     return ok(projectPath);
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: "init-infra",
-      telemetryComponentName: "coordinator",
-      errorSource: CoordinatorSource,
-    }),
-  ])
-  async initInfra(
-    context: ContextV3,
-    inputs: Inputs,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(InvalidInputError("projectPath is undefined"));
-    }
-    const editor = inputs.editor;
-    const capability = inputs.capability;
-    const spfx = inputs.spfx;
-    if (!editor) return err(InvalidInputError("editor is undefined"));
-    if (!capability) return err(InvalidInputError("capability is undefined"));
-    const templateName = InitTemplateName[`infra:${editor}:${capability}:${spfx}`];
-    if (!templateName) {
-      return err(InvalidInputError("templateName is undefined"));
-    }
-    const settingsRes = await settingsUtil.readSettings(projectPath, false);
-    const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;
-    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
-    if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
-    if (ensureRes.isErr()) return err(ensureRes.error);
-    if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS().id) {
-      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
-      if (ensure.isErr()) return err(ensure.error);
-    }
-    return ok(undefined);
   }
 
   async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {
@@ -385,51 +283,6 @@ export class Coordinator {
     return ok(undefined);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: "init-debug",
-      telemetryComponentName: "coordinator",
-      errorSource: CoordinatorSource,
-    }),
-  ])
-  async initDebug(
-    context: ContextV3,
-    inputs: Inputs,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(InvalidInputError("projectPath is undefined"));
-    }
-    const editor = inputs.editor;
-    const capability = inputs.capability;
-    const spfx = inputs.spfx;
-    if (!editor) return err(InvalidInputError("editor is undefined"));
-    if (!capability) return err(InvalidInputError("capability is undefined"));
-    const templateName = InitTemplateName[`debug:${editor}:${capability}:${spfx}`];
-    if (!templateName) {
-      return err(InvalidInputError("templateName is undefined"));
-    }
-    if (editor === InitEditorVSCode().id) {
-      const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
-      context.templateVariables = { dotVscodeFolderName: exists ? ".vscode-teamsfx" : ".vscode" };
-    }
-    const settingsRes = await settingsUtil.readSettings(projectPath, false);
-    const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;
-    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
-    if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
-    if (ensureRes.isErr()) return err(ensureRes.error);
-    if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS().id) {
-      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
-      if (ensure.isErr()) return err(ensure.error);
-    }
-    return ok(undefined);
-  }
-
   async ensureTrackingId(
     projectPath: string,
     trackingId: string | undefined = undefined
@@ -442,58 +295,6 @@ export class Coordinator {
     settings.trackingId = trackingId || uuid.v4();
     await settingsUtil.writeSettings(projectPath, settings);
     return ok(settings.trackingId);
-  }
-
-  /**
-   * add feature
-   */
-  @hooks([
-    ActionExecutionMW({
-      question: (context, inputs) => {
-        return getQuestionsForAddFeatureV3(context, inputs);
-      },
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.AddFeature,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
-  async addFeature(
-    context: ContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
-  ): Promise<Result<any, FxError>> {
-    const features = inputs[AzureSolutionQuestionNames.Features];
-    let component;
-    if (BotFeatureIds().includes(features)) {
-      component = Container.get(ComponentNames.TeamsBot);
-    } else if (TabFeatureIds().includes(features)) {
-      component = Container.get(ComponentNames.TeamsTab);
-    } else if (features === AzureResourceSQLNewUI.id) {
-      component = Container.get("sql");
-    } else if (features === AzureResourceFunctionNewUI.id) {
-      component = Container.get(ComponentNames.TeamsApi);
-    } else if (features === AzureResourceApim.id) {
-      component = Container.get(ComponentNames.APIMFeature);
-    } else if (features === AzureResourceKeyVaultNewUI.id) {
-      component = Container.get("key-vault-feature");
-    } else if (features === CicdOptionItem.id) {
-      component = Container.get("cicd");
-    } else if (features === ApiConnectionOptionItem.id) {
-      component = Container.get("api-connector");
-    } else if (features === SingleSignOnOptionItem.id) {
-      component = Container.get("sso");
-    } else if (features === TabSPFxNewUIItem().id) {
-      component = Container.get(ComponentNames.SPFxTab);
-    }
-    if (component) {
-      const res = await (component as any).add(context, inputs);
-      merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Feature]: features,
-      });
-      if (res.isErr()) return err(res.error);
-      return ok(res.value);
-    }
-    return ok(undefined);
   }
 
   async preProvisionForVS(
@@ -652,9 +453,7 @@ export class Coordinator {
 
       const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
         tenantSwitchCheckActions,
-        m365tenantInfo?.tenantIdInToken,
-        inputs.env,
-        CoordinatorSource
+        m365tenantInfo?.tenantIdInToken
       );
       if (checkM365TenatRes.isErr()) {
         return err(checkM365TenatRes.error);
@@ -1063,7 +862,7 @@ export class Coordinator {
     }),
   ])
   async publishInDeveloperPortal(
-    ctx: ContextV3,
+    ctx: Context,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<Void, FxError>> {
@@ -1071,10 +870,10 @@ export class Coordinator {
     if (!ctx.tokenProvider) {
       return err(new ObjectIsUndefinedError("tokenProvider"));
     }
-    if (!inputs[CoreQuestionNames.AppPackagePath]) {
+    if (!inputs[QuestionNames.AppPackagePath]) {
       return err(new ObjectIsUndefinedError("appPackagePath"));
     }
-    const updateRes = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+    const updateRes = await updateTeamsAppV3ForPublish(ctx, inputs);
 
     if (updateRes.isErr()) {
       return err(updateRes.error);
@@ -1094,3 +893,43 @@ export class Coordinator {
 }
 
 export const coordinator = new Coordinator();
+
+interface BotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBot ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as BotTroubleShootMessage;
+}
+
+async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
+  // A temporary solution to avoid duplicate componentId
+  if (sampleId === "todo-list-SPFx") {
+    const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+    const componentId = uuid.v4();
+    glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
+      await Promise.all(
+        files.map(async (file) => {
+          let content = (await fs.readFile(file)).toString();
+          const reg = new RegExp(originalId, "g");
+          content = content.replace(reg, componentId);
+          await fs.writeFile(file, content);
+        })
+      );
+    });
+  }
+}

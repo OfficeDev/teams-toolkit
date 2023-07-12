@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import {
-  err,
   FuncValidation,
   getValidationFunction,
   Inputs,
@@ -9,24 +8,24 @@ import {
   Stage,
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";
-import "mocha";
 import * as chai from "chai";
-import * as sinon from "sinon";
 import fs from "fs-extra";
+import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
-import { getLocalizedString } from "../../../../../src/common/localizeUtils";
-import {
-  spfxPackageSelectQuestion,
-  versionCheckQuestion,
-  webpartNameQuestion,
-} from "../../../../../src/component/resource/spfx/utils/questions";
-import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
+import * as sinon from "sinon";
 import { cpUtils } from "../../../../../src";
+import { getLocalizedString } from "../../../../../src/common/localizeUtils";
+import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 import {
   PackageSelectOptionsHelper,
   SPFxVersionOptionIds,
-} from "../../../../../src/component/resource/spfx/utils/question-helper";
-import mockedEnv, { RestoreFn } from "mocked-env";
+  QuestionNames,
+  SPFxPackageSelectQuestion,
+  SPFxWebpartNameQuestion,
+  appNameQuestion,
+} from "../../../../../src/question";
+
 describe("utils", () => {
   afterEach(async () => {
     sinon.restore();
@@ -47,7 +46,7 @@ describe("utils", () => {
       previousInputs.stage = Stage.create;
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc("helloworld", previousInputs);
 
       chai.expect(res).equal(undefined);
@@ -58,7 +57,7 @@ describe("utils", () => {
       const input = "1";
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai
@@ -84,7 +83,7 @@ describe("utils", () => {
       });
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai.expect(res).equal(undefined);
@@ -101,9 +100,9 @@ describe("utils", () => {
           return false;
         }
       });
-
+      previousInputs["spfx-folder"] = path.join(previousInputs?.projectPath!, "SPFx");
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai.expect(res).equal(undefined);
@@ -115,7 +114,7 @@ describe("utils", () => {
       const input = "1";
 
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai
@@ -139,9 +138,9 @@ describe("utils", () => {
           return true;
         }
       });
-
+      previousInputs["spfx-folder"] = path.join(previousInputs?.projectPath!, "SPFx");
       const res = await (
-        (webpartNameQuestion! as TextInputQuestion).validation! as FuncValidation<string>
+        (SPFxWebpartNameQuestion() as TextInputQuestion).validation! as FuncValidation<string>
       ).validFunc(input, previousInputs);
 
       chai
@@ -156,60 +155,14 @@ describe("utils", () => {
     });
   });
 
-  describe("versionCheckQuestion", async () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("Throw error when NPM not installed", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves(undefined);
-
-      try {
-        await (versionCheckQuestion as any).func({});
-      } catch (e) {
-        chai.expect(e.name).equal("NpmNotFound");
-      }
-    });
-
-    it("Throw error when NPM version not supported", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves("4");
-
-      try {
-        await (versionCheckQuestion as any).func({});
-      } catch (e) {
-        chai.expect(e.name).equal("NpmVersionNotSupported");
-      }
-    });
-
-    it("Throw error when Node version not supported", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves("8");
-      sinon.stub(Utils, "getNodeVersion").resolves("18");
-
-      try {
-        await (versionCheckQuestion as any).func({});
-      } catch (e) {
-        chai.expect(e.name).equal("NodeVersionNotSupported");
-      }
-    });
-
-    it("Return undefined when both Node and NPM version supported", async () => {
-      sinon.stub(Utils, "getNPMMajorVersion").resolves("8");
-      sinon.stub(Utils, "getNodeVersion").resolves("16");
-
-      const res = await (versionCheckQuestion as any).func({});
-
-      chai.expect(res).equal(undefined);
-    });
-  });
-
-  describe("spfxPackageSelectQuestion", async () => {
+  describe("SPFxPackageSelectQuestion", async () => {
     afterEach(() => {
       sinon.restore();
     });
 
     it("return undefined if choosing to install locally", async () => {
       const func = getValidationFunction<string>(
-        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
         { platform: Platform.VSCode }
       );
       const res = await func(SPFxVersionOptionIds.installLocally);
@@ -220,7 +173,7 @@ describe("utils", () => {
       sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(true);
 
       const func = getValidationFunction<string>(
-        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
         { platform: Platform.VSCode }
       );
       const res = await func(SPFxVersionOptionIds.globalPackage);
@@ -231,7 +184,7 @@ describe("utils", () => {
       sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(false);
 
       const func = getValidationFunction<string>(
-        (spfxPackageSelectQuestion as SingleSelectQuestion).validation!,
+        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
         { platform: Platform.VSCode }
       );
       let error;
@@ -269,5 +222,31 @@ describe("utils", () => {
     const res = await Utils.findGloballyInstalledVersion(undefined, "name", 0, false);
 
     chai.expect(res).to.be.undefined;
+  });
+
+  it("dynamicOptions", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    sinon.stub(PackageSelectOptionsHelper, "loadOptions").resolves();
+    sinon.stub(PackageSelectOptionsHelper, "getOptions").resolves([]);
+    const res = await (SPFxPackageSelectQuestion() as SingleSelectQuestion).dynamicOptions!(inputs);
+    chai.expect(res.length === 0).to.be.true;
+  });
+
+  it("Returns solution name as default app name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: "c:\\testApp",
+      [QuestionNames.SPFxFolder]: "c:\\test",
+      [QuestionNames.SPFxSolution]: "import",
+    };
+    sinon
+      .stub(fs, "readJson")
+      .resolves({ "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } });
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const defaultName = await (appNameQuestion() as any).default(inputs);
+    chai.expect(defaultName).equal("fakedSolutionName");
   });
 });

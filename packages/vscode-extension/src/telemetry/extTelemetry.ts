@@ -5,11 +5,8 @@
 
 import * as vscode from "vscode";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
 import * as globalVariables from "../globalVariables";
@@ -30,9 +27,7 @@ export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
   export let hasSentTelemetry = false;
   /* eslint-disable prefer-const */
-  export let isFromSample: boolean | undefined = undefined;
   export let settingsVersion: string | undefined = undefined;
-  export let isM365: boolean | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;
@@ -60,8 +55,6 @@ export namespace ExtTelemetry {
     switch (stage) {
       case Stage.create:
         return TelemetryEvent.CreateProject;
-      case Stage.init:
-        return TelemetryEvent.InitProject;
       case Stage.provision:
         return TelemetryEvent.Provision;
       case Stage.deploy:
@@ -112,12 +105,6 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
-    if (isFromSample != undefined) {
-      properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
-    }
-    if (isM365 !== undefined) {
-      properties![TelemetryProperty.IsM365] = isM365.toString();
-    }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
@@ -158,12 +145,6 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
-    if (isFromSample != undefined) {
-      properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
-    }
-    if (isM365 !== undefined) {
-      properties![TelemetryProperty.IsM365] = isM365.toString();
-    }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
@@ -190,12 +171,6 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
-    if (isFromSample != undefined) {
-      properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
-    }
-    if (isM365 !== undefined) {
-      properties![TelemetryProperty.IsM365] = isM365.toString();
-    }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
@@ -211,7 +186,7 @@ export namespace ExtTelemetry {
       eventName: eventName,
       properties: {
         [TelemetryProperty.CorrelationId]: lastCorrelationId,
-        [TelemetryProperty.ProjectId]: getProjectId(),
+        [TelemetryProperty.ProjectId]: await getProjectId(),
         [TelemetryProperty.Timestamp]: new Date().toISOString(),
         ...properties,
       },

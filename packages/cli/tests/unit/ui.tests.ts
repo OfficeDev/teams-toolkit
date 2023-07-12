@@ -1,29 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import sinon from "sinon";
 import inquirer, { DistinctQuestion } from "inquirer";
+import sinon from "sinon";
 
 import {
   Colors,
-  FxError,
-  GroupOfTasks,
+  InputTextConfig,
   LogLevel,
   MultiSelectConfig,
-  ok,
-  Result,
-  RunnableTask,
   SelectFileConfig,
   SelectFilesConfig,
   SelectFolderConfig,
   SingleSelectConfig,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 
-import UI from "../../src/userInteraction";
-import { EmptySubConfigOptions } from "../../src/error";
 import LogProvider from "../../src/commonlib/log";
-import { expect } from "./utils";
+import UI from "../../src/userInteraction";
 import { getColorizedString } from "../../src/utils";
+import { expect } from "./utils";
+import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -79,6 +78,10 @@ describe("User Interaction Tests", function () {
   });
 
   describe("Single Select Option", async () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("(Hardcode) Subscription: EmptySubConfigOptions Error", async () => {
       const config: SingleSelectConfig = {
         name: "subscription",
@@ -87,7 +90,7 @@ describe("User Interaction Tests", function () {
       };
       const result = await UI.selectOption(config);
       expect(result.isOk() ? result.value.result : result.error.name).equals(
-        EmptySubConfigOptions().name
+        new SelectSubscriptionError().name
       );
     });
 
@@ -147,9 +150,101 @@ describe("User Interaction Tests", function () {
         expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
       }
     });
+    it("Auto skip for single option (return object = true)", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals({
+          id: "a",
+          cliName: "aa",
+          label: "aaa",
+        });
+      }
+    });
+    it("Auto skip for single option (return object = false)", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Auto skip for single option 1", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equals("a");
+      }
+    });
+
+    it("invalid option", async () => {
+      sandbox.stub(UI, "singleSelect").resolves(ok("c"));
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isErr());
+      if (result.isErr()) {
+        expect(result.error.name).equals("InputValidationError");
+      }
+    });
   });
 
   describe("Multi Select Options", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("Get Value from Preset Answers", async () => {
       UI.updatePresetAnswer("resources", ["c"]);
       const config: MultiSelectConfig = {
@@ -192,6 +287,97 @@ describe("User Interaction Tests", function () {
         UI.updatePresetAnswer("resources", ["bb", "cc"]);
         const result = await UI.selectOptions(config);
         expect(result.isOk() ? result.value.result : result.error).deep.equals(["b", "c"]);
+      }
+    });
+
+    it("Auto skip for single option (return object = true)", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals([
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ]);
+      }
+    });
+    it("Auto skip for single option (return object = false)", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [
+          {
+            id: "a",
+            cliName: "aa",
+            label: "aaa",
+          },
+        ],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("Auto skip for single option 1", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: false,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("Auto skip for single option 2", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+        skipSingleOption: true,
+        returnObject: true,
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).deep.equals(["a"]);
+      }
+    });
+
+    it("invalid options", async () => {
+      sandbox.stub(UI, "multiSelect").resolves(ok(["c"]));
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a"],
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isErr());
+      if (result.isErr()) {
+        expect(result.error.name).equals("InputValidationError");
       }
     });
   });
@@ -296,23 +482,131 @@ describe("User Interaction Tests", function () {
   it("Create Progress Bar", async () => {
     UI.createProgressBar("title", 3);
   });
+});
 
-  it("Run With Progress", async () => {
-    const task: RunnableTask<string> = {
-      name: "task",
-      message: "task started",
-      run: async (...args: any): Promise<Result<string, FxError>> => {
-        return ok("finished");
+describe("Errors in User Interaction", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("InputValidationError", async () => {
+    const config: InputTextConfig = {
+      name: "testInput",
+      title: "input text",
+      validation: (input: string) => {
+        return "failed";
       },
     };
-    const group = new GroupOfTasks<string>([task], {
-      sequential: true,
-      fastFail: true,
+    UI.updatePresetAnswer("testInput", "valuebrabrabra");
+    const result = await UI.inputText(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("InputValidationError");
+    }
+  });
+
+  it("UnhandledError", async () => {
+    sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
+    const config: InputTextConfig = {
+      name: "testInput",
+      title: "input text",
+    };
+    UI.clearPresetAnswers();
+    const result = await UI.inputText(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("UnhandledError");
+    }
+  });
+
+  it("SelectSubscriptionError", async () => {
+    sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
+    const config: SingleSelectConfig = {
+      name: "subscription",
+      title: "select subscription",
+      options: [],
+    };
+    const result = await UI.selectOption(config);
+    expect(result.isErr());
+    if (result.isErr()) {
+      expect(result.error.name).equals("SelectSubscriptionError");
+    }
+  });
+});
+
+describe("User Interaction Tests for select", function () {
+  const sandbox = sinon.createSandbox();
+  beforeEach(() => {
+    sandbox.stub(UI, "createProgressBar").returns({
+      start: async (s) => {},
+      next: async (s) => {},
+      end: async (s) => {},
     });
-    const result = await UI.runWithProgress(group, {
-      showProgress: true,
-      cancellable: false,
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+  describe("loadOptions", async () => {
+    it("happy path", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => ["a", "b", "c"],
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isOk());
+      expect(config.options).deep.equals(["a", "b", "c"]);
     });
-    expect(result.isOk()).equals(true);
+    it("throw error", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isErr());
+    });
+    it("no need to call function", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a", "b", "c"],
+      };
+      const result = await UI.loadOptions(config);
+      expect(result.isOk());
+      expect(config.options).deep.equals(["a", "b", "c"]);
+    });
+  });
+
+  describe("selectOptions", async () => {
+    it("throw error", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOptions(config);
+      expect(result.isErr());
+    });
+  });
+
+  describe("selectOption", async () => {
+    it("throw error", async () => {
+      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.selectOption(config);
+      expect(result.isErr());
+    });
   });
 });

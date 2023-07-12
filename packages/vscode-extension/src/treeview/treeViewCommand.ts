@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
 
-import * as globalVariables from "../globalVariables";
-import { localize } from "../utils/localizeUtils";
 import { TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import { localize } from "../utils/localizeUtils";
 
 export enum CommandStatus {
   Ready,

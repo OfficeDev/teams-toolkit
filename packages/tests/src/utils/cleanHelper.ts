@@ -1,0 +1,660 @@
+import axios, { AxiosInstance, AxiosRequestConfig, Method } from "axios";
+import { RetryHandler } from "./retryHandler";
+import { ResourceGroupManager } from "./resourceGroupManager";
+import * as msal from "@azure/msal-node";
+import * as qs from "querystring";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { Env } from "./env";
+import { dotenvUtil } from "./envUtil";
+import { TestFilePath } from "../constants";
+import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
+import {
+  Tunnel,
+  TunnelAccessControlEntryType,
+  TunnelPort,
+} from "@microsoft/dev-tunnels-contracts";
+import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+
+class CleanHelper {
+  protected readonly axios: AxiosInstance;
+  constructor(url: string, token: string) {
+    this.axios = axios.create({
+      baseURL: url,
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+    });
+  }
+
+  protected async execute(method: Method, url: string, data?: any) {
+    return await RetryHandler.retry(async () => {
+      const result = await this.axios.request({
+        method: method,
+        url: url,
+        data: data,
+      });
+
+      return result;
+    });
+  }
+}
+
+export class GraphApiCleanHelper extends CleanHelper {
+  constructor(graphToken: string) {
+    super("https://graph.microsoft.com/v1.0", graphToken);
+  }
+
+  public static async create(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ): Promise<GraphApiCleanHelper> {
+    const token = await this.getUserToken(
+      tenantId,
+      clientId,
+      username,
+      password
+    );
+    return new GraphApiCleanHelper(token);
+  }
+
+  private static async getUserToken(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ): Promise<string> {
+    const config = {
+      auth: {
+        clientId: clientId,
+        authority: `https://login.microsoftonline.com/${tenantId}`,
+      },
+    };
+
+    const usernamePasswordRequest = {
+      scopes: ["https://graph.microsoft.com/.default"],
+      username: username,
+      // Need to encode password for special characters to workaround the MSAL bug:
+      // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4326#issuecomment-995109619
+      password: encodeURIComponent(password),
+    };
+
+    const pca = new msal.PublicClientApplication(config);
+    const credential = await pca.acquireTokenByUsernamePassword(
+      usernamePasswordRequest
+    );
+    const accessToken = credential?.accessToken;
+    if (!accessToken) {
+      throw new Error("Failed to get token.");
+    }
+    return accessToken;
+  }
+
+  public async getUserIdByName(userName: string): Promise<string> {
+    let accounts: any;
+    const response = await this.execute("get", `/users`, undefined);
+    if (response?.data?.value) {
+      accounts = response?.data?.value;
+    }
+    for (const user of accounts) {
+      if (user?.userPrincipalName === userName) {
+        console.log(user?.id);
+        return user?.id;
+      }
+    }
+    return "";
+  }
+
+  public async listAad(): Promise<any[]> {
+    const result: any[] = [];
+    const response = await this.execute("get", `/applications`, undefined);
+    if (response?.data?.value) {
+      result.push(...(response?.data?.value as any[]));
+    }
+
+    let next = response?.data["@odata.nextLink"] as string;
+    while (next) {
+      const responseNext = await this.execute("get", next, undefined);
+      next = responseNext?.data["@odata.nextLink"] as string;
+      result.push(...(responseNext?.data?.value as any[]));
+    }
+
+    return result;
+  }
+
+  public async getAadObjectId(
+    applicationId: string
+  ): Promise<string | undefined> {
+    const result: any[] = [];
+    const response = await this.execute("get", `/applications`, undefined);
+    if (response?.data?.value) {
+      result.push(...(response?.data?.value as any[]));
+    }
+
+    let next = response?.data["@odata.nextLink"] as string;
+    while (next) {
+      const responseNext = await this.execute("get", next, undefined);
+      next = responseNext?.data["@odata.nextLink"] as string;
+      result.push(...(responseNext?.data?.value as any[]));
+    }
+
+    for (const app of result) {
+      if (app?.appId === applicationId) {
+        return app?.id;
+      }
+    }
+    return;
+  }
+
+  public async getAad(applicationObjectId: string): Promise<any | undefined> {
+    const response = await this.execute(
+      "get",
+      `/applications/${applicationObjectId}`,
+      undefined
+    );
+    return response?.data;
+  }
+
+  public async deleteAad(objectId: string): Promise<void> {
+    await this.execute("delete", `/applications/${objectId}`, undefined);
+    await this.execute(
+      "delete",
+      `/directory/deletedItems/${objectId}`,
+      undefined
+    );
+  }
+
+  public async listTeamsApp(userId: string): Promise<any | undefined> {
+    const response = await this.execute(
+      "get",
+      `/users/${userId}/teamwork/installedApps?$expand=teamsAppDefinition`
+    );
+    return response?.data?.value;
+  }
+
+  public async getInstalledTeamsAppId(
+    userId: string,
+    displayName: string
+  ): Promise<string> {
+    const response = await this.execute(
+      "get",
+      `/users/${userId}/teamwork/installedApps?$expand=teamsAppDefinition&$filter=teamsAppDefinition/displayName eq '${displayName}'`
+    );
+    const results = response?.data?.value as any[];
+    if (!results || results.length < 1) {
+      throw new Error("Could not found user installed this App.");
+    }
+
+    return results[0].id;
+  }
+
+  public async uninstallTeamsApp(
+    userId: string,
+    installationId: string
+  ): Promise<void> {
+    await this.execute(
+      "delete",
+      `/users/${userId}/teamwork/installedApps/${installationId}`,
+      undefined
+    );
+  }
+}
+
+export class SharePointApiCleanHelper extends CleanHelper {
+  constructor(token: string) {
+    const domainName = Env.username.match(/(?<=@)\w+?(?=\.)/i);
+    const sharePointSite = domainName + ".sharepoint.com";
+    const url = "https://" + sharePointSite + "/sites/appcatalog";
+    super(url, token);
+  }
+
+  public static async create(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ): Promise<SharePointApiCleanHelper> {
+    const token = await this.getSharePointUserToken(
+      tenantId,
+      clientId,
+      username,
+      password
+    );
+    return new SharePointApiCleanHelper(token);
+  }
+
+  private static async getSharePointUserToken(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ): Promise<string> {
+    const config = {
+      auth: {
+        clientId: clientId,
+        authority: `https://login.microsoftonline.com/${tenantId}`,
+      },
+    };
+    const domainName = username.match(/(?<=@)\w+?(?=\.)/i);
+    const sharePointSite = domainName + ".sharepoint.com";
+    const usernamePasswordRequest = {
+      scopes: [`https://${sharePointSite}/AllSites.FullControl`],
+      username: username,
+      // Need to encode password for special characters to workaround the MSAL bug:
+      // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4326#issuecomment-995109619
+      password: encodeURIComponent(password),
+    };
+
+    const pca = new msal.PublicClientApplication(config);
+    const credential = await pca.acquireTokenByUsernamePassword(
+      usernamePasswordRequest
+    );
+    const accessToken = credential?.accessToken;
+    if (!accessToken) {
+      throw new Error("Failed to get token.");
+    }
+    return accessToken;
+  }
+
+  public async listApp(): Promise<any[]> {
+    const result: any[] = [];
+    const response = await this.execute(
+      "get",
+      `/_api/web/tenantappcatalog/AvailableApps`,
+      undefined
+    );
+    if (response?.data?.value) {
+      result.push(...(response?.data?.value as any[]));
+    }
+
+    let next = response?.data["@odata.nextLink"] as string;
+    while (next) {
+      const responseNext = await this.execute("get", next, undefined);
+      next = responseNext?.data["@odata.nextLink"] as string;
+      result.push(...(responseNext?.data?.value as any[]));
+    }
+
+    return result;
+  }
+
+  public async deleteApp(appId: string): Promise<void> {
+    await this.execute(
+      "post",
+      `/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')/Remove`,
+      undefined
+    );
+  }
+}
+
+export class AppStudioCleanHelper extends CleanHelper {
+  constructor(token: string) {
+    super("https://dev.teams.microsoft.com", token);
+  }
+
+  public static async create(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ): Promise<AppStudioCleanHelper> {
+    const token = await this.getAppStudioUserToken(
+      tenantId,
+      clientId,
+      username,
+      password
+    );
+    return new AppStudioCleanHelper(token);
+  }
+
+  private static async getAppStudioUserToken(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ) {
+    const data = qs.stringify({
+      client_id: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+      scope: "https://dev.teams.microsoft.com/AppDefinitions.ReadWrite",
+      username: username,
+      password: password,
+      grant_type: "password",
+    });
+
+    const config: AxiosRequestConfig = {
+      method: "post",
+      url: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Cookie:
+          "fpc=AmzaQu9yHbpLtMD2LmHazdRCGxwGAQAAAIW47NcOAAAA; x-ms-gateway-slice=estsfd; stsservicecookie=estsfd",
+      },
+      data: data,
+    };
+
+    const response = await axios(config);
+    return response?.data?.access_token;
+  }
+
+  public async getAppsInAppStudio() {
+    const response = await this.execute("get", `/api/identityapps`);
+    const results = response?.data?.apps as any[];
+    // if (!results || results.length < 1) {
+    //   throw new Error("Could not found apps in AppStudio.");
+    // }
+    return results;
+  }
+
+  public async deleteAppInAppStudio(appId: string) {
+    await this.execute("delete", `/api/appdefinitions/${appId}`, undefined);
+  }
+
+  public async getAppInAdminPortal(appId: string) {
+    const response = await this.execute("get", `/api/publishing/${appId}`);
+    const results = response?.data?.value as any[];
+    if (!results || results.length < 1) {
+      throw new Error("Could not found apps in App Admin Portal.");
+    }
+    return results;
+  }
+
+  public async cancelStagedAppInAdminPortal(app: any) {
+    const appId = app[0]?.id;
+    const appDefinitions = app[0]?.appDefinitions;
+    const appDefinistionId = appDefinitions[0]?.id;
+    await this.execute(
+      "delete",
+      `/api/publishing/${appId}/appdefinitions/${appDefinistionId}`,
+      undefined
+    );
+  }
+}
+
+export class DevTunnelCleanHelper {
+  private readonly tunnelManagementClientImpl: TunnelManagementHttpClient;
+  constructor(token: string) {
+    this.tunnelManagementClientImpl = new TunnelManagementHttpClient(
+      "Teams-Toolkit-UI-TEST",
+      () => Promise.resolve(`Bearer ${token}`)
+    );
+  }
+
+  public static async create(
+    tenantId: string,
+    username: string,
+    password: string
+  ): Promise<DevTunnelCleanHelper> {
+    const token = await this.getToken(tenantId, username, password);
+    return new DevTunnelCleanHelper(token);
+  }
+
+  private static async getToken(
+    tenantId: string,
+    username: string,
+    password: string
+  ): Promise<string> {
+    const config = {
+      auth: {
+        clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+        authority: `https://login.microsoftonline.com/${tenantId}`,
+      },
+    };
+
+    const usernamePasswordRequest = {
+      scopes: ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"],
+      username: username,
+      password: encodeURIComponent(password),
+    };
+
+    const pca = new msal.PublicClientApplication(config);
+    const credential = await pca.acquireTokenByUsernamePassword(
+      usernamePasswordRequest
+    );
+    const accessToken = credential?.accessToken;
+    if (!accessToken) {
+      throw new Error("Failed to get token.");
+    }
+    return accessToken;
+  }
+
+  public async delete(tunnelId: string, clusterId: string): Promise<void> {
+    await this.tunnelManagementClientImpl.deleteTunnel({
+      tunnelId: tunnelId,
+      clusterId: clusterId,
+    });
+  }
+
+  public async deleteAll(tag = "TeamsToolkitCreatedTag"): Promise<void> {
+    const tunnels = await this.tunnelManagementClientImpl.listTunnels();
+    for (const tunnel of tunnels) {
+      if (tunnel?.tags?.includes(tag)) {
+        console.log(`clean dev tunnel ${tunnel.tunnelId}`);
+        await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
+      }
+    }
+  }
+}
+
+export async function cleanUpLocalProject(
+  projectPath: string,
+  necessary?: Promise<any>
+) {
+  return new Promise<boolean>(async (resolve) => {
+    try {
+      await necessary;
+      await fs.remove(projectPath);
+      console.log(`[Successfully] clean up the local folder: ${projectPath}.`);
+      return resolve(true);
+    } catch (error) {
+      console.log(`[Failed] clean up the local folder: ${projectPath}.`);
+      return resolve(false);
+    }
+  });
+}
+
+export async function cleanUpResourceGroup(
+  appName: string,
+  envName?: string
+): Promise<boolean> {
+  if (!appName) {
+    return false;
+  }
+  const name = `${appName}-${envName}-rg`;
+  return await deleteResourceGroupByName(name);
+}
+
+export async function createResourceGroup(
+  appName: string,
+  envName?: string
+): Promise<boolean> {
+  if (!appName) {
+    return false;
+  }
+  const name = `${appName}-${envName}-rg`;
+  return await createResourceGroupByName(name);
+}
+
+export async function createResourceGroupByName(
+  name: string,
+  location = "eastus"
+): Promise<boolean> {
+  const manager = await ResourceGroupManager.init();
+  const result = await manager.createResourceGroup(name, location);
+  if (result) {
+    console.log(
+      `[Successfully] create the Azure resource group with name: ${name}.`
+    );
+  } else {
+    console.error(
+      `[Failed] create the Azure resource group with name: ${name}.`
+    );
+  }
+  return result;
+}
+
+export async function deleteResourceGroupByName(
+  name: string
+): Promise<boolean> {
+  const manager = await ResourceGroupManager.init();
+  if (await manager.hasResourceGroup(name)) {
+    const result = await manager.deleteResourceGroup(name);
+    if (result) {
+      console.log(
+        `[Successfully] clean up the Azure resource group with name: ${name}.`
+      );
+    } else {
+      console.error(
+        `[Failed] clean up the Azure resource group with name: ${name}.`
+      );
+    }
+    return result;
+  }
+  return false;
+}
+
+export async function filterResourceGroupByName(contains: string) {
+  const manager = await ResourceGroupManager.init();
+  const groups = await manager.searchResourceGroups(contains);
+  const rgNameGroup: string[] = [];
+  groups.map((rg: { name?: string }) => {
+    rgNameGroup.push(rg.name!);
+  });
+  return rgNameGroup;
+}
+
+export async function cleanUpAadApp(
+  projectPath: string,
+  hasAadPlugin?: boolean,
+  hasBotPlugin?: boolean,
+  hasApimPlugin?: boolean,
+  envName = "dev"
+) {
+  const userDataFile = path.join(
+    TestFilePath.configurationFolder,
+    `.env.${envName}`
+  );
+  const configFilePath = path.resolve(projectPath, userDataFile);
+  if (!fs.existsSync(configFilePath)) {
+    return;
+  }
+  const context = dotenvUtil.deserialize(
+    await fs.readFile(configFilePath, { encoding: "utf8" })
+  );
+  const cleanService = await GraphApiCleanHelper.create(
+    Env.cleanTenantId,
+    Env.cleanClientId,
+    Env.username,
+    Env.password
+  );
+  const promises: Promise<boolean>[] = [];
+
+  const clean = async (objectId?: string) => {
+    return new Promise<boolean>(async (resolve) => {
+      if (objectId) {
+        console.log(`delete AAD ${objectId}`);
+        await cleanService.deleteAad(objectId);
+        return resolve(true);
+      }
+      return resolve(false);
+    });
+  };
+
+  if (hasAadPlugin) {
+    const objectId = context.obj.AAD_APP_OBJECT_ID;
+    promises.push(clean(objectId));
+  }
+
+  if (hasBotPlugin) {
+    const botAppId = context.obj.BOT_ID;
+    const objectId = await cleanService.getAadObjectId(botAppId);
+    promises.push(clean(objectId));
+  }
+
+  if (hasApimPlugin) {
+    // const objectId = context[apimPluginName].apimClientAADObjectId;
+    // promises.push(clean(objectId));
+  }
+
+  return Promise.all(promises);
+}
+
+export async function cleanTeamsApp(appName: string) {
+  try {
+    const cleanService = await GraphApiCleanHelper.create(
+      Env.cleanTenantId,
+      Env.cleanClientId,
+      Env.username,
+      Env.password
+    );
+    console.log(`uninstall teams app ${appName}`);
+    const teamsUserId = await cleanService.getUserIdByName(Env.username);
+    const installationId = await cleanService.getInstalledTeamsAppId(
+      teamsUserId,
+      appName
+    );
+    await cleanService.uninstallTeamsApp(teamsUserId, installationId);
+  } catch (e: any) {
+    console.log(`Failed to uninstall teams app, error message: ${e.message}`);
+  }
+}
+
+export async function cleanAppStudio(appName: string) {
+  try {
+    const addStudioCleanService = await AppStudioCleanHelper.create(
+      Env.cleanTenantId,
+      Env.cleanClientId,
+      Env.username,
+      Env.password
+    );
+    const appStudioAppList = await addStudioCleanService.getAppsInAppStudio();
+    console.log(`clean app ${appName} in app studio`);
+    if (appStudioAppList) {
+      for (const app of appStudioAppList) {
+        if (app?.displayName?.startsWith(appName)) {
+          console.log(app?.displayName);
+          try {
+            await addStudioCleanService.deleteAppInAppStudio(
+              app?.appDefinitionId
+            );
+          } catch {
+            console.log(
+              `Failed to delete Teams App ${app?.displayName} in App Studio`
+            );
+          }
+          break;
+        }
+      }
+    }
+  } catch (e: any) {
+    console.log(
+      `Failed to get apps in app studio, error message: ${e.message}`
+    );
+  }
+}
+
+export async function cleanUpStagedPublishApp(appId: string) {
+  try {
+    const addStudioCleanService = await AppStudioCleanHelper.create(
+      Env.cleanTenantId,
+      Env.cleanClientId,
+      Env.username,
+      Env.password
+    );
+    const app = await addStudioCleanService.getAppInAdminPortal(appId);
+    console.log(`App name for ${appId}: ${app[0]?.displayName}`);
+    console.log(`Cancel staged app ${appId} in admin portal`);
+    if (app) {
+      try {
+        await addStudioCleanService.cancelStagedAppInAdminPortal(app);
+      } catch {
+        console.log(`Failed to cancel staged app ${appId} in admin portal`);
+      }
+    }
+  } catch (e: any) {
+    console.log(
+      `Failed to get apps in admin portal, error message: ${e.message}`
+    );
+  }
+}

@@ -9,7 +9,7 @@ import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
 import { Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
-import axios from "axios";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -409,17 +409,7 @@ describe("serverConnections", () => {
     const accountToken = {
       token: "fakeToken",
     };
-
-    const fakeAxiosInstance = axios.create();
-    sinon.stub(axios, "create").returns(fakeAxiosInstance);
-    const postResponse = {
-      data: {
-        regionGtms: {
-          teamsDevPortal: "https://dev.teams.microsoft.com",
-        },
-      },
-    };
-    sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+    sinon.stub(tools, "setRegion").callsFake(async () => {});
 
     const res = connection.setRegionRequest(accountToken, {} as CancellationToken);
     res.then((data) => {

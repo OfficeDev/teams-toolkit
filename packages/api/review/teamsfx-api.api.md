@@ -272,6 +272,8 @@ export interface Inputs extends Record<string, any> {
     // (undocumented)
     locale?: string;
     // (undocumented)
+    openAIPluginManifest?: OpenAIPluginManifest;
+    // (undocumented)
     platform: Platform;
     // (undocumented)
     projectId?: string;
@@ -435,6 +437,47 @@ export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
 export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+
+// @public (undocumented)
+export enum OpenAIManifestAuthType {
+    // (undocumented)
+    None = "none",
+    // (undocumented)
+    OAuth = "oauth",
+    // (undocumented)
+    ServiceHttp = "service_http",
+    // (undocumented)
+    UserHttp = "user_http"
+}
+
+// @public (undocumented)
+export interface OpenAIPluginManifest {
+    // (undocumented)
+    api: {
+        type: string;
+        url: string;
+    };
+    // (undocumented)
+    auth: {
+        type: OpenAIManifestAuthType;
+    };
+    // (undocumented)
+    contact_email: string;
+    // (undocumented)
+    description_for_human: string;
+    // (undocumented)
+    description_for_model: string;
+    // (undocumented)
+    legal_info_url: string;
+    // (undocumented)
+    logo_url: string;
+    // (undocumented)
+    name_for_human: string;
+    // (undocumented)
+    name_for_model: string;
+    // (undocumented)
+    schema_version: string;
+}
 
 // @public
 export interface OptionItem {

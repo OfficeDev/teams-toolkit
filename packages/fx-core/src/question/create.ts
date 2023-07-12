@@ -38,8 +38,10 @@ import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { QuestionNames } from "./questionNames";
-import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
 import { isValidHttpUrl } from "./util";
+import { EmptyOptionError, assembleError } from "../error";
+import { OpenAIManifestHelper, listOperations } from "../component/generator/copilotPlugin/helper";
+import { createContextV3 } from "../component/utils";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1284,7 +1286,8 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
-function apiOperationQuestion(): MultiSelectQuestion {
+export function apiOperationQuestion(): MultiSelectQuestion {
+  // export for unit test
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
@@ -1296,12 +1299,27 @@ function apiOperationQuestion(): MultiSelectQuestion {
       minItems: 1,
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      // TODO: will update whe API Spec Parser is ready. For now, return a static options.
-      await sleep(2000);
-      return [
-        { id: "listRepairs", label: "GET repairs" },
-        { id: "createRepair", label: "POST repairs" },
-      ];
+      let manifest;
+      if (inputs[QuestionNames.OpenAIPluginManifestLocation]) {
+        manifest = await OpenAIManifestHelper.loadOpenAIPluginManifest(
+          inputs[QuestionNames.OpenAIPluginManifestLocation] as string
+        );
+        inputs.openAIPluginManifest = manifest;
+      }
+      const context = createContextV3();
+      try {
+        const res = await listOperations(context, manifest, inputs[QuestionNames.ApiSpecLocation]);
+        if (res.isOk()) {
+          return res.value.map((operation) => {
+            return { id: operation, label: operation };
+          });
+        } else {
+          throw new EmptyOptionError(); // TODO: handle errors based on error results
+        }
+      } catch (e) {
+        const error = assembleError(e);
+        throw error;
+      }
     },
   };
 }

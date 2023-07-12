@@ -41,7 +41,9 @@ import { QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import { SpecParser } from "../common/spec-parser/specParser";
 import { ValidationStatus } from "../common/spec-parser/interfaces";
-import { assembleError } from "../error";
+import { EmptyOptionError, assembleError } from "../error";
+import { OpenAIManifestHelper, listOperations } from "../component/generator/copilotPlugin/helper";
+import { createContextV3 } from "../component/utils";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1318,19 +1320,49 @@ export function apiOperationQuestion(): MultiSelectQuestion {
       minItems: 1,
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      const specParser = new SpecParser(inputs[QuestionNames.ApiSpecLocation] as string);
-      const validationRes = await specParser.validate();
-      if (validationRes.status === ValidationStatus.Error) {
-        // TODO: handle errors based on error type
-        return [];
-      }
+      // let apiSpecUrl = inputs[QuestionNames.ApiSpecLocation];
+      // if(inputs[QuestionNames.OpenAIPluginManifestLocation]) {
+      //   const manifest = await OpenAIManifestHelper.loadOpenAIPluginManifest(inputs[QuestionNames.OpenAIPluginManifestLocation] as string);
+      //   apiSpecUrl = manifest.api.url;
+      //   inputs.openAIPluginManifest = manifest;
+      // }
 
+      // const specParser = new SpecParser(apiSpecUrl);        // load()
+      // const validationRes = await specParser.validate();    // validate( object   ): validationRes {   }
+
+      // if (validationRes.status === ValidationStatus.Error) {
+      //   // TODO: handle errors based on error type
+      //   return [];
+      // }
+
+      // try {
+      //   // success or warning
+      //   const operations = await specParser.list();
+      //   return operations.map((operation) => {
+      //     return { id: operation, label: operation };
+      //   });
+      // } catch (e) {
+      //   const error = assembleError(e);
+      //   throw error;
+      // }
+      let manifest;
+      const apiSpecUrl = inputs[QuestionNames.ApiSpecLocation];
+      if (inputs[QuestionNames.OpenAIPluginManifestLocation]) {
+        manifest = await OpenAIManifestHelper.loadOpenAIPluginManifest(
+          inputs[QuestionNames.OpenAIPluginManifestLocation] as string
+        );
+        inputs.openAIPluginManifest = manifest;
+      }
+      const context = createContextV3();
       try {
-        // success or warning
-        const operations = await specParser.list();
-        return operations.map((operation) => {
-          return { id: operation, label: operation };
-        });
+        const res = await listOperations(context, manifest, apiSpecUrl);
+        if (res.isOk()) {
+          return res.value.map((operation) => {
+            return { id: operation, label: operation };
+          });
+        } else {
+          throw new EmptyOptionError(); // TODO: handle errors based on error results
+        }
       } catch (e) {
         const error = assembleError(e);
         throw error;

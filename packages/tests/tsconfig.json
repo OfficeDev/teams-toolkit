@@ -17,6 +17,6 @@
       "emitDecoratorMetadata": true,
       "esModuleInterop": true
     },
-    "include": ["src"],
+    "include": ["src/utils", "src/ui-test"],
     "exclude": ["node_modules", ".test-resources", "src/ui-test/treeview/office-xml-addin"]
   }

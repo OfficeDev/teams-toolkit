@@ -1,13 +1,13 @@
 import { BrowserContext, Page, chromium, Frame } from "playwright";
 import { assert } from "chai";
 import { Timeout, ValidationContent } from "./constants";
-import { RetryHandler } from "./utils/retryHandler";
-import { getPlaywrightScreenshotPath } from "./utils/nameUtil";
+import { RetryHandler } from "./retryHandler";
+import { getPlaywrightScreenshotPath } from "./nameUtil";
 import axios from "axios";
-import { SampledebugContext } from "./ui-test/samples/sampledebugContext";
+import { SampledebugContext } from "../ui-test/samples/sampledebugContext";
 import path from "path";
 import fs from "fs";
-import { dotenvUtil } from "./utils/envUtil";
+import { dotenvUtil } from "./envUtil";
 
 export async function initPage(
   context: BrowserContext,

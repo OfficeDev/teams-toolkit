@@ -4,7 +4,7 @@
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { AadManager } from "../commonlib";
-import { AzureHelper } from "./azureHelper";
+import { AzureHelper } from "../commonlib/azureHelper";
 import {
   AADAppIdEnvNames,
   BotIdEnvName,
@@ -12,9 +12,9 @@ import {
   ResourceGroupEnvName,
   TeamsAppIdEnvName,
 } from "./constants";
-import { M365TitleHelper } from "./m365TitleHelper";
+import { M365TitleHelper } from "../commonlib/m365TitleHelper";
 import { ProjectEnvReader } from "./projectEnvReader";
-import { TeamsAppHelper } from "./teamsAppHelper";
+import { TeamsAppHelper } from "../commonlib/teamsAppHelper";
 
 /// Clean up the resources created by the test cases for V3 projects.
 export class Cleaner {

@@ -3,7 +3,7 @@
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout, ValidationContent } from "../../constants";
+import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
@@ -14,12 +14,12 @@ import {
   execCommandIfExist,
   createNewProject,
   clearNotifications,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import {
   initPage,
   validateBasicTab,
   validateTab,
-} from "../../playwrightOperation";
+} from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { cleanAppStudio } from "../../utils/cleanHelper";

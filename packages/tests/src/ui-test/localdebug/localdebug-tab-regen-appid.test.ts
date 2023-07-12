@@ -6,15 +6,15 @@ import {
   startDebugging,
   stopDebugging,
   waitForTerminal,
-} from "../../vscodeOperation";
-import { initPage, validateBasicTab } from "../../playwrightOperation";
+} from "../../utils/vscodeOperation";
+import { initPage, validateBasicTab } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
   LocalDebugTaskLabel,
   DebugItemSelect,
   ValidationContent,
-} from "../../constants";
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";

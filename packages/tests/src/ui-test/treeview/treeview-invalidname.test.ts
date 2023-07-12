@@ -7,9 +7,9 @@ import {
   CommandPaletteCommands,
   Timeout,
   CreateProjectQuestion,
-} from "../../constants";
+} from "../../utils/constants";
 import { TreeViewTestContext } from "./treeviewContext";
-import { execCommandIfExist } from "../../vscodeOperation";
+import { execCommandIfExist } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
 import { getNodeVersion } from "../../utils/getNodeVersion";
 

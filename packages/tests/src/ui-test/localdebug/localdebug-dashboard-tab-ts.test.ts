@@ -2,10 +2,17 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateBasicDashboardTab } from "../../playwrightOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  initPage,
+  validateBasicDashboardTab,
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel, DebugItemSelect } from "../../constants";
+import {
+  Timeout,
+  LocalDebugTaskLabel,
+  DebugItemSelect,
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";

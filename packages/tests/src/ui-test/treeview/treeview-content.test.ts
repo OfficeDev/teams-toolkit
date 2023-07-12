@@ -3,8 +3,8 @@
  */
 import { expect } from "chai";
 import { TreeViewTestContext, checkSectionContent } from "./treeviewContext";
-import { Timeout, TreeViewCommands } from "../../constants";
-import { createNewProject } from "../../vscodeOperation";
+import { Timeout, TreeViewCommands } from "../../utils/constants";
+import { createNewProject } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
 
 describe("Check command name in command palette and tree view content Tests", function () {

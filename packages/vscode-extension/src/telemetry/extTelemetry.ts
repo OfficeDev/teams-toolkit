@@ -79,6 +79,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.BuildAadManifest;
       case Stage.deployAad:
         return TelemetryEvent.DeployAadManifest;
+      case Stage.copilotPluginAddAPI:
+        return TelemetryEvent.CopilotPluginAddAPI;
       default:
         return undefined;
     }

@@ -2,6 +2,7 @@ import { FxError, IQTreeNode, Result, ok } from "@microsoft/teamsfx-api";
 import { createProjectCliHelpNode, createProjectQuestionNode } from "./create";
 import {
   addWebPartQuestionNode,
+  copilotPluginAddAPIQuestionNode,
   createNewEnvQuestionNode,
   deployAadManifestQuestionNode,
   grantPermissionQuestionNode,
@@ -49,6 +50,9 @@ class QuestionNodes {
   createNewEnv(): IQTreeNode | undefined {
     return createNewEnvQuestionNode();
   }
+  copilotPluginAddAPI(): IQTreeNode | undefined {
+    return copilotPluginAddAPIQuestionNode();
+  }
 }
 
 export const questionNodes = new QuestionNodes();
@@ -80,6 +84,10 @@ class Questions {
 
   previewWithTeamsAppManifest(): Result<IQTreeNode | undefined, FxError> {
     return ok(questionNodes.previewWithTeamsAppManifest());
+  }
+
+  copilotPluginAddAPI(): Result<IQTreeNode | undefined, FxError> {
+    return ok(questionNodes.copilotPluginAddAPI());
   }
 
   listCollaborator(): Result<IQTreeNode | undefined, FxError> {

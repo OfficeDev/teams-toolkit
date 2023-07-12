@@ -481,4 +481,8 @@ export class FxCore {
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }
+
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.copilotPluginAddAPI, inputs);
+  }
 }

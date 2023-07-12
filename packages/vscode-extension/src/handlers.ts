@@ -753,6 +753,10 @@ export async function runCommand(
         result = await core.createAppPackage(inputs);
         break;
       }
+      case Stage.copilotPluginAddAPI: {
+        result = await core.copilotPluginAddAPI(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,
@@ -2231,7 +2235,12 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
   return result;
 }
 
-export async function copilotPluginAddAPIHandler(args: any[]) {}
+export async function copilotPluginAddAPIHandler(args: any[]) {
+  const inputs = getSystemInputs();
+  // Telemetries are handled in runCommand()
+  const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
+  return result;
+}
 
 export async function editAadManifestTemplate(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(

@@ -1240,7 +1240,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
@@ -1284,7 +1284,7 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
-function apiOperationQuestion(): MultiSelectQuestion {
+export function apiOperationQuestion(): MultiSelectQuestion {
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,

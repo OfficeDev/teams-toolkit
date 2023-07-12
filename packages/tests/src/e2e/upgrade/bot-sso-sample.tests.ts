@@ -12,8 +12,8 @@ import fs from "fs-extra";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { TemplateProject } from "../../commonlib/constants";
-import { Cleaner } from "../../utils/cleaner";
+import { TemplateProject } from "../../utils/constants";
+import { Cleaner } from "../../commonlib/cleaner";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
 

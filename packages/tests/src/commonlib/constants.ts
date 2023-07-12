@@ -41,31 +41,6 @@ export type CliTriggerType =
   | "http-functions"
   | "timer-functions";
 
-export enum TemplateProject {
-  HelloWorldTabBackEnd = "hello-world-tab-with-backend",
-  ContactExporter = "graph-toolkit-contact-exporter",
-  HelloWorldBotSSO = "bot-sso",
-  TodoListSpfx = "todo-list-SPFx",
-  MyFirstMetting = "hello-world-in-meeting",
-  TodoListM365 = "todo-list-with-Azure-backend-M365",
-  NpmSearch = "NPM-search-connector-M365",
-  AdaptiveCard = "adaptive-card-notification",
-  IncomingWebhook = "incoming-webhook-notification",
-  StockUpdate = "stocks-update-notification-bot",
-  QueryOrg = "query-org-user-with-message-extension-sso",
-  Dashboard = "team-central-dashboard",
-  GraphConnector = "graph-connector-app",
-  OneProductivityHub = "graph-toolkit-one-productivity-hub",
-  TodoListBackend = "todo-list-with-Azure-backend",
-  ShareNow = "share-now",
-  TabOutlookAddIn = "hello-world-teams-tab-and-outlook-add-in",
-  OutlookAddIn = "outlook-add-in-set-signature",
-  AssistDashboard = "developer-assist-dashboard",
-  ProactiveMessaging = "bot-proactive-messaging-teamsfx",
-  Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
-  DiceRoller = "live-share-dice-roller",
-}
-
 export enum Resource {
   AzureKeyVault = "azure-keyvault",
   AzureFunction = "azure-function",

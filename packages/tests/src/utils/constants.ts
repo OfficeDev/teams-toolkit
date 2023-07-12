@@ -48,6 +48,7 @@ export enum TemplateProject {
   DiceRoller = "Dice Roller in meeting",
   OutlookTab = "Hello World Teams Tab Outlook add-in",
   OutlookSignature = "Set signature using Outlook add-in",
+  AssistDashboard = "developer-assist-dashboard",
 }
 
 export enum TemplateProjectFolder {

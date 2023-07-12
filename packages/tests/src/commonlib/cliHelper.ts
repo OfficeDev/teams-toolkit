@@ -6,7 +6,8 @@ import {
   execAsyncWithRetry,
   editDotEnvFile,
 } from "../e2e/commonUtils";
-import { TemplateProject, Resource, ResourceToDeploy } from "./constants";
+import { Resource, ResourceToDeploy } from "./constants";
+import { TemplateProject } from "../utils/constants";
 import { Capability } from "../utils/constants";
 import path from "path";
 

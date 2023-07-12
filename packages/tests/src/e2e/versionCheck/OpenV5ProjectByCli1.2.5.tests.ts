@@ -10,7 +10,7 @@ import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 import { Capability } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";

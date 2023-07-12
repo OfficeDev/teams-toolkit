@@ -15,9 +15,9 @@ import {
   getUniqueAppName,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 import { BotValidator } from "../../commonlib";
-import { TemplateProject } from "../../commonlib/constants";
+import { TemplateProject } from "../../utils/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new template", function () {

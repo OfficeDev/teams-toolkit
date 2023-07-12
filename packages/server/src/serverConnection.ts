@@ -393,10 +393,7 @@ export default class ServerConnection implements IServerConnection {
     },
     token: CancellationToken
   ): Promise<Result<any, FxError>> {
-    const authSvcToken: string = accountToken.token;
-    if (authSvcToken) {
-      await setRegion(authSvcToken);
-    }
+    await setRegion(accountToken.token);
     return ok(true);
   }
 

@@ -3,7 +3,6 @@ import {
   OpenAIManifestAuthType,
   OpenAIPluginManifest,
   Result,
-  UserInteraction,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -11,12 +10,9 @@ import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
 import {
   ErrorType as ApiSpecErrorType,
-  ValidateResult,
   ValidationStatus,
-  WarningResult,
 } from "../../../common/spec-parser/interfaces";
 import { SpecParser } from "../../../common/spec-parser/specParser";
-import { assembleError } from "../../../error";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 
@@ -54,27 +50,6 @@ export class OpenAIManifestHelper {
   static async updateManifest(manifest: OpenAIPluginManifest, manifestPath: string): Promise<void> {
     //TODO: implementation
   }
-
-  // static validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ValidateResult {
-  //   const errors: ErrorResult[] = [];
-  //   const warnings: WarningResult[] = [];
-  //   let status: ValidationStatus = ValidationStatus.Valid;
-  //   if (!manifest.api.url) {
-  //     status = ValidationStatus.Error;
-  //     errors.push({type: OpenAIPluginManifestErrorType.ApiUrlMissing, content: "Missing url in manifest"});
-  //   }
-
-  //   if (manifest.auth.type !== OpenAIManifestAuthType.None) {
-  //     status = ValidationStatus.Error;
-  //     errors.push({type: OpenAIPluginManifestErrorType.AuthNotSupported, content: "Auth type not supported"});
-  //   }
-
-  //   return {
-  //     status,
-  //     errors,
-  //     warnings
-  //   }
-  // }
 }
 
 export async function listOperations(
@@ -83,24 +58,9 @@ export async function listOperations(
   apiSpecUrl: string | undefined,
   shouldLogWarning = true
 ): Promise<Result<string[], ErrorResult[]>> {
-  context.logProvider.info("listOperations()");
   if (manifest) {
     apiSpecUrl = manifest.api.url;
-    const errors: ErrorResult[] = [];
-    if (!manifest.api.url) {
-      errors.push({
-        type: OpenAIPluginManifestErrorType.ApiUrlMissing,
-        content: "Missing url in manifest",
-      });
-    }
-
-    if (manifest.auth.type !== OpenAIManifestAuthType.None) {
-      errors.push({
-        type: OpenAIPluginManifestErrorType.AuthNotSupported,
-        content: "Auth type not supported",
-      });
-    }
-
+    const errors = validateOpenAIPluginManifest(manifest);
     if (errors.length > 0) {
       return err(errors);
     }
@@ -121,4 +81,22 @@ export async function listOperations(
 
   const operations = await specParser.list();
   return ok(operations);
+}
+
+function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResult[] {
+  const errors: ErrorResult[] = [];
+  if (!manifest.api.url) {
+    errors.push({
+      type: OpenAIPluginManifestErrorType.ApiUrlMissing,
+      content: "Missing url in manifest",
+    });
+  }
+
+  if (manifest.auth.type !== OpenAIManifestAuthType.None) {
+    errors.push({
+      type: OpenAIPluginManifestErrorType.AuthNotSupported,
+      content: "Auth type not supported",
+    });
+  }
+  return errors;
 }

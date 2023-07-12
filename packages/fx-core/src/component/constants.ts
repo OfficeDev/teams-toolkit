@@ -19,7 +19,6 @@ export const ComponentNames = {
   SPFxTab: "spfx-tab",
   SPFx: "spfx",
   Identity: "identity",
-  APIMFeature: "apim-feature",
   APIM: "apim",
   KeyVault: "key-vault",
   AzureSQL: "azure-sql",
@@ -73,29 +72,6 @@ export const TelemetryConstants = {
 export const ErrorConstants = {
   unhandledError: "UnhandledError",
   unhandledErrorMessage: "Unhandled Error",
-};
-
-export const APIMOutputs = {
-  serviceResourceId: {
-    key: "serviceResourceId",
-    bicepVariable: "provisionOutputs.apimOutput.value.serviceResourceId",
-  },
-  productResourceId: {
-    key: "productResourceId",
-    bicepVariable: "provisionOutputs.apimOutput.value.productResourceId",
-  },
-  authServerResourceId: {
-    key: "authServerResourceId",
-  },
-  apimClientAADObjectId: {
-    key: "apimClientAADObjectId",
-  },
-  apimClientAADClientId: {
-    key: "apimClientAADClientId",
-  },
-  apimClientAADClientSecret: {
-    key: "apimClientAADClientSecret",
-  },
 };
 
 export const AadAppOutputs = {

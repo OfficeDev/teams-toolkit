@@ -131,17 +131,6 @@ export class StateConfigKey {
   static readonly identityClientId = "identityClientId";
   // key vault
   static readonly keyVaultResourceId = "keyVaultResourceId";
-  // Apim
-  static readonly serviceResourceId = "serviceResourceId";
-  static readonly productResourceId = "productResourceId";
-  static readonly authServerResourceId = "authServerResourceId";
-  static readonly apiPrefix = "apiPrefix";
-  static readonly versionSetId = "versionSetId";
-  static readonly apiPath = "apiPath";
-  static readonly apiDocumentPath = "apiDocumentPath";
-  static readonly apimClientAADObjectId = "apimClientAADObjectId";
-  static readonly apimClientAADClientId = "apimClientAADClientId";
-  static readonly apimClientAADClientSecret = "apimClientAADClientSecret";
 
   static readonly skuName = "skuName";
 }

@@ -21,6 +21,12 @@ import * as constants from "../constants";
 import { strings } from "../resource";
 import { toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
+import CliTelemetry from "../telemetry/cliTelemetry";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
@@ -98,8 +104,10 @@ class AccountShow extends YargsCommand {
   }
 
   public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountShowStart);
     const m365StatusRes = await M365TokenProvider.getStatus({ scopes: AppStudioScopes });
     if (m365StatusRes.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AccountShow, m365StatusRes.error);
       return err(m365StatusRes.error);
     }
     const m365Status = m365StatusRes.value;
@@ -122,7 +130,9 @@ class AccountShow extends YargsCommand {
         "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
       );
     }
-
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountShow, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
     return ok(null);
   }
 }
@@ -157,6 +167,7 @@ export class M365Login extends YargsCommand {
   }
 
   public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountShowStart);
     await M365TokenProvider.signout();
     await outputM365Info("login");
 

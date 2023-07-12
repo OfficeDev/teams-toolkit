@@ -9,6 +9,7 @@ import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
 import { Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -398,6 +399,19 @@ describe("serverConnections", () => {
       inputs as Inputs,
       token as CancellationToken
     );
+    res.then((data) => {
+      assert.equal(data.isOk(), true);
+    });
+  });
+
+  it("setRegionRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const accountToken = {
+      token: "fakeToken",
+    };
+    sinon.stub(tools, "setRegion").callsFake(async () => {});
+
+    const res = connection.setRegionRequest(accountToken, {} as CancellationToken);
     res.then((data) => {
       assert.equal(data.isOk(), true);
     });

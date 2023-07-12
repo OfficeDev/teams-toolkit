@@ -31,7 +31,7 @@ export namespace AuthSvcClient {
   /**
    * Get the region of M365 user
    * @param authSvcToken
-   * @returns e.g. apac amer
+   * @returns e.g. https://dev.teams.microsoft.com/apac, https://dev.teams.microsoft.com/amer
    */
   export async function getRegion(authSvcToken: string): Promise<string | undefined> {
     const requester = createRequesterWithToken(authSvcToken);

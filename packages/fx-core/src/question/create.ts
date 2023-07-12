@@ -39,8 +39,6 @@ import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
-import { SpecParser } from "../common/spec-parser/specParser";
-import { ValidationStatus } from "../common/spec-parser/interfaces";
 import { EmptyOptionError, assembleError } from "../error";
 import { OpenAIManifestHelper, listOperations } from "../component/generator/copilotPlugin/helper";
 import { createContextV3 } from "../component/utils";

@@ -207,8 +207,8 @@ class Coordinator {
           return err(res.error);
         }
       } else if (
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec ||
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginOpenAIPlugin
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginOpenAIPlugin().id
       ) {
         const res = await CopilotPluginGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {

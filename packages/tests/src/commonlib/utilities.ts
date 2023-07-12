@@ -67,42 +67,6 @@ export function getKeyVaultNameFromResourceId(
   return result;
 }
 
-export function getApimServiceNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(
-    /providers\/Microsoft.ApiManagement\/service\/([^\/]*)/i,
-    resourceId
-  );
-  if (!result) {
-    throw new Error(
-      failedToParseResourceIdErrorMessage("apim service name", resourceId)
-    );
-  }
-  return result;
-}
-
-export function getproductNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(/products\/([^\/]*)/i, resourceId);
-  if (!result) {
-    throw new Error(
-      failedToParseResourceIdErrorMessage("product name", resourceId)
-    );
-  }
-  return result;
-}
-
-export function getAuthServiceNameFromResourceId(resourceId: string): string {
-  const result = parseFromResourceId(
-    /authorizationServers\/([^\/]*)/i,
-    resourceId
-  );
-  if (!result) {
-    throw new Error(
-      failedToParseResourceIdErrorMessage("auth service name", resourceId)
-    );
-  }
-  return result;
-}
-
 export function parseFromResourceId(
   pattern: RegExp,
   resourceId: string

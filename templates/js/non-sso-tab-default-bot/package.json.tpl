@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "0.0.1",
     "engines": {
         "node": "16 || 18"

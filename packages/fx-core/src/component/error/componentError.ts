@@ -191,36 +191,6 @@ export class ExternalApiCallError extends BaseComponentInnerError {
   }
 }
 
-export class ExecuteCommandError extends BaseComponentInnerError {
-  constructor(
-    source: string,
-    name: string,
-    messageKey: string,
-    messageParams: string[],
-    error: string
-  ) {
-    super(
-      source,
-      "UserError",
-      name,
-      messageKey,
-      messageParams,
-      ["plugins.bot.CheckCommandOutput", "suggestions.retryTheCurrentStep"],
-      error
-    );
-  }
-
-  static fromErrorOutput(source: string, commands: string[], error: unknown): ExecuteCommandError {
-    return new ExecuteCommandError(
-      source,
-      "CommandExecutionError",
-      "plugins.bot.RunFailedCommand",
-      commands,
-      typeof error === "string" ? error : JSON.stringify(error)
-    );
-  }
-}
-
 /**
  * parameter in environmental error or user input error
  */

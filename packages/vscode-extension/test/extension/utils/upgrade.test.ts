@@ -27,14 +27,12 @@ const reporterSpy = spy.interface({
 describe("upgrade show changelog", () => {
   const sandbox = sinon.createSandbox();
   let context: vscode.ExtensionContext;
+  let telemetryStub: sinon.SinonStub;
   const mockGlobalState: vscode.Memento = {
     keys: gloablStateKeys,
     get: globalStateGet,
     update: globalStateUpdate,
   };
-  before(() => {
-    chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
-  });
   beforeEach(() => {
     context = {
       subscriptions: [],
@@ -53,6 +51,7 @@ describe("upgrade show changelog", () => {
         return Promise.resolve();
       },
     });
+    telemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
   });
   afterEach(() => {
     sandbox.restore();
@@ -71,9 +70,16 @@ describe("upgrade show changelog", () => {
     await instance.showChangeLog();
     chai.assert(title === "Changelog");
     chai.assert(contextSpy.callCount == 2);
-    chai
-      .expect(reporterSpy.sendTelemetryEvent)
-      .to.have.been.called.with("show-what-is-new-notification");
+    chai.assert(telemetryStub.calledWith("show-what-is-new-notification"));
+  });
+  it("should not show changelog if button is not clicked", async () => {
+    const contextSpy = sandbox.spy(context.globalState, "update");
+    sandbox.stub(context.globalState, "get").returns("4.99.0");
+    sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined);
+    const instance = new ExtensionUpgrade(context);
+    await instance.showChangeLog();
+    chai.assert(contextSpy.callCount == 2);
+    chai.assert(telemetryStub.calledOnce);
   });
   it("should not show changelog when version is not changed", async () => {
     const contextSpy = sandbox.spy(context.globalState, "update");
@@ -82,6 +88,6 @@ describe("upgrade show changelog", () => {
     const instance = new ExtensionUpgrade(context);
     await instance.showChangeLog();
     sinon.assert.notCalled(contextSpy);
-    chai.expect(reporterSpy.sendTelemetryEvent).to.not.have.been.called;
+    chai.assert(telemetryStub.notCalled);
   });
 });

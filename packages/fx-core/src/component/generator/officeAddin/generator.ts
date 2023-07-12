@@ -16,13 +16,6 @@ import {
   Context,
 } from "@microsoft/teamsfx-api";
 import { join } from "path";
-import {
-  AddinLanguageQuestion,
-  OfficeHostQuestion,
-  getTemplate,
-  AddinProjectFolderQuestion,
-  AddinProjectManifestQuestion,
-} from "./question";
 import { HelperMethods } from "./helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import projectsJsonData from "./config/projectsJsonData";
@@ -35,6 +28,7 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
+import { getTemplate } from "../../../question/create";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -60,7 +54,7 @@ export class OfficeAddinGenerator {
     }
 
     // If lang is undefined, it means the project is created from a folder.
-    const lang = inputs[AddinLanguageQuestion.name];
+    const lang = inputs[QuestionNames.ProgrammingLanguage];
 
     const templateRes = await Generator.generateTemplate(
       context,
@@ -85,9 +79,9 @@ export class OfficeAddinGenerator {
     const template = getTemplate(inputs);
     const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
-    const fromFolder = inputs[AddinProjectFolderQuestion.name];
-    const language = inputs[AddinLanguageQuestion.name];
-    const host = inputs[OfficeHostQuestion.name];
+    const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
+    const language = inputs[QuestionNames.ProgrammingLanguage];
+    const host = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
 
     process.chdir(addinRoot);
@@ -121,14 +115,14 @@ export class OfficeAddinGenerator {
       } else {
         // from existing project
         HelperMethods.copyAddinFiles(fromFolder, addinRoot);
-        const sourceManifestFile: string = inputs[AddinProjectManifestQuestion.name];
+        const sourceManifestFile: string = inputs[QuestionNames.OfficeAddinManifest];
         let manifestFile: string = sourceManifestFile.replace(fromFolder, addinRoot);
         if (manifestFile.endsWith(".xml")) {
           // Need to convert to json project first
           await convertProject(manifestFile);
           manifestFile = manifestFile.replace(/\.xml$/, ".json");
         }
-        inputs[OfficeHostQuestion.name] = await getHost(manifestFile);
+        inputs[QuestionNames.OfficeAddinHost] = await getHost(manifestFile);
         HelperMethods.updateManifest(destinationPath, manifestFile);
       }
       process.chdir(workingDir);

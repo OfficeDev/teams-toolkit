@@ -39,7 +39,7 @@ import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { QuestionNames } from "./questionNames";
 import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
-import { isValidUrl } from "./util";
+import { isValidHttpUrl } from "./util";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1015,10 +1015,13 @@ export function appNameQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.AppName,
     title: "Application name",
-    default: (inputs: Inputs) => {
-      const defaultName = !inputs.teamsAppFromTdp?.appName
-        ? undefined
-        : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+    default: async (inputs: Inputs) => {
+      let defaultName = undefined;
+      if (inputs.teamsAppFromTdp?.appName) {
+        defaultName = convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+      } else if (inputs[QuestionNames.SPFxSolution] == "import") {
+        defaultName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
+      }
       return defaultName;
     },
     validation: {
@@ -1054,27 +1057,6 @@ export function appNameQuestion(): TextInputQuestion {
   return question;
 }
 
-export function fillInAppNameFuncQuestion(): FuncQuestion {
-  const q: FuncQuestion = {
-    type: "func",
-    name: QuestionNames.SkipAppName,
-    title: "Set app name to skip",
-    func: async (inputs: Inputs) => {
-      if (inputs[QuestionNames.SPFxSolution] == "import") {
-        const solutionName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
-        if (solutionName) {
-          inputs[QuestionNames.AppName] = solutionName;
-          if (await fs.pathExists(path.join(inputs.folder, solutionName)))
-            throw PathAlreadyExistsError(path.join(inputs.folder, solutionName));
-        } else {
-          throw RetrieveSPFxInfoError();
-        }
-      }
-    },
-  };
-  return q;
-}
-
 function sampleSelectQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
@@ -1086,7 +1068,6 @@ function sampleSelectQuestion(): SingleSelectQuestion {
         label: sample.title,
         description: `${sample.time} • ${sample.configuration}`,
         detail: sample.shortDescription,
-        data: sample.link,
       } as OptionItem;
     }),
     placeholder: getLocalizedString("core.SampleSelect.placeholder"),
@@ -1271,7 +1252,7 @@ function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
       name: "input-api-spec-url",
       step: 2, // Add "back" button
       validation: async (input: string): Promise<string | undefined> => {
-        return isValidUrl(input)
+        return isValidHttpUrl(input)
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
       },
@@ -1279,6 +1260,9 @@ function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
     inputOptionItem: {
       id: "input",
       label: getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
+    },
+    filters: {
+      files: ["json", "yml", "yaml"],
     },
   };
 }
@@ -1292,7 +1276,7 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
-        return isValidUrl(input)
+        return isValidHttpUrl(input)
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
       },
@@ -1364,13 +1348,6 @@ export function createProjectQuestionNode(): IQTreeNode {
                   {
                     data: SPFxImportFolderQuestion(),
                     condition: { equals: "import" },
-                    children: [
-                      {
-                        // auto fill in "app-name" question,
-                        // TODO can we make it as a default value of "app-name" question? (need to discuss)
-                        data: fillInAppNameFuncQuestion(),
-                      },
-                    ],
                   },
                 ],
               },
@@ -1492,7 +1469,6 @@ export function createProjectCliHelpNode(): IQTreeNode {
   const node = cloneDeep(createProjectQuestionNode());
   const deleteNames = [
     QuestionNames.ProjectType,
-    QuestionNames.SkipAppName,
     QuestionNames.OfficeAddinImport,
     QuestionNames.OfficeAddinHost,
     QuestionNames.RepalceTabUrl,

@@ -6,7 +6,6 @@
 import * as vscode from "vscode";
 
 import {
-  AdaptiveCardsFolderName,
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
@@ -689,7 +688,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
-  const adaptiveCardFilePattern = `**/${AdaptiveCardsFolderName}/*.json`;
+  const adaptiveCardFilePattern = `**/*.json`;
   const adaptiveCardFileSelector = {
     language: "json",
     scheme: "file",

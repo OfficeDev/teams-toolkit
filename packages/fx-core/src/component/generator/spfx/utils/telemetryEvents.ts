@@ -19,4 +19,5 @@ export enum TelemetryProperty {
   EnsureSharepointGeneratorReason = "ensure-sharepoint-generator-reason",
   EnsureLatestYoReason = "ensure-latest-yo-reason",
   EnsureLatestSharepointGeneratorReason = "ensure-latest-sharepoint-generator-reason",
+  SPFxSolution = "spfx-solution",
 }

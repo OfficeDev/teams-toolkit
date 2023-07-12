@@ -2,6 +2,7 @@ import axios from "axios";
 import { sendRequestWithTimeout } from "../component/generator/utils";
 import sampleConfigV3 from "./samples-config-v3.json";
 import { isVideoFilterEnabled } from "./featureFlags";
+const packageJson = require("../../package.json");
 
 class configInfo {
   static readonly owner = "OfficeDev";
@@ -18,10 +19,8 @@ export interface SampleInfo {
   tags: string[];
   time: string;
   configuration: string;
-  link: string;
   suggested: boolean;
   url: string;
-  relativePath?: string;
 }
 
 interface SampleCollection {
@@ -63,14 +62,8 @@ class SampleProvider {
         tags: sample.tags,
         time: sample.time,
         configuration: sample.configuration,
-        link:
-          (sample as any).packageLink ?? (this.sampleConfigs ?? sampleConfigV3).defaultPackageLink,
         suggested: sample.suggested,
-        url:
-          (sample as any).relativePath && (sample as any).url
-            ? (sample as any).url
-            : `${(this.sampleConfigs ?? sampleConfigV3).baseUrl}${sample.id}`,
-        relativePath: (sample as any).relativePath,
+        url: (sample as any).url ? (sample as any).url : `${this.getBaseSampleUrl()}${sample.id}`,
       } as SampleInfo;
     });
 
@@ -88,6 +81,17 @@ class SampleProvider {
     };
 
     return this.sampleCollection;
+  }
+
+  private getBaseSampleUrl(): string {
+    const version: string = packageJson.version;
+    if (version.includes("alpha")) {
+      return "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/";
+    }
+    if (version.includes("rc")) {
+      return "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/";
+    }
+    return (this.sampleConfigs ?? sampleConfigV3).baseUrl;
   }
 }
 

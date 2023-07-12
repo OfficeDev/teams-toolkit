@@ -31,22 +31,19 @@ import {
   GeneratorContext,
   TemplateActionSeq,
 } from "./generatorAction";
-import {
-  getSampleInfoFromName,
-  getSampleRelativePath,
-  renderTemplateFileData,
-  renderTemplateFileName,
-} from "./utils";
+import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
 
 export class Generator {
   public static getDefaultVariables(
     appName: string,
     safeProjectNameFromVS?: string
   ): { [key: string]: string } {
+    const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
     return {
       appName: appName,
       ProjectName: appName,
-      SafeProjectName: safeProjectNameFromVS ?? convertToAlphanumericOnly(appName),
+      SafeProjectName: safeProjectName,
+      SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
     };
   }
   @hooks([
@@ -119,7 +116,6 @@ export class Generator {
       logProvider: ctx.logProvider,
       url: sample.url,
       timeoutInMs: sampleDefaultTimeoutInMs,
-      relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));

@@ -53,6 +53,7 @@
     "test:visitor": "nyc mocha \"tests/ui/qm.visitor.test.ts\"",
     "test:question": "nyc mocha \"tests/question/*.test.ts\"",
     "test:coll": "nyc mocha \"tests/core/collaborator.test.ts\"",
+    "test:specParser": "npx mocha \"tests/common/spec-parser/**/specParser.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -67,7 +68,7 @@
     "deleteUnusedStrings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src"
   },
   "dependencies": {
-    "@apidevtools/swagger-parser": "^10.0.2",
+    "@apidevtools/swagger-parser": "^10.1.0",
     "@azure/arm-apimanagement": "^8.0.0",
     "@azure/arm-appservice": "^13.0.0",
     "@azure/arm-resources": "~5.0.1",

@@ -4,6 +4,10 @@
 
 export enum TelemetryEvent {
   //TODO: define CLI telemetry event
+
+  AccountShowStart = "account-show-start",
+  AccountShow = "account-show",
+
   AccountLoginStart = "login-start",
   AccountLogin = "login",
 
@@ -136,6 +140,7 @@ export enum TelemetryProperty {
   IsFromSample = "is-from-sample",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
+  Interactive = "interactive",
 }
 
 export enum TelemetrySuccess {

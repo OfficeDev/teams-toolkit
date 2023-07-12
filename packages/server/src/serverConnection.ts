@@ -20,6 +20,7 @@ import {
   FxCore,
   environmentManager,
   getSideloadingStatus,
+  setRegion,
   listDevTunnels,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
@@ -74,6 +75,7 @@ export default class ServerConnection implements IServerConnection {
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
       this.publishInDeveloperPortalRequest.bind(this),
+      this.setRegionRequest.bind(this),
       this.listDevTunnelsRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
@@ -383,6 +385,16 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
+  }
+
+  public async setRegionRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<any, FxError>> {
+    await setRegion(accountToken.token);
+    return ok(true);
   }
 
   public async listDevTunnelsRequest(

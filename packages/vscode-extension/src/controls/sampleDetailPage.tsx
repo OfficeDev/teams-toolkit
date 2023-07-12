@@ -65,7 +65,6 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
       command: Commands.CloneSampleApp,
       data: {
         appName: this.props.title,
-        appUrl: this.props.sampleAppUrl,
         appFolder: this.props.sampleAppFolder,
       },
     });

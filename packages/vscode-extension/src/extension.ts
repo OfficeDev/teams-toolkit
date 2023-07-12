@@ -841,7 +841,6 @@ async function runBackgroundAsyncTasks(
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
-  await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
 

@@ -13,9 +13,6 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
-export const AdaptiveCardsFolderName = "adaptiveCards";
-
-// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public (undocumented)

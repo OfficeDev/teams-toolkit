@@ -55,7 +55,10 @@ export class CopilotPluginGenerator {
     await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveFolderName);
 
     if (inputs.openAIPluginManifest) {
-      await OpenAIManifestHelper.updateManifest(inputs.openAIPluginManifest, manifestPath);
+      await OpenAIManifestHelper.updateManifest(
+        inputs.openAIPluginManifest,
+        path.join(destinationPath, appPackageName)
+      );
     }
 
     // TODO: log warnings

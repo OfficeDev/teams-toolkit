@@ -7,19 +7,23 @@
 
 import {
   Context,
+  FxError,
   OpenAIManifestAuthType,
   OpenAIPluginManifest,
   Result,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
 import {
   ErrorType as ApiSpecErrorType,
   ValidationStatus,
 } from "../../../common/spec-parser/interfaces";
 import { SpecParser } from "../../../common/spec-parser/specParser";
+import fs from "fs-extra";
+import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
+import path from "path";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 
@@ -54,8 +58,42 @@ export class OpenAIManifestHelper {
     return res.data;
   }
 
-  static async updateManifest(manifest: OpenAIPluginManifest, manifestPath: string): Promise<void> {
-    //TODO: implementation
+  static async updateManifest(
+    context: Context,
+    openAiPluginManifest: OpenAIPluginManifest,
+    appPackageFolder: string
+  ): Promise<Result<undefined, FxError>> {
+    const manifestPath = path.join(appPackageFolder, "manifest.json");
+    const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    const manifest = manifestRes.value;
+    manifest.name.full = openAiPluginManifest.name_for_model;
+    manifest.name.short = openAiPluginManifest.name_for_human;
+    manifest.description.full = openAiPluginManifest.description_for_model;
+    manifest.description.short = openAiPluginManifest.description_for_human;
+    manifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
+    manifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;
+    manifest.developer.termsOfUseUrl = openAiPluginManifest.legal_info_url;
+
+    try {
+      const legalInfoRes: AxiosResponse<any> = await sendRequestWithRetry(async () => {
+        return await axios.get(openAiPluginManifest.logo_url, { responseType: "arraybuffer" });
+      }, 3);
+
+      if (legalInfoRes.data) {
+        const iconPath = path.join(appPackageFolder, manifest.icons.color);
+        await fs.writeFile(iconPath, legalInfoRes.data);
+      }
+    } catch (e) {
+      // TODO: log error and telemetry
+      context.logProvider.warning(`Failed to download icon from ${openAiPluginManifest.logo_url}`);
+    }
+
+    return ok(undefined);
   }
 }
 

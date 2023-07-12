@@ -2,13 +2,13 @@
  * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
 import * as path from "path";
-import { openExistingProject } from "../../vscodeOperation";
+import { openExistingProject } from "../../utils/vscodeOperation";
 import * as fs from "fs-extra";
 import { execCommand } from "../../utils/execCommand";
-import { stopDebugging } from "../../vscodeOperation";
+import { stopDebugging } from "../../utils/vscodeOperation";
 import { TestContext } from "../testContext";
 import { dotenvUtil } from "../../utils/envUtil";
-import { TestFilePath } from "../../constants";
+import { TestFilePath } from "../../utils/constants";
 
 export type LocalDebugTestName =
   | "tab"

@@ -1,10 +1,13 @@
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateTeamsWorkbench } from "../../playwrightOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  initPage,
+  validateTeamsWorkbench,
+} from "../../utils/playwrightOperation";
 import { LocalDebugSpfxTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../constants";
+import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 

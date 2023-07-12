@@ -10,9 +10,9 @@ import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
-import { TemplateProject } from "../../commonlib/constants";
+import { TemplateProject } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();

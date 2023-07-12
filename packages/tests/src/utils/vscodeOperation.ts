@@ -26,12 +26,12 @@ import {
   TreeViewCommands,
   CreateProjectQuestion,
 } from "./constants";
-import { RetryHandler } from "./utils/retryHandler";
+import { RetryHandler } from "./retryHandler";
 import isWsl from "is-wsl";
-import { Env } from "./utils/env";
-import { execCommand } from "./utils/execCommand";
+import { Env } from "./env";
+import { execCommand } from "./execCommand";
 import { assert } from "chai";
-import { getScreenshotName } from "./utils/nameUtil";
+import { getScreenshotName } from "./nameUtil";
 
 export async function ensureExtensionActivated(): Promise<void> {
   const driver = VSBrowser.instance.driver;

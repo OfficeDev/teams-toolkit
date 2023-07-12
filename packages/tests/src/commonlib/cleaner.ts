@@ -3,7 +3,7 @@
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
-import { AadManager } from "../commonlib";
+import { AadManager } from ".";
 import { AzureHelper } from "./azureHelper";
 import {
   AADAppIdEnvNames,
@@ -11,7 +11,7 @@ import {
   M365TitleIdEnvName,
   ResourceGroupEnvName,
   TeamsAppIdEnvName,
-} from "./constants";
+} from "../utils/constants";
 import { M365TitleHelper } from "./m365TitleHelper";
 import { ProjectEnvReader } from "./projectEnvReader";
 import { TeamsAppHelper } from "./teamsAppHelper";

@@ -8,20 +8,20 @@ import {
   Trigger,
   Notification,
   CliVersion,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
   initPage,
   validateNotificationBot,
-} from "../../../playwrightOperation";
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   startDebugging,
   upgrade,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import {
   CLIVersionCheck,
   getBotSiteEndpoint,

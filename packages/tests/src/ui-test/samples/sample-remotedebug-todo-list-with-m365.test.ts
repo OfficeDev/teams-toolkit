@@ -5,8 +5,8 @@ import {
   Timeout,
   TemplateProject,
   TemplateProjectFolder,
-} from "../../constants";
-import { initPage, validateTodoList } from "../../playwrightOperation";
+} from "../../utils/constants";
+import { initPage, validateTodoList } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";

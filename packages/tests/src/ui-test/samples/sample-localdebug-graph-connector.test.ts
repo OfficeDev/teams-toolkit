@@ -7,9 +7,12 @@ import {
   TemplateProjectFolder,
   LocalDebugTaskResult,
   LocalDebugTaskLabel,
-} from "../../constants";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateGraphConnector } from "../../playwrightOperation";
+} from "../../utils/constants";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  initPage,
+  validateGraphConnector,
+} from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";

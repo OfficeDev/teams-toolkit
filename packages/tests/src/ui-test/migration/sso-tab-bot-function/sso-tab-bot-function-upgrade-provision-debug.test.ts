@@ -7,16 +7,16 @@ import {
   Capability,
   Notification,
   ResourceToDeploy,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { validateTab, initPage } from "../../../playwrightOperation";
+import { validateTab, initPage } from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {

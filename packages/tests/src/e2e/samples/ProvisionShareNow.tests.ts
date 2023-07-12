@@ -17,10 +17,10 @@ import {
   editDotEnvFile,
 } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
-import { TemplateProject } from "../../commonlib/constants";
+import { TemplateProject } from "../../utils/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();

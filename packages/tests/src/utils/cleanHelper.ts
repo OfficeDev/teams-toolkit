@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Env } from "./env";
 import { dotenvUtil } from "./envUtil";
-import { TestFilePath } from "../constants";
+import { TestFilePath } from "./constants";
 import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
 import {
   Tunnel,

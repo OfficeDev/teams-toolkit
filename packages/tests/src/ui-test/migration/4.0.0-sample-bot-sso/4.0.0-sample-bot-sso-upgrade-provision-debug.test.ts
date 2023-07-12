@@ -7,15 +7,15 @@ import {
   TemplateProject,
   Notification,
   TemplateProjectFolder,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   validateUpgrade,
   upgradeByTreeView,
-} from "../../../vscodeOperation";
-import { initPage, validateBot } from "../../../playwrightOperation";
+} from "../../../utils/vscodeOperation";
+import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 

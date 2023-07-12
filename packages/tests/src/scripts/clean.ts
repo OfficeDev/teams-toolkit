@@ -1,4 +1,4 @@
-import { Project } from "../constants";
+import { Project } from "../utils/constants";
 import { Env } from "../utils/env";
 import {
   AppStudioCleanHelper,

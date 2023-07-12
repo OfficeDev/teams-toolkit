@@ -162,14 +162,16 @@ export class Executor {
     return this.executeCmd(workspace, "preview", env, processEnv);
   }
 
-  static async installCLI(workspace: string, version: string, global: boolean) {
-    if (global) {
-      const command = `npm install -g @microsoft/teamsfx-cli@${version}`;
-      return this.execute(command, workspace);
-    } else {
-      const command = `npm install @microsoft/teamsfx-cli@${version}`;
-      return this.execute(command, workspace);
-    }
+  static async installCLI(
+    workspace: string,
+    version: string,
+    global: boolean,
+    force?: boolean
+  ) {
+    const globalFlag = global ? "-g" : "";
+    const forceFlag = force ? "--force" : "";
+    const command = `npm install ${globalFlag} @microsoft/teamsfx-cli@${version} ${forceFlag}`;
+    return this.execute(command, workspace);
   }
 
   static async createTemplateProject(

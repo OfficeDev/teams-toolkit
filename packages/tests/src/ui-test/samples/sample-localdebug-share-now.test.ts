@@ -7,9 +7,9 @@ import {
   TemplateProjectFolder,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../constants";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateShareNow } from "../../playwrightOperation";
+} from "../../utils/constants";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import { initPage, validateShareNow } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";

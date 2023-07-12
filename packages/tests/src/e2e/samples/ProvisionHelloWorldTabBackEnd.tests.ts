@@ -15,8 +15,8 @@ import {
   getUniqueAppName,
 } from "../commonUtils";
 import { FrontendValidator, FunctionValidator } from "../../commonlib";
-import { TemplateProject } from "../../commonlib/constants";
-import { Cleaner } from "../../utils/cleaner";
+import { TemplateProject } from "../../utils/constants";
+import { Cleaner } from "../../commonlib/cleaner";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { Executor } from "../../utils/executor";
 

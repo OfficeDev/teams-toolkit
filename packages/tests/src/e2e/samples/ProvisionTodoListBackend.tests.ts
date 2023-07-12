@@ -22,9 +22,9 @@ import {
   SqlValidator,
 } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
-import { TemplateProject } from "../../commonlib/constants";
+import { TemplateProject } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core";
 

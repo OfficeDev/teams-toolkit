@@ -5,10 +5,10 @@ import {
   Timeout,
   TemplateProject,
   TemplateProjectFolder,
-} from "../../constants";
+} from "../../utils/constants";
 import * as path from "path";
 import fs from "fs";
-import { initPage, validateStockUpdate } from "../../playwrightOperation";
+import { initPage, validateStockUpdate } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";

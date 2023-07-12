@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  AdaptiveCardsFolderName,
-  AppPackageFolderName,
-  TemplateFolderName,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, TemplateFolderName } from "@microsoft/teamsfx-api";
 import {
   MetadataV3,
   envUtil,
@@ -148,9 +144,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
   private static SEARCH_TERM = "adaptivecards.io/schemas/adaptive-card.json";
 
   public static async detectedAdaptiveCards(): Promise<boolean> {
-    const files: vscode.Uri[] = await vscode.workspace.findFiles(
-      `**/${AdaptiveCardsFolderName}/*.json`
-    );
+    const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/*.json`, "**/node_modules/**");
     for (const file of files) {
       const content = await fs.readFile(file.fsPath, "utf8");
       if (content.includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {

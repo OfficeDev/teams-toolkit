@@ -45,7 +45,7 @@ describe("Start a new project", function () {
         const result = await Executor.createProject(
           testFolder,
           appName,
-          Capability.SPFxTab,
+          Capability.Spfx,
           ProgrammingLanguage.TS
         );
         expect(result.success).to.be.true;

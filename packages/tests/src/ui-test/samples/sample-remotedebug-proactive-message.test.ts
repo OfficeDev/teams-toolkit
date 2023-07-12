@@ -5,11 +5,11 @@ import {
   Timeout,
   TemplateProject,
   TemplateProjectFolder,
-} from "../../constants";
+} from "../../utils/constants";
 import {
   initPage,
   validateProactiveMessaging,
-} from "../../playwrightOperation";
+} from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";

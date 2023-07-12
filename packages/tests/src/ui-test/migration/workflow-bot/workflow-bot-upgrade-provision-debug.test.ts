@@ -2,20 +2,20 @@
  * @author Frank Qian <frankqian@microsoft.com>
  */
 import { MigrationTestContext } from "../migrationContext";
-import { Timeout, Capability, Notification } from "../../../constants";
+import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
   validateBot,
   initPage,
   validateWorkFlowBot,
-} from "../../../playwrightOperation";
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {

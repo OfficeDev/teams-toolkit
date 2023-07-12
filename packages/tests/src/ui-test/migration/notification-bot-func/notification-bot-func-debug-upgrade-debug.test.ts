@@ -9,13 +9,13 @@ import {
   Notification,
   LocalDebugTaskLabel,
   CliVersion,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
   validateNotificationBot,
   initPage,
-} from "../../../playwrightOperation";
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
@@ -24,7 +24,7 @@ import {
   waitForTerminal,
   validateUpgrade,
   stopDebugging,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { execCommand } from "../../../utils/execCommand";
 import { expect } from "chai";
 import { ModalDialog, VSBrowser } from "vscode-extension-tester";

@@ -8,21 +8,21 @@ import {
   Notification,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
   validateBot,
   initPage,
   validateWorkFlowBot,
-} from "../../../playwrightOperation";
+} from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   startDebugging,
   upgradeByTreeView,
   waitForTerminal,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";

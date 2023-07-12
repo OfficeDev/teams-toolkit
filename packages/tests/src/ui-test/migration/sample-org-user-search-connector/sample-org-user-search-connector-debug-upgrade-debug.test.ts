@@ -6,7 +6,7 @@ import {
   TemplateProjectFolder,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import {
   validateNotification,
@@ -14,8 +14,8 @@ import {
   upgradeByTreeView,
   startDebugging,
   waitForTerminal,
-} from "../../../vscodeOperation";
-import { initPage, validateQueryOrg } from "../../../playwrightOperation";
+} from "../../../utils/vscodeOperation";
+import { initPage, validateQueryOrg } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";

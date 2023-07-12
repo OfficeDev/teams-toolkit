@@ -7,8 +7,8 @@ import {
   VSBrowser,
   WebElement,
 } from "vscode-extension-tester";
-import { Extension, Timeout, TreeViewCommands } from "../constants";
-import { clearNotifications, openTerminalView } from "../vscodeOperation";
+import { Extension, Timeout, TreeViewCommands } from "./constants";
+import { clearNotifications, openTerminalView } from "./vscodeOperation";
 
 const listCollaborator = "List Microsoft 365 Teams App (with AAD App) Owners";
 const grantPermission = "Manage M365 Teams App (with AAD app) Collaborators";

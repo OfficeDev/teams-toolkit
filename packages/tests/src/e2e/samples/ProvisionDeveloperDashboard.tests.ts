@@ -15,8 +15,8 @@ import {
   removeTeamsAppExtendToM365,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
-import { TemplateProject } from "../../commonlib/constants";
+import { Cleaner } from "../../commonlib/cleaner";
+import { TemplateProject } from "../../utils/constants";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();

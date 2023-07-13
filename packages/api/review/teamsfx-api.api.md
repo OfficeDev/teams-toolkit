@@ -259,6 +259,10 @@ export interface Inputs extends Record<string, any> {
     // (undocumented)
     existingResources?: string[];
     // (undocumented)
+    globalSpfxPackageVersion?: string;
+    // (undocumented)
+    globalYeomanPackageVersion?: string;
+    // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
@@ -266,6 +270,8 @@ export interface Inputs extends Record<string, any> {
     inProductDoc?: boolean;
     // (undocumented)
     isM365?: boolean;
+    // (undocumented)
+    latestSpfxPackageVersion?: string;
     // (undocumented)
     locale?: string;
     // (undocumented)

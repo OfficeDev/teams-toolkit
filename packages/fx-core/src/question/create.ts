@@ -4,7 +4,6 @@
 import {
   CLIPlatforms,
   FolderQuestion,
-  FuncQuestion,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
@@ -21,7 +20,6 @@ import * as jsonschema from "jsonschema";
 import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
-import semver from "semver";
 import { ConstantString } from "../common/constants";
 import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -720,14 +718,55 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
     staticOptions: [],
     placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      await PackageSelectOptionsHelper.loadOptions();
-      return PackageSelectOptionsHelper.getOptions();
+      const versions = await Promise.all([
+        Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 0, false),
+        Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 5),
+        Utils.findGloballyInstalledVersion(undefined, Constants.YeomanPackageName, 0, false),
+      ]);
+
+      inputs.globalSPFxVersion = versions[0];
+      inputs.latestSpfxPackageVersion = versions[1];
+      inputs.globalYeomanPackageVersion = versions[2];
+
+      return [
+        {
+          id: SPFxVersionOptionIds.installLocally,
+
+          label:
+            versions[1] !== undefined
+              ? getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.installLocally.withVersion.label",
+                  "v" + versions[1]
+                )
+              : getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.installLocally.noVersion.label"
+                ),
+        },
+        {
+          id: SPFxVersionOptionIds.globalPackage,
+          label:
+            versions[0] !== undefined
+              ? getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label",
+                  "v" + versions[0]
+                )
+              : getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
+                ),
+          description: getLocalizedString(
+            "plugins.spfx.questions.packageSelect.useGlobalPackage.detail",
+            Constants.RecommendedLowestSpfxVersion
+          ),
+        },
+      ];
     },
     default: SPFxVersionOptionIds.installLocally,
     validation: {
-      validFunc: async (input: string): Promise<string | undefined> => {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         if (input === SPFxVersionOptionIds.globalPackage) {
-          const hasPackagesInstalled = PackageSelectOptionsHelper.checkGlobalPackages();
+          const hasPackagesInstalled =
+            !!previousInputs?.globalSpfxPackageVersion &&
+            !!previousInputs?.globalYeomanPackageVersion;
           if (!hasPackagesInstalled) {
             throw DevEnvironmentSetupError();
           }
@@ -802,86 +841,6 @@ export enum SPFxVersionOptionIds {
   globalPackage = "false",
 }
 
-export class PackageSelectOptionsHelper {
-  private static options: OptionItem[] = [];
-  private static globalPackageVersions: (string | undefined)[] = [undefined, undefined];
-  private static latestSpGeneratorVersion: string | undefined = undefined;
-
-  public static async loadOptions(): Promise<void> {
-    const versions = await Promise.all([
-      Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 0, false),
-      Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 5),
-      Utils.findGloballyInstalledVersion(undefined, Constants.YeomanPackageName, 0, false),
-    ]);
-
-    PackageSelectOptionsHelper.globalPackageVersions[0] = versions[0];
-    PackageSelectOptionsHelper.globalPackageVersions[1] = versions[2];
-    PackageSelectOptionsHelper.latestSpGeneratorVersion = versions[1];
-
-    PackageSelectOptionsHelper.options = [
-      {
-        id: SPFxVersionOptionIds.installLocally,
-
-        label:
-          versions[1] !== undefined
-            ? getLocalizedString(
-                "plugins.spfx.questions.packageSelect.installLocally.withVersion.label",
-                "v" + versions[1]
-              )
-            : getLocalizedString(
-                "plugins.spfx.questions.packageSelect.installLocally.noVersion.label"
-              ),
-      },
-      {
-        id: SPFxVersionOptionIds.globalPackage,
-        label:
-          versions[0] !== undefined
-            ? getLocalizedString(
-                "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label",
-                "v" + versions[0]
-              )
-            : getLocalizedString(
-                "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
-              ),
-        description: getLocalizedString(
-          "plugins.spfx.questions.packageSelect.useGlobalPackage.detail",
-          Constants.RecommendedLowestSpfxVersion
-        ),
-      },
-    ];
-  }
-
-  public static getOptions(): OptionItem[] {
-    return PackageSelectOptionsHelper.options;
-  }
-
-  public static clear(): void {
-    PackageSelectOptionsHelper.options = [];
-    PackageSelectOptionsHelper.globalPackageVersions = [undefined, undefined];
-    PackageSelectOptionsHelper.latestSpGeneratorVersion = undefined;
-  }
-
-  public static checkGlobalPackages(): boolean {
-    return (
-      !!PackageSelectOptionsHelper.globalPackageVersions[0] &&
-      !!PackageSelectOptionsHelper.globalPackageVersions[1]
-    );
-  }
-
-  public static getLatestSpGeneratorVersion(): string | undefined {
-    return PackageSelectOptionsHelper.latestSpGeneratorVersion;
-  }
-
-  public static isLowerThanRecommendedVersion(): boolean | undefined {
-    const installedVersion = PackageSelectOptionsHelper.globalPackageVersions[0];
-    if (!installedVersion) {
-      return undefined;
-    }
-
-    const recommendedLowestVersion = Constants.RecommendedLowestSpfxVersion.substring(1); // remove "v"
-    return semver.lte(installedVersion, recommendedLowestVersion);
-  }
-}
 export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion {
   return {
     type: "folder",

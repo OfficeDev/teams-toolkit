@@ -176,7 +176,6 @@ export class SpecParser {
       } else if (prop === "$ref") {
         const ref = spec[prop];
         if (!ref.startsWith("#")) {
-          console.log(root + "/" + prop + ": " + spec[prop]);
           refs.set(root + "/" + prop, spec[prop]);
         }
       }

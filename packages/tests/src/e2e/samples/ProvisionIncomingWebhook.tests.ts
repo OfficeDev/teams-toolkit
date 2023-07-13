@@ -10,7 +10,7 @@ import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../commonlib/cleaner";
 
@@ -20,13 +20,13 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(
-    `${TemplateProject.IncomingWebhook}`,
+    `${TemplateProjectFolder.IncomingWebhook}`,
     { testPlanCaseId: 15277475, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.IncomingWebhook
+        TemplateProjectFolder.IncomingWebhook
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(

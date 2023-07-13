@@ -7,7 +7,7 @@ import {
   editDotEnvFile,
 } from "../e2e/commonUtils";
 import { Resource, ResourceToDeploy } from "./constants";
-import { TemplateProject } from "../utils/constants";
+import { TemplateProjectFolder } from "../utils/constants";
 import { Capability } from "../utils/constants";
 import path from "path";
 
@@ -304,7 +304,7 @@ export class CliHelper {
   static async openTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
+    template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
     const timeout = 100000;
@@ -328,7 +328,7 @@ export class CliHelper {
   static async createTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
+    template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
     const command = `teamsfx new template ${template} --interactive false `;

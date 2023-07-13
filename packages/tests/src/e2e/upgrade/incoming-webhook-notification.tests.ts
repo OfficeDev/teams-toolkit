@@ -10,7 +10,7 @@ import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
 import fs from "fs-extra";
@@ -36,7 +36,7 @@ describe("upgrade", () => {
         await CliHelper.createTemplateProject(
           appName,
           testFolder,
-          TemplateProject.IncomingWebhook,
+          TemplateProjectFolder.IncomingWebhook,
           env
         );
       }

@@ -3,7 +3,7 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "./commonUtils";
-import { TemplateProject } from "./constants";
+import { TemplateProjectFolder } from "./constants";
 import { Capability } from "../utils/constants";
 import path from "path";
 
@@ -175,7 +175,7 @@ export class Executor {
   static async createTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
+    template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
     const command = `teamsfx new template ${template} --interactive false `;
@@ -224,7 +224,7 @@ export class Executor {
   static async openTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
+    template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
     const timeout = 100000;

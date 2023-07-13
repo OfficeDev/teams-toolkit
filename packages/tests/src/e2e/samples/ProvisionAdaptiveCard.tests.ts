@@ -15,7 +15,7 @@ import {
   getUniqueAppName,
 } from "../commonUtils";
 import { BotValidator } from "../../commonlib";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../commonlib/cleaner";
 import { environmentManager } from "@microsoft/teamsfx-core";
@@ -27,13 +27,13 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(
-    `${TemplateProject.AdaptiveCard}`,
+    `${TemplateProjectFolder.AdaptiveCard}`,
     { testPlanCaseId: 15277474, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.AdaptiveCard
+        TemplateProjectFolder.AdaptiveCard
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

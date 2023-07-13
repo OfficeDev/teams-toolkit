@@ -35,11 +35,6 @@ export interface WarningResult {
    * The content of the warning.
    */
   content: string;
-
-  /**
-   * The api path of the warning.
-   */
-  apiPath?: string;
 }
 
 /**
@@ -55,11 +50,6 @@ export interface ErrorResult {
    * The content of the error.
    */
   content: string;
-
-  /**
-   * The api path of the error.
-   */
-  apiPath?: string;
 }
 
 /**
@@ -68,7 +58,10 @@ export interface ErrorResult {
 export enum ErrorType {
   SpecNotValid,
   VersionNotSupported,
-  RemoteReferenceNotSupported,
+  RemoteRefNotSupported,
+  NoServerInformation,
+  MultipleServerInformation,
+  NoSupportedApi,
 
   ListFailed,
   Cancelled,

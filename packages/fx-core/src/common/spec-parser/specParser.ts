@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import * as util from "util";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { SpecParserError } from "./specParserError";
@@ -11,6 +12,7 @@ import {
   ValidateResult,
   ValidationStatus,
   WarningResult,
+  WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
 
@@ -38,9 +40,12 @@ export class SpecParser {
     const errors: ErrorResult[] = [];
     const warnings: WarningResult[] = [];
     let spec: OpenAPIV3.Document;
+    let unResolvedSpec: OpenAPIV3.Document;
     try {
       spec = (await SwaggerParser.validate(this.specPath)) as OpenAPIV3.Document;
+      unResolvedSpec = (await SwaggerParser.parse(this.specPath)) as OpenAPIV3.Document;
     } catch (e) {
+      // Spec not valid
       errors.push({ type: ErrorType.SpecNotValid, content: (e as Error).toString() });
       return {
         status: ValidationStatus.Error,
@@ -49,7 +54,68 @@ export class SpecParser {
       };
     }
 
-    // TODO: other validations
+    // Spec version not supported
+    if (!spec.openapi || spec.openapi < "3.0.0") {
+      errors.push({
+        type: ErrorType.VersionNotSupported,
+        content: ConstantString.SpecVersionNotSupported,
+      });
+      return {
+        status: ValidationStatus.Error,
+        warnings,
+        errors,
+      };
+    }
+
+    // Server information invalid
+    if (!spec.servers || spec.servers.length === 0) {
+      errors.push({
+        type: ErrorType.NoServerInformation,
+        content: ConstantString.NoServerInformation,
+      });
+    } else if (spec.servers.length > 1) {
+      errors.push({
+        type: ErrorType.MultipleServerInformation,
+        content: ConstantString.MultipleServerInformation,
+      });
+    }
+
+    // Remote reference not supported
+    const remoteRefs = this.getAllRemoteRefs(unResolvedSpec);
+    if (remoteRefs.size > 0) {
+      errors.push({
+        type: ErrorType.RemoteRefNotSupported,
+        content: util.format(
+          ConstantString.RemoteRefNotSupported,
+          JSON.stringify(Array.from(remoteRefs))
+        ),
+      });
+    }
+
+    // No supported API
+    const apiMap = await this.getAllSupportedApi(spec);
+    if (Object.keys(apiMap).length === 0) {
+      errors.push({
+        type: ErrorType.NoSupportedApi,
+        content: ConstantString.NoSupportedApi,
+      });
+    }
+
+    // OperationId missing
+    const apisMissingOperationId: string[] = [];
+    for (const key in apiMap) {
+      const pathObjectItem = apiMap[key];
+      if (!pathObjectItem.operationId) {
+        apisMissingOperationId.push(key);
+      }
+    }
+
+    if (apisMissingOperationId.length > 0) {
+      warnings.push({
+        type: WarningType.OperationIdMissing,
+        content: util.format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
+      });
+    }
 
     let status = ValidationStatus.Valid;
     if (warnings.length > 0 && errors.length === 0) {
@@ -72,7 +138,8 @@ export class SpecParser {
    */
   async list(): Promise<string[]> {
     try {
-      const apiMap = await this.getAllSupportedApi(this.specPath);
+      const spec = (await SwaggerParser.validate(this.specPath)) as OpenAPIV3.Document;
+      const apiMap = await this.getAllSupportedApi(spec);
       return Array.from(Object.keys(apiMap));
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
@@ -100,14 +167,30 @@ export class SpecParser {
     // TODO: implementation
   }
 
+  private getAllRemoteRefs(spec: any, root = ""): Map<string, string> {
+    let refs: Map<string, string> = new Map<string, string>();
+    for (const prop in spec) {
+      if (typeof spec[prop] === "object") {
+        const newRefs = this.getAllRemoteRefs(spec[prop], root + "/" + prop);
+        refs = new Map([...refs, ...newRefs]);
+      } else if (prop === "$ref") {
+        const ref = spec[prop];
+        if (!ref.startsWith("#")) {
+          console.log(root + "/" + prop + ": " + spec[prop]);
+          refs.set(root + "/" + prop, spec[prop]);
+        }
+      }
+    }
+    return refs;
+  }
+
   private async getAllSupportedApi(
-    specPath: string
+    spec: OpenAPIV3.Document
   ): Promise<{ [key: string]: OpenAPIV3.OperationObject }> {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const apis = await SwaggerParser.validate(specPath);
-    const paths = apis.paths;
+    const paths = spec.paths;
     const result: { [key: string]: OpenAPIV3.OperationObject } = {};
     for (const path in paths) {
       const methods = paths[path];
@@ -115,7 +198,7 @@ export class SpecParser {
         // only list get and post method without auth
         if (
           (method === ConstantString.GetMethod || method === ConstantString.PostMethod) &&
-          !methods[method].security
+          !methods[method]?.security
         ) {
           result[`${method.toUpperCase()} ${path}`] = methods[method] as OpenAPIV3.OperationObject;
         }

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       preid:
-        description: "preid name(alpha, stable)"
+        description: "preid name(alpha, rc, stable)"
         required: true
         default: "alpha"
 
@@ -41,11 +41,29 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: Version alpha
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha' }}
+        working-directory: packages/api2teams/
+        run: |
+          npm version prerelease --preid=alpha
+
+      - name: Version rc
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        working-directory: packages/api2teams/
+        run: |
+          npm version prerelease --preid=rc
+
       - name: publish alpha release to npm org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha' }}
         working-directory: packages/api2teams/
         run: |
           npm publish --tag alpha
+
+      - name: publish rc release to npm org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        working-directory: packages/api2teams/
+        run: |
+          npm publish --tag rc
 
       - name: publish stable release to npm org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}

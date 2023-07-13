@@ -12,7 +12,7 @@ import fs from "fs-extra";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Cleaner } from "../../commonlib/cleaner";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
@@ -38,7 +38,7 @@ describe("upgrade", () => {
         await CliHelper.createTemplateProject(
           appName,
           testFolder,
-          TemplateProject.HelloWorldBotSSO,
+          TemplateProjectFolder.HelloWorldBotSSO,
           env
         );
       }

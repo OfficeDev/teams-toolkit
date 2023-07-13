@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { FxError, Result, TeamsAppManifest, devPreview } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";

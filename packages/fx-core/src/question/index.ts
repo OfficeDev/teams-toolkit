@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { FxError, IQTreeNode, Result, ok } from "@microsoft/teamsfx-api";
 import { createProjectCliHelpNode, createProjectQuestionNode } from "./create";
 import {

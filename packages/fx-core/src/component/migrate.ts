@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
 import { join } from "path";

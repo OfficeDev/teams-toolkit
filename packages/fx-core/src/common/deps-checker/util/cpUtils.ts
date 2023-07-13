@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-namespace */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/* eslint-disable @typescript-eslint/no-namespace */
 import * as cp from "child_process";
 import * as os from "os";
 

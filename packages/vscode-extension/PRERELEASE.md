@@ -1,4 +1,4 @@
-# Teams Toolkit v5.0 Pre-release
+# Teams Toolkit Pre-release
 
 ## Changelog
 

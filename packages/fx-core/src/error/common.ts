@@ -121,12 +121,12 @@ export class UnhandledError extends SystemError {
       message: getDefaultString(
         "error.common.UnhandledError",
         source || "",
-        e.message || JSON.stringify(e)
+        JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       displayMessage: getLocalizedString(
         "error.common.UnhandledError",
         source || "",
-        e.message || JSON.stringify(e)
+        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
     });
     if (e.stack) super.stack = e.stack;
@@ -140,12 +140,12 @@ export class UnhandledUserError extends UserError {
       message: getDefaultString(
         "error.common.UnhandledError",
         source || "",
-        e.message || JSON.stringify(e)
+        JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       displayMessage: getLocalizedString(
         "error.common.UnhandledError",
         source || "",
-        e.message || JSON.stringify(e)
+        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       helpLink: helpLink,
     });

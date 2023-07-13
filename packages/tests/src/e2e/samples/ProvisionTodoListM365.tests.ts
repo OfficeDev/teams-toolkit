@@ -19,7 +19,7 @@ import {
   FunctionValidator,
   FrontendValidator,
 } from "../../commonlib";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../commonlib/cleaner";
 import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
@@ -32,13 +32,13 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(
-    `${TemplateProject.TodoListM365}`,
+    `${TemplateProjectFolder.TodoListM365}`,
     { testPlanCaseId: 15277470, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.TodoListM365
+        TemplateProjectFolder.TodoListM365
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

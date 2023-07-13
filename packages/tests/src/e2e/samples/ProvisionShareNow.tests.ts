@@ -17,7 +17,7 @@ import {
   editDotEnvFile,
 } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../commonlib/cleaner";
@@ -33,7 +33,7 @@ describe("teamsfx new template", function () {
   });
 
   it(
-    `${TemplateProject.ShareNow}`,
+    `${TemplateProjectFolder.ShareNow}`,
     { testPlanCaseId: 15277467, author: "v-ivanchen@microsoft.com" },
     async function () {
       // disable CI
@@ -42,7 +42,7 @@ describe("teamsfx new template", function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.ShareNow
+        TemplateProjectFolder.ShareNow
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

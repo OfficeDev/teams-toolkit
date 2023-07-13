@@ -16,7 +16,7 @@ import {
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../commonlib/cleaner";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -24,13 +24,13 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(
-    `${TemplateProject.AssistDashboard}`,
+    `${TemplateProjectFolder.AssistDashboard}`,
     { testPlanCaseId: 24132124, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.AssistDashboard
+        TemplateProjectFolder.AssistDashboard
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

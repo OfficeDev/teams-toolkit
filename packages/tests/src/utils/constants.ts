@@ -74,6 +74,7 @@ export enum TemplateProjectFolder {
   DiceRoller = "live-share-dice-roller",
   OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   OutlookSignature = "outlook-add-in-set-signature",
+  AssistDashboard = "developer-assist-dashboard",
 }
 
 export enum Resource {

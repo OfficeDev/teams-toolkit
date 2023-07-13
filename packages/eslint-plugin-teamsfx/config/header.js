@@ -24,7 +24,11 @@ module.exports = {
       rules: {
         "header/header": [
           "error",
-          "../eslint-plugin-teamsfx/config/header"
+          "line",
+          [
+            " Copyright (c) Microsoft Corporation.",
+            " Licensed under the MIT license.",
+          ],
         ],
       },
     },

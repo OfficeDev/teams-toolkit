@@ -12,9 +12,6 @@ module.exports = {
     sourceType: "module",
     project: ['./tsconfig.eslint.json']
   },
-  // extends: [
-  //   "plugin:@typescript-eslint/recommended-requiring-type-checking",
-  // ],
   plugins: [
     "@typescript-eslint/eslint-plugin",
     "prettier",

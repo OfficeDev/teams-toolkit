@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";

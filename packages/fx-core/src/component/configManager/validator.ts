@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import Ajv, { ValidateFunction } from "ajv";
 import fs from "fs-extra";
 import path from "path";

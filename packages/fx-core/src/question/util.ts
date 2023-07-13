@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import { URL } from "url";
 
 export function isValidHttpUrl(input: string): boolean {

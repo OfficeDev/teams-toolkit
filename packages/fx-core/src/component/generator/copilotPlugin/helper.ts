@@ -103,7 +103,7 @@ export class OpenAIPluginManifestHelper {
     } catch (e) {
       context.logProvider.warning(
         getLocalizedString(
-          "error.generator.copilotPlugin.openAiPluginManifest.CannotGetLogoError",
+          "error.copilotPlugin.openAiPluginManifest.CannotGetLogoError",
           openAiPluginManifest.logo_url,
           iconPath
         )

@@ -120,6 +120,26 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(updateManifestBasedOnOpenAIPlugin.calledOnce);
   });
 
+  it("error if updating manifest based on OpenAI Plugin", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      openAIPluginManifest: openAIPluginManifest,
+    };
+    const context = createContextV3();
+    const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    const updateManifestBasedOnOpenAIPlugin = sandbox
+      .stub(OpenAIPluginManifestHelper, "updateManifest")
+      .resolves(err(new SystemError("source", "name", "", "")));
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isErr());
+    assert.isTrue(downloadTemplate.calledOnce);
+    assert.isTrue(generateBasedOnSpec.calledOnce);
+    assert.isTrue(updateManifestBasedOnOpenAIPlugin.calledOnce);
+  });
+
   it("failed to download template generator", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,

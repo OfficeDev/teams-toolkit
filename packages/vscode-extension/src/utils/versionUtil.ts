@@ -68,7 +68,8 @@ export function isPrereleaseVersion(version: string | Version): boolean {
   if (typeof version === "string") {
     version = fromString(version);
   }
-  if (version.major === PrereleaseVersionMajor && version.minor === PrereleaseVersionMinor) {
+  // The odd nuber is the prerelease version, with patch version as timestamp like 2023071206 as 10 number.
+  if (version.minor % 2 === 1 && version.patch.toString().length === 10) {
     return true;
   }
   return false;

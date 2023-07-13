@@ -102,6 +102,18 @@ export class WriteFileError extends SystemError {
   }
 }
 
+export class FilePermissionError extends UserError {
+  constructor(e: Error, source?: string) {
+    const msg = getDefaultString("error.common.FilePermissionError", e.message);
+    super({
+      source: source || "core",
+      message: msg,
+      displayMessage: msg,
+    });
+    if (e.stack) super.stack = e.stack;
+  }
+}
+
 export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
     super({

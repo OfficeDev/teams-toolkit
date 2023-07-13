@@ -5,39 +5,24 @@
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import { err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { setLocale } from "../globalVars";
-import { assembleError } from "../../error/common";
+import { FilePermissionError, assembleError } from "../../error/common";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
  * to catch exceptions and return specific error.
  */
 export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
-  // const taskName = `${ctx.method} ${
-  //   ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
-  // }`;
-  // if locale is set in inputs, set it globally.
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs?.locale) setLocale(inputs.locale);
   try {
-    // let log = `FxCore start call:${taskName}`;
-    // if (inputs.loglevel && inputs.loglevel === "Debug") {
-    //   TOOLS?.logProvider?.debug(log);
-    // } else {
-    //   TOOLS?.logProvider?.info(log);
-    // }
-    // const time = new Date().getTime();
     await next();
-    // log = `FxCore finish call:${taskName}, time: ${new Date().getTime() - time} ms`;
-    // if (inputs.loglevel && inputs.loglevel === "Debug") {
-    //   TOOLS?.logProvider?.debug(log);
-    // } else {
-    //   TOOLS?.logProvider?.info(log);
-    // }
   } catch (e) {
-    let fxError = assembleError(e);
-    if (fxError instanceof SystemError) {
-      fxError = await tryConvertToUserError(fxError);
-    }
+    const fxError = assembleError(e);
+    ctx.result = err(fxError);
+  }
+  if (ctx.result?.isErr()) {
+    let fxError = ctx.result.error;
+    fxError = convertError(fxError);
     ctx.result = err(fxError);
   }
 };
@@ -62,16 +47,25 @@ const Reg12 = /.+no space left on device.+/;
 // const Reg12 = /ENOENT: no such file or directory/;
 // const Reg13 = /EBUSY: resource busy or locked/;
 // const Reg14 = /Lock is not .+ by you/;
-// const Reg15 = /EPERM: operation not permitted/;
+const Reg15 = /EPERM: operation not permitted/;
 
 const Regs = [Reg1, Reg2, Reg3, Reg4, Reg5, Reg6, Reg7, Reg8, Reg9, Reg10, Reg11, Reg12];
 
-async function tryConvertToUserError(err: SystemError): Promise<UserError | SystemError> {
+export function convertError(err: Error): UserError | SystemError | Error {
   const msg = err.message;
   if (!msg) return err;
+  if (Reg15.test(msg) === true) {
+    const userError = new FilePermissionError(err, (err as any).source);
+    return userError;
+  }
   for (const reg of Regs) {
     if (reg.test(msg) === true) {
-      const userError = new UserError(err.source, err.name, err.message);
+      const userError = new UserError(
+        (err as any).source,
+        err.name,
+        err.message,
+        (err as any).displayMessage
+      );
       userError.stack = err.stack;
       return userError;
     }

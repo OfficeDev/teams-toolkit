@@ -2,11 +2,20 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, ok, Platform, Result, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import { ErrorHandlerMW } from "../../../src/core/middleware/errorHandler";
-import { UnhandledError, UserCancelError } from "../../../src/error/common";
+import { convertError, ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
+import { UnhandledError, UserCancelError } from "../../src/error/common";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -105,5 +114,22 @@ describe("Middleware - ErrorHandlerMW", () => {
       const error = res.error;
       assert.isTrue(error instanceof UserError);
     }
+  });
+});
+
+describe("convertError", () => {
+  it("EPERM: operation not permitted (Error)", () => {
+    const error = new Error(`EPERM: operation not permitted, open '<REDACTED: user-file-path>'`);
+    const converted = convertError(error);
+    assert.isTrue(converted instanceof UserError);
+  });
+  it("EPERM: operation not permitted (SystemError)", () => {
+    const error = new SystemError(
+      "test",
+      "Error",
+      `EPERM: operation not permitted, open '<REDACTED: user-file-path>'`
+    );
+    const converted = convertError(error);
+    assert.isTrue(converted instanceof UserError);
   });
 });

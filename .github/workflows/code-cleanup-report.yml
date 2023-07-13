@@ -141,7 +141,7 @@ jobs:
 
     - name: Install eslint-plugin-header
       run: |
-        sed -i 's/share/header/g' .eslintrc.js
+        sed -i 's/shared/header/g' .eslintrc.js
       working-directory: packages/${{matrix.package}}
 
     - name: Detect missing header file

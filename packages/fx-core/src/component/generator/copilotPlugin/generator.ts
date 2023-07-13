@@ -54,8 +54,10 @@ export class CopilotPluginGenerator {
     const openapiSpecPath = path.join(destinationPath, apiSpecFolderName, apiSpecFileName);
     await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveFolderName);
 
+    // update manifest based on openAI plugin manifest
     if (inputs.openAIPluginManifest) {
       await OpenAIManifestHelper.updateManifest(
+        context,
         inputs.openAIPluginManifest,
         path.join(destinationPath, appPackageName)
       );

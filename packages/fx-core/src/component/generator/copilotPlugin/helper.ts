@@ -14,7 +14,7 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
 import {
   ErrorType as ApiSpecErrorType,
@@ -24,6 +24,8 @@ import { SpecParser } from "../../../common/spec-parser/specParser";
 import fs from "fs-extra";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { TelemetryEvents } from "./constant";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 
@@ -42,11 +44,6 @@ export interface ErrorResult {
    * The content of the error.
    */
   content: string;
-
-  /**
-   * The api path of the error.
-   */
-  apiPath?: string;
 }
 
 export class OpenAIManifestHelper {
@@ -71,8 +68,9 @@ export class OpenAIManifestHelper {
     }
 
     const manifest = manifestRes.value;
+    const iconPath = path.join(appPackageFolder, manifest.icons.color);
     manifest.name.full = openAiPluginManifest.name_for_model;
-    manifest.name.short = openAiPluginManifest.name_for_human;
+    manifest.name.short = openAiPluginManifest.name_for_human + "-${{TEAMSFX_ENV}}";
     manifest.description.full = openAiPluginManifest.description_for_model;
     manifest.description.short = openAiPluginManifest.description_for_human;
     manifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
@@ -85,14 +83,20 @@ export class OpenAIManifestHelper {
       }, 3);
 
       if (legalInfoRes.data) {
-        const iconPath = path.join(appPackageFolder, manifest.icons.color);
         await fs.writeFile(iconPath, legalInfoRes.data);
       }
     } catch (e) {
-      // TODO: log error and telemetry
-      context.logProvider.warning(`Failed to download icon from ${openAiPluginManifest.logo_url}`);
+      context.logProvider.warning(
+        getLocalizedString(
+          "error.generator.copilotPlugin.openAiPluginManifest.CannotGetLogoError",
+          openAiPluginManifest.logo_url,
+          iconPath
+        )
+      );
+      context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.CannotGetLogoFromOpenAIPlugin);
     }
 
+    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, "\t"), "utf-8");
     return ok(undefined);
   }
 }

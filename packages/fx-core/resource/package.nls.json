@@ -610,5 +610,6 @@
   "error.deploy.AzureStorageGetContainerPropertiesError.Notification": "Unable to get properties of container '%s' in Azure Storage Account '%s' due to error: %s. Refer to the [Output panel](command:fx-extension.showOutputChannel) for more details.",
   "error.deploy.AzureStorageGetContainerPropertiesError": "Unable to get properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again.",
   "error.deploy.AzureStorageSetContainerPropertiesError.Notification": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. Refer to the [Output panel](command:fx-extension.showOutputChannel) for more details.",
-  "error.deploy.AzureStorageSetContainerPropertiesError": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again."
+  "error.deploy.AzureStorageSetContainerPropertiesError": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again.",
+  "error.generator.copilotPlugin.openAiPluginManifest.CannotGetLogoError": "Unable to get logo from '%s'. Please update '%s' manually if you want to use same logo for your Copilot plugin."
 }

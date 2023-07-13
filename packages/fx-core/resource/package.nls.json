@@ -207,6 +207,8 @@
   "error.generator.DownloadSampleApiLimitError": "Unable to download sample due to throttling. Retry later after rate limit reset (This may take up to 1 hour). Alternatively, you can go to %s to git clone the repo manually",
   "error.generator.DownloadSampleNetworkError": "Unable to download sample due to network error. Check your network connection and retry. Alternatively, you can go to %s to git clone the repo manually",
   "error.generator.ParseUrlError": "Unable to parse url %s",
+  "error.copilotPlugin.openAiPluginManifest.CannotGetLogoError": "Unable to get logo from '%s'. Please update '%s' manually if you want to use same logo for your Copilot plugin.",
+  "error.copilotPlugin.openAiPluginManifest.CannotGetManifest": "Unable to get OpenAI plugin manifest from '%s'.",
   "error.m365.NotExtendedToM365Error": "Unable to extend Teams app to Microsoft 365. Use 'teamsApp/extendToM365' action to extend your Teams app to Microsoft 365.",
   "core.QuestionAppName.validation.pattern": "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.",
   "core.QuestionAppName.validation.maxlength": "Application name is longer than the maximum length of 30.",
@@ -610,6 +612,5 @@
   "error.deploy.AzureStorageGetContainerPropertiesError.Notification": "Unable to get properties of container '%s' in Azure Storage Account '%s' due to error: %s. Refer to the [Output panel](command:fx-extension.showOutputChannel) for more details.",
   "error.deploy.AzureStorageGetContainerPropertiesError": "Unable to get properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again.",
   "error.deploy.AzureStorageSetContainerPropertiesError.Notification": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. Refer to the [Output panel](command:fx-extension.showOutputChannel) for more details.",
-  "error.deploy.AzureStorageSetContainerPropertiesError": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again.",
-  "error.generator.copilotPlugin.openAiPluginManifest.CannotGetLogoError": "Unable to get logo from '%s'. Please update '%s' manually if you want to use same logo for your Copilot plugin."
+  "error.deploy.AzureStorageSetContainerPropertiesError": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again."
 }

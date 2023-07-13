@@ -11,6 +11,7 @@ import {
   OpenAIManifestAuthType,
   OpenAIPluginManifest,
   Result,
+  UserError,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -26,8 +27,11 @@ import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TelemetryEvents } from "./constant";
+import { assembleError } from "../../../error";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
+const teamsFxEnv = "${{TEAMSFX_ENV}}";
+const componentName = "OpenAIPluginManifestHelper";
 
 enum OpenAIPluginManifestErrorType {
   AuthNotSupported,
@@ -46,13 +50,24 @@ export interface ErrorResult {
   content: string;
 }
 
-export class OpenAIManifestHelper {
+export class OpenAIPluginManifestHelper {
   static async loadOpenAIPluginManifest(domain: string): Promise<OpenAIPluginManifest> {
     const path = domain + manifestFilePath;
-    const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
-      return await axios.get(path);
-    }, 3);
-    return res.data;
+
+    try {
+      const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
+        return await axios.get(path);
+      }, 3);
+
+      return res.data;
+    } catch (e) {
+      throw new UserError(
+        componentName,
+        "loadOpenAIPluginManifest",
+        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path),
+        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path)
+      );
+    }
   }
 
   static async updateManifest(
@@ -70,7 +85,7 @@ export class OpenAIManifestHelper {
     const manifest = manifestRes.value;
     const iconPath = path.join(appPackageFolder, manifest.icons.color);
     manifest.name.full = openAiPluginManifest.name_for_model;
-    manifest.name.short = openAiPluginManifest.name_for_human + "-${{TEAMSFX_ENV}}";
+    manifest.name.short = `${openAiPluginManifest.name_for_human}-${teamsFxEnv}`;
     manifest.description.full = openAiPluginManifest.description_for_model;
     manifest.description.short = openAiPluginManifest.description_for_human;
     manifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
@@ -93,7 +108,10 @@ export class OpenAIManifestHelper {
           iconPath
         )
       );
-      context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.CannotGetLogoFromOpenAIPlugin);
+      const error = assembleError(e);
+      context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.CannotGetLogoFromOpenAIPlugin, {
+        reason: error.message,
+      });
     }
 
     await fs.writeFile(manifestPath, JSON.stringify(manifest, null, "\t"), "utf-8");

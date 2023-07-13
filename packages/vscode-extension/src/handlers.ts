@@ -753,6 +753,10 @@ export async function runCommand(
         result = await core.createAppPackage(inputs);
         break;
       }
+      case Stage.copilotPluginAddAPI: {
+        result = await core.copilotPluginAddAPI(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,
@@ -2163,21 +2167,11 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
   return result;
 }
 
-export async function editManifestTemplate(args: any[]) {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.EditManifestTemplate,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-
-  if (args && args.length > 0) {
-    const segments = args[0].fsPath.split(".");
-    const env = segments[segments.length - 2] === "local" ? "local" : "remote";
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
-    });
-  }
+export async function copilotPluginAddAPIHandler(args: any[]) {
+  const inputs = getSystemInputs();
+  // Telemetries are handled in runCommand()
+  const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
+  return result;
 }
 
 export async function editAadManifestTemplate(args: any[]) {

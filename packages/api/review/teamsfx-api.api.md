@@ -647,6 +647,8 @@ export enum Stage {
     // (undocumented)
     checkPermission = "checkPermission",
     // (undocumented)
+    copilotPluginAddAPI = "copilotPluginAddAPI",
+    // (undocumented)
     create = "create",
     // (undocumented)
     createAppPackage = "createAppPackage",

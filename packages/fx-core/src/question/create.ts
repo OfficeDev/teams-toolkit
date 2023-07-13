@@ -1245,7 +1245,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,

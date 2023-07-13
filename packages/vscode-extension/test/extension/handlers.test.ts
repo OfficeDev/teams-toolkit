@@ -876,49 +876,6 @@ describe("handlers", () => {
     });
   });
 
-  describe("manifest", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-    it("edit manifest template: local", async () => {
-      sinon.restore();
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const openTextDocument = sinon
-        .stub(vscode.workspace, "openTextDocument")
-        .returns(new Promise<vscode.TextDocument>((resolve) => {}));
-      sinon
-        .stub(vscode.workspace, "workspaceFolders")
-        .returns([{ uri: { fsPath: "c:\\manifestTestFolder" } }]);
-
-      const args = [{ fsPath: "c:\\testPath\\manifest.local.json" }, "CodeLens"];
-      await handlers.editManifestTemplate(args);
-      chai.assert.isTrue(
-        openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.template.json" as any
-        )
-      );
-    });
-
-    it("edit manifest template: remote", async () => {
-      sinon.restore();
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      const openTextDocument = sinon
-        .stub(vscode.workspace, "openTextDocument")
-        .returns(new Promise<vscode.TextDocument>((resolve) => {}));
-      sinon
-        .stub(vscode.workspace, "workspaceFolders")
-        .returns([{ uri: { fsPath: "c:\\manifestTestFolder" } }]);
-
-      const args = [{ fsPath: "c:\\testPath\\manifest.dev.json" }, "CodeLens"];
-      await handlers.editManifestTemplate(args);
-      chai.assert.isTrue(
-        openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.template.json" as any
-        )
-      );
-    });
-  });
-
   describe("checkUpgrade", function () {
     const sandbox = sinon.createSandbox();
     const mockCore = new MockCore();

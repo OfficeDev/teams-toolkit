@@ -27,7 +27,12 @@ import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import { SPFxImportFolderQuestion, SPFxWebpartNameQuestion } from "./create";
+import {
+  SPFxImportFolderQuestion,
+  SPFxWebpartNameQuestion,
+  apiSpecLocationQuestion,
+  apiOperationQuestion,
+} from "./create";
 import { QuestionNames } from "./questionNames";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
@@ -274,6 +279,17 @@ function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
 export function selectTeamsAppValidationMethodQuestionNode(): IQTreeNode {
   return {
     data: selectTeamsAppValidationMethodQuestion(),
+  };
+}
+
+export function copilotPluginAddAPIQuestionNode(): IQTreeNode {
+  return {
+    data: apiSpecLocationQuestion(),
+    children: [
+      {
+        data: apiOperationQuestion(),
+      },
+    ],
   };
 }
 

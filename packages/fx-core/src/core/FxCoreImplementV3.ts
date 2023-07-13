@@ -630,6 +630,12 @@ export class FxCoreV3Implement {
     return result;
   }
 
+  @hooks([ErrorHandlerMW, QuestionMW(questions.copilotPluginAddAPI), ConcurrentLockerMW])
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
+    // TODO: call generator to add API
+    return ok("");
+  }
+
   @hooks([
     ErrorHandlerMW,
     QuestionMW(questions.previewWithTeamsAppManifest),

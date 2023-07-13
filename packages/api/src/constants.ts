@@ -67,6 +67,7 @@ export enum Stage {
   validateApplication = "validateApplication",
   createAppPackage = "createAppPackage",
   previewWithManifest = "previewWithManifest",
+  copilotPluginAddAPI = "copilotPluginAddAPI",
 }
 
 export enum TelemetryEvent {

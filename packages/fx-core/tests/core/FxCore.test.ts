@@ -1350,3 +1350,23 @@ describe("isEnvFile", async () => {
     }
   });
 });
+
+describe("copilotPlugin", async () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("add API", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "https://example.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isOk());
+  });
+});

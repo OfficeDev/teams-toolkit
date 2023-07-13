@@ -22,6 +22,7 @@ import { ConstantString } from "./constants";
 export class SpecParser {
   private specPath: string;
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
+  private spec: OpenAPIV3.Document | undefined;
 
   /**
    * Creates a new instance of the SpecParser class.
@@ -39,11 +40,11 @@ export class SpecParser {
   async validate(): Promise<ValidateResult> {
     const errors: ErrorResult[] = [];
     const warnings: WarningResult[] = [];
-    let spec: OpenAPIV3.Document;
-    let unResolvedSpec: OpenAPIV3.Document;
+    const parser = new SwaggerParser();
     try {
-      spec = (await SwaggerParser.validate(this.specPath)) as OpenAPIV3.Document;
-      unResolvedSpec = (await SwaggerParser.parse(this.specPath)) as OpenAPIV3.Document;
+      if (!this.spec) {
+        this.spec = (await parser.validate(this.specPath)) as OpenAPIV3.Document;
+      }
     } catch (e) {
       // Spec not valid
       errors.push({ type: ErrorType.SpecNotValid, content: (e as Error).toString() });
@@ -55,7 +56,7 @@ export class SpecParser {
     }
 
     // Spec version not supported
-    if (!spec.openapi || spec.openapi < "3.0.0") {
+    if (!this.spec.openapi || this.spec.openapi < "3.0.0") {
       errors.push({
         type: ErrorType.VersionNotSupported,
         content: ConstantString.SpecVersionNotSupported,
@@ -68,12 +69,12 @@ export class SpecParser {
     }
 
     // Server information invalid
-    if (!spec.servers || spec.servers.length === 0) {
+    if (!this.spec.servers || this.spec.servers.length === 0) {
       errors.push({
         type: ErrorType.NoServerInformation,
         content: ConstantString.NoServerInformation,
       });
-    } else if (spec.servers.length > 1) {
+    } else if (this.spec.servers.length > 1) {
       errors.push({
         type: ErrorType.MultipleServerInformation,
         content: ConstantString.MultipleServerInformation,
@@ -81,19 +82,19 @@ export class SpecParser {
     }
 
     // Remote reference not supported
-    const remoteRefs = this.getAllRemoteRefs(unResolvedSpec);
-    if (remoteRefs.size > 0) {
+    const refPaths = parser.$refs.paths();
+
+    // refPaths [0] is the current spec file path
+    if (refPaths.length > 1) {
+      console.log("refPaths", refPaths);
       errors.push({
         type: ErrorType.RemoteRefNotSupported,
-        content: util.format(
-          ConstantString.RemoteRefNotSupported,
-          JSON.stringify(Array.from(remoteRefs))
-        ),
+        content: util.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
       });
     }
 
     // No supported API
-    const apiMap = await this.getAllSupportedApi(spec);
+    const apiMap = await this.getAllSupportedApi(this.spec);
     if (Object.keys(apiMap).length === 0) {
       errors.push({
         type: ErrorType.NoSupportedApi,
@@ -138,8 +139,10 @@ export class SpecParser {
    */
   async list(): Promise<string[]> {
     try {
-      const spec = (await SwaggerParser.validate(this.specPath)) as OpenAPIV3.Document;
-      const apiMap = await this.getAllSupportedApi(spec);
+      if (!this.spec) {
+        this.spec = (await SwaggerParser.validate(this.specPath)) as OpenAPIV3.Document;
+      }
+      const apiMap = await this.getAllSupportedApi(this.spec);
       return Array.from(Object.keys(apiMap));
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
@@ -165,22 +168,6 @@ export class SpecParser {
     }
 
     // TODO: implementation
-  }
-
-  private getAllRemoteRefs(spec: any, root = ""): Map<string, string> {
-    let refs: Map<string, string> = new Map<string, string>();
-    for (const prop in spec) {
-      if (typeof spec[prop] === "object") {
-        const newRefs = this.getAllRemoteRefs(spec[prop], root + "/" + prop);
-        refs = new Map([...refs, ...newRefs]);
-      } else if (prop === "$ref") {
-        const ref = spec[prop];
-        if (!ref.startsWith("#")) {
-          refs.set(root + "/" + prop, spec[prop]);
-        }
-      }
-    }
-    return refs;
   }
 
   private async getAllSupportedApi(

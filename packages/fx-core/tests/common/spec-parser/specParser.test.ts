@@ -14,6 +14,7 @@ import {
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
+import { OpenAPIV3 } from "openapi-types";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -23,7 +24,9 @@ describe("SpecParser", () => {
   describe("validate", () => {
     it("should return an error result when the spec is not valid", async () => {
       const parser = new SpecParser("/path/to/spec.yaml");
-      const validateStub = sinon.stub(SwaggerParser, "validate").rejects(new Error("Invalid spec"));
+      const validateStub = sinon
+        .stub(SwaggerParser.prototype, "validate")
+        .rejects(new Error("Invalid spec"));
 
       const result = await parser.validate();
 
@@ -38,8 +41,7 @@ describe("SpecParser", () => {
     it("should return an error result object if the spec version is not supported", async function () {
       const specPath = "path/to/spec";
       const spec = { openapi: "2.0.0" };
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves(spec as any);
-      sinon.stub(SwaggerParser, "parse").resolves({} as any);
+      const validateStub = sinon.stub(SwaggerParser.prototype, "validate").resolves(spec as any);
 
       const result = await new SpecParser(specPath).validate();
 
@@ -56,8 +58,7 @@ describe("SpecParser", () => {
     it("should return an error result object if no server information", async function () {
       const specPath = "path/to/spec";
       const spec = { openapi: "3.0.0" };
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves(spec as any);
-      sinon.stub(SwaggerParser, "parse").resolves({} as any);
+      const validateStub = sinon.stub(SwaggerParser.prototype, "validate").resolves(spec as any);
 
       const result = await new SpecParser(specPath).validate();
 
@@ -75,8 +76,7 @@ describe("SpecParser", () => {
     it("should return an error result object if has multiple server information", async function () {
       const specPath = "path/to/spec";
       const spec = { openapi: "3.0.0", servers: ["server1", "server2"] };
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves(spec as any);
-      sinon.stub(SwaggerParser, "parse").resolves({} as any);
+      const validateStub = sinon.stub(SwaggerParser.prototype, "validate").resolves(spec as any);
 
       const result = await new SpecParser(specPath).validate();
 
@@ -97,8 +97,7 @@ describe("SpecParser", () => {
     it("should return an error result object if no supported apis", async function () {
       const specPath = "path/to/spec";
       const spec = { openapi: "3.0.0", servers: ["server1"] };
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves(spec as any);
-      sinon.stub(SwaggerParser, "parse").resolves({} as any);
+      const validateStub = sinon.stub(SwaggerParser.prototype, "validate").resolves(spec as any);
 
       const result = await new SpecParser(specPath).validate();
 
@@ -111,26 +110,29 @@ describe("SpecParser", () => {
     });
 
     it("should return an error result object if contain remote reference", async function () {
-      const specPath = "path/to/spec";
       const spec = {
-        openapi: "3.0.2",
+        openapi: "3.0.3",
+        info: {
+          title: "Swagger Petstore - OpenAPI 3.",
+          version: "1.0.11",
+        },
         servers: [
           {
-            url: "/v3",
+            url: "https://petstore3.swagger.io/api/v3",
           },
         ],
         paths: {
           "/pet": {
-            post: {
+            get: {
               tags: ["pet"],
-              summary: "Add a new pet to the store",
-              operationId: "addPet",
+              operationId: "updatePet",
               responses: {
                 "200": {
+                  description: "Successful operation",
                   content: {
-                    "application/xml": {
+                    "application/json": {
                       schema: {
-                        $ref: "https://fake-url/pet.yml",
+                        $ref: "https://petstore3.swagger.io/api/v3/openapi.json#/components/schemas/Pet",
                       },
                     },
                   },
@@ -139,17 +141,25 @@ describe("SpecParser", () => {
             },
           },
         },
-      };
+        components: {
+          schemas: {
+            Pet: {
+              type: "object",
+              properties: {
+                name: {
+                  type: "string",
+                  example: "doggie",
+                },
+              },
+            },
+          },
+        },
+      } as OpenAPIV3.Document;
 
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves(spec as any);
-      sinon.stub(SwaggerParser, "parse").resolves(spec as any);
-
-      const result = await new SpecParser(specPath).validate();
+      const result = await new SpecParser(spec as any).validate();
 
       expect(result.errors[0].type).equal(ErrorType.RemoteRefNotSupported);
       expect(result.status).equal(ValidationStatus.Error);
-
-      sinon.assert.calledOnce(validateStub);
     });
 
     it("should return an warning result object if missing operation id", async function () {
@@ -182,8 +192,7 @@ describe("SpecParser", () => {
         },
       };
 
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves(spec as any);
-      sinon.stub(SwaggerParser, "parse").resolves(spec as any);
+      const validateStub = sinon.stub(SwaggerParser.prototype, "validate").resolves(spec as any);
 
       const result = await new SpecParser(specPath).validate();
       expect(result).to.deep.equal({
@@ -230,8 +239,7 @@ describe("SpecParser", () => {
         },
       };
 
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves(spec as any);
-      sinon.stub(SwaggerParser, "parse").resolves(spec as any);
+      const validateStub = sinon.stub(SwaggerParser.prototype, "validate").resolves(spec as any);
 
       const result = await new SpecParser(specPath).validate();
 

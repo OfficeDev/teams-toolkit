@@ -218,7 +218,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       );
       const url = line.text.substring(line.text.indexOf("https"), line.text.length - 2);
       const schemaCommand = {
-        title: "Open schema",
+        title: localize("teamstoolkit.codeLens.openSchema"),
         command: "fx-extension.openSchema",
         arguments: [{ url: url }],
       };
@@ -537,7 +537,7 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
         new vscode.Position(line.lineNumber, indexOf + match.length)
       );
       const schemaCommand = {
-        title: "➕Add another API",
+        title: "➕" + localize("teamstoolkit.codeLens.copilotPluginAddAPI"),
         command: "fx-extension.copilotPluginAddAPI",
       };
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));

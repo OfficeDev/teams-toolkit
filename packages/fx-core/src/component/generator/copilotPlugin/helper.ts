@@ -26,8 +26,6 @@ import fs from "fs-extra";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { TelemetryEvents } from "./constant";
-import { assembleError } from "../../../error";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const teamsFxEnv = "${{TEAMSFX_ENV}}";
@@ -71,7 +69,6 @@ export class OpenAIPluginManifestHelper {
   }
 
   static async updateManifest(
-    context: Context,
     openAiPluginManifest: OpenAIPluginManifest,
     appPackageFolder: string
   ): Promise<Result<undefined, FxError>> {
@@ -83,7 +80,6 @@ export class OpenAIPluginManifestHelper {
     }
 
     const manifest = manifestRes.value;
-    const iconPath = path.join(appPackageFolder, manifest.icons.color);
     manifest.name.full = openAiPluginManifest.name_for_model;
     manifest.name.short = `${openAiPluginManifest.name_for_human}-${teamsFxEnv}`;
     manifest.description.full = openAiPluginManifest.description_for_model;
@@ -91,28 +87,6 @@ export class OpenAIPluginManifestHelper {
     manifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
     manifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;
     manifest.developer.termsOfUseUrl = openAiPluginManifest.legal_info_url;
-
-    try {
-      const legalInfoRes: AxiosResponse<any> = await sendRequestWithRetry(async () => {
-        return await axios.get(openAiPluginManifest.logo_url, { responseType: "arraybuffer" });
-      }, 3);
-
-      if (legalInfoRes.data) {
-        await fs.writeFile(iconPath, legalInfoRes.data);
-      }
-    } catch (e) {
-      context.logProvider.warning(
-        getLocalizedString(
-          "error.copilotPlugin.openAiPluginManifest.CannotGetLogoError",
-          openAiPluginManifest.logo_url,
-          iconPath
-        )
-      );
-      const error = assembleError(e);
-      context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.CannotGetLogoFromOpenAIPlugin, {
-        reason: error.message,
-      });
-    }
 
     await fs.writeFile(manifestPath, JSON.stringify(manifest, null, "\t"), "utf-8");
     return ok(undefined);

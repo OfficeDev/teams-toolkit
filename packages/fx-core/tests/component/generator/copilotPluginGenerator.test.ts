@@ -159,10 +159,7 @@ describe("copilotPluginGenerator", function () {
 });
 
 describe("OpenAIManifestHelper", async () => {
-  const tools = new MockTools();
-  setTools(tools);
   const sandbox = sinon.createSandbox();
-  const context = createContextV3();
 
   afterEach(async () => {
     sandbox.restore();
@@ -172,11 +169,7 @@ describe("OpenAIManifestHelper", async () => {
     sandbox
       .stub(manifestUtils, "_readAppManifest")
       .resolves(err(new SystemError("source", "name", "", "")));
-    const result = await OpenAIPluginManifestHelper.updateManifest(
-      context,
-      openAIPluginManifest,
-      "path"
-    );
+    const result = await OpenAIPluginManifestHelper.updateManifest(openAIPluginManifest, "path");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
       assert.equal(result.error.source, "source");
@@ -185,69 +178,21 @@ describe("OpenAIManifestHelper", async () => {
 
   it("updateManifest: cannot get logo and success", async () => {
     let updatedManifestData = "";
-    let updateColor = false;
+    const updateColor = false;
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-      if (file === path.join("path", "color.png")) {
-        updateColor = true;
-      } else if (file === path.join("path", "manifest.json")) {
+      if (file === path.join("path", "manifest.json")) {
         updatedManifestData = data;
       } else {
         throw new Error("not support " + file);
       }
     });
 
-    sandbox.stub(axios, "get").rejects(new Error("cannot get logo"));
-    const result = await OpenAIPluginManifestHelper.updateManifest(
-      context,
-      openAIPluginManifest,
-      "path"
-    );
+    const result = await OpenAIPluginManifestHelper.updateManifest(openAIPluginManifest, "path");
     assert.isTrue(result.isOk());
     assert.isFalse(updateColor);
 
     const updatedTeamsManifest = JSON.parse(updatedManifestData!) as TeamsAppManifest;
-    assert.equal(updatedTeamsManifest!.name.short, "TODO List-${{TEAMSFX_ENV}}");
-    assert.equal(updatedTeamsManifest!.name.full, openAIPluginManifest.name_for_model);
-    assert.equal(
-      updatedTeamsManifest!.description.short,
-      openAIPluginManifest.description_for_human
-    );
-    assert.equal(
-      updatedTeamsManifest!.description.full,
-      openAIPluginManifest.description_for_model
-    );
-    assert.equal(updatedTeamsManifest!.developer.privacyUrl, openAIPluginManifest.legal_info_url);
-    assert.equal(updatedTeamsManifest!.developer.websiteUrl, openAIPluginManifest.legal_info_url);
-    assert.equal(
-      updatedTeamsManifest!.developer.termsOfUseUrl,
-      openAIPluginManifest.legal_info_url
-    );
-  });
-
-  it("updateManifest: update logo and success", async () => {
-    let updatedManifestData = "";
-    let updateColor = false;
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
-    sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-      if (file === path.join("path", "color.png")) {
-        updateColor = true;
-      } else if (file === path.join("path", "manifest.json")) {
-        updatedManifestData = data;
-      } else {
-        throw new Error("not support " + file);
-      }
-    });
-
-    sandbox.stub(axios, "get").resolves({ status: 200, data: "data" });
-    const result = await OpenAIPluginManifestHelper.updateManifest(
-      context,
-      openAIPluginManifest,
-      "path"
-    );
-    const updatedTeamsManifest = JSON.parse(updatedManifestData!) as TeamsAppManifest;
-    assert.isTrue(result.isOk());
-    assert.isTrue(updateColor);
     assert.equal(updatedTeamsManifest!.name.short, "TODO List-${{TEAMSFX_ENV}}");
     assert.equal(updatedTeamsManifest!.name.full, openAIPluginManifest.name_for_model);
     assert.equal(

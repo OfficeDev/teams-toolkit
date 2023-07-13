@@ -57,7 +57,6 @@ export class CopilotPluginGenerator {
     // update manifest based on openAI plugin manifest
     if (inputs.openAIPluginManifest) {
       const updateManifestRes = await OpenAIPluginManifestHelper.updateManifest(
-        context,
         inputs.openAIPluginManifest,
         path.join(destinationPath, appPackageName)
       );

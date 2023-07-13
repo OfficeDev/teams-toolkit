@@ -103,9 +103,9 @@ export class BaseComponentInnerError extends Error {
     return new BaseComponentInnerError(
       source,
       "SystemError",
-      "UnhandledError",
+      "UnknownError",
       "error.common.UnhandledError",
-      [source, JSON.stringify(error, Object.getOwnPropertyNames(error))]
+      [JSON.stringify(error)]
     );
   }
 }

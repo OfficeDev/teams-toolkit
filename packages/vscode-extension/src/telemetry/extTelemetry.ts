@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -23,6 +24,7 @@ const TelemetryCacheKey = "TelemetryEvents";
 // export for UT
 export let lastCorrelationId: string | undefined = undefined;
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
   export let hasSentTelemetry = false;

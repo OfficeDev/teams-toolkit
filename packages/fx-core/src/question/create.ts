@@ -765,8 +765,9 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
       validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         if (input === SPFxVersionOptionIds.globalPackage) {
           const hasPackagesInstalled =
-            !!previousInputs?.globalSpfxPackageVersion &&
-            !!previousInputs?.globalYeomanPackageVersion;
+            !!previousInputs &&
+            !!previousInputs.globalSpfxPackageVersion &&
+            !!previousInputs.globalYeomanPackageVersion;
           if (!hasPackagesInstalled) {
             throw DevEnvironmentSetupError();
           }

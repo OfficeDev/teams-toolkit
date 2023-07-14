@@ -10,6 +10,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import {
   FuncValidation,
   Inputs,
+  OptionItem,
   Platform,
   SingleSelectQuestion,
   Stage,
@@ -19,6 +20,7 @@ import {
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import * as path from "path";
 import fs from "fs-extra";
+import { Utils } from "../../src/component/generator/spfx/utils/utils";
 describe("SPFx question-helpers", () => {
   describe("SPFxWebpartNameQuestion", () => {
     let mockedEnvRestore: RestoreFn;
@@ -145,6 +147,12 @@ describe("SPFx question-helpers", () => {
   });
 
   describe("SPFxPackageSelectQuestion", async () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("return undefined if choosing to install locally", async () => {
       const func = getValidationFunction<string>(
         (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
@@ -167,7 +175,7 @@ describe("SPFx question-helpers", () => {
       chai.expect(res).equal(undefined);
     });
 
-    it("return undefined if package exists", async () => {
+    it("return undefined if missing Yeoman", async () => {
       const func = getValidationFunction<string>(
         (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
         { platform: Platform.VSCode, globalSpfxPackageVersion: "1.17.0" }
@@ -179,6 +187,67 @@ describe("SPFx question-helpers", () => {
         error = e;
       }
       chai.expect(error.name).equal("DevEnvironmentSetupError");
+    });
+
+    it("return undefined if missing SPFX generator", async () => {
+      const func = getValidationFunction<string>(
+        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
+        { platform: Platform.VSCode, globalYeomanPackageVersion: "4.3.0" }
+      );
+      let error;
+      try {
+        await func(SPFxVersionOptionIds.globalPackage);
+      } catch (e) {
+        error = e;
+      }
+      chai.expect(error.name).equal("DevEnvironmentSetupError");
+    });
+
+    it("throws error if inputs is undefined", async () => {
+      const question = SPFxPackageSelectQuestion();
+
+      let error;
+      try {
+        await (question.validation! as FuncValidation<string>).validFunc!(
+          SPFxVersionOptionIds.globalPackage
+        );
+      } catch (e) {
+        error = e;
+      }
+      chai.expect(error.name).equal("DevEnvironmentSetupError");
+    });
+
+    it("returns two options with package versions after loading", async () => {
+      sandbox.stub(Utils, "findGloballyInstalledVersion").resolves("1.17.0");
+      sandbox.stub(Utils, "findLatestVersion").resolves("1.17.4");
+
+      const question = SPFxPackageSelectQuestion();
+      const options = await question.dynamicOptions!({ platform: Platform.VSCode });
+
+      chai.expect(options.length).equal(2);
+      chai.expect((options[0] as OptionItem).label.includes("1.17.4")).equal(true);
+    });
+
+    it("returns two options without package versions after loading", async () => {
+      sandbox.stub(Utils, "findGloballyInstalledVersion").resolves(undefined);
+      sandbox.stub(Utils, "findLatestVersion").resolves(undefined);
+
+      const question = SPFxPackageSelectQuestion();
+      const options = await question.dynamicOptions!({ platform: Platform.VSCode });
+
+      chai.expect(options.length).equal(2);
+      chai
+        .expect((options[0] as OptionItem).label)
+        .equal(
+          getLocalizedString("plugins.spfx.questions.packageSelect.installLocally.noVersion.label")
+        );
+      chai
+        .expect((options[1] as OptionItem).label)
+        .equal(
+          getLocalizedString(
+            "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
+          )
+        );
     });
   });
 });

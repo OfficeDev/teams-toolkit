@@ -260,9 +260,9 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/src/common/samples-config-v3.json @HuihuiWu-Microsoft @wenytang-ms @jayzhang
 /packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
-/packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
+/packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 /packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang @LongOddCode
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang

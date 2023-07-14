@@ -267,6 +267,15 @@ export class ConcurrentError extends UserError {
   }
 }
 
+export class InternalError extends UserError {
+  constructor(source: string, error: Error) {
+    super({
+      source: source,
+    });
+    this.innerError = error;
+  }
+}
+
 export function assembleError(e: any, source?: string): FxError {
   if (e instanceof UserError || e instanceof SystemError) return e;
   if (!source) source = "unknown";
@@ -275,6 +284,11 @@ export function assembleError(e: any, source?: string): FxError {
     return new UnhandledError(new Error(e as string), source);
   } else if (e instanceof Error) {
     const err = e as Error;
+    const code = (err as any).code as string;
+    if (code && (errnoCodes[code] || code.startsWith("ERR_"))) {
+      // convert to internal error
+      return new InternalError(source, err);
+    }
     const fxError = new UnhandledError(err, source);
     fxError.stack = err.stack;
     return fxError;
@@ -283,3 +297,85 @@ export function assembleError(e: any, source?: string): FxError {
     return new UnhandledError(new Error(message), source);
   }
 }
+
+const errnoCodes: Record<string, string> = {
+  E2BIG: "Argument list too long",
+  EACCES: "Permission denied",
+  EADDRINUSE: "Address already in use",
+  EADDRNOTAVAIL: "Address not available",
+  EAFNOSUPPORT: "Address family not supported",
+  EAGAIN: "Resource temporarily unavailable",
+  EALREADY: "Operation already in progress",
+  EBADF: "Bad file descriptor",
+  EBADMSG: "Bad message",
+  EBUSY: "Device or resource busy",
+  ECANCELED: "Operation canceled",
+  ECHILD: "No child processes",
+  ECONNABORTED: "Connection aborted",
+  ECONNREFUSED: "Connection refused",
+  ECONNRESET: "Connection reset by peer",
+  EDEADLK: "Resource deadlock would occur",
+  EDESTADDRREQ: "Destination address required",
+  EDOM: "Mathematics argument out of domain of function",
+  EDQUOT: "Disk quota exceeded",
+  EEXIST: "File exists",
+  EFAULT: "Bad address",
+  EFBIG: "File too large",
+  EHOSTUNREACH: "Host is unreachable",
+  EIDRM: "Identifier removed",
+  EILSEQ: "Illegal byte sequence",
+  EINPROGRESS: "Operation in progress",
+  EINTR: "Interrupted system call",
+  EINVAL: "Invalid argument",
+  EIO: "I/O error",
+  EISCONN: "Socket is already connected",
+  EISDIR: "Is a directory",
+  ELOOP: "Too many symbolic links encountered",
+  EMFILE: "Too many open files",
+  EMLINK: "Too many links",
+  EMSGSIZE: "Message too long",
+  EMULTIHOP: "Multihop attempted",
+  ENAMETOOLONG: "File name too long",
+  ENETDOWN: "Network is down",
+  ENETRESET: "Network dropped connection because of reset",
+  ENETUNREACH: "Network is unreachable",
+  ENFILE: "Too many open files in system",
+  ENOBUFS: "No buffer space available",
+  ENODATA: "No message is available on the STREAM head read queue",
+  ENODEV: "No such device",
+  ENOENT: "No such file or directory",
+  ENOEXEC: "Exec format error",
+  ENOLCK: "No locks available",
+  ENOLINK: "Link has been severed",
+  ENOMEM: "Out of memory",
+  ENOMSG: "No message of the desired type",
+  ENOPROTOOPT: "Protocol not available",
+  ENOSPC: "No space left on device",
+  ENOSR: "No STREAM resources",
+  ENOSTR: "Not a STREAM",
+  ENOSYS: "Function not implemented",
+  ENOTCONN: "Socket is not connected",
+  ENOTDIR: "Not a directory",
+  ENOTEMPTY: "Directory not empty",
+  ENOTSOCK: "Socket operation on non-socket",
+  ENOTSUP: "Operation not supported",
+  ENOTTY: "Inappropriate ioctl for device",
+  ENXIO: "No such device or address",
+  EOPNOTSUPP: "Operation not supported on socket",
+  EOVERFLOW: "Value too large to be stored in data type",
+  EPERM: "Operation not permitted",
+  EPIPE: "Broken pipe",
+  EPROTO: "Protocol error",
+  EPROTONOSUPPORT: "Protocol not supported",
+  EPROTOTYPE: "Protocol wrong type for socket",
+  ERANGE: "Result too large",
+  EROFS: "Read-only file system",
+  ESPIPE: "Invalid seek",
+  ESRCH: "No such process",
+  ESTALE: "Stale file handle",
+  ETIME: "Timer expired",
+  ETIMEDOUT: "Connection timed out",
+  ETXTBSY: "Text file busy",
+  EWOULDBLOCK: "Operation would block",
+  EXDEV: "Cross-device link",
+};

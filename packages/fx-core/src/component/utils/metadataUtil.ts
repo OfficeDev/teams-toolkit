@@ -47,16 +47,14 @@ class MetadataUtil {
     props[prefix + "staticTabs.contentUrl"] =
       manifest.staticTabs
         ?.map((tab) =>
-          tab.contentUrl
-            ? createHash("sha256").update(tab.contentUrl).digest("base64")
-            : "undefined"
+          tab.contentUrl ? createHash("sha256").update(tab.contentUrl).digest("hex") : "undefined"
         )
         .toString() ?? "";
     props[prefix + "configurableTabs.configurationUrl"] =
       manifest.configurableTabs
         ?.map((tab) =>
           tab.configurationUrl
-            ? createHash("sha256").update(tab.configurationUrl).digest("base64")
+            ? createHash("sha256").update(tab.configurationUrl).digest("hex")
             : "undefined"
         )
         .toString() ?? "";

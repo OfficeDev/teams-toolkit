@@ -173,12 +173,12 @@ describe("metadata util", () => {
         "manifest.bots": "bot1,bot2",
         "manifest.composeExtensions": "bot1,bot2",
         "manifest.staticTabs.contentUrl": `${[
-          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
-          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("hex"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("hex"),
         ].toString()}`,
         "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
           .update(manifest.configurableTabs[0].configurationUrl)
-          .digest("base64")}`,
+          .digest("hex")}`,
         "manifest.webApplicationInfo.id": "web-app-id",
         "manifest.extensions": "true",
       })
@@ -196,12 +196,12 @@ describe("metadata util", () => {
         "manifest.bots": "bot1,bot2",
         "manifest.composeExtensions": "bot1,bot2",
         "manifest.staticTabs.contentUrl": `${[
-          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
-          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("hex"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("hex"),
         ].toString()}`,
         "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
           .update(manifest.configurableTabs[0].configurationUrl)
-          .digest("base64")}`,
+          .digest("hex")}`,
         "manifest.webApplicationInfo.id": "web-app-id",
         "manifest.extensions": "false",
       })
@@ -219,12 +219,12 @@ describe("metadata util", () => {
         "manifest.bots": "bot1,bot2",
         "manifest.composeExtensions": "bot1,bot2",
         "manifest.staticTabs.contentUrl": `${[
-          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
-          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("hex"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("hex"),
         ].toString()}`,
         "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
           .update(manifest.configurableTabs[0].configurationUrl)
-          .digest("base64")}`,
+          .digest("hex")}`,
         "manifest.webApplicationInfo.id": "web-app-id",
         "manifest.extensions": "false",
       })

@@ -282,10 +282,8 @@ jobs:
     if: ${{ github.event_name ==  'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - id: changed-files
-        uses: tj-actions/changed-files@v29.0.3
-      - uses: austenstone/codeowners-coverage@main
+      - uses: actions/checkout@v1
+      - name: Check all files have an owner
+        uses: morrislaptop/codeowners-check@releases/v1
         with:
-          ignore-default: 'true'
-          files: ${{ steps.changed-files.outputs.all_changed_files }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}

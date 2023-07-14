@@ -278,3 +278,14 @@ jobs:
           body: ${{join(steps.test.outputs.*, '')}}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  check-codeowner:
+    if: ${{ github.event_name ==  'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - id: changed-files
+        uses: tj-actions/changed-files@v29.0.3
+      - uses: austenstone/codeowners-coverage@main
+        with:
+          ignore-default: 'true'
+          files: ${{ steps.changed-files.outputs.all_changed_files }}

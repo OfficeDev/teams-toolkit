@@ -15,7 +15,12 @@ import {
 import { assert } from "chai";
 import "mocha";
 import { convertError, ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
-import { UnhandledError, UserCancelError } from "../../src/error/common";
+import {
+  FilePermissionError,
+  UnhandledError,
+  UnhandledUserError,
+  UserCancelError,
+} from "../../src/error/common";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -131,5 +136,27 @@ describe("convertError", () => {
     );
     const converted = convertError(error);
     assert.isTrue(converted instanceof UserError);
+  });
+});
+
+describe("Errors", () => {
+  it("FilePermissionError", () => {
+    const error = new Error(`EPERM: operation not permitted, open '<REDACTED: user-file-path>'`);
+    const converted = new FilePermissionError(error);
+    assert.isTrue(converted instanceof UserError);
+  });
+  it("UnhandledError", () => {
+    const error = new Error("test");
+    const error1 = new UnhandledError(error);
+    assert.isTrue(error1 instanceof SystemError);
+    const error2 = new UnhandledError(error, "source");
+    assert.isTrue(error2 instanceof SystemError);
+  });
+  it("UnhandledUserError", () => {
+    const error = new Error("test");
+    const error1 = new UnhandledUserError(error);
+    assert.isTrue(error1 instanceof UserError);
+    const error2 = new UnhandledUserError(error, "source");
+    assert.isTrue(error2 instanceof UserError);
   });
 });

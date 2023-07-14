@@ -282,6 +282,6 @@ jobs:
     if: ${{ github.event_name ==  'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: cuichenli/enforce-codeowner@1
+      - uses: cuichenli/enforce-codeowner@1.0.0
         env:
           GITHUB_TOKEN: '{{ secrets.GITHUB_TOKEN }}'

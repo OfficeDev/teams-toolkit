@@ -151,6 +151,9 @@ describe("Errors", () => {
     assert.isTrue(error1 instanceof SystemError);
     const error2 = new UnhandledError(error, "source");
     assert.isTrue(error2 instanceof SystemError);
+    error.message = "";
+    const error3 = new UnhandledError(error, "source");
+    assert.isTrue(error3 instanceof SystemError);
   });
   it("UnhandledUserError", () => {
     const error = new Error("test");
@@ -158,5 +161,8 @@ describe("Errors", () => {
     assert.isTrue(error1 instanceof UserError);
     const error2 = new UnhandledUserError(error, "source");
     assert.isTrue(error2 instanceof UserError);
+    error.message = "";
+    const error3 = new UnhandledUserError(error, "source");
+    assert.isTrue(error3 instanceof SystemError);
   });
 });

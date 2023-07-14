@@ -102,19 +102,32 @@ export class WriteFileError extends SystemError {
   }
 }
 
+export class FilePermissionError extends UserError {
+  constructor(e: Error, source?: string) {
+    const msg = getDefaultString("error.common.FilePermissionError", e.message);
+    super({
+      source: source || "unknown",
+      message: msg,
+      displayMessage: msg,
+    });
+    if (e.stack) super.stack = e.stack;
+  }
+}
+
 export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
+    source = source || "unknown";
     super({
-      source: camelCase(source || "unknown"),
+      source: camelCase(source),
       message: getDefaultString(
         "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
+        source,
+        JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       displayMessage: getLocalizedString(
         "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
+        source,
+        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
     });
     if (e.stack) super.stack = e.stack;
@@ -123,17 +136,18 @@ export class UnhandledError extends SystemError {
 
 export class UnhandledUserError extends UserError {
   constructor(e: Error, source?: string, helpLink?: string) {
+    source = source || "unknown";
     super({
-      source: camelCase(source || "unknown"),
+      source: camelCase(source),
       message: getDefaultString(
         "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
+        source,
+        JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       displayMessage: getLocalizedString(
         "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
+        source,
+        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       helpLink: helpLink,
     });

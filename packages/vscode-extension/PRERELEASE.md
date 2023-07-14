@@ -13,7 +13,7 @@ New features:
 
 Enhancement:
 
-- Updated `React with Fluent UI`  app template to use an On-Behalf-Of flow for Single Sign-on to improve the experience in mobile platforms.
+- Updated `React with Fluent UI` app template to use an On-Behalf-Of flow for Single Sign-on to improve the experience in mobile platforms.
 - Updated project scaffold success notification for Outlook Add-in.
 
 TeamsFx SDK ([`@microsoft/teamsfx`](https://www.npmjs.com/package/@microsoft/teamsfx)) `v2.2.2`:

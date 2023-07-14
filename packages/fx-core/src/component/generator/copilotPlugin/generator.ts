@@ -13,7 +13,7 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
 import { SpecParser } from "../../../common/spec-parser/specParser";
 import { QuestionNames } from "../../../question/questionNames";
-import { OpenAIManifestHelper } from "./helper";
+import { OpenAIPluginManifestHelper } from "./helper";
 
 const componentName = "copilot-plugin-existing-api";
 const templateName = "copilot-plugin-existing-api";
@@ -54,8 +54,13 @@ export class CopilotPluginGenerator {
     const openapiSpecPath = path.join(destinationPath, apiSpecFolderName, apiSpecFileName);
     await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveFolderName);
 
+    // update manifest based on openAI plugin manifest
     if (inputs.openAIPluginManifest) {
-      await OpenAIManifestHelper.updateManifest(inputs.openAIPluginManifest, manifestPath);
+      const updateManifestRes = await OpenAIPluginManifestHelper.updateManifest(
+        inputs.openAIPluginManifest,
+        path.join(destinationPath, appPackageName)
+      );
+      if (updateManifestRes.isErr()) return err(updateManifestRes.error);
     }
 
     // TODO: log warnings

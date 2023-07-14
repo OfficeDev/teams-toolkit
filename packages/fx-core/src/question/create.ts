@@ -43,7 +43,10 @@ import { Utils } from "../component/generator/spfx/utils/utils";
 import { QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import { EmptyOptionError, assembleError } from "../error";
-import { OpenAIManifestHelper, listOperations } from "../component/generator/copilotPlugin/helper";
+import {
+  OpenAIPluginManifestHelper,
+  listOperations,
+} from "../component/generator/copilotPlugin/helper";
 import { createContextV3 } from "../component/utils";
 
 export class ScratchOptions {
@@ -1304,7 +1307,7 @@ export function apiOperationQuestion(): MultiSelectQuestion {
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
       let manifest;
       if (inputs[QuestionNames.OpenAIPluginManifestLocation]) {
-        manifest = await OpenAIManifestHelper.loadOpenAIPluginManifest(
+        manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(
           inputs[QuestionNames.OpenAIPluginManifestLocation] as string
         );
         inputs.openAIPluginManifest = manifest;

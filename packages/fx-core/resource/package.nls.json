@@ -562,7 +562,7 @@
   "error.common.ReadFileError": "Unable to read file for reason: %s",
   "error.common.UnhandledError": "An unexpected error has occurred while performing the %s task. %s",
   "error.common.WriteFileError": "Unable to write file for reason: %s",
-  "error.common.FilePermissionError": "File operation not permitted, ensure that you have the necessary permissions: %s",
+  "error.common.FilePermissionError": "File operation is not permitted, ensure that you have the necessary permissions: %s",
   "error.common.MissingRequiredInputError": "Missing required input: %s",
   "error.common.InputValidationError": "Input '%s' validation failed: %s",
   "error.common.NoEnvFilesError": "Unable to find .env files.",

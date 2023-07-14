@@ -21,7 +21,7 @@ TeamsFx SDK ([`@microsoft/teamsfx`](https://www.npmjs.com/package/@microsoft/tea
 - Renamed the internal class `ConversationReferenceStore` to `DefaultConversationReferenceStore`.
 - Deprecated the `NotificationStorage` interface.
 - Added `ConversationReferenceStore` that has support for pagination.
-- Added a new option to set a custom `ConversationReferenceStore` and deprecated the existing option for `NotificationStorage``.
+- Added a new option to set a custom `ConversationReferenceStore` and deprecated the existing option for `NotificationStorage`.
 
 Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.2@beta`:
 

@@ -282,8 +282,6 @@ jobs:
     if: ${{ github.event_name ==  'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Check all files have an owner
-        uses: morrislaptop/codeowners-check@releases/v1
-        with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - uses: cuichenli/enforce-codeowner@1
+        env:
+          GITHUB_TOKEN: '{{ secrets.GITHUB_TOKEN }}'

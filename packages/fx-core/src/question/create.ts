@@ -724,7 +724,7 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
         Utils.findGloballyInstalledVersion(undefined, Constants.YeomanPackageName, 0, false),
       ]);
 
-      inputs.globalSPFxVersion = versions[0];
+      inputs.globalSpfxPackageVersion = versions[0];
       inputs.latestSpfxPackageVersion = versions[1];
       inputs.globalYeomanPackageVersion = versions[2];
 

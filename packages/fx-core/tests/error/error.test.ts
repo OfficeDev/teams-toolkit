@@ -21,6 +21,7 @@ import {
   UnhandledUserError,
   UserCancelError,
 } from "../../src/error/common";
+import { BaseComponentInnerError } from "../../src/component/error/componentError";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -163,6 +164,14 @@ describe("Errors", () => {
     assert.isTrue(error2 instanceof UserError);
     error.message = "";
     const error3 = new UnhandledUserError(error, "source");
-    assert.isTrue(error3 instanceof SystemError);
+    assert.isTrue(error3 instanceof UserError);
+  });
+});
+
+describe("BaseComponentInnerError", () => {
+  it("unknownError", () => {
+    const error = new Error("test");
+    const error1 = BaseComponentInnerError.unknownError("test", error);
+    assert.isTrue(error1.toFxError() instanceof SystemError);
   });
 });

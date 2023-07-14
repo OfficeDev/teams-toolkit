@@ -25,8 +25,8 @@ TeamsFx SDK ([`@microsoft/teamsfx`](https://www.npmjs.com/package/@microsoft/tea
 
 Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.2@beta`:
 
-- (Feature parity with Visual Sudio Code) Import an existing SPFx solution and continue development with Teams Toolkit.
-- (Feature parity with Visual Sudio Code) Create a new link unfurling app with Teams Toolkit.
+- (Feature parity with Visual Studio Code) Import an existing SPFx solution and continue development with Teams Toolkit.
+- (Feature parity with Visual Studio Code) Create a new link unfurling app with Teams Toolkit.
 
 Bug fixes:
 

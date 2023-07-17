@@ -646,6 +646,7 @@ export class VsCodeUI implements UserInteraction {
 
   async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     if (config.default && typeof config.default === "function") {
+      //TODO quick workaround solution, which will blocking the UI popup
       config.default = (await config.default()) as string;
     }
     return this.selectFileInQuickPick(config, "file", config.default as string);
@@ -653,6 +654,7 @@ export class VsCodeUI implements UserInteraction {
 
   async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
     if (config.default && typeof config.default === "function") {
+      //TODO  quick workaround solution, which will blocking the UI popup
       config.default = (await config.default()) as string[];
     }
     return this.selectFileInQuickPick(

@@ -60,6 +60,7 @@
 /.github/workflows/cd.yml @adashen @LongOddCode @Siglud @qinezh @wenytang-ms
 /.github/actions @xzf0587 @wenytang-ms @blackchoey @adashen
 /.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
+/.github/workflows/lint-pr.yml @adashen @LongOddCode @Siglud @qinezh @wenytang-ms
 /packages/server @chagong @Alive-Fish @jayzhang
 
 /Localize @HuihuiWu-Microsoft @tecton

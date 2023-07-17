@@ -225,8 +225,8 @@ describe("v3 yaml parser", () => {
       const errorMsg = result._unsafeUnwrapErr().message;
       chai
         .expect(errorMsg)
-        .includes(`Incorrect type. Expected "object"`)
-        .and.includes(`Value must be "teamsApp/create" | "botAadApp/create"`);
+        .includes(`Unable to parse yaml file`)
+        .and.includes(`Please open the yaml file in VSCode or Visual Studio`);
 
       result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_number.yml"),

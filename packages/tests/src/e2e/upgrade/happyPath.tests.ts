@@ -37,7 +37,9 @@ describe("upgrade", () => {
           appName,
           testFolder,
           Capability.TabNonSso,
-          env
+          env,
+          "",
+          true
         );
       }
 

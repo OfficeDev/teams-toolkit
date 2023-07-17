@@ -331,9 +331,11 @@ export class CliHelper {
     appName: string,
     testFolder: string,
     template: TemplateProjectFolder,
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    npx = false
   ) {
-    const command = `teamsfx new template ${template} --interactive false `;
+    const npxCommand = npx ? "npx" : "";
+    const command = `${npxCommand} teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

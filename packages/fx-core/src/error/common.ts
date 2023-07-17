@@ -411,7 +411,7 @@ export function fillInTelemetryPropsForFxError(
   }
 
   if (error.tags) {
-    props[TelemetryConstants.properties.errorTag1] = error.tags[0] || error.name;
+    props[TelemetryConstants.properties.errorTag1] = error.tags[0];
     props[TelemetryConstants.properties.errorTag2] = error.tags[1];
     props[TelemetryConstants.properties.errorTag3] = error.tags[2];
   }

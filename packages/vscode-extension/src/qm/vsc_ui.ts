@@ -51,10 +51,10 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import {
-  UserCancelError,
   assembleError,
-  loadingOptionsPlaceholder,
   loadingDefaultPlaceholder,
+  loadingOptionsPlaceholder,
+  UserCancelError,
 } from "@microsoft/teamsfx-core";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
@@ -65,7 +65,6 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { type } from "os";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;

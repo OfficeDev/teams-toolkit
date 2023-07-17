@@ -273,9 +273,11 @@ export class CliHelper {
     testFolder: string,
     capability: Capability,
     processEnv?: NodeJS.ProcessEnv,
-    options = ""
+    options = "",
+    npm = false
   ) {
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
+    const npxCommand = npm ? "npm" : "";
+    const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

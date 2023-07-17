@@ -30,9 +30,8 @@ describe("upgrade", () => {
     { testPlanCaseId: 17184119, author: "zhaofengxu@microsoft.com" },
     async function () {
       {
-        await Executor.installCLI(testFolder, "1.2.5", false, true);
+        await Executor.installCLI(testFolder, "1.2.5", false);
         const env = Object.assign({}, process.env);
-        env["TEAMSFX_V3"] = "false";
         // new a project ( tab only )
         await CliHelper.createProjectWithCapability(
           appName,
@@ -42,7 +41,6 @@ describe("upgrade", () => {
         );
       }
 
-      await Executor.installCLI(testFolder, "alpha", false, true);
       {
         // upgrade
         const result = await Executor.upgrade(projectPath);

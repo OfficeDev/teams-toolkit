@@ -20,6 +20,7 @@ provision:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
+
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:

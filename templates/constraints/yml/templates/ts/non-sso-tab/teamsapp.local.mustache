@@ -1,0 +1,31 @@
+{{{header}}}
+
+provision:
+{{{teamsAppCreate}}}
+
+  # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+  - uses: script
+    with:
+      run:
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
+
+{{{teamsAppValidateManifest}}}
+{{{teamsAppZipAppPackage}}}
+{{{teamsAppValidateAppPackage}}}
+{{{teamsAppUpdate}}}
+{{{teamsAppExtendToM365}}}
+
+deploy:
+{{#devToolInstall}} devCert {{/devToolInstall}}
+
+  # Run npm command
+  - uses: cli/runNpmCommand
+    with:
+      args: install --no-audit
+
+{{{fileCreateOrUpdateEnvironmentFile}}}
+      envs:
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}

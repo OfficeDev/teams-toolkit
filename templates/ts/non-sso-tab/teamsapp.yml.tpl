@@ -14,7 +14,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
@@ -109,6 +109,7 @@ publish:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
       # Path to manifest template
@@ -137,4 +138,3 @@ publish:
     # the specified environment variable(s).
     writeToEnvironmentFile:
       publishedAppId: TEAMS_APP_PUBLISHED_APP_ID
-

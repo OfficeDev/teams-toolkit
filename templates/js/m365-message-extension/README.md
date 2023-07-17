@@ -2,7 +2,7 @@
 
 This app template is a search-based [message extension](https://docs.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=nodejs) that allows users to search an external system and share results through the compose message area of the Microsoft Teams client. You can now build and run your search-based message extensions in Teams, Outlook for Windows desktop and web experiences.
 
-## Get started with the Basic Tab template
+## Get started with the template
 
 > **Prerequisites**
 >
@@ -49,9 +49,9 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 
-## Extend the Basic Bot template
+## Extend the template
 
-Following documentation will help you to extend the Basic Tab template.
+Following documentation will help you to extend the template.
 
 - [Add or manage the environment](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
 - [Create multi-capability app](https://learn.microsoft.com/microsoftteams/platform/toolkit/add-capability)

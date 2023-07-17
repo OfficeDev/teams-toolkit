@@ -274,9 +274,9 @@ export class CliHelper {
     capability: Capability,
     processEnv?: NodeJS.ProcessEnv,
     options = "",
-    npm = false
+    npx = false
   ) {
-    const npxCommand = npm ? "npm" : "";
+    const npxCommand = npx ? "npx" : "";
     const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
     const timeout = 100000;
     try {

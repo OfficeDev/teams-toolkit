@@ -273,9 +273,11 @@ export class CliHelper {
     testFolder: string,
     capability: Capability,
     processEnv?: NodeJS.ProcessEnv,
-    options = ""
+    options = "",
+    npx = false
   ) {
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
+    const npxCommand = npx ? "npx" : "";
+    const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -329,9 +331,11 @@ export class CliHelper {
     appName: string,
     testFolder: string,
     template: TemplateProjectFolder,
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    npx = false
   ) {
-    const command = `teamsfx new template ${template} --interactive false `;
+    const npxCommand = npx ? "npx" : "";
+    const command = `${npxCommand} teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

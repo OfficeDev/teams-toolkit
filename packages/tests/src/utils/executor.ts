@@ -96,9 +96,11 @@ export class Executor {
     workspace: string,
     cmd: string,
     env = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    npx = false
   ) {
-    const command = `teamsfx ${cmd} --env ${env}`;
+    const npxCommand = npx ? "npx " : "";
+    const command = `${npxCommand} teamsfx ${cmd} --env ${env}`;
     return this.execute(command, workspace, processEnv);
   }
 
@@ -109,9 +111,10 @@ export class Executor {
   static async provisionWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "provision", env, processEnv);
+    return this.executeCmd(workspace, "provision", env, processEnv, npx);
   }
 
   static async validate(workspace: string, env = "dev") {
@@ -121,9 +124,10 @@ export class Executor {
   static async validateWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "deploy", env, processEnv);
+    return this.executeCmd(workspace, "deploy", env, processEnv, npx);
   }
 
   static async deploy(workspace: string, env = "dev") {
@@ -133,9 +137,10 @@ export class Executor {
   static async deployWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "deploy", env, processEnv);
+    return this.executeCmd(workspace, "deploy", env, processEnv, npx);
   }
 
   static async publish(workspace: string, env = "dev") {
@@ -145,9 +150,10 @@ export class Executor {
   static async publishWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "publish", env, processEnv);
+    return this.executeCmd(workspace, "publish", env, processEnv, npx);
   }
 
   static async preview(workspace: string, env = "dev") {
@@ -157,9 +163,10 @@ export class Executor {
   static async previewWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "preview", env, processEnv);
+    return this.executeCmd(workspace, "preview", env, processEnv, npx);
   }
 
   static async installCLI(workspace: string, version: string, global: boolean) {

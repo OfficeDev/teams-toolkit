@@ -633,6 +633,13 @@ export class FxCoreV3Implement {
   @hooks([ErrorHandlerMW, QuestionMW(questions.copilotPluginAddAPI), ConcurrentLockerMW])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
     // TODO: call generator to add API
+    const operations = inputs[QuestionNames.ApiOperation] as string[];
+    const message = getLocalizedString(
+      "core.copilot.addAPI.success",
+      operations,
+      inputs.projectPath
+    );
+    this.tools.ui.showMessage("info", message, false);
     return ok("");
   }
 

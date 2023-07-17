@@ -92,11 +92,11 @@ To respond with an Adaptive Card, define your card in its JSON format. Create a 
       "type": "TextBlock",
       "size": "Medium",
       "weight": "Bolder",
-      "text": "Your doSomething Command is added!"
+      "text": "${title}"
     },
     {
       "type": "TextBlock",
-      "text": "Congratulations! Your hello world bot now includes a new DoSomething Command",
+      "text": "${body}",
       "wrap": true
     }
   ],

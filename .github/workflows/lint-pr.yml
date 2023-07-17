@@ -296,5 +296,4 @@ jobs:
 
       - uses: austenstone/codeowners-coverage@main
         with:
-          ignore-default: 'true'
           files: ${{ steps.changed-files-specific.outputs.all_changed_files }}

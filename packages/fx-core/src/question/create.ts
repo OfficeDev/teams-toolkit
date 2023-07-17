@@ -47,6 +47,7 @@ import {
 } from "../component/generator/copilotPlugin/helper";
 import { createContextV3 } from "../component/utils";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
 
 export class ScratchOptions {
   static yes(): OptionItem {

@@ -546,16 +546,18 @@ describe("User Interaction Tests for select", function () {
   afterEach(() => {
     sandbox.restore();
   });
-  describe("loadOptions", async () => {
+  describe("loadSelectDynamicData", async () => {
     it("happy path", async () => {
       const config: SingleSelectConfig = {
         name: "test",
         title: "test",
         options: async () => ["a", "b", "c"],
+        default: async () => "a",
       };
-      const result = await UI.loadOptions(config);
+      const result = await UI.loadSelectDynamicData(config);
       expect(result.isOk());
       expect(config.options).deep.equals(["a", "b", "c"]);
+      expect(config.default).equals("a");
     });
     it("throw error", async () => {
       const config: SingleSelectConfig = {
@@ -565,7 +567,7 @@ describe("User Interaction Tests for select", function () {
           throw new Error("test");
         },
       };
-      const result = await UI.loadOptions(config);
+      const result = await UI.loadSelectDynamicData(config);
       expect(result.isErr());
     });
     it("no need to call function", async () => {
@@ -574,15 +576,51 @@ describe("User Interaction Tests for select", function () {
         title: "test",
         options: ["a", "b", "c"],
       };
-      const result = await UI.loadOptions(config);
+      const result = await UI.loadSelectDynamicData(config);
       expect(result.isOk());
       expect(config.options).deep.equals(["a", "b", "c"]);
     });
   });
 
-  describe("selectOptions", async () => {
+  describe("loadDefaultValue", async () => {
+    it("happy path", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a", "b", "c"],
+        default: async () => "a",
+      };
+      const result = await UI.loadDefaultValue(config);
+      expect(result.isOk());
+      expect(config.default).equals("a");
+    });
     it("throw error", async () => {
-      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a", "b", "c"],
+        default: async () => {
+          throw new Error("test");
+        },
+      };
+      const result = await UI.loadDefaultValue(config);
+      expect(result.isErr());
+    });
+    it("no need to call function", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: ["a", "b", "c"],
+        default: "a",
+      };
+      const result = await UI.loadDefaultValue(config);
+      expect(result.isOk());
+    });
+  });
+
+  describe("selectOptions dynamic data", async () => {
+    it("throw error", async () => {
+      sandbox.stub(UI, "loadSelectDynamicData").resolves(err(new UserError({})));
       const config: MultiSelectConfig = {
         name: "test",
         title: "test",
@@ -595,9 +633,9 @@ describe("User Interaction Tests for select", function () {
     });
   });
 
-  describe("selectOption", async () => {
+  describe("selectOption dynamic data", async () => {
     it("throw error", async () => {
-      sandbox.stub(UI, "loadOptions").resolves(err(new UserError({})));
+      sandbox.stub(UI, "loadSelectDynamicData").resolves(err(new UserError({})));
       const config: SingleSelectConfig = {
         name: "test",
         title: "test",

@@ -22,7 +22,6 @@ import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
-import { PackageSelectOptionsHelper } from "../../../../question/create";
 
 const name = Constants.GeneratorPackageName;
 const displayName = `${name}@${Constants.LatestVersion}`;
@@ -62,12 +61,10 @@ export class GeneratorChecker implements DependencyChecker {
     return ok(true);
   }
 
-  public async isLatestInstalled(): Promise<boolean> {
+  public async isLatestInstalled(loadedLatestVersion: string | undefined): Promise<boolean> {
     try {
       const generatorVersion = await this.queryVersion();
-      const latestGeneratorVersion =
-        PackageSelectOptionsHelper.getLatestSpGeneratorVersion() ??
-        (await this.findLatestVersion(5));
+      const latestGeneratorVersion = loadedLatestVersion ?? (await this.findLatestVersion(5));
       const hasSentinel = await fs.pathExists(this.getSentinelPath());
       return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion && hasSentinel;
     } catch (error) {

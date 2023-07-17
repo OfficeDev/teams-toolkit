@@ -6,7 +6,6 @@ import {
   Inputs,
   LocalFunc,
   MultiSelectQuestion,
-  OpenAIPluginManifest,
   OptionItem,
   Platform,
   Question,

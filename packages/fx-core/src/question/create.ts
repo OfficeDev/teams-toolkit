@@ -45,6 +45,7 @@ import { isValidHttpUrl } from "./util";
 import { EmptyOptionError, assembleError } from "../error";
 import { OpenAIManifestHelper, listOperations } from "../component/generator/copilotPlugin/helper";
 import { createContextV3 } from "../component/utils";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1289,7 +1290,7 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
-export function apiOperationQuestion(): MultiSelectQuestion {
+export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
   // export for unit test
   return {
     type: "multiSelect",
@@ -1313,9 +1314,24 @@ export function apiOperationQuestion(): MultiSelectQuestion {
       try {
         const res = await listOperations(context, manifest, inputs[QuestionNames.ApiSpecLocation]);
         if (res.isOk()) {
-          return res.value.map((operation) => {
-            return { id: operation, label: operation };
-          });
+          if (includeExistingAPIs) {
+            return res.value.map((operation) => {
+              return { id: operation, label: operation };
+            });
+          } else {
+            const teamsManifestPath = inputs.teamsManifestPath;
+            const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+            if (manifest.isOk()) {
+              const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+              return res.value
+                .filter((operation: string) => !existingOperationIds.includes(operation))
+                .map((operation: string) => {
+                  return { id: operation, label: operation };
+                });
+            } else {
+              throw manifest.error;
+            }
+          }
         } else {
           throw new EmptyOptionError(); // TODO: handle errors based on error results
         }

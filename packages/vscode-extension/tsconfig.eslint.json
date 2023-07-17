@@ -8,7 +8,7 @@
     "include": [
       // whatever paths you intend to lint
       "src",
-      "tests"
+      "test"
     ],
     "exclude": []
 }

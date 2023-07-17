@@ -199,6 +199,7 @@ describe("Copilot plugin CodeLensProvider", () => {
     chai.expect(codelens[0].command).to.deep.equal({
       title: "➕Add another API",
       command: "fx-extension.copilotPluginAddAPI",
+      arguments: [{ fsPath: document.fileName }],
     });
   });
 });

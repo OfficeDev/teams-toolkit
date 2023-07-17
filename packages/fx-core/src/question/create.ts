@@ -1296,7 +1296,9 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder"),
+    placeholder: includeExistingAPIs
+      ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+      : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
     forgetLastValue: true,
     staticOptions: [],
     validation: {

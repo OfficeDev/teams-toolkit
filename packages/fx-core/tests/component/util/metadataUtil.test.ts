@@ -21,7 +21,7 @@ import { DriverContext } from "../../../src/component/driver/interface/commonArg
 import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
-import { createHash } from "crypto";
+import { createHash, Hash } from "crypto";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -161,10 +161,14 @@ describe("metadata util", () => {
       extensions: [{}],
     };
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const createHashSpy = sandbox.spy(createHash);
+    const hashSpy = sandbox.spy(Hash.prototype);
 
     manifest.extensions = [{}];
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
-
+    assert.isTrue(createHashSpy.calledWith("sha256"));
+    assert.isTrue(hashSpy.update.called);
+    assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
         "manifest.id": "test-id",
@@ -187,7 +191,9 @@ describe("metadata util", () => {
     // If extensions is empty, it should report false in telemetry event
     manifest.extensions = [];
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
-
+    assert.isTrue(createHashSpy.calledWith("sha256"));
+    assert.isTrue(hashSpy.update.called);
+    assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledWith(TelemetryEvent.MetaData, {
         "manifest.id": "test-id",
@@ -210,7 +216,9 @@ describe("metadata util", () => {
     // If extensions is undefined, it should report false in telemetry event
     manifest.extensions = undefined;
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
-
+    assert.isTrue(createHashSpy.calledWith("sha256"));
+    assert.isTrue(hashSpy.update.called);
+    assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledWith(TelemetryEvent.MetaData, {
         "manifest.id": "test-id",

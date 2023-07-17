@@ -234,4 +234,36 @@ describe("metadata util", () => {
       })
     );
   });
+
+  it("parseManifest with undefined urls", () => {
+    const manifest: any = {
+      id: "test-id",
+      version: "1.0",
+      manifestVersion: "1.0",
+      bots: [{ botId: "bot1" }, { botId: "bot2" }],
+      composeExtensions: [{ botId: "bot1" }, { botId: "bot2" }],
+      staticTabs: [{ contentUrl: undefined }, { contentUrl: undefined }],
+      configurableTabs: [{ configurationUrl: undefined }],
+      webApplicationInfo: { id: "web-app-id" },
+    };
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const hashSpy = sandbox.spy(Hash.prototype);
+
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+    assert.isTrue(hashSpy.update.notCalled);
+    assert.isTrue(hashSpy.digest.notCalled);
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        "manifest.id": "test-id",
+        "manifest.version": "1.0",
+        "manifest.manifestVersion": "1.0",
+        "manifest.bots": "bot1,bot2",
+        "manifest.composeExtensions": "bot1,bot2",
+        "manifest.staticTabs.contentUrl": "undefined,undefined",
+        "manifest.configurableTabs.configurationUrl": "undefined",
+        "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "false",
+      })
+    );
+  });
 });

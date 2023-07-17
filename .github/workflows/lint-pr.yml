@@ -287,9 +287,9 @@ jobs:
         id: changed-files-specific
         uses: tj-actions/changed-files@v29.0.3
         with:
-          files: ./*.{ts, js, yml, html, tpl, json}
+          files: ./*.{ts, js, yml, html, tpl, json, bicep}
 
-      - name: Run step if any file(s) in the docs folder change
+      - name: change files
         run: |
           echo "One or more files in the docs folder has changed."
           echo "List all the files that have changed: ${{ steps.changed-files-specific.outputs.all_changed_files }}"

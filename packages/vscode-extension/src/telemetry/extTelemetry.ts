@@ -6,7 +6,7 @@
 
 import * as vscode from "vscode";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, fillInTelemetryPropsForFxError } from "@microsoft/teamsfx-core";
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
@@ -133,17 +133,7 @@ export namespace ExtTelemetry {
 
     properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
-    properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-    if (error instanceof UserError) {
-      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
-    } else {
-      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
-    }
-
-    properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
-    properties[TelemetryProperty.ErrorMessage] = `${error.message}${
-      error.stack ? "\nstack:\n" + error.stack : ""
-    }`;
+    fillInTelemetryPropsForFxError(properties, error);
 
     if (globalVariables.workspaceUri) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();

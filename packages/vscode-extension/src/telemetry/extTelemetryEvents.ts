@@ -252,6 +252,11 @@ export enum TelemetryProperty {
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   ErrorStack = "error-stack",
+  ErrorName = "error-name", // keep error name as a separate property for telemetry analysis, error name should has limited set of values
+  InnerError = "inner-error", // JSON serialized raw inner error that is caused by internal error or external call error
+  RrrorTag1 = "error-tag1", // error category level 1
+  RrrorTag2 = "error-tag2", // error category level 2
+  RrrorTag3 = "error-tag3", // error category level 2
   Errors = "errors",
   Hub = "hub",
   DebugSessionId = "session-id",

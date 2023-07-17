@@ -5,6 +5,7 @@ import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/te
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
+import { TelemetryConstants } from "../component/constants";
 
 export class FileNotFoundError extends UserError {
   constructor(source: string, filePath: string, helpLink?: string) {
@@ -379,3 +380,38 @@ const errnoCodes: Record<string, string> = {
   EWOULDBLOCK: "Operation would block",
   EXDEV: "Cross-device link",
 };
+
+/**
+ * fill in telemetry properties for FxError
+ * @param error FxError
+ * @param props teletry properties
+ */
+export function fillInTelemetryPropsForFxError(
+  props: Record<string, string>,
+  error: FxError
+): void {
+  const errorCode = error.source + "." + error.name;
+  const errorType =
+    error instanceof SystemError
+      ? TelemetryConstants.values.systemError
+      : TelemetryConstants.values.userError;
+  props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
+  props[TelemetryConstants.properties.errorCode] = errorCode;
+  props[TelemetryConstants.properties.errorType] = errorType;
+  props[TelemetryConstants.properties.errorMessage] = error.message;
+  props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  props[TelemetryConstants.properties.errorName] = error.name;
+
+  if (error.innerError) {
+    props[TelemetryConstants.properties.innerError] = JSON.stringify(
+      error.innerError,
+      Object.getOwnPropertyNames(error.innerError)
+    );
+  }
+
+  if (error.tags) {
+    props[TelemetryConstants.properties.errorTag1] = error.tags[0] || error.name;
+    props[TelemetryConstants.properties.errorTag2] = error.tags[1];
+    props[TelemetryConstants.properties.errorTag3] = error.tags[2];
+  }
+}

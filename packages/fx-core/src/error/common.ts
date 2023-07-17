@@ -274,6 +274,7 @@ export class InternalError extends UserError {
       source: source,
     });
     this.innerError = error;
+    this.tags = [(error as any).code];
   }
 }
 

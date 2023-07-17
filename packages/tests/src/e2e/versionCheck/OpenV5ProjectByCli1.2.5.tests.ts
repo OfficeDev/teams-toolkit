@@ -47,7 +47,9 @@ describe("version check", () => {
         // provision
         const result = await Executor.provisionWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -57,7 +59,9 @@ describe("version check", () => {
         // deploy
         const result = await Executor.deployWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -67,7 +71,9 @@ describe("version check", () => {
         // publish
         const result = await Executor.publishWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -77,7 +83,9 @@ describe("version check", () => {
         // preview
         const result = await Executor.previewWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -87,7 +95,9 @@ describe("version check", () => {
         // validate
         const result = await Executor.validateWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);

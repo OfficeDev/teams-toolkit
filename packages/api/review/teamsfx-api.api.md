@@ -174,6 +174,8 @@ export interface ErrorOptionBase {
     // (undocumented)
     source?: string;
     // (undocumented)
+    tags?: string[];
+    // (undocumented)
     userData?: any;
 }
 
@@ -230,6 +232,8 @@ export interface FuncValidation<T extends string | string[] | OptionItem | Optio
 export interface FxError extends Error {
     innerError?: any;
     source: string;
+    // (undocumented)
+    tags?: string[];
     timestamp: Date;
     // (undocumented)
     userData?: any;
@@ -752,6 +756,8 @@ export class SystemError extends Error implements FxError {
     innerError?: any;
     issueLink?: string;
     source: string;
+    // (undocumented)
+    tags?: string[];
     timestamp: Date;
     userData?: string;
 }
@@ -926,6 +932,8 @@ export class UserError extends Error implements FxError {
     helpLink?: string;
     innerError?: any;
     source: string;
+    // (undocumented)
+    tags?: string[];
     timestamp: Date;
     userData?: string;
 }

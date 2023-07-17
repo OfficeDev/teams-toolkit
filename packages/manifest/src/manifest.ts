@@ -201,6 +201,8 @@ export interface IComposeExtension {
    * A list of handlers that allow apps to be invoked when certain conditions are met
    */
   messageHandlers?: IComposeExtensionMessageHandler[];
+
+  type?: "apiSpecification" | "bot";
 }
 
 export interface IComposeExtensionMessageHandler {

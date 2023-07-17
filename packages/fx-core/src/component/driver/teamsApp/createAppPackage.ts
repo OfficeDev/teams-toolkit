@@ -5,7 +5,15 @@ import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import * as path from "path";
 import { hooks } from "@feathersjs/hooks/lib";
-import { Result, FxError, ok, err, Platform, Colors } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  ok,
+  err,
+  Platform,
+  Colors,
+  IMessagingExtensionCommand,
+} from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
@@ -17,6 +25,7 @@ import { Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
+import { isCopilotPluginEnabled } from "../../../common/featureFlags";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -148,6 +157,45 @@ export class CreateAppPackageDriver implements StepDriver {
         const fileName = `${appDirectory}/${file}`;
         const dir = path.dirname(file);
         zip.addLocalFile(fileName, dir === "." ? "" : dir);
+      }
+    }
+
+    // M365 Copilot plugin, API specification and Adaptive card templates
+    if (
+      isCopilotPluginEnabled() &&
+      manifest.composeExtensions?.length > 0 &&
+      manifest.composeExtensions[0].type == "apiSpecification"
+    ) {
+      const apiSpecFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecFile}`;
+      if (!(await fs.pathExists(apiSpecFile))) {
+        return err(
+          new FileNotFoundError(
+            actionName,
+            apiSpecFile,
+            "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+          )
+        );
+      }
+      const dir = path.dirname(apiSpecFile);
+      zip.addLocalFile(apiSpecFile, dir === "." ? "" : dir);
+
+      if (manifest.composeExtensions[0].commands.length > 0) {
+        manifest.composeExtensions[0].commands.map(async (command: IMessagingExtensionCommand) => {
+          if (command.responseAdaptiveCardTemplate) {
+            const adaptiveCardFile = `${appDirectory}/${command.responseAdaptiveCardTemplate}`;
+            if (!(await fs.pathExists(adaptiveCardFile))) {
+              return err(
+                new FileNotFoundError(
+                  actionName,
+                  adaptiveCardFile,
+                  "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+                )
+              );
+            }
+            const dir = path.dirname(adaptiveCardFile);
+            zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
+          }
+        });
       }
     }
 

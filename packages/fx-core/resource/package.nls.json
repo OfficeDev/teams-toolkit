@@ -547,7 +547,7 @@
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
   "driver.botFramework.error.InvalidBotId": "Bot ID %s is invalid. It must be a GUID.",
-  "error.yaml.InvalidYamlSchemaError": "Unable to parse yaml file: %s. Please review the yaml file.",
+  "error.yaml.InvalidYamlSchemaError": "Unable to parse yaml file: %s. Please open the yaml file in VSCode or Visual Studio for detailed errors.",
   "error.yaml.InvalidYamlSchemaErrorWithReason": "Unable to parse yaml file: %s. Reason: %s Please review the yaml file.",
   "error.yaml.VersionNotSupported": "version %s is not supported. Supported versions: %s.",
   "error.yaml.YamlFieldTypeError": "Field '%s' should have %s type, yaml file: %s",

@@ -82,4 +82,21 @@ describe("getManifest V3", () => {
     const res = await manifestUtils.getManifestV3("");
     chai.assert.isTrue(res.isOk());
   });
+
+  it("getOperationIds", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        botId: uuid.v4(),
+        commands: [
+          {
+            id: "GET /repairs",
+            title: "List repairs",
+          },
+        ],
+      },
+    ];
+    const ids = manifestUtils.getOperationIds(manifest);
+    chai.assert.equal(ids.length, 1);
+  });
 });

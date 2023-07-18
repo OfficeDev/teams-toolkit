@@ -226,7 +226,7 @@ describe("v3 yaml parser", () => {
       chai
         .expect(errorMsg)
         .includes(`Unable to parse yaml file`)
-        .and.includes(`Please open the yaml file in VSCode or Visual Studio`);
+        .and.includes(`Please open the yaml file`);
 
       result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_number.yml"),

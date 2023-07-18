@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { LocalFunc } from ".";
+import { LocalFunc, ValidateFunc } from ".";
 import { FxError } from "../error";
 import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
 import { Inputs, OptionItem } from "../types";
@@ -133,10 +133,7 @@ export interface InputTextConfig extends UIConfig<string> {
    * @return A human-readable string which is presented as diagnostic message.
    * Return `undefined` when 'value' is valid.
    */
-  additionalValidationOnAccept?: (
-    input: string,
-    inputs?: Inputs
-  ) => string | undefined | Promise<string | undefined>;
+  additionalValidationOnAccept?: ValidateFunc<string>;
 }
 
 /**

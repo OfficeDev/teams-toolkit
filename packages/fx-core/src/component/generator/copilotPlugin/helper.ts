@@ -8,6 +8,8 @@
 import {
   Context,
   FxError,
+  Inputs,
+  LogLevel,
   OpenAIManifestAuthType,
   OpenAIPluginManifest,
   Result,
@@ -26,6 +28,7 @@ import fs from "fs-extra";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { assembleError } from "../../../error";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const teamsFxEnv = "${{TEAMSFX_ENV}}";
@@ -111,6 +114,9 @@ export async function listOperations(
   const validationRes = await specParser.validate();
 
   if (validationRes.status === ValidationStatus.Error) {
+    for (const error of validationRes.errors) {
+      context.logProvider?.error(error.content);
+    }
     return err(validationRes.errors);
   }
 

@@ -799,6 +799,7 @@ export class VsCodeUI implements UserInteraction {
               quickPick.busy = false;
               quickPick.enabled = true;
               if (validationResult) {
+                this.showMessage("error", validationResult, false);
                 quickPick.selectedItems = [];
                 quickPick.activeItems = [];
                 return;

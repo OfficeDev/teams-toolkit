@@ -1211,6 +1211,25 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 }
 
 export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+  const context = createContextV3();
+  const validationOnAccept = async (
+    input: string,
+    inputs?: Inputs
+  ): Promise<string | undefined> => {
+    try {
+      const res = await listOperations(context, undefined, input, true);
+      if (res.isOk()) {
+        inputs!.supportedApisFromApiSpec = res.value;
+      } else {
+        // TODO: get validationErrorMessage based on error length
+        const errors = res.error;
+        return errors[0].content;
+      }
+    } catch (e) {
+      const error = assembleError(e);
+      throw error;
+    }
+  };
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
@@ -1226,6 +1245,7 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
       },
+      additionalValidationOnAccept: validationOnAccept,
     },
     inputOptionItem: {
       id: "input",
@@ -1233,6 +1253,15 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
     },
     filters: {
       files: ["json", "yml", "yaml"],
+    },
+    validation: {
+      validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+        if (input === "input") {
+          return undefined;
+        }
+
+        return await validationOnAccept(input, inputs);
+      },
     },
   };
 }
@@ -1249,6 +1278,39 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
         return isValidHttpUrl(input)
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+      },
+    },
+    additionalValidationOnAccept: {
+      validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+        let manifest;
+
+        try {
+          manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(input);
+          inputs!.openAIPluginManifest = manifest;
+        } catch (e) {
+          const error = assembleError(e);
+          return error.message;
+        }
+
+        const context = createContextV3();
+        try {
+          const res = await listOperations(
+            context,
+            manifest,
+            inputs![QuestionNames.ApiSpecLocation],
+            true
+          );
+          if (res.isOk()) {
+            inputs!.supportedApisFromApiSpec = res.value;
+          } else {
+            // TODO: get validationErrorMessage based on error length
+            const errors = res.error;
+            return errors[0].content;
+          }
+        } catch (e) {
+          const error = assembleError(e);
+          throw error;
+        }
       },
     },
   };
@@ -1269,41 +1331,29 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
       minItems: 1,
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      let manifest;
-      if (inputs[QuestionNames.OpenAIPluginManifestLocation]) {
-        manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(
-          inputs[QuestionNames.OpenAIPluginManifestLocation] as string
-        );
-        inputs.openAIPluginManifest = manifest;
+      if (!inputs.supportedApisFromApiSpec) {
+        throw new EmptyOptionError();
       }
-      const context = createContextV3();
-      try {
-        const res = await listOperations(context, manifest, inputs[QuestionNames.ApiSpecLocation]);
-        if (res.isOk()) {
-          if (includeExistingAPIs) {
-            return res.value.map((operation) => {
+      if (includeExistingAPIs) {
+        return inputs.supportedApisFromApiSpec.map((operation: string) => {
+          return {
+            id: operation,
+            label: operation,
+          };
+        });
+      } else {
+        const teamsManifestPath = inputs.teamsManifestPath;
+        const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+        if (manifest.isOk()) {
+          const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+          return inputs.supportedApisFromApiSpec
+            .filter((operation: string) => !existingOperationIds.includes(operation))
+            .map((operation: string) => {
               return { id: operation, label: operation };
             });
-          } else {
-            const teamsManifestPath = inputs.teamsManifestPath;
-            const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
-            if (manifest.isOk()) {
-              const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-              return res.value
-                .filter((operation: string) => !existingOperationIds.includes(operation))
-                .map((operation: string) => {
-                  return { id: operation, label: operation };
-                });
-            } else {
-              throw manifest.error;
-            }
-          }
         } else {
-          throw new EmptyOptionError(); // TODO: handle errors based on error results
+          throw manifest.error;
         }
-      } catch (e) {
-        const error = assembleError(e);
-        throw error;
       }
     },
   };

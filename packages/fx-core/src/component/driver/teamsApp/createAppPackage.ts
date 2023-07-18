@@ -5,15 +5,7 @@ import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import * as path from "path";
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  Result,
-  FxError,
-  ok,
-  err,
-  Platform,
-  Colors,
-  IMessagingExtensionCommand,
-} from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform, Colors } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
@@ -182,7 +174,7 @@ export class CreateAppPackageDriver implements StepDriver {
       zip.addLocalFile(apiSpecFile, dir === "." ? "" : dir);
 
       if (manifest.composeExtensions[0].commands.length > 0) {
-        manifest.composeExtensions[0].commands.map(async (command: IMessagingExtensionCommand) => {
+        for (const command of manifest.composeExtensions[0].commands) {
           if (command.responseAdaptiveCardTemplate) {
             const adaptiveCardFile = `${appDirectory}/${command.responseAdaptiveCardTemplate}`;
             if (!(await fs.pathExists(adaptiveCardFile))) {
@@ -197,7 +189,7 @@ export class CreateAppPackageDriver implements StepDriver {
             const dir = path.dirname(command.responseAdaptiveCardTemplate);
             zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
-        });
+        }
       }
     }
 

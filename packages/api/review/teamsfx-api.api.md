@@ -307,6 +307,7 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
+    additionalValidationOnAccept?: (input: string, inputs?: Inputs) => string | undefined | Promise<string | undefined>;
     // (undocumented)
     default?: string | (() => Promise<string>);
     password?: boolean;
@@ -822,6 +823,7 @@ export const TemplateFolderName = "templates";
 
 // @public
 export interface TextInputQuestion extends UserInputQuestion {
+    additionalValidationOnAccept?: StringValidation | FuncValidation<string>;
     default?: string | LocalFunc<string | undefined>;
     password?: boolean;
     // (undocumented)

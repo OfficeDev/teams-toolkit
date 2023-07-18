@@ -492,6 +492,32 @@ export class VsCodeUI implements UserInteraction {
             ? await config.validation(inputBox.value)
             : undefined;
           if (!validationRes) {
+            inputBox.enabled = false;
+            inputBox.busy = true;
+            if (config.additionalValidationOnAccept) {
+              const oldValue = inputBox.value;
+              inputBox.placeholder = localize("teamstoolkit.qm.validatingInput");
+              inputBox.value = "";
+              try {
+                const additionalValidationOnAcceptRes = await config.additionalValidationOnAccept(
+                  oldValue
+                );
+
+                if (!additionalValidationOnAcceptRes) {
+                  resolve(ok({ type: "success", result: oldValue }));
+                } else {
+                  inputBox.validationMessage = additionalValidationOnAcceptRes;
+                  inputBox.busy = false;
+                  inputBox.enabled = true;
+                  inputBox.value = oldValue;
+                  return;
+                }
+              } catch (e) {
+                resolve(err(assembleError(e)));
+              }
+            } else {
+              resolve(ok({ type: "success", result: inputBox.value }));
+            }
             resolve(ok({ type: "success", result: inputBox.value }));
           } else {
             inputBox.validationMessage = validationRes;
@@ -768,11 +794,17 @@ export class VsCodeUI implements UserInteraction {
           if (config.validation) {
             quickPick.busy = true;
             quickPick.enabled = false;
-            const validationResult = await config.validation(result);
-            quickPick.busy = false;
-            quickPick.enabled = true;
-            if (validationResult) {
-              return;
+            try {
+              const validationResult = await config.validation(result);
+              quickPick.busy = false;
+              quickPick.enabled = true;
+              if (validationResult) {
+                quickPick.selectedItems = [];
+                quickPick.activeItems = [];
+                return;
+              }
+            } catch (e) {
+              resolve(err(assembleError(e)));
             }
           }
 

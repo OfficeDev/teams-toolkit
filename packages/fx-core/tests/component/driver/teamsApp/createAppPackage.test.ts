@@ -100,6 +100,28 @@ describe("teamsApp/createAppPackage", async () => {
       outputJsonPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
     };
+
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        type: "apiSpecification",
+        apiSpecFile: "resources/openai.yml",
+        commands: [
+          {
+            id: "GET /repairs",
+            responseAdaptiveCardTemplate: "resources/repairs.json",
+            title: "fake",
+          },
+        ],
+        botId: "",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
     sinon.stub(fs, "pathExists").callsFake((filePath) => {
       if (filePath.includes("openai.yml")) {
         return false;
@@ -130,6 +152,28 @@ describe("teamsApp/createAppPackage", async () => {
         return true;
       }
     });
+
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        type: "apiSpecification",
+        apiSpecFile: "resources/openai.yml",
+        commands: [
+          {
+            id: "GET /repairs",
+            responseAdaptiveCardTemplate: "resources/repairs.json",
+            title: "fake",
+          },
+        ],
+        botId: "",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
@@ -159,6 +203,27 @@ describe("teamsApp/createAppPackage", async () => {
       outputJsonPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
     };
+
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        type: "apiSpecification",
+        apiSpecFile: "resources/openai.yml",
+        commands: [
+          {
+            id: "GET /repairs",
+            responseAdaptiveCardTemplate: "resources/repairs.json",
+            title: "fake",
+          },
+        ],
+        botId: "",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
 
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});

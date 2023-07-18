@@ -23,14 +23,7 @@
         "full": "Full description of ${{ CONFIG_TEAMS_APP_NAME }}"
     },
     "accentColor": "#FFFFFF",
-    "composeExtensions": [{
-        "type": "apiSpecification",
-        "apiSpecFile": "resources/openai.yml",
-        "commands": [{
-            "id": "GET /repairs",
-            "responseAdaptiveCardTemplate": "resources/repairs.json"
-        }]
-    }],
+    "composeExtensions": [],
     "staticTabs": [],
     "permissions": [
         "identity",

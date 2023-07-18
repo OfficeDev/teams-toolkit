@@ -1,6 +1,7 @@
 import * as chai from "chai";
 import * as os from "os";
 import * as sinon from "sinon";
+import * as cp from "child_process";
 import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
@@ -36,6 +37,14 @@ describe("CommonUtils", () => {
       const version = "4.6.0";
 
       chai.expect(commonUtils.getPackageVersion(version)).equals("formal");
+    });
+  });
+
+  describe("openFolderInExplorer", () => {
+    it("happy path", () => {
+      const folderPath = "fakePath";
+      sinon.stub(cp, "exec");
+      commonUtils.openFolderInExplorer(folderPath);
     });
   });
 

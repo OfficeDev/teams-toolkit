@@ -735,10 +735,11 @@ export class VsCodeUI implements UserInteraction {
 
         const onDidAccept = async () => {
           const selectedItems = quickPick.selectedItems;
+          let result;
           if (selectedItems && selectedItems.length > 0) {
             const item = selectedItems[0];
             if (item.id === "default") {
-              resolve(ok({ type: "success", result: config.default }));
+              result = config.default;
             } else if (item.id === "browse") {
               fileSelectorIsOpen = true;
               const uriList: Uri[] | undefined = await window.showOpenDialog({
@@ -752,23 +753,30 @@ export class VsCodeUI implements UserInteraction {
               if (uriList && uriList.length > 0) {
                 if (type === "files") {
                   const results = uriList.map((u) => u.fsPath);
-                  resolve(ok({ type: "success", result: results }));
+                  result = results;
                 } else {
-                  const result = uriList[0].fsPath;
-                  resolve(ok({ type: "success", result: result }));
+                  result = uriList[0].fsPath;
                 }
               } else {
                 resolve(err(new UserCancelError("VSC")));
               }
             } else {
-              resolve(
-                ok({
-                  type: "success",
-                  result: config.possibleFiles?.find((f) => f.id === item.id)?.id,
-                })
-              );
+              result = config.possibleFiles?.find((f) => f.id === item.id)?.id;
             }
           }
+
+          if (config.validation) {
+            quickPick.busy = true;
+            quickPick.enabled = false;
+            const validationResult = await config.validation(result);
+            quickPick.busy = false;
+            quickPick.enabled = true;
+            if (validationResult) {
+              return;
+            }
+          }
+
+          resolve(ok({ type: "success", result: result }));
         };
 
         disposables.push(

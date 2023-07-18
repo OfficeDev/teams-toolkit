@@ -6,7 +6,7 @@ This template showcases how Microsoft Teams supports the ability to run web-base
 
 > **Prerequisites**
 >
-> To run the command bot template in your local dev machine, you will need:
+> To run the basic tab template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)

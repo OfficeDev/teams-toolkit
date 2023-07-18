@@ -118,6 +118,9 @@ export class MockCore {
   async getTeamsAppName(projectPath: string): Promise<Result<string, FxError>> {
     return ok("");
   }
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return ok("");
+  }
   async getProjectInfo(
     projectPath: string,
     env: string

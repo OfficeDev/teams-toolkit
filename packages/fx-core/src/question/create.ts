@@ -46,6 +46,7 @@ import {
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
 import { createContextV3 } from "../component/utils";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -701,10 +702,15 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
     staticOptions: [
-      { id: "new", label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew") },
+      {
+        id: "new",
+        label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew"),
+        detail: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew.detail"),
+      },
       {
         id: "import",
         label: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting"),
+        detail: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting.detail"),
       },
     ],
     default: "new",
@@ -1252,13 +1258,15 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
-export function apiOperationQuestion(): MultiSelectQuestion {
+export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
   // export for unit test
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder"),
+    placeholder: includeExistingAPIs
+      ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+      : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
     forgetLastValue: true,
     staticOptions: [],
     validation: {
@@ -1276,9 +1284,24 @@ export function apiOperationQuestion(): MultiSelectQuestion {
       try {
         const res = await listOperations(context, manifest, inputs[QuestionNames.ApiSpecLocation]);
         if (res.isOk()) {
-          return res.value.map((operation) => {
-            return { id: operation, label: operation };
-          });
+          if (includeExistingAPIs) {
+            return res.value.map((operation) => {
+              return { id: operation, label: operation };
+            });
+          } else {
+            const teamsManifestPath = inputs.teamsManifestPath;
+            const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+            if (manifest.isOk()) {
+              const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+              return res.value
+                .filter((operation: string) => !existingOperationIds.includes(operation))
+                .map((operation: string) => {
+                  return { id: operation, label: operation };
+                });
+            } else {
+              throw manifest.error;
+            }
+          }
         } else {
           throw new EmptyOptionError(); // TODO: handle errors based on error results
         }

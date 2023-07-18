@@ -6,6 +6,7 @@
     "packages/api",
     "packages/fx-core",
     "packages/cli",
+    "packages/metrics-ts",
     "templates"
   ],
   "vscode": [
@@ -26,6 +27,15 @@
     "packages/adaptivecards-tools-sdk",
     "packages/sdk",
     "packages/sdk-react"
+  ],
+  "tests": [
+    "packages/manifest",
+    "packages/api",
+    "packages/fx-core",
+    "packages/cli",
+    "packages/tests",
+    "packages/metrics-ts",
+    "templates"
   ],
   "template": ["templates"],
   "extra-shot-mocha": ["packages/extra-shot-mocha"],

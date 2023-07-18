@@ -301,6 +301,20 @@ describe("handlers", () => {
       sinon.assert.calledOnce(validateApplication);
     });
 
+    it("copilotPluginAddAPIHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const addAPIHanlder = sinon.spy(handlers.core, "copilotPluginAddAPI");
+      const args = [
+        {
+          fsPath: "manifest.json",
+        },
+      ];
+
+      await handlers.copilotPluginAddAPIHandler(args);
+
+      sinon.assert.calledOnce(addAPIHanlder);
+    });
+
     it("treeViewPreviewHandler() - previewWithManifest error", async () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");

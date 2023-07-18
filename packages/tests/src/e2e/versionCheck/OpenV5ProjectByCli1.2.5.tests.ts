@@ -39,8 +39,7 @@ describe("version check", () => {
       }
 
       const env = Object.assign({}, process.env);
-      env["TEAMSFX_V3"] = "false";
-      await Executor.installCLI(testFolder, "1.2.5", true);
+      await Executor.installCLI(testFolder, "1.2.5", false);
       const errorMessage =
         "Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest";
 
@@ -48,7 +47,9 @@ describe("version check", () => {
         // provision
         const result = await Executor.provisionWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -58,7 +59,9 @@ describe("version check", () => {
         // deploy
         const result = await Executor.deployWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -68,7 +71,9 @@ describe("version check", () => {
         // publish
         const result = await Executor.publishWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -78,7 +83,9 @@ describe("version check", () => {
         // preview
         const result = await Executor.previewWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -88,7 +95,9 @@ describe("version check", () => {
         // validate
         const result = await Executor.validateWithCustomizedProcessEnv(
           projectPath,
-          env
+          env,
+          "dev",
+          true
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);

@@ -18,12 +18,13 @@ const Action = {
 const mustacheFolder = path.resolve(__dirname, "..", "constraints", "yml", "templates");
 const solutionFolder = path.resolve(__dirname, "..");
 
+// example:  " key1: value, key2 " => { key1: value, key2: true }
 function strToObj(str) {
-  var properties = str.split(",");
-  var obj = {};
+  const properties = str.split(",");
+  let obj = {};
   properties.forEach(function (property) {
     if (property.includes(":")) {
-      var tup = property.split(":");
+      const tup = property.split(":");
       obj[tup[0].trim()] = tup[1].trim();
     } else {
       obj[property.trim()] = true;
@@ -57,11 +58,11 @@ function generateVariablesFromSnippets(dir) {
 
 function* solveMustache(mustachePaths) {
   for (const mustachePath of mustachePaths) {
-    const template = fs.readFileSync(mustachePath);
+    const template = fs.readFileSync(mustachePath, "utf8");
     const variables = generateVariablesFromSnippets(
       path.resolve(__dirname, "..", "constraints", "yml", "snippets")
     );
-    const solution = utils.renderMustache(template.toString(), variables);
+    const solution = utils.renderMustache(template, variables);
     yield { mustachePath, solution };
   }
 }

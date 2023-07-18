@@ -202,7 +202,14 @@ export interface IComposeExtension {
    */
   messageHandlers?: IComposeExtensionMessageHandler[];
 
+  /**
+   * To support SME
+   */
   type?: "apiSpecification" | "bot";
+  /**
+   * To support SME
+   */
+  apiSpecFile?: string;
 }
 
 export interface IComposeExtensionMessageHandler {
@@ -253,6 +260,10 @@ export interface IMessagingExtensionCommand {
   parameters?: IParameter[];
 
   taskInfo?: ITaskInfo;
+  /**
+   * To support SME
+   */
+  responseAdaptiveCardTemplate?: string;
 }
 
 export interface IParameter {

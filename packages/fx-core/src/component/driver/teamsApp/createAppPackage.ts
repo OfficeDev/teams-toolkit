@@ -163,8 +163,10 @@ export class CreateAppPackageDriver implements StepDriver {
     // M365 Copilot plugin, API specification and Adaptive card templates
     if (
       isCopilotPluginEnabled() &&
-      manifest.composeExtensions?.length > 0 &&
-      manifest.composeExtensions[0].type == "apiSpecification"
+      manifest.composeExtensions &&
+      manifest.composeExtensions.length > 0 &&
+      manifest.composeExtensions[0].type == "apiSpecification" &&
+      manifest.composeExtensions[0].apiSpecFile
     ) {
       const apiSpecFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecFile}`;
       if (!(await fs.pathExists(apiSpecFile))) {
@@ -176,7 +178,7 @@ export class CreateAppPackageDriver implements StepDriver {
           )
         );
       }
-      const dir = path.dirname(apiSpecFile);
+      const dir = path.dirname(manifest.composeExtensions[0].apiSpecFile);
       zip.addLocalFile(apiSpecFile, dir === "." ? "" : dir);
 
       if (manifest.composeExtensions[0].commands.length > 0) {
@@ -192,7 +194,7 @@ export class CreateAppPackageDriver implements StepDriver {
                 )
               );
             }
-            const dir = path.dirname(adaptiveCardFile);
+            const dir = path.dirname(command.responseAdaptiveCardTemplate);
             zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
         });

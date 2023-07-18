@@ -202,7 +202,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    # if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
+    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
@@ -265,7 +265,7 @@ jobs:
         with:
           node-version: 14
       - name: lerna expect rc version
-        # if: ${{ github.event.pull_request.base.ref == 'main' }}
+        if: ${{ github.event.pull_request.base.ref == 'main' }}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ steps.branch-name.outputs.current_branch }} --yes
           npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt

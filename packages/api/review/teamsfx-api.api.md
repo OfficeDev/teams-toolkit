@@ -307,6 +307,8 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     password?: boolean;
 }
 
@@ -415,6 +417,8 @@ export interface MultiFileQuestion extends UserInputQuestion {
 
 // @public
 export interface MultiSelectConfig extends UIConfig<string[]> {
+    // (undocumented)
+    default?: string[] | (() => Promise<string[]>);
     onDidChangeSelection?: OnSelectionChangeFunc;
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
@@ -543,6 +547,7 @@ export type SelectFileConfig = UIConfig<string> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string | (() => Promise<string>);
     possibleFiles?: {
         id: string;
         label: string;
@@ -558,13 +563,16 @@ export type SelectFilesConfig = UIConfig<string[]> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string[] | (() => Promise<string[]>);
 };
 
 // @public (undocumented)
 export type SelectFilesResult = InputResult<string[]>;
 
 // @public
-export type SelectFolderConfig = UIConfig<string>;
+export type SelectFolderConfig = UIConfig<string> & {
+    default?: string | (() => Promise<string>);
+};
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
@@ -614,6 +622,8 @@ export interface SingleFileQuestion extends UserInputQuestion {
 
 // @public
 export interface SingleSelectConfig extends UIConfig<string> {
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
     skipSingleOption?: boolean;
@@ -914,7 +924,7 @@ export interface UIConfig<T> {
         tooltip: string;
         command: string;
     }[];
-    default?: T;
+    default?: T | (() => Promise<T>);
     name: string;
     placeholder?: string;
     prompt?: string;

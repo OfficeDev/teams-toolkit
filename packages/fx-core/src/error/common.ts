@@ -397,7 +397,8 @@ export function fillInTelemetryPropsForFxError(
       ? TelemetryConstants.values.systemError
       : TelemetryConstants.values.userError;
   props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
-  props[TelemetryConstants.properties.errorCode] = errorCode;
+  props[TelemetryConstants.properties.errorCode] =
+    props[TelemetryConstants.properties.errorCode] || errorCode;
   props[TelemetryConstants.properties.errorType] = errorType;
   props[TelemetryConstants.properties.errorMessage] = error.message;
   props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more

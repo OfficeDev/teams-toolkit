@@ -1,15 +1,15 @@
 const path = require("path");
-const fs = require("fs-extra");
+const { readdirSync, lstatSync, existsSync } = require("node:fs");
 const Mustache = require("mustache");
 
 function filterFiles(dir, fileList = [], filter = () => true) {
-  if (!fs.existsSync(dir)) {
+  if (!existsSync(dir)) {
     return fileList;
   }
-  const files = fs.readdirSync(dir);
+  const files = readdirSync(dir);
   files.forEach((file) => {
     const filePath = path.join(dir, file);
-    if (fs.lstatSync(filePath).isDirectory()) {
+    if (lstatSync(filePath).isDirectory()) {
       fileList = filterFiles(filePath, fileList, filter);
     } else if (filter(file)) {
       fileList.push(filePath);

@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+const { writeFileSync, readFileSync, lstatSync, existsSync } = require("node:fs");
 const path = require("path");
 const utils = require("./utils");
 
@@ -37,11 +37,11 @@ function strToObj(str) {
 function generateVariablesFromSnippets(dir) {
   let result = {};
   utils.filterYmlFiles(dir).map((file) => {
-    const yml = fs.readFileSync(file, "utf8");
+    const yml = readFileSync(file, "utf8");
     result = { ...result, ...{ [path.basename(file, ".yml")]: yml } };
   });
   utils.filterMustacheFiles(dir).map((file) => {
-    const mustache = fs.readFileSync(file, "utf8");
+    const mustache = readFileSync(file, "utf8");
     result = {
       ...result,
       ...{
@@ -58,7 +58,7 @@ function generateVariablesFromSnippets(dir) {
 
 function* solveMustache(mustachePaths) {
   for (const mustachePath of mustachePaths) {
-    const template = fs.readFileSync(mustachePath, "utf8");
+    const template = readFileSync(mustachePath, "utf8");
     const variables = generateVariablesFromSnippets(
       path.resolve(__dirname, "..", "constraints", "yml", "snippets")
     );
@@ -73,13 +73,13 @@ function validateMustachePath(mustachePath) {
     return utils.filterMustacheFiles(mustacheFolder);
   }
   // input is a folder, return all mustache files in folder
-  if (fs.lstatSync(mustachePath).isDirectory()) {
+  if (lstatSync(mustachePath).isDirectory()) {
     return utils.filterMustacheFiles(mustachePath);
   }
   if (!mustachePath.endsWith(".mustache")) {
     throw new Error("Invalid mustache file path");
   }
-  if (!fs.existsSync(mustachePath)) {
+  if (!existsSync(mustachePath)) {
     throw new Error("Invalid path");
   }
   // return input mustache file
@@ -110,10 +110,10 @@ function main({ action, mustachePaths }) {
     );
     switch (action) {
       case Action.APPLY:
-        fs.writeFileSync(solutionPath, solution);
+        writeFileSync(solutionPath, solution);
         break;
       case Action.VERIFY:
-        const expected = fs.readFileSync(solutionPath, "utf8");
+        const expected = readFileSync(solutionPath, "utf8");
         const assertion = solution.replaceAll("\r\n", "\n") === expected.replaceAll("\r\n", "\n");
         console.assert(
           assertion,

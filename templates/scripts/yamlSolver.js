@@ -114,7 +114,7 @@ function main({ action, mustachePaths }) {
         break;
       case Action.VERIFY:
         const expected = readFileSync(solutionPath, "utf8");
-        const assertion = solution.replaceAll("\r\n", "\n") === expected.replaceAll("\r\n", "\n");
+        const assertion = solution.replace(/\r\n/g, "\n") === expected.replace(/\r\n/g, "\n");
         console.assert(
           assertion,
           `${solutionPath} is not satisfied with the constraint ${mustachePath}`

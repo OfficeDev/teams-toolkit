@@ -112,7 +112,7 @@ export async function listOperations(
 
   if (validationRes.status === ValidationStatus.Error) {
     for (const error of validationRes.errors) {
-      context.logProvider?.error(error.content);
+      context.logProvider.error(error.content);
     }
     return err(validationRes.errors);
   }

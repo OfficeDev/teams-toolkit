@@ -49,6 +49,7 @@ import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-
 import { setTools } from "../../src/core/globalVars";
 import { EmptyOptionError } from "../../src/error";
 import axios from "axios";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -938,6 +939,23 @@ describe("scaffold question", () => {
           assert.isTrue(options[1].id === "operation2");
         });
 
+        it(" list operations without existing APIs", async () => {
+          const question = apiOperationQuestion(false);
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: ["operation1", "operation2"],
+          };
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+          sandbox.stub(manifestUtils, "getOperationIds").returns(["operation1"]);
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+
+          assert.isTrue(options.length === 1);
+          assert.isTrue(options[0].id === "operation2");
+        });
+
         it(" list operations error", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -970,6 +988,22 @@ describe("scaffold question", () => {
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
+          assert.isUndefined(res);
+        });
+
+        it("skip validating on selectFile result if user selects to input URL", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("input", inputs);
           assert.isUndefined(res);
         });
 

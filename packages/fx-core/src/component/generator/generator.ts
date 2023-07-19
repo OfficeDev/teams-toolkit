@@ -105,7 +105,7 @@ export class Generator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.SampleName]: sampleName,
+      [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
     const sample = getSampleInfoFromName(sampleName);

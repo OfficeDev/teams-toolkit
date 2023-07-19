@@ -28,6 +28,7 @@ class MetadataUtil {
         props[name + ".actions"] = str ?? "";
       }
       props[TelemetryProperty.YmlSchemaVersion] = res.value.version;
+      props[TelemetryProperty.SampleAppName] = res.value.sampleTag ?? "";
 
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
     }

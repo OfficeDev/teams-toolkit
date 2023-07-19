@@ -92,7 +92,7 @@ export class UserError extends Error implements FxError {
     super(message);
 
     //name
-    this.name = option.name || option.error?.name || new.target.name;
+    this.name = option.name || new.target.name;
 
     //source
     this.source = option.source || "unknown";
@@ -172,7 +172,7 @@ export class SystemError extends Error implements FxError {
     super(message);
 
     //name
-    this.name = option.name || option.error?.name || new.target.name;
+    this.name = option.name || new.target.name;
 
     //source
     this.source = option.source || "unknown";

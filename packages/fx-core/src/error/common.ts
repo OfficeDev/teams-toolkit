@@ -117,9 +117,8 @@ export class FilePermissionError extends UserError {
 
 export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
-    source = source || "unknown";
     super({
-      source: camelCase(source),
+      source: camelCase(source) || "unknown",
       error: e,
       message: getDefaultString(
         "error.common.UnhandledError",

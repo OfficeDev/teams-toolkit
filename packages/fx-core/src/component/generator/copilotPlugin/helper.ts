@@ -8,8 +8,6 @@
 import {
   Context,
   FxError,
-  Inputs,
-  LogLevel,
   OpenAIManifestAuthType,
   OpenAIPluginManifest,
   Result,
@@ -28,7 +26,6 @@ import fs from "fs-extra";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { assembleError } from "../../../error";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const teamsFxEnv = "${{TEAMSFX_ENV}}";

@@ -14,22 +14,14 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint/eslint-plugin",
-    "prettier",
-    "no-secrets",
-    "@microsoft/eslint-plugin-teamsfx",
   ],
-  overrides: [
-    {
-      files: ["*.ts"],
-      rules: {
-          "@typescript-eslint/no-unnecessary-type-assertion": "error",
-          "@typescript-eslint/no-for-in-array": "error",
-          "@typescript-eslint/no-implied-eval": "error",
-          "@typescript-eslint/restrict-plus-operands": "error",
-          "@typescript-eslint/restrict-template-expressions": "error",
-          "@typescript-eslint/prefer-regexp-exec": "error",
-          // "@typescript-eslint/unbound-method": "error",
-      },
-    },
-  ],
+  rules: {
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/no-for-in-array": "error",
+    "@typescript-eslint/no-implied-eval": "error",
+    "@typescript-eslint/restrict-plus-operands": "error",
+    "@typescript-eslint/restrict-template-expressions": "error",
+    "@typescript-eslint/prefer-regexp-exec": "error",
+    // "@typescript-eslint/unbound-method": "error",
+  },
 };

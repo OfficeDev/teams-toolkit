@@ -53,19 +53,4 @@ module.exports = {
       },
     ],
   },
-  overrides: [
-    {
-      files: ["src/**/*.ts"],
-      rules: {
-        "header/header": [
-          "error",
-          "line",
-          [
-            " Copyright (c) Microsoft Corporation.",
-            " Licensed under the MIT license.",
-          ],
-        ],
-      },
-    },
-  ],
 };

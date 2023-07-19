@@ -18,6 +18,7 @@ import { convertError, ErrorHandlerMW } from "../../src/core/middleware/errorHan
 import {
   assembleError,
   FilePermissionError,
+  InternalError,
   UnhandledError,
   UnhandledUserError,
   UserCancelError,
@@ -199,7 +200,7 @@ describe("assembleError", function () {
     const raw = new Error(myMessage);
     (raw as any).code = "EEXIST";
     const fxError = assembleError(raw);
-    assert.isTrue(fxError instanceof UnhandledError);
+    assert.isTrue(fxError instanceof InternalError);
     assert.isTrue(fxError.source === "unknown");
     assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
     assert.deepEqual(fxError.categories, ["internal", "EEXIST"]);

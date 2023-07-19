@@ -274,7 +274,7 @@ export function assembleError(e: any, source?: string): FxError {
   if (type === "string") {
     return new UnhandledError(new Error(e as string), source);
   } else if (e instanceof Error) {
-    const err = e as Error;
+    const err = e;
     const fxError = new UnhandledError(err, source);
     fxError.stack = err.stack;
     return fxError;

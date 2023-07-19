@@ -217,10 +217,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
   }
 };
 
-export async function wrapRunMigration(
-  context: MigrationContext,
-  exec: (context: MigrationContext) => void
-): Promise<void> {
+export async function wrapRunMigration(context: MigrationContext, exec: Migration): Promise<void> {
   try {
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorMigrateStart);
     await exec(context);
@@ -466,9 +463,8 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     path.join(context.projectPath, oldAadManifestPath)
   );
 
-  const activeResourcePlugins = (projectSettings.solutionSettings as any)
-    .activeResourcePlugins as any[];
-  const component = (projectSettings as any).components as any[];
+  const activeResourcePlugins = projectSettings.solutionSettings.activeResourcePlugins as any[];
+  const component = projectSettings.components as any[];
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
     (component &&
@@ -556,7 +552,7 @@ async function askUserConfirm(
   do {
     answer = await popupMessageModal(versionForMigration);
     if (answer === moreInfoButton) {
-      TOOLS?.ui!.openUrl(learnMoreLink);
+      TOOLS?.ui.openUrl(learnMoreLink);
       sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
@@ -586,7 +582,7 @@ async function showNonmodalNotification(
   sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const answer = await popupMessageNonmodal(versionForMigration);
   if (answer === moreInfoButton) {
-    TOOLS?.ui!.openUrl(learnMoreLink);
+    TOOLS?.ui.openUrl(learnMoreLink);
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,

@@ -82,7 +82,7 @@ export class CreateAadAppDriver implements StepDriver {
         );
         // Create new AAD app if no client id exists
         const signInAudience = args.signInAudience
-          ? (args.signInAudience as SignInAudience)
+          ? args.signInAudience
           : SignInAudience.AzureADMyOrg;
         const aadApp = await aadAppClient.createAadApp(args.name, signInAudience);
         aadAppState.clientId = aadApp.appId!;

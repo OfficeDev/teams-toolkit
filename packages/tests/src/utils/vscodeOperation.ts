@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as os from "os";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -482,7 +484,7 @@ export async function createNewProject(
   const driver = VSBrowser.instance.driver;
   let scaffoldingTime = 60 * 1000;
   if (!testRootFolder) {
-    testRootFolder = path.resolve(__dirname, "../resource/");
+    testRootFolder = path.resolve(__dirname, "../../resource/");
   }
   await clearNotifications();
   await execCommandIfExist(
@@ -615,11 +617,12 @@ export async function createNewProject(
       break;
     }
     case "spfxreact": {
-      await input.selectQuickPick(CreateProjectQuestion.Tab);
-      await input.selectQuickPick("SPFx");
       scaffoldingTime = 7 * 60 * 1000;
-      // Choose Tab(SPFx)
-      await input.selectQuickPick("SPFx tab");
+      await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
       await driver.sleep(Timeout.longTimeWait);
       await input.selectQuickPick(
@@ -640,7 +643,10 @@ export async function createNewProject(
       scaffoldingTime = 7 * 60 * 1000;
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
       await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
       await driver.sleep(Timeout.longTimeWait);
       await input.selectQuickPick(
@@ -661,7 +667,10 @@ export async function createNewProject(
       scaffoldingTime = 5 * 60 * 1000;
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
       await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
       await driver.sleep(Timeout.longTimeWait);
       await input.selectQuickPick(

@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { InputBox, VSBrowser } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
@@ -96,6 +96,8 @@ describe("New project Tests", function () {
       await driver.sleep(Timeout.input);
       // Choose Tab(SPFx)
       await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
       await driver.sleep(Timeout.longTimeWait);
       await input.selectQuickPick(

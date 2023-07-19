@@ -197,12 +197,12 @@ describe("assembleError", function () {
 
   it("error is Error", () => {
     const raw = new Error(myMessage);
-    (raw as any).code = "code1";
+    (raw as any).code = "EEXIST";
     const fxError = assembleError(raw);
     assert.isTrue(fxError instanceof UnhandledError);
     assert.isTrue(fxError.source === "unknown");
     assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
-    assert.deepEqual(fxError.categories, ["internal", "code1"]);
+    assert.deepEqual(fxError.categories, ["internal", "EEXIST"]);
   });
 
   it("error is Error with source", () => {

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/api2teams",
-  "version": "0.1.0-rc",
+  "version": "0.1.0",
   "description": "openapi spec to teams app",
   "main": "index.js",
   "author": "Microsoft Corporation",

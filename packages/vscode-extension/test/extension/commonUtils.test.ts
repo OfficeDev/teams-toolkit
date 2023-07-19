@@ -165,6 +165,12 @@ describe("CommonUtils", () => {
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });
+    it("should return undefined if getTeamsAppName returns empty string", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(core, "getTeamsAppName").resolves(ok(""));
+      const result = await commonUtils.getAppName();
+      chai.expect(result).equals(undefined);
+    });
   });
 
   describe("getTeamsAppTelemetryInfoByEnv", async () => {

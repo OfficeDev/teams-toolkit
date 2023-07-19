@@ -17,7 +17,7 @@ export interface FxError extends Error {
 
   userData?: any;
 
-  tags?: string[];
+  categories?: string[];
 }
 export interface ErrorOptionBase {
   source?: string;
@@ -26,7 +26,7 @@ export interface ErrorOptionBase {
   error?: Error;
   userData?: any;
   displayMessage?: string;
-  tags?: string[];
+  categories?: string[];
 }
 
 export interface UserErrorOptions extends ErrorOptionBase {
@@ -65,7 +65,7 @@ export class UserError extends Error implements FxError {
    */
   displayMessage?: string;
 
-  tags?: string[];
+  categories?: string[];
 
   constructor(opt: UserErrorOptions);
   constructor(source: string, name: string, message: string, displayMessage?: string);
@@ -111,7 +111,7 @@ export class UserError extends Error implements FxError {
     this.userData = option.userData;
     this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
-    this.tags = option.tags;
+    this.categories = option.categories;
   }
 }
 
@@ -145,7 +145,7 @@ export class SystemError extends Error implements FxError {
    */
   displayMessage?: string;
 
-  tags?: string[];
+  categories?: string[];
 
   constructor(opt: SystemErrorOptions);
   constructor(source: string, name: string, message: string, displayMessage?: string);
@@ -191,6 +191,6 @@ export class SystemError extends Error implements FxError {
     this.userData = option.userData;
     this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
-    this.tags = option.tags;
+    this.categories = option.categories;
   }
 }

@@ -120,6 +120,7 @@ export class UnhandledError extends SystemError {
     source = source || "unknown";
     super({
       source: camelCase(source),
+      error: e,
       message: getDefaultString(
         "error.common.UnhandledError",
         source,
@@ -131,7 +132,6 @@ export class UnhandledError extends SystemError {
         e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
     });
-    if (e.stack) super.stack = e.stack;
   }
 }
 
@@ -151,8 +151,8 @@ export class UnhandledUserError extends UserError {
         e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       helpLink: helpLink,
+      error: e,
     });
-    if (e.stack) super.stack = e.stack;
   }
 }
 
@@ -269,12 +269,12 @@ export class ConcurrentError extends UserError {
 }
 
 export class InternalError extends UserError {
-  constructor(source: string, error: Error) {
+  constructor(error: any, source: string) {
     super({
       source: source,
     });
     this.innerError = error;
-    this.tags = [(error as any).code];
+    this.categories = ["internal", error.code];
   }
 }
 
@@ -284,19 +284,13 @@ export function assembleError(e: any, source?: string): FxError {
   const type = typeof e;
   if (type === "string") {
     return new UnhandledError(new Error(e as string), source);
-  } else if (e instanceof Error) {
-    const err = e as Error;
-    const code = (err as any).code as string;
+  } else {
+    const code = e.code as string;
     if (code && (errnoCodes[code] || code.startsWith("ERR_"))) {
       // convert to internal error
-      return new InternalError(source, err);
+      return new InternalError(e, source);
     }
-    const fxError = new UnhandledError(err, source);
-    fxError.stack = err.stack;
-    return fxError;
-  } else {
-    const message = JSON.stringify(e, Object.getOwnPropertyNames(e));
-    return new UnhandledError(new Error(message), source);
+    return new UnhandledError(e, source);
   }
 }
 
@@ -411,9 +405,9 @@ export function fillInTelemetryPropsForFxError(
     );
   }
 
-  if (error.tags) {
-    props[TelemetryConstants.properties.errorTag1] = error.tags[0];
-    props[TelemetryConstants.properties.errorTag2] = error.tags[1];
-    props[TelemetryConstants.properties.errorTag3] = error.tags[2];
+  if (error.categories) {
+    props[TelemetryConstants.properties.errorCat1] = error.categories[0];
+    props[TelemetryConstants.properties.errorCat2] = error.categories[1];
+    props[TelemetryConstants.properties.errorCat3] = error.categories[2];
   }
 }

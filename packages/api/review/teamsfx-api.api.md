@@ -164,6 +164,8 @@ export interface EnvMeta {
 // @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
+    categories?: string[];
+    // (undocumented)
     displayMessage?: string;
     // (undocumented)
     error?: Error;
@@ -173,8 +175,6 @@ export interface ErrorOptionBase {
     name?: string;
     // (undocumented)
     source?: string;
-    // (undocumented)
-    tags?: string[];
     // (undocumented)
     userData?: any;
 }
@@ -230,10 +230,10 @@ export interface FuncValidation<T extends string | string[] | OptionItem | Optio
 
 // @public (undocumented)
 export interface FxError extends Error {
+    // (undocumented)
+    categories?: string[];
     innerError?: any;
     source: string;
-    // (undocumented)
-    tags?: string[];
     timestamp: Date;
     // (undocumented)
     userData?: any;
@@ -758,12 +758,12 @@ export type SubscriptionInfo = {
 export class SystemError extends Error implements FxError {
     constructor(opt: SystemErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     innerError?: any;
     issueLink?: string;
     source: string;
-    // (undocumented)
-    tags?: string[];
     timestamp: Date;
     userData?: string;
 }
@@ -934,12 +934,12 @@ export interface UIConfig<T> {
 export class UserError extends Error implements FxError {
     constructor(opt: UserErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     helpLink?: string;
     innerError?: any;
     source: string;
-    // (undocumented)
-    tags?: string[];
     timestamp: Date;
     userData?: string;
 }

@@ -1266,7 +1266,8 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   };
 }
 
-function openAIPluginManifestLocationQuestion(): TextInputQuestion {
+export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
+  // export for unit test
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginManifestLocation,

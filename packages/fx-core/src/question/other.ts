@@ -287,7 +287,7 @@ export function copilotPluginAddAPIQuestionNode(): IQTreeNode {
     data: apiSpecLocationQuestion(),
     children: [
       {
-        data: apiOperationQuestion(),
+        data: apiOperationQuestion(false),
       },
     ],
   };

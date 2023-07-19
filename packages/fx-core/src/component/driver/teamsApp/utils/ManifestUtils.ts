@@ -6,6 +6,8 @@ import {
   ManifestCapability,
   Result,
   TeamsAppManifest,
+  IComposeExtension,
+  IMessagingExtensionCommand,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -251,6 +253,20 @@ export class ManifestUtils {
       capabilities.push("MessageExtension");
     }
     return capabilities;
+  }
+
+  /**
+   * Get command id from composeExtensions
+   * @param manifest
+   */
+  public getOperationIds(manifest: TeamsAppManifest): string[] {
+    const ids: string[] = [];
+    manifest.composeExtensions?.map((extension: IComposeExtension) => {
+      extension.commands?.map((command: IMessagingExtensionCommand) => {
+        ids.push(command.id);
+      });
+    });
+    return ids;
   }
 
   async getManifestV3(

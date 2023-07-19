@@ -2168,8 +2168,12 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
 }
 
 export async function copilotPluginAddAPIHandler(args: any[]) {
-  const inputs = getSystemInputs();
   // Telemetries are handled in runCommand()
+  const inputs = getSystemInputs();
+  if (args && args.length > 0) {
+    const filePath = args[0].fsPath as string;
+    inputs.teamsManifestPath = filePath;
+  }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;
 }

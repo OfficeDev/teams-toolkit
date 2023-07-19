@@ -539,6 +539,7 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
       const schemaCommand = {
         title: "➕" + localize("teamstoolkit.codeLens.copilotPluginAddAPI"),
         command: "fx-extension.copilotPluginAddAPI",
+        arguments: [{ fsPath: document.fileName }],
       };
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
       return codeLenses;

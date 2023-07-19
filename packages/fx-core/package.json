@@ -55,6 +55,7 @@
     "test:coll": "nyc mocha \"tests/core/collaborator.test.ts\"",
     "test:specParser": "npx mocha \"tests/common/spec-parser/**/specParser.test.ts\"",
     "test:specFilter": "npx mocha \"tests/common/spec-parser/**/specFilter.test.ts\"",
+    "test:error": "nyc mocha \"tests/error/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -129,7 +130,6 @@
     "validator": "^13.7.0",
     "xml2js": "^0.5.0",
     "yaml": "^2.2.2",
-    "yaml-language-server": "1.7.0",
     "@microsoft/dev-tunnels-contracts": "~1.0.7360",
     "@microsoft/dev-tunnels-management": "~1.0.7360"
   },

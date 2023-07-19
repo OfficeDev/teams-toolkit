@@ -7,9 +7,11 @@
 
 import {
   Context,
+  FxError,
   OpenAIManifestAuthType,
   OpenAIPluginManifest,
   Result,
+  UserError,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -20,8 +22,14 @@ import {
   ValidationStatus,
 } from "../../../common/spec-parser/interfaces";
 import { SpecParser } from "../../../common/spec-parser/specParser";
+import fs from "fs-extra";
+import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
+import path from "path";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
+const teamsFxEnv = "${{TEAMSFX_ENV}}";
+const componentName = "OpenAIPluginManifestHelper";
 
 enum OpenAIPluginManifestErrorType {
   AuthNotSupported,
@@ -38,24 +46,50 @@ export interface ErrorResult {
    * The content of the error.
    */
   content: string;
-
-  /**
-   * The api path of the error.
-   */
-  apiPath?: string;
 }
 
-export class OpenAIManifestHelper {
+export class OpenAIPluginManifestHelper {
   static async loadOpenAIPluginManifest(domain: string): Promise<OpenAIPluginManifest> {
     const path = domain + manifestFilePath;
-    const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
-      return await axios.get(path);
-    }, 3);
-    return res.data;
+
+    try {
+      const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
+        return await axios.get(path);
+      }, 3);
+
+      return res.data;
+    } catch (e) {
+      throw new UserError(
+        componentName,
+        "loadOpenAIPluginManifest",
+        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path),
+        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path)
+      );
+    }
   }
 
-  static async updateManifest(manifest: OpenAIPluginManifest, manifestPath: string): Promise<void> {
-    //TODO: implementation
+  static async updateManifest(
+    openAiPluginManifest: OpenAIPluginManifest,
+    appPackageFolder: string
+  ): Promise<Result<undefined, FxError>> {
+    const manifestPath = path.join(appPackageFolder, "manifest.json");
+    const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    const manifest = manifestRes.value;
+    manifest.name.full = openAiPluginManifest.name_for_model;
+    manifest.name.short = `${openAiPluginManifest.name_for_human}-${teamsFxEnv}`;
+    manifest.description.full = openAiPluginManifest.description_for_model;
+    manifest.description.short = openAiPluginManifest.description_for_human;
+    manifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
+    manifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;
+    manifest.developer.termsOfUseUrl = openAiPluginManifest.legal_info_url;
+
+    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, "\t"), "utf-8");
+    return ok(undefined);
   }
 }
 

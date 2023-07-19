@@ -85,6 +85,9 @@ export interface Inputs extends Record<string, any> {
   inProductDoc?: boolean; // AB test for in product doc feature
   teamsAppFromTdp?: any;
   openAIPluginManifest?: OpenAIPluginManifest;
+  globalYeomanPackageVersion?: string;
+  globalSpfxPackageVersion?: string;
+  latestSpfxPackageVersion?: string;
 }
 
 export type InputsWithProjectPath = Inputs & { projectPath: string };

@@ -84,6 +84,10 @@ export interface Inputs extends Record<string, any> {
   isM365?: boolean;
   inProductDoc?: boolean; // AB test for in product doc feature
   teamsAppFromTdp?: any;
+  openAIPluginManifest?: OpenAIPluginManifest;
+  globalYeomanPackageVersion?: string;
+  globalSpfxPackageVersion?: string;
+  latestSpfxPackageVersion?: string;
 }
 
 export type InputsWithProjectPath = Inputs & { projectPath: string };
@@ -130,3 +134,26 @@ export type ManifestCapability =
       snippet?: IWebApplicationInfo;
       existingApp?: boolean;
     };
+
+export enum OpenAIManifestAuthType {
+  None = "none",
+  UserHttp = "user_http",
+  ServiceHttp = "service_http",
+  OAuth = "oauth",
+}
+
+export interface OpenAIPluginManifest {
+  schema_version: string;
+  name_for_human: string;
+  name_for_model: string;
+  description_for_human: string;
+  description_for_model: string;
+  auth: { type: OpenAIManifestAuthType };
+  api: {
+    type: string;
+    url: string;
+  };
+  logo_url: string;
+  contact_email: string;
+  legal_info_url: string;
+}

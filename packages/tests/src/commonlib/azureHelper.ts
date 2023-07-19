@@ -4,7 +4,7 @@
 import { ResourceGroup, ResourceManagementClient } from "@azure/arm-resources";
 import { UsernamePasswordCredential } from "@azure/identity";
 import * as azureConfig from "@microsoft/teamsfx-cli/src/commonlib/common/userPasswordConfig";
-import { strings } from "./constants";
+import { strings } from "../utils/constants";
 
 const tenantId = azureConfig.AZURE_TENANT_ID || "";
 const clientId = azureConfig.client_id;

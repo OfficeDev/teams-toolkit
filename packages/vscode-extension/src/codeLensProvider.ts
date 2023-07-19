@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  AdaptiveCardsFolderName,
-  AppPackageFolderName,
-  TemplateFolderName,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, TemplateFolderName } from "@microsoft/teamsfx-api";
 import {
   MetadataV3,
   envUtil,
@@ -148,9 +144,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
   private static SEARCH_TERM = "adaptivecards.io/schemas/adaptive-card.json";
 
   public static async detectedAdaptiveCards(): Promise<boolean> {
-    const files: vscode.Uri[] = await vscode.workspace.findFiles(
-      `**/${AdaptiveCardsFolderName}/*.json`
-    );
+    const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/*.json`, "**/node_modules/**");
     for (const file of files) {
       const content = await fs.readFile(file.fsPath, "utf8");
       if (content.includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {
@@ -224,7 +218,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       );
       const url = line.text.substring(line.text.indexOf("https"), line.text.length - 2);
       const schemaCommand = {
-        title: "Open schema",
+        title: localize("teamstoolkit.codeLens.openSchema"),
         command: "fx-extension.openSchema",
         arguments: [{ url: url }],
       };
@@ -520,6 +514,35 @@ export class PermissionsJsonFileCodeLensProvider implements vscode.CodeLensProvi
         codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
         return codeLenses;
       }
+    }
+  }
+}
+
+export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
+  private schemaRegex = /composeExtensions/;
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    const regex = new RegExp(this.schemaRegex);
+    const matches = regex.exec(text);
+    if (matches != null) {
+      const match = matches[0];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      const schemaCommand = {
+        title: "➕" + localize("teamstoolkit.codeLens.copilotPluginAddAPI"),
+        command: "fx-extension.copilotPluginAddAPI",
+        arguments: [{ fsPath: document.fileName }],
+      };
+      codeLenses.push(new vscode.CodeLens(range, schemaCommand));
+      return codeLenses;
     }
   }
 }

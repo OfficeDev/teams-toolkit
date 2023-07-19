@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
 

@@ -6,8 +6,8 @@ import {
   TemplateProject,
   TemplateProjectFolder,
   LocalDebugTaskLabel,
-} from "../../constants";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
+} from "../../utils/constants";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import { getScreenshotName } from "../../utils/nameUtil";
 import { VSBrowser } from "vscode-extension-tester";
 import { SampledebugContext } from "./sampledebugContext";

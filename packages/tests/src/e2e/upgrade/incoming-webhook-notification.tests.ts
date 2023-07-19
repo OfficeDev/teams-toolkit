@@ -10,7 +10,7 @@ import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { TemplateProject } from "../../commonlib/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
 import fs from "fs-extra";
@@ -29,19 +29,18 @@ describe("upgrade", () => {
     { testPlanCaseId: 19298763, author: "zhaofengxu@microsoft.com" },
     async function () {
       {
-        await Executor.installCLI(testFolder, "1.2.5", true);
+        await Executor.installCLI(testFolder, "1.2.5", false);
         const env = Object.assign({}, process.env);
-        env["TEAMSFX_V3"] = "false";
         // new projiect
         await CliHelper.createTemplateProject(
           appName,
           testFolder,
-          TemplateProject.IncomingWebhook,
-          env
+          TemplateProjectFolder.IncomingWebhook,
+          env,
+          true
         );
       }
 
-      await Executor.installCLI(testFolder, "alpha", true);
       {
         // provision
         const result = await Executor.provision(projectPath);

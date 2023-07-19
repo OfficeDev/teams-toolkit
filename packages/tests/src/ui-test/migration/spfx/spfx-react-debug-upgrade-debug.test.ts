@@ -9,10 +9,13 @@ import {
   Notification,
   Framework,
   CliVersion,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { initPage, validateTeamsWorkbench } from "../../../playwrightOperation";
+import {
+  initPage,
+  validateTeamsWorkbench,
+} from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   startDebugging,
@@ -20,7 +23,7 @@ import {
   waitForTerminal,
   validateUpgrade,
   upgradeByCommandPalette,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { execCommand } from "../../../utils/execCommand";
 

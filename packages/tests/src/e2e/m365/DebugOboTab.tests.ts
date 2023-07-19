@@ -16,10 +16,10 @@ import * as fs from "fs-extra";
 import { describe } from "mocha";
 import * as path from "path";
 import { AadValidator } from "../../commonlib/aadValidate";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 import { Capability } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
-import { ProjectEnvReader } from "../../utils/projectEnvReader";
+import { ProjectEnvReader } from "../../commonlib/projectEnvReader";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
 import { getTeamsApp } from "../debug/utility";
 

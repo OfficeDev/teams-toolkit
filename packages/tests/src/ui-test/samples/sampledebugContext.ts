@@ -10,16 +10,16 @@ import {
   TemplateProject,
   TemplateProjectFolder,
   TestFilePath,
-} from "../../constants";
+} from "../../utils/constants";
 import { dotenvUtil } from "../../utils/envUtil";
-import { clearNotifications } from "../../vscodeOperation";
+import { clearNotifications } from "../../utils/vscodeOperation";
 import { InputBox, VSBrowser } from "vscode-extension-tester";
 import { getSampleAppName } from "../../utils/nameUtil";
 import {
   execCommandIfExistFromTreeView,
   openExistingProject,
   stopDebugging,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { assert, expect } from "chai";
 import { TestContext } from "../testContext";
 import * as dotenv from "dotenv";

@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 import {
   FuncValidation,
+  FxError,
   Inputs,
   LocalFunc,
   MultiSelectQuestion,
+  OptionItem,
   Platform,
   Question,
   SingleSelectQuestion,
@@ -25,6 +27,7 @@ import {
   RuntimeOptions,
   SPFxVersionOptionIds,
   ScratchOptions,
+  apiOperationQuestion,
   appNameQuestion,
   createProjectQuestionNode,
   getLanguageOptions,
@@ -33,9 +36,14 @@ import {
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
-import { MockUserInteraction, randomAppName } from "../core/utils";
+import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import * as path from "path";
 import { FeatureFlagName } from "../../src/common/constants";
+import { SpecParser } from "../../src/common/spec-parser/specParser";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
+import { setTools } from "../../src/core/globalVars";
+import { EmptyOptionError } from "../../src/error";
+import axios from "axios";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -466,18 +474,36 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: "test001" });
         } else if (question.name === QuestionNames.ReplaceWebsiteUrl) {
           const select = question as MultiSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
+          const options = (await select.dynamicOptions!(inputs)) as OptionItem[];
+          const defaults = await (select as any).default!(inputs);
           assert.isTrue(options.length === 1);
+          assert.isTrue(defaults.length === 1);
+          assert.deepEqual(
+            options.map((o) => o.id),
+            defaults
+          );
           return ok({ type: "success", result: [] });
         } else if (question.name === QuestionNames.ReplaceContentUrl) {
           const select = question as MultiSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
+          const options = (await select.dynamicOptions!(inputs)) as OptionItem[];
+          const defaults = await (select as any).default!(inputs);
           assert.isTrue(options.length === 1);
+          assert.isTrue(defaults.length === 1);
+          assert.deepEqual(
+            options.map((o) => o.id),
+            defaults
+          );
           return ok({ type: "success", result: [] });
         } else if (question.name === QuestionNames.ReplaceBotIds) {
           const select = question as MultiSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
+          const options = (await select.dynamicOptions!(inputs)) as OptionItem[];
+          const defaults = await (select as any).default!(inputs);
           assert.isTrue(options.length === 1);
+          assert.isTrue(defaults.length === 1);
+          assert.deepEqual(
+            options.map((o: OptionItem) => o.id),
+            defaults
+          );
           return ok({ type: "success", result: [] });
         }
         return ok({ type: "success", result: undefined });
@@ -886,6 +912,133 @@ describe("scaffold question", () => {
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
+      });
+
+      describe("validate and list operations", async () => {
+        const tools = new MockTools();
+        setTools(tools);
+        it("valid api spec and list operations successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+
+          assert.isTrue(options.length === 2);
+          assert.isTrue(options[0].id === "operation1");
+          assert.isTrue(options[1].id === "operation2");
+        });
+
+        it("valid api spec and list operations error", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Valid,
+            errors: [],
+            warnings: [{ type: WarningType.AuthNotSupported, content: "" }],
+          });
+          sandbox.stub(SpecParser.prototype, "list").throws(new Error("error1"));
+          let fxError: FxError;
+          try {
+            await question.dynamicOptions!(inputs);
+          } catch (e) {
+            fxError = e;
+          }
+
+          assert.isTrue(fxError!.message.includes("error1"));
+        });
+
+        it("invalid api spec", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Error,
+            errors: [
+              {
+                type: ErrorType.SpecNotValid,
+                content: "error",
+              },
+            ],
+            warnings: [],
+          });
+
+          let fxError: FxError;
+          try {
+            await question.dynamicOptions!(inputs);
+          } catch (e) {
+            fxError = e;
+          }
+
+          assert.isTrue(fxError! instanceof EmptyOptionError);
+        });
+
+        it("valid openAI plugin manifest spec and list operations successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+          };
+          const manifest = {
+            schema_version: "1.0.0",
+            api: {
+              type: "openapi",
+              url: "test",
+            },
+            auth: { type: "none" },
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+
+          assert.isTrue(options.length === 2);
+          assert.isTrue(options[0].id === "operation1");
+          assert.isTrue(options[1].id === "operation2");
+        });
+
+        it("invalid openAI plugin manifest", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+          };
+          const manifest = {
+            schema_version: "1.0.0",
+            api: {
+              type: "openapi",
+            },
+            auth: "oauth",
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          let fxError: FxError;
+          try {
+            await question.dynamicOptions!(inputs);
+          } catch (e) {
+            fxError = e;
+          }
+
+          assert.isTrue(fxError! instanceof EmptyOptionError);
+        });
       });
     });
   });

@@ -1,9 +1,9 @@
-import { FeatureFlagName } from "../constants";
+import { FeatureFlagName } from "./constants";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as chai from "chai";
 import { dotenvUtil } from "./envUtil";
-import { TestFilePath } from "../constants";
+import { TestFilePath } from "./constants";
 import { exec, spawn, SpawnOptionsWithoutStdio } from "child_process";
 import { promisify } from "util";
 import { Executor } from "./executor";

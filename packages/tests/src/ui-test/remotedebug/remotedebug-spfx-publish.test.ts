@@ -3,13 +3,17 @@
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { CommandPaletteCommands, Timeout, Notification } from "../../constants";
+import {
+  CommandPaletteCommands,
+  Timeout,
+  Notification,
+} from "../../utils/constants";
 import { RemoteDebugTestContext, runPublish } from "./remotedebugContext";
 import {
   execCommandIfExist,
   getNotification,
   createNewProject,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
 import { cleanUpStagedPublishApp } from "../../utils/cleanHelper";

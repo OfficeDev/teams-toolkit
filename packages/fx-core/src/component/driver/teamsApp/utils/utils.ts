@@ -27,14 +27,6 @@ export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   return keys;
 }
 
-export function getLocalAppName(appName: string): string {
-  const suffix = "-local-debug";
-  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-    appName = appName + suffix;
-  }
-  return appName;
-}
-
 export function renderTemplate(manifestString: string, view: any): string {
   // Unesacped HTML
   Mustache.escape = (value) => value;

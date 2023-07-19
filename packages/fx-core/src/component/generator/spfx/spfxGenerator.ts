@@ -44,9 +44,10 @@ import {
 } from "./error";
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
-import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "../../../question/create";
+import { SPFxVersionOptionIds } from "../../../question/create";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
+import semver from "semver";
 
 export class SPFxGenerator {
   @hooks([
@@ -232,7 +233,9 @@ export class SPFxGenerator {
 
       if (shouldInstallLocally) {
         const latestYoInstalled = await yoChecker.isLatestInstalled();
-        const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled();
+        const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled(
+          inputs.latestSpfxPackageVersion
+        );
 
         if (!latestYoInstalled || !latestGeneratorInstalled) {
           await progressHandler?.next(
@@ -254,7 +257,12 @@ export class SPFxGenerator {
           }
         }
       } else {
-        const isLowerVersion = PackageSelectOptionsHelper.isLowerThanRecommendedVersion();
+        const isLowerVersion =
+          !!inputs.globalSpfxPackageVersion &&
+          semver.lte(
+            inputs.globalSpfxPackageVersion,
+            Constants.RecommendedLowestSpfxVersion.substring(1)
+          );
         if (isLowerVersion) {
           context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.UseNotRecommendedVersion);
         }

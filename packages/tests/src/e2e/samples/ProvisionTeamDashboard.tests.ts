@@ -11,8 +11,8 @@ import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
-import { TemplateProject } from "../../commonlib/constants";
+import { Cleaner } from "../../commonlib/cleaner";
+import { TemplateProjectFolder } from "../../utils/constants";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -20,13 +20,13 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(
-    `${TemplateProject.Dashboard}`,
+    `${TemplateProjectFolder.Dashboard}`,
     { testPlanCaseId: 24132131, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.Dashboard
+        TemplateProjectFolder.Dashboard
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

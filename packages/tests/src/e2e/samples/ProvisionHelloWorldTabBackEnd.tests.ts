@@ -14,9 +14,9 @@ import {
   readContextMultiEnvV3,
   getUniqueAppName,
 } from "../commonUtils";
-import { FrontendValidator, FunctionValidator } from "../../commonlib";
-import { TemplateProject } from "../../commonlib/constants";
-import { Cleaner } from "../../utils/cleaner";
+import { FrontendValidator } from "../../commonlib";
+import { TemplateProjectFolder } from "../../utils/constants";
+import { Cleaner } from "../../commonlib/cleaner";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { Executor } from "../../utils/executor";
 
@@ -27,13 +27,13 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(
-    `${TemplateProject.HelloWorldTabBackEnd}`,
+    `${TemplateProjectFolder.HelloWorldTabBackEnd}`,
     { testPlanCaseId: 15277459, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.HelloWorldTabBackEnd
+        TemplateProjectFolder.HelloWorldTabBackEnd
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

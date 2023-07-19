@@ -11,8 +11,8 @@ import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
-import { TemplateProject } from "../../commonlib/constants";
+import { Cleaner } from "../../commonlib/cleaner";
+import { TemplateProjectFolder } from "../../utils/constants";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -20,13 +20,13 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(
-    `${TemplateProject.ProactiveMessaging}`,
+    `${TemplateProjectFolder.ProactiveMessaging}`,
     { testPlanCaseId: 1277473, author: "v-ivanchen@microsoft.com" },
     async function () {
-      await Executor.openTemplateProject(
+      await Executor.createTemplateProject(
         appName,
         testFolder,
-        TemplateProject.ProactiveMessaging
+        TemplateProjectFolder.ProactiveMessaging
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
 

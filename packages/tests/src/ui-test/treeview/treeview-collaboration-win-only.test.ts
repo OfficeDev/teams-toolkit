@@ -3,12 +3,12 @@
  */
 import * as fs from "fs-extra";
 import { expect } from "chai";
-import { Timeout } from "../../constants";
+import { Timeout } from "../../utils/constants";
 import {
   createNewProject,
   execCommandIfExist,
   ensureExtensionActivated,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import {
   RemoteDebugTestContext,
   runProvision,

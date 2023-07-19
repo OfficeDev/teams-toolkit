@@ -233,6 +233,9 @@ export enum TelemetryEvent {
 
   // Select to input a value when choosing between browsing local file or proceeding to input
   ContinueToInput = "continue-to-input",
+
+  // Copilot plugin
+  CopilotPluginAddAPI = "copilot-plugin-add-api",
 }
 
 export enum TelemetryProperty {

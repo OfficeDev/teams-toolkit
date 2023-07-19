@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
 import { getLocalizedString } from "../../../../common/localizeUtils";
 

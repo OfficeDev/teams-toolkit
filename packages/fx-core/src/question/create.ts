@@ -1,7 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   CLIPlatforms,
   FolderQuestion,
-  FuncQuestion,
   IQTreeNode,
   Inputs,
   MultiSelectQuestion,
@@ -18,7 +20,6 @@ import * as jsonschema from "jsonschema";
 import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
-import semver from "semver";
 import { ConstantString } from "../common/constants";
 import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -27,18 +28,20 @@ import { convertToAlphanumericOnly } from "../common/utils";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
-import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
 import {
-  DevEnvironmentSetupError,
-  PathAlreadyExistsError,
-  RetrieveSPFxInfoError,
-} from "../component/generator/spfx/error";
+  OpenAIPluginManifestHelper,
+  listOperations,
+} from "../component/generator/copilotPlugin/helper";
+import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
+import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
+import { createContextV3 } from "../component/utils";
+import { EmptyOptionError, assembleError } from "../error";
 import { QuestionNames } from "./questionNames";
-import { sleep } from "../component/driver/deploy/spfx/utility/sleep";
 import { isValidHttpUrl } from "./util";
 
 export class ScratchOptions {
@@ -695,10 +698,15 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
     staticOptions: [
-      { id: "new", label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew") },
+      {
+        id: "new",
+        label: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew"),
+        detail: getLocalizedString("plugins.spfx.questions.spfxSolution.createNew.detail"),
+      },
       {
         id: "import",
         label: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting"),
+        detail: getLocalizedString("plugins.spfx.questions.spfxSolution.importExisting.detail"),
       },
     ],
     default: "new",
@@ -712,14 +720,56 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
     staticOptions: [],
     placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      await PackageSelectOptionsHelper.loadOptions();
-      return PackageSelectOptionsHelper.getOptions();
+      const versions = await Promise.all([
+        Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 0, false),
+        Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 5),
+        Utils.findGloballyInstalledVersion(undefined, Constants.YeomanPackageName, 0, false),
+      ]);
+
+      inputs.globalSpfxPackageVersion = versions[0];
+      inputs.latestSpfxPackageVersion = versions[1];
+      inputs.globalYeomanPackageVersion = versions[2];
+
+      return [
+        {
+          id: SPFxVersionOptionIds.installLocally,
+
+          label:
+            versions[1] !== undefined
+              ? getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.installLocally.withVersion.label",
+                  "v" + versions[1]
+                )
+              : getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.installLocally.noVersion.label"
+                ),
+        },
+        {
+          id: SPFxVersionOptionIds.globalPackage,
+          label:
+            versions[0] !== undefined
+              ? getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label",
+                  "v" + versions[0]
+                )
+              : getLocalizedString(
+                  "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
+                ),
+          description: getLocalizedString(
+            "plugins.spfx.questions.packageSelect.useGlobalPackage.detail",
+            Constants.RecommendedLowestSpfxVersion
+          ),
+        },
+      ];
     },
     default: SPFxVersionOptionIds.installLocally,
     validation: {
-      validFunc: async (input: string): Promise<string | undefined> => {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         if (input === SPFxVersionOptionIds.globalPackage) {
-          const hasPackagesInstalled = PackageSelectOptionsHelper.checkGlobalPackages();
+          const hasPackagesInstalled =
+            !!previousInputs &&
+            !!previousInputs.globalSpfxPackageVersion &&
+            !!previousInputs.globalYeomanPackageVersion;
           if (!hasPackagesInstalled) {
             throw DevEnvironmentSetupError();
           }
@@ -794,86 +844,6 @@ export enum SPFxVersionOptionIds {
   globalPackage = "false",
 }
 
-export class PackageSelectOptionsHelper {
-  private static options: OptionItem[] = [];
-  private static globalPackageVersions: (string | undefined)[] = [undefined, undefined];
-  private static latestSpGeneratorVersion: string | undefined = undefined;
-
-  public static async loadOptions(): Promise<void> {
-    const versions = await Promise.all([
-      Utils.findGloballyInstalledVersion(undefined, Constants.GeneratorPackageName, 0, false),
-      Utils.findLatestVersion(undefined, Constants.GeneratorPackageName, 5),
-      Utils.findGloballyInstalledVersion(undefined, Constants.YeomanPackageName, 0, false),
-    ]);
-
-    PackageSelectOptionsHelper.globalPackageVersions[0] = versions[0];
-    PackageSelectOptionsHelper.globalPackageVersions[1] = versions[2];
-    PackageSelectOptionsHelper.latestSpGeneratorVersion = versions[1];
-
-    PackageSelectOptionsHelper.options = [
-      {
-        id: SPFxVersionOptionIds.installLocally,
-
-        label:
-          versions[1] !== undefined
-            ? getLocalizedString(
-                "plugins.spfx.questions.packageSelect.installLocally.withVersion.label",
-                "v" + versions[1]
-              )
-            : getLocalizedString(
-                "plugins.spfx.questions.packageSelect.installLocally.noVersion.label"
-              ),
-      },
-      {
-        id: SPFxVersionOptionIds.globalPackage,
-        label:
-          versions[0] !== undefined
-            ? getLocalizedString(
-                "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label",
-                "v" + versions[0]
-              )
-            : getLocalizedString(
-                "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label"
-              ),
-        description: getLocalizedString(
-          "plugins.spfx.questions.packageSelect.useGlobalPackage.detail",
-          Constants.RecommendedLowestSpfxVersion
-        ),
-      },
-    ];
-  }
-
-  public static getOptions(): OptionItem[] {
-    return PackageSelectOptionsHelper.options;
-  }
-
-  public static clear(): void {
-    PackageSelectOptionsHelper.options = [];
-    PackageSelectOptionsHelper.globalPackageVersions = [undefined, undefined];
-    PackageSelectOptionsHelper.latestSpGeneratorVersion = undefined;
-  }
-
-  public static checkGlobalPackages(): boolean {
-    return (
-      !!PackageSelectOptionsHelper.globalPackageVersions[0] &&
-      !!PackageSelectOptionsHelper.globalPackageVersions[1]
-    );
-  }
-
-  public static getLatestSpGeneratorVersion(): string | undefined {
-    return PackageSelectOptionsHelper.latestSpGeneratorVersion;
-  }
-
-  public static isLowerThanRecommendedVersion(): boolean | undefined {
-    const installedVersion = PackageSelectOptionsHelper.globalPackageVersions[0];
-    if (!installedVersion) {
-      return undefined;
-    }
-
-    const recommendedLowestVersion = Constants.RecommendedLowestSpfxVersion.substring(1); // remove "v"
-    return semver.lte(installedVersion, recommendedLowestVersion);
-  }
-}
 export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion {
   return {
     type: "folder",
@@ -1240,7 +1210,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
@@ -1284,24 +1254,57 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
-function apiOperationQuestion(): MultiSelectQuestion {
+export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
+  // export for unit test
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder"),
+    placeholder: includeExistingAPIs
+      ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+      : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
     forgetLastValue: true,
     staticOptions: [],
     validation: {
       minItems: 1,
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      // TODO: will update whe API Spec Parser is ready. For now, return a static options.
-      await sleep(2000);
-      return [
-        { id: "listRepairs", label: "GET repairs" },
-        { id: "createRepair", label: "POST repairs" },
-      ];
+      let manifest;
+      if (inputs[QuestionNames.OpenAIPluginManifestLocation]) {
+        manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(
+          inputs[QuestionNames.OpenAIPluginManifestLocation] as string
+        );
+        inputs.openAIPluginManifest = manifest;
+      }
+      const context = createContextV3();
+      try {
+        const res = await listOperations(context, manifest, inputs[QuestionNames.ApiSpecLocation]);
+        if (res.isOk()) {
+          if (includeExistingAPIs) {
+            return res.value.map((operation) => {
+              return { id: operation, label: operation };
+            });
+          } else {
+            const teamsManifestPath = inputs.teamsManifestPath;
+            const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+            if (manifest.isOk()) {
+              const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+              return res.value
+                .filter((operation: string) => !existingOperationIds.includes(operation))
+                .map((operation: string) => {
+                  return { id: operation, label: operation };
+                });
+            } else {
+              throw manifest.error;
+            }
+          }
+        } else {
+          throw new EmptyOptionError(); // TODO: handle errors based on error results
+        }
+      } catch (e) {
+        const error = assembleError(e);
+        throw error;
+      }
     },
   };
 }

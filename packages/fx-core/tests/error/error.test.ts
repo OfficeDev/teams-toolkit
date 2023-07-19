@@ -2,11 +2,26 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, ok, Platform, Result, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import { ErrorHandlerMW } from "../../../src/core/middleware/errorHandler";
-import { UnhandledError, UserCancelError } from "../../../src/error/common";
+import { convertError, ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
+import {
+  FilePermissionError,
+  UnhandledError,
+  UnhandledUserError,
+  UserCancelError,
+} from "../../src/error/common";
+import { BaseComponentInnerError } from "../../src/component/error/componentError";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -105,5 +120,58 @@ describe("Middleware - ErrorHandlerMW", () => {
       const error = res.error;
       assert.isTrue(error instanceof UserError);
     }
+  });
+});
+
+describe("convertError", () => {
+  it("EPERM: operation not permitted (Error)", () => {
+    const error = new Error(`EPERM: operation not permitted, open '<REDACTED: user-file-path>'`);
+    const converted = convertError(error);
+    assert.isTrue(converted instanceof UserError);
+  });
+  it("EPERM: operation not permitted (SystemError)", () => {
+    const error = new SystemError(
+      "test",
+      "Error",
+      `EPERM: operation not permitted, open '<REDACTED: user-file-path>'`
+    );
+    const converted = convertError(error);
+    assert.isTrue(converted instanceof UserError);
+  });
+});
+
+describe("Errors", () => {
+  it("FilePermissionError", () => {
+    const error = new Error(`EPERM: operation not permitted, open '<REDACTED: user-file-path>'`);
+    const converted = new FilePermissionError(error);
+    assert.isTrue(converted instanceof UserError);
+  });
+  it("UnhandledError", () => {
+    const error = new Error("test");
+    const error1 = new UnhandledError(error);
+    assert.isTrue(error1 instanceof SystemError);
+    const error2 = new UnhandledError(error, "source");
+    assert.isTrue(error2 instanceof SystemError);
+    error.message = "";
+    const error3 = new UnhandledError(error, "source");
+    assert.isTrue(error3 instanceof SystemError);
+  });
+  it("UnhandledUserError", () => {
+    const error = new Error("test");
+    const error1 = new UnhandledUserError(error);
+    assert.isTrue(error1 instanceof UserError);
+    const error2 = new UnhandledUserError(error, "source");
+    assert.isTrue(error2 instanceof UserError);
+    error.message = "";
+    const error3 = new UnhandledUserError(error, "source");
+    assert.isTrue(error3 instanceof UserError);
+  });
+});
+
+describe("BaseComponentInnerError", () => {
+  it("unknownError", () => {
+    const error = new Error("test");
+    const error1 = BaseComponentInnerError.unknownError("test", error);
+    assert.isTrue(error1.toFxError() instanceof SystemError);
   });
 });

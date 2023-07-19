@@ -15,9 +15,9 @@ import {
   getUniqueAppName,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 import { BotValidator } from "../../commonlib";
-import { TemplateProject } from "../../commonlib/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new template", function () {
@@ -27,13 +27,13 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(
-    `${TemplateProject.NpmSearch}`,
+    `${TemplateProjectFolder.NpmSearch}`,
     { testPlanCaseId: 15277471, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.NpmSearch
+        TemplateProjectFolder.NpmSearch
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

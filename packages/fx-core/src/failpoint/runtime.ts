@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 // Please don't edit. This file is copied from packages/failpoint-ts/src
 // We don't want failpoint-ts to be a package.json dependency.
 // We tried to soft link the code, and it works well on linux. However, soft-linked git files don't naturally work on Windows.
@@ -62,7 +65,7 @@ function parseValue(name: string, term: string): Value | undefined {
       throw new Error(`invalid syntax(${term}) for failpoint ${name}. Not a number.`);
     }
     return { kind: "number", value: result };
-  } else if (value[0] == "\"" && value.length >= 2 && value[value.length - 1] == "\"") {
+  } else if (value[0] == '"' && value.length >= 2 && value[value.length - 1] == '"') {
     return { kind: "string", value: value.substring(1, value.length - 1) };
   } else if (value === "true" || value === "false") {
     const result: boolean = value === "true";

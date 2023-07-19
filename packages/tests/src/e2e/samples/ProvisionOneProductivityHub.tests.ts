@@ -15,9 +15,9 @@ import {
   getUniqueAppName,
 } from "../commonUtils";
 import { AadValidator, FrontendValidator } from "../../commonlib";
-import { TemplateProject } from "../../commonlib/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Executor } from "../../utils/executor";
-import { Cleaner } from "../../utils/cleaner";
+import { Cleaner } from "../../commonlib/cleaner";
 import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
@@ -28,13 +28,13 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(
-    `${TemplateProject.OneProductivityHub}`,
+    `${TemplateProjectFolder.OneProductivityHub}`,
     { testPlanCaseId: 15277463, author: "v-ivanchen@microsoft.com" },
     async function () {
       await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProject.OneProductivityHub
+        TemplateProjectFolder.OneProductivityHub
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
       expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;

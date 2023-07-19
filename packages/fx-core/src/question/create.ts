@@ -991,6 +991,8 @@ export function appNameQuestion(): TextInputQuestion {
         defaultName = convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
       } else if (inputs[QuestionNames.SPFxSolution] == "import") {
         defaultName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
+      } else if (inputs.openAIPluginManifest) {
+        defaultName = inputs.openAIPluginManifest.name_for_human;
       }
       return defaultName;
     },

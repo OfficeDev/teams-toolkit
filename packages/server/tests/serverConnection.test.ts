@@ -7,7 +7,7 @@ import sinon from "sinon";
 import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
 import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
-import { Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
@@ -430,5 +430,30 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     assert.isTrue(res.isErr());
+  });
+
+  it("loadOpenAIPluginManifestRequest succeed", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok({}));
+    sandbox.replace(connection["core"], "copilotPluginLoadOpenAIManifest", fake);
+    const res = await connection.loadOpenAIPluginManifestRequest(
+      {} as Inputs,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+  });
+
+  it("copilotPluginListOperations fail", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(err([{ content: "error1" }, { content: "error2" }]));
+    sandbox.replace(connection["core"], "copilotPluginListOperations", fake);
+    const res = await connection.listOpenAPISpecOperationsRequest(
+      {} as Inputs,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.message, "error1\nerror2");
+    }
   });
 });

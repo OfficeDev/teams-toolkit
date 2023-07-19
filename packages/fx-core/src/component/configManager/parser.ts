@@ -118,17 +118,15 @@ export class YamlParser implements IYamlParser {
     path: string,
     validateSchema?: boolean
   ): Promise<Result<RawProjectModel, FxError>> {
-    let diagnostic: string | undefined = undefined;
     try {
       globalVars.ymlFilePath = path;
       const str = await fs.readFile(path, "utf8");
       const content = load(str);
       const value = content as unknown as Record<string, unknown>;
       const version = typeof value["version"] === "string" ? value["version"] : undefined;
-      diagnostic = await validator.generateDiagnosticMessage(path, str, version);
       // note: typeof null === "object" typeof undefined === "undefined" in js
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
-        return err(new InvalidYamlSchemaError(path, diagnostic));
+        return err(new InvalidYamlSchemaError(path));
       }
       if (validateSchema) {
         if (!validator.isVersionSupported(version ?? "undefined")) {
@@ -145,12 +143,12 @@ export class YamlParser implements IYamlParser {
         }
         const valid = validator.validate(value, version);
         if (!valid) {
-          return err(new InvalidYamlSchemaError(path, diagnostic));
+          return err(new InvalidYamlSchemaError(path));
         }
       }
       return parseRawProjectModel(value);
     } catch (error) {
-      return err(new InvalidYamlSchemaError(path, diagnostic));
+      return err(new InvalidYamlSchemaError(path));
     }
   }
 }

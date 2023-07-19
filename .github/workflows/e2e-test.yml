@@ -43,7 +43,7 @@ jobs:
         run: |
           npm config set legacy-peer-deps true
 
-      - name: manage pkgs to release
+      - name: manage pkgs to setup
         run: bash .github/scripts/lerna.sh tests
 
       - name: Setup project
@@ -136,7 +136,7 @@ jobs:
           which func
           func --version
 
-      - name: manage pkgs to release
+      - name: manage pkgs to setup
         run: bash .github/scripts/lerna.sh tests
 
       - name: Setup legacy-peer-deps
@@ -248,6 +248,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+
+      - name: manage pkgs to setup
+        run: bash .github/scripts/lerna.sh tests
 
       - name: Setup legacy-peer-deps
         run: |

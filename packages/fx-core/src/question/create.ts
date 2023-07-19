@@ -28,25 +28,21 @@ import { convertToAlphanumericOnly } from "../common/utils";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
-import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
-import {
-  DevEnvironmentSetupError,
-  PathAlreadyExistsError,
-  RetrieveSPFxInfoError,
-} from "../component/generator/spfx/error";
-import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
-import { Constants } from "../component/generator/spfx/utils/constants";
-import { Utils } from "../component/generator/spfx/utils/utils";
-import { QuestionNames } from "./questionNames";
-import { isValidHttpUrl } from "./util";
-import { EmptyOptionError, assembleError } from "../error";
 import {
   OpenAIPluginManifestHelper,
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
+import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
+import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
+import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
+import { Constants } from "../component/generator/spfx/utils/constants";
+import { Utils } from "../component/generator/spfx/utils/utils";
 import { createContextV3 } from "../component/utils";
-import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { EmptyOptionError, assembleError } from "../error";
+import { QuestionNames } from "./questionNames";
+import { isValidHttpUrl } from "./util";
 
 export class ScratchOptions {
   static yes(): OptionItem {

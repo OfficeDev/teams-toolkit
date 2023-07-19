@@ -8,6 +8,7 @@ import {
   Inputs,
   LogProvider,
   Ok,
+  OpenAIPluginManifest,
   Platform,
   Result,
   Stage,
@@ -69,6 +70,8 @@ import {
 } from "../../src/question";
 import { MockTools, deleteFolder, randomAppName } from "./utils";
 import { FeatureFlagName } from "../../src/common/constants";
+import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
+import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
 
 const tools = new MockTools();
 
@@ -1368,5 +1371,53 @@ describe("copilotPlugin", async () => {
     const core = new FxCore(tools);
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
+  });
+
+  it("load OpenAI manifest - should run successful", async () => {
+    const core = new FxCore(tools);
+    const inputs = { domain: "mydomain.com" };
+    sinon
+      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
+      .returns(Promise.resolve<OpenAIPluginManifest>(undefined as any));
+    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
+    assert.isTrue(result.isOk());
+  });
+
+  it("load OpenAI manifest - should return an error when an exception is thrown", async () => {
+    const core = new FxCore(tools);
+    const inputs = { domain: "mydomain.com" };
+    sinon
+      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
+      .throws(new Error("Test error"));
+    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
+    assert.isTrue(result.isErr());
+  });
+
+  it("load operations - should return a list of operations when given valid inputs", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      manifest: {},
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+    };
+    const expectedResult = ["operation1", "operation2"];
+    sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(ok(expectedResult)));
+    const result = await core.copilotPluginListOperations(inputs as any);
+    assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      assert.equal(result.value, expectedResult);
+    }
+  });
+
+  it("load operations - should return an error when an exception is thrown", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      manifest: {},
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+    };
+    sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(err([])));
+    const result = await core.copilotPluginListOperations(inputs as any);
+    assert.isTrue(result.isErr());
   });
 });

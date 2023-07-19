@@ -211,6 +211,9 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
       - name: Add Pull Request Reviewer
         uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
         with: 
@@ -264,7 +267,7 @@ jobs:
       - name: lerna expect rc version
         if: ${{ github.event.pull_request.base.ref == 'main' }}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${GITHUB_REF#refs/*/} --yes
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ steps.branch-name.outputs.current_branch }} --yes
           npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
       - uses: edwardgeorge/file-outputs-action@main
         id: test

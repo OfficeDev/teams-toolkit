@@ -106,7 +106,7 @@ export async function getAppName(): Promise<string | undefined> {
   try {
     const ws = globalVariables.workspaceUri.fsPath;
     const nameRes = await core.getTeamsAppName(ws);
-    if (nameRes.isOk()) {
+    if (nameRes.isOk() && nameRes.value != "") {
       return nameRes.value;
     }
   } catch (e) {}

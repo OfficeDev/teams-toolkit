@@ -734,7 +734,7 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(inputs["test"] === "file");
     });
 
-    it("single file or input with validation", async () => {
+    it("single file or input with validation and additional validation", async () => {
       sandbox.stub(mockUI, "selectFileOrInput").resolves(ok({ type: "success", result: "file" }));
       const validation: StringValidation = {
         equals: "test",
@@ -750,6 +750,9 @@ describe("Question Model - Visitor Test", () => {
         inputBoxConfig: {
           name: "input",
           title: "input",
+          additionalValidationOnAccept: async (input) => {
+            return undefined;
+          },
         },
         validation: validation,
       };

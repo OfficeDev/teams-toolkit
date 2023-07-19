@@ -287,6 +287,8 @@ export interface Inputs extends Record<string, any> {
     // (undocumented)
     stage?: Stage;
     // (undocumented)
+    supportedApisFromApiSpec?: string[];
+    // (undocumented)
     targetEnvName?: string;
     // (undocumented)
     targetResourceGroupName?: string;
@@ -307,6 +309,7 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
+    additionalValidationOnAccept?: ValidateFunc<string>;
     // (undocumented)
     default?: string | (() => Promise<string>);
     password?: boolean;
@@ -822,6 +825,7 @@ export const TemplateFolderName = "templates";
 
 // @public
 export interface TextInputQuestion extends UserInputQuestion {
+    additionalValidationOnAccept?: StringValidation | FuncValidation<string>;
     default?: string | LocalFunc<string | undefined>;
     password?: boolean;
     // (undocumented)

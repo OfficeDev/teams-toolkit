@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { LocalFunc } from ".";
+import { LocalFunc, ValidateFunc } from ".";
 import { FxError } from "../error";
 import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
 import { Inputs, OptionItem } from "../types";
@@ -124,6 +124,16 @@ export interface InputTextConfig extends UIConfig<string> {
   password?: boolean;
 
   default?: string | (() => Promise<string>);
+
+  /**
+   * A function that will be called to validate the input that user accepted.
+   *
+   * @param input The current value of the input to be validated.
+   * @param inputs The current values of all inputs.
+   * @return A human-readable string which is presented as diagnostic message.
+   * Return `undefined` when 'value' is valid.
+   */
+  additionalValidationOnAccept?: ValidateFunc<string>;
 }
 
 /**

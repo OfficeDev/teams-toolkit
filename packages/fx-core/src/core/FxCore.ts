@@ -11,6 +11,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
+  OpenAIPluginManifest,
   QTreeNode,
   Result,
   Stage,
@@ -44,6 +45,7 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
 import { QuestionNames } from "../question/questionNames";
 import { questions } from "../question";
+import { ErrorResult } from "../component/generator/copilotPlugin/helper";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -484,5 +486,15 @@ export class FxCore {
 
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.copilotPluginAddAPI, inputs);
+  }
+
+  async copilotPluginLoadOpenAIManifest(
+    inputs: Inputs
+  ): Promise<Result<OpenAIPluginManifest, FxError>> {
+    return this.v3Implement.dispatch(this.copilotPluginLoadOpenAIManifest, inputs);
+  }
+
+  async copilotPluginListOperations(inputs: Inputs): Promise<Result<string[], ErrorResult[]>> {
+    return this.v3Implement.dispatch(this.copilotPluginListOperations, inputs);
   }
 }

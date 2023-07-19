@@ -1223,9 +1223,14 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
       if (res.isOk()) {
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
-        // TODO: get validationErrorMessage based on error length
         const errors = res.error;
-        return errors[0].content;
+        if (errors.length === 1) {
+          return errors[0].content;
+        } else {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+          );
+        }
       }
     } catch (e) {
       const error = assembleError(e);
@@ -1276,13 +1281,6 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
     forgetLastValue: true,
-    validation: {
-      validFunc: async (input: string): Promise<string | undefined> => {
-        return isValidHttpUrl(input)
-          ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
-      },
-    },
     additionalValidationOnAccept: {
       validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
         let manifest;
@@ -1306,9 +1304,14 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
           if (res.isOk()) {
             inputs!.supportedApisFromApiSpec = res.value;
           } else {
-            // TODO: get validationErrorMessage based on error length
             const errors = res.error;
-            return errors[0].content;
+            if (errors.length === 1) {
+              return errors[0].content;
+            } else {
+              return getLocalizedString(
+                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
+              );
+            }
           }
         } catch (e) {
           const error = assembleError(e);

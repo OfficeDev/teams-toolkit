@@ -1213,12 +1213,12 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 }
 
 export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
-  const context = createContextV3();
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs
   ): Promise<string | undefined> => {
     try {
+      const context = createContextV3();
       const res = await listOperations(context, undefined, input, true);
       if (res.isOk()) {
         inputs!.supportedApisFromApiSpec = res.value;

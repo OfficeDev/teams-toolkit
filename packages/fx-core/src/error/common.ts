@@ -131,6 +131,7 @@ export class UnhandledError extends SystemError {
         source,
         e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
+      categories: ["unhandled"],
     });
   }
 }

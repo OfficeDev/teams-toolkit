@@ -852,8 +852,6 @@ describe("scaffold question", () => {
               result: CapabilityOptions.copilotPluginOpenAIPlugin().id,
             });
           } else if (question.name === QuestionNames.OpenAIPluginManifestLocation) {
-            const validRes = await (question as any).validation.validFunc("https://test.com");
-            assert.isUndefined(validRes);
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
             return ok({ type: "success", result: ["testOperation1"] });

@@ -23,7 +23,6 @@ export function makeEnvRelatedProperty(
 class CliTelemetry {
   reporter: CliTelemetryReporter | undefined;
   rootFolder: string | undefined;
-  isFromSample: boolean | undefined = undefined;
 
   public withRootFolder(rootFolder: string | undefined): CliTelemetry {
     this.rootFolder = rootFolder;
@@ -41,10 +40,6 @@ class CliTelemetry {
     properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
-    }
-
-    if (this.isFromSample !== undefined) {
-      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
     }
 
     const settingsVersion = getSettingsVersion(this.rootFolder);
@@ -72,10 +67,6 @@ class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (this.isFromSample !== undefined) {
-      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
-    }
-
     const settingsVersion = getSettingsVersion(this.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
@@ -99,10 +90,6 @@ class CliTelemetry {
     properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
-    }
-
-    if (this.isFromSample !== undefined) {
-      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
     }
 
     const settingsVersion = getSettingsVersion(this.rootFolder);

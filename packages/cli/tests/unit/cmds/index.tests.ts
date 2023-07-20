@@ -1,18 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { assert } from "chai";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
 import { registerCommands } from "../../../src/cmds/index";
-import { expect } from "../utils";
 import { initTelemetryReporter, sendCommandUsageTelemetry } from "../../../src/index";
-import { assert } from "chai";
 import cliTelemetry from "../../../src/telemetry/cliTelemetry";
-import Reporter from "../../../src/telemetry/telemetryReporter";
-import { CliTelemetryReporter } from "../../../src/commonlib/telemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../../src/telemetry/cliTelemetryEvents";
+import { expect } from "../utils";
 
 describe("Register Commands Tests", function () {
   const sandbox = sinon.createSandbox();

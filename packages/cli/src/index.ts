@@ -51,7 +51,6 @@ export function sendCommandUsageTelemetry(processArgv: string[]): void {
     [TelemetryProperty.Interactive]: interactive || "",
     [TelemetryProperty.CommandLogLevel]: level,
   };
-  console.log(props);
   cliTelemetry.sendTelemetryEvent(TelemetryEvent.Command, props);
 }
 

@@ -249,29 +249,35 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in log file
         context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
 
+        const defaultMesage = getDefaultString(
+          "driver.teamsApp.validate.result",
+          summaryStr.join(", ")
+        );
+        const displayMessage = getLocalizedString(
+          "driver.teamsApp.validate.result.display",
+          summaryStr.join(", ")
+        );
         if (args.showMessage) {
           // For non-lifecycle commands, just show the message
-          const message = getLocalizedString(
-            "driver.teamsApp.validate.result.display",
-            summaryStr.join(", ")
-          );
           if (validationResult.errors.length > 0) {
-            context.ui?.showMessage("error", message, false);
+            return err(
+              AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
+                defaultMesage,
+                displayMessage,
+              ])
+            );
           } else if (validationResult.warnings.length > 0) {
-            context.ui?.showMessage("warn", message, false);
+            context.ui?.showMessage("warn", displayMessage, false);
           } else {
-            context.ui?.showMessage("info", message, false);
+            context.ui?.showMessage("info", displayMessage, false);
           }
         } else {
           // For lifecycle like provision, stop-on-error
           if (validationResult.errors.length > 0) {
             return err(
               AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
-                getDefaultString("driver.teamsApp.validate.result", summaryStr.join(", ")),
-                getLocalizedString(
-                  "driver.teamsApp.validate.result.display",
-                  summaryStr.join(", ")
-                ),
+                defaultMesage,
+                displayMessage,
               ])
             );
           }

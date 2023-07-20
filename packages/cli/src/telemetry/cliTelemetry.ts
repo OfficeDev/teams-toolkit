@@ -1,17 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
+import { FxError, Inputs } from "@microsoft/teamsfx-api";
 import { fillInTelemetryPropsForFxError, getHashedEnv } from "@microsoft/teamsfx-core";
 import { CliTelemetryReporter } from "../commonlib/telemetry";
-import { getSettingsVersion } from "../utils";
-import {
-  TelemetryComponentType,
-  TelemetryErrorType,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "./cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
+import { getSettingsVersion } from "../utils";
+import { TelemetryComponentType, TelemetryProperty } from "./cliTelemetryEvents";
 
 export function makeEnvRelatedProperty(
   projectDir: string,
@@ -25,35 +20,14 @@ export function makeEnvRelatedProperty(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export class CliTelemetry {
-  private static instance: CliTelemetry;
-  private static reporter: CliTelemetryReporter;
-  private static rootFolder: string | undefined;
-  private static isFromSample: boolean | undefined = undefined;
-
-  public static setReporter(reporter: CliTelemetryReporter): void {
-    CliTelemetry.reporter = reporter;
-  }
-
-  public static getReporter(): CliTelemetryReporter {
-    return CliTelemetry.reporter;
-  }
-
-  public static setIsFromSample(isFromSample?: boolean) {
-    CliTelemetry.isFromSample = isFromSample;
-  }
-
-  public static getInstance(): CliTelemetry {
-    if (!CliTelemetry.instance) {
-      CliTelemetry.instance = new CliTelemetry();
-    }
-
-    return CliTelemetry.instance;
-  }
+class CliTelemetry {
+  reporter: CliTelemetryReporter | undefined;
+  rootFolder: string | undefined;
+  isFromSample: boolean | undefined = undefined;
 
   public withRootFolder(rootFolder: string | undefined): CliTelemetry {
-    CliTelemetry.rootFolder = rootFolder;
-    return CliTelemetry.instance;
+    this.rootFolder = rootFolder;
+    return this;
   }
 
   public sendTelemetryEvent(
@@ -69,17 +43,17 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (CliTelemetry.isFromSample !== undefined) {
-      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
+    if (this.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
     }
 
-    const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
+    const settingsVersion = getSettingsVersion(this.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
     }
 
-    CliTelemetry.reporter
-      .withRootFolder(CliTelemetry.rootFolder)
+    this.reporter
+      ?.withRootFolder(this.rootFolder)
       .sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -98,19 +72,19 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (CliTelemetry.isFromSample !== undefined) {
-      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
+    if (this.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
     }
 
-    const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
+    const settingsVersion = getSettingsVersion(this.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
     }
 
     fillInTelemetryPropsForFxError(properties, error);
 
-    CliTelemetry.reporter
-      .withRootFolder(CliTelemetry.rootFolder)
+    this.reporter
+      ?.withRootFolder(this.rootFolder)
       .sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -127,23 +101,23 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (CliTelemetry.isFromSample !== undefined) {
-      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
+    if (this.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
     }
 
-    const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
+    const settingsVersion = getSettingsVersion(this.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
     }
 
-    CliTelemetry.reporter
-      .withRootFolder(CliTelemetry.rootFolder)
+    this.reporter
+      ?.withRootFolder(this.rootFolder)
       .sendTelemetryException(error, properties, measurements);
   }
 
   public async flush(): Promise<void> {
-    await CliTelemetry.reporter.flush();
+    await this.reporter?.flush();
   }
 }
 
-export default CliTelemetry.getInstance();
+export default new CliTelemetry();

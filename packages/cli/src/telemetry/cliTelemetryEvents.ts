@@ -100,6 +100,8 @@ export enum TelemetryEvent {
 
   UpgradeStart = "upgrade-start",
   Upgrade = "upgrade",
+
+  Command = "command", // this event is used to track the usage of each command, including --help command
 }
 
 export enum TelemetryProperty {
@@ -141,6 +143,12 @@ export enum TelemetryProperty {
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
   Interactive = "interactive",
+
+  CommandOptions = "options",
+  CommandHead = "head",
+  CommandBody = "body",
+  CommandHelp = "help",
+  CommandLogLevel = "loglevel",
 }
 
 export enum TelemetrySuccess {

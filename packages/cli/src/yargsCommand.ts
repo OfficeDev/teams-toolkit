@@ -3,22 +3,19 @@
 
 import { FxError, LogLevel, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import {
+  Correlator,
   IncompatibleProjectError,
   UnhandledError,
-  isUserCancelError,
-  Correlator,
   VersionState,
+  isUserCancelError,
 } from "@microsoft/teamsfx-core";
-import { readFileSync } from "fs";
-import path from "path";
 import { Argv, Options, exit } from "yargs";
 import activate from "./activate";
 import { TextType, colorize } from "./colorize";
 import CLILogProvider from "./commonlib/log";
-import { CliTelemetryReporter } from "./commonlib/telemetry";
 import Progress from "./console/progress";
 import * as constants from "./constants";
-import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
+import CliTelemetryInstance from "./telemetry/cliTelemetry";
 import UI from "./userInteraction";
 import { getSystemInputs } from "./utils";
 
@@ -102,14 +99,6 @@ export abstract class YargsCommand {
         );
       }
     }
-
-    const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));
-    const reporter = new CliTelemetryReporter(
-      cliPackage.aiKey,
-      constants.cliTelemetryPrefix,
-      cliPackage.version
-    );
-    CliTelemetry.setReporter(reporter);
 
     try {
       {

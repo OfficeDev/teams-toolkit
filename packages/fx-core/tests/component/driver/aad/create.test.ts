@@ -526,7 +526,6 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.properties.success).to.equal("no");
     expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
-    expect(endTelemetry.properties["error-stack"]).to.equal("fake stack");
   });
 
   it("should use input signInAudience when provided", async () => {

@@ -16,12 +16,15 @@ import { assert } from "chai";
 import "mocha";
 import { convertError, ErrorHandlerMW } from "../../src/core/middleware/errorHandler";
 import {
+  assembleError,
   FilePermissionError,
+  InternalError,
   UnhandledError,
   UnhandledUserError,
   UserCancelError,
 } from "../../src/error/common";
 import { BaseComponentInnerError } from "../../src/component/error/componentError";
+import { InvalidYamlSchemaError } from "../../src/error/yml";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -166,6 +169,12 @@ describe("Errors", () => {
     const error3 = new UnhandledUserError(error, "source");
     assert.isTrue(error3 instanceof UserError);
   });
+  it("InvalidYamlSchemaError", async () => {
+    const e1 = new InvalidYamlSchemaError(".", ".");
+    const e2 = new InvalidYamlSchemaError(".");
+    assert.isTrue(e1 instanceof InvalidYamlSchemaError);
+    assert.isTrue(e2 instanceof InvalidYamlSchemaError);
+  });
 });
 
 describe("BaseComponentInnerError", () => {
@@ -173,5 +182,42 @@ describe("BaseComponentInnerError", () => {
     const error = new Error("test");
     const error1 = BaseComponentInnerError.unknownError("test", error);
     assert.isTrue(error1.toFxError() instanceof SystemError);
+  });
+});
+
+describe("assembleError", function () {
+  const myMessage = "message1";
+  const mySource = "source1";
+  it("error is string", () => {
+    const fxError = assembleError(myMessage);
+    assert.isTrue(fxError instanceof UnhandledError);
+    assert.isTrue(fxError.name === "UnhandledError");
+    assert.isTrue(fxError.source === "unknown");
+    assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
+  });
+
+  it("error is Error", () => {
+    const raw = new Error(myMessage);
+    (raw as any).code = "EEXIST";
+    const fxError = assembleError(raw);
+    assert.isTrue(fxError instanceof InternalError);
+    assert.isTrue(fxError.source === "unknown");
+    assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
+    assert.deepEqual(fxError.categories, ["internal", "EEXIST"]);
+  });
+
+  it("error is Error with source", () => {
+    const raw = new Error(myMessage);
+    const fxError = assembleError(raw, mySource);
+    assert.isTrue(fxError instanceof UnhandledError);
+    assert.isTrue(fxError.source === mySource);
+    assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
+  });
+  it("error has other type", () => {
+    const raw = [1, 2, 3];
+    const fxError = assembleError(raw);
+    assert.isTrue(fxError instanceof UnhandledError);
+    assert.isTrue(fxError.message.includes(JSON.stringify(raw, Object.getOwnPropertyNames(raw))));
+    assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
   });
 });

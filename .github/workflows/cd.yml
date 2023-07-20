@@ -36,7 +36,7 @@ jobs:
           exit 1
 
       - name: Validate inputs for main or hotfix
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'beta' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
         run: |
           echo It's only allowed to release RC and stable on main branch.
           exit 1

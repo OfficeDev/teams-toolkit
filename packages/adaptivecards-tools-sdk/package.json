@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/adaptivecards-tools",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Microsoft sdk for Adaptive Cards",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
@@ -21,7 +21,7 @@
   "homepage": "https://github.com/OfficeDev/TeamsFx",
   "sideEffects": false,
   "devDependencies": {
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.3",
+    "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
     "@rollup/plugin-commonjs": "^13.0.2",
     "@rollup/plugin-json": "^4.0.0",
     "@rollup/plugin-node-resolve": "^8.0.0",

@@ -7,11 +7,11 @@ import {
   TemplateProjectFolder,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../constants";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
+} from "../../utils/constants";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import * as path from "path";
 import fs from "fs";
-import { initPage, validateStockUpdate } from "../../playwrightOperation";
+import { initPage, validateStockUpdate } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";

@@ -911,3 +911,40 @@ describe("createNewEnvQuestionNode", async () => {
     assert.deepEqual(questionNames, [QuestionNames.NewTargetEnvName, QuestionNames.SourceEnvName]);
   });
 });
+
+describe("copilotPluginQuestions", async () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("happy path", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs, "xxx@xxx.com");
+      if (question.name == QuestionNames.ApiSpecLocation) {
+        return ok({
+          type: "success",
+          result: ["https://example.json"],
+        });
+      } else if (question.name == QuestionNames.ApiOperation) {
+        return ok({ type: "success", result: ["testOperation1"] });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    const res = questions.copilotPluginAddAPI();
+    if (res.isOk()) {
+      await traverse(res.value!, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [QuestionNames.ApiSpecLocation, QuestionNames.ApiOperation]);
+    }
+  });
+});

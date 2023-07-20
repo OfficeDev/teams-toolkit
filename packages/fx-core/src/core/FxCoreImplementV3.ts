@@ -9,6 +9,7 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
+  OpenAIPluginManifest,
   Platform,
   Result,
   Stage,
@@ -81,6 +82,11 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import {
+  ErrorResult,
+  OpenAIPluginManifestHelper,
+  listOperations,
+} from "../component/generator/copilotPlugin/helper";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -628,6 +634,40 @@ export class FxCoreV3Implement {
       }
     }
     return result;
+  }
+
+  @hooks([ErrorHandlerMW, QuestionMW(questions.copilotPluginAddAPI), ConcurrentLockerMW])
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
+    // TODO: call generator to add API
+    const operations = inputs[QuestionNames.ApiOperation] as string[];
+    const message = getLocalizedString(
+      "core.copilot.addAPI.success",
+      operations,
+      inputs.projectPath
+    );
+    this.tools.ui.showMessage("info", message, false);
+    return ok("");
+  }
+
+  @hooks([ErrorHandlerMW])
+  async copilotPluginLoadOpenAIManifest(
+    inputs: Inputs
+  ): Promise<Result<OpenAIPluginManifest, FxError>> {
+    try {
+      return ok(await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(inputs.domain));
+    } catch (error) {
+      return err(error as FxError);
+    }
+  }
+
+  @hooks([ErrorHandlerMW])
+  async copilotPluginListOperations(inputs: Inputs): Promise<Result<string[], ErrorResult[]>> {
+    return await listOperations(
+      createContextV3(),
+      inputs.manifest,
+      inputs.apiSpecUrl,
+      inputs.shouldLogWarning
+    );
   }
 
   @hooks([

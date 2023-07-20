@@ -2,13 +2,18 @@
 // Licensed under the MIT license.
 import {
   FuncValidation,
+  FxError,
   Inputs,
   LocalFunc,
   MultiSelectQuestion,
+  OptionItem,
   Platform,
   Question,
   SingleSelectQuestion,
+  UserError,
   UserInteraction,
+  ValidateFunc,
+  ValidationSchema,
   ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -25,17 +30,26 @@ import {
   RuntimeOptions,
   SPFxVersionOptionIds,
   ScratchOptions,
+  apiOperationQuestion,
+  apiSpecLocationQuestion,
   appNameQuestion,
   createProjectQuestionNode,
   getLanguageOptions,
   getTemplate,
+  openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
-import { MockUserInteraction, randomAppName } from "../core/utils";
+import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import * as path from "path";
 import { FeatureFlagName } from "../../src/common/constants";
+import { SpecParser } from "../../src/common/spec-parser/specParser";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
+import { setTools } from "../../src/core/globalVars";
+import { EmptyOptionError } from "../../src/error";
+import axios from "axios";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -466,18 +480,36 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: "test001" });
         } else if (question.name === QuestionNames.ReplaceWebsiteUrl) {
           const select = question as MultiSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
+          const options = (await select.dynamicOptions!(inputs)) as OptionItem[];
+          const defaults = await (select as any).default!(inputs);
           assert.isTrue(options.length === 1);
+          assert.isTrue(defaults.length === 1);
+          assert.deepEqual(
+            options.map((o) => o.id),
+            defaults
+          );
           return ok({ type: "success", result: [] });
         } else if (question.name === QuestionNames.ReplaceContentUrl) {
           const select = question as MultiSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
+          const options = (await select.dynamicOptions!(inputs)) as OptionItem[];
+          const defaults = await (select as any).default!(inputs);
           assert.isTrue(options.length === 1);
+          assert.isTrue(defaults.length === 1);
+          assert.deepEqual(
+            options.map((o) => o.id),
+            defaults
+          );
           return ok({ type: "success", result: [] });
         } else if (question.name === QuestionNames.ReplaceBotIds) {
           const select = question as MultiSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
+          const options = (await select.dynamicOptions!(inputs)) as OptionItem[];
+          const defaults = await (select as any).default!(inputs);
           assert.isTrue(options.length === 1);
+          assert.isTrue(defaults.length === 1);
+          assert.deepEqual(
+            options.map((o: OptionItem) => o.id),
+            defaults
+          );
           return ok({ type: "success", result: [] });
         }
         return ok({ type: "success", result: undefined });
@@ -664,6 +696,8 @@ describe("scaffold question", () => {
 
     describe("copilot plugin enabled", () => {
       let mockedEnvRestore: RestoreFn;
+      const tools = new MockTools();
+      setTools(tools);
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.CopilotPlugin]: "true",
@@ -886,6 +920,233 @@ describe("scaffold question", () => {
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
+      });
+
+      describe("list operations", async () => {
+        it(" list operations successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: ["operation1", "operation2"],
+          };
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+
+          assert.isTrue(options.length === 2);
+          assert.isTrue(options[0].id === "operation1");
+          assert.isTrue(options[1].id === "operation2");
+        });
+
+        it(" list operations without existing APIs", async () => {
+          const question = apiOperationQuestion(false);
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: ["operation1", "operation2"],
+          };
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+          sandbox.stub(manifestUtils, "getOperationIds").returns(["operation1"]);
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+
+          assert.isTrue(options.length === 1);
+          assert.isTrue(options[0].id === "operation2");
+        });
+
+        it(" list operations error", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+
+          let fxError: FxError | undefined = undefined;
+          try {
+            await question.dynamicOptions!(inputs);
+          } catch (e) {
+            fxError = e;
+          }
+
+          assert.isTrue(fxError !== undefined);
+        });
+      });
+
+      describe("apiSpecLocationQuestion", async () => {
+        it("valid API spec selecting from local file", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+          assert.isUndefined(res);
+        });
+
+        it("skip validating on selectFile result if user selects to input URL", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("input", inputs);
+          assert.isUndefined(res);
+        });
+
+        it("invalid api spec", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Error,
+            errors: [
+              {
+                type: ErrorType.SpecNotValid,
+                content: "error",
+              },
+            ],
+            warnings: [],
+          });
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+
+          assert.equal(res, "error");
+        });
+
+        it("valid API spec from remote URL", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const validate = question.inputBoxConfig.additionalValidationOnAccept!;
+          const res = await validate("url1", inputs);
+          assert.isUndefined(res);
+        });
+
+        it("valid api spec and list operations error", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Valid,
+            errors: [],
+            warnings: [{ type: WarningType.AuthNotSupported, content: "" }],
+          });
+          sandbox.stub(SpecParser.prototype, "list").throws(new Error("error1"));
+
+          const validate = question.inputBoxConfig.additionalValidationOnAccept!;
+
+          let fxError: FxError;
+          try {
+            await validate("url1", inputs);
+          } catch (e) {
+            fxError = e;
+          }
+
+          assert.isTrue(fxError!.message.includes("error1"));
+        });
+      });
+
+      describe("openAIPluginManifestLocationQuestion", async () => {
+        it("valid openAI plugin manifest spec and list operations successfully", async () => {
+          const question = openAIPluginManifestLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+          };
+          const manifest = {
+            schema_version: "1.0.0",
+            api: {
+              type: "openapi",
+              url: "test",
+            },
+            auth: { type: "none" },
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+
+          assert.isUndefined(res);
+        });
+
+        it("cannot load openAI plugin manifest", async () => {
+          const question = openAIPluginManifestLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+          };
+          const manifest = {
+            schema_version: "1.0.0",
+            api: {
+              type: "openapi",
+            },
+            auth: "oauth",
+          };
+          sandbox.stub(axios, "get").throws(new Error("error1"));
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+
+          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+
+          assert.isFalse(res === undefined);
+        });
+
+        it("invalid openAI plugin manifest spec", async () => {
+          const question = openAIPluginManifestLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+          };
+          const manifest = {
+            schema_version: "1.0.0",
+            api: {
+              type: "openapi",
+              url: "test",
+            },
+            auth: { type: "none" },
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Error,
+            errors: [{ content: "error", type: ErrorType.NoSupportedApi }],
+            warnings: [],
+          });
+
+          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+
+          assert.equal(res, "error");
+        });
       });
     });
   });

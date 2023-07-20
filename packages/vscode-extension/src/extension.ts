@@ -12,12 +12,19 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
+import {
+  AuthSvcScopes,
+  Correlator,
+  VersionState,
+  setRegion,
+  isCopilotPluginEnabled,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
+  CopilotPluginCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
@@ -438,12 +445,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openConfigStateCmd);
 
-  const editManifestTemplateCmd = vscode.commands.registerCommand(
-    "fx-extension.editManifestTemplate",
-    (...args) => Correlator.run(handlers.editManifestTemplate, args)
-  );
-  context.subscriptions.push(editManifestTemplateCmd);
-
   const editAadManifestTemplateCmd = vscode.commands.registerCommand(
     "fx-extension.editAadManifestTemplate",
     (...args) => Correlator.run(handlers.editAadManifestTemplate, args)
@@ -581,6 +582,16 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     }
   );
   context.subscriptions.push(openManifestSchemaCmd);
+
+  if (isCopilotPluginEnabled()) {
+    const addAPICmd = vscode.commands.registerCommand(
+      "fx-extension.copilotPluginAddAPI",
+      (...args) => {
+        Correlator.run(handlers.copilotPluginAddAPIHandler, args);
+      }
+    );
+    context.subscriptions.push(addAPICmd);
+  }
 
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
@@ -745,6 +756,15 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       manifestTemplateCodeLensProvider
     )
   );
+  if (isCopilotPluginEnabled()) {
+    const copilotPluginCodeLensProvider = new CopilotPluginCodeLensProvider();
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        manifestTemplateSelector,
+        copilotPluginCodeLensProvider
+      )
+    );
+  }
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       localManifestTemplateSelector,
@@ -841,7 +861,6 @@ async function runBackgroundAsyncTasks(
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
-  await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
 

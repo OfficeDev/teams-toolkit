@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
@@ -63,6 +66,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
+import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -202,6 +206,14 @@ class Coordinator {
         if (res.isErr()) return err(res.error);
       } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id) {
         const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+        if (res.isErr()) {
+          return err(res.error);
+        }
+      } else if (
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginOpenAIPlugin().id
+      ) {
+        const res = await CopilotPluginGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
         }

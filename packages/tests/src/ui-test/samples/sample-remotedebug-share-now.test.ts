@@ -5,9 +5,9 @@ import {
   Timeout,
   TemplateProject,
   TemplateProjectFolder,
-} from "../../constants";
+} from "../../utils/constants";
 import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
-import { initPage, validateShareNow } from "../../playwrightOperation";
+import { initPage, validateShareNow } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";

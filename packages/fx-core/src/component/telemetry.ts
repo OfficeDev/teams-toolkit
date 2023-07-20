@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, SystemError } from "@microsoft/teamsfx-api";
-import { globalVars, TOOLS } from "../core/globalVars";
+import { FxError } from "@microsoft/teamsfx-api";
+import { TOOLS, globalVars } from "../core/globalVars";
+import { fillInTelemetryPropsForFxError } from "../error/common";
 import { TelemetryConstants } from "./constants";
 
 type TelemetryProps = { [key: string]: string };
@@ -45,19 +46,11 @@ export function sendErrorEvent(
   properties?: TelemetryProps,
   measurements?: { [key: string]: number }
 ): void {
-  const errorCode = error.source + "." + error.name;
-  const errorType =
-    error instanceof SystemError
-      ? TelemetryConstants.values.systemError
-      : TelemetryConstants.values.userError;
   const props = {
     ...getCommonProperties(),
     ...properties,
-    [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
-    [TelemetryConstants.properties.errorCode]: errorCode,
-    [TelemetryConstants.properties.errorType]: errorType,
-    [TelemetryConstants.properties.errorMessage]: error.message,
   };
+  fillInTelemetryPropsForFxError(props, error);
   TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, props, measurements ?? {}, [
     TelemetryConstants.properties.errorMessage,
   ]);

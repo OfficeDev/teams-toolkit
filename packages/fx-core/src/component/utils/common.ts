@@ -61,7 +61,7 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
     if (typeof data === "object" && data !== null) {
       const maybeT = data as unknown as T;
       for (const key of Object.keys(keyValidators) as Array<keyof T>) {
-        keyValidators[key](maybeT[key], `${key}`, helpLink);
+        keyValidators[key](maybeT[key], `${String(key)}`, helpLink);
       }
       return maybeT;
     }

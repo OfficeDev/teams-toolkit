@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import * as util from "util";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { SpecParserError } from "./specParserError";
@@ -11,15 +12,23 @@ import {
   ValidateResult,
   ValidationStatus,
   WarningResult,
+  WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
+import jsyaml from "js-yaml";
+import fs from "fs-extra";
+import { specFilter } from "./specFilter";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
  */
 export class SpecParser {
-  private specPath: string;
+  public readonly specPath: string;
+  public readonly parser: SwaggerParser;
+
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
+  private spec: OpenAPIV3.Document | undefined;
+  private unResolveSpec: OpenAPIV3.Document | undefined;
 
   /**
    * Creates a new instance of the SpecParser class.
@@ -27,6 +36,7 @@ export class SpecParser {
    */
   constructor(path: string) {
     this.specPath = path;
+    this.parser = new SwaggerParser();
   }
 
   /**
@@ -37,10 +47,10 @@ export class SpecParser {
   async validate(): Promise<ValidateResult> {
     const errors: ErrorResult[] = [];
     const warnings: WarningResult[] = [];
-    let spec: OpenAPIV3.Document;
     try {
-      spec = (await SwaggerParser.validate(this.specPath)) as OpenAPIV3.Document;
+      await this.loadSpec();
     } catch (e) {
+      // Spec not valid
       errors.push({ type: ErrorType.SpecNotValid, content: (e as Error).toString() });
       return {
         status: ValidationStatus.Error,
@@ -49,7 +59,67 @@ export class SpecParser {
       };
     }
 
-    // TODO: other validations
+    // Spec version not supported
+    if (!this.spec!.openapi || this.spec!.openapi < "3.0.0") {
+      errors.push({
+        type: ErrorType.VersionNotSupported,
+        content: ConstantString.SpecVersionNotSupported,
+      });
+      return {
+        status: ValidationStatus.Error,
+        warnings,
+        errors,
+      };
+    }
+
+    // Server information invalid
+    if (!this.spec!.servers || this.spec!.servers.length === 0) {
+      errors.push({
+        type: ErrorType.NoServerInformation,
+        content: ConstantString.NoServerInformation,
+      });
+    } else if (this.spec!.servers.length > 1) {
+      errors.push({
+        type: ErrorType.MultipleServerInformation,
+        content: ConstantString.MultipleServerInformation,
+      });
+    }
+
+    // Remote reference not supported
+    const refPaths = this.parser!.$refs.paths();
+
+    // refPaths [0] is the current spec file path
+    if (refPaths.length > 1) {
+      errors.push({
+        type: ErrorType.RemoteRefNotSupported,
+        content: util.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+      });
+    }
+
+    // No supported API
+    const apiMap = await this.getAllSupportedApi(this.spec!);
+    if (Object.keys(apiMap).length === 0) {
+      errors.push({
+        type: ErrorType.NoSupportedApi,
+        content: ConstantString.NoSupportedApi,
+      });
+    }
+
+    // OperationId missing
+    const apisMissingOperationId: string[] = [];
+    for (const key in apiMap) {
+      const pathObjectItem = apiMap[key];
+      if (!pathObjectItem.operationId) {
+        apisMissingOperationId.push(key);
+      }
+    }
+
+    if (apisMissingOperationId.length > 0) {
+      warnings.push({
+        type: WarningType.OperationIdMissing,
+        content: util.format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
+      });
+    }
 
     let status = ValidationStatus.Valid;
     if (warnings.length > 0 && errors.length === 0) {
@@ -72,7 +142,8 @@ export class SpecParser {
    */
   async list(): Promise<string[]> {
     try {
-      const apiMap = await this.getAllSupportedApi(this.specPath);
+      await this.loadSpec();
+      const apiMap = await this.getAllSupportedApi(this.spec!);
       return Array.from(Object.keys(apiMap));
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
@@ -83,13 +154,13 @@ export class SpecParser {
    * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
-   * @param specPath An optional file path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param outputSpecPath An optional file path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
    * @param adaptiveCardFolder An optional folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
    */
   async generate(
     manifestPath: string,
     filter: string[],
-    specPath?: string,
+    outputSpecPath?: string,
     adaptiveCardFolder?: string,
     signal?: AbortSignal
   ): Promise<void> {
@@ -97,17 +168,30 @@ export class SpecParser {
       throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
     }
 
-    // TODO: implementation
+    await this.loadSpec();
+    const newUnResolvedSpec = await specFilter(filter, this.unResolveSpec!);
+    if (outputSpecPath) {
+      const ymlString = jsyaml.dump(newUnResolvedSpec);
+      await fs.writeFile(outputSpecPath, ymlString);
+    }
+
+    // TODO: other implementations
+  }
+
+  private async loadSpec(): Promise<void> {
+    if (!this.spec) {
+      this.unResolveSpec = (await this.parser.parse(this.specPath)) as OpenAPIV3.Document;
+      this.spec = (await this.parser.dereference(this.unResolveSpec)) as OpenAPIV3.Document;
+    }
   }
 
   private async getAllSupportedApi(
-    specPath: string
+    spec: OpenAPIV3.Document
   ): Promise<{ [key: string]: OpenAPIV3.OperationObject }> {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const apis = await SwaggerParser.validate(specPath);
-    const paths = apis.paths;
+    const paths = spec.paths;
     const result: { [key: string]: OpenAPIV3.OperationObject } = {};
     for (const path in paths) {
       const methods = paths[path];
@@ -115,7 +199,7 @@ export class SpecParser {
         // only list get and post method without auth
         if (
           (method === ConstantString.GetMethod || method === ConstantString.PostMethod) &&
-          !methods[method].security
+          !methods[method]?.security
         ) {
           result[`${method.toUpperCase()} ${path}`] = methods[method] as OpenAPIV3.OperationObject;
         }

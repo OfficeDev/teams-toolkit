@@ -1,7 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
+import { TelemetryConstants } from "../component/constants";
 
 export class FileNotFoundError extends UserError {
   constructor(source: string, filePath: string, helpLink?: string) {
@@ -99,42 +103,56 @@ export class WriteFileError extends SystemError {
   }
 }
 
-export class UnhandledError extends SystemError {
+export class FilePermissionError extends UserError {
   constructor(e: Error, source?: string) {
+    const msg = getDefaultString("error.common.FilePermissionError", e.message);
     super({
-      source: camelCase(source || "unknown"),
-      message: getDefaultString(
-        "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
-      ),
-      displayMessage: getLocalizedString(
-        "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
-      ),
+      source: source || "unknown",
+      message: msg,
+      displayMessage: msg,
     });
     if (e.stack) super.stack = e.stack;
   }
 }
 
-export class UnhandledUserError extends UserError {
-  constructor(e: Error, source?: string, helpLink?: string) {
+export class UnhandledError extends SystemError {
+  constructor(e: Error, source?: string) {
     super({
-      source: camelCase(source || "unknown"),
+      source: camelCase(source) || "unknown",
+      error: e,
       message: getDefaultString(
         "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
+        source,
+        JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       displayMessage: getLocalizedString(
         "error.common.UnhandledError",
-        source || "",
-        e.message || JSON.stringify(e)
+        source,
+        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
+      ),
+      categories: ["unhandled"],
+    });
+  }
+}
+
+export class UnhandledUserError extends UserError {
+  constructor(e: Error, source?: string, helpLink?: string) {
+    source = source || "unknown";
+    super({
+      source: camelCase(source),
+      message: getDefaultString(
+        "error.common.UnhandledError",
+        source,
+        JSON.stringify(e, Object.getOwnPropertyNames(e))
+      ),
+      displayMessage: getLocalizedString(
+        "error.common.UnhandledError",
+        source,
+        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
       helpLink: helpLink,
+      error: e,
     });
-    if (e.stack) super.stack = e.stack;
   }
 }
 
@@ -250,19 +268,146 @@ export class ConcurrentError extends UserError {
   }
 }
 
+export class InternalError extends UserError {
+  constructor(error: any, source: string) {
+    super({
+      source: source,
+    });
+    this.innerError = error;
+    this.categories = ["internal", error.code];
+  }
+}
+
 export function assembleError(e: any, source?: string): FxError {
   if (e instanceof UserError || e instanceof SystemError) return e;
   if (!source) source = "unknown";
   const type = typeof e;
   if (type === "string") {
     return new UnhandledError(new Error(e as string), source);
-  } else if (e instanceof Error) {
-    const err = e as Error;
-    const fxError = new UnhandledError(err, source);
-    fxError.stack = err.stack;
-    return fxError;
   } else {
-    const message = JSON.stringify(e, Object.getOwnPropertyNames(e));
-    return new UnhandledError(new Error(message), source);
+    const code = e.code as string;
+    if (code && (errnoCodes[code] || code.startsWith("ERR_"))) {
+      // convert to internal error
+      return new InternalError(e, source);
+    }
+    return new UnhandledError(e, source);
+  }
+}
+
+const errnoCodes: Record<string, string> = {
+  E2BIG: "Argument list too long",
+  EACCES: "Permission denied",
+  EADDRINUSE: "Address already in use",
+  EADDRNOTAVAIL: "Address not available",
+  EAFNOSUPPORT: "Address family not supported",
+  EAGAIN: "Resource temporarily unavailable",
+  EALREADY: "Operation already in progress",
+  EBADF: "Bad file descriptor",
+  EBADMSG: "Bad message",
+  EBUSY: "Device or resource busy",
+  ECANCELED: "Operation canceled",
+  ECHILD: "No child processes",
+  ECONNABORTED: "Connection aborted",
+  ECONNREFUSED: "Connection refused",
+  ECONNRESET: "Connection reset by peer",
+  EDEADLK: "Resource deadlock would occur",
+  EDESTADDRREQ: "Destination address required",
+  EDOM: "Mathematics argument out of domain of function",
+  EDQUOT: "Disk quota exceeded",
+  EEXIST: "File exists",
+  EFAULT: "Bad address",
+  EFBIG: "File too large",
+  EHOSTUNREACH: "Host is unreachable",
+  EIDRM: "Identifier removed",
+  EILSEQ: "Illegal byte sequence",
+  EINPROGRESS: "Operation in progress",
+  EINTR: "Interrupted system call",
+  EINVAL: "Invalid argument",
+  EIO: "I/O error",
+  EISCONN: "Socket is already connected",
+  EISDIR: "Is a directory",
+  ELOOP: "Too many symbolic links encountered",
+  EMFILE: "Too many open files",
+  EMLINK: "Too many links",
+  EMSGSIZE: "Message too long",
+  EMULTIHOP: "Multihop attempted",
+  ENAMETOOLONG: "File name too long",
+  ENETDOWN: "Network is down",
+  ENETRESET: "Network dropped connection because of reset",
+  ENETUNREACH: "Network is unreachable",
+  ENFILE: "Too many open files in system",
+  ENOBUFS: "No buffer space available",
+  ENODATA: "No message is available on the STREAM head read queue",
+  ENODEV: "No such device",
+  ENOENT: "No such file or directory",
+  ENOEXEC: "Exec format error",
+  ENOLCK: "No locks available",
+  ENOLINK: "Link has been severed",
+  ENOMEM: "Out of memory",
+  ENOMSG: "No message of the desired type",
+  ENOPROTOOPT: "Protocol not available",
+  ENOSPC: "No space left on device",
+  ENOSR: "No STREAM resources",
+  ENOSTR: "Not a STREAM",
+  ENOSYS: "Function not implemented",
+  ENOTCONN: "Socket is not connected",
+  ENOTDIR: "Not a directory",
+  ENOTEMPTY: "Directory not empty",
+  ENOTSOCK: "Socket operation on non-socket",
+  ENOTSUP: "Operation not supported",
+  ENOTTY: "Inappropriate ioctl for device",
+  ENXIO: "No such device or address",
+  EOPNOTSUPP: "Operation not supported on socket",
+  EOVERFLOW: "Value too large to be stored in data type",
+  EPERM: "Operation not permitted",
+  EPIPE: "Broken pipe",
+  EPROTO: "Protocol error",
+  EPROTONOSUPPORT: "Protocol not supported",
+  EPROTOTYPE: "Protocol wrong type for socket",
+  ERANGE: "Result too large",
+  EROFS: "Read-only file system",
+  ESPIPE: "Invalid seek",
+  ESRCH: "No such process",
+  ESTALE: "Stale file handle",
+  ETIME: "Timer expired",
+  ETIMEDOUT: "Connection timed out",
+  ETXTBSY: "Text file busy",
+  EWOULDBLOCK: "Operation would block",
+  EXDEV: "Cross-device link",
+};
+
+/**
+ * fill in telemetry properties for FxError
+ * @param error FxError
+ * @param props teletry properties
+ */
+export function fillInTelemetryPropsForFxError(
+  props: Record<string, string>,
+  error: FxError
+): void {
+  const errorCode = error.source + "." + error.name;
+  const errorType =
+    error instanceof SystemError
+      ? TelemetryConstants.values.systemError
+      : TelemetryConstants.values.userError;
+  props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
+  props[TelemetryConstants.properties.errorCode] =
+    props[TelemetryConstants.properties.errorCode] || errorCode;
+  props[TelemetryConstants.properties.errorType] = errorType;
+  props[TelemetryConstants.properties.errorMessage] = error.message;
+  props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  props[TelemetryConstants.properties.errorName] = error.name;
+
+  if (error.innerError) {
+    props[TelemetryConstants.properties.innerError] = JSON.stringify(
+      error.innerError,
+      Object.getOwnPropertyNames(error.innerError)
+    );
+  }
+
+  if (error.categories) {
+    props[TelemetryConstants.properties.errorCat1] = error.categories[0];
+    props[TelemetryConstants.properties.errorCat2] = error.categories[1];
+    props[TelemetryConstants.properties.errorCat3] = error.categories[2];
   }
 }

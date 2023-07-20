@@ -106,7 +106,7 @@ export async function getAppName(): Promise<string | undefined> {
   try {
     const ws = globalVariables.workspaceUri.fsPath;
     const nameRes = await core.getTeamsAppName(ws);
-    if (nameRes.isOk()) {
+    if (nameRes.isOk() && nameRes.value != "") {
       return nameRes.value;
     }
   } catch (e) {}
@@ -114,7 +114,7 @@ export async function getAppName(): Promise<string | undefined> {
 }
 
 export function openFolderInExplorer(folderPath: string): void {
-  const command = format('start "" %s', folderPath);
+  const command = format('start "" "%s"', folderPath);
   exec(command);
 }
 

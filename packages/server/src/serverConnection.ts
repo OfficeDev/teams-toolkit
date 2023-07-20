@@ -7,10 +7,12 @@ import {
   Func,
   FxError,
   Inputs,
+  OpenAIPluginManifest,
   QTreeNode,
   Result,
   Stage,
   Tools,
+  UserError,
   Void,
   err,
   ok,
@@ -20,6 +22,7 @@ import {
   FxCore,
   environmentManager,
   getSideloadingStatus,
+  setRegion,
   listDevTunnels,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
@@ -74,13 +77,15 @@ export default class ServerConnection implements IServerConnection {
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
       this.publishInDeveloperPortalRequest.bind(this),
+      this.setRegionRequest.bind(this),
       this.listDevTunnelsRequest.bind(this),
+      this.loadOpenAIPluginManifestRequest.bind(this),
+      this.listOpenAPISpecOperationsRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
     });
   }
-
   public listen() {
     this.connection.listen();
   }
@@ -385,6 +390,16 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
+  public async setRegionRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<any, FxError>> {
+    await setRegion(accountToken.token);
+    return ok(true);
+  }
+
   public async listDevTunnelsRequest(
     inputs: Inputs,
     token: CancellationToken
@@ -396,5 +411,37 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
+  }
+
+  public async loadOpenAIPluginManifestRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<OpenAIPluginManifest, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginLoadOpenAIManifest(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async listOpenAPISpecOperationsRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<string[], FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginListOperations(inputs),
+      inputs
+    );
+    if (res.isErr()) {
+      const msg = res.error.map((e) => e.content).join("\n");
+      return standardizeResult(
+        err(new UserError("Fx-VS", "ListOpenAPISpecOperationsError", msg, msg))
+      );
+    }
+    return standardizeResult(ok(res.value));
   }
 }

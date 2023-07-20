@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, fillInTelemetryPropsForFxError } from "@microsoft/teamsfx-core";
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
@@ -23,6 +24,7 @@ const TelemetryCacheKey = "TelemetryEvents";
 // export for UT
 export let lastCorrelationId: string | undefined = undefined;
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
   export let hasSentTelemetry = false;
@@ -79,6 +81,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.BuildAadManifest;
       case Stage.deployAad:
         return TelemetryEvent.DeployAadManifest;
+      case Stage.copilotPluginAddAPI:
+        return TelemetryEvent.CopilotPluginAddAPI;
       default:
         return undefined;
     }
@@ -129,17 +133,7 @@ export namespace ExtTelemetry {
 
     properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
-    properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-    if (error instanceof UserError) {
-      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
-    } else {
-      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
-    }
-
-    properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
-    properties[TelemetryProperty.ErrorMessage] = `${error.message}${
-      error.stack ? "\nstack:\n" + error.stack : ""
-    }`;
+    fillInTelemetryPropsForFxError(properties, error);
 
     if (globalVariables.workspaceUri) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();

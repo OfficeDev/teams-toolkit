@@ -79,6 +79,11 @@ describe("ExtTelemetry", () => {
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.AddWebpart);
     });
 
+    it("Stage.copilotPluginAddAPI", () => {
+      const stage = Stage.copilotPluginAddAPI;
+      chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CopilotPluginAddAPI);
+    });
+
     it("unknown", () => {
       const stage = "unknown";
       chai.expect(ExtTelemetry.stageToEvent(stage as Stage)).equals(undefined);
@@ -142,7 +147,9 @@ describe("ExtTelemetry", () => {
           "is-existing-user": "no",
           "is-spfx": "false",
           "error-type": "user",
-          "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
+          "error-name": "UserTestError",
+          "error-message": error.message,
+          "error-stack": error.stack,
           "error-code": "test.UserTestError",
         },
         { numericMeasure: 123 },

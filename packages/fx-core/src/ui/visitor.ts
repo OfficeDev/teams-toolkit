@@ -111,27 +111,46 @@ const questionVisitor: QuestionTreeVisitor = async function (
       return err(assembleError(e));
     }
   } else {
-    const defaultValue =
-      question.forgetLastValue !== true && question.value
-        ? question.value
-        : await getCallFuncValue(inputs, question.default);
+    let defaultValue:
+      | string
+      | string[]
+      | (() => Promise<string>)
+      | (() => Promise<string[]>)
+      | undefined = undefined;
+    if (question.forgetLastValue !== true && question.value)
+      defaultValue = question.value as string | string[];
+    else {
+      if (question.default) {
+        if (typeof question.default === "function") {
+          defaultValue = async () => {
+            return (question as any).default(inputs);
+          };
+        } else {
+          defaultValue = question.default;
+        }
+      }
+    }
     const placeholder = (await getCallFuncValue(inputs, question.placeholder)) as string;
     const prompt = (await getCallFuncValue(inputs, question.prompt)) as string;
     if (question.type === "text") {
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
+      const additionalValidationOnAcceptFunc = question.additionalValidationOnAccept
+        ? getValidationFunction<string>(question.additionalValidationOnAccept, inputs)
+        : undefined;
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
         name: question.name,
         title: title,
         password: (inputQuestion as TextInputQuestion).password,
-        default: defaultValue as string,
+        default: defaultValue as string | (() => Promise<string>),
         placeholder: placeholder,
         prompt: prompt,
         validation: validationFunc,
         step: step,
         totalSteps: totalSteps,
+        additionalValidationOnAccept: additionalValidationOnAcceptFunc,
       });
     } else if (question.type === "singleSelect" || question.type === "multiSelect") {
       const selectQuestion = question as SingleSelectQuestion | MultiSelectQuestion;
@@ -159,7 +178,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
           title: title,
           options: options,
           returnObject: selectQuestion.returnObject,
-          default: defaultValue as string,
+          default: defaultValue as string | (() => Promise<string>),
           placeholder: placeholder,
           prompt: prompt,
           step: step,
@@ -178,7 +197,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
           title: title,
           options: options,
           returnObject: selectQuestion.returnObject,
-          default: defaultValue as string[],
+          default: defaultValue as string[] | (() => Promise<string[]>),
           placeholder: placeholder,
           prompt: prompt,
           onDidChangeSelection: mq.onDidChangeSelection,
@@ -197,6 +216,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         title: title,
         placeholder: placeholder,
         prompt: prompt,
+        default: defaultValue as string[] | (() => Promise<string[]>),
         step: step,
         totalSteps: totalSteps,
         validation: validationFunc,
@@ -210,7 +230,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         title: title,
         placeholder: placeholder,
         prompt: prompt,
-        default: defaultValue as string,
+        default: defaultValue as string | (() => Promise<string>),
         step: step,
         totalSteps: totalSteps,
         validation: validationFunc,
@@ -225,7 +245,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         title: title,
         placeholder: placeholder,
         prompt: prompt,
-        default: defaultValue as string,
+        default: defaultValue as string | (() => Promise<string>),
         step: step,
         totalSteps: totalSteps,
         validation: validationFunc,
@@ -234,6 +254,13 @@ const questionVisitor: QuestionTreeVisitor = async function (
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
+      const additionalValidationOnAcceptFunc = question.inputBoxConfig.additionalValidationOnAccept
+        ? getValidationFunction<string>(
+            { validFunc: question.inputBoxConfig.additionalValidationOnAccept },
+            inputs
+          )
+        : undefined;
+      question.inputBoxConfig.additionalValidationOnAccept = additionalValidationOnAcceptFunc;
       const res = await ui.selectFileOrInput({
         name: question.name,
         title: title,

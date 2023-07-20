@@ -38,10 +38,12 @@ export class Generator {
     appName: string,
     safeProjectNameFromVS?: string
   ): { [key: string]: string } {
+    const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
     return {
       appName: appName,
       ProjectName: appName,
-      SafeProjectName: safeProjectNameFromVS ?? convertToAlphanumericOnly(appName),
+      SafeProjectName: safeProjectName,
+      SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
     };
   }
   @hooks([
@@ -103,7 +105,7 @@ export class Generator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.SampleName]: sampleName,
+      [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
     const sample = getSampleInfoFromName(sampleName);

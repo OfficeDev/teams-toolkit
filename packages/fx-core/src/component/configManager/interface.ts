@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author yefuwang@microsoft.com
  */
@@ -14,6 +17,7 @@ export type RawProjectModel = {
   publish?: DriverDefinition[];
   environmentFolderPath?: string;
   version: string;
+  sampleTag?: string;
 };
 
 export type ProjectModel = {
@@ -24,6 +28,7 @@ export type ProjectModel = {
   publish?: ILifecycle;
   environmentFolderPath?: string;
   version: string;
+  sampleTag?: string;
 };
 
 export type DriverDefinition = {

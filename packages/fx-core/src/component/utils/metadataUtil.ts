@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { FxError, Result, TeamsAppManifest, devPreview } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";
@@ -25,6 +28,7 @@ class MetadataUtil {
         props[name + ".actions"] = str ?? "";
       }
       props[TelemetryProperty.YmlSchemaVersion] = res.value.version;
+      props[TelemetryProperty.SampleAppName] = res.value.sampleTag ?? "";
 
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
     }
@@ -44,16 +48,14 @@ class MetadataUtil {
     props[prefix + "staticTabs.contentUrl"] =
       manifest.staticTabs
         ?.map((tab) =>
-          tab.contentUrl
-            ? createHash("sha256").update(tab.contentUrl).digest("base64")
-            : "undefined"
+          tab.contentUrl ? createHash("sha256").update(tab.contentUrl).digest("hex") : "undefined"
         )
         .toString() ?? "";
     props[prefix + "configurableTabs.configurationUrl"] =
       manifest.configurableTabs
         ?.map((tab) =>
           tab.configurationUrl
-            ? createHash("sha256").update(tab.configurationUrl).digest("base64")
+            ? createHash("sha256").update(tab.configurationUrl).digest("hex")
             : "undefined"
         )
         .toString() ?? "";

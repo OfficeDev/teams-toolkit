@@ -1,5 +1,5 @@
 {
-  "name": "{{appName}}",
+  "name": "{{SafeProjectNameLowerCase}}",
   "version": "1.0.0",
   "description": "Microsoft Teams Toolkit hello world Bot sample",
   "engines": {

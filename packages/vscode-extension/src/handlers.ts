@@ -753,6 +753,10 @@ export async function runCommand(
         result = await core.createAppPackage(inputs);
         break;
       }
+      case Stage.copilotPluginAddAPI: {
+        result = await core.copilotPluginAddAPI(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,
@@ -1291,74 +1295,6 @@ export async function openReadMeHandler(args: any[]) {
     await workspace.openTextDocument(uri);
     const PreviewMarkdownCommand = "markdown.showPreview";
     await vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
-  }
-}
-
-export async function postUpgrade(): Promise<void> {
-  await openUpgradeChangeLogsHandler();
-  await popupAfterUpgrade();
-}
-
-async function popupAfterUpgrade(): Promise<void> {
-  const aadClientSecretFlag = "NeedToSetAADClientSecretEnv";
-  const aadClientSecret = await globalStateGet(aadClientSecretFlag, "");
-  if (
-    aadClientSecret !== "" &&
-    workspace.workspaceFolders &&
-    workspace.workspaceFolders.length > 0
-  ) {
-    try {
-      const learnMoreLink = localize("teamstoolkit.upgradeToMultiEnvAndBicep.learnMoreLink");
-      const learnMoreText = localize("teamstoolkit.upgradeToMultiEnvAndBicep.learnMoreText");
-      const option = { modal: false };
-      const outputMsg = util.format(
-        localize("teamstoolkit.upgradeToMultiEnvAndBicep.outputMsg"),
-        aadClientSecret,
-        learnMoreLink
-      );
-      const showMsg = util.format(
-        localize("teamstoolkit.upgradeToMultiEnvAndBicep.showMsg"),
-        aadClientSecret
-      );
-      VsCodeLogInstance.warning(outputMsg);
-      window.showWarningMessage(showMsg, option, learnMoreText).then((result) => {
-        if (result === learnMoreText) {
-          return env.openExternal(Uri.parse(learnMoreLink));
-        }
-      });
-    } finally {
-      await globalStateUpdate(aadClientSecretFlag, "");
-    }
-  }
-}
-
-async function openUpgradeChangeLogsHandler() {
-  const openUpgradeChangelogsFlag = "openUpgradeChangelogs";
-  if (
-    (await globalStateGet(openUpgradeChangelogsFlag, false)) &&
-    workspace.workspaceFolders &&
-    workspace.workspaceFolders.length > 0
-  ) {
-    try {
-      await globalStateUpdate(openUpgradeChangelogsFlag, false);
-
-      const workspacePath: string = workspace.workspaceFolders[0].uri.fsPath;
-      const backupName = ".backup";
-      const changeLogsName = "upgrade-change-logs.md";
-      const changeLogsPath: string = (await fs.pathExists(
-        path.join(workspacePath, backupName, changeLogsName)
-      ))
-        ? path.join(workspacePath, backupName, changeLogsName)
-        : path.join(workspacePath, `.teamsfx${backupName}`, changeLogsName);
-      const uri = Uri.file(changeLogsPath);
-
-      workspace.openTextDocument(uri).then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreview";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
-    } catch (err) {
-      // do nothing
-    }
   }
 }
 
@@ -2231,21 +2167,15 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
   return result;
 }
 
-export async function editManifestTemplate(args: any[]) {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.EditManifestTemplate,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-
+export async function copilotPluginAddAPIHandler(args: any[]) {
+  // Telemetries are handled in runCommand()
+  const inputs = getSystemInputs();
   if (args && args.length > 0) {
-    const segments = args[0].fsPath.split(".");
-    const env = segments[segments.length - 2] === "local" ? "local" : "remote";
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
-    });
+    const filePath = args[0].fsPath as string;
+    inputs.teamsManifestPath = filePath;
   }
+  const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
+  return result;
 }
 
 export async function editAadManifestTemplate(args: any[]) {

@@ -1,10 +1,15 @@
 import path from "path";
 import * as fs from "fs-extra";
-import { openExistingProject } from "../../vscodeOperation";
-import { Capability, Trigger, Framework, TestFilePath } from "../../constants";
+import { openExistingProject } from "../../utils/vscodeOperation";
+import {
+  Capability,
+  Trigger,
+  Framework,
+  TestFilePath,
+} from "../../utils/constants";
 import { TestContext } from "../testContext";
 import { CliHelper } from "../cliHelper";
-import { stopDebugging } from "../../vscodeOperation";
+import { stopDebugging } from "../../utils/vscodeOperation";
 import { Env } from "../../utils/env";
 import { dotenvUtil } from "../../utils/envUtil";
 import {

@@ -13,9 +13,6 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
-export const AdaptiveCardsFolderName = "adaptiveCards";
-
-// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public (undocumented)
@@ -167,6 +164,8 @@ export interface EnvMeta {
 // @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
+    categories?: string[];
+    // (undocumented)
     displayMessage?: string;
     // (undocumented)
     error?: Error;
@@ -231,6 +230,8 @@ export interface FuncValidation<T extends string | string[] | OptionItem | Optio
 
 // @public (undocumented)
 export interface FxError extends Error {
+    // (undocumented)
+    categories?: string[];
     innerError?: any;
     source: string;
     timestamp: Date;
@@ -262,6 +263,10 @@ export interface Inputs extends Record<string, any> {
     // (undocumented)
     existingResources?: string[];
     // (undocumented)
+    globalSpfxPackageVersion?: string;
+    // (undocumented)
+    globalYeomanPackageVersion?: string;
+    // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
@@ -270,7 +275,11 @@ export interface Inputs extends Record<string, any> {
     // (undocumented)
     isM365?: boolean;
     // (undocumented)
+    latestSpfxPackageVersion?: string;
+    // (undocumented)
     locale?: string;
+    // (undocumented)
+    openAIPluginManifest?: OpenAIPluginManifest;
     // (undocumented)
     platform: Platform;
     // (undocumented)
@@ -281,6 +290,8 @@ export interface Inputs extends Record<string, any> {
     sourceEnvName?: string;
     // (undocumented)
     stage?: Stage;
+    // (undocumented)
+    supportedApisFromApiSpec?: string[];
     // (undocumented)
     targetEnvName?: string;
     // (undocumented)
@@ -302,6 +313,9 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
+    additionalValidationOnAccept?: ValidateFunc<string>;
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     password?: boolean;
 }
 
@@ -410,6 +424,8 @@ export interface MultiFileQuestion extends UserInputQuestion {
 
 // @public
 export interface MultiSelectConfig extends UIConfig<string[]> {
+    // (undocumented)
+    default?: string[] | (() => Promise<string[]>);
     onDidChangeSelection?: OnSelectionChangeFunc;
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
@@ -435,6 +451,47 @@ export type MultiSelectResult = InputResult<StaticOptions>;
 
 // @public (undocumented)
 export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
+
+// @public (undocumented)
+export enum OpenAIManifestAuthType {
+    // (undocumented)
+    None = "none",
+    // (undocumented)
+    OAuth = "oauth",
+    // (undocumented)
+    ServiceHttp = "service_http",
+    // (undocumented)
+    UserHttp = "user_http"
+}
+
+// @public (undocumented)
+export interface OpenAIPluginManifest {
+    // (undocumented)
+    api: {
+        type: string;
+        url: string;
+    };
+    // (undocumented)
+    auth: {
+        type: OpenAIManifestAuthType;
+    };
+    // (undocumented)
+    contact_email: string;
+    // (undocumented)
+    description_for_human: string;
+    // (undocumented)
+    description_for_model: string;
+    // (undocumented)
+    legal_info_url: string;
+    // (undocumented)
+    logo_url: string;
+    // (undocumented)
+    name_for_human: string;
+    // (undocumented)
+    name_for_model: string;
+    // (undocumented)
+    schema_version: string;
+}
 
 // @public
 export interface OptionItem {
@@ -497,6 +554,7 @@ export type SelectFileConfig = UIConfig<string> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string | (() => Promise<string>);
     possibleFiles?: {
         id: string;
         label: string;
@@ -512,13 +570,16 @@ export type SelectFilesConfig = UIConfig<string[]> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string[] | (() => Promise<string[]>);
 };
 
 // @public (undocumented)
 export type SelectFilesResult = InputResult<string[]>;
 
 // @public
-export type SelectFolderConfig = UIConfig<string>;
+export type SelectFolderConfig = UIConfig<string> & {
+    default?: string | (() => Promise<string>);
+};
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
@@ -568,6 +629,8 @@ export interface SingleFileQuestion extends UserInputQuestion {
 
 // @public
 export interface SingleSelectConfig extends UIConfig<string> {
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
     skipSingleOption?: boolean;
@@ -606,6 +669,8 @@ export enum Stage {
     buildAad = "buildAad",
     // (undocumented)
     checkPermission = "checkPermission",
+    // (undocumented)
+    copilotPluginAddAPI = "copilotPluginAddAPI",
     // (undocumented)
     create = "create",
     // (undocumented)
@@ -706,6 +771,8 @@ export type SubscriptionInfo = {
 export class SystemError extends Error implements FxError {
     constructor(opt: SystemErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     innerError?: any;
     issueLink?: string;
@@ -764,6 +831,7 @@ export const TemplateFolderName = "templates";
 
 // @public
 export interface TextInputQuestion extends UserInputQuestion {
+    additionalValidationOnAccept?: StringValidation | FuncValidation<string>;
     default?: string | LocalFunc<string | undefined>;
     password?: boolean;
     // (undocumented)
@@ -866,7 +934,7 @@ export interface UIConfig<T> {
         tooltip: string;
         command: string;
     }[];
-    default?: T;
+    default?: T | (() => Promise<T>);
     name: string;
     placeholder?: string;
     prompt?: string;
@@ -880,6 +948,8 @@ export interface UIConfig<T> {
 export class UserError extends Error implements FxError {
     constructor(opt: UserErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     helpLink?: string;
     innerError?: any;

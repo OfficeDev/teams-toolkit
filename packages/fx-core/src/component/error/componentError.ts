@@ -103,9 +103,9 @@ export class BaseComponentInnerError extends Error {
     return new BaseComponentInnerError(
       source,
       "SystemError",
-      "UnknownError",
+      "UnhandledError",
       "error.common.UnhandledError",
-      [JSON.stringify(error)]
+      [source, JSON.stringify(error)]
     );
   }
 }
@@ -187,36 +187,6 @@ export class ExternalApiCallError extends BaseComponentInnerError {
         "plugins.frontend.checkNetworkTip",
       ],
       detail
-    );
-  }
-}
-
-export class ExecuteCommandError extends BaseComponentInnerError {
-  constructor(
-    source: string,
-    name: string,
-    messageKey: string,
-    messageParams: string[],
-    error: string
-  ) {
-    super(
-      source,
-      "UserError",
-      name,
-      messageKey,
-      messageParams,
-      ["plugins.bot.CheckCommandOutput", "suggestions.retryTheCurrentStep"],
-      error
-    );
-  }
-
-  static fromErrorOutput(source: string, commands: string[], error: unknown): ExecuteCommandError {
-    return new ExecuteCommandError(
-      source,
-      "CommandExecutionError",
-      "plugins.bot.RunFailedCommand",
-      commands,
-      typeof error === "string" ? error : JSON.stringify(error)
     );
   }
 }

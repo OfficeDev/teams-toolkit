@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+import { FxError, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { fillInTelemetryPropsForFxError } from "../error";
 
 export class TelemetryReporterInstance {
   public static telemetryReporter: TelemetryReporter | undefined;
@@ -40,7 +41,6 @@ export enum TelemetryProperty {
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   TemplateName = "template-name",
-  SampleName = "sample-name",
   SampleDownloadDirectory = "sample-download-directory",
   Fallback = "fallback",
   HasSwitchedSubscription = "has-switched-subscription",
@@ -190,17 +190,8 @@ export function sendTelemetryErrorEvent(
     properties = {};
   }
   properties[TelemetryProperty.Component] = component;
-  properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-  if (fxError instanceof UserError) {
-    properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
-  } else {
-    properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
-  }
 
-  properties[TelemetryProperty.ErrorCode] = `${fxError.source}.${fxError.name}`;
-  properties[TelemetryProperty.ErrorMessage] = `${fxError.message}${
-    fxError.stack ? "\nstack:\n" + fxError.stack : ""
-  }`;
+  fillInTelemetryPropsForFxError(properties, fxError);
 
   TelemetryReporterInstance.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
 }

@@ -2,14 +2,14 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 import { MigrationTestContext } from "../migrationContext";
-import { Timeout, Capability, Notification } from "../../../constants";
+import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   startDebugging,
   stopDebugging,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 
 describe("Migration Tests", function () {

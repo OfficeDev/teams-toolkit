@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, ok } from "@microsoft/teamsfx-api";
+import { M365TokenJSONNotFoundError } from "@microsoft/teamsfx-core";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
@@ -10,16 +11,17 @@ import Account, { AzureLogin, M365Login } from "../../../src/cmds/account";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedOut } from "../../../src/commonlib/common/constant";
 import M365TokenProvider from "../../../src/commonlib/m365Login";
-import { expect, mockLogProvider, mockYargs } from "../utils";
-import { FileNotFoundError, M365TokenJSONNotFoundError } from "@microsoft/teamsfx-core";
+import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
 
 describe("Account Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let messages: string[] = [];
+  const telemetryEvents: string[] = [];
   const mockedEnvRestore: RestoreFn = () => {};
 
   beforeEach(() => {
     mockYargs(sandbox);
+    mockTelemetry(sandbox, telemetryEvents);
     mockLogProvider(sandbox, messages);
   });
 

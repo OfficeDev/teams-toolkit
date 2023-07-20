@@ -30,16 +30,14 @@
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish
 /packages/cli/src/cmds/m365 @swatDong @kuojianlu @kimizhu
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
-/packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
-/packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon
-/packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
-/packages/cli/tests/e2e/frontend @hund030 @eriolchan @huimiu
-/packages/cli/tests/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/packages/cli/tests/e2e/scaffold @hund030 @eriolchan @huimiu
-/packages/cli/tests/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
-/packages/cli/tests/e2e/m365 @kimizhu @swatDong @kuojianlu
-/packages/cli/tests/e2e/debug @kimizhu @swatDong @kuojianlu
-/packages/cli/tests/e2e/samples @LongOddCode @ayachensiyuan
+/packages/tests/src/e2e/collaboration @KennethBWSong @adashen @SLdragon
+/packages/tests/src/e2e/frontend @hund030 @eriolchan @huimiu
+/packages/tests/src/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/packages/tests/src/e2e/scaffold @hund030 @eriolchan @huimiu
+/packages/tests/src/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
+/packages/tests/src/e2e/m365 @kimizhu @swatDong @kuojianlu
+/packages/tests/src/e2e/debug @kimizhu @swatDong @kuojianlu
+/packages/tests/src/e2e/samples @LongOddCode @ayachensiyuan
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
 /packages/cli/tests/unit/cmds/m365 @swatDong @kuojianlu @kimizhu
@@ -219,8 +217,11 @@
 
 /packages/fx-core/src/component/driver/deploy/azure @Siglud @Yukun-dong @JerryYangKai @eriolchan
 /packages/fx-core/tests/component/driver/deploy/azure/ @Siglud @Yukun-dong @JerryYangKai @eriolchan
-/packages/fx-core/src/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
 /packages/fx-core/tests/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/baseBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/baseBuildStepDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/dotnetBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
+packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 
 /packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
 /packages/fx-core/resource/package.nls.cs.json @HuihuiWu-Microsoft @chagong @jayzhang
@@ -266,6 +267,7 @@
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
+/packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 /packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang @LongOddCode
 /packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @1yefuwang1 @jayzhang @LongOddCode
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
@@ -274,6 +276,7 @@
 /packages/fx-core/tests/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
+/packages/fx-core/tests/component/generator/copilotPluginGenerator.test.ts @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang

@@ -11,6 +11,7 @@ import {
   LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
+  OpenAIPluginManifest,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -149,10 +150,24 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  setRegionRequest: (
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
   listDevTunnelsRequest: (
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Tunnel[], FxError>>;
+  loadOpenAIPluginManifestRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<OpenAIPluginManifest, FxError>>;
+  listOpenAPISpecOperationsRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<string[], FxError>>;
 }
 
 /**

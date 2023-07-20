@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import axios from "axios";
 import { sendRequestWithTimeout } from "../component/generator/utils";
 import sampleConfigV3 from "./samples-config-v3.json";

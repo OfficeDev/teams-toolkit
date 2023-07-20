@@ -40,7 +40,6 @@ export enum TelemetryProperty {
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   TemplateName = "template-name",
-  SampleName = "sample-name",
   SampleDownloadDirectory = "sample-download-directory",
   Fallback = "fallback",
   HasSwitchedSubscription = "has-switched-subscription",

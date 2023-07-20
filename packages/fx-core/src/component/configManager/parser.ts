@@ -39,6 +39,13 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
     return err(new YamlFieldMissingError("version"));
   }
 
+  if ("sampleTag" in obj) {
+    if (typeof obj["sampleTag"] !== "string") {
+      return err(new YamlFieldTypeError("sampleTag", "string"));
+    }
+    result.sampleTag = obj["sampleTag"] as string;
+  }
+
   for (const name of LifecycleNames) {
     if (name in obj) {
       const value = obj[name];
@@ -109,6 +116,10 @@ export class YamlParser implements IYamlParser {
 
     if (raw.value.environmentFolderPath) {
       result.environmentFolderPath = raw.value.environmentFolderPath;
+    }
+
+    if (raw.value.sampleTag) {
+      result.sampleTag = raw.value.sampleTag;
     }
 
     return ok(result);

@@ -16,6 +16,10 @@ describe("yaml validator", () => {
   });
 
   it("should support valid versions", () => {
-    chai.expect(validator.supportedVersions()).contains("1.0.0").and.contains("1.1.0");
+    chai
+      .expect(validator.supportedVersions())
+      .contains("1.0.0")
+      .and.contains("1.1.0")
+      .and.contains("1.1.1");
   });
 });

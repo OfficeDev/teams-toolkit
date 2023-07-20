@@ -17,6 +17,7 @@ import { commandIsRunning } from "./globalVariables";
 import { getSystemInputs } from "./handlers";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
+import _ = require("lodash");
 
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables
@@ -543,6 +544,57 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
       };
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
       return codeLenses;
+    }
+  }
+}
+
+export class TeamsAppYamlCodeLensProvider implements vscode.CodeLensProvider {
+  private provisionRegex = /^provision:/m;
+  private deployRegex = /^deploy:/m;
+  private publishRegex = /^publish:/m;
+  private regexes = [this.provisionRegex, this.deployRegex, this.publishRegex];
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const text = document.getText();
+    return _.flatMap(this.regexes, (regex) => {
+      const matches = regex.exec(text);
+      if (matches && matches.length > 0) {
+        const match = matches[0];
+        const line = document.lineAt(document.positionAt(matches.index).line);
+        const indexOf = line.text.indexOf(match);
+        const position = new vscode.Position(line.lineNumber, indexOf);
+        const range = new vscode.Range(
+          position,
+          new vscode.Position(line.lineNumber, indexOf + match.length)
+        );
+        const schemaCommand = this.getCommand(match);
+        return [new vscode.CodeLens(range, schemaCommand)];
+      } else {
+        return [];
+      }
+    });
+  }
+
+  private getCommand(match: string): vscode.Command | undefined {
+    if (match.startsWith("provision")) {
+      return {
+        title: "🔄" + localize("teamstoolkit.commands.provision.title"),
+        command: "fx-extension.provision",
+      };
+    } else if (match.startsWith("deploy")) {
+      return {
+        title: "🔄" + localize("teamstoolkit.commands.deploy.title"),
+        command: "fx-extension.deploy",
+      };
+    } else if (match.startsWith("publish")) {
+      return {
+        title: "🔄" + localize("teamstoolkit.commands.publish.title"),
+        command: "fx-extension.publish",
+      };
+    } else {
+      return undefined;
     }
   }
 }

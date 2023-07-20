@@ -28,6 +28,7 @@ import {
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
+  TeamsAppYamlCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -818,6 +819,16 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       aadManifestPreviewSelectorV3,
       aadAppTemplateCodeLensProvider
     )
+  );
+
+  const yamlCodelensProvider = new TeamsAppYamlCodeLensProvider();
+  const yamlFileSelector = {
+    language: "yaml",
+    scheme: "file",
+    pattern: `**/teamsapp.yml`,
+  };
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(yamlFileSelector, yamlCodelensProvider)
   );
 }
 

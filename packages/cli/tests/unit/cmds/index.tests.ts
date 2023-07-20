@@ -97,12 +97,12 @@ describe("sendCommandUsageTelemetry", function () {
   });
   it("happy path --debug", () => {
     const sendTelemetryStub = sandbox.stub(cliTelemetry, "sendTelemetryEvent");
-    sendCommandUsageTelemetry(["node", "cli.js", "new", "-h", "--debug", "template"]);
+    sendCommandUsageTelemetry(["node", "cli.js", "new", "template", "-h", "--debug"]);
     assert.isTrue(
       sendTelemetryStub.calledWith(TelemetryEvent.Command, {
         [TelemetryProperty.CommandOptions]: "h,debug",
-        [TelemetryProperty.CommandHead]: "new template",
-        [TelemetryProperty.CommandBody]: "new",
+        [TelemetryProperty.CommandHead]: "new",
+        [TelemetryProperty.CommandBody]: "new template",
         [TelemetryProperty.CommandHelp]: "true",
         [TelemetryProperty.Interactive]: "",
         [TelemetryProperty.CommandLogLevel]: "debug",

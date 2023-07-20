@@ -114,7 +114,7 @@ export async function getAppName(): Promise<string | undefined> {
 }
 
 export function openFolderInExplorer(folderPath: string): void {
-  const command = format('start "" %s', folderPath);
+  const command = format('start "" "%s"', folderPath);
   exec(command);
 }
 

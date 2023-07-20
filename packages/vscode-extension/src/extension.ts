@@ -62,6 +62,7 @@ import { delay, isM365Project, syncFeatureFlags } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { PrereleasePage } from "./utils/prerelease";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -863,6 +864,8 @@ async function runBackgroundAsyncTasks(
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
+  const prereleasePage = new PrereleasePage(context);
+  prereleasePage.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 

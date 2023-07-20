@@ -492,6 +492,32 @@ export class VsCodeUI implements UserInteraction {
             ? await config.validation(inputBox.value)
             : undefined;
           if (!validationRes) {
+            inputBox.enabled = false;
+            inputBox.busy = true;
+            if (config.additionalValidationOnAccept) {
+              const oldValue = inputBox.value;
+              inputBox.placeholder = localize("teamstoolkit.qm.validatingInput");
+              inputBox.value = "";
+              try {
+                const additionalValidationOnAcceptRes = await config.additionalValidationOnAccept(
+                  oldValue
+                );
+
+                if (!additionalValidationOnAcceptRes) {
+                  resolve(ok({ type: "success", result: oldValue }));
+                } else {
+                  inputBox.validationMessage = additionalValidationOnAcceptRes;
+                  inputBox.busy = false;
+                  inputBox.enabled = true;
+                  inputBox.value = oldValue;
+                  return;
+                }
+              } catch (e) {
+                resolve(err(assembleError(e)));
+              }
+            } else {
+              resolve(ok({ type: "success", result: inputBox.value }));
+            }
             resolve(ok({ type: "success", result: inputBox.value }));
           } else {
             inputBox.validationMessage = validationRes;
@@ -735,10 +761,11 @@ export class VsCodeUI implements UserInteraction {
 
         const onDidAccept = async () => {
           const selectedItems = quickPick.selectedItems;
+          let result;
           if (selectedItems && selectedItems.length > 0) {
             const item = selectedItems[0];
             if (item.id === "default") {
-              resolve(ok({ type: "success", result: config.default }));
+              result = config.default;
             } else if (item.id === "browse") {
               fileSelectorIsOpen = true;
               const uriList: Uri[] | undefined = await window.showOpenDialog({
@@ -752,23 +779,37 @@ export class VsCodeUI implements UserInteraction {
               if (uriList && uriList.length > 0) {
                 if (type === "files") {
                   const results = uriList.map((u) => u.fsPath);
-                  resolve(ok({ type: "success", result: results }));
+                  result = results;
                 } else {
-                  const result = uriList[0].fsPath;
-                  resolve(ok({ type: "success", result: result }));
+                  result = uriList[0].fsPath;
                 }
               } else {
                 resolve(err(new UserCancelError("VSC")));
               }
             } else {
-              resolve(
-                ok({
-                  type: "success",
-                  result: config.possibleFiles?.find((f) => f.id === item.id)?.id,
-                })
-              );
+              result = config.possibleFiles?.find((f) => f.id === item.id)?.id;
             }
           }
+
+          if (config.validation) {
+            quickPick.busy = true;
+            quickPick.enabled = false;
+            try {
+              const validationResult = await config.validation(result);
+              quickPick.busy = false;
+              quickPick.enabled = true;
+              if (validationResult) {
+                this.showMessage("error", validationResult, false);
+                quickPick.selectedItems = [];
+                quickPick.activeItems = [];
+                return;
+              }
+            } catch (e) {
+              resolve(err(assembleError(e)));
+            }
+          }
+
+          resolve(ok({ type: "success", result: result }));
         };
 
         disposables.push(

@@ -250,6 +250,10 @@ export interface TextInputQuestion extends UserInputQuestion {
    * validation schema, which can be a dynamic function closure
    */
   validation?: StringValidation | FuncValidation<string>;
+  /**
+   * validation when user confirms the input.
+   */
+  additionalValidationOnAccept?: StringValidation | FuncValidation<string>;
 }
 
 /**

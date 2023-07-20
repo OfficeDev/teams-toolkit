@@ -23,6 +23,7 @@ import {
   ResolvedPlaceholders,
   ExecutionResult,
 } from "./interface";
+import { MissingEnvironmentVariablesError } from "../../error";
 
 function resolveDriverDef(
   def: DriverDefinition,
@@ -171,7 +172,10 @@ export class Lifecycle implements ILifecycle {
           );
         } else if (result.error.reason.kind === "UnresolvedPlaceholders") {
           // This error is just for telemetry because sendEndEvent() needs an error as parameter.
-          e = new UserError(component, "UnresolvedPlaceHolders", "UnresolvedPlaceHolders");
+          e = new MissingEnvironmentVariablesError(
+            component,
+            result.error.reason.unresolvedPlaceHolders.join(",")
+          );
           ctx.logProvider.info(
             `Failed to Execute lifecycle ${
               this.name

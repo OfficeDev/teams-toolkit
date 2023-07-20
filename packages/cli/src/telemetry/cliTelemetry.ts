@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
+import { fillInTelemetryPropsForFxError, getHashedEnv } from "@microsoft/teamsfx-core";
 import { CliTelemetryReporter } from "../commonlib/telemetry";
 import { getSettingsVersion } from "../utils";
 import {
@@ -107,15 +107,7 @@ export class CliTelemetry {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
     }
 
-    properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-    if (error instanceof UserError) {
-      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
-    } else {
-      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
-    }
-
-    properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
-    properties[TelemetryProperty.ErrorMessage] = error.message;
+    fillInTelemetryPropsForFxError(properties, error);
 
     CliTelemetry.reporter
       .withRootFolder(CliTelemetry.rootFolder)

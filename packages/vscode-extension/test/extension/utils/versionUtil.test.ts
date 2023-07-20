@@ -21,10 +21,9 @@ describe("versionUtil", () => {
     });
 
     it("Prerelease version", () => {
-      chai.expect(versionUtil.isPrereleaseVersion("4.99.12")).be.true;
+      chai.expect(versionUtil.isPrereleaseVersion("4.1.2023050400")).be.true;
       chai.expect(versionUtil.isPrereleaseVersion("4.1.2")).be.false;
-      chai.expect(versionUtil.isPrereleaseVersion("5.0.0")).be.false;
-      chai.expect(versionUtil.isPrereleaseVersion("4.99.0-alpha.12930943")).be.true;
+      chai.expect(versionUtil.isPrereleaseVersion("5.0.2")).be.false;
     });
   });
 });

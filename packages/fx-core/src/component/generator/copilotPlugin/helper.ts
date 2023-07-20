@@ -111,6 +111,9 @@ export async function listOperations(
   const validationRes = await specParser.validate();
 
   if (validationRes.status === ValidationStatus.Error) {
+    for (const error of validationRes.errors) {
+      context.logProvider.error(error.content);
+    }
     return err(validationRes.errors);
   }
 

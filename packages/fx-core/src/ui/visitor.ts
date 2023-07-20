@@ -136,6 +136,9 @@ const questionVisitor: QuestionTreeVisitor = async function (
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
+      const additionalValidationOnAcceptFunc = question.additionalValidationOnAccept
+        ? getValidationFunction<string>(question.additionalValidationOnAccept, inputs)
+        : undefined;
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
         name: question.name,
@@ -147,6 +150,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         validation: validationFunc,
         step: step,
         totalSteps: totalSteps,
+        additionalValidationOnAccept: additionalValidationOnAcceptFunc,
       });
     } else if (question.type === "singleSelect" || question.type === "multiSelect") {
       const selectQuestion = question as SingleSelectQuestion | MultiSelectQuestion;
@@ -250,6 +254,13 @@ const questionVisitor: QuestionTreeVisitor = async function (
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
+      const additionalValidationOnAcceptFunc = question.inputBoxConfig.additionalValidationOnAccept
+        ? getValidationFunction<string>(
+            { validFunc: question.inputBoxConfig.additionalValidationOnAccept },
+            inputs
+          )
+        : undefined;
+      question.inputBoxConfig.additionalValidationOnAccept = additionalValidationOnAcceptFunc;
       const res = await ui.selectFileOrInput({
         name: question.name,
         title: title,

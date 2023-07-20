@@ -86,12 +86,26 @@ describe("sendCommandUsageTelemetry", function () {
     sendCommandUsageTelemetry(["node", "cli.js", "new", "-h"]);
     assert.isTrue(
       sendTelemetryStub.calledWith(TelemetryEvent.Command, {
-        [TelemetryProperty.CommandOptions]: "h,debug",
+        [TelemetryProperty.CommandOptions]: "h",
         [TelemetryProperty.CommandHead]: "new",
         [TelemetryProperty.CommandBody]: "new",
         [TelemetryProperty.CommandHelp]: "true",
         [TelemetryProperty.Interactive]: "",
         [TelemetryProperty.CommandLogLevel]: "info",
+      })
+    );
+  });
+  it("happy path --debug", () => {
+    const sendTelemetryStub = sandbox.stub(cliTelemetry, "sendTelemetryEvent");
+    sendCommandUsageTelemetry(["node", "cli.js", "new", "-h", "--debug"]);
+    assert.isTrue(
+      sendTelemetryStub.calledWith(TelemetryEvent.Command, {
+        [TelemetryProperty.CommandOptions]: "h,debug",
+        [TelemetryProperty.CommandHead]: "new",
+        [TelemetryProperty.CommandBody]: "new",
+        [TelemetryProperty.CommandHelp]: "true",
+        [TelemetryProperty.Interactive]: "",
+        [TelemetryProperty.CommandLogLevel]: "debug",
       })
     );
   });

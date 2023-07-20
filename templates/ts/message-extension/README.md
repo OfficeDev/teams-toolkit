@@ -1,4 +1,4 @@
-# Overview of Collect Form Input and Process Data
+# Overview of Collect Form Input and Process Data template
 
 A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
@@ -49,7 +49,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Extend the template
 
-Following documentation will help you to extend the Basic Tab template.
+Following documentation will help you to extend the template.
 
 - [Add or manage the environment](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
 - [Create multi-capability app](https://learn.microsoft.com/microsoftteams/platform/toolkit/add-capability)

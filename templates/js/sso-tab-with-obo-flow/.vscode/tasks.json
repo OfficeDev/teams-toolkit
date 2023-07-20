@@ -115,20 +115,6 @@
             },
             "presentation": {
                 "reveal": "silent"
-            },
-            "dependsOn": "Watch backend"
-        },
-        {
-            "label": "Watch backend",
-            "type": "shell",
-            "command": "npm run watch",
-            "isBackground": true,
-            "options": {
-                "cwd": "${workspaceFolder}/api"
-            },
-            "problemMatcher": "$tsc-watch",
-            "presentation": {
-                "reveal": "silent"
             }
         }
     ]

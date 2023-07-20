@@ -1,84 +1,71 @@
-# How to use this Bot HelloWorld app
+# Overview of the Basic Bot template
 
-A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
+Examples of Microsoft Teams bots in everyday use include:
 
-This is a simple hello world application with Bot capabilities.
+- Bots that notify about build failures.
+- Bots that provide information about the weather or bus schedules.
+- Bots that provide travel information.
 
-## Prerequisites
+A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
 
-- [Node.js](https://nodejs.org/), supported versions: 16, 18
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
+## Get started with the Basic Bot template
 
-## Debug
+> **Prerequisites**
+>
+> To run the Basic Bot template in your local dev machine, you will need:
+>
+> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 
-- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
-- Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
-- From TeamsFx CLI:
-  - Install [dev tunnel cli](https://aka.ms/teamsfx-install-dev-tunnel).
-  - Login with your M365 Account using the command `devtunnel user login`.
-  - Start your local tunnel service by running the command `devtunnel host -p 3978 --protocol http --allow-anonymous`.
-  - In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your dev tunnel URL.
-    ```
-    BOT_DOMAIN=sample-id-3978.devtunnels.ms
-    BOT_ENDPOINT=https://sample-id-3978.devtunnels.ms
-    ```
-  - Executing the command `teamsfx provision --env local` in your project directory.
-  - Executing the command `teamsfx deploy --env local` in your project directory.
-  - Executing the command `teamsfx preview --env local` in your project directory.
+1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
+5. You will receive a welcome message from the bot, or start typing `welcome` or `learn` to get a response.
 
-## Edit the manifest
+**Congratulations**! You are running an application that can now interact with users in Teams:
 
-You can find the Teams app manifest in `./appPackage` folder. The folder contains one manifest file:
-* `manifest.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
+![basic bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/d9dc7159-1f93-4790-8b83-a3bfe600799a)
 
-This file contains template arguments with `${{...}}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
+## What's included in the template
 
-## Deploy to Azure
+| Folder       | Contents                                            |
+| - | - |
+| `.vscode`    | VSCode files for debugging                          |
+| `appPackage` | Templates for the Teams application manifest        |
+| `env`        | Environment files                                   |
+| `infra`      | Templates for provisioning Azure resources          |
 
-Deploy your project to Azure by following these steps:
+The following files can be customized and demonstrate an example implementation to get you started.
 
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | From TeamsFx CLI                                                                                                                                                                                                                    |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision` from DEPLOYMENT section or open the command palette and select: `Teams: Provision`.</li><li>Open the Teams Toolkit and click `Deploy` or open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx provision --env dev`.</li> <li>Run command: `teamsfx deploy --env dev`. </li></ul> |
+| File                                 | Contents                                           |
+| - | - |
+|`adaptiveCards/learn.json`| Defines the adaptive card returned from bot when `learn` command is triggered. |
+|`adaptiveCards/welcome.json`| Defines the adaptive card returned from bot for welcome message and `welcome` command.|
+|`teamsBot.js`| Handles business logics for the Basic Bot.|
+|`index.js`|`index.js` is used to setup and configure the Basic Bot.|
 
-> Note: Provisioning and deployment may incur charges to your Azure Subscription.
+The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-## Preview
+| File                                 | Contents                                           |
+| - | - |
+|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
+|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 
-Once the provisioning and deployment steps are finished, you can preview your app:
+## Extend the Basic Bot template
 
-- From Visual Studio Code
+Following documentation will help you to extend the Basic Bot template.
 
-  1. Open the `Run and Debug Activity Panel`.
-  1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
-  1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
-
-- From TeamsFx CLI: execute `teamsfx preview --env dev` in your project directory to launch your application.
-
-## Validate manifest file
-
-To check that your manifest file is valid:
-
-- From Visual Studio Code: open the command palette and select: `Teams: Validate Application`.
-- From TeamsFx CLI: run command `teamsfx validate` in your project directory.
-
-## Package
-
-- From Visual Studio Code: open the Teams Toolkit and click `Zip Teams App Package` or open the command palette and select `Teams: Zip Teams App Package`.
-- Alternatively, from the command line run `teamsfx package` in the project directory.
-
-## Publish to Teams
-
-Once deployed, you may want to distribute your application to your organization's internal app store in Teams. Your app will be submitted for admin approval.
-
-- From Visual Studio Code: open the Teams Toolkit and click `Publish` or open the command palette and select: `Teams: Publish`.
-- From TeamsFx CLI: run command `teamsfx publish` in your project directory.
-
-## Further reading
-
-### Bot
-
-- [Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
-- [Bot Framework Documentation](https://docs.botframework.com/)
-- [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
+- [Add or manage the environment](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
+- [Create multi-capability app](https://learn.microsoft.com/microsoftteams/platform/toolkit/add-capability)
+- [Add single sign on to your app](https://learn.microsoft.com/microsoftteams/platform/toolkit/add-single-sign-on)
+- [Access data in Microsoft Graph](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk#microsoft-graph-scenarios)
+- [Use an existing Azure Active Directory application](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-existing-aad-app)
+- [Customize the Teams app manifest](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-preview-and-customize-app-manifest)
+- Host your app in Azure by [provision cloud resources](https://learn.microsoft.com/microsoftteams/platform/toolkit/provision) and [deploy the code to cloud](https://learn.microsoft.com/microsoftteams/platform/toolkit/deploy)
+- [Collaborate on app development](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
+- [Set up the CI/CD pipeline](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
+- [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
+- [Develop with Teams Toolkit CLI](https://aka.ms/teamsfx-cli/debug)
+- [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)

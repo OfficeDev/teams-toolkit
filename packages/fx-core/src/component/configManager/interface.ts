@@ -17,6 +17,7 @@ export type RawProjectModel = {
   publish?: DriverDefinition[];
   environmentFolderPath?: string;
   version: string;
+  sampleTag?: string;
 };
 
 export type ProjectModel = {
@@ -27,6 +28,7 @@ export type ProjectModel = {
   publish?: ILifecycle;
   environmentFolderPath?: string;
   version: string;
+  sampleTag?: string;
 };
 
 export type DriverDefinition = {

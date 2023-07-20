@@ -61,7 +61,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
   public async generateAppYml(): Promise<string> {
     await this.generateCommonHandlerbarsContext();
 
-    const solutionSettings = this.oldProjectSettings.solutionSettings as any;
+    const solutionSettings = this.oldProjectSettings.solutionSettings;
     if (solutionSettings.hostType.toLowerCase() === "azure") {
       await this.generateAzureHandlebarsContext();
       switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
@@ -83,7 +83,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.handlebarsContext.placeholderMappings = placeholderMappings as any;
     await this.generateAzureHandlebarsContext();
 
-    const solutionSettings = this.oldProjectSettings.solutionSettings as any;
+    const solutionSettings = this.oldProjectSettings.solutionSettings;
     if (solutionSettings.hostType === "Azure") {
       switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
         case "csharp":
@@ -99,7 +99,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     // project setting information
     this.handlebarsContext.appName = this.oldProjectSettings.appName;
 
-    const azureSolutionSettings = this.oldProjectSettings.solutionSettings as any;
+    const azureSolutionSettings = this.oldProjectSettings.solutionSettings;
     for (const activePlugin of azureSolutionSettings.activeResourcePlugins) {
       this.handlebarsContext.activePlugins[activePlugin] = true; // convert array items to object properties to simplify handlebars template
     }

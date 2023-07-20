@@ -40,7 +40,7 @@
         "ts/sso-tab-with-obo-flow"
     ],
     "devDependencies": {
-        "@microsoft/eslint-plugin-teamsfx": "^0.0.3",
+        "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
         "@typescript-eslint/eslint-plugin": "^4.19.0",
         "@typescript-eslint/parser": "^4.19.0",
         "eslint": "^7.22.0",

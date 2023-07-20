@@ -48,8 +48,8 @@ describe("versionUtil", () => {
     sandbox.restore();
   });
   it("checkAndShow success", async () => {
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.1");
-    sandbox.stub(context.globalState, "get").returns("4.99.0");
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("5.1.2023072000");
+    sandbox.stub(context.globalState, "get").returns("5.0.1");
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
     await instance.checkAndShow();
@@ -58,7 +58,7 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return prerelease version undefined", async () => {
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("5.1.2023072000");
     sandbox.stub(context.globalState, "get").returns(undefined);
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
@@ -68,8 +68,8 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow return failed if not prerelease", async () => {
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.1.0");
-    sandbox.stub(context.globalState, "get").returns("4.99.0");
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("5.0.1");
+    sandbox.stub(context.globalState, "get").returns("5.0.0");
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
     await instance.checkAndShow();
@@ -77,8 +77,8 @@ describe("versionUtil", () => {
     spyChecker.restore();
   });
   it("checkAndShow with Same version", async () => {
-    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("4.99.0");
-    sandbox.stub(context.globalState, "get").returns("4.99.0");
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns("5.1.2023072000");
+    sandbox.stub(context.globalState, "get").returns("5.1.2023072000");
     const instance = new PrereleasePage(context);
     const spyChecker = sandbox.spy(context.globalState, "update");
     await instance.checkAndShow();

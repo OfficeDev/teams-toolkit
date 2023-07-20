@@ -1281,6 +1281,16 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
     forgetLastValue: true,
+    validation: {
+      validFunc: async (input: string): Promise<string | undefined> => {
+        const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?$/i;
+        const match = pattern.test(input);
+
+        return match
+          ? undefined
+          : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+      },
+    },
     additionalValidationOnAccept: {
       validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
         let manifest;

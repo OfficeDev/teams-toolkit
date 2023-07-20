@@ -255,7 +255,13 @@ export class ValidateAppPackageDriver implements StepDriver {
             "driver.teamsApp.validate.result.display",
             summaryStr.join(", ")
           );
-          context.ui?.showMessage("info", message, false);
+          if (validationResult.errors.length > 0) {
+            context.ui?.showMessage("error", message, false);
+          } else if (validationResult.warnings.length > 0) {
+            context.ui?.showMessage("warn", message, false);
+          } else {
+            context.ui?.showMessage("info", message, false);
+          }
         } else {
           // For lifecycle like provision, stop-on-error
           if (validationResult.errors.length > 0) {

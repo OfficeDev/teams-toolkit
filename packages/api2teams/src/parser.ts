@@ -23,6 +23,12 @@ export async function parseApi(yaml: string, options: CliOptions) {
         recursive: true,
         force: true
       });
+
+      // Remove env folder to avoid cipher text is broken issue
+      await fs.rm(path.join(options.output, 'env'), {
+        recursive: true,
+        force: true
+      });
     } else {
       const output = options.output;
       await fs.mkdir(output, { recursive: true });

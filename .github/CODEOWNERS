@@ -141,12 +141,13 @@
 
 /packages/fx-core/src/common/versionMetadata.ts @xzf0587 @blackchoey @adashen
 /packages/fx-core/src/failpoint @1yefuwang1 @LongOddCode
+/packages/fx-core/tests/core/failpoint.test.ts @1yefuwang1 @LongOddCode
 /packages/fx-core/src/folder.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/index.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/ui/visitor.ts @jayzhang @xzf0587 @LongOddCode
 
 
-/packages/fx-core/tests/component/coordinator.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/coordinator @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/driver/script/scriptDriver.test.ts @jayzhang @LongOddCode
 /packages/fx-core/tests/component/envUtil.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/error.test.ts @jayzhang @xzf0587 @LongOddCode
@@ -208,11 +209,15 @@
 /packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong @adashen
 /packages/fx-core/src/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
 /packages/fx-core/tests/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
+/packages/fx-core/src/component/driver/util/utils.ts @blackchoey @xzf0587 @adashen
+/packages/fx-core/tests/component/driver/util/utils.test.ts @blackchoey @xzf0587 @adashen
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/core/middleware/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/component/driver/deploy/azure @Siglud @Yukun-dong @JerryYangKai @eriolchan
+/packages/fx-core/tests/component/driver/deploy/azure/ @Siglud @Yukun-dong @JerryYangKai @eriolchan
+/packages/fx-core/tests/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
 packages/fx-core/src/component/driver/script/baseBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 packages/fx-core/src/component/driver/script/baseBuildStepDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 packages/fx-core/src/component/driver/script/dotnetBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
@@ -264,7 +269,9 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 /packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang @LongOddCode
+/packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @1yefuwang1 @jayzhang @LongOddCode
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/tests/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
@@ -293,4 +300,12 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587 @adashen
 packages/fx-core/tests/component/feature/sso.test.ts @KennethBWSong @xzf0587 @adashen
 packages/fx-core/tests/component/feature/collaborator.test.ts @KennethBWSong @SLdragon @adashen
+packages/fx-core/tests/component/feature/collaboration.test.ts @KennethBWSong @SLdragon @adashen
 packages/fx-core/tests/core/collaborator.test.ts @KennethBWSong @SLdragon @adashen
+
+packages/fx-core/tests/helpers.ts @jayzhang @MSFT-yiz
+
+packages/manifest/ @1yefuwang1 @MSFT-yiz
+
+packages/fx-core/src/common/spec-parser/ @SLdragon @adashen
+packages/fx-core/tests/common/spec-parser/ @SLdragon @adashen

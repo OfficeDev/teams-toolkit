@@ -17,7 +17,7 @@ import { commandIsRunning } from "./globalVariables";
 import { getSystemInputs } from "./handlers";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
-import _ = require("lodash");
+import * as _ from "lodash";
 
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables

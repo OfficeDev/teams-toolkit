@@ -25,6 +25,7 @@ var outlookWebAppClientId = '00000002-0000-0ff1-ce00-000000000000'
 var officeUwpPwaClientId = '0ec893e0-5785-4de6-99da-4ed124e5296c'
 var outlookOnlineAddInAppClientId = 'bc59ab01-8403-45c6-8796-ac3ef710b3e3'
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId};${officeWebAppClientId1};${officeWebAppClientId2};${outlookDesktopAppClientId};${outlookWebAppClientId};${officeUwpPwaClientId};${outlookOnlineAddInAppClientId}'
+var allowedClientApplications = '"${teamsMobileOrDesktopAppClientId}","${teamsWebAppClientId}","${officeWebAppClientId1}","${officeWebAppClientId2}","${outlookDesktopAppClientId}","${outlookWebAppClientId}","${officeUwpPwaClientId}","${outlookOnlineAddInAppClientId}"'
 
 // Azure Storage that hosts your static web site
 resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
@@ -119,6 +120,10 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'M365_APPLICATION_ID_URI'
           value: aadApplicationIdUri
+        }
+        {
+          name: 'WEBSITE_AUTH_AAD_ACL'
+          value: '{"allowed_client_applications": [${allowedClientApplications}]}'
         }
       ]
       ftpsState: 'FtpsOnly'

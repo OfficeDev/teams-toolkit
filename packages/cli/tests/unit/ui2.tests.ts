@@ -1,7 +1,3 @@
-import { assert } from "chai";
-import "mocha";
-import * as sinon from "sinon";
-import UI from "../../src/userInteraction";
 import {
   InputTextConfig,
   MultiSelectConfig,
@@ -14,7 +10,11 @@ import {
   SelectSubscriptionError,
   UnhandledError,
 } from "@microsoft/teamsfx-core";
-import inquirer, { DistinctQuestion } from "inquirer";
+import { assert } from "chai";
+import inquirer from "inquirer";
+import "mocha";
+import * as sinon from "sinon";
+import UI from "../../src/userInteraction";
 
 describe("UserInteraction(CLI)", () => {
   const sandbox = sinon.createSandbox();

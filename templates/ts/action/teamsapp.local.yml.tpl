@@ -23,7 +23,7 @@ provision:
       # The Azure Active Directory application's client id created for bot.
       botId: BOT_ID
       # The Azure Active Directory application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD 
+      botPassword: SECRET_BOT_PASSWORD  
 
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
@@ -34,7 +34,6 @@ provision:
       description: ""
       channels:
         - name: msteams
-        - name: m365extensions
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
@@ -62,17 +61,6 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-
-  # Extend your Teams app to Outlook and the Microsoft 365 app
-  - uses: teamsApp/extendToM365
-    with:
-      # Relative path to the build app package.
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-    # Write the information of created resources into environment file for
-    # the specified environment variable(s).
-    writeToEnvironmentFile:
-      titleId: M365_TITLE_ID
-      appId: M365_APP_ID
 
 deploy:
   # Run npm command

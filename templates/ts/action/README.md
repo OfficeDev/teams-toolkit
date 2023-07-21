@@ -28,17 +28,17 @@ This app template implements action command that allows you to present your user
 
 | Folder       | Contents                                            |
 | - | - |
-| `.vscode`    | VSCode files for debugging                          |
-| `appPackage` | Templates for the Teams application manifest        |
-| `env`        | Environment files                                   |
-| `infra`      | Templates for provisioning Azure resources          |
+| `.vscode/`    | VSCode files for debugging                          |
+| `appPackage/` | Templates for the Teams application manifest        |
+| `env/`        | Environment files                                   |
+| `infra/`      | Templates for provisioning Azure resources          |
 | `src/` | The source code for the link unfurling application |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
 | File                                 | Contents                                           |
 | - | - |
-|`src/teamsBot.ts`| Handles the business logic for this app template to collect form input and process data.|
+|`src/actionApp.ts`| Handles the business logic for this app template to collect form input and process data.|
 |`src/index.ts`| `index.ts` is used to setup and configure the Message Extension.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.

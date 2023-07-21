@@ -8,6 +8,7 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PlaceholderCodeLens,
+  TeamsAppYamlCodeLensProvider,
 } from "../../src/codeLensProvider";
 import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
@@ -201,5 +202,46 @@ describe("Copilot plugin CodeLensProvider", () => {
       command: "fx-extension.copilotPluginAddAPI",
       arguments: [{ fsPath: document.fileName }],
     });
+  });
+});
+
+describe("teamsapp.yml CodeLensProvider", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should work with correct teamsapp.yml", async () => {
+    const text = `
+version: 1.1.0
+
+provision:
+  provision: 1 // this line shouldn't have codelens
+deploy:
+  publish: 2 // this line shouldn't have codelens
+publish:
+  ccc: 3`;
+    const document = {
+      fileName: "teamsapp.yml",
+      getText: () => {
+        return text;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: text,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    const provider = new TeamsAppYamlCodeLensProvider();
+    const codelens: vscode.CodeLens[] = provider.provideCodeLenses(document) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 3);
+    chai.expect(codelens[0].command?.command).eq("fx-extension.provision");
+    chai.expect(codelens[1].command?.command).eq("fx-extension.deploy");
+    chai.expect(codelens[2].command?.command).eq("fx-extension.publish");
   });
 });

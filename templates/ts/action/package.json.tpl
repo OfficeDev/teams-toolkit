@@ -1,7 +1,7 @@
 {
     "name": "{{appName}}",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit link unfurling sample",
+    "description": "Microsoft Teams Toolkit action sample",
     "engines": {
         "node": "16 || 18"
     },

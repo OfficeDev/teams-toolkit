@@ -51,7 +51,7 @@ const config: Configuration = {
 };
 const prompt = new TeamsBotSsoPrompt(dialogId, {
    config: config
-   scopes: '["User.Read"],
+   scopes: ["User.Read"],
 });
 this.addDialog(prompt);
 

@@ -1227,7 +1227,7 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
         if (errors.length === 1) {
           return errors[0].content;
         } else {
-          return inputs?.platform === Platform.VSCode
+          return inputs!.platform === Platform.VSCode
             ? getLocalizedString(
                 "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
               )
@@ -1322,7 +1322,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             if (errors.length === 1) {
               return errors[0].content;
             } else {
-              return inputs?.platform === Platform.VSCode
+              return inputs!.platform === Platform.VSCode
                 ? getLocalizedString(
                     "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
                   )

@@ -1219,7 +1219,7 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   ): Promise<string | undefined> => {
     try {
       const context = createContextV3();
-      const res = await listOperations(context, undefined, input, true);
+      const res = await listOperations(context, undefined, input, false);
       if (res.isOk()) {
         inputs!.supportedApisFromApiSpec = res.value;
       } else {

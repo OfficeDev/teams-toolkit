@@ -46,8 +46,8 @@ const enum telemetryEvents {
 }
 
 enum OpenAIPluginManifestErrorType {
-  AuthNotSupported,
-  ApiUrlMissing,
+  AuthNotSupported = "openai-pliugin-auth-not-supported",
+  ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
 export interface ErrorResult {
@@ -144,7 +144,7 @@ export async function listOperations(
 }
 
 function formatTelemetryValidationProperty(result: ErrorResult | WarningResult): string {
-  return result.type.toString() + ":" + result.content;
+  return result.type.toString() + ": " + result.content;
 }
 
 function logValidationResults(
@@ -168,19 +168,23 @@ function logValidationResults(
     }
   );
 
-  if (errors.length === 0 && warnings.length === 0) {
+  if (errors.length === 0 && (warnings.length === 0 || !shouldLogWarning)) {
     return;
   }
+
+  // errors > 0 || (warnings > 0 && shouldLogWarning)
   const errorMessage = errors
     .map((error) => {
       return `${SummaryConstant.Failed} ${error.content}`;
     })
     .join(EOL);
-  const warningMessage = warnings
-    .map((warning) => {
-      return `${SummaryConstant.NotExecuted} ${warning.content}`;
-    })
-    .join(EOL);
+  const warningMessage = shouldLogWarning
+    ? warnings
+        .map((warning) => {
+          return `${SummaryConstant.NotExecuted} ${warning.content}`;
+        })
+        .join(EOL)
+    : "";
 
   const failed = errors.length;
   const warns = warnings.length;
@@ -213,7 +217,7 @@ function logValidationResults(
         warningMessage
       );
 
-  context.logProvider?.info(outputMessage);
+  context.logProvider.info(outputMessage);
 }
 
 function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResult[] {

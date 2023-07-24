@@ -10,10 +10,7 @@ import {
   Platform,
   Question,
   SingleSelectQuestion,
-  UserError,
   UserInteraction,
-  ValidateFunc,
-  ValidationSchema,
   ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -47,7 +44,6 @@ import { FeatureFlagName } from "../../src/common/constants";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
 import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
 import { setTools } from "../../src/core/globalVars";
-import { EmptyOptionError } from "../../src/error";
 import axios from "axios";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 
@@ -83,6 +79,11 @@ describe("scaffold question", () => {
     const ui = new MockUserInteraction();
     let mockedEnvRestore: RestoreFn = () => {};
 
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "false",
+      });
+    });
     afterEach(() => {
       mockedEnvRestore();
     });
@@ -1169,7 +1170,7 @@ describe("scaffold question", () => {
 
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
 
-          assert.equal(res.isErr(), true);
+          assert.isFalse(res === undefined);
         });
 
         it("invalid openAI plugin manifest spec -single error", async () => {

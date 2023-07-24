@@ -132,14 +132,14 @@ export async function listOperations(
 
 function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResult[] {
   const errors: ErrorResult[] = [];
-  if (!manifest?.api?.url) {
+  if (!manifest.api?.url) {
     errors.push({
       type: OpenAIPluginManifestErrorType.ApiUrlMissing,
       content: "Missing url in manifest",
     });
   }
 
-  if (manifest?.auth?.type !== OpenAIManifestAuthType.None) {
+  if (manifest.auth?.type !== OpenAIManifestAuthType.None) {
     errors.push({
       type: OpenAIPluginManifestErrorType.AuthNotSupported,
       content: "Auth type not supported",

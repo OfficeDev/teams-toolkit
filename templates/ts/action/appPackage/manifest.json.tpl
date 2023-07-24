@@ -31,7 +31,9 @@
                                 {
                     "id": "createCard",
                     "context": [
-                        "compose"
+                        "compose",
+                        "message",
+                        "commandBox"
                     ],
                     "description": "Command to run action to create a Card from Compose Box",
                     "title": "Create Card",
@@ -54,23 +56,6 @@
                             "title": "Text",
                             "description": "Text for the card",
                             "inputType": "textarea"
-                        }
-                    ]
-                },
-                {
-                    "id": "shareMessage",
-                    "context": [
-                        "message"
-                    ],
-                    "description": "Test command to run action on message context (message sharing)",
-                    "title": "Share Message",
-                    "type": "action",
-                    "parameters": [
-                        {
-                            "name": "includeImage",
-                            "title": "Include Image",
-                            "description": "Include image in Hero Card",
-                            "inputType": "toggle"
                         }
                     ]
                 }

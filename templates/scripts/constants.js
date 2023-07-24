@@ -13,7 +13,13 @@ const Path = {
   Solution: resolve(__dirname, ".."),
 };
 
+const RegExp = {
+  AllPlaceholders: /(?<!\$){{(?!\/).*?}}/g,
+  AllMustacheDelimiters: /[{#}]/g,
+};
+
 module.exports = {
   Ext,
   Path,
+  RegExp,
 };

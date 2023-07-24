@@ -321,7 +321,7 @@ jobs:
           name: release
           path: |
             changed.txt
-            stage.txt
+            series.txt
             versions.json
             *.vsix
             *.exe

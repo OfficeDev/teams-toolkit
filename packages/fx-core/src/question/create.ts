@@ -1223,9 +1223,14 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
       if (res.isOk()) {
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
-        // TODO: get validationErrorMessage based on error length
         const errors = res.error;
-        return errors[0].content;
+        if (errors.length === 1) {
+          return errors[0].content;
+        } else {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+          );
+        }
       }
     } catch (e) {
       const error = assembleError(e);
@@ -1278,9 +1283,12 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
-        return isValidHttpUrl(input)
+        const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?$/i;
+        const match = pattern.test(input);
+
+        return match
           ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+          : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
       },
     },
     additionalValidationOnAccept: {
@@ -1306,9 +1314,14 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
           if (res.isOk()) {
             inputs!.supportedApisFromApiSpec = res.value;
           } else {
-            // TODO: get validationErrorMessage based on error length
             const errors = res.error;
-            return errors[0].content;
+            if (errors.length === 1) {
+              return errors[0].content;
+            } else {
+              return getLocalizedString(
+                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
+              );
+            }
           }
         } catch (e) {
           const error = assembleError(e);

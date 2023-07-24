@@ -852,8 +852,6 @@ describe("scaffold question", () => {
               result: CapabilityOptions.copilotPluginOpenAIPlugin().id,
             });
           } else if (question.name === QuestionNames.OpenAIPluginManifestLocation) {
-            const validRes = await (question as any).validation.validFunc("https://test.com");
-            assert.isUndefined(validRes);
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
             return ok({ type: "success", result: ["testOperation1"] });
@@ -1030,6 +1028,38 @@ describe("scaffold question", () => {
           assert.equal(res, "error");
         });
 
+        it("invalid api spec - multiple errors", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Error,
+            errors: [
+              {
+                type: ErrorType.SpecNotValid,
+                content: "error",
+              },
+              {
+                type: ErrorType.MultipleServerInformation,
+                content: "error2",
+              },
+            ],
+            warnings: [],
+          });
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+
+          assert.equal(
+            res,
+            getLocalizedString(
+              "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+            )
+          );
+        });
+
         it("valid API spec from remote URL", async () => {
           const question = apiSpecLocationQuestion();
           const inputs: Inputs = {
@@ -1093,9 +1123,13 @@ describe("scaffold question", () => {
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
 
-          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+          const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
+          const additionalValidationRes = await (
+            question.additionalValidationOnAccept as any
+          ).validFunc("url", inputs);
 
-          assert.isUndefined(res);
+          assert.isUndefined(validationRes);
+          assert.isUndefined(additionalValidationRes);
         });
 
         it("cannot load openAI plugin manifest", async () => {
@@ -1122,7 +1156,7 @@ describe("scaffold question", () => {
           assert.isFalse(res === undefined);
         });
 
-        it("invalid openAI plugin manifest spec", async () => {
+        it("invalid openAI plugin manifest spec -single error", async () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1146,6 +1180,102 @@ describe("scaffold question", () => {
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
 
           assert.equal(res, "error");
+        });
+
+        it("invalid openAI plugin manifest spec - multiple errors", async () => {
+          const question = openAIPluginManifestLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+          };
+          const manifest = {
+            schema_version: "1.0.0",
+            api: {
+              type: "openapi",
+              url: "test",
+            },
+            auth: { type: "none" },
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Error,
+            errors: [
+              { content: "error", type: ErrorType.NoSupportedApi },
+              { content: "error2", type: ErrorType.MultipleServerInformation },
+            ],
+            warnings: [],
+          });
+
+          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+
+          assert.equal(
+            res,
+            getLocalizedString(
+              "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
+            )
+          );
+        });
+
+        describe("validate when changing value", async () => {
+          it("valid input - case 1", async () => {
+            const question = openAIPluginManifestLocationQuestion();
+            const inputs: Inputs = {
+              platform: Platform.VSCode,
+              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            };
+            const input = "test.com";
+            const validationRes = await (question.validation as any).validFunc!(input, inputs);
+
+            assert.isUndefined(validationRes);
+          });
+
+          it("valid input - case 2", async () => {
+            const input = "HTTPS://test.com";
+            const question = openAIPluginManifestLocationQuestion();
+            const inputs: Inputs = {
+              platform: Platform.VSCode,
+              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            };
+            const validationRes = await (question.validation as any).validFunc!(input, inputs);
+
+            assert.isUndefined(validationRes);
+          });
+
+          it("valid input - case 3", async () => {
+            const input = "HTTP://www.test.com";
+            const question = openAIPluginManifestLocationQuestion();
+            const inputs: Inputs = {
+              platform: Platform.VSCode,
+              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            };
+            const validationRes = await (question.validation as any).validFunc!(input, inputs);
+
+            assert.isUndefined(validationRes);
+          });
+
+          it("valid input - localhost", async () => {
+            const input = "localhost:3000";
+            const question = openAIPluginManifestLocationQuestion();
+            const inputs: Inputs = {
+              platform: Platform.VSCode,
+              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            };
+            const validationRes = await (question.validation as any).validFunc!(input, inputs);
+
+            assert.isUndefined(validationRes);
+          });
+
+          it("invalid input", async () => {
+            const input = "localhost:";
+            const question = openAIPluginManifestLocationQuestion();
+            const inputs: Inputs = {
+              platform: Platform.VSCode,
+              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            };
+            const validationRes = await (question.validation as any).validFunc!(input, inputs);
+
+            assert.isFalse(validationRes === undefined);
+          });
         });
       });
     });

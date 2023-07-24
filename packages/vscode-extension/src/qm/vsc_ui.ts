@@ -791,7 +791,7 @@ export class VsCodeUI implements UserInteraction {
             }
           }
 
-          if (config.validation) {
+          if (config.validation && result !== undefined) {
             quickPick.busy = true;
             quickPick.enabled = false;
             try {

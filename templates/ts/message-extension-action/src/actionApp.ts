@@ -13,51 +13,39 @@ export class ActionApp extends TeamsActivityHandler {
     context: TurnContext,
     action: MessagingExtensionAction
   ): Promise<MessagingExtensionActionResponse> {
-    switch (action.commandId) {
-      case "createCard":
-        return createCardCommand(context, action);
-      default:
-        throw new Error("NotImplemented");
-    }
+    // The user has chosen to create a card by choosing the 'Create Card' context menu command.
+    const data = action.data;
+    const attachment = CardFactory.adaptiveCard({
+      $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      type: "AdaptiveCard",
+      version: "1.4",
+      body: [
+        {
+          type: "TextBlock",
+          text: `${data.title}`,
+          wrap: true,
+          size: "Large",
+        },
+        {
+          type: "TextBlock",
+          text: `${data.subTitle}`,
+          wrap: true,
+          size: "Medium",
+        },
+        {
+          type: "TextBlock",
+          text: `${data.text}`,
+          wrap: true,
+          size: "Small",
+        },
+      ],
+    });
+    return {
+      composeExtension: {
+        type: "result",
+        attachmentLayout: "list",
+        attachments: [attachment],
+      },
+    };
   }
-}
-
-async function createCardCommand(
-  context: TurnContext,
-  action: MessagingExtensionAction
-): Promise<MessagingExtensionResponse> {
-  // The user has chosen to create a card by choosing the 'Create Card' context menu command.
-  const data = action.data;
-  const attachment = CardFactory.adaptiveCard({
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-    type: "AdaptiveCard",
-    version: "1.4",
-    body: [
-      {
-        type: "TextBlock",
-        text: `${data.title}`,
-        wrap: true,
-        size: "Large",
-      },
-      {
-        type: "TextBlock",
-        text: `${data.subTitle}`,
-        wrap: true,
-        size: "Medium",
-      },
-      {
-        type: "TextBlock",
-        text: `${data.text}`,
-        wrap: true,
-        size: "Small",
-      },
-    ],
-  });
-  return {
-    composeExtension: {
-      type: "result",
-      attachmentLayout: "list",
-      attachments: [attachment],
-    },
-  };
 }

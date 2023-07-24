@@ -535,13 +535,12 @@ You can pass custom config when creating `TeamsFx` instance to override default 
 
 If you are using the version of SDK that has `loadConfiguration()`, you can follow these steps to upgrade to the latest SDK version.
 
-1. Remove `loadConfiguration()` and pass customized settings using `new TeamsFx(IdentityType.User, { ...customConfig })`.
-2. Replace `new TeamsUserCredential()` with `new TeamsFx()`.
-3. Replace `new M365TenantCredential()` with `new TeamsFx(IdentityType.App)`.
-4. Replace `new OnBehalfOfUserCredential(ssoToken)` with `new TeamsFx().setSsoToken(ssoToken)`.
-5. Pass the instance of `TeamsFx` to helper functions to replace credential instance.
+1. Instead of calling `loadConfiguration()`, use the specific auth config classes to customize the settings for each credential type. For example, use `AppCredentialAuthConfig` for `AppCredential`, `OnBehalfOfUserCredentialAuthConfig` for `OnBehalfOfUserCredential`, and `TeamsUserCredentialAuthConfig` for `TeamsUserCredential`.
+2. Replace `new TeamsUserCredential()` with `new TeamsUserCredential(authConfig)`.
+3. Replace `new M365TenantCredential()` with `new AppCredential(authConfig)`.
+4. Replace `new OnBehalfOfUserCredential(ssoToken)` with `new OnBehalfOfUserCredential(authConfig)`.
 
-Also see [TeamsFx class](#teamsfx-class) for furthur description.
+Also see [Credential](#Credential) for furthur description.
 
 ## How to use SDK implemented with `CloudAdapter`
 

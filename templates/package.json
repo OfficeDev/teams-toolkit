@@ -6,6 +6,8 @@
     "scripts": {
         "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
         "precommit": "npm run check-sensitive && lint-staged",
+        "verify": "node ./scripts/yamlSolver.js verify",
+        "apply": "node ./scripts/yamlSolver.js apply",
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
     "templates": [
@@ -50,6 +52,7 @@
         "eslint-plugin-no-secrets": "^0.8.9",
         "eslint-plugin-prettier": "^4.0.0",
         "lint-staged": "^10.5.4",
+        "mustache": "^4.2.0",
         "prettier": "^2.4.1",
         "semver": "^7.3.5",
         "tslint": "^6.1.3",

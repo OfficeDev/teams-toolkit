@@ -1,0 +1,19 @@
+  {{#install}}
+  # Run npm command
+  - uses: cli/runNpmCommand
+    name: install dependencies
+    with:
+    {{#workingDirectory}}
+      workingDirectory: {{workingDirectory}}
+    {{/workingDirectory}}
+      args: install
+  {{/install}}
+  {{#build}}
+  - uses: cli/runNpmCommand
+    name: build app
+    with:
+    {{#workingDirectory}}
+      workingDirectory: {{workingDirectory}}
+    {{/workingDirectory}}
+      args: run build --if-present
+  {{/build}}

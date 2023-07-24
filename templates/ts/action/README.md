@@ -32,7 +32,7 @@ This app template implements action command that allows you to present your user
 | `appPackage/` | Templates for the Teams application manifest        |
 | `env/`        | Environment files                                   |
 | `infra/`      | Templates for provisioning Azure resources          |
-| `src/` | The source code for the link unfurling application |
+| `src/` | The source code for the action application |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 

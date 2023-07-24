@@ -47,7 +47,7 @@ const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
 // Set the onTurnError for the singleton CloudAdapter.
 adapter.onTurnError = onTurnErrorHandler;
 
-// Create the bot that will handle user pasted links.
+// Create the app that will handle action commands.
 const actionApp = new ActionApp();
 
 // Create HTTP server.

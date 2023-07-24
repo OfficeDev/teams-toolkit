@@ -1,6 +1,6 @@
 # Overview of Collect Form Input and Process Data template
 
-A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
+A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can search or initiate actions in an external system from compose message area, the command box, or directly from a message.
 
 This app template implements action command that allows you to present your users with a modal pop-up called a task module in Teams. The task module collects or displays information, processes the interaction, and sends the information back to Teams.
 

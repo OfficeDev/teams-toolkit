@@ -1227,9 +1227,13 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
         if (errors.length === 1) {
           return errors[0].content;
         } else {
-          return getLocalizedString(
-            "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
-          );
+          return inputs?.platform === Platform.VSCode
+            ? getLocalizedString(
+                "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+              )
+            : getLocalizedString(
+                "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+              );
         }
       }
     } catch (e) {
@@ -1318,9 +1322,13 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             if (errors.length === 1) {
               return errors[0].content;
             } else {
-              return getLocalizedString(
-                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
-              );
+              return inputs?.platform === Platform.VSCode
+                ? getLocalizedString(
+                    "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
+                  )
+                : getLocalizedString(
+                    "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
+                  );
             }
           }
         } catch (e) {

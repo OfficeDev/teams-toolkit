@@ -19,7 +19,7 @@
     "sampleTag": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$",
-      "description": "The tag that indicates the sample name"
+      "description": "The tag of sample repo and sample name, used for telemetry purpose only. E.g. <sample-repo>:<sample-name>"
     },
     "provision": {
       "$ref": "#/definitions/lifeCycleArray",

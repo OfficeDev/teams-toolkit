@@ -4,7 +4,7 @@
     name: install dependencies
     with:
     {{#workingDirectory}}
-      workingDirectory: {{workingDirectory}}
+      workingDirectory: {{{workingDirectory}}}
     {{/workingDirectory}}
       args: install
   {{/install}}
@@ -13,7 +13,7 @@
     name: build app
     with:
     {{#workingDirectory}}
-      workingDirectory: {{workingDirectory}}
+      workingDirectory: {{{workingDirectory}}}
     {{/workingDirectory}}
       args: run build --if-present
   {{/build}}

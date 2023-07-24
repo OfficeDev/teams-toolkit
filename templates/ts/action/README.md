@@ -18,7 +18,7 @@ This app template implements action command that allows you to present your user
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-5. To trigger the Message Extension, you can click the `...` under compose message area to find your message extension.
+5. To trigger the action command, you can click the `...` under compose message area, click `...`-> `More actions` beside a message, or @ your message extension app from the command box.
 
 **Congratulations**! You are running an application that can share information in rich format by creating an Adaptive Card in Teams.
 

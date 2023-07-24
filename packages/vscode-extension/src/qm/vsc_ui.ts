@@ -62,7 +62,11 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import { showOutputChannel } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import {
+  SelectFileOrInputResultType,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
@@ -784,7 +788,7 @@ export class VsCodeUI implements UserInteraction {
                   result = uriList[0].fsPath;
                 }
               } else {
-                resolve(err(new UserCancelError("VSC")));
+                resolve(err(new UserCancelError("VSC-CloseFileSelector")));
               }
             } else {
               result = config.possibleFiles?.find((f) => f.id === item.id)?.id;
@@ -860,15 +864,26 @@ export class VsCodeUI implements UserInteraction {
           const inputRes = await this.inputText(config.inputBoxConfig);
           if (inputRes.isOk()) {
             if (inputRes.value.type === "back") continue;
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.selectFileOrInputResultType, {
+              [TelemetryProperty.SelectedOption]: SelectFileOrInputResultType.Input,
+            });
             return ok(inputRes.value);
           } else {
             return err(inputRes.error);
           }
         } else {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.selectFileOrInputResultType, {
+            [TelemetryProperty.SelectedOption]: SelectFileOrInputResultType.LocalFile,
+          });
           return ok(selectFileOrItemRes.value);
         }
       } else {
-        return err(selectFileOrItemRes.error);
+        if (
+          !(selectFileOrItemRes.error instanceof UserCancelError) ||
+          (selectFileOrItemRes.error as UserCancelError).source !== "vscCloseFileSelector"
+        ) {
+          return err(selectFileOrItemRes.error);
+        }
       }
     }
   }

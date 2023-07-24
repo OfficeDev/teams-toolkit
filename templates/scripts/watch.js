@@ -2,11 +2,11 @@ const { writeFileSync, readFileSync, accessSync, watch, rm } = require("node:fs"
 const { join, basename } = require("node:path");
 const utils = require("./utils");
 const Mustache = require("mustache");
+const { Ext, Path } = require("./constants");
 
-const snippetsFolder = join(__dirname, "..", "constraints", "yml", "snippets");
+const snippetsFolder = Path.YmlSnippets;
 
 const ac = new AbortController();
-const { signal } = ac;
 let tempFiles = [];
 
 function cleanup() {
@@ -14,7 +14,11 @@ function cleanup() {
   try {
     tempFiles.forEach((file) => {
       console.log(`Deleting ${file}`);
-      rm(file, { force: true });
+      rm(file, { force: true }, (error) => {
+        if (error) {
+          console.log(error.message);
+        }
+      });
     });
   } catch {}
 }
@@ -63,9 +67,9 @@ function loadVariables(varFile, template) {
 }
 
 function previewMustache(mustacheName, dir = snippetsFolder) {
-  const mustacheFile = join(dir, `${mustacheName}.mustache`);
-  const varFile = join(dir, `${mustacheName}.json`);
-  const ymlFile = join(dir, `${mustacheName}.yml`);
+  const mustacheFile = join(dir, `${mustacheName}${Ext.Mustache}`);
+  const varFile = join(dir, `${mustacheName}${Ext.Json}`);
+  const ymlFile = join(dir, `${mustacheName}${Ext.Yml}`);
 
   const template = readFileSync(mustacheFile, "utf8");
   if (!template) {
@@ -79,12 +83,12 @@ function previewMustache(mustacheName, dir = snippetsFolder) {
 
 function handler(eventType, filename) {
   if (eventType === "change") {
-    if (filename?.endsWith(".mustache")) {
-      const mustacheName = basename(filename, ".mustache");
+    if (filename?.endsWith(Ext.Mustache)) {
+      const mustacheName = basename(filename, Ext.Mustache);
       previewMustache(mustacheName);
     }
-    if (filename?.endsWith(".json")) {
-      const mustacheName = basename(filename, ".json");
+    if (filename?.endsWith(Ext.Json)) {
+      const mustacheName = basename(filename, Ext.Json);
       previewMustache(mustacheName);
     }
   }
@@ -105,7 +109,7 @@ function main() {
     console.log(`Watching ${snippetsFolder}`);
     watch(
       snippetsFolder,
-      { persistent: true, encoding: "utf8", signal: signal, recursive: false },
+      { persistent: true, encoding: "utf8", signal: ac.signal, recursive: false },
       // fs.watch could be triggered twice for a single file change, delay the event handler to avoid duplicate rendering
       debounce(handler, 100)
     );

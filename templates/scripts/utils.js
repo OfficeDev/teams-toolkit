@@ -1,6 +1,7 @@
 const path = require("path");
 const { readdirSync, lstatSync, existsSync } = require("node:fs");
 const Mustache = require("mustache");
+const { Ext } = require("./constants");
 
 function filterFiles(dir, fileList = [], filter = () => true) {
   if (!existsSync(dir)) {
@@ -19,11 +20,11 @@ function filterFiles(dir, fileList = [], filter = () => true) {
 }
 
 function filterYmlFiles(dir, fileList = []) {
-  return filterFiles(dir, fileList, (file) => file.endsWith(".yml"));
+  return filterFiles(dir, fileList, (file) => file.endsWith(Ext.Yml));
 }
 
 function filterMustacheFiles(dir, fileList = []) {
-  return filterFiles(dir, fileList, (file) => file.endsWith(".mustache"));
+  return filterFiles(dir, fileList, (file) => file.endsWith(Ext.Mustache));
 }
 
 function escapeEmptyVariable(template, view, tags = ["{{", "}}"]) {

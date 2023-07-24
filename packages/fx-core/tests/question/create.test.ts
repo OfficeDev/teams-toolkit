@@ -1156,6 +1156,22 @@ describe("scaffold question", () => {
           assert.isFalse(res === undefined);
         });
 
+        it("invalid openAI plugin manifest spec: missing property", async () => {
+          const question = openAIPluginManifestLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+          };
+          const manifest = {
+            schema_version: "1.0.0",
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+
+          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+
+          assert.equal(res.isErr(), true);
+        });
+
         it("invalid openAI plugin manifest spec -single error", async () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {

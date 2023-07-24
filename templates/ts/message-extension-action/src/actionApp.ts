@@ -2,7 +2,6 @@ import {
   TeamsActivityHandler,
   CardFactory,
   TurnContext,
-  MessagingExtensionResponse,
   MessagingExtensionAction,
   MessagingExtensionActionResponse,
 } from "botbuilder";

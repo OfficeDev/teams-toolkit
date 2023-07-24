@@ -158,7 +158,7 @@ export class SPFxGenerator {
       const templateRes = await Generator.generateTemplate(
         context,
         destinationPath,
-        Constants.TEMPLATE_NAME,
+        Constants.IMPORT_TEMPLATE_NAME,
         "ts"
       );
       if (templateRes.isErr()) {

@@ -23,7 +23,7 @@ describe("teamsfx new template", function () {
     `${TemplateProjectFolder.ProactiveMessaging}`,
     { testPlanCaseId: 1277473, author: "v-ivanchen@microsoft.com" },
     async function () {
-      await Executor.openTemplateProject(
+      await Executor.createTemplateProject(
         appName,
         testFolder,
         TemplateProjectFolder.ProactiveMessaging

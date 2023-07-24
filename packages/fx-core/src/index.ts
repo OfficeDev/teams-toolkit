@@ -25,7 +25,7 @@ export { metadataUtil } from "./component/utils/metadataUtil";
 export { pathUtils } from "./component/utils/pathUtils";
 export { CoreCallbackFunc, FxCore } from "./core/FxCore";
 export { sampleProvider } from "./common/samples";
-export { loadingOptionsPlaceholder } from "./common/utils";
+export { loadingOptionsPlaceholder, loadingDefaultPlaceholder } from "./common/utils";
 export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioClient";
 export { getPermissionMap } from "./component/driver/aad/permissions/index";
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";

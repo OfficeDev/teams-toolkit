@@ -238,7 +238,7 @@ export function getCapabilityStatus(projectSettings: any): {
   BotSso: boolean;
   Tab: boolean;
 } {
-  const capabilities = (projectSettings.solutionSettings as any).capabilities;
+  const capabilities = projectSettings.solutionSettings.capabilities;
   const tabSso = capabilities.includes("TabSSO");
   const botSso = capabilities.includes("BotSSO");
   const tab = capabilities.includes("Tab");

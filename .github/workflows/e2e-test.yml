@@ -7,8 +7,8 @@ on:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
 
-  schedule:
-    - cron: "0 22 * * *"
+  # schedule:
+  #   - cron: "0 22 * * *"
 
   pull_request_target:
 
@@ -43,6 +43,9 @@ jobs:
         run: |
           npm config set legacy-peer-deps true
 
+      - name: manage pkgs to setup
+        run: bash .github/scripts/lerna.sh tests
+
       - name: Setup project
         uses: nick-fields/retry@v2
         with:
@@ -50,19 +53,6 @@ jobs:
           max_attempts: 5
           command: |
             npm run setup-metrics
-
-      - name: Package CLI
-        working-directory: packages/cli
-        run: |
-          rm -f *.tgz
-          npm pack
-          mv *.tgz teamsfx-cli.tgz
-
-      - name: Upload to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Teamsfx-cli
-          path: ./packages/cli/teamsfx-cli.tgz
 
       - name: List cases for schedule
         id: schedule-cases
@@ -145,6 +135,9 @@ jobs:
           sudo apt-get install azure-functions-core-tools-4
           which func
           func --version
+
+      - name: manage pkgs to setup
+        run: bash .github/scripts/lerna.sh tests
 
       - name: Setup legacy-peer-deps
         run: |
@@ -255,6 +248,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+
+      - name: manage pkgs to setup
+        run: bash .github/scripts/lerna.sh tests
 
       - name: Setup legacy-peer-deps
         run: |

@@ -5,13 +5,12 @@ import Ajv, { ValidateFunction } from "ajv";
 import fs from "fs-extra";
 import path from "path";
 import { getResourceFolder } from "../../folder";
-import { YAMLDiagnostics } from "./diagnostic";
 
 type Version = string;
-const supportedVersions = ["1.0.0", "1.1.0"];
+const supportedVersions = ["1.0.0", "1.1.0", "1.1.1"];
 
 export class Validator {
-  impl: Map<Version, { validator: ValidateFunction; yamlDiagnostics: YAMLDiagnostics }>;
+  impl: Map<Version, { validator: ValidateFunction }>;
 
   constructor() {
     this.impl = new Map();
@@ -29,7 +28,6 @@ export class Validator {
 
     this.impl.set(version, {
       validator: ajv.compile(schema),
-      yamlDiagnostics: new YAMLDiagnostics(schemaPath, schemaString),
     });
   }
 
@@ -43,18 +41,6 @@ export class Validator {
 
   private latestSupportedVersion(): string {
     return supportedVersions[supportedVersions.length - 1];
-  }
-
-  async generateDiagnosticMessage(
-    yamlPath: string,
-    yamlString: string,
-    version?: string
-  ): Promise<string | undefined> {
-    const impl = this.impl.get(version ?? this.latestSupportedVersion());
-    if (!impl) {
-      return undefined;
-    }
-    return impl.yamlDiagnostics.doValidation(yamlPath, yamlString);
   }
 
   validate(obj: Record<string, unknown>, version?: string): boolean {

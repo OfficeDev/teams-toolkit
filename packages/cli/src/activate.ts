@@ -6,7 +6,7 @@ import { FxCore, UnhandledError } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import CLILogProvider from "./commonlib/log";
 import M365Login from "./commonlib/m365Login";
-import { CliTelemetry } from "./telemetry/cliTelemetry";
+import CliTelemetry from "./telemetry/cliTelemetry";
 import CLIUserInteraction from "./userInteraction";
 import { cliSource } from "./constants";
 
@@ -21,7 +21,7 @@ export default async function activate(
       if (subscriptionInfo) {
         await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
       }
-      CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
+      CliTelemetry.reporter?.withRootFolder(rootPath);
     } catch (e) {
       if (!shouldIgnoreSubscriptionNotFoundError) {
         return err(new UnhandledError(e as Error, cliSource));
@@ -35,7 +35,7 @@ export default async function activate(
       azureAccountProvider: AzureAccountManager,
       m365TokenProvider: M365Login,
     },
-    telemetryReporter: CliTelemetry.getReporter(),
+    telemetryReporter: CliTelemetry.reporter,
     ui: CLIUserInteraction,
   };
   const core = new FxCore(tools);

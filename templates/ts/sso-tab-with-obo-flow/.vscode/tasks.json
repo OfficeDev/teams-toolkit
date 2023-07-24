@@ -121,7 +121,7 @@
         {
             "label": "Watch backend",
             "type": "shell",
-            "command": "npm run watch",
+            "command": "npm run watch:teamsfx",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/api"

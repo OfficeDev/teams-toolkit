@@ -45,7 +45,7 @@ async function callFunction(teamsUserCredential) {
 export function AzureFunctions(props) {
   const [needConsent, setNeedConsent] = useState(false);
   const { codePath, docsUrl } = {
-    codePath: `api/${functionName}/index.ts`,
+    codePath: `api/${functionName}/index.js`,
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
@@ -75,7 +75,7 @@ export function AzureFunctions(props) {
         response:
       </p>
       <Button appearance="primary" disabled={loading} onClick={reload}>
-        Call Azure Function
+        Authorize and call Azure Function
       </Button>
       {loading && (
         <pre className="fixed">

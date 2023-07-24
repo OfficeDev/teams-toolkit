@@ -1,0 +1,245 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Hosted workbench (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "-incognito"
+            ],
+            "preLaunchTask": "gulp serve",
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "remote",
+                "order": 1
+            }
+        },
+        {
+            "name": "Hosted workbench (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "-incognito"
+            ],
+            "preLaunchTask": "gulp serve",
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "remote",
+                "order": 2
+            }
+        },
+        {
+            "name": "Start Teams workbench (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Start Teams workbench (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in Outlook (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{local:M365_APP_ID}}?${account-hint}",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in Outlook (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{local:M365_APP_ID}}?${account-hint}",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in the Microsoft 365 app (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{local:M365_APP_ID}}?auth=2&${account-hint}",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Attach to Frontend in the Microsoft 365 app (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{local:M365_APP_ID}}?auth=2&${account-hint}",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*"
+            },
+            "postDebugTask": "Terminate All Tasks",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Teams workbench (Edge)",
+            "configurations": [
+                "Start Teams workbench (Edge)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "forteams",
+                "order": 1
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Teams workbench (Chrome)",
+            "configurations": [
+                "Start Teams workbench (Chrome)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "forteams",
+                "order": 2
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Outlook workbench (Edge)",
+            "configurations": [
+                "Attach to Frontend in Outlook (Edge)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group2: Outlook",
+                "order": 3
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Outlook workbench (Chrome)",
+            "configurations": [
+                "Attach to Frontend in Outlook (Chrome)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group2: Outlook",
+                "order": 4
+            },
+            "stopAll": true
+        },
+        {
+            "name": "The Microsoft 365 app workbench (Edge)",
+            "configurations": [
+                "Attach to Frontend in the Microsoft 365 app (Edge)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group3: the Microsoft 365 app",
+                "order": 5
+            },
+            "stopAll": true
+        },
+        {
+            "name": "The Microsoft 365 app workbench (Chrome)",
+            "configurations": [
+                "Attach to Frontend in the Microsoft 365 app (Chrome)"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "group3: the Microsoft 365 app",
+                "order": 6
+            },
+            "stopAll": true
+        }
+    ]
+}

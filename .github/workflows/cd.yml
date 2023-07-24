@@ -30,15 +30,21 @@ jobs:
       PREID: ${{ github.event.inputs.preid }}
     steps:
       - name: Validate CD branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && !startsWith(github.ref, 'refs/heads/release/') }}
         run: |
           echo It's not allowed to run CD on other branch except main and dev.
           exit 1
 
       - name: Validate inputs for main or hotfix
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'beta' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
         run: |
           echo It's only allowed to release RC and stable on main branch.
+          exit 1
+
+      - name: Validate inputs for release
+        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.preid != 'stable'}}
+        run: |
+          echo It's only allowed to release stable on release branch
           exit 1
 
       - name: Valiadte inputs for dev
@@ -110,7 +116,7 @@ jobs:
           npx lerna version prerelease --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid == 'stable' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/')) && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 
@@ -306,7 +312,7 @@ jobs:
           echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
           npx lerna ls -all --json > versions.json
           find ./packages/vscode-extension -type f -name '*.vsix' -exec mv {} . \;
-          find ./packages/server/lib -type f -name '*.exe' -exec mv {} server.exe \;
+          [ -d ./packages/server/lib ] && find ./packages/server/lib -type f -name '*.exe' -exec mv {} server.exe \;
 
       - name: upload release info to artifact
         uses: actions/upload-artifact@v3

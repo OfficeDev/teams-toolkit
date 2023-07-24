@@ -164,6 +164,8 @@ export interface EnvMeta {
 // @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
+    categories?: string[];
+    // (undocumented)
     displayMessage?: string;
     // (undocumented)
     error?: Error;
@@ -228,6 +230,8 @@ export interface FuncValidation<T extends string | string[] | OptionItem | Optio
 
 // @public (undocumented)
 export interface FxError extends Error {
+    // (undocumented)
+    categories?: string[];
     innerError?: any;
     source: string;
     timestamp: Date;
@@ -287,6 +291,8 @@ export interface Inputs extends Record<string, any> {
     // (undocumented)
     stage?: Stage;
     // (undocumented)
+    supportedApisFromApiSpec?: string[];
+    // (undocumented)
     targetEnvName?: string;
     // (undocumented)
     targetResourceGroupName?: string;
@@ -307,6 +313,9 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
+    additionalValidationOnAccept?: ValidateFunc<string>;
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     password?: boolean;
 }
 
@@ -415,6 +424,8 @@ export interface MultiFileQuestion extends UserInputQuestion {
 
 // @public
 export interface MultiSelectConfig extends UIConfig<string[]> {
+    // (undocumented)
+    default?: string[] | (() => Promise<string[]>);
     onDidChangeSelection?: OnSelectionChangeFunc;
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
@@ -543,6 +554,7 @@ export type SelectFileConfig = UIConfig<string> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string | (() => Promise<string>);
     possibleFiles?: {
         id: string;
         label: string;
@@ -558,13 +570,16 @@ export type SelectFilesConfig = UIConfig<string[]> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string[] | (() => Promise<string[]>);
 };
 
 // @public (undocumented)
 export type SelectFilesResult = InputResult<string[]>;
 
 // @public
-export type SelectFolderConfig = UIConfig<string>;
+export type SelectFolderConfig = UIConfig<string> & {
+    default?: string | (() => Promise<string>);
+};
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
@@ -614,6 +629,8 @@ export interface SingleFileQuestion extends UserInputQuestion {
 
 // @public
 export interface SingleSelectConfig extends UIConfig<string> {
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
     skipSingleOption?: boolean;
@@ -754,6 +771,8 @@ export type SubscriptionInfo = {
 export class SystemError extends Error implements FxError {
     constructor(opt: SystemErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     innerError?: any;
     issueLink?: string;
@@ -812,6 +831,7 @@ export const TemplateFolderName = "templates";
 
 // @public
 export interface TextInputQuestion extends UserInputQuestion {
+    additionalValidationOnAccept?: StringValidation | FuncValidation<string>;
     default?: string | LocalFunc<string | undefined>;
     password?: boolean;
     // (undocumented)
@@ -914,7 +934,7 @@ export interface UIConfig<T> {
         tooltip: string;
         command: string;
     }[];
-    default?: T;
+    default?: T | (() => Promise<T>);
     name: string;
     placeholder?: string;
     prompt?: string;
@@ -928,6 +948,8 @@ export interface UIConfig<T> {
 export class UserError extends Error implements FxError {
     constructor(opt: UserErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     helpLink?: string;
     innerError?: any;

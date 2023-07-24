@@ -1,6 +1,37 @@
-# Teams Toolkit v5.0 Pre-release
+# Teams Toolkit Pre-release
 
 ## Changelog
+
+### July 18, 2023
+
+New features:
+
+- Import an existing SharePoint Framework solution and continue development with Teams Toolkit.
+    ![SPFx Existing App](https://github.com/OfficeDev/TeamsFx/assets/11220663/3944f5c8-6c8c-4b4d-8df8-dc4f45b5967f)
+- A new link unfurling app template to help you get started with displaying rich content from links in Teams messages and Outlook emails.
+    ![Link Unfurling](https://github.com/OfficeDev/TeamsFx/assets/11220663/6e8b982a-0531-4ec1-8420-f6f17955ff40)
+
+Enhancement:
+
+- Updated `React with Fluent UI` app template to use an On-Behalf-Of flow for Single Sign-on to improve the experience in mobile platforms.
+- Updated project scaffold success notification for Outlook Add-in.
+
+TeamsFx SDK ([`@microsoft/teamsfx`](https://www.npmjs.com/package/@microsoft/teamsfx)) `v2.2.2`:
+
+- Renamed the internal class `ConversationReferenceStore` to `DefaultConversationReferenceStore`.
+- Deprecated the `NotificationStorage` interface.
+- Added `ConversationReferenceStore` that has support for pagination.
+- Added a new option to set a custom `ConversationReferenceStore` and deprecated the existing option for `NotificationStorage`.
+
+Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.2@beta`:
+
+- (Feature parity with Visual Studio Code) Import an existing SPFx solution and continue development with Teams Toolkit.
+- (Feature parity with Visual Studio Code) Create a new link unfurling app with Teams Toolkit.
+
+Bug fixes:
+
+- Fixed an issue where CodeLens hints would only open an Adaptive Card if it was in an `adaptiveCards` folder. ([#9232](https://github.com/OfficeDev/TeamsFx/pull/9232))
+- Fixed an issue in Teams Toolkit CLI where we did not show correct error messages for invalid input for `teamsfx new` command. ([#9233](https://github.com/OfficeDev/TeamsFx/pull/9233))
 
 ### Apr 18, 2023
 

@@ -28,25 +28,21 @@ import { convertToAlphanumericOnly } from "../common/utils";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
-import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
-import {
-  DevEnvironmentSetupError,
-  PathAlreadyExistsError,
-  RetrieveSPFxInfoError,
-} from "../component/generator/spfx/error";
-import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
-import { Constants } from "../component/generator/spfx/utils/constants";
-import { Utils } from "../component/generator/spfx/utils/utils";
-import { QuestionNames } from "./questionNames";
-import { isValidHttpUrl } from "./util";
-import { EmptyOptionError, assembleError } from "../error";
 import {
   OpenAIPluginManifestHelper,
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
+import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
+import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
+import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
+import { Constants } from "../component/generator/spfx/utils/constants";
+import { Utils } from "../component/generator/spfx/utils/utils";
 import { createContextV3 } from "../component/utils";
-import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { EmptyOptionError, assembleError } from "../error";
+import { QuestionNames } from "./questionNames";
+import { isValidHttpUrl } from "./util";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -995,6 +991,8 @@ export function appNameQuestion(): TextInputQuestion {
         defaultName = convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
       } else if (inputs[QuestionNames.SPFxSolution] == "import") {
         defaultName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
+      } else if (inputs.openAIPluginManifest) {
+        defaultName = inputs.openAIPluginManifest.name_for_human;
       }
       return defaultName;
     },
@@ -1215,6 +1213,30 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 }
 
 export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+  const validationOnAccept = async (
+    input: string,
+    inputs?: Inputs
+  ): Promise<string | undefined> => {
+    try {
+      const context = createContextV3();
+      const res = await listOperations(context, undefined, input, true);
+      if (res.isOk()) {
+        inputs!.supportedApisFromApiSpec = res.value;
+      } else {
+        const errors = res.error;
+        if (errors.length === 1) {
+          return errors[0].content;
+        } else {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+          );
+        }
+      }
+    } catch (e) {
+      const error = assembleError(e);
+      throw error;
+    }
+  };
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
@@ -1230,6 +1252,7 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
       },
+      additionalValidationOnAccept: validationOnAccept,
     },
     inputOptionItem: {
       id: "input",
@@ -1238,10 +1261,20 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
     filters: {
       files: ["json", "yml", "yaml"],
     },
+    validation: {
+      validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+        if (input === "input") {
+          return undefined;
+        }
+
+        return await validationOnAccept(input, inputs);
+      },
+    },
   };
 }
 
-function openAIPluginManifestLocationQuestion(): TextInputQuestion {
+export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
+  // export for unit test
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginManifestLocation,
@@ -1250,9 +1283,50 @@ function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
-        return isValidHttpUrl(input)
+        const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?$/i;
+        const match = pattern.test(input);
+
+        return match
           ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+          : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+      },
+    },
+    additionalValidationOnAccept: {
+      validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+        let manifest;
+
+        try {
+          manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(input);
+          inputs!.openAIPluginManifest = manifest;
+        } catch (e) {
+          const error = assembleError(e);
+          return error.message;
+        }
+
+        const context = createContextV3();
+        try {
+          const res = await listOperations(
+            context,
+            manifest,
+            inputs![QuestionNames.ApiSpecLocation],
+            true
+          );
+          if (res.isOk()) {
+            inputs!.supportedApisFromApiSpec = res.value;
+          } else {
+            const errors = res.error;
+            if (errors.length === 1) {
+              return errors[0].content;
+            } else {
+              return getLocalizedString(
+                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
+              );
+            }
+          }
+        } catch (e) {
+          const error = assembleError(e);
+          throw error;
+        }
       },
     },
   };
@@ -1273,41 +1347,29 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
       minItems: 1,
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      let manifest;
-      if (inputs[QuestionNames.OpenAIPluginManifestLocation]) {
-        manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(
-          inputs[QuestionNames.OpenAIPluginManifestLocation] as string
-        );
-        inputs.openAIPluginManifest = manifest;
+      if (!inputs.supportedApisFromApiSpec) {
+        throw new EmptyOptionError();
       }
-      const context = createContextV3();
-      try {
-        const res = await listOperations(context, manifest, inputs[QuestionNames.ApiSpecLocation]);
-        if (res.isOk()) {
-          if (includeExistingAPIs) {
-            return res.value.map((operation) => {
+      if (includeExistingAPIs) {
+        return inputs.supportedApisFromApiSpec.map((operation: string) => {
+          return {
+            id: operation,
+            label: operation,
+          };
+        });
+      } else {
+        const teamsManifestPath = inputs.teamsManifestPath;
+        const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+        if (manifest.isOk()) {
+          const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+          return inputs.supportedApisFromApiSpec
+            .filter((operation: string) => !existingOperationIds.includes(operation))
+            .map((operation: string) => {
               return { id: operation, label: operation };
             });
-          } else {
-            const teamsManifestPath = inputs.teamsManifestPath;
-            const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
-            if (manifest.isOk()) {
-              const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-              return res.value
-                .filter((operation: string) => !existingOperationIds.includes(operation))
-                .map((operation: string) => {
-                  return { id: operation, label: operation };
-                });
-            } else {
-              throw manifest.error;
-            }
-          }
         } else {
-          throw new EmptyOptionError(); // TODO: handle errors based on error results
+          throw manifest.error;
         }
-      } catch (e) {
-        const error = assembleError(e);
-        throw error;
       }
     },
   };

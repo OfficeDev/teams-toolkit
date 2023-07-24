@@ -28,6 +28,7 @@ import {
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
+  TeamsAppYamlCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -62,6 +63,7 @@ import { delay, isM365Project, syncFeatureFlags } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { PrereleasePage } from "./utils/prerelease";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -819,6 +821,16 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       aadAppTemplateCodeLensProvider
     )
   );
+
+  const yamlCodelensProvider = new TeamsAppYamlCodeLensProvider();
+  const yamlFileSelector = {
+    language: "yaml",
+    scheme: "file",
+    pattern: `**/teamsapp.yml`,
+  };
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(yamlFileSelector, yamlCodelensProvider)
+  );
 }
 
 function registerDebugConfigProviders(context: vscode.ExtensionContext) {
@@ -863,6 +875,8 @@ async function runBackgroundAsyncTasks(
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
   const upgrade = new ExtensionUpgrade(context);
   upgrade.showChangeLog();
+  const prereleasePage = new PrereleasePage(context);
+  prereleasePage.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 

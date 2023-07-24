@@ -1,68 +1,67 @@
-# Search based message extension across Microsoft 365
+# Overview of Custom Search Results template
 
-Search-based [message extensions](https://docs.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=nodejs) allow users to search an external system and share results through the compose message area of the Microsoft Teams client. You can now build and run your search-based message extensions in Teams, Outlook for Windows desktop and web experiences.
+This app template is a search-based [message extension](https://docs.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=nodejs) that allows users to search an external system and share results through the compose message area of the Microsoft Teams client. You can now build and run your search-based message extensions in Teams, Outlook for Windows desktop and web experiences.
+
+## Get started with the template
+
+> **Prerequisites**
+>
+> To run the template in your local dev machine, you will need:
+>
+> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
+> Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+
+1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
+5. To trigger the Message Extension, you can:
+   1. In Teams: `@mention` Your message extension from the `search box area`, `@mention` your message extension from the `compose message area` or click the `...` under compose message area to find your message extension.
+   2. In Outlook: click the `More apps` icon under compose email area to find your message extension.
+
+**Congratulations**! You are running an application that can now search npm registries in Teams and Outlook.
 
 ![Search app demo](https://user-images.githubusercontent.com/11220663/167868361-40ffaaa3-0300-4313-ae22-0f0bab49c329.png)
 
-## Prerequisites
+## What's included in the template
 
-- [Node.js](https://nodejs.org/), supported versions: 16, 18
-- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/microsoft-365/dev-program)
-- [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
-> Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
-- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
+| Folder       | Contents                                            |
+| - | - |
+| `.vscode`    | VSCode files for debugging                          |
+| `appPackage` | Templates for the Teams application manifest        |
+| `env`        | Environment files                                   |
+| `infra`      | Templates for provisioning Azure resources          |
 
-## Getting Started
+The following files can be customized and demonstrate an example implementation to get you started.
 
-Follow below instructions to get started with this application template for local debugging.
+| File                                 | Contents                                           |
+| - | - |
+|`teamsBot.ts`| Handles the business logic for this app template to query npm registry and return result list to Teams.|
+|`index.ts`| `index.ts` is used to setup and configure the Message Extension.|
 
-### Test your application with Visual Studio Code
+The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-1. Press `F5` or use the `Run and Debug Activity Panel` in Visual Studio Code.
-1. Select a target Microsoft application where the message extension runs: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
+| File                                 | Contents                                           |
+| - | - |
+|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
+|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 
-### Test your application with TeamsFx CLI
-1. Install [dev tunnel cli](https://aka.ms/teamsfx-install-dev-tunnel).
-1. Login with your M365 Account using the command `devtunnel user login`.
-1. Start your local tunnel service by running the command `devtunnel host -p 3978 --protocol http --allow-anonymous`.
-1. In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your dev tunnel URL.
-   ```
-   BOT_DOMAIN=sample-id-3978.devtunnels.ms
-   BOT_ENDPOINT=https://sample-id-3978.devtunnels.ms
-   ```
-1. Executing the command `teamsfx provision --env local` in your project directory.
-1. Executing the command `teamsfx deploy --env local` in your project directory.
-1. Executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.
+## Extend the template
 
-## Use this message extension app
+Following documentation will help you to extend the template.
 
-This template provides a simple functionality to search for `npm` packages and render the result in [Adaptive Card](https://docs.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/design-effective-cards?tabs=design).
-
-### Use this app in Teams
-
-- `@mention` Your message extension from the `search box area`.
-
-    ![AtBotFromSearch](https://user-images.githubusercontent.com/11220663/167869365-3828ef85-64f7-43bf-9f75-99d882370154.png)
-
-- `@mention` your message extension from the `compose message area`.
-
-    ![AtBotFromMessage](https://user-images.githubusercontent.com/11220663/167869475-528736fa-d0f1-4bf8-9c23-fdffae984802.png)
-
-- Click the `...` under compose message area, find your message extension.
-
-    ![ComposeArea](https://user-images.githubusercontent.com/11220663/167869578-ce33b2ef-f5f2-4be7-a7a0-57e53b6f7c36.png)
-
-### Use this app in Outlook
-
-- Click the "More apps" icon under compose email area, find your message extension.
-  
-    ![InOutlook](https://user-images.githubusercontent.com/11220663/167869656-20225f14-f982-4e47-8dd0-050285d56853.png)
-
-## References
-
-* [Extend a Teams message extension across Microsoft 365](https://docs.microsoft.com/microsoftteams/platform/m365-apps/extend-m365-teams-message-extension?tabs=manifest-teams-toolkit)
-* [Bot Framework Documentation](https://docs.botframework.com/)
-* [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-* [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
-* [TeamsFx SDK](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk)
-* [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
+- [Add or manage the environment](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
+- [Create multi-capability app](https://learn.microsoft.com/microsoftteams/platform/toolkit/add-capability)
+- [Add single sign on to your app](https://learn.microsoft.com/microsoftteams/platform/toolkit/add-single-sign-on)
+- [Access data in Microsoft Graph](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk#microsoft-graph-scenarios)
+- [Use an existing Azure Active Directory application](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-existing-aad-app)
+- [Customize the Teams app manifest](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-preview-and-customize-app-manifest)
+- Host your app in Azure by [provision cloud resources](https://learn.microsoft.com/microsoftteams/platform/toolkit/provision) and [deploy the code to cloud](https://learn.microsoft.com/microsoftteams/platform/toolkit/deploy)
+- [Collaborate on app development](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
+- [Set up the CI/CD pipeline](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
+- [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
+- [Develop with Teams Toolkit CLI](https://aka.ms/teamsfx-cli/debug)
+- [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)

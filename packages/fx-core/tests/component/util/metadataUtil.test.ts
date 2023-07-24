@@ -45,6 +45,7 @@ describe("metadata util", () => {
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
   const mockProjectModel: ProjectModel = {
     version: "1.0.0",
+    sampleTag: "testRepo:testSample",
     registerApp: {
       name: "registerApp",
       driverDefs: [
@@ -103,6 +104,7 @@ describe("metadata util", () => {
         "publish.actions": "",
         "registerApp.actions": "armdeploy,teamsAppcreate",
         [TelemetryProperty.YmlName]: "teamsapplocalyml",
+        [TelemetryProperty.SampleAppName]: "testRepo:testSample",
       })
     );
     assert(result.isOk());
@@ -121,6 +123,26 @@ describe("metadata util", () => {
         "publish.actions": "",
         "registerApp.actions": "armdeploy,teamsAppcreate",
         [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "testRepo:testSample",
+      })
+    );
+    assert(result.isOk());
+  });
+
+  it("no sample tag", async () => {
+    sandbox.stub(yamlParser, "parse").resolves(ok({ ...mockProjectModel, sampleTag: undefined }));
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const result = await metadataUtil.parse(".", "dev");
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
+        "configureApp.actions": "",
+        "deploy.actions": "",
+        "provision.actions": "",
+        "publish.actions": "",
+        "registerApp.actions": "armdeploy,teamsAppcreate",
+        [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "",
       })
     );
     assert(result.isOk());

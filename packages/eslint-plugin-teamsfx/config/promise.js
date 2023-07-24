@@ -12,21 +12,11 @@ module.exports = {
     sourceType: "module",
     project: ['./tsconfig.eslint.json']
   },
-  plugins: [
-    "@typescript-eslint/eslint-plugin",
-    "prettier",
-    "no-secrets",
-    "@microsoft/eslint-plugin-teamsfx",
-  ],
-  overrides: [
-    {
-      files: ["*.ts"],
-      rules: {
-          "@typescript-eslint/await-thenable": "error",  
-          "@typescript-eslint/no-floating-promises": "error",
-          "@typescript-eslint/no-misused-promises": "error",
-          "@typescript-eslint/require-await": "error",
-      },
-    },
-  ],
+  plugins: ["@typescript-eslint/eslint-plugin"],
+  rules: {
+    "@typescript-eslint/await-thenable": "error",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-misused-promises": "error",
+    "@typescript-eslint/require-await": "error",
+  },
 };

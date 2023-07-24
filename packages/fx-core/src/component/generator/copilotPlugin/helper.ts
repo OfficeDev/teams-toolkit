@@ -49,8 +49,11 @@ export interface ErrorResult {
 }
 
 export class OpenAIPluginManifestHelper {
-  static async loadOpenAIPluginManifest(domain: string): Promise<OpenAIPluginManifest> {
-    const path = domain + manifestFilePath;
+  static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
+    let path = input + manifestFilePath;
+    if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
+      path = "https://" + path;
+    }
 
     try {
       const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
@@ -111,6 +114,9 @@ export async function listOperations(
   const validationRes = await specParser.validate();
 
   if (validationRes.status === ValidationStatus.Error) {
+    for (const error of validationRes.errors) {
+      context.logProvider.error(error.content);
+    }
     return err(validationRes.errors);
   }
 

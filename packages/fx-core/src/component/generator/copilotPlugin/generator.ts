@@ -35,7 +35,7 @@ import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 
 const componentName = "simplified-message-extension-existing-api";
-const templateName = "simplified-message-extension";
+const templateName = "simplified-message-extension-existing-api";
 const appPackageName = "appPackage";
 const manifestFileName = "manifest.json";
 const adaptiveFolderName = "adaptiveCards";

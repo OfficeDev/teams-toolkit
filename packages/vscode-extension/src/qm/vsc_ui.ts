@@ -794,27 +794,27 @@ export class VsCodeUI implements UserInteraction {
             } else {
               result = config.possibleFiles?.find((f) => f.id === item.id)?.id;
             }
-          }
 
-          if (config.validation && result !== undefined) {
-            quickPick.busy = true;
-            quickPick.enabled = false;
-            try {
-              const validationResult = await config.validation(result);
-              quickPick.busy = false;
-              quickPick.enabled = true;
-              if (validationResult) {
-                this.showMessage("error", validationResult, false);
-                quickPick.selectedItems = [];
-                quickPick.activeItems = [];
-                return;
+            if (config.validation && result !== undefined) {
+              quickPick.busy = true;
+              quickPick.enabled = false;
+              try {
+                const validationResult = await config.validation(result);
+                quickPick.busy = false;
+                quickPick.enabled = true;
+                if (validationResult) {
+                  this.showMessage("error", validationResult, false);
+                  quickPick.selectedItems = [];
+                  quickPick.activeItems = [];
+                  return;
+                }
+              } catch (e) {
+                resolve(err(assembleError(e)));
               }
-            } catch (e) {
-              resolve(err(assembleError(e)));
             }
-          }
 
-          resolve(ok({ type: "success", result: result }));
+            resolve(ok({ type: "success", result: result }));
+          }
         };
 
         disposables.push(

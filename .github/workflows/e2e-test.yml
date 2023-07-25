@@ -7,8 +7,8 @@ on:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
 
-  # schedule:
-  #   - cron: "0 22 * * *"
+  schedule:
+    - cron: "0 22 * * *"
 
   pull_request_target:
 

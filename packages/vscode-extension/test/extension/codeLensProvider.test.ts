@@ -12,6 +12,7 @@ import {
 } from "../../src/codeLensProvider";
 import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
+import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 
 describe("Manifest codelens", () => {
   afterEach(() => {
@@ -241,7 +242,10 @@ publish:
 
     chai.assert.equal(codelens.length, 3);
     chai.expect(codelens[0].command?.command).eq("fx-extension.provision");
+    chai.expect(codelens[0].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
     chai.expect(codelens[1].command?.command).eq("fx-extension.deploy");
+    chai.expect(codelens[1].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
     chai.expect(codelens[2].command?.command).eq("fx-extension.publish");
+    chai.expect(codelens[2].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
   });
 });

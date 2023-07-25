@@ -1056,6 +1056,38 @@ describe("scaffold question", () => {
           assert.equal(
             res,
             getLocalizedString(
+              "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+            )
+          );
+        });
+
+        it("invalid api spec - multiple errors CLI", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.CLI,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+          };
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Error,
+            errors: [
+              {
+                type: ErrorType.SpecNotValid,
+                content: "error",
+              },
+              {
+                type: ErrorType.MultipleServerInformation,
+                content: "error2",
+              },
+            ],
+            warnings: [],
+          });
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+
+          assert.equal(
+            res,
+            getLocalizedString(
               "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
             )
           );
@@ -1228,9 +1260,46 @@ describe("scaffold question", () => {
           assert.equal(
             res,
             getLocalizedString(
-              "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
+              "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
             )
           );
+
+          it("invalid openAI plugin manifest spec - multiple errors in CLI", async () => {
+            const question = openAIPluginManifestLocationQuestion();
+            const inputs: Inputs = {
+              platform: Platform.CLI,
+              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            };
+            const manifest = {
+              schema_version: "1.0.0",
+              api: {
+                type: "openapi",
+                url: "test",
+              },
+              auth: { type: "none" },
+            };
+            sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+            sandbox.stub(SpecParser.prototype, "validate").resolves({
+              status: ValidationStatus.Error,
+              errors: [
+                { content: "error", type: ErrorType.NoSupportedApi },
+                { content: "error2", type: ErrorType.MultipleServerInformation },
+              ],
+              warnings: [],
+            });
+
+            const res = await (question.additionalValidationOnAccept as any).validFunc(
+              "url",
+              inputs
+            );
+
+            assert.equal(
+              res,
+              getLocalizedString(
+                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
+              )
+            );
+          });
         });
 
         describe("validate when changing value", async () => {

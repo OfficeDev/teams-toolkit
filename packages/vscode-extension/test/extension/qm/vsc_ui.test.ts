@@ -203,12 +203,12 @@ describe("UI Unit Tests", async () => {
 
       const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
       const mockDisposable = stubInterface<Disposable>();
-      let acceptListener: (e: void) => any;
+      let onHideListener: (e: void) => any;
       mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
-        acceptListener = listener;
         return mockDisposable;
       });
       mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        onHideListener = listener;
         return mockDisposable;
       });
       mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
@@ -216,7 +216,7 @@ describe("UI Unit Tests", async () => {
       });
       mockQuickPick.show.callsFake(() => {
         mockQuickPick.selectedItems = [{ id: "browse" } as FxQuickPickItem];
-        acceptListener();
+        onHideListener();
       });
       sinon.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;

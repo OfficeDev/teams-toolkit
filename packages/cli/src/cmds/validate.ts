@@ -24,6 +24,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { globals } from "../globals";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -31,6 +32,7 @@ export class ManifestValidate extends YargsCommand {
   public readonly description = "Validate the Teams app using manifest schema or validation rules.";
 
   public builder(yargs: Argv): Argv<any> {
+    globals.options = ["manifest-file-path", "app-package-file-path", "env"];
     return yargs
       .hide("interactive")
       .version(false)

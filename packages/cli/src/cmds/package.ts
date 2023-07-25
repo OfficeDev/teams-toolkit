@@ -14,6 +14,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { globals } from "../globals";
 
 export default class Package extends YargsCommand {
   public readonly commandHead = `package`;
@@ -21,6 +22,7 @@ export default class Package extends YargsCommand {
   public readonly description = "Build your Teams app into a package for publishing.";
 
   public builder(yargs: Argv): Argv<any> {
+    globals.options = ["manifest-path", "env"];
     return yargs
       .hide("interactive")
       .version(false)

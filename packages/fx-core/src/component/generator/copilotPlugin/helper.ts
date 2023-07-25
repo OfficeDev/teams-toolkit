@@ -20,20 +20,34 @@ import { sendRequestWithRetry } from "../utils";
 import {
   ErrorType as ApiSpecErrorType,
   ValidationStatus,
+  WarningResult,
 } from "../../../common/spec-parser/interfaces";
 import { SpecParser } from "../../../common/spec-parser/specParser";
 import fs from "fs-extra";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { EOL } from "os";
+import { SummaryConstant } from "../../configManager/constant";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const teamsFxEnv = "${{TEAMSFX_ENV}}";
 const componentName = "OpenAIPluginManifestHelper";
 
+const enum telemetryProperties {
+  validationStatus = "validation-status",
+  validationErrors = "validation-errors",
+  validationWarnings = "validation-warnings",
+}
+
+const enum telemetryEvents {
+  validateApiSpec = "validate-api-spec",
+  validateOpenAiPluginManifest = "validate-openai-plugin-manifest",
+}
+
 enum OpenAIPluginManifestErrorType {
-  AuthNotSupported,
-  ApiUrlMissing,
+  AuthNotSupported = "openai-pliugin-auth-not-supported",
+  ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
 export interface ErrorResult {
@@ -105,6 +119,7 @@ export async function listOperations(
   if (manifest) {
     const errors = validateOpenAIPluginManifest(manifest);
     if (errors.length > 0) {
+      logValidationResults(errors, [], context, false, shouldLogWarning);
       return err(errors);
     }
     apiSpecUrl = manifest.api.url;
@@ -113,21 +128,96 @@ export async function listOperations(
   const specParser = new SpecParser(apiSpecUrl!);
   const validationRes = await specParser.validate();
 
+  logValidationResults(
+    validationRes.errors,
+    validationRes.warnings,
+    context,
+    true,
+    shouldLogWarning
+  );
   if (validationRes.status === ValidationStatus.Error) {
-    for (const error of validationRes.errors) {
-      context.logProvider.error(error.content);
-    }
     return err(validationRes.errors);
-  }
-
-  if (shouldLogWarning && validationRes.warnings.length > 0) {
-    for (const warning of validationRes.warnings) {
-      context.logProvider.warning(warning.content);
-    }
   }
 
   const operations = await specParser.list();
   return ok(operations);
+}
+
+function formatTelemetryValidationProperty(result: ErrorResult | WarningResult): string {
+  return result.type.toString() + ": " + result.content;
+}
+
+function logValidationResults(
+  errors: ErrorResult[],
+  warnings: WarningResult[],
+  context: Context,
+  isApiSpec: boolean,
+  shouldLogWarning: boolean
+) {
+  context.telemetryReporter.sendTelemetryEvent(
+    isApiSpec ? telemetryEvents.validateApiSpec : telemetryEvents.validateOpenAiPluginManifest,
+    {
+      [telemetryProperties.validationStatus]:
+        errors.length !== 0 ? "error" : warnings.length !== 0 ? "warning" : "success",
+      [telemetryProperties.validationErrors]: errors
+        .map((error: ErrorResult) => formatTelemetryValidationProperty(error))
+        .join(";"),
+      [telemetryProperties.validationWarnings]: warnings
+        .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
+        .join(";"),
+    }
+  );
+
+  if (errors.length === 0 && (warnings.length === 0 || !shouldLogWarning)) {
+    return;
+  }
+
+  // errors > 0 || (warnings > 0 && shouldLogWarning)
+  const errorMessage = errors
+    .map((error) => {
+      return `${SummaryConstant.Failed} ${error.content}`;
+    })
+    .join(EOL);
+  const warningMessage = shouldLogWarning
+    ? warnings
+        .map((warning) => {
+          return `${SummaryConstant.NotExecuted} ${warning.content}`;
+        })
+        .join(EOL)
+    : "";
+
+  const failed = errors.length;
+  const warns = warnings.length;
+  const summaryStr = [];
+
+  if (failed > 0) {
+    summaryStr.push(
+      getLocalizedString("core.copilotPlugin.validate.summary.validate.failed", failed)
+    );
+  }
+  if (warns > 0 && shouldLogWarning) {
+    summaryStr.push(
+      getLocalizedString("core.copilotPlugin.validate.summary.validate.warning", warns)
+    );
+  }
+
+  const outputMessage = isApiSpec
+    ? EOL +
+      getLocalizedString(
+        "core.copilotPlugin.validate.apiSpec.summary",
+        summaryStr.join(", "),
+        errorMessage,
+        warningMessage
+      )
+    : EOL +
+      getLocalizedString(
+        "core.copilotPlugin.validate.openAIPluginManifest.summary",
+        summaryStr.join(", "),
+        errorMessage,
+        warningMessage
+      );
+
+  context.logProvider.info(outputMessage);
 }
 
 function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResult[] {

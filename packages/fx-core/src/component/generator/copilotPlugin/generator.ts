@@ -33,6 +33,7 @@ import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ProgrammingLanguage } from "../../../question";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
+import { isYamlSpecFile } from "../../../common/spec-parser/utils";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
@@ -73,11 +74,12 @@ export class CopilotPluginGenerator {
 
       const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
 
+      // validate API spec
       const specParser = new SpecParser(url);
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
-      logValidationResults(validationRes.errors, warnings, context, true, false, true);
       if (validationRes.status === ValidationStatus.Error) {
+        logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =
           inputs!.platform === Platform.VSCode
             ? getLocalizedString(
@@ -91,13 +93,23 @@ export class CopilotPluginGenerator {
         );
       }
 
+      // generate files
       const manifestPath = path.join(destinationPath, appPackageName, manifestFileName);
       const filters = inputs[QuestionNames.ApiOperation] as string[];
 
       const apiSpecFolderPath = path.join(destinationPath, appPackageName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);
 
-      const openapiSpecPath = path.join(apiSpecFolderPath, apiSpecYamlFileName);
+      let isYaml: boolean;
+      try {
+        isYaml = await isYamlSpecFile(url);
+      } catch (e) {
+        isYaml = false;
+      }
+      const openapiSpecPath = path.join(
+        apiSpecFolderPath,
+        isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
+      );
       await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveFolderName);
 
       // update manifest based on openAI plugin manifest

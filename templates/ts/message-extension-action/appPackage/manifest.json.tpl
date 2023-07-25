@@ -28,7 +28,7 @@
         {
             "botId": "${{BOT_ID}}",
             "commands": [
-                                {
+                {
                     "id": "createCard",
                     "context": [
                         "compose",

@@ -788,7 +788,8 @@ export class VsCodeUI implements UserInteraction {
                   result = uriList[0].fsPath;
                 }
               } else {
-                resolve(err(new UserCancelError("VSC-CloseFileSelector")));
+                quickPick.selectedItems = [];
+                return;
               }
             } else {
               result = config.possibleFiles?.find((f) => f.id === item.id)?.id;
@@ -878,12 +879,7 @@ export class VsCodeUI implements UserInteraction {
           return ok(selectFileOrItemRes.value);
         }
       } else {
-        if (
-          !(selectFileOrItemRes.error instanceof UserCancelError) ||
-          (selectFileOrItemRes.error as UserCancelError).source !== "vscCloseFileSelector"
-        ) {
-          return err(selectFileOrItemRes.error);
-        }
+        return err(selectFileOrItemRes.error);
       }
     }
   }

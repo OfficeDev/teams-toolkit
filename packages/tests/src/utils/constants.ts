@@ -44,7 +44,7 @@ export enum TemplateProject {
   QueryOrg = "Org User Search Connector",
   Deeplinking = "Hello World Deeplinking Navigation Tab App",
   Dashboard = "Team Central Dashboard",
-  DeveloperAssist = "Developer Assist Dashboard",
+  AssistDashboard = "Developer Assist Dashboard",
   DiceRoller = "Dice Roller in meeting",
   OutlookTab = "Hello World Teams Tab Outlook add-in",
   OutlookSignature = "Set signature using Outlook add-in",

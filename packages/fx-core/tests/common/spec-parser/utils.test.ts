@@ -11,20 +11,24 @@ describe("utils", () => {
       sinon.restore();
     });
     it("should return false for a valid JSON file", async () => {
-      const readFileStub = sinon.stub(fs, "readFile").resolves('{"name": "test"}' as any);
       const result = await isYamlSpecFile("test.json");
       expect(result).to.be.false;
     });
 
     it("should return true for an yaml file", async () => {
-      const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.2" as any);
-      const result = await isYamlSpecFile("test.json");
+      const result = await isYamlSpecFile("test.yaml");
       expect(result).to.be.true;
+    });
+
+    it("should handle local json files", async () => {
+      const readFileStub = sinon.stub(fs, "readFile").resolves('{"name": "test"}' as any);
+      const result = await isYamlSpecFile("path/to/localfile");
+      expect(result).to.be.false;
     });
 
     it("should handle remote files", async () => {
       const axiosStub = sinon.stub(axios, "get").resolves({ data: '{"name": "test"}' });
-      const result = await isYamlSpecFile("http://example.com/test.json");
+      const result = await isYamlSpecFile("http://example.com/remotefile");
       expect(result).to.be.false;
     });
   });
@@ -112,6 +116,36 @@ describe("utils", () => {
       };
       const result = isSupportedApi(method, path, spec as any);
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if parameter length is 0", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [],
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, true);
+    });
+
+    it("should return true if parameter is null", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {},
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, true);
     });
   });
 });

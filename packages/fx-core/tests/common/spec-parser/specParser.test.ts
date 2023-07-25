@@ -17,7 +17,6 @@ import { SpecParserError } from "../../../src/common/spec-parser/specParserError
 import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { OpenAPIV3 } from "openapi-types";
 import * as SpecFilter from "../../../src/common/spec-parser/specFilter";
-import * as Utils from "../../../src/common/spec-parser/utils";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -308,7 +307,6 @@ describe("SpecParser", () => {
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
       const writeFileStub = sinon.stub(fs, "writeFile").resolves();
-      const isYamlSpecFileStub = sinon.stub(Utils, "isYamlSpecFile").resolves(true);
 
       const filter = ["get /hello"];
 

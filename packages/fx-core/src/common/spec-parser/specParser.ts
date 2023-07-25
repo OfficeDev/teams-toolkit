@@ -18,7 +18,7 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
-import { isSupportedApi, isYamlSpecFile } from "./utils";
+import { isSupportedApi } from "./utils";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -173,7 +173,7 @@ export class SpecParser {
     const newUnResolvedSpec = await specFilter(filter, this.unResolveSpec!);
     if (outputSpecPath) {
       let resultStr;
-      if (await isYamlSpecFile(this.specPath)) {
+      if (this.specPath.endsWith(".yaml")) {
         resultStr = jsyaml.dump(newUnResolvedSpec);
       } else {
         resultStr = JSON.stringify(newUnResolvedSpec, null, 2);

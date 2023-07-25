@@ -8,6 +8,11 @@ import { ConstantString } from "./constants";
 import { OpenAPIV3 } from "openapi-types";
 
 export async function isYamlSpecFile(specPath: string): Promise<boolean> {
+  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
+    return true;
+  } else if (specPath.endsWith(".json")) {
+    return false;
+  }
   const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
   const fileContent = isRemoteFile
     ? (await axios.get(specPath)).data
@@ -28,8 +33,13 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
   if (pathObj) {
     if (method === ConstantString.GetMethod && !pathObj[method]?.security) {
       const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
-      if (operationObject.parameters?.length === 1) {
-        const paramObject = operationObject.parameters;
+      const paramObject = operationObject.parameters;
+
+      if (!paramObject || paramObject.length === 0) {
+        return true;
+      }
+
+      if (paramObject && paramObject.length === 1) {
         for (const index in paramObject) {
           const param = paramObject[index] as OpenAPIV3.ParameterObject;
           if (param.in === "query" || param.in === "path") {

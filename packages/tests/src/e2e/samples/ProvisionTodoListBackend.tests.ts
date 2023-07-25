@@ -12,6 +12,6 @@ const sampleCase = sampleCaseFactory(
   TemplateProjectFolder.TodoListBackend,
   15277465,
   "v-ivanchen@microsoft.com",
-  ["aad", "tab", "function"]
+  ["aad", "tab", "function", "sql"]
 );
 sampleCase.test();

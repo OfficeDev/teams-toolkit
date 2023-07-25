@@ -1,7 +1,7 @@
 {
     "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit action sample",
+    "description": "Microsoft Teams Toolkit message extension action sample",
     "engines": {
         "node": "16 || 18"
     },

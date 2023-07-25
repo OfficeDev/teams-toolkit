@@ -23,6 +23,7 @@
         "full": ""
     },
     "accentColor": "#FFFFFF",
+    "composeExtensions": [],
     "permissions": [
         "identity",
         "messageTeamMembers"

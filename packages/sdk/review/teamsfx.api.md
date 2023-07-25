@@ -483,9 +483,11 @@ class NotificationBot_2 {
     findAllMembers(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2[]>;
     findChannel(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2 | undefined>;
     findMember(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2 | undefined>;
-    getPagedInstallations(pageSize?: number, continuationToken?: string): Promise<PagedData<TeamsBotInstallation_2>>;
+    getPagedInstallations(pageSize?: number, continuationToken?: string, validationEnabled?: boolean): Promise<PagedData<TeamsBotInstallation_2>>;
     // @deprecated
     installations(): Promise<TeamsBotInstallation_2[]>;
+    // (undocumented)
+    validateInstallation(conversationReference: Partial<ConversationReference>): Promise<Boolean>;
 }
 
 // @public @deprecated

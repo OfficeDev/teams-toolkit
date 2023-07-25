@@ -20,6 +20,7 @@ import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
+import { TelemetryProperty } from "../../../../common/telemetry";
 import { CapabilityOptions } from "../../../../question/create";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
@@ -43,6 +44,7 @@ import {
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
+import { ManifestCommonProperties } from "../interfaces/ManifestCommonProperties";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -328,6 +330,48 @@ export class ManifestUtils {
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     return ok(manifest);
+  }
+
+  /**
+   * Parse the manifest and get telemetry propreties e.g. appId, capabilities etc.
+   * @param manifest
+   * @returns Telemetry properties
+   */
+  public parseCommonTelemetryProperties(manifest: TeamsAppManifest): { [p: string]: string } {
+    const properties = this.parseCommonProperties(manifest);
+
+    const telemetryProperties: { [p: string]: string } = {
+      [TelemetryProperty.ManifestVersion]: properties.manifestVersion,
+      [TelemetryProperty.AppId]: properties.appId,
+    };
+
+    telemetryProperties[TelemetryProperty.Capabilities] = properties.capabilities.join(";");
+
+    return telemetryProperties;
+  }
+
+  /**
+   * Parse the manifest and get properties
+   * @param manifest
+   */
+  public parseCommonProperties(manifest: TeamsAppManifest): ManifestCommonProperties {
+    const capabilities = this.getCapabilities(manifest);
+    const properties: ManifestCommonProperties = {
+      appId: manifest.id,
+      capabilities: capabilities,
+      manifestVersion: manifest.manifestVersion,
+      isCopilotPlugin: false,
+    };
+
+    if (
+      manifest.composeExtensions &&
+      manifest.composeExtensions.length > 0 &&
+      manifest.composeExtensions[0].type == "apiSpecification"
+    ) {
+      properties.isCopilotPlugin = true;
+    }
+
+    return properties;
   }
 }
 

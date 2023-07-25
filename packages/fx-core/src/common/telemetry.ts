@@ -47,9 +47,12 @@ export enum TelemetryProperty {
   HasSwitchedM365Tenant = "has-switched-m365",
   CustomizeSubscriptionType = "customize-subscription-type",
   IsFromTdp = "is-from-developer-portal",
+  IsSPFx = "is-spfx",
+  isCopilotPlugin = "is-copilot-plugin",
   ToolkitVersion = "toolkit-version",
   YmlName = "yml-name",
   YmlSchemaVersion = "yml-schema-version",
+  ManifestVersion = "manifest-version",
 }
 
 export enum TelemetryEvent {

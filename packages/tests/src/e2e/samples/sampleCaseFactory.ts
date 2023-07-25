@@ -62,7 +62,25 @@ export default function sampleCaseFactory(
         before(async () => {});
 
         it(sampleName, { testPlanCaseId, author }, async function () {
-          await Executor.openTemplateProject(appName, testFolder, sampleName);
+          if (sampleName === TemplateProjectFolder.ProactiveMessaging) {
+            await Executor.openTemplateProject(
+              appName,
+              testFolder,
+              sampleName,
+              undefined,
+              "samples"
+            );
+          } else if (sampleName === TemplateProjectFolder.OutlookSignature) {
+            await Executor.openTemplateProject(
+              appName,
+              testFolder,
+              sampleName,
+              undefined,
+              "Samples"
+            );
+          } else {
+            await Executor.openTemplateProject(appName, testFolder, sampleName);
+          }
           expect(fs.pathExistsSync(projectPath)).to.be.true;
           if (validate.includes("spfx")) {
             expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src")))

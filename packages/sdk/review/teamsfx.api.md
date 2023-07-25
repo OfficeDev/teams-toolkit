@@ -487,7 +487,7 @@ class NotificationBot_2 {
     // @deprecated
     installations(): Promise<TeamsBotInstallation_2[]>;
     // (undocumented)
-    validateInstallation(conversationReference: Partial<ConversationReference>): Promise<Boolean>;
+    validateInstallation(conversationReference: Partial<ConversationReference>): Promise<boolean>;
 }
 
 // @public @deprecated

@@ -7,7 +7,7 @@
 <b>Signature:</b>
 
 ```typescript
-validateInstallation(conversationReference: Partial<ConversationReference>): Promise<Boolean>;
+validateInstallation(conversationReference: Partial<ConversationReference>): Promise<boolean>;
 ```
 
 ## Parameters
@@ -18,5 +18,5 @@ validateInstallation(conversationReference: Partial<ConversationReference>): Pro
 
 <b>Returns:</b>
 
-Promise&lt;Boolean&gt;
+Promise&lt;boolean&gt;
 

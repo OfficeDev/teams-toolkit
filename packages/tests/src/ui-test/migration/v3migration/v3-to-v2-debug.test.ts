@@ -22,7 +22,7 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.Tab,
+      Capability.Bot,
       "javascript"
     );
     await mirgationDebugTestContext.before();

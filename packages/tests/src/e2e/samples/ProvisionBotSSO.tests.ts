@@ -20,15 +20,16 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(
-    `${TemplateProjectFolder.ProactiveMessaging}`,
-    { testPlanCaseId: 15277473, author: "v-ivanchen@microsoft.com" },
+    `${TemplateProjectFolder.HelloWorldBotSSO}`,
+    { testPlanCaseId: 15277464, author: "v-ivanchen@microsoft.com" },
     async function () {
-      await Executor.createTemplateProject(
+      await Executor.openTemplateProject(
         appName,
         testFolder,
-        TemplateProjectFolder.ProactiveMessaging
+        TemplateProjectFolder.HelloWorldBotSSO
       );
       expect(fs.pathExistsSync(projectPath)).to.be.true;
+      expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
       // Provision
       {

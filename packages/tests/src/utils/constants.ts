@@ -48,33 +48,33 @@ export enum TemplateProject {
   DiceRoller = "Dice Roller in meeting",
   OutlookTab = "Hello World Teams Tab Outlook add-in",
   OutlookSignature = "Set signature using Outlook add-in",
-  AssistDashboard = "developer-assist-dashboard",
 }
 
 export enum TemplateProjectFolder {
   HelloWorldTabBackEnd = "hello-world-tab-with-backend",
   ContactExporter = "graph-toolkit-contact-exporter",
-  OneProductivityHub = "graph-toolkit-one-productivity-hub",
   HelloWorldBotSSO = "bot-sso",
-  TodoListBackend = "todo-list-with-Azure-backend",
   TodoListSpfx = "todo-list-SPFx",
-  ShareNow = "share-now",
   MyFirstMetting = "hello-world-in-meeting",
   TodoListM365 = "todo-list-with-Azure-backend-M365",
   NpmSearch = "NPM-search-connector-M365",
   ProactiveMessaging = "bot-proactive-messaging-teamsfx",
   AdaptiveCard = "adaptive-card-notification",
   IncomingWebhook = "incoming-webhook-notification",
-  GraphConnector = "graph-connector-app",
   StockUpdate = "stocks-update-notification-bot",
   QueryOrg = "query-org-user-with-message-extension-sso",
-  Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
+  GraphConnector = "graph-connector-app",
+  OneProductivityHub = "graph-toolkit-one-productivity-hub",
+  TodoListBackend = "todo-list-with-Azure-backend",
+  ShareNow = "share-now",
+  // v3 only
   Dashboard = "team-central-dashboard",
-  DeveloperAssist = "developer-assist-dashboard",
-  DiceRoller = "live-share-dice-roller",
-  OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   OutlookSignature = "outlook-add-in-set-signature",
+  OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   AssistDashboard = "developer-assist-dashboard",
+  DiceRoller = "live-share-dice-roller",
+  // v2 only
+  Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
 
 export enum Resource {
@@ -94,18 +94,19 @@ export enum ResourceToDeploy {
 }
 
 export enum Capability {
+  Bot = "bot",
   Notification = "notification",
   CommandBot = "command-bot",
   WorkflowBot = "workflow-bot",
-  DashboardTab = "dashboard-tab",
-  Tab = "tab",
   TabNonSso = "tab-non-sso",
-  Bot = "bot",
-  MessageExtension = "message-extension",
   M365SsoLaunchPage = "sso-launch-page",
-  M365SearchApp = "search-app",
+  DashboardTab = "dashboard-tab",
   Spfx = "tab-spfx",
-  BasicTab = "tab-non-sso",
+  M365SearchApp = "search-app",
+  MessageExtension = "message-extension",
+  LinkUnfruling = "link-unfurling",
+  // v2 only
+  Tab = "tab",
 }
 
 export enum Trigger {

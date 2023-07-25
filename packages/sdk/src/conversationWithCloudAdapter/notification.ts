@@ -618,6 +618,12 @@ export class NotificationBot {
     return new TeamsBotInstallation(this.adapter, conversationReference, this.botAppId);
   }
 
+  /**
+   * Validate the installation by getting paged memebers.
+   *
+   * @param conversationReference The bound `ConversationReference`.
+   * @returns Returns false if recieves `BotNotInConversationRoster` error, otherwise returns true.
+   */
   public async validateInstallation(
     conversationReference: Partial<ConversationReference>
   ): Promise<boolean> {

@@ -486,7 +486,6 @@ class NotificationBot_2 {
     getPagedInstallations(pageSize?: number, continuationToken?: string, validationEnabled?: boolean): Promise<PagedData<TeamsBotInstallation_2>>;
     // @deprecated
     installations(): Promise<TeamsBotInstallation_2[]>;
-    // (undocumented)
     validateInstallation(conversationReference: Partial<ConversationReference>): Promise<boolean>;
 }
 

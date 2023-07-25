@@ -4,6 +4,8 @@
 
 ## BotBuilderCloudAdapter.NotificationBot.validateInstallation() method
 
+Validate the installation by getting paged memebers.
+
 <b>Signature:</b>
 
 ```typescript
@@ -14,9 +16,11 @@ validateInstallation(conversationReference: Partial<ConversationReference>): Pro
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  conversationReference | Partial&lt;ConversationReference&gt; |  |
+|  conversationReference | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
 
 <b>Returns:</b>
 
 Promise&lt;boolean&gt;
+
+Returns false if recieves `BotNotInConversationRoster` error, otherwise returns true.
 

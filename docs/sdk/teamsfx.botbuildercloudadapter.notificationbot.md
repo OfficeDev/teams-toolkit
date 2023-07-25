@@ -29,5 +29,5 @@ export declare class NotificationBot
 |  [findMember(predicate, scope)](./teamsfx.botbuildercloudadapter.notificationbot.findmember.md) |  | Return the first [Member](./teamsfx.member.md) where predicate is true, and undefined otherwise. |
 |  [getPagedInstallations(pageSize, continuationToken, validationEnabled)](./teamsfx.botbuildercloudadapter.notificationbot.getpagedinstallations.md) |  | Gets a pagined list of targets where the bot is installed. |
 |  [installations()](./teamsfx.botbuildercloudadapter.notificationbot.installations.md) |  | Get all targets where the bot is installed. |
-|  [validateInstallation(conversationReference)](./teamsfx.botbuildercloudadapter.notificationbot.validateinstallation.md) |  |  |
+|  [validateInstallation(conversationReference)](./teamsfx.botbuildercloudadapter.notificationbot.validateinstallation.md) |  | Validate the installation by getting paged memebers. |
 

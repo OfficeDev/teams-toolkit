@@ -55,6 +55,7 @@
     "test:coll": "nyc mocha \"tests/core/collaborator.test.ts\"",
     "test:specParser": "npx mocha \"tests/common/spec-parser/**/specParser.test.ts\"",
     "test:specFilter": "npx mocha \"tests/common/spec-parser/**/specFilter.test.ts\"",
+    "test:specParserUtils": "npx mocha \"tests/common/spec-parser/**/utils.test.ts\"",
     "test:error": "nyc mocha \"tests/error/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",

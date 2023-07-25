@@ -17,7 +17,7 @@ import { SpecParserError } from "../../../src/common/spec-parser/specParserError
 import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { OpenAPIV3 } from "openapi-types";
 import * as SpecFilter from "../../../src/common/spec-parser/specFilter";
-import { write } from "fs";
+import * as Utils from "../../../src/common/spec-parser/utils";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -183,9 +183,19 @@ describe("SpecParser", () => {
         ],
         paths: {
           "/pet": {
-            post: {
+            get: {
               tags: ["pet"],
-              summary: "Add a new pet to the store",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
               responses: {
                 "200": {
                   content: {
@@ -212,7 +222,7 @@ describe("SpecParser", () => {
         warnings: [
           {
             type: WarningType.OperationIdMissing,
-            content: util.format(ConstantString.MissingOperationId, "POST /pet"),
+            content: util.format(ConstantString.MissingOperationId, "GET /pet"),
           },
         ],
         errors: [],
@@ -231,10 +241,20 @@ describe("SpecParser", () => {
         ],
         paths: {
           "/pet": {
-            post: {
+            get: {
               tags: ["pet"],
-              operationId: "addPet",
-              summary: "Add a new pet to the store",
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
               responses: {
                 "200": {
                   content: {
@@ -255,7 +275,7 @@ describe("SpecParser", () => {
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const result = await specParser.validate();
-
+      console.log(result);
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
@@ -288,6 +308,7 @@ describe("SpecParser", () => {
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
       const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+      const isYamlSpecFileStub = sinon.stub(Utils, "isYamlSpecFile").resolves(true);
 
       const filter = ["get /hello"];
 
@@ -317,12 +338,12 @@ describe("SpecParser", () => {
   });
 
   describe("list", () => {
-    it("should return a list of HTTP methods and paths for all GET and POST operations without security", async () => {
+    it("should return a list of HTTP methods and paths for all GET with 1 parameter and without security", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath);
       const spec = {
         paths: {
-          "/pets/{petId}": {
+          "/pets": {
             get: {
               operationId: "getPetById",
               security: [{ api_key: [] }],
@@ -331,6 +352,15 @@ describe("SpecParser", () => {
           "/user/{userId}": {
             get: {
               operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
             },
             post: {
               operationId: "createUser",
@@ -350,7 +380,7 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal(["GET /user/{userId}", "POST /store/order"]);
+      expect(result).to.deep.equal(["GET /user/{userId}"]);
     });
 
     it("should throw an error when the SwaggerParser library throws an error", async () => {

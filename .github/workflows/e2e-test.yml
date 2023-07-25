@@ -193,15 +193,15 @@ jobs:
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
           ref: main
-          path: packages/tests/e2e/src/resource
+          path: packages/tests/src/e2e/resource
       
-      - name: Download samples from another repo
+      - name: Download samples from office repo
         if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'SignatureOutlook')
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Office-Add-in-samples
           ref: main
-          path: packages/tests/e2e/src/resource
+          path: packages/tests/src/e2e/resource
 
       - name: run test
         working-directory: packages/tests/src/e2e

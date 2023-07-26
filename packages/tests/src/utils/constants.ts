@@ -69,7 +69,7 @@ export enum TemplateProjectFolder {
   ShareNow = "share-now",
   // v3 only
   Dashboard = "team-central-dashboard",
-  OutlookSignature = "outlook-add-in-set-signature",
+  OutlookSignature = "outlook-set-signature",
   OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",

@@ -105,11 +105,13 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
     const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
     const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
+    assert.isTrue(getDefaultVariables.calledOnce);
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
@@ -133,6 +135,7 @@ describe("copilotPluginGenerator", function () {
       .resolves(ok({ ...teamsManifest, name: { short: "", full: "" } }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
     sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
     const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
@@ -154,6 +157,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(true);
     const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
       .stub(OpenAIPluginManifestHelper, "updateManifest")
@@ -161,6 +165,7 @@ describe("copilotPluginGenerator", function () {
     const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
+    assert.isTrue(getDefaultVariables.calledOnce);
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
     assert.isTrue(updateManifestBasedOnOpenAIPlugin.calledOnce);
@@ -180,6 +185,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").throws(new Error("test"));
     const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
       .stub(OpenAIPluginManifestHelper, "updateManifest")
@@ -187,6 +193,7 @@ describe("copilotPluginGenerator", function () {
     const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
+    assert.isTrue(getDefaultVariables.calledOnce);
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
     assert.isTrue(updateManifestBasedOnOpenAIPlugin.calledOnce);
@@ -223,6 +230,7 @@ describe("copilotPluginGenerator", function () {
     });
 
     sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
     const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
@@ -249,6 +257,7 @@ describe("copilotPluginGenerator", function () {
       .resolves(err(new SystemError("readManifest", "name", "", "")));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
     sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
     const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");

@@ -80,6 +80,7 @@
 
 /templates/*/non-sso-tab-default-bot @hund030 @yuqizhou77
 /templates/common/office-addin @1yefuwang1 @jayzhang
+/templates/common/simplified-message-extension-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/ts/office-addin @1yefuwang1 @jayzhang
 /templates/ts/spfx-tab @HuihuiWu-Microsoft @nliu-ms @jayzhang
 

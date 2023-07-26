@@ -93,8 +93,6 @@ export default function sampleCaseFactory(
             // remove teamsApp/extendToM365 in case it fails
             removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
           }
-          // validate
-          await Executor.validate(projectPath);
 
           // Provision
           {

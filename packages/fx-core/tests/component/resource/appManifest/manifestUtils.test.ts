@@ -100,21 +100,4 @@ describe("getManifest V3", () => {
     const ids = manifestUtils.getOperationIds(manifest);
     chai.assert.equal(ids.length, 1);
   });
-
-  it("parseCommonProperties", async () => {
-    const manifest = new TeamsAppManifest();
-    manifest.composeExtensions = [
-      {
-        type: "apiSpecification",
-        botId: uuid.v4(),
-        commands: [],
-      },
-    ];
-    manifest.webApplicationInfo = {
-      id: Constants.SharePointAppId,
-    };
-    const properties = manifestUtils.parseCommonProperties(manifest);
-    chai.assert.isTrue(properties.isCopilotPlugin);
-    chai.assert.isTrue(properties.isSPFx);
-  });
 });

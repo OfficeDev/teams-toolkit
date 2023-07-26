@@ -9,7 +9,11 @@ export interface ManifestCommonProperties {
   /**
    * Teams app id
    */
-  appId: string;
+  id: string;
+  /**
+   * Teams app version, e.g.
+   */
+  version: string;
   /**
    * manifest version, e.g. 1.16
    */

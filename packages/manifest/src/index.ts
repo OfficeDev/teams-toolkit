@@ -7,6 +7,8 @@ import Ajv from "ajv-draft-04";
 import { JSONSchemaType } from "ajv";
 import axios, { AxiosResponse } from "axios";
 import { DevPreviewSchema } from "./devPreviewManifest";
+import { ManifestCommonProperties } from "./ManifestCommonProperties";
+import { SharePointAppId } from "./constants";
 
 export * from "./manifest";
 export * as devPreview from "./devPreviewManifest";
@@ -92,5 +94,77 @@ export class ManifestUtil {
     }
 
     return ManifestUtil.validateManifestAgainstSchema(manifest, result.data);
+  }
+
+  /**
+   * Parse the manifest and get properties
+   * @param manifest
+   */
+  static parseCommonProperties<T extends Manifest = TeamsAppManifest>(
+    manifest: T
+  ): ManifestCommonProperties {
+    const capabilities: string[] = [];
+    if (manifest.staticTabs && manifest.staticTabs!.length > 0) {
+      capabilities.push("staticTab");
+    }
+    if (manifest.configurableTabs && manifest.configurableTabs!.length > 0) {
+      capabilities.push("configurableTab");
+    }
+    if (manifest.bots && manifest.bots!.length > 0) {
+      capabilities.push("Bot");
+    }
+    if (manifest.composeExtensions) {
+      capabilities.push("MessageExtension");
+    }
+
+    const properties: ManifestCommonProperties = {
+      id: manifest.id,
+      version: manifest.version,
+      capabilities: capabilities,
+      manifestVersion: manifest.manifestVersion,
+      isCopilotPlugin: false,
+      isSPFx: true,
+    };
+
+    // If it's copilot plugin app
+    if (
+      manifest instanceof TeamsAppManifest &&
+      manifest.composeExtensions &&
+      manifest.composeExtensions.length > 0 &&
+      manifest.composeExtensions[0].type == "apiSpecification"
+    ) {
+      properties.isCopilotPlugin = true;
+    }
+
+    // If it's SPFx app
+    if (
+      manifest.webApplicationInfo &&
+      manifest.webApplicationInfo.id &&
+      manifest.webApplicationInfo.id == SharePointAppId
+    ) {
+      properties.isSPFx = true;
+    }
+
+    return properties;
+  }
+
+  /**
+   * Parse the manifest and get telemetry propreties e.g. appId, capabilities etc.
+   * @param manifest
+   * @returns Telemetry properties
+   */
+  static parseCommonTelemetryProperties(manifest: TeamsAppManifest): { [p: string]: string } {
+    const properties = ManifestUtil.parseCommonProperties(manifest);
+
+    const telemetryProperties: { [p: string]: string } = {
+      //   [TelemetryProperty.ManifestVersion]: properties.manifestVersion,
+      //   [TelemetryProperty.AppId]: properties.appId,
+      //   [TelemetryProperty.IsSPFx]: String(properties.isSPFx),
+    };
+    // const map = new Map<string, string>(Object.entries(properties));
+
+    // telemetryProperties[TelemetryProperty.Capabilities] = properties.capabilities.join(";");
+
+    return telemetryProperties;
   }
 }

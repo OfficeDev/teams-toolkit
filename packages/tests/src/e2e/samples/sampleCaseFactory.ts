@@ -57,8 +57,6 @@ export default function sampleCaseFactory(
         const env = environmentManager.getDefaultEnvName();
         samplePath = projectPath;
 
-        before(async () => {});
-
         it(sampleName, { testPlanCaseId, author }, async function () {
           if (sampleName === TemplateProjectFolder.ProactiveMessaging) {
             await Executor.openTemplateProject(

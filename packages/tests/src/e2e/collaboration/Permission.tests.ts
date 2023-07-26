@@ -120,6 +120,6 @@ describe("Collaboration", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false);
+    // await cleanUp(appName, projectPath, true, false, false);
   });
 });

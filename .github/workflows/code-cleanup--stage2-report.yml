@@ -18,6 +18,10 @@ jobs:
         - manifest
         - api
         - cli
+        - sdk
+        - sdk-react
+        - tests
+        - adaptivecards-tools-sdk
 
     steps:
     - name: Checkout
@@ -108,6 +112,10 @@ jobs:
         - manifest
         - api
         - cli
+        - sdk
+        - sdk-react
+        - tests
+        - adaptivecards-tools-sdk
 
     steps:
     - name: Checkout

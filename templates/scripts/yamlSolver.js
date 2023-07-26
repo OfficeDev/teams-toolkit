@@ -21,8 +21,15 @@ const solutionFolder = Path.Solution;
 
 // example:  " key1: value, key2 " => { key1: value, key2: true }
 function strToObj(str) {
-  const properties = str.split(",");
+  try {
+    return JSON.parse(str);
+  } catch {}
+
+  if (!str) {
+    return {};
+  }
   let obj = {};
+  const properties = str.split(",");
   properties.forEach(function (property) {
     if (property.includes(":")) {
       const tup = property.split(":");
@@ -48,7 +55,9 @@ function generateVariablesFromSnippets(dir) {
       ...{
         [path.basename(file, Ext.Mustache)]: function () {
           return function (text) {
-            return utils.renderMustache(mustache, strToObj(text)).trimEnd();
+            const view = strToObj(text.trim());
+            const result = utils.renderMustache(mustache, view).trimEnd();
+            return Object.keys(view).length === 0 ? result + os.EOL : result;
           };
         },
       },

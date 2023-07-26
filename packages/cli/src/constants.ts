@@ -4,6 +4,7 @@
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
 import { sampleProvider, CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
+import chalk from "chalk";
 
 export type OptionsMap = { [_: string]: Options };
 
@@ -159,3 +160,7 @@ export const AddFeatureFunc = {
 export const EmptyQTreeNode = new QTreeNode({ type: "group" });
 
 export const SUPPORTED_SPFX_VERSION = "1.16.1";
+
+export const FooterText = `\nFor more information about the Teams Toolkit: ${chalk.cyanBright(
+  "https://aka.ms/teamsfx-cli"
+)}.`;

@@ -15,12 +15,12 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "copilot-plugin-tpl-${{TEAMSFX_ENV}}",
-        "full": "Full name for copilot-plugin-tpl"
+        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "full": "Full name for {{appName}}"
     },
     "description": {
-        "short": "Short description of copilot-plugin-tpl",
-        "full": "Full description of copilot-plugin-tpl"
+        "short": "Short description of {{appName}}",
+        "full": "Full description of {{appName}}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

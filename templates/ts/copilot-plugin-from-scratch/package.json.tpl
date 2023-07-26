@@ -1,5 +1,5 @@
 {
-    "name": "teamsfx-template",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",

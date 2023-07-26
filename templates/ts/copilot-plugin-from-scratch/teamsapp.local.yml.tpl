@@ -6,7 +6,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: copilot-plugin-tpl-${{TEAMSFX_ENV}}
+      name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:

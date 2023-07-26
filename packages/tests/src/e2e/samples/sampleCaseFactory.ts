@@ -56,8 +56,6 @@ export default function sampleCaseFactory(
         const projectPath = path.resolve(testFolder, appName);
         const env = environmentManager.getDefaultEnvName();
         samplePath = projectPath;
-        // disable CI
-        process.env["CI"] = "false";
 
         before(async () => {});
 

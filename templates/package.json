@@ -8,6 +8,7 @@
         "precommit": "npm run check-sensitive && lint-staged",
         "verify": "node ./scripts/yamlSolver.js verify",
         "apply": "node ./scripts/yamlSolver.js apply",
+        "watch": "node ./scripts/watch.js",
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
     "templates": [

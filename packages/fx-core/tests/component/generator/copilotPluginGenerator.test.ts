@@ -285,7 +285,7 @@ describe("OpenAIManifestHelper", async () => {
     let updatedManifestData = "";
     const updateColor = false;
     sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-      if (file === path.join("path", "manifest.json")) {
+      if (file === "path") {
         updatedManifestData = data;
       } else {
         throw new Error("not support " + file);
@@ -301,7 +301,7 @@ describe("OpenAIManifestHelper", async () => {
     assert.isFalse(updateColor);
 
     const updatedTeamsManifest = JSON.parse(updatedManifestData!) as TeamsAppManifest;
-    assert.equal(updatedTeamsManifest!.name.short, "TODO List-${{TEAMSFX_ENV}}");
+    assert.equal(updatedTeamsManifest!.name.short, "TODO List");
     assert.equal(updatedTeamsManifest!.name.full, openAIPluginManifest.name_for_model);
     assert.equal(
       updatedTeamsManifest!.description.short,

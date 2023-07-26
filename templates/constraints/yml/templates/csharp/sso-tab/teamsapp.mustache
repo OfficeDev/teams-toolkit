@@ -1,0 +1,23 @@
+{{#header}} version: 1.1.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsfx provision' is executed
+provision:
+{{{aadAppCreate}}}
+
+{{{teamsAppCreate}}}
+
+{{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
+
+{{{aadAppUpdate}}}
+
+{{{teamsAppValidateManifest}}}
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
+{{{teamsAppValidateAppPackage}}}
+{{{teamsAppUpdate}}}
+
+# Triggered when 'teamsfx deploy' is executed
+deploy:
+{{#cliRunDotnetCommand}} publish {{/cliRunDotnetCommand}}
+{{#azureAppServiceZipDeploy}} artifactFolder: bin/Release/net6.0/win-x86/publish, resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}} {{/azureAppServiceZipDeploy}}

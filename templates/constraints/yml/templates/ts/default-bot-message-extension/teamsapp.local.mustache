@@ -1,0 +1,20 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+provision:
+{{{teamsAppCreate}}}
+
+{{{botAadAppCreate}}}
+
+{{#botFrameworkCreate}}  {{/botFrameworkCreate}}
+
+{{{teamsAppValidateManifest}}}
+
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
+{{{teamsAppValidateAppPackage}}}
+
+{{{teamsAppUpdate}}}
+
+deploy:
+{{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}
+
+{{#fileCreateOrUpdateEnvironmentFile}} target: ./.localConfigs, BOT {{/fileCreateOrUpdateEnvironmentFile}}

@@ -11,11 +11,11 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
-  - uses: script 
+  - uses: script
     with:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
@@ -69,6 +69,7 @@ deploy:
 
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install --no-audit
 

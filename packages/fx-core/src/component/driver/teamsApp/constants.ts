@@ -11,8 +11,6 @@ const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
 const BOT_STATE_KEY = ComponentNames.TeamsBot;
 
-export const manifestStateDataRegex = /{{{?state\.[a-zA-Z-_]+\.\w+}}}?/g;
-
 export const STATIC_TABS_TPL_V3: IStaticTab[] = [
   {
     entityId: "index",
@@ -226,6 +224,8 @@ export class Constants {
 
   // HTTP headers are case insensitive. Axios lowercases all headers.
   public static readonly CORRELATION_ID = "x-correlation-id";
+
+  public static readonly SharePointAppId = "00000003-0000-0ff1-ce00-000000000000";
 }
 
 export class ErrorMessages {

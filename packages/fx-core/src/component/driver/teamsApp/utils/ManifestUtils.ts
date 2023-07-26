@@ -343,6 +343,7 @@ export class ManifestUtils {
     const telemetryProperties: { [p: string]: string } = {
       [TelemetryProperty.ManifestVersion]: properties.manifestVersion,
       [TelemetryProperty.AppId]: properties.appId,
+      [TelemetryProperty.IsSPFx]: String(properties.isSPFx),
     };
 
     telemetryProperties[TelemetryProperty.Capabilities] = properties.capabilities.join(";");
@@ -361,14 +362,25 @@ export class ManifestUtils {
       capabilities: capabilities,
       manifestVersion: manifest.manifestVersion,
       isCopilotPlugin: false,
+      isSPFx: true,
     };
 
+    // If it's copilot plugin app
     if (
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
       manifest.composeExtensions[0].type == "apiSpecification"
     ) {
       properties.isCopilotPlugin = true;
+    }
+
+    // If it's SPFx app
+    if (
+      manifest.webApplicationInfo &&
+      manifest.webApplicationInfo.id &&
+      manifest.webApplicationInfo.id == Constants.SharePointAppId
+    ) {
+      properties.isSPFx = true;
     }
 
     return properties;

@@ -70,6 +70,7 @@
 /templates/scripts @hund030 @eriolchan @huimiu
 /templates/constraints @hund030 @eriolchan @huimiu
 
+/templates/*/copilot-plugin-from-scratch @hund030 @eriolchan @huimiu
 /templates/*/dashboard-tab @hund030 @eriolchan @huimiu
 /templates/*/non-sso-tab @hund030 @eriolchan @huimiu @JerryYangKai
 /templates/*/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu

@@ -102,6 +102,24 @@ describe("AadCollaboration", async () => {
     expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
   });
 
+  it("errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "addOwner").rejects({
+      message: "Request failed with status code 404",
+      response: {
+        status: 404,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.grantPermission(
+      context,
+      expectedObjectId,
+      expectedUserId
+    );
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
+  });
+
   it("errors: should return HttpServerError for 5xx errors", async () => {
     sandbox.stub(AadAppClient.prototype, "addOwner").rejects({
       message: "Request failed with status code 500",
@@ -201,7 +219,7 @@ describe("TeamsCollaboration", async () => {
   it("errors: should return HttpClientError for 4xx errors", async () => {
     sandbox.stub(AppStudioClient, "getUserList").rejects({
       innerError: {
-        message: "Request failed with status code 404",
+        message: "Request failed with status code 400",
         response: {
           status: 400,
           data: {},
@@ -211,6 +229,21 @@ describe("TeamsCollaboration", async () => {
 
     const result = await teamsCollaboration.listCollaborator(context, expectedAppId);
     expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
+  });
+
+  it("errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AppStudioClient, "getUserList").rejects({
+      innerError: {
+        message: "Request failed with status code 404",
+        response: {
+          status: 404,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.listCollaborator(context, expectedAppId);
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
   });
 
   it("errors: should return HttpServerError for 5xx errors", async () => {

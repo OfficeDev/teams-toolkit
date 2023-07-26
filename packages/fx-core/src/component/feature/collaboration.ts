@@ -218,8 +218,8 @@ export class TeamsCollaboration {
     if (error.innerError) {
       const message = JSON.stringify(error.innerError.response.data);
       ctx.logProvider?.error(message);
-      if (error.innerError.status) {
-        const statusCode = error.innerError.status;
+      if (error.innerError.response.status) {
+        const statusCode = error.innerError.response.status;
         if (statusCode === 404) {
           return new AppIdNotExist(appId);
         } else if (statusCode >= 400 && statusCode < 500) {

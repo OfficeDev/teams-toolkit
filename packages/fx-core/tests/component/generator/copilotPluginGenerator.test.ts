@@ -23,12 +23,20 @@ import { SpecParser } from "../../../src/common/spec-parser/specParser";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { assert } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
-import { QuestionNames } from "../../../src/question";
-import { OpenAIPluginManifestHelper } from "../../../src/component/generator/copilotPlugin/helper";
+import { ProgrammingLanguage, QuestionNames } from "../../../src/question";
+import {
+  OpenAIPluginManifestHelper,
+  validateTeamsManifestLength,
+} from "../../../src/component/generator/copilotPlugin/helper";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
-import axios from "axios";
 import path from "path";
+import {
+  ErrorType,
+  ValidationStatus,
+  WarningType,
+} from "../../../src/common/spec-parser/interfaces";
+import * as specParserUtils from "../../../src/common/spec-parser/utils";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -90,6 +98,12 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "https://test.com",
     };
     const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
     const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
@@ -100,6 +114,32 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 
+  it("success with warnings when CSharp", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      projectPath: "path",
+      [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+    };
+    const context = createContextV3();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Warning,
+      errors: [],
+      warnings: [{ type: WarningType.OperationIdMissing, content: "warning" }],
+    });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox
+      .stub(manifestUtils, "_readAppManifest")
+      .resolves(ok({ ...teamsManifest, name: { short: "", full: "" } }));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isOk());
+  });
+
   it("success if starting from OpenAI Plugin", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -107,6 +147,12 @@ describe("copilotPluginGenerator", function () {
       openAIPluginManifest: openAIPluginManifest,
     };
     const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(true);
     const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
@@ -127,6 +173,12 @@ describe("copilotPluginGenerator", function () {
       openAIPluginManifest: openAIPluginManifest,
     };
     const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").throws(new Error("test"));
     const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
@@ -156,6 +208,70 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isErr());
   });
+
+  it("invalid API spec", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+    };
+    const context = createContextV3();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Error,
+      errors: [{ type: ErrorType.NoServerInformation, content: "" }],
+      warnings: [],
+    });
+
+    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.isTrue(result.error.name === "invalid-api-spec");
+    }
+  });
+
+  it("read manifest error", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+    };
+    const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox
+      .stub(manifestUtils, "_readAppManifest")
+      .resolves(err(new SystemError("readManifest", "name", "", "")));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.source, "readManifest");
+    }
+  });
+
+  it("throws exception", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+    };
+    const context = createContextV3();
+    sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isErr());
+  });
 });
 
 describe("OpenAIManifestHelper", async () => {
@@ -165,35 +281,27 @@ describe("OpenAIManifestHelper", async () => {
     sandbox.restore();
   });
 
-  it("updateManifest: cannot load Teams manifest", async () => {
-    sandbox
-      .stub(manifestUtils, "_readAppManifest")
-      .resolves(err(new SystemError("source", "name", "", "")));
-    const result = await OpenAIPluginManifestHelper.updateManifest(openAIPluginManifest, "path");
-    assert.isTrue(result.isErr());
-    if (result.isErr()) {
-      assert.equal(result.error.source, "source");
-    }
-  });
-
-  it("updateManifest: cannot get logo and success", async () => {
+  it("updateManifest: success", async () => {
     let updatedManifestData = "";
     const updateColor = false;
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-      if (file === path.join("path", "manifest.json")) {
+      if (file === "path") {
         updatedManifestData = data;
       } else {
         throw new Error("not support " + file);
       }
     });
 
-    const result = await OpenAIPluginManifestHelper.updateManifest(openAIPluginManifest, "path");
+    const result = await OpenAIPluginManifestHelper.updateManifest(
+      openAIPluginManifest,
+      teamsManifest,
+      "path"
+    );
     assert.isTrue(result.isOk());
     assert.isFalse(updateColor);
 
     const updatedTeamsManifest = JSON.parse(updatedManifestData!) as TeamsAppManifest;
-    assert.equal(updatedTeamsManifest!.name.short, "TODO List-${{TEAMSFX_ENV}}");
+    assert.equal(updatedTeamsManifest!.name.short, "TODO List");
     assert.equal(updatedTeamsManifest!.name.full, openAIPluginManifest.name_for_model);
     assert.equal(
       updatedTeamsManifest!.description.short,
@@ -209,5 +317,34 @@ describe("OpenAIManifestHelper", async () => {
       updatedTeamsManifest!.developer.termsOfUseUrl,
       openAIPluginManifest.legal_info_url
     );
+  });
+});
+
+describe("validateTeamsManifestLength", () => {
+  it("no warnings", () => {
+    const res = validateTeamsManifestLength(teamsManifest);
+    assert.equal(res.length, 0);
+  });
+
+  it("warnings about missing property", () => {
+    const res = validateTeamsManifestLength({
+      ...teamsManifest,
+      name: { short: "", full: "" },
+      description: { short: "", full: "" },
+    });
+    assert.equal(res.length, 4);
+  });
+
+  it("warnings if exceeding length", () => {
+    const invalidShortName = "a".repeat(65);
+    const invalidFullName = "a".repeat(101);
+    const invalidShortDescription = "a".repeat(101);
+    const invalidFullDescription = "a".repeat(4001);
+    const res = validateTeamsManifestLength({
+      ...teamsManifest,
+      name: { short: invalidShortName, full: invalidFullName },
+      description: { short: invalidShortDescription, full: invalidFullDescription },
+    });
+    assert.equal(res.length, 4);
   });
 });

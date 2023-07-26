@@ -14,6 +14,7 @@ import {
   UserError,
   err,
   ok,
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -31,7 +32,6 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
-const teamsFxEnv = "${{TEAMSFX_ENV}}";
 const componentName = "OpenAIPluginManifestHelper";
 
 const enum telemetryProperties {
@@ -87,25 +87,18 @@ export class OpenAIPluginManifestHelper {
 
   static async updateManifest(
     openAiPluginManifest: OpenAIPluginManifest,
-    appPackageFolder: string
+    teamsAppManifest: TeamsAppManifest,
+    manifestPath: string
   ): Promise<Result<undefined, FxError>> {
-    const manifestPath = path.join(appPackageFolder, "manifest.json");
-    const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+    teamsAppManifest.name.full = openAiPluginManifest.name_for_model;
+    teamsAppManifest.name.short = openAiPluginManifest.name_for_human;
+    teamsAppManifest.description.full = openAiPluginManifest.description_for_model;
+    teamsAppManifest.description.short = openAiPluginManifest.description_for_human;
+    teamsAppManifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
+    teamsAppManifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;
+    teamsAppManifest.developer.termsOfUseUrl = openAiPluginManifest.legal_info_url;
 
-    if (manifestRes.isErr()) {
-      return err(manifestRes.error);
-    }
-
-    const manifest = manifestRes.value;
-    manifest.name.full = openAiPluginManifest.name_for_model;
-    manifest.name.short = `${openAiPluginManifest.name_for_human}-${teamsFxEnv}`;
-    manifest.description.full = openAiPluginManifest.description_for_model;
-    manifest.description.short = openAiPluginManifest.description_for_human;
-    manifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
-    manifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;
-    manifest.developer.termsOfUseUrl = openAiPluginManifest.legal_info_url;
-
-    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, "\t"), "utf-8");
+    await fs.writeFile(manifestPath, JSON.stringify(teamsAppManifest, null, "\t"), "utf-8");
     return ok(undefined);
   }
 }
@@ -147,26 +140,29 @@ function formatTelemetryValidationProperty(result: ErrorResult | WarningResult):
   return result.type.toString() + ": " + result.content;
 }
 
-function logValidationResults(
+export function logValidationResults(
   errors: ErrorResult[],
   warnings: WarningResult[],
   context: Context,
   isApiSpec: boolean,
-  shouldLogWarning: boolean
+  shouldLogWarning: boolean,
+  shouldSkipTelemetry = false
 ) {
-  context.telemetryReporter.sendTelemetryEvent(
-    isApiSpec ? telemetryEvents.validateApiSpec : telemetryEvents.validateOpenAiPluginManifest,
-    {
-      [telemetryProperties.validationStatus]:
-        errors.length !== 0 ? "error" : warnings.length !== 0 ? "warning" : "success",
-      [telemetryProperties.validationErrors]: errors
-        .map((error: ErrorResult) => formatTelemetryValidationProperty(error))
-        .join(";"),
-      [telemetryProperties.validationWarnings]: warnings
-        .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
-        .join(";"),
-    }
-  );
+  if (!shouldSkipTelemetry) {
+    context.telemetryReporter.sendTelemetryEvent(
+      isApiSpec ? telemetryEvents.validateApiSpec : telemetryEvents.validateOpenAiPluginManifest,
+      {
+        [telemetryProperties.validationStatus]:
+          errors.length !== 0 ? "error" : warnings.length !== 0 ? "warning" : "success",
+        [telemetryProperties.validationErrors]: errors
+          .map((error: ErrorResult) => formatTelemetryValidationProperty(error))
+          .join(";"),
+        [telemetryProperties.validationWarnings]: warnings
+          .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
+          .join(";"),
+      }
+    );
+  }
 
   if (errors.length === 0 && (warnings.length === 0 || !shouldLogWarning)) {
     return;
@@ -236,4 +232,46 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
     });
   }
   return errors;
+}
+
+export function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] {
+  const nameShortLimit = 30;
+  const nameFullLimit = 100;
+  const descriptionShortLimit = 80;
+  const descriptionFullLimit = 4000;
+  const warnings = [];
+
+  // message below are copied from the validation result of Teams manifest.
+  // validate name
+  if (teamsManifest.name.short.length === 0) {
+    warnings.push("Short name of the app cannot be empty");
+  }
+
+  if (teamsManifest.name.short.length > nameShortLimit) {
+    warnings.push("/name/short must NOT have more than 30 characters");
+  }
+
+  if (!teamsManifest.name.full?.length) {
+    warnings.push("Full name cannot be empty");
+  }
+
+  if (teamsManifest.name.full!.length > nameFullLimit) {
+    warnings.push("/name/full must NOT have more than 100 characters");
+  }
+
+  // validate description
+  if (teamsManifest.description.short.length === 0) {
+    warnings.push("Short Description can not be empty");
+  }
+  if (teamsManifest.description.short.length > descriptionShortLimit) {
+    warnings.push("/description/short must NOT have more than 80 characters");
+  }
+  if (teamsManifest.description.full?.length === 0) {
+    warnings.push("Full Description can not be empty");
+  }
+  if (teamsManifest.description.full!.length > descriptionFullLimit) {
+    warnings.push("/description/full must NOT have more than 4000 characters");
+  }
+
+  return warnings;
 }

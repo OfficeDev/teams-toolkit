@@ -27,7 +27,6 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
 
   // Define the repair information object.
   const repairInfo = {
-    id: 1,
     title: "Oil change",
     description:
       "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",

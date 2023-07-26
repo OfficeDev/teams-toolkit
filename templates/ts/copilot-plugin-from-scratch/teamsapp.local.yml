@@ -15,7 +15,7 @@ provision:
   - uses: script # Set required variables for local launch
     with:
       run:
-        echo "::set-teamsfx-env FUNC_NAME=repairs";
+        echo "::set-teamsfx-env FUNC_NAME=repair";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
         
   # Validate using manifest schema
@@ -52,7 +52,6 @@ deploy:
       func:
         version: ~4.0.4670
         symlinkDir: ./devTools/func
-      dotnet: true
     # Write the information of installed development tool(s) into environment
     # file for the specified environment variable(s).
     writeToEnvironmentFile:
@@ -66,4 +65,3 @@ deploy:
   - uses: cli/runNpmCommand
     with:
       args: install --no-audit
-      workingDirectory: api

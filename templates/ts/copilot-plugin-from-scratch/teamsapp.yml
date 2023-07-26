@@ -50,30 +50,18 @@ provision:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
 deploy:
-  # Install development tool(s)
-  - uses: devTool/install
-    with:
-      dotnet: true
-    # Write the information of installed development tool(s) into environment
-    # file for the specified environment variable(s).
-    writeToEnvironmentFile:
-      dotnetPath: DOTNET_PATH
-
   # Run npm command
   - uses: cli/runNpmCommand
-    with:
-      workingDirectory: api
+    with:      
       args: install
   # Run npm command
   - uses: cli/runNpmCommand
     with:
-      workingDirectory: api
       args: run build --if-present
   # Deploy your application to Azure Functions using the zip deploy feature.
   # For additional details, see at https://aka.ms/zip-deploy-to-azure-functions
   - uses: azureFunctions/zipDeploy
     with:
-      workingDirectory: api
       # deploy base folder
       artifactFolder: .
       # Ignore file location, leave blank will ignore nothing

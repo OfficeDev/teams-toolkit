@@ -59,7 +59,7 @@
             "command": "npm run dev:teamsfx",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}/api",
+                "cwd": "${workspaceFolder}",
                 "env": {
                     "PATH": "${workspaceFolder}/devTools/func:${env:PATH}"
                 }
@@ -95,7 +95,7 @@
             "command": "npm run watch",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}/api"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": "$tsc-watch",
             "presentation": {
@@ -110,7 +110,7 @@
             "isBackground": true,
             "dependsOn": "npm build (functions)",
             "options": {
-                "cwd": "${workspaceFolder}/api"
+                "cwd": "${workspaceFolder}"
             }
         },
         {
@@ -123,7 +123,7 @@
             ],
             "problemMatcher": "$tsc",
             "options": {
-                "cwd": "${workspaceFolder}/api"
+                "cwd": "${workspaceFolder}"
             }
         },
         {
@@ -131,7 +131,7 @@
             "label": "npm install (functions)",
             "command": "npm install",
             "options": {
-                "cwd": "${workspaceFolder}/api"
+                "cwd": "${workspaceFolder}"
             }
         },
         {
@@ -141,7 +141,7 @@
             "dependsOn": "npm build (functions)",
             "problemMatcher": [],
             "options": {
-                "cwd": "${workspaceFolder}/api"
+                "cwd": "${workspaceFolder}"
             }
         }
     ]

@@ -4,9 +4,9 @@ info:
   description: A simple service to manage repairs
   version: 1.0.0
 paths:
-  /repairs:
+  /repair:
     get:
-      operationId: repairs
+      operationId: repair
       summary: Returns a repair
       description: Returns a repair with its details and image     
       responses:

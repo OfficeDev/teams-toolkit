@@ -15,3 +15,16 @@ appPackage/build
 
 # Dev tool directories
 /devTools/
+
+# TypeScript output
+dist
+out
+
+# Azure Functions artifacts
+bin
+obj
+appsettings.json
+local.settings.json
+
+# Local data
+.localConfigs

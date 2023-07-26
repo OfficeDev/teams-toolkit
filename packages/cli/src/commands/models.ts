@@ -10,7 +10,13 @@ export interface CliCommand {
   options?: CliOption[];
   examples?: string[];
   commands?: CliCommand[];
-  handler: (args: { [argName: string]: string | string[] }) => Promise<Result<undefined, FxError>>;
+  handler: (cmd: CliParsedCommand) => Promise<Result<undefined, FxError>>;
+}
+
+export interface CliParsedCommand extends CliCommand {
+  inputs: Record<string, any>;
+  loglevel: "verbose" | "debug" | "info";
+  interactive: boolean;
 }
 
 interface CliOptionBase {
@@ -19,30 +25,35 @@ interface CliOptionBase {
   shortName?: string;
   type: "text" | "boolean" | "singleSelect" | "multiSelect";
   required?: boolean;
+  hidden?: boolean;
 }
 
 interface CliBooleanOption extends CliOptionBase {
   type: "boolean";
   default?: boolean;
+  value?: boolean;
 }
 
 interface CliTextOption extends CliOptionBase {
   type: "text";
   default?: string;
+  value?: string;
 }
 
 interface CliSingleSelectOption extends CliOptionBase {
   type: "singleSelect";
-  default?: string;
-  choices?: string[];
+  default?: string | boolean;
+  choices?: string[] | boolean[];
   choiceListCommand?: string;
+  value?: string | boolean;
 }
 
 interface CliMultiSelectOption extends CliOptionBase {
   type: "multiSelect";
-  default?: string[];
-  choices?: string[];
+  default?: string[] | boolean[];
+  choices?: string[] | boolean[];
   choiceListCommand?: string;
+  value?: string[] | boolean[];
 }
 
 export type CliOption =

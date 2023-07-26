@@ -42,7 +42,7 @@ export default function sampleCaseFactory(
     | "sql"
     | "function"
     | "spfx"
-    | "proactive"
+    | "tab & bot"
   )[] = []
 ) {
   let samplePath = "";
@@ -83,7 +83,7 @@ export default function sampleCaseFactory(
           if (validate.includes("spfx")) {
             expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src")))
               .to.be.true;
-          } else if (!validate.includes("proactive")) {
+          } else if (sampleName !== TemplateProjectFolder.ProactiveMessaging) {
             expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be
               .true;
           }
@@ -127,7 +127,8 @@ export default function sampleCaseFactory(
               const aad = AadValidator.init(context, false, m365Login);
               await AadValidator.validate(aad);
             }
-            if (validate.includes("sql")) {
+            if (validate.includes("tab & bot")) {
+              // Validate Tab & Bot Provision
               await validateTabAndBotProjectProvision(projectPath, env);
             }
             if (validate.includes("function")) {

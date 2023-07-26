@@ -12,6 +12,6 @@ const sampleCase = sampleCaseFactory(
   TemplateProjectFolder.ShareNow,
   15277467,
   "v-ivanchen@microsoft.com",
-  ["sql"]
+  ["sql", "tab & bot"]
 );
 sampleCase.test();

@@ -11,7 +11,6 @@ import sampleCaseFactory from "./sampleCaseFactory";
 const sampleCase = sampleCaseFactory(
   TemplateProjectFolder.ProactiveMessaging,
   15277473,
-  "v-ivanchen@microsoft.com",
-  ["proactive"]
+  "v-ivanchen@microsoft.com"
 );
 sampleCase.test();

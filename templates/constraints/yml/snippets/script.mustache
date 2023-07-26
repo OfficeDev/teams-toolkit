@@ -1,9 +1,9 @@
-{{^TAB}}
+{{#FUNC}}
   # Set required variables for local launch
-{{/TAB}}
-{{#TAB}}
+{{/FUNC}}
+{{^FUNC}}
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
-{{/TAB}}
+{{/FUNC}}
   - uses: script
     with:
       run:

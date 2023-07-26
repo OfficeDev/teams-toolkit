@@ -1,6 +1,5 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
@@ -22,7 +21,7 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.Tab,
+      Capability.Bot,
       "javascript"
     );
     await mirgationDebugTestContext.before();

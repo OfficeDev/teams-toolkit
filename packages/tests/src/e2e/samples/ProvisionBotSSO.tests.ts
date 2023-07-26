@@ -9,8 +9,8 @@ import { TemplateProjectFolder } from "../../utils/constants";
 import sampleCaseFactory from "./sampleCaseFactory";
 
 const sampleCase = sampleCaseFactory(
-  TemplateProjectFolder.StockUpdate,
-  15772706,
+  TemplateProjectFolder.HelloWorldBotSSO,
+  15277464,
   "v-ivanchen@microsoft.com",
   ["bot"]
 );

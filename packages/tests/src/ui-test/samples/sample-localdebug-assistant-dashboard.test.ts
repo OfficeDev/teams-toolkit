@@ -1,6 +1,5 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import {
   Timeout,
   TemplateProject,
@@ -28,8 +27,8 @@ describe("Sample Tests", function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
     sampledebugContext = new SampledebugContext(
-      TemplateProject.DeveloperAssist,
-      TemplateProjectFolder.DeveloperAssist
+      TemplateProject.AssistDashboard,
+      TemplateProjectFolder.AssistDashboard
     );
     await sampledebugContext.before();
   });

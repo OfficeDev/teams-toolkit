@@ -136,3 +136,25 @@ export class NotAllowedMigrationError extends UserError {
     });
   }
 }
+
+export class FailedToLoadManifestId extends UserError {
+  constructor(manifestPath: string) {
+    super({
+      source: CoreSource,
+      name: FailedToLoadManifestId.name,
+      message: getDefaultString("error.core.failedToLoadManifestId", manifestPath),
+      displayMessage: getLocalizedString("error.core.failedToLoadManifestId", manifestPath),
+    });
+  }
+}
+
+export class AppIdNotExist extends UserError {
+  constructor(appId: string) {
+    super({
+      source: CoreSource,
+      name: AppIdNotExist.name,
+      message: getDefaultString("error.core.appIdNotExist", appId),
+      displayMessage: getLocalizedString("error.core.appIdNotExist", appId),
+    });
+  }
+}

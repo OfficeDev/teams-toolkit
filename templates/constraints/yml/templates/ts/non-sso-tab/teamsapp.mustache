@@ -1,4 +1,4 @@
-{{{header}}}
+{{#header}} version: 1.0.0 {{/header}}
 
 environmentFolderPath: ./env
 
@@ -9,7 +9,7 @@ provision:
 {{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
 
 {{{teamsAppValidateManifest}}}
-{{{teamsAppZipAppPackage}}}
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}
 {{{teamsAppExtendToM365}}}
@@ -18,12 +18,12 @@ provision:
 deploy:
 {{#cliRunNpmCommand}} install {{/cliRunNpmCommand}}
 {{#cliRunNpmCommand}} build {{/cliRunNpmCommand}}
-{{#azureAppServiceZipDeploy}} resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}} {{/azureAppServiceZipDeploy}}
+{{#azureAppServiceZipDeploy}} resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}, ignoreFile: .webappignore {{/azureAppServiceZipDeploy}}
 
 # Triggered when 'teamsfx publish' is executed
 publish:
 {{{teamsAppValidateManifest}}}
-{{{teamsAppZipAppPackage}}}
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}
 {{{teamsAppPublishAppPackage}}}

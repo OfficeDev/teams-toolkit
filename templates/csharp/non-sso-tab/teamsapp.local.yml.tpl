@@ -3,15 +3,13 @@
 # Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.1.0
 
-
 provision:
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
-  - uses: script 
+  - uses: script
     with:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302";
-
   # Creates a Teams app
   - uses: teamsApp/create
     with:
@@ -19,7 +17,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Validate using manifest schema

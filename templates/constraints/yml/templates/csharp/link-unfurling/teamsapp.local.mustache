@@ -1,0 +1,18 @@
+{{#header}} version: 1.1.0 {{/header}}
+
+provision:
+{{{teamsAppCreate}}}
+
+{{{botAadAppCreate}}}
+
+{{#fileCreateOrUpdateJsonFile}} appsettings, BOT {{/fileCreateOrUpdateJsonFile}}
+
+{{#botFrameworkCreate}}  {{/botFrameworkCreate}}
+
+{{{teamsAppValidateManifest}}}
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
+{{{teamsAppValidateAppPackage}}}
+
+{{{teamsAppUpdate}}}
+
+{{#fileCreateOrUpdateJsonFile}} {"launchSettings": true, "applicationUrl": "\"http://localhost:5130\"", "hotReload": true} {{/fileCreateOrUpdateJsonFile}}

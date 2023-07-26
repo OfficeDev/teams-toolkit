@@ -1,6 +1,8 @@
 const { writeFileSync, readFileSync, lstatSync, existsSync } = require("node:fs");
 const path = require("path");
 const utils = require("./utils");
+const { Ext, Path } = require("./constants");
+const os = require("os");
 
 // The solver is called by the following command:
 // > node yamlSolver.js <action> <constraintFilePath>
@@ -14,14 +16,21 @@ const Action = {
 };
 
 // The constraints are defined in mustache files.
-// default constraints folders
-const mustacheFolder = path.resolve(__dirname, "..", "constraints", "yml", "templates");
-const solutionFolder = path.resolve(__dirname, "..");
+const mustacheFolder = Path.YmlConstraints;
+const snippetsFolder = Path.YmlSnippets;
+const solutionFolder = Path.Solution;
 
 // example:  " key1: value, key2 " => { key1: value, key2: true }
 function strToObj(str) {
-  const properties = str.split(",");
+  try {
+    return JSON.parse(str);
+  } catch {}
+
+  if (!str) {
+    return {};
+  }
   let obj = {};
+  const properties = str.split(",");
   properties.forEach(function (property) {
     if (property.includes(":")) {
       const tup = property.split(":");
@@ -38,16 +47,18 @@ function generateVariablesFromSnippets(dir) {
   let result = {};
   utils.filterYmlFiles(dir).map((file) => {
     const yml = readFileSync(file, "utf8");
-    result = { ...result, ...{ [path.basename(file, ".yml")]: yml } };
+    result = { ...result, ...{ [path.basename(file, Ext.Yml)]: yml } };
   });
   utils.filterMustacheFiles(dir).map((file) => {
     const mustache = readFileSync(file, "utf8");
     result = {
       ...result,
       ...{
-        [path.basename(file, ".mustache")]: function () {
+        [path.basename(file, Ext.Mustache)]: function () {
           return function (text) {
-            return utils.renderMustache(mustache, strToObj(text)).trimEnd();
+            const view = strToObj(text.trim());
+            const result = utils.renderMustache(mustache, view).trimEnd();
+            return Object.keys(view).length === 0 ? result + os.EOL : result;
           };
         },
       },
@@ -59,9 +70,7 @@ function generateVariablesFromSnippets(dir) {
 function* solveMustache(mustachePaths) {
   for (const mustachePath of mustachePaths) {
     const template = readFileSync(mustachePath, "utf8");
-    const variables = generateVariablesFromSnippets(
-      path.resolve(__dirname, "..", "constraints", "yml", "snippets")
-    );
+    const variables = generateVariablesFromSnippets(snippetsFolder);
     const solution = utils.renderMustache(template, variables);
     yield { mustachePath, solution };
   }
@@ -76,7 +85,7 @@ function validateMustachePath(mustachePath) {
   if (lstatSync(mustachePath).isDirectory()) {
     return utils.filterMustacheFiles(mustachePath);
   }
-  if (!mustachePath.endsWith(".mustache")) {
+  if (!mustachePath.endsWith(Ext.Mustache)) {
     throw new Error("Invalid mustache file path");
   }
   if (!existsSync(mustachePath)) {
@@ -106,7 +115,7 @@ function main({ action, mustachePaths }) {
     const solutionPath = path.resolve(
       solutionFolder,
       path.dirname(path.relative(mustacheFolder, mustachePath)),
-      path.basename(mustachePath, ".mustache") + ".yml.tpl"
+      path.basename(mustachePath, Ext.Mustache) + Ext.YmlTpl
     );
     switch (action) {
       case Action.APPLY:

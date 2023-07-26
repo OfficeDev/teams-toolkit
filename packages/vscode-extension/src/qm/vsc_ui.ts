@@ -217,9 +217,13 @@ export class VsCodeUI implements UserInteraction {
             try {
               if (typeof config.options === "function") {
                 options = await config.options();
+              } else {
+                options = config.options as StaticOptions;
               }
               if (typeof config.default === "function") {
                 defaultValue = await config.default();
+              } else {
+                defaultValue = config.default;
               }
             } catch (e) {
               resolve(err(assembleError(e)));
@@ -254,13 +258,13 @@ export class VsCodeUI implements UserInteraction {
             }
           };
           if (typeof config.options === "function" || typeof config.default === "function") {
-            // load dynamic data (options, default)
+            // load dynamic data (options or default)
             quickPick.busy = true;
             quickPick.placeholder = loadingOptionsPlaceholder();
             loadDynamicData().then(onDataLoaded);
           } else {
             options = config.options as StaticOptions;
-            defaultValue = config.default || "";
+            defaultValue = config.default;
             onDataLoaded();
           }
           disposables.push(
@@ -353,9 +357,13 @@ export class VsCodeUI implements UserInteraction {
             try {
               if (typeof config.options === "function") {
                 options = await config.options();
+              } else {
+                options = config.options as StaticOptions;
               }
               if (typeof config.default === "function") {
                 defaultValue = await config.default();
+              } else {
+                defaultValue = config.default || [];
               }
             } catch (e) {
               resolve(err(assembleError(e)));
@@ -392,16 +400,18 @@ export class VsCodeUI implements UserInteraction {
               isSkip = true;
               onDidAccept();
             }
-            const selectedItems: FxQuickPickItem[] = [];
-            preIds.clear();
-            for (const id of defaultValue) {
-              const item = optionMap.get(id);
-              if (item) {
-                selectedItems.push(item);
-                preIds.add(id);
+            if (defaultValue) {
+              const selectedItems: FxQuickPickItem[] = [];
+              preIds.clear();
+              for (const id of defaultValue) {
+                const item = optionMap.get(id);
+                if (item) {
+                  selectedItems.push(item);
+                  preIds.add(id);
+                }
               }
+              quickPick.selectedItems = selectedItems;
             }
-            quickPick.selectedItems = selectedItems;
           };
 
           if (typeof config.options === "function" || typeof config.default === "function") {

@@ -1,0 +1,15 @@
+{{#extensions}}
+  # TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
+{{/extensions}}
+  - uses: cli/runDotnetCommand
+    with:
+    {{#workingDirectory}}
+      workingDirectory: {{{workingDirectory}}}
+    {{/workingDirectory}}
+    {{#publish}}
+      args: publish --configuration Release --runtime win-x86 --self-contained
+    {{/publish}}
+    {{#extensions}}
+      args: build extensions.csproj -o bin --ignore-failed-sources
+      execPath: ${{DOTNET_PATH}}
+    {{/extensions}}

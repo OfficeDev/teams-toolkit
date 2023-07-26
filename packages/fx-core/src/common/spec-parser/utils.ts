@@ -20,14 +20,13 @@ export async function isYamlSpecFile(specPath: string): Promise<boolean> {
 
   try {
     JSON.parse(fileContent);
-    return false;
-  } catch (error) {
     return true;
+  } catch (error) {
+    return false;
   }
 }
 
 export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Document): boolean {
-  debugger;
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
   if (pathObj) {

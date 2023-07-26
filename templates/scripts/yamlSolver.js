@@ -2,6 +2,7 @@ const { writeFileSync, readFileSync, lstatSync, existsSync } = require("node:fs"
 const path = require("path");
 const utils = require("./utils");
 const { Ext, Path } = require("./constants");
+const os = require("os");
 
 // The solver is called by the following command:
 // > node yamlSolver.js <action> <constraintFilePath>

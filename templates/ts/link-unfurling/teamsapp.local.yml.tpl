@@ -11,7 +11,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Create or reuse an existing Azure Active Directory application for bot.
@@ -23,7 +23,7 @@ provision:
       # The Azure Active Directory application's client id created for bot.
       botId: BOT_ID
       # The Azure Active Directory application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD 
+      botPassword: SECRET_BOT_PASSWORD
 
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
@@ -62,7 +62,6 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-
   # Extend your Teams app to Outlook and the Microsoft 365 app
   - uses: teamsApp/extendToM365
     with:
@@ -77,6 +76,7 @@ provision:
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install --no-audit
 

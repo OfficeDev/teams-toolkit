@@ -1,6 +1,6 @@
 {
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.15/MicrosoftTeams.schema.json",
-    "manifestVersion": "1.15",
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.17",
     "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
     "packageName": "com.microsoft.teams.extension",
@@ -24,7 +24,26 @@
     },
     "accentColor": "#FFFFFF",
     "bots": [],
-    "composeExtensions": [],    
+    "composeExtensions": [
+        {
+            "type": "apiBased",
+            "apiSpecFile": "./apiSpecFiles/repair-openapi.yml",
+            supportsConversationAI: false,
+            "commands": [
+                {
+                    "id": "repair",
+                    "type": "query",
+                    "context": [
+                        "compose",
+                        "commandBox"
+                    ],
+                    "title": "Returns a repair",
+                    "description": "Returns a repair with its details and image",
+                    "responseAdaptiveCardTemplate": "./adaptiveCards/repair.json"
+                }
+            ]
+        }
+    ],    
     "permissions": [
         "identity",
         "messageTeamMembers"

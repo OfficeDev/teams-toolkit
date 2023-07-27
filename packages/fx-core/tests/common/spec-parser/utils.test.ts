@@ -5,6 +5,7 @@ import { assert, expect } from "chai";
 import sinon from "sinon";
 import axios from "axios";
 import fs from "fs-extra";
+import os from "os";
 import "mocha";
 import {
   getRelativePath,
@@ -68,11 +69,13 @@ describe("utils", () => {
       expect(result).to.equal("subfolder/file.txt");
     });
 
-    it("should replace backslashes with forward slashes", () => {
-      const from = "path\\to\\from";
-      const to = "path\\to\\subfolder\\file.txt";
-      const result = getRelativePath(from, to);
-      expect(result).to.equal("subfolder/file.txt");
+    it("should replace backslashes with forward slashes on Windows", () => {
+      if (os.platform() === "win32") {
+        const from = "c:\\path\\to\\from";
+        const to = "c:\\path\\to\\subfolder\\file.txt";
+        const result = getRelativePath(from, to);
+        expect(result).to.equal("subfolder/file.txt");
+      }
     });
   });
 

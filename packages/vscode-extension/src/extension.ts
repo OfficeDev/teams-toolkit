@@ -860,13 +860,13 @@ async function runBackgroundAsyncTasks(
     "fx-extension.isNewUser",
     isExistingUser === "no"
   );
-  TreatmentVariableValue.inProductDoc = (await exp
+  TreatmentVariableValue.inProductDoc = await exp
     .getExpService()
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.InProductDoc,
       true
-    )) as boolean | undefined;
+    );
 
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
 

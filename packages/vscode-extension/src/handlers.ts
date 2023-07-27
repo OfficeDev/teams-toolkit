@@ -436,7 +436,7 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
     }
 
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
-    const url = result.value as string;
+    const url = result.value;
     properties[TelemetryProperty.Hub] = hub;
 
     await openHubWebClient(hub, url);
@@ -644,7 +644,7 @@ export function showOutputChannel(args?: any[]): Result<any, FxError> {
   return ok(null);
 }
 
-export function openFolderHandler(args?: any[]): Result<any, FxError> {
+export function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
   const scheme = "file://";
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification,
@@ -657,7 +657,7 @@ export function openFolderHandler(args?: any[]): Result<any, FxError> {
     const uri = Uri.file(path);
     openFolderInExplorer(uri.fsPath);
   }
-  return ok(null);
+  return Promise.resolve(ok(null));
 }
 
 export async function addWebpart(args?: any[]) {
@@ -1742,7 +1742,7 @@ export async function showError(e: UserError | SystemError) {
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) await button.run();
   } else if (e instanceof SystemError) {
-    const sysError = e as SystemError;
+    const sysError = e;
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
@@ -1757,7 +1757,7 @@ export async function showError(e: UserError | SystemError) {
       },
     };
     await VsCodeLogInstance.error(
-      `code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`
+      `code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack || ""}`
     );
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
     if (button) await button.run();
@@ -1919,7 +1919,7 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
   );
   const workspacePath = globalVariables.workspaceUri?.fsPath;
   const validProject = isValidProject(workspacePath);
-  if (!validProject) {
+  if (!workspacePath || !validProject) {
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.PreviewAadManifestFile,
       new InvalidProjectError()
@@ -2025,18 +2025,18 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     if (args[0].type === "config") {
       sourcePath = path.resolve(
         `${workspacePath}/.${ConfigFolderName}/configs/`,
-        `config.${env}.json`
+        `config.${env as string}.json`
       );
     } else if (args[0].type === "state") {
       sourcePath = path.resolve(
         `${workspacePath}/.${ConfigFolderName}/states/`,
-        `state.${env}.json`
+        `state.${env as string}.json`
       );
     } else {
       // Load env folder from yml
       const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
       if (envFolder.isOk()) {
-        sourcePath = path.resolve(`${envFolder.value}/.env.${env}`);
+        sourcePath = path.resolve(`${envFolder.value || ""}/.env.${env as string}`);
       } else {
         return err(envFolder.error);
       }
@@ -2147,7 +2147,9 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
       return err(env.error);
     }
-    const manifestPath = `${workspacePath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value}.json`;
+    const manifestPath = `${
+      workspacePath || ""
+    }/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value || ""}.json`;
     const document = await workspace.openTextDocument(manifestPath);
     await window.showTextDocument(document);
   }
@@ -2172,7 +2174,9 @@ export async function editAadManifestTemplate(args: any[]) {
   );
   if (args && args.length > 1) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
+    const manifestPath = `${
+      workspacePath || ""
+    }/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
     const document = await workspace.openTextDocument(manifestPath);
     await window.showTextDocument(document);
   }

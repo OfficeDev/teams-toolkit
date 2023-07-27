@@ -15,7 +15,6 @@ import {
   err,
   ok,
   TeamsAppManifest,
-  OptionItem,
   ApiOperation,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
@@ -144,7 +143,7 @@ function sortOperations(operations: string[]): ApiOperation[] {
     operationsWithSeparator.push({ id: operation, label: operation, groupName: arr[0] });
   }
 
-  return operationsWithSeparator.sort((operation1: OptionItem, operation2: OptionItem) => {
+  return operationsWithSeparator.sort((operation1: ApiOperation, operation2: ApiOperation) => {
     const arr1 = operation1.id.toLowerCase().split(" ");
     const arr2 = operation2.id.toLowerCase().split(" ");
     return arr1[0] < arr2[0] ? -1 : arr1[0] > arr2[0] ? 1 : arr1[1].localeCompare(arr2[1]);

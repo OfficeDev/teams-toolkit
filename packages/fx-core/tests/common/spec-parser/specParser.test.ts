@@ -309,7 +309,7 @@ describe("SpecParser", () => {
       }
     });
 
-    it("should generate a new spec and write it to a file if outputSpecPath is provided", async () => {
+    it("should generate a new spec and write it to a yaml file", async () => {
       const specParser = new SpecParser("path/to/spec.yaml");
       const spec = { openapi: "3.0.0", paths: {} };
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
@@ -317,6 +317,7 @@ describe("SpecParser", () => {
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
       const writeFileStub = sinon.stub(fs, "writeFile").resolves();
       const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+      const JSONStringifySpy = sinon.spy(JSON, "stringify");
 
       const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
 
@@ -330,6 +331,36 @@ describe("SpecParser", () => {
         "path/to/adaptiveCardFolder"
       );
 
+      expect(JSONStringifySpy.calledOnce).to.be.false;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(writeFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(writeFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+    });
+
+    it("should generate a new spec and write it to a json file", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = { openapi: "3.0.0", paths: {} };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
+      const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+      const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+      const JSONStringifySpy = sinon.spy(JSON, "stringify");
+
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.json";
+      await specParser.generate(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        "path/to/adaptiveCardFolder"
+      );
+
+      expect(JSONStringifySpy.calledOnce).to.be.true;
       expect(specFilterStub.calledOnce).to.be.true;
       expect(writeFileStub.calledOnce).to.be.true;
       expect(manifestUpdaterStub.calledOnce).to.be.true;

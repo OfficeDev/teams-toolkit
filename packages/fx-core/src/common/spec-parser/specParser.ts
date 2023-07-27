@@ -174,7 +174,7 @@ export class SpecParser {
     await this.loadSpec();
     const newUnResolvedSpec = await specFilter(filter, this.unResolveSpec!);
     let resultStr;
-    if (this.specPath.endsWith(".yaml") || this.specPath.endsWith(".yml")) {
+    if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
       resultStr = jsyaml.dump(newUnResolvedSpec);
     } else {
       resultStr = JSON.stringify(newUnResolvedSpec, null, 2);

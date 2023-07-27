@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import { AppPackageFolderName, TemplateFolderName } from "@microsoft/teamsfx-api";
 import {
   MetadataV3,

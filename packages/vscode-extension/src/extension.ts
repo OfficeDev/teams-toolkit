@@ -98,10 +98,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  VsCodeLogInstance.info("Teams Toolkit extension is now active!");
+  void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
-  runBackgroundAsyncTasks(context, isTeamsFxProject);
+  void runBackgroundAsyncTasks(context, isTeamsFxProject);
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 }
 
@@ -127,14 +127,14 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
     m365TokenProvider: M365TokenInstance,
   });
   // Set region for M365 account every
-  M365TokenInstance.setStatusChangeMap(
+  void M365TokenInstance.setStatusChangeMap(
     "set-region",
     { scopes: AuthSvcScopes },
     async (status, token, accountInfo) => {
       if (status === "SignedIn") {
         const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
         if (tokenRes.isOk()) {
-          setRegion(tokenRes.value);
+          await setRegion(tokenRes.value);
         }
       }
     }
@@ -493,23 +493,21 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const manageCollaborator = vscode.commands.registerCommand(
     "fx-extension.manageCollaborator",
-    (node) => {
+    async (node) => {
       const envName = node.identifier;
-      Correlator.run(handlers.manageCollaboratorHandler, envName);
+      await Correlator.run(handlers.manageCollaboratorHandler, envName);
     }
   );
   context.subscriptions.push(manageCollaborator);
 
-  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
-    Correlator.run(handlers.treeViewLocalDebugHandler);
-  });
+  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", () =>
+    Correlator.run(handlers.treeViewLocalDebugHandler)
+  );
   context.subscriptions.push(localDebug);
 
   const localDebugWithIcon = vscode.commands.registerCommand(
     "fx-extension.localdebugWithIcon",
-    (node) => {
-      Correlator.run(handlers.treeViewLocalDebugHandler);
-    }
+    () => Correlator.run(handlers.treeViewLocalDebugHandler)
   );
   context.subscriptions.push(localDebugWithIcon);
 
@@ -570,17 +568,17 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const openResourceGroupInPortal = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
-    (node) => {
+    async (node) => {
       const envName = node.identifier;
-      Correlator.run(handlers.openResourceGroupInPortal, envName);
+      await Correlator.run(handlers.openResourceGroupInPortal, envName);
     }
   );
   context.subscriptions.push(openResourceGroupInPortal);
 
   const openManifestSchemaCmd = vscode.commands.registerCommand(
     "fx-extension.openSchema",
-    (...args) => {
-      Correlator.run(handlers.openExternalHandler, args);
+    async (...args) => {
+      await Correlator.run(handlers.openExternalHandler, args);
     }
   );
   context.subscriptions.push(openManifestSchemaCmd);
@@ -588,8 +586,8 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   if (isCopilotPluginEnabled()) {
     const addAPICmd = vscode.commands.registerCommand(
       "fx-extension.copilotPluginAddAPI",
-      (...args) => {
-        Correlator.run(handlers.copilotPluginAddAPIHandler, args);
+      async (...args) => {
+        await Correlator.run(handlers.copilotPluginAddAPIHandler, args);
       }
     );
     context.subscriptions.push(addAPICmd);
@@ -597,9 +595,9 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
-    (node) => {
+    async (node) => {
       const envName = node.identifier;
-      Correlator.run(handlers.openSubscriptionInPortal, envName);
+      await Correlator.run(handlers.openSubscriptionInPortal, envName);
     }
   );
   context.subscriptions.push(openSubscriptionInPortal);
@@ -670,7 +668,7 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
 }
 
 async function setAadManifestEnabledContext() {
-  vscode.commands.executeCommand("setContext", "fx-extension.isAadManifestEnabled", true);
+  await vscode.commands.executeCommand("setContext", "fx-extension.isAadManifestEnabled", true);
 }
 
 async function setTDPIntegrationEnabledContext() {
@@ -874,9 +872,9 @@ async function runBackgroundAsyncTasks(
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
   const upgrade = new ExtensionUpgrade(context);
-  upgrade.showChangeLog();
+  await upgrade.showChangeLog();
   const prereleasePage = new PrereleasePage(context);
-  prereleasePage.checkAndShow();
+  await prereleasePage.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 
@@ -910,7 +908,7 @@ function registerInCommandController(
 }
 
 function runCommand(commandName: string, args: unknown[]) {
-  commandController.runCommand(commandName, args);
+  void commandController.runCommand(commandName, args);
 }
 
 async function checkProjectUpgradable(): Promise<boolean> {
@@ -931,7 +929,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 
-    vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+    await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
     const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
 
@@ -939,7 +937,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
       await setAadManifestEnabledContext();
     });
 
-    runTeamsFxBackgroundTasks();
+    void runTeamsFxBackgroundTasks();
   }
 
   const upgradeable = await checkProjectUpgradable();

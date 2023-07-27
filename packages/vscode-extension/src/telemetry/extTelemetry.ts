@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-
 import * as vscode from "vscode";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
 import { Correlator, fillInTelemetryPropsForFxError } from "@microsoft/teamsfx-core";

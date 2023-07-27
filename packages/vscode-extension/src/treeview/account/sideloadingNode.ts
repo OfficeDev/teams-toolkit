@@ -20,8 +20,8 @@ export class SideloadingNode extends DynamicNode {
     this.contextValue = "checkSideloading";
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
-    return null;
+  public getChildren(): Promise<DynamicNode[] | undefined | null> {
+    return Promise.resolve(null);
   }
 
   public async getTreeItem(): Promise<vscode.TreeItem> {

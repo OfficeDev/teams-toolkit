@@ -137,13 +137,13 @@ export function activate(): Result<Void, FxError> {
     );
     ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
-    AzureAccountManager.setStatusChangeMap(
+    void AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
       (status, token, accountInfo) => {
         if (status === signedIn) {
-          window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
+          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
         } else if (status === signedOut) {
-          window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
+          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
         }
         return Promise.resolve();
       },
@@ -158,14 +158,14 @@ export function activate(): Result<Void, FxError> {
       accountInfo: Record<string, unknown> | undefined
     ) => {
       if (status === signedIn) {
-        window.showInformationMessage(localize("teamstoolkit.handlers.m365SignIn"));
+        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignIn"));
       } else if (status === signedOut) {
-        window.showInformationMessage(localize("teamstoolkit.handlers.m365SignOut"));
+        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignOut"));
       }
       return Promise.resolve();
     };
 
-    M365TokenInstance.setStatusChangeMap(
+    void M365TokenInstance.setStatusChangeMap(
       "successfully-sign-in-m365",
       { scopes: AppStudioScopes },
       m365NotificationCallback,
@@ -222,13 +222,13 @@ export function activate(): Result<Void, FxError> {
     }
   } catch (e) {
     const FxError: FxError = {
-      name: e.name,
+      name: (e as Error).name,
       source: ExtensionSource,
-      message: e.message,
-      stack: e.stack,
+      message: (e as Error).message,
+      stack: (e as Error).stack,
       timestamp: new Date(),
     };
-    showError(FxError);
+    void showError(FxError);
     return err(FxError);
   }
   return result;
@@ -373,7 +373,7 @@ export async function openFolder(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
     [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
   });
-  commands.executeCommand("vscode.openFolder", folderPath, true);
+  await commands.executeCommand("vscode.openFolder", folderPath, true);
 }
 
 export async function updateAutoOpenGlobalKey(
@@ -442,7 +442,7 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
     await openHubWebClient(hub, url);
   } catch (error) {
     const assembledError = assembleError(error);
-    showError(assembledError);
+    await showError(assembledError);
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.TreeViewPreview,
       assembledError,
@@ -638,13 +638,13 @@ export async function publishInDeveloperPortalHandler(
   return res;
 }
 
-export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
+export function showOutputChannel(args?: any[]): Result<any, FxError> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
   VsCodeLogInstance.outputChannel.show();
   return ok(null);
 }
 
-export async function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
+export function openFolderHandler(args?: any[]): Result<any, FxError> {
   const scheme = "file://";
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification,
@@ -765,7 +765,7 @@ export async function runCommand(
         );
     }
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   await processResult(eventName, result, inputs, telemetryProperties);
@@ -791,16 +791,16 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
       result = ok(uri);
     }
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   if (result.isErr()) {
     const error = result.error;
     if (!isUserCancelError(error)) {
       if (isLoginFailureError(error)) {
-        window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
+        void window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
       } else {
-        showError(error);
+        await showError(error);
       }
     }
   }
@@ -848,7 +848,7 @@ export async function runUserTask(
     inputs.env = envName;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   await processResult(eventName, result, inputs, telemetryProperties);
@@ -902,7 +902,7 @@ async function processResult(
       return;
     }
     if (isLoginFailureError(error)) {
-      window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
+      void window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
       return;
     }
     showError(error);
@@ -1597,7 +1597,7 @@ export async function listCollaborator(env?: string): Promise<Result<any, FxErro
     // TODO: For short-term workaround. Remove after webview is ready.
     VsCodeLogInstance.outputChannel.show();
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   await processResult(TelemetryEvent.ListCollaborator, result, inputs);
@@ -1643,7 +1643,7 @@ export async function manageCollaboratorHandler(env?: string): Promise<Result<an
         break;
     }
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaborator);
@@ -1739,10 +1739,10 @@ export async function showError(e: UserError | SystemError) {
           [TelemetryProperty.ErrorMessage]: notificationMessage,
           [TelemetryProperty.HelpLink]: e.helpLink!,
         });
-        commands.executeCommand("vscode.open", helpLinkUrl);
+        await commands.executeCommand("vscode.open", helpLinkUrl);
       },
     };
-    VsCodeLogInstance.error(
+    await VsCodeLogInstance.error(
       `code:${e.source}.${e.name}, message: ${e.message}\n Help link: ${e.helpLink}`
     );
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
@@ -1759,10 +1759,12 @@ export async function showError(e: UserError | SystemError) {
     const issue = {
       title: localize("teamstoolkit.handlers.reportIssue"),
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.open", issueLink);
+        await commands.executeCommand("vscode.open", issueLink);
       },
     };
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
+    await VsCodeLogInstance.error(
+      `code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`
+    );
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
     if (button) await button.run();
   } else {
@@ -1890,7 +1892,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     }
   } else {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    window.showErrorMessage(result.error.message);
+    void window.showErrorMessage(result.error.message);
   }
 }
 
@@ -2928,9 +2930,9 @@ export async function scaffoldFromDeveloperPortalHandler(
     );
     if (tokenRes.isErr()) {
       if ((tokenRes.error as any).displayMessage) {
-        window.showErrorMessage((tokenRes.error as any).displayMessage);
+        void window.showErrorMessage((tokenRes.error as any).displayMessage);
       } else {
-        vscode.window.showErrorMessage(
+        void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
@@ -2952,7 +2954,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
     await progressBar.end(true);
   } catch (e) {
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.generalError.message")
     );
     await progressBar.end(false);
@@ -2975,7 +2977,7 @@ export async function scaffoldFromDeveloperPortalHandler(
       error,
       properties
     );
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message")
     );
     return err(error);

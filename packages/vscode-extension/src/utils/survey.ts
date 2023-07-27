@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as vscode from "vscode";
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core";
@@ -61,7 +64,7 @@ export class ExtensionSurvey {
     this.timeToRemindMeLater = timeToRemindMeLater ? timeToRemindMeLater : TIME_TO_REMIND_ME_LATER;
   }
 
-  public async activate(): Promise<void> {
+  public activate(): void {
     if (this.needToShow && !this.checkSurveyInterval) {
       this.checkSurveyInterval = setInterval(async () => {
         if (!(await this.shouldShowBanner())) {

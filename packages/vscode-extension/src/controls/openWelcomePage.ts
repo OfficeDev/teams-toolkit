@@ -15,6 +15,6 @@ export async function openWelcomePageAfterExtensionInstallation(): Promise<void>
 
   // Let's show!
   await globalStateUpdate(welcomePageKey, true);
-  vscode.commands.executeCommand("fx-extension.openWelcome", TelemetryTriggerFrom.Auto);
-  vscode.commands.executeCommand("workbench.view.extension.teamsfx");
+  await vscode.commands.executeCommand("fx-extension.openWelcome", TelemetryTriggerFrom.Auto);
+  await vscode.commands.executeCommand("workbench.view.extension.teamsfx");
 }

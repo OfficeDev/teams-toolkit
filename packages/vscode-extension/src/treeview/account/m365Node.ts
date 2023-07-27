@@ -66,11 +66,11 @@ export class M365AccountNode extends DynamicNode {
     this.eventEmitter.fire(this);
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
-    return [this.sideloadingNode];
+  public getChildren(): Promise<DynamicNode[] | undefined | null> {
+    return Promise.resolve([this.sideloadingNode]);
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public getTreeItem(): Promise<vscode.TreeItem> {
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     if (this.status !== AccountItemStatus.SignedIn) {
       this.label = localize("teamstoolkit.handlers.signIn365");
@@ -97,6 +97,6 @@ export class M365AccountNode extends DynamicNode {
     } else {
       this.iconPath = m365Icon;
     }
-    return this;
+    return Promise.resolve(this);
   }
 }

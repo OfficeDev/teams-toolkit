@@ -78,7 +78,7 @@ class CommandController {
   public async runCommand(commandName: string, args: unknown[]) {
     const command = this.commandMap.get(commandName);
     if (command) {
-      command.callback(args);
+      await command.callback(args);
     }
   }
 

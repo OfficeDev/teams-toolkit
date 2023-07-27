@@ -14,6 +14,7 @@ export async function updateManifest(
   adaptiveCardFolder: string,
   spec: OpenAPIV3.Document
 ): Promise<PartialManifest> {
+  // TODO: manifest interface can be updated when manifest parser library is ready
   const originalManifest: PartialManifest = await fs.readJSON(manifestPath);
 
   const commands = await generateCommands(spec, adaptiveCardFolder, manifestPath);

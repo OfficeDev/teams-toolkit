@@ -61,14 +61,17 @@ export class CopilotPluginGenerator {
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
     try {
+      const appName = inputs[QuestionNames.AppName];
+      const language = inputs[QuestionNames.ProgrammingLanguage];
+      const safeProjectNameFromVS =
+        language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+      context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
       // download template
       const templateRes = await Generator.generateTemplate(
         context,
         destinationPath,
         templateName,
-        inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.CSharp
-          ? ProgrammingLanguage.CSharp
-          : undefined
+        language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
       );
       if (templateRes.isErr()) return err(templateRes.error);
 

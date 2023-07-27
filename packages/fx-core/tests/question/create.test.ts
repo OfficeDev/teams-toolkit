@@ -992,6 +992,10 @@ describe("scaffold question", () => {
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
+          assert.deepEqual(inputs.supportedApisFromApiSpec, [
+            { id: "get operation1", label: "get operation1", groupName: "GET" },
+            { id: "get operation2", label: "get operation2", groupName: "GET" },
+          ]);
           assert.isUndefined(res);
         });
 
@@ -1111,6 +1115,10 @@ describe("scaffold question", () => {
 
           const validate = question.inputBoxConfig.additionalValidationOnAccept!;
           const res = await validate("url1", inputs);
+          assert.deepEqual(inputs.supportedApisFromApiSpec, [
+            { id: "get operation1", label: "get operation1", groupName: "GET" },
+            { id: "get operation2", label: "get operation2", groupName: "GET" },
+          ]);
           assert.isUndefined(res);
         });
 

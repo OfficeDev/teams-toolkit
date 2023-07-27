@@ -1508,8 +1508,8 @@ describe("handlers", () => {
   });
 
   describe("getPathDelimiterHandler", () => {
-    it("happy path", async () => {
-      const actualPath = await handlers.getPathDelimiterHandler();
+    it("happy path", () => {
+      const actualPath = handlers.getPathDelimiterHandler();
       chai.assert.equal(actualPath, path.delimiter);
     });
   });

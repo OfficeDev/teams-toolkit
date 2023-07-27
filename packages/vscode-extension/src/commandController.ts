@@ -88,7 +88,7 @@ class CommandController {
     if (commandName) {
       const command = this.commandMap.get(commandName);
       const blockedCommands = [...this.exclusiveCommands.values()].filter((x) => x !== commandName);
-      await treeViewManager.setRunningCommand(commandName, blockedCommands, command?.blockTooltip);
+      treeViewManager.setRunningCommand(commandName, blockedCommands, command?.blockTooltip);
     }
   }
 
@@ -97,7 +97,7 @@ class CommandController {
     const commandName = this.commandNameMap.get(operation);
     if (commandName) {
       const blockedCommands = [...this.exclusiveCommands.values()].filter((x) => x !== commandName);
-      await treeViewManager.restoreRunningCommand(blockedCommands);
+      treeViewManager.restoreRunningCommand(blockedCommands);
     }
   }
 

@@ -185,11 +185,11 @@ class WarningNode extends DynamicNode {
     this.tooltip = this.formatWarningMessages(accountStatus.warnings);
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {
     return this;
   }
 
@@ -214,14 +214,14 @@ class SubscriptionNode extends DynamicNode {
     this.iconPath = subscriptionIcon;
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     if (this.resourceGroupNode) {
       return [this.resourceGroupNode];
     }
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override async getTreeItem(): Promise<vscode.TreeItem> {
     this.tooltip = this.subscriptionInfo.subscriptionName
       ? util.format(
           localize("teamstoolkit.envTree.subscriptionTooltip"),
@@ -257,11 +257,11 @@ class ResourceGroupNode extends DynamicNode {
     this.iconPath = resourceGroupIcon;
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {
     return this;
   }
 }

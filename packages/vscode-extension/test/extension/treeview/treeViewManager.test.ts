@@ -134,7 +134,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(commands.length, 4);
 
     sandbox.stub(globalVariables, "isSPFxProject").value(true);
-    await treeViewManager.updateTreeViewsOnSPFxChanged();
+    treeViewManager.updateTreeViewsOnSPFxChanged();
 
     chai.assert.equal(commands.length, 5);
   });

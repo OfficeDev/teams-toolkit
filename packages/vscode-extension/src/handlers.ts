@@ -300,7 +300,7 @@ export function addFileSystemWatcher(workspacePath: string) {
 export async function refreshSPFxTreeOnFileChanged() {
   await globalVariables.initializeGlobalVariables(globalVariables.context);
 
-  await TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
+  TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
 
 export async function sendSDKVersionTelemetry(filePath: string) {

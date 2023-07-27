@@ -107,7 +107,7 @@ export namespace ExtTelemetry {
     }
 
     if (settingsVersion !== undefined) {
-      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryEvent(eventName, properties, measurements);
@@ -137,7 +137,7 @@ export namespace ExtTelemetry {
     }
 
     if (settingsVersion !== undefined) {
-      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
@@ -163,7 +163,7 @@ export namespace ExtTelemetry {
     }
 
     if (settingsVersion !== undefined) {
-      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryException(error, properties, measurements);

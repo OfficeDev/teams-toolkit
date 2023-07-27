@@ -62,7 +62,7 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
     return element.getTreeItem();
   }
 
-  public getChildren(element?: DynamicNode): Thenable<DynamicNode[] | undefined | null> {
+  public getChildren(element?: DynamicNode): vscode.ProviderResult<DynamicNode[]> {
     if (!element) {
       return this.getEnvironments();
     }

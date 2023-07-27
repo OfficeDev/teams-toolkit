@@ -48,12 +48,12 @@ export class AzureAccountNode extends DynamicNode {
     this.eventEmitter.fire(this);
   }
 
-  public getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     // No subscription info in V3
-    return Promise.resolve(null);
+    return null;
   }
 
-  public getTreeItem(): Promise<vscode.TreeItem> {
+  public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {
     if (this.status === AccountItemStatus.SigningIn) {
       this.iconPath = loadingIcon;
     } else {
@@ -77,6 +77,6 @@ export class AzureAccountNode extends DynamicNode {
       localize("teamstoolkit.accountTree.azureAccountTooltip")
     );
 
-    return Promise.resolve(this);
+    return this;
   }
 }

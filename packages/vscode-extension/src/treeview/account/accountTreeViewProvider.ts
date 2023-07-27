@@ -43,22 +43,22 @@ class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
     );
   }
 
-  public getTreeItem(element: DynamicNode): Thenable<vscode.TreeItem> | vscode.TreeItem {
+  public getTreeItem(element: DynamicNode): vscode.TreeItem | Promise<vscode.TreeItem> {
     return element.getTreeItem();
   }
 
-  public getChildren(element?: DynamicNode): Thenable<DynamicNode[] | undefined | null> {
+  public getChildren(element?: DynamicNode): vscode.ProviderResult<DynamicNode[]> {
     if (!element) {
       return this.getAccountNodes();
     }
     return element.getChildren();
   }
 
-  private getAccountNodes(): Promise<DynamicNode[]> {
+  private getAccountNodes(): DynamicNode[] {
     if (isSPFxProject) {
-      return Promise.resolve([this.m365AccountNode]);
+      return [this.m365AccountNode];
     } else {
-      return Promise.resolve([this.m365AccountNode, this.azureAccountNode]);
+      return [this.m365AccountNode, this.azureAccountNode];
     }
   }
 }

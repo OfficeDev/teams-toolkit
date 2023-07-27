@@ -106,7 +106,7 @@ class TreeViewManager {
     }
   }
 
-  public async updateTreeViewsOnSPFxChanged(): Promise<void> {
+  public updateTreeViewsOnSPFxChanged(): void {
     const developmentTreeviewProvider = this.getTreeView(
       "teamsfx-development"
     ) as CommandsTreeViewProvider;
@@ -121,7 +121,7 @@ class TreeViewManager {
     return this.treeviewMap.get(viewName);
   }
 
-  public async setRunningCommand(
+  public setRunningCommand(
     commandName: string,
     blockedCommands: string[],
     blockingTooltip?: string
@@ -143,7 +143,7 @@ class TreeViewManager {
     }
   }
 
-  public async restoreRunningCommand(blockedCommands: string[]) {
+  public restoreRunningCommand(blockedCommands: string[]) {
     if (!this.runningCommand) {
       return;
     }

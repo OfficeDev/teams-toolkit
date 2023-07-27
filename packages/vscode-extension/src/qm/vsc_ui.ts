@@ -217,7 +217,7 @@ export class VsCodeUI implements UserInteraction {
             if (typeof config.options === "function") {
               options = await config.options();
             } else {
-              options = config.options as StaticOptions;
+              options = config.options;
             }
             if (typeof config.default === "function") {
               defaultValue = await config.default();
@@ -264,7 +264,7 @@ export class VsCodeUI implements UserInteraction {
             .then(onDataLoaded)
             .catch((e) => resolve(err(assembleError(e))));
         } else {
-          options = config.options as StaticOptions;
+          options = config.options;
           defaultValue = config.default;
           onDataLoaded().catch((e) => resolve(err(assembleError(e))));
         }
@@ -297,7 +297,7 @@ export class VsCodeUI implements UserInteraction {
             const triggerItem: OptionItem | undefined = (itemOptions as OptionItem[]).find(
               (singleOption: string | OptionItem) => {
                 if (typeof singleOption !== "string") {
-                  return (singleOption as OptionItem).id === event.item.id;
+                  return singleOption.id === event.item.id;
                 }
               }
             );
@@ -357,7 +357,7 @@ export class VsCodeUI implements UserInteraction {
             if (typeof config.options === "function") {
               options = await config.options();
             } else {
-              options = config.options as StaticOptions;
+              options = config.options;
             }
             if (typeof config.default === "function") {
               defaultValue = await config.default();
@@ -421,7 +421,7 @@ export class VsCodeUI implements UserInteraction {
             .then(onDataLoaded)
             .catch((e) => resolve(err(assembleError(e))));
         } else {
-          options = config.options as StaticOptions;
+          options = config.options;
           defaultValue = config.default as string[] | [];
           onDataLoaded().catch((e) => resolve(err(assembleError(e))));
         }
@@ -617,7 +617,7 @@ export class VsCodeUI implements UserInteraction {
                   {
                     id: "default",
                     label: localize("teamstoolkit.qm.defaultFolder"),
-                    description: defaultValue as string,
+                    description: defaultValue,
                   },
                 ]
               : []),
@@ -693,7 +693,7 @@ export class VsCodeUI implements UserInteraction {
   async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     if (config.default && typeof config.default === "function") {
       //TODO quick workaround solution, which will blocking the UI popup
-      config.default = (await config.default()) as string;
+      config.default = await config.default();
     }
     return this.selectFileInQuickPick(config, "file", config.default as string);
   }
@@ -701,12 +701,12 @@ export class VsCodeUI implements UserInteraction {
   async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
     if (config.default && typeof config.default === "function") {
       //TODO  quick workaround solution, which will blocking the UI popup
-      config.default = (await config.default()) as string[];
+      config.default = await config.default();
     }
     return this.selectFileInQuickPick(
       config,
       "files",
-      config.default ? (config.default as string[]).join(";") : undefined
+      config.default ? config.default.join(";") : undefined
     );
   }
 

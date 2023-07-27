@@ -61,7 +61,7 @@ describe("utils", () => {
       expect(result).to.equal("file.txt");
     });
 
-    it("should use slash", () => {
+    it("should get relative path with subfolder", () => {
       const from = "/path/to/from";
       const to = "/path/to/subfolder/file.txt";
       const result = getRelativePath(from, to);
@@ -69,10 +69,10 @@ describe("utils", () => {
     });
 
     it("should replace backslashes with forward slashes", () => {
-      const from = "C:\\path\\to\\from";
-      const to = "C:\\path\\to\\file.txt";
+      const from = "path\\to\\from";
+      const to = "path\\to\\subfolder\\file.txt";
       const result = getRelativePath(from, to);
-      expect(result).to.equal("file.txt");
+      expect(result).to.equal("subfolder/file.txt");
     });
   });
 

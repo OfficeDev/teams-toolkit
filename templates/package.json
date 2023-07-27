@@ -40,7 +40,8 @@
         "ts/notification-restify",
         "ts/notification-timer-trigger",
         "ts/workflow",
-        "ts/sso-tab-with-obo-flow"
+        "ts/sso-tab-with-obo-flow",
+        "ts/copilot-plugin-from-scratch"
     ],
     "devDependencies": {
         "@microsoft/eslint-plugin-teamsfx": "^0.0.4",

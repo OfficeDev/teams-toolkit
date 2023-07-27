@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   CLIPlatforms,
   FolderQuestion,
   IQTreeNode,
@@ -1359,26 +1360,6 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         throw new EmptyOptionError();
       }
 
-      //   const operationMap = new Map<string, string[]>();
-      //   for(const operation of sortedOperations) {
-      //     const arr = operation.toLowerCase().split(" ");
-      //     if(operationMap.has(arr[1])) {
-      //       operationMap.get(arr[1])!.push(arr[0]);
-      //     }else {
-      //       operationMap.set(arr[1], [arr[0]]);
-      //     }
-
-      //   }
-
-      //   for(const path of operationMap.keys()) {
-      //     for(const method of operationMap.get(path)!) {
-      //       const operation = path + " " +method;
-      //     operationsWithSeparator.push({id: operation, label: operation, groupName: path});
-      //     }
-
-      //  }
-
-      //   return operationsWithSeparator;
       let operations = inputs.supportedApisFromApiSpec;
 
       if (!includeExistingAPIs) {
@@ -1387,24 +1368,14 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         if (manifest.isOk()) {
           const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
           operations = inputs.supportedApisFromApiSpec.filter(
-            (operation: string) => !existingOperationIds.includes(operation)
+            (operation: ApiOperation) => !existingOperationIds.includes(operation.id)
           );
         } else {
           throw manifest.error;
         }
       }
 
-      const operationsWithSeparator: OptionItem[] = [];
-      for (const operation of operations) {
-        const arr = operation.toUpperCase().split(" ");
-        operationsWithSeparator.push({ id: operation, label: operation, groupName: arr[0] });
-      }
-
-      return operationsWithSeparator.sort((operation1: OptionItem, operation2: OptionItem) => {
-        const arr1 = operation1.id.toLowerCase().split(" ");
-        const arr2 = operation2.id.toLowerCase().split(" ");
-        return arr1[0] < arr2[0] ? -1 : arr1[0] > arr2[0] ? 1 : arr1[1].localeCompare(arr2[1]);
-      });
+      return operations;
     },
   };
 }

@@ -13,6 +13,16 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
+export interface ApiOperation {
+    // (undocumented)
+    groupName: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+}
+
+// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public (undocumented)
@@ -291,7 +301,7 @@ export interface Inputs extends Record<string, any> {
     // (undocumented)
     stage?: Stage;
     // (undocumented)
-    supportedApisFromApiSpec?: string[];
+    supportedApisFromApiSpec?: ApiOperation[];
     // (undocumented)
     targetEnvName?: string;
     // (undocumented)

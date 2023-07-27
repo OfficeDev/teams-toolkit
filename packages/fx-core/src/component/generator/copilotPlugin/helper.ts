@@ -15,6 +15,8 @@ import {
   err,
   ok,
   TeamsAppManifest,
+  OptionItem,
+  ApiOperation,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -25,8 +27,6 @@ import {
 } from "../../../common/spec-parser/interfaces";
 import { SpecParser } from "../../../common/spec-parser/specParser";
 import fs from "fs-extra";
-import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
@@ -108,7 +108,7 @@ export async function listOperations(
   manifest: OpenAIPluginManifest | undefined,
   apiSpecUrl: string | undefined,
   shouldLogWarning = true
-): Promise<Result<string[], ErrorResult[]>> {
+): Promise<Result<ApiOperation[], ErrorResult[]>> {
   if (manifest) {
     const errors = validateOpenAIPluginManifest(manifest);
     if (errors.length > 0) {
@@ -133,7 +133,22 @@ export async function listOperations(
   }
 
   const operations = await specParser.list();
-  return ok(operations);
+  const sortedOperations = sortOperations(operations);
+  return ok(sortedOperations);
+}
+
+function sortOperations(operations: string[]): ApiOperation[] {
+  const operationsWithSeparator: ApiOperation[] = [];
+  for (const operation of operations) {
+    const arr = operation.toUpperCase().split(" ");
+    operationsWithSeparator.push({ id: operation, label: operation, groupName: arr[0] });
+  }
+
+  return operationsWithSeparator.sort((operation1: OptionItem, operation2: OptionItem) => {
+    const arr1 = operation1.id.toLowerCase().split(" ");
+    const arr2 = operation2.id.toLowerCase().split(" ");
+    return arr1[0] < arr2[0] ? -1 : arr1[0] > arr2[0] ? 1 : arr1[1].localeCompare(arr2[1]);
+  });
 }
 
 function formatTelemetryValidationProperty(result: ErrorResult | WarningResult): string {

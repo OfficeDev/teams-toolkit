@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
   Func,
@@ -429,7 +430,7 @@ export default class ServerConnection implements IServerConnection {
   public async listOpenAPISpecOperationsRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<string[], FxError>> {
+  ): Promise<Result<ApiOperation[], FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,

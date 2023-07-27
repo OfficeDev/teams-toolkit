@@ -1,4 +1,4 @@
-{{{header}}}
+{{#header}} version: 1.0.0 {{/header}}
 
 provision:
 {{{teamsAppCreate}}}
@@ -11,7 +11,7 @@ provision:
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
 
 {{{teamsAppValidateManifest}}}
-{{{teamsAppZipAppPackage}}}
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}
 {{{teamsAppExtendToM365}}}
@@ -24,8 +24,7 @@ deploy:
     with:
       args: install --no-audit
 
-{{{fileCreateOrUpdateEnvironmentFile}}}
-      envs:
+{{#fileCreateOrUpdateEnvironmentFile}} {{/fileCreateOrUpdateEnvironmentFile}}
         PORT: 53000
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}

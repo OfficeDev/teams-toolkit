@@ -36,6 +36,7 @@ import {
 
 import {
   InputValidationError,
+  MissingRequiredInputError,
   SelectSubscriptionError,
   UnhandledError,
   assembleError,
@@ -50,6 +51,7 @@ import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
 import * as util from "util";
 import { strings } from "./resource";
+import { globals } from "./globals";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
@@ -155,15 +157,16 @@ class CLIUserInteraction implements UserInteraction {
   }
 
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
-    if (this.presetAnswers.has(question.name!)) {
-      const answer = this.presetAnswers.get(question.name!);
+    const questionName = question.name!;
+    if (this.presetAnswers.has(questionName)) {
+      const answer = this.presetAnswers.get(questionName);
       if (answer === undefined) {
         /// TOOD: this is only for APIM
         return ok(answer);
       }
       const result = await question.validate?.(answer);
       if (typeof result === "string") {
-        return err(new InputValidationError(question.name!, result));
+        return err(new InputValidationError(questionName, result));
       }
       return ok(answer);
     }
@@ -173,7 +176,12 @@ class CLIUserInteraction implements UserInteraction {
       if (question.default !== undefined) {
         // if it has a defualt value, return it at first.
         return ok(question.default);
-      } else if (
+      }
+      if (globals.options.includes(questionName)) {
+        // if the question is the required option, return error if value is missing
+        return err(new MissingRequiredInputError(questionName, cliSource));
+      }
+      if (
         question.type === "list" &&
         Array.isArray(question.choices) &&
         question.choices.length > 0

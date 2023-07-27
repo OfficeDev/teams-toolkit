@@ -14,7 +14,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
@@ -90,7 +90,6 @@ deploy:
     name: install dependencies
     with:
       args: install --production
-  # Run npm command
   - uses: cli/runNpmCommand
     name: build app
     with:
@@ -98,7 +97,6 @@ deploy:
   # Deploy bits to Azure Storage Static Website
   - uses: azureStorage/deploy
     with:
-      workingDirectory: .
       # Deploy base folder
       artifactFolder: build
       # The resource id of the cloud resource to be deployed to.
@@ -114,6 +112,7 @@ publish:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
       # Path to manifest template

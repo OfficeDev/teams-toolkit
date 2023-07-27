@@ -1,0 +1,12 @@
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
+    with:
+      botId: ${{BOT_ID}}
+      name: {{appName}}
+      messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
+      description: ""
+      channels:
+        - name: msteams
+      {{#m365extensions}}
+        - name: m365extensions
+      {{/m365extensions}}

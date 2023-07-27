@@ -311,6 +311,7 @@ jobs:
           rm -f versions.json
           echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
           npx lerna ls -all --json > versions.json
+          echo ${{ inputs.series }} > series.txt
           find ./packages/vscode-extension -type f -name '*.vsix' -exec mv {} . \;
           [ -d ./packages/server/lib ] && find ./packages/server/lib -type f -name '*.exe' -exec mv {} server.exe \;
 
@@ -320,6 +321,7 @@ jobs:
           name: release
           path: |
             changed.txt
+            series.txt
             versions.json
             *.vsix
             *.exe

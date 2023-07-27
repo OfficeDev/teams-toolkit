@@ -7,8 +7,8 @@ on:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
 
-  # schedule:
-  #   - cron: "0 22 * * *"
+  schedule:
+    - cron: "0 22 * * *"
 
   pull_request_target:
 
@@ -180,7 +180,7 @@ jobs:
           path: packages/tests/src/e2e/resource
 
       - name: Download samples(rc)
-        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false
+        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false && contains(matrix.cases, 'SignatureOutlook') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -193,7 +193,15 @@ jobs:
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
           ref: main
-          path: packages/tests/e2e/src/resource
+          path: packages/tests/src/e2e/resource
+      
+      - name: Download samples from office repo
+        if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'SignatureOutlook')
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/Office-Add-in-samples
+          ref: main
+          path: packages/tests/src/e2e/resource
 
       - name: run test
         working-directory: packages/tests/src/e2e

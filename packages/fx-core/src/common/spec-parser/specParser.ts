@@ -18,6 +18,7 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
+import { isSupportedApi } from "./utils";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -171,8 +172,13 @@ export class SpecParser {
     await this.loadSpec();
     const newUnResolvedSpec = await specFilter(filter, this.unResolveSpec!);
     if (outputSpecPath) {
-      const ymlString = jsyaml.dump(newUnResolvedSpec);
-      await fs.writeFile(outputSpecPath, ymlString);
+      let resultStr;
+      if (this.specPath.endsWith(".yaml")) {
+        resultStr = jsyaml.dump(newUnResolvedSpec);
+      } else {
+        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
+      }
+      await fs.writeFile(outputSpecPath, resultStr);
     }
 
     // TODO: other implementations
@@ -196,12 +202,10 @@ export class SpecParser {
     for (const path in paths) {
       const methods = paths[path];
       for (const method in methods) {
-        // only list get and post method without auth
-        if (
-          (method === ConstantString.GetMethod || method === ConstantString.PostMethod) &&
-          !methods[method]?.security
-        ) {
-          result[`${method.toUpperCase()} ${path}`] = methods[method] as OpenAPIV3.OperationObject;
+        // For developer preview, only support GET operation with only 1 parameter without auth
+        if (isSupportedApi(method, path, spec)) {
+          const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+          result[`${method.toUpperCase()} ${path}`] = operationObject;
         }
       }
     }

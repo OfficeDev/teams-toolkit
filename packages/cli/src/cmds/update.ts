@@ -24,12 +24,14 @@ import {
 import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { globals } from "../globals";
 export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
   public readonly command = this.commandHead;
   public readonly description = "Update the AAD App in the current application.";
 
   public builder(yargs: Argv): Argv<any> {
+    globals.options = ["manifest-file-path", "env"];
     return yargs
       .options(EnvOptions)
       .options(RootFolderOptions)

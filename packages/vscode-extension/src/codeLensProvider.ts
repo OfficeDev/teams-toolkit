@@ -582,16 +582,19 @@ export class TeamsAppYamlCodeLensProvider implements vscode.CodeLensProvider {
       return {
         title: "🔄" + localize("teamstoolkit.commands.provision.title"),
         command: "fx-extension.provision",
+        arguments: [TelemetryTriggerFrom.CodeLens],
       };
     } else if (match.startsWith("deploy")) {
       return {
         title: "🔄" + localize("teamstoolkit.commands.deploy.title"),
         command: "fx-extension.deploy",
+        arguments: [TelemetryTriggerFrom.CodeLens],
       };
     } else if (match.startsWith("publish")) {
       return {
         title: "🔄" + localize("teamstoolkit.commands.publish.title"),
         command: "fx-extension.publish",
+        arguments: [TelemetryTriggerFrom.CodeLens],
       };
     } else {
       return undefined;

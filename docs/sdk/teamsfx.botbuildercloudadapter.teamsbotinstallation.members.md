@@ -11,14 +11,14 @@
 
 Get members from this bot installation.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 members(): Promise<Member[]>;
 ```
-<b>Returns:</b>
+**Returns:**
 
-Promise&lt;[Member](./teamsfx.member.md)<!-- -->\[\]&gt;
+Promise&lt;Member\[\]&gt;
 
 An array of members from where the bot is installed.
 

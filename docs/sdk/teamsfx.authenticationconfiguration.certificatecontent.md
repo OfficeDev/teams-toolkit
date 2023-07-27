@@ -6,7 +6,7 @@
 
 The content of a PEM-encoded public/private key certificate.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly certificateContent?: string;

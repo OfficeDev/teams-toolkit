@@ -6,7 +6,7 @@
 
 Constructs a new instance of the `TeamsUserCredential` class
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(authConfig: AuthenticationConfiguration);

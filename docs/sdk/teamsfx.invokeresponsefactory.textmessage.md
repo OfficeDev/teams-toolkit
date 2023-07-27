@@ -6,7 +6,7 @@
 
 Create an invoke response from a text message. The type of the invoke response is `application/vnd.microsoft.activity.message` indicates the request was successfully processed.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 static textMessage(message: string): InvokeResponse;
@@ -18,7 +18,7 @@ static textMessage(message: string): InvokeResponse;
 |  --- | --- | --- |
 |  message | string | A text message included in a invoke response. |
 
-<b>Returns:</b>
+**Returns:**
 
 InvokeResponse
 

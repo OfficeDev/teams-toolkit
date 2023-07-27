@@ -6,7 +6,7 @@
 
 The commands to registered with the sso command bot. Each sso command should implement the interface [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) so that it can be correctly handled by this command bot.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 ssoCommands?: TeamsFxBotSsoCommandHandler[];

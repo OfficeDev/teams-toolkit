@@ -6,7 +6,7 @@
 
 The bound `BotFrameworkAdapter`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly adapter: BotFrameworkAdapter;

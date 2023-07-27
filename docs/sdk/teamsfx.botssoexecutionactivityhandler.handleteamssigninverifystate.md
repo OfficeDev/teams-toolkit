@@ -6,7 +6,7 @@
 
 Receives invoke activities with Activity name of 'signin/verifyState'.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
@@ -19,7 +19,7 @@ handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificatio
 |  context | TurnContext | A context object for this turn. |
 |  query | SigninStateVerificationQuery | Signin state (part of signin action auth flow) verification invoke query. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;void&gt;
 

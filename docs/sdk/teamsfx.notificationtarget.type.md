@@ -6,7 +6,7 @@
 
 The type of target, could be "Channel" or "Group" or "Person".
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly type?: NotificationTargetType;

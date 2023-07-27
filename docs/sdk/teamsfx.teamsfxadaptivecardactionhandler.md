@@ -6,7 +6,7 @@
 
 Interface for adaptive card action handler that can process card action invoke and return a response.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface TeamsFxAdaptiveCardActionHandler 
@@ -14,10 +14,10 @@ export interface TeamsFxAdaptiveCardActionHandler
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [adaptiveCardResponse?](./teamsfx.teamsfxadaptivecardactionhandler.adaptivecardresponse.md) | [AdaptiveCardResponse](./teamsfx.adaptivecardresponse.md) | <i>(Optional)</i> Specify the behavior for how the card response will be sent in Teams conversation. The default value is <code>AdaptiveCardResponse.ReplaceForInteractor</code>, which means the card response will replace the current one only for the interactor. |
-|  [triggerVerb](./teamsfx.teamsfxadaptivecardactionhandler.triggerverb.md) | string | The verb defined in adaptive card action that can trigger this handler. The verb string here is case-insensitive. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [adaptiveCardResponse?](./teamsfx.teamsfxadaptivecardactionhandler.adaptivecardresponse.md) |  | [AdaptiveCardResponse](./teamsfx.adaptivecardresponse.md) | _(Optional)_ Specify the behavior for how the card response will be sent in Teams conversation. The default value is <code>AdaptiveCardResponse.ReplaceForInteractor</code>, which means the card response will replace the current one only for the interactor. |
+|  [triggerVerb](./teamsfx.teamsfxadaptivecardactionhandler.triggerverb.md) |  | string | The verb defined in adaptive card action that can trigger this handler. The verb string here is case-insensitive. |
 
 ## Methods
 

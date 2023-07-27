@@ -6,7 +6,7 @@
 
 The request handler to integrate with web request.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext) => Promise<any>): Promise<void>;
@@ -18,9 +18,9 @@ requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext)
 |  --- | --- | --- |
 |  req | WebRequest | an Express or Restify style request object. |
 |  res | WebResponse | an Express or Restify style response object. |
-|  logic | (context: TurnContext) =&gt; Promise&lt;any&gt; | the additional function to handle bot context. |
+|  logic | (context: TurnContext) =&gt; Promise&lt;any&gt; | _(Optional)_ the additional function to handle bot context. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;void&gt;
 

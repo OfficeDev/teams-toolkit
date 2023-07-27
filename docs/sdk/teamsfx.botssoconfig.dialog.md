@@ -4,7 +4,7 @@
 
 ## BotSsoConfig.dialog property
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 dialog?: {

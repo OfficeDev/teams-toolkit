@@ -6,7 +6,7 @@
 
 constructor of the notification bot.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions);
@@ -17,7 +17,7 @@ constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | BotFrameworkAdapter | the bound <code>BotFrameworkAdapter</code> |
-|  options | NotificationOptions | initialize options |
+|  options | [NotificationOptions](./teamsfx.notificationoptions_2.md) | _(Optional)_ initialize options |
 
 ## Remarks
 

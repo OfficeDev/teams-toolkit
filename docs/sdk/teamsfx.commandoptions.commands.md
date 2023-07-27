@@ -6,7 +6,7 @@
 
 The commands to registered with the command bot. Each command should implement the interface [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) so that it can be correctly handled by this command bot.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 commands?: TeamsFxBotCommandHandler[];

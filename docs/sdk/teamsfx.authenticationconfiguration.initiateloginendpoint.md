@@ -6,7 +6,7 @@
 
 Login page for Teams to redirect to. Default value comes from INITIATE\_LOGIN\_ENDPOINT environment variable.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly initiateLoginEndpoint?: string;

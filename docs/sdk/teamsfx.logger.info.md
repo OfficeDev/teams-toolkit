@@ -6,7 +6,7 @@
 
 Writes to info level logging or lower.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 info(message: string): void;
@@ -18,7 +18,7 @@ info(message: string): void;
 |  --- | --- | --- |
 |  message | string |  |
 
-<b>Returns:</b>
+**Returns:**
 
 void
 

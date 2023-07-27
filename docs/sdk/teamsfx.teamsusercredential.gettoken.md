@@ -6,7 +6,7 @@
 
 Get access token from credential.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
@@ -17,9 +17,9 @@ getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessTo
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  scopes | string \| string\[\] |  |
-|  options | GetTokenOptions |  |
+|  options | GetTokenOptions | _(Optional)_ |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;AccessToken \| null&gt;
 

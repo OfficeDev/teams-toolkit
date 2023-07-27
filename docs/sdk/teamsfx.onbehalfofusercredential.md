@@ -6,12 +6,12 @@
 
 Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class OnBehalfOfUserCredential implements TokenCredential 
 ```
-<b>Implements:</b> TokenCredential
+**Implements:** TokenCredential
 
 ## Remarks
 

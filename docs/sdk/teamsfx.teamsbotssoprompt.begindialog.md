@@ -6,7 +6,7 @@
 
 Called when a prompt dialog is pushed onto the dialog stack and is being activated.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
@@ -18,7 +18,7 @@ beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
 |  --- | --- | --- |
 |  dc | DialogContext | The DialogContext for the current turn of the conversation. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;DialogTurnResult&gt;
 

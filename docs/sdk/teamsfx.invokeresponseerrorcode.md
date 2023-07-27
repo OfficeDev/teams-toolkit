@@ -6,7 +6,7 @@
 
 Status code for an `application/vnd.microsoft.error` invoke response.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare enum InvokeResponseErrorCode 

@@ -6,7 +6,7 @@
 
 Read one notification target by its key.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 read(key: string): Promise<{
@@ -20,7 +20,7 @@ read(key: string): Promise<{
 |  --- | --- | --- |
 |  key | string | the key of a notification target. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;{ \[key: string\]: unknown; } \| undefined&gt;
 

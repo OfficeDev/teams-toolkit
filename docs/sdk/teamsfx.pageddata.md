@@ -6,7 +6,7 @@
 
 Represents a page of data.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface PagedData<T> 
@@ -14,8 +14,8 @@ export interface PagedData<T>
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [continuationToken?](./teamsfx.pageddata.continuationtoken.md) | string | <i>(Optional)</i> The Continuation Token to pass to get the next page of results. |
-|  [data](./teamsfx.pageddata.data.md) | T\[\] | Page of data. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [continuationToken?](./teamsfx.pageddata.continuationtoken.md) |  | string | _(Optional)_ The Continuation Token to pass to get the next page of results. |
+|  [data](./teamsfx.pageddata.data.md) |  | T\[\] | Page of data. |
 

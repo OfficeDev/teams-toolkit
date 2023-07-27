@@ -11,7 +11,7 @@
 
 An optional storage to persist bot notification target references.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 storage?: NotificationTargetStorage;

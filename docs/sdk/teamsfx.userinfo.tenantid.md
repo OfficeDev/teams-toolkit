@@ -6,7 +6,7 @@
 
 User tenant ID.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 tenantId: string;

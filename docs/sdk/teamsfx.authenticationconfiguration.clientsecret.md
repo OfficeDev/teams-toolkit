@@ -6,7 +6,7 @@
 
 Secret string that the application uses when requesting a token. Only used in confidential client applications. Can be created in the Azure app registration portal. Default value comes from M365\_CLIENT\_SECRET environment variable
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly clientSecret?: string;

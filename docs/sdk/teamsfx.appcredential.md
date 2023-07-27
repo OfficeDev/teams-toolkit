@@ -6,12 +6,12 @@
 
 Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class AppCredential implements TokenCredential 
 ```
-<b>Implements:</b> TokenCredential
+**Implements:** TokenCredential
 
 ## Remarks
 

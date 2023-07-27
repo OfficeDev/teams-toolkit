@@ -6,7 +6,7 @@
 
 The entrypoint of command and response.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly command?: CommandBot;

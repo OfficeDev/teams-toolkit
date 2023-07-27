@@ -6,7 +6,7 @@
 
 Gets a pagined list of members from this bot installation.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getPagedMembers(pageSize?: number, continuationToken?: string): Promise<PagedData<Member>>;
@@ -16,12 +16,12 @@ getPagedMembers(pageSize?: number, continuationToken?: string): Promise<PagedDat
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  pageSize | number | Suggested number of entries on a page. |
-|  continuationToken | string | A continuation token. |
+|  pageSize | number | _(Optional)_ Suggested number of entries on a page. |
+|  continuationToken | string | _(Optional)_ A continuation token. |
 
-<b>Returns:</b>
+**Returns:**
 
-Promise&lt;[PagedData](./teamsfx.pageddata.md)<!-- -->&lt;[Member](./teamsfx.member.md)<!-- -->&gt;&gt;
+Promise&lt;[PagedData](./teamsfx.pageddata.md)<!-- -->&lt;Member&gt;&gt;
 
 An array of members from where the bot is installed.
 

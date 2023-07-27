@@ -6,7 +6,7 @@
 
 Create an invoke response with status code and response value.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResponse;
@@ -17,9 +17,9 @@ static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResp
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  statusCode | StatusCodes | The status code. |
-|  body | unknown | The value of the response body. |
+|  body | unknown | _(Optional)_ The value of the response body. |
 
-<b>Returns:</b>
+**Returns:**
 
 InvokeResponse
 

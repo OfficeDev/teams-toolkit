@@ -6,7 +6,7 @@
 
 Remove a conversation reference from the store.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 remove(key: string, reference: Partial<ConversationReference>): Promise<boolean>;
@@ -19,7 +19,7 @@ remove(key: string, reference: Partial<ConversationReference>): Promise<boolean>
 |  key | string | the key of the conversation reference. |
 |  reference | Partial&lt;ConversationReference&gt; | the conversation reference to remove. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;boolean&gt;
 

@@ -6,7 +6,7 @@
 
 Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel).
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class ConversationBot 
@@ -75,10 +75,10 @@ for (const target of await conversationBot.notification.installations()) {
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [adapter](./teamsfx.botbuildercloudadapter.conversationbot.adapter.md) |  | CloudAdapter | The bot adapter. |
-|  [cardAction?](./teamsfx.botbuildercloudadapter.conversationbot.cardaction.md) |  | [CardActionBot](./teamsfx.cardactionbot.md) | <i>(Optional)</i> The action handler used for adaptive card universal actions. |
-|  [command?](./teamsfx.botbuildercloudadapter.conversationbot.command.md) |  | [CommandBot](./teamsfx.commandbot.md) | <i>(Optional)</i> The entrypoint of command and response. |
-|  [notification?](./teamsfx.botbuildercloudadapter.conversationbot.notification.md) |  | [NotificationBot](./teamsfx.notificationbot.md) | <i>(Optional)</i> The entrypoint of notification. |
+|  [adapter](./teamsfx.botbuildercloudadapter.conversationbot.adapter.md) | <code>readonly</code> | CloudAdapter | The bot adapter. |
+|  [cardAction?](./teamsfx.botbuildercloudadapter.conversationbot.cardaction.md) | <code>readonly</code> | CardActionBot | _(Optional)_ The action handler used for adaptive card universal actions. |
+|  [command?](./teamsfx.botbuildercloudadapter.conversationbot.command.md) | <code>readonly</code> | CommandBot | _(Optional)_ The entrypoint of command and response. |
+|  [notification?](./teamsfx.botbuildercloudadapter.conversationbot.notification.md) | <code>readonly</code> | NotificationBot | _(Optional)_ The entrypoint of notification. |
 
 ## Methods
 

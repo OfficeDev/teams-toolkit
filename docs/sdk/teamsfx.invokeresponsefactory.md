@@ -6,7 +6,7 @@
 
 Provides methods for formatting various invoke responses a bot can send to respond to an invoke request.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class InvokeResponseFactory 
@@ -42,8 +42,8 @@ await context.sendActivity({
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [adaptiveCard(card)](./teamsfx.invokeresponsefactory.adaptivecard.md) | <code>static</code> | Create an invoke response from an adaptive card.<!-- -->The type of the invoke response is <code>application/vnd.microsoft.card.adaptive</code> indicates the request was successfully processed, and the response includes an adaptive card that the client should display in place of the current one. |
+|  [adaptiveCard(card)](./teamsfx.invokeresponsefactory.adaptivecard.md) | <code>static</code> | <p>Create an invoke response from an adaptive card.</p><p>The type of the invoke response is <code>application/vnd.microsoft.card.adaptive</code> indicates the request was successfully processed, and the response includes an adaptive card that the client should display in place of the current one.</p> |
 |  [createInvokeResponse(statusCode, body)](./teamsfx.invokeresponsefactory.createinvokeresponse.md) | <code>static</code> | Create an invoke response with status code and response value. |
-|  [errorResponse(errorCode, errorMessage)](./teamsfx.invokeresponsefactory.errorresponse.md) | <code>static</code> | Create an invoke response with error code and message.<!-- -->The type of the invoke response is <code>application/vnd.microsoft.error</code> indicates the request was failed to processed. |
+|  [errorResponse(errorCode, errorMessage)](./teamsfx.invokeresponsefactory.errorresponse.md) | <code>static</code> | <p>Create an invoke response with error code and message.</p><p>The type of the invoke response is <code>application/vnd.microsoft.error</code> indicates the request was failed to processed.</p> |
 |  [textMessage(message)](./teamsfx.invokeresponsefactory.textmessage.md) | <code>static</code> | Create an invoke response from a text message. The type of the invoke response is <code>application/vnd.microsoft.activity.message</code> indicates the request was successfully processed. |
 

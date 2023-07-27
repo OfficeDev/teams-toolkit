@@ -6,7 +6,7 @@
 
 Constructor
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>);

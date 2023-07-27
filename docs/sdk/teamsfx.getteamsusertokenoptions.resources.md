@@ -4,7 +4,7 @@
 
 ## GetTeamsUserTokenOptions.resources property
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 resources?: string[];

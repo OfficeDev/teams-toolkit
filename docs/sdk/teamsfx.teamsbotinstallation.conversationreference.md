@@ -6,7 +6,7 @@
 
 The bound `ConversationReference`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly conversationReference: Partial<ConversationReference>;

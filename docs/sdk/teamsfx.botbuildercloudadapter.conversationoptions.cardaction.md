@@ -6,7 +6,7 @@
 
 The adaptive card action handler part.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 cardAction?: CardActionOptions & {

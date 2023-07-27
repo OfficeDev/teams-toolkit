@@ -6,7 +6,7 @@
 
 Build a bot message activity attached with an hero card.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 static attachHeroCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<HeroCard>): Partial<Activity>;
@@ -17,11 +17,11 @@ static attachHeroCard(title: string, images?: (CardImage | string)[], buttons?: 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  title | string | The card title. |
-|  images | (CardImage \| string)\[\] | Optional. The array of images to include on the card. |
-|  buttons | (CardAction \| string)\[\] | Optional. The array of buttons to include on the card. Each <code>string</code> in the array is converted to an <code>imBack</code> button with a title and value set to the value of the string. |
-|  other | Partial&lt;HeroCard&gt; | Optional. Any additional properties to include on the card. |
+|  images | (CardImage \| string)\[\] | _(Optional)_ Optional. The array of images to include on the card. |
+|  buttons | (CardAction \| string)\[\] | _(Optional)_ Optional. The array of buttons to include on the card. Each <code>string</code> in the array is converted to an <code>imBack</code> button with a title and value set to the value of the string. |
+|  other | Partial&lt;HeroCard&gt; | _(Optional)_ Optional. Any additional properties to include on the card. |
 
-<b>Returns:</b>
+**Returns:**
 
 Partial&lt;Activity&gt;
 

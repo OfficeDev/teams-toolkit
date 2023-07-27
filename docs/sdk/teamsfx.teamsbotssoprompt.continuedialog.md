@@ -6,7 +6,7 @@
 
 Called when a prompt dialog is the active dialog and the user replied with a new activity.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
@@ -18,7 +18,7 @@ continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
 |  --- | --- | --- |
 |  dc | DialogContext | The DialogContext for the current turn of the conversation. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;DialogTurnResult&gt;
 

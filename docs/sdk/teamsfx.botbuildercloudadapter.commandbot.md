@@ -6,7 +6,7 @@
 
 A command bot for receiving commands and sending responses in Teams.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class CommandBot 

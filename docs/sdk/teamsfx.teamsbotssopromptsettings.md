@@ -6,7 +6,7 @@
 
 Settings used to configure an TeamsBotSsoPrompt instance.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface TeamsBotSsoPromptSettings 
@@ -14,9 +14,9 @@ export interface TeamsBotSsoPromptSettings
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [endOnInvalidMessage?](./teamsfx.teamsbotssopromptsettings.endoninvalidmessage.md) | boolean | <i>(Optional)</i> (Optional) value indicating whether the TeamsBotSsoPrompt should end upon receiving an invalid message. Generally the TeamsBotSsoPrompt will end the auth flow when receives user message not related to the auth flow. Setting the flag to false ignores the user's message instead. Defaults to value <code>true</code> |
-|  [scopes](./teamsfx.teamsbotssopromptsettings.scopes.md) | string\[\] | The array of strings that declare the desired permissions and the resources requested. |
-|  [timeout?](./teamsfx.teamsbotssopromptsettings.timeout.md) | number | <i>(Optional)</i> (Optional) number of milliseconds the prompt will wait for the user to authenticate. Defaults to a value <code>900,000</code> (15 minutes.) |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [endOnInvalidMessage?](./teamsfx.teamsbotssopromptsettings.endoninvalidmessage.md) |  | boolean | _(Optional)_ (Optional) value indicating whether the TeamsBotSsoPrompt should end upon receiving an invalid message. Generally the TeamsBotSsoPrompt will end the auth flow when receives user message not related to the auth flow. Setting the flag to false ignores the user's message instead. Defaults to value <code>true</code> |
+|  [scopes](./teamsfx.teamsbotssopromptsettings.scopes.md) |  | string\[\] | The array of strings that declare the desired permissions and the resources requested. |
+|  [timeout?](./teamsfx.teamsbotssopromptsettings.timeout.md) |  | number | _(Optional)_ (Optional) number of milliseconds the prompt will wait for the user to authenticate. Defaults to a value <code>900,000</code> (15 minutes.) |
 

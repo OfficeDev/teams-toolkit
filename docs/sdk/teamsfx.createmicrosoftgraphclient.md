@@ -6,7 +6,7 @@
 
 Get Microsoft graph client.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
@@ -17,9 +17,9 @@ export declare function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  teamsfx | TeamsFxConfiguration | Used to provide configuration and auth. |
-|  scopes | string \| string\[\] | The array of Microsoft Token scope of access. Default value is <code>[.default]</code>. |
+|  scopes | string \| string\[\] | _(Optional)_ The array of Microsoft Token scope of access. Default value is <code>[.default]</code>. |
 
-<b>Returns:</b>
+**Returns:**
 
 Client
 

@@ -6,7 +6,7 @@
 
 Set SSO token when using user identity in NodeJS.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 setSsoToken(ssoToken: string): TeamsFx;
@@ -18,7 +18,7 @@ setSsoToken(ssoToken: string): TeamsFx;
 |  --- | --- | --- |
 |  ssoToken | string | used for on behalf of user flow. |
 
-<b>Returns:</b>
+**Returns:**
 
 [TeamsFx](./teamsfx.teamsfx.md)
 

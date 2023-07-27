@@ -6,12 +6,12 @@
 
 Credential instance according to identity type choice.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getCredential(): TokenCredential;
 ```
-<b>Returns:</b>
+**Returns:**
 
 TokenCredential
 

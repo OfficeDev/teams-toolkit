@@ -6,12 +6,12 @@
 
 Get access token for Microsoft Graph API requests.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getAccessToken(): Promise<string>;
 ```
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;string&gt;
 

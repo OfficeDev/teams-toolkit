@@ -6,12 +6,12 @@
 
 A class providing credential and configuration.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class TeamsFx implements TeamsFxConfiguration 
 ```
-<b>Implements:</b> TeamsFxConfiguration
+**Implements:** TeamsFxConfiguration
 
 ## Constructors
 

@@ -6,7 +6,7 @@
 
 Set custom log function. Use the function if it's set. Priority is lower than setLogger.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare function setLogFunction(logFunction?: LogFunction): void;
@@ -16,9 +16,9 @@ export declare function setLogFunction(logFunction?: LogFunction): void;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  logFunction | [LogFunction](./teamsfx.logfunction.md) | custom log function. If it's undefined, custom log function will be cleared. |
+|  logFunction | [LogFunction](./teamsfx.logfunction.md) | _(Optional)_ custom log function. If it's undefined, custom log function will be cleared. |
 
-<b>Returns:</b>
+**Returns:**
 
 void
 

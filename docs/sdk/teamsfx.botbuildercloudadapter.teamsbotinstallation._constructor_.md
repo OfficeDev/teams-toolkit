@@ -6,7 +6,7 @@
 
 Constructor
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(adapter: CloudAdapter, conversationReference: Partial<ConversationReference>, botAppId: string);

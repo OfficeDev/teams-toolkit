@@ -6,7 +6,7 @@
 
 Interface for a command message that can handled in a command handler.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface CommandMessage 
@@ -14,8 +14,8 @@ export interface CommandMessage
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [matches?](./teamsfx.commandmessage.matches.md) | RegExpMatchArray | <i>(Optional)</i> The capture groups that matched to the [TriggerPatterns](./teamsfx.triggerpatterns.md) in a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
-|  [text](./teamsfx.commandmessage.text.md) | string | Text of the message sent by the user. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [matches?](./teamsfx.commandmessage.matches.md) |  | RegExpMatchArray | _(Optional)_ The capture groups that matched to the [TriggerPatterns](./teamsfx.triggerpatterns.md) in a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
+|  [text](./teamsfx.commandmessage.text.md) |  | string | Text of the message sent by the user. |
 

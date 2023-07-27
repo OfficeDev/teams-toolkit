@@ -6,7 +6,7 @@
 
 Define available location for API Key location
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare enum ApiKeyLocation 

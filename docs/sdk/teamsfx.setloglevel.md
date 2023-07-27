@@ -6,7 +6,7 @@
 
 Update log level helper.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare function setLogLevel(level: LogLevel): void;
@@ -18,7 +18,7 @@ export declare function setLogLevel(level: LogLevel): void;
 |  --- | --- | --- |
 |  level | [LogLevel](./teamsfx.loglevel.md) | log level in configuration |
 
-<b>Returns:</b>
+**Returns:**
 
 void
 

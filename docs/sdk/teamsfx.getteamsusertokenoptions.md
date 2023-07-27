@@ -4,16 +4,16 @@
 
 ## GetTeamsUserTokenOptions interface
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface GetTeamsUserTokenOptions extends GetTokenOptions 
 ```
-<b>Extends:</b> GetTokenOptions
+**Extends:** GetTokenOptions
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [resources?](./teamsfx.getteamsusertokenoptions.resources.md) | string\[\] | <i>(Optional)</i> |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [resources?](./teamsfx.getteamsusertokenoptions.resources.md) |  | string\[\] | _(Optional)_ |
 

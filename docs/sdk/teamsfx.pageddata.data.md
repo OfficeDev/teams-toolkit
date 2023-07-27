@@ -6,7 +6,7 @@
 
 Page of data.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 data: T[];

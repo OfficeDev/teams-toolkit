@@ -8,7 +8,7 @@ Create an invoke response from an adaptive card.
 
 The type of the invoke response is `application/vnd.microsoft.card.adaptive` indicates the request was successfully processed, and the response includes an adaptive card that the client should display in place of the current one.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 static adaptiveCard(card: unknown): InvokeResponse;
@@ -20,7 +20,7 @@ static adaptiveCard(card: unknown): InvokeResponse;
 |  --- | --- | --- |
 |  card | unknown | The adaptive card JSON payload. |
 
-<b>Returns:</b>
+**Returns:**
 
 InvokeResponse
 

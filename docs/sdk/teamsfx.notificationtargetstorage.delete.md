@@ -6,7 +6,7 @@
 
 Delete one notification target by its key.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 delete(key: string): Promise<void>;
@@ -18,7 +18,7 @@ delete(key: string): Promise<void>;
 |  --- | --- | --- |
 |  key | string | the key of a notification target. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;void&gt;
 

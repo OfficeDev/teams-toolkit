@@ -6,7 +6,7 @@
 
 Creates a new instance of the `CardActionBot`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
@@ -17,5 +17,5 @@ constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | BotFrameworkAdapter | The bound <code>BotFrameworkAdapter</code>. |
-|  options | [CardActionOptions](./teamsfx.cardactionoptions.md) | initialize options |
+|  options | [CardActionOptions](./teamsfx.cardactionoptions.md) | _(Optional)_ initialize options |
 

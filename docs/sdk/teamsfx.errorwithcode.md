@@ -6,12 +6,12 @@
 
 Error class with code and message thrown by the SDK.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class ErrorWithCode extends Error 
 ```
-<b>Extends:</b> Error
+**Extends:** Error
 
 ## Constructors
 
@@ -23,5 +23,5 @@ export declare class ErrorWithCode extends Error
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [code](./teamsfx.errorwithcode.code.md) |  | string \| undefined | Error code |
+|  [code](./teamsfx.errorwithcode.code.md) | <code>readonly</code> | string \| undefined | Error code |
 

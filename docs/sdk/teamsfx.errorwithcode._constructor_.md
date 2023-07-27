@@ -6,7 +6,7 @@
 
 Constructor of ErrorWithCode.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(message?: string, code?: ErrorCode);
@@ -16,6 +16,6 @@ constructor(message?: string, code?: ErrorCode);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  message | string | error message. |
-|  code | [ErrorCode](./teamsfx.errorcode.md) | error code. |
+|  message | string | _(Optional)_ error message. |
+|  code | [ErrorCode](./teamsfx.errorcode.md) | _(Optional)_ error code. |
 

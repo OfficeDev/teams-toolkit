@@ -6,7 +6,7 @@
 
 Notification target type. For member it's always "Person".
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly type: NotificationTargetType;

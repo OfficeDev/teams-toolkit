@@ -6,7 +6,7 @@
 
 Writes to warning level logging or lower.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 warn(message: string): void;
@@ -18,7 +18,7 @@ warn(message: string): void;
 |  --- | --- | --- |
 |  message | string |  |
 
-<b>Returns:</b>
+**Returns:**
 
 void
 

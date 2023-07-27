@@ -6,7 +6,7 @@
 
 An optional store to persist bot notification target references.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 store?: ConversationReferenceStore;

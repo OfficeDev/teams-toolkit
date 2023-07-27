@@ -6,7 +6,7 @@
 
 Register a sso command into the command bot.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void;
@@ -18,7 +18,7 @@ registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void;
 |  --- | --- | --- |
 |  ssoCommand | [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) | The sso command to be registered. |
 
-<b>Returns:</b>
+**Returns:**
 
 void
 

@@ -6,7 +6,7 @@
 
 Constructor of the notification bot.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(adapter: CloudAdapter, options?: NotificationOptions);
@@ -17,7 +17,7 @@ constructor(adapter: CloudAdapter, options?: NotificationOptions);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | CloudAdapter | The bound <code>CloudAdapter</code> |
-|  options | NotificationOptions | The initialize options |
+|  options | NotificationOptions | _(Optional)_ The initialize options |
 
 ## Remarks
 

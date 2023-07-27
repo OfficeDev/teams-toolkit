@@ -6,7 +6,7 @@
 
 Create a new instance of the `CommandBot`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(adapter: CloudAdapter, options?: CommandOptions, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler, ssoConfig?: BotSsoConfig);
@@ -17,7 +17,7 @@ constructor(adapter: CloudAdapter, options?: CommandOptions, ssoCommandActivityH
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | CloudAdapter | The bound <code>CloudAdapter</code>. |
-|  options | [CommandOptions](./teamsfx.commandoptions.md) | The initialize options |
-|  ssoCommandActivityHandler | [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | SSO execution activity handler. |
-|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) | SSO configuration for Bot SSO. |
+|  options | [CommandOptions](./teamsfx.commandoptions.md) | _(Optional)_ The initialize options |
+|  ssoCommandActivityHandler | [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | _(Optional)_ SSO execution activity handler. |
+|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) | _(Optional)_ SSO configuration for Bot SSO. |
 

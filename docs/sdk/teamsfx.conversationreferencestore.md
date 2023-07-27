@@ -6,7 +6,7 @@
 
 A store to persist notification target references.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface ConversationReferenceStore 

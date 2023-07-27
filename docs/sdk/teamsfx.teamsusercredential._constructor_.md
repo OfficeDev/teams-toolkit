@@ -6,7 +6,7 @@
 
 Constructor of TeamsUserCredential.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(authConfig: TeamsUserCredentialAuthConfig);

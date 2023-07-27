@@ -6,7 +6,7 @@
 
 The array of strings that declare the desired permissions and the resources requested.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 scopes: string[];

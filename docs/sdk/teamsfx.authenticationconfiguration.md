@@ -6,7 +6,7 @@
 
 Authentication related configuration.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface AuthenticationConfiguration 
@@ -14,13 +14,13 @@ export interface AuthenticationConfiguration
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [applicationIdUri?](./teamsfx.authenticationconfiguration.applicationiduri.md) | string | <i>(Optional)</i> Application ID URI. Default value comes from M365\_APPLICATION\_ID\_URI environment variable. |
-|  [authorityHost?](./teamsfx.authenticationconfiguration.authorityhost.md) | string | <i>(Optional)</i> Hostname of AAD authority. Default value comes from M365\_AUTHORITY\_HOST environment variable. |
-|  [certificateContent?](./teamsfx.authenticationconfiguration.certificatecontent.md) | string | <i>(Optional)</i> The content of a PEM-encoded public/private key certificate. |
-|  [clientId?](./teamsfx.authenticationconfiguration.clientid.md) | string | <i>(Optional)</i> The client (application) ID of an App Registration in the tenant, default value comes from M365\_CLIENT\_ID environment variable |
-|  [clientSecret?](./teamsfx.authenticationconfiguration.clientsecret.md) | string | <i>(Optional)</i> Secret string that the application uses when requesting a token. Only used in confidential client applications. Can be created in the Azure app registration portal. Default value comes from M365\_CLIENT\_SECRET environment variable |
-|  [initiateLoginEndpoint?](./teamsfx.authenticationconfiguration.initiateloginendpoint.md) | string | <i>(Optional)</i> Login page for Teams to redirect to. Default value comes from INITIATE\_LOGIN\_ENDPOINT environment variable. |
-|  [tenantId?](./teamsfx.authenticationconfiguration.tenantid.md) | string | <i>(Optional)</i> AAD tenant id, default value comes from M365\_TENANT\_ID environment variable. |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [applicationIdUri?](./teamsfx.authenticationconfiguration.applicationiduri.md) | <code>readonly</code> | string | _(Optional)_ Application ID URI. Default value comes from M365\_APPLICATION\_ID\_URI environment variable. |
+|  [authorityHost?](./teamsfx.authenticationconfiguration.authorityhost.md) | <code>readonly</code> | string | _(Optional)_ Hostname of AAD authority. Default value comes from M365\_AUTHORITY\_HOST environment variable. |
+|  [certificateContent?](./teamsfx.authenticationconfiguration.certificatecontent.md) | <code>readonly</code> | string | _(Optional)_ The content of a PEM-encoded public/private key certificate. |
+|  [clientId?](./teamsfx.authenticationconfiguration.clientid.md) | <code>readonly</code> | string | _(Optional)_ The client (application) ID of an App Registration in the tenant, default value comes from M365\_CLIENT\_ID environment variable |
+|  [clientSecret?](./teamsfx.authenticationconfiguration.clientsecret.md) | <code>readonly</code> | string | _(Optional)_ Secret string that the application uses when requesting a token. Only used in confidential client applications. Can be created in the Azure app registration portal. Default value comes from M365\_CLIENT\_SECRET environment variable |
+|  [initiateLoginEndpoint?](./teamsfx.authenticationconfiguration.initiateloginendpoint.md) | <code>readonly</code> | string | _(Optional)_ Login page for Teams to redirect to. Default value comes from INITIATE\_LOGIN\_ENDPOINT environment variable. |
+|  [tenantId?](./teamsfx.authenticationconfiguration.tenantid.md) | <code>readonly</code> | string | _(Optional)_ AAD tenant id, default value comes from M365\_TENANT\_ID environment variable. |
 

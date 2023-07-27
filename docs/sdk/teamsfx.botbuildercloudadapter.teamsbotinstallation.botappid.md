@@ -6,7 +6,7 @@
 
 The bot app id.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly botAppId: string;

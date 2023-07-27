@@ -6,7 +6,7 @@
 
 Notification target type. For channel it's always "Channel".
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly type: NotificationTargetType;

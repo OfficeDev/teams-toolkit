@@ -6,12 +6,12 @@
 
 Get all targets where the bot is installed.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 installations(): Promise<TeamsBotInstallation[]>;
 ```
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;[TeamsBotInstallation](./teamsfx.teamsbotinstallation.md)<!-- -->\[\]&gt;
 

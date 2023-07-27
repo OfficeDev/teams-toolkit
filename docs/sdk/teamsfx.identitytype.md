@@ -6,7 +6,7 @@
 
 Identity type to use in authentication.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare enum IdentityType 

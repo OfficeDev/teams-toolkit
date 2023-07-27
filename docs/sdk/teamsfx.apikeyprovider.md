@@ -6,12 +6,12 @@
 
 Provider that handles API Key authentication
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class ApiKeyProvider implements AuthProvider 
 ```
-<b>Implements:</b> [AuthProvider](./teamsfx.authprovider.md)
+**Implements:** [AuthProvider](./teamsfx.authprovider.md)
 
 ## Constructors
 

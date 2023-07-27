@@ -6,7 +6,7 @@
 
 Add an attachement to a bot activity.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 static attachContent(attachement: Attachment): Partial<Activity>;
@@ -18,7 +18,7 @@ static attachContent(attachement: Attachment): Partial<Activity>;
 |  --- | --- | --- |
 |  attachement | Attachment | The attachment object to attach. |
 
-<b>Returns:</b>
+**Returns:**
 
 Partial&lt;Activity&gt;
 

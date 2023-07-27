@@ -6,7 +6,7 @@
 
 Constructs a new instance of the `ApiKeyProvider` class
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation);

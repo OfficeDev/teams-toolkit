@@ -6,7 +6,7 @@
 
 Specify the behavior for how the card response will be sent in Teams conversation. The default value is `AdaptiveCardResponse.ReplaceForInteractor`<!-- -->, which means the card response will replace the current one only for the interactor.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 adaptiveCardResponse?: AdaptiveCardResponse;

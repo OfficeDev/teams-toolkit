@@ -6,10 +6,10 @@
 
 Log function for customized logging.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare type LogFunction = (level: LogLevel, message: string) => void;
 ```
-<b>References:</b> [LogLevel](./teamsfx.loglevel.md)
+**References:** [LogLevel](./teamsfx.loglevel.md)
 

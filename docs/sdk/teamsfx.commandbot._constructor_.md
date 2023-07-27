@@ -6,7 +6,7 @@
 
 Creates a new instance of the `CommandBot`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler, ssoConfig?: BotSsoConfig);
@@ -17,7 +17,7 @@ constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandAc
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | BotFrameworkAdapter | The bound <code>BotFrameworkAdapter</code>. |
-|  options | [CommandOptions](./teamsfx.commandoptions.md) | initialize options |
-|  ssoCommandActivityHandler | [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) |  |
-|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) |  |
+|  options | [CommandOptions](./teamsfx.commandoptions.md) | _(Optional)_ initialize options |
+|  ssoCommandActivityHandler | [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | _(Optional)_ |
+|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) | _(Optional)_ |
 

@@ -6,7 +6,7 @@
 
 Creates a new instance of the BotSsoExecutionDialog.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
@@ -19,5 +19,5 @@ constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings,
 |  dedupStorage | Storage |  |
 |  ssoPromptSettings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
 |  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) |  |
-|  dialogName | string | custom dialog name |
+|  dialogName | string | _(Optional)_ custom dialog name |
 

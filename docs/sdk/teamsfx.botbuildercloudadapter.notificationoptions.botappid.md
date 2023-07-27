@@ -6,7 +6,7 @@
 
 An optional input of bot app Id.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 botAppId?: string;

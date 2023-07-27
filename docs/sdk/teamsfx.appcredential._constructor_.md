@@ -6,7 +6,7 @@
 
 Constructor of AppCredential.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(authConfig: AppCredentialAuthConfig);

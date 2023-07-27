@@ -6,7 +6,7 @@
 
 Authentication configuration for TeamsUserCredential used in browser environment
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare type TeamsUserCredentialAuthConfig = {

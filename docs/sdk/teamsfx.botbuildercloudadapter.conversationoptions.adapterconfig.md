@@ -6,7 +6,7 @@
 
 If `adapter` is not provided, this `adapterConfig` will be passed to the new `CloudAdapter` when created internally.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 adapterConfig?: {

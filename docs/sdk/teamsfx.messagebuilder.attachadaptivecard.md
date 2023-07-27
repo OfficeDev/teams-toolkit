@@ -6,7 +6,7 @@
 
 Build a bot message activity attached with adaptive card.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TData): Partial<Activity>;
@@ -19,7 +19,7 @@ static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TDa
 |  cardTemplate | unknown | The adaptive card template. |
 |  data | TData | card data used to render the template. |
 
-<b>Returns:</b>
+**Returns:**
 
 Partial&lt;Activity&gt;
 

@@ -6,7 +6,7 @@
 
 The bot adapter.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly adapter: BotFrameworkAdapter;

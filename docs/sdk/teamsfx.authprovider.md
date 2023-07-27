@@ -6,7 +6,7 @@
 
 Defines method that injects authentication info to http requests
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface AuthProvider 
@@ -14,7 +14,7 @@ export interface AuthProvider
 
 ## Properties
 
-|  Property | Type | Description |
-|  --- | --- | --- |
-|  [AddAuthenticationInfo](./teamsfx.authprovider.addauthenticationinfo.md) | (config: AxiosRequestConfig) =&gt; Promise&lt;AxiosRequestConfig&gt; | Adds authentication info to http requests |
+|  Property | Modifiers | Type | Description |
+|  --- | --- | --- | --- |
+|  [AddAuthenticationInfo](./teamsfx.authprovider.addauthenticationinfo.md) |  | (config: AxiosRequestConfig) =&gt; Promise&lt;AxiosRequestConfig&gt; | Adds authentication info to http requests |
 

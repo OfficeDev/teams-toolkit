@@ -6,7 +6,7 @@
 
 Usually be the email address.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 preferredUserName: string;

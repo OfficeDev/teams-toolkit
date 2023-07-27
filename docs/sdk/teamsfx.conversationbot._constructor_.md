@@ -6,7 +6,7 @@
 
 Creates new instance of the `ConversationBot`<!-- -->.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(options: ConversationOptions);

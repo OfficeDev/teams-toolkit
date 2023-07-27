@@ -6,14 +6,14 @@
 
 Get channels from this bot installation.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 channels(): Promise<Channel[]>;
 ```
-<b>Returns:</b>
+**Returns:**
 
-Promise&lt;[Channel](./teamsfx.channel.md)<!-- -->\[\]&gt;
+Promise&lt;Channel\[\]&gt;
 
 An array of channels if bot is installed into a team, otherwise returns an empty array.
 

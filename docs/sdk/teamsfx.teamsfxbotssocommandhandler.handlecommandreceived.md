@@ -6,7 +6,7 @@
 
 Handles a bot command received activity.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 handleCommandReceived(context: TurnContext, message: CommandMessage, tokenResponse: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
@@ -20,7 +20,7 @@ handleCommandReceived(context: TurnContext, message: CommandMessage, tokenRespon
 |  message | [CommandMessage](./teamsfx.commandmessage.md) | The command message the user types from Teams. |
 |  tokenResponse | [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | The tokenResponse which contains sso token that can be used to exchange access token for the bot. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;string \| Partial&lt;Activity&gt; \| void&gt;
 

@@ -6,7 +6,7 @@
 
 Configurations for sso command bot
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 ssoConfig?: BotSsoConfig;

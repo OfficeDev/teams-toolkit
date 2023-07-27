@@ -6,7 +6,7 @@
 
 Creates a new instance of the BotSsoExecutionDialog.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings, authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogName?: string);
@@ -20,5 +20,5 @@ constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings,
 |  ssoPromptSettings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
 |  authConfig | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) |  |
 |  initiateLoginEndpoint | string | Login URL for Teams to redirect to. |
-|  dialogName | string | custom dialog name |
+|  dialogName | string | _(Optional)_ custom dialog name |
 

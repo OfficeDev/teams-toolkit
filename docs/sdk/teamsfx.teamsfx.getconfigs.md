@@ -6,12 +6,12 @@
 
 Get all configurations.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 getConfigs(): Record<string, string>;
 ```
-<b>Returns:</b>
+**Returns:**
 
 Record&lt;string, string&gt;
 

@@ -6,7 +6,7 @@
 
 User unique reference within the Azure Active Directory domain.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 objectId: string;

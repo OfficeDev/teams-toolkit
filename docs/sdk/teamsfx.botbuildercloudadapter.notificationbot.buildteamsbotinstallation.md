@@ -6,7 +6,7 @@
 
 Create a [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) instance with conversation reference.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 buildTeamsBotInstallation(conversationReference: Partial<ConversationReference>): TeamsBotInstallation | null;
@@ -18,9 +18,9 @@ buildTeamsBotInstallation(conversationReference: Partial<ConversationReference>)
 |  --- | --- | --- |
 |  conversationReference | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
 
-<b>Returns:</b>
+**Returns:**
 
-[TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) \| null
+TeamsBotInstallation \| null
 
 - The [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) instance or null.
 

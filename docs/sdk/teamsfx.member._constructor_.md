@@ -6,7 +6,7 @@
 
 Constructor.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);

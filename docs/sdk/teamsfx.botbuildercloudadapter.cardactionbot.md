@@ -6,7 +6,7 @@
 
 A card action bot to respond to adaptive card universal actions.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class CardActionBot 

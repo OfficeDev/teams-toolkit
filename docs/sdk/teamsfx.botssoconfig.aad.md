@@ -6,7 +6,7 @@
 
 aad related configurations
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 aad: {

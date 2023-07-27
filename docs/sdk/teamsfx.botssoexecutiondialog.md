@@ -6,12 +6,12 @@
 
 Sso execution dialog, use to handle sso command
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare class BotSsoExecutionDialog extends ComponentDialog 
 ```
-<b>Extends:</b> ComponentDialog
+**Extends:** ComponentDialog
 
 ## Constructors
 
@@ -25,6 +25,6 @@ export declare class BotSsoExecutionDialog extends ComponentDialog
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
 |  [addCommand(handler, triggerPatterns)](./teamsfx.botssoexecutiondialog.addcommand.md) |  | Add TeamsFxBotSsoCommandHandler instance |
-|  [onEndDialog(context)](./teamsfx.botssoexecutiondialog.onenddialog.md) |  | Called when the component is ending. |
+|  [onEndDialog(context)](./teamsfx.botssoexecutiondialog.onenddialog.md) | <code>protected</code> | Called when the component is ending. |
 |  [run(context, accessor)](./teamsfx.botssoexecutiondialog.run.md) |  | The run method handles the incoming activity (in the form of a DialogContext) and passes it through the dialog system. |
 

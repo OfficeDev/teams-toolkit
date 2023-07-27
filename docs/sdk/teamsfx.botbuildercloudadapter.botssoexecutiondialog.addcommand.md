@@ -6,7 +6,7 @@
 
 Add TeamsFxBotSsoCommandHandler instance
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
@@ -19,7 +19,7 @@ addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatter
 |  handler | [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) | [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) callback function |
 |  triggerPatterns | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern |
 
-<b>Returns:</b>
+**Returns:**
 
 void
 

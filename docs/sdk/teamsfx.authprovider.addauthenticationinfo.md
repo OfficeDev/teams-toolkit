@@ -6,7 +6,7 @@
 
 Adds authentication info to http requests
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;

@@ -6,7 +6,7 @@
 
 The Continuation Token to pass to get the next page of results.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 continuationToken?: string;

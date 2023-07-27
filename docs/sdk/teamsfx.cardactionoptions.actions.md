@@ -6,7 +6,7 @@
 
 The action handlers to registered with the action bot. Each command should implement the interface [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) so that it can be correctly handled by this bot.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 actions?: TeamsFxAdaptiveCardActionHandler[];

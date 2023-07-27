@@ -6,7 +6,7 @@
 
 Add a conversation reference to the store. If overwrite, update existing one, otherwise add when not exist.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 add(key: string, reference: Partial<ConversationReference>, options: ConversationReferenceStoreAddOptions): Promise<boolean>;
@@ -20,7 +20,7 @@ add(key: string, reference: Partial<ConversationReference>, options: Conversatio
 |  reference | Partial&lt;ConversationReference&gt; | the conversation reference to add. |
 |  options | [ConversationReferenceStoreAddOptions](./teamsfx.conversationreferencestoreaddoptions.md) | the options to add the conversation reference. |
 
-<b>Returns:</b>
+**Returns:**
 
 Promise&lt;boolean&gt;
 

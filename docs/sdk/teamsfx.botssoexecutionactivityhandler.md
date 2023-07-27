@@ -6,7 +6,7 @@
 
 Interface for user to customize SSO execution activity handler
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export interface BotSsoExecutionActivityHandler 

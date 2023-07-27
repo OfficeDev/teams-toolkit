@@ -6,7 +6,7 @@
 
 The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 readonly parent: TeamsBotInstallation;

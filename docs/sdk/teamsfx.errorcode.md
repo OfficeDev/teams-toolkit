@@ -6,7 +6,7 @@
 
 Error code to trace the error types.
 
-<b>Signature:</b>
+**Signature:**
 
 ```typescript
 export declare enum ErrorCode 

@@ -1,9 +1,17 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { assert, expect } from "chai";
 import sinon from "sinon";
 import axios from "axios";
 import fs from "fs-extra";
 import "mocha";
-import { isSupportedApi, isYamlSpecFile } from "../../../src/common/spec-parser/utils";
+import {
+  getRelativePath,
+  isSupportedApi,
+  isYamlSpecFile,
+  updateFirstLetter,
+} from "../../../src/common/spec-parser/utils";
 
 describe("utils", () => {
   describe("isYamlSpecFile", () => {
@@ -30,6 +38,41 @@ describe("utils", () => {
       const axiosStub = sinon.stub(axios, "get").resolves({ data: '{"name": "test"}' });
       const result = await isYamlSpecFile("http://example.com/remotefile");
       expect(result).to.be.false;
+    });
+  });
+
+  describe("updateFirstLetter", () => {
+    it("should return the string with the first letter capitalized", () => {
+      const result = updateFirstLetter("hello");
+      expect(result).to.equal("Hello");
+    });
+
+    it("should return an empty string if the input is empty", () => {
+      const result = updateFirstLetter("");
+      expect(result).to.equal("");
+    });
+  });
+
+  describe("getRelativePath", () => {
+    it("should return the correct relative path", () => {
+      const from = "/path/to/from";
+      const to = "/path/to/file.txt";
+      const result = getRelativePath(from, to);
+      expect(result).to.equal("file.txt");
+    });
+
+    it("should use slash", () => {
+      const from = "/path/to/from";
+      const to = "/path/to/subfolder/file.txt";
+      const result = getRelativePath(from, to);
+      expect(result).to.equal("subfolder/file.txt");
+    });
+
+    it("should replace backslashes with forward slashes", () => {
+      const from = "C:\\path\\to\\from";
+      const to = "C:\\path\\to\\file.txt";
+      const result = getRelativePath(from, to);
+      expect(result).to.equal("file.txt");
     });
   });
 

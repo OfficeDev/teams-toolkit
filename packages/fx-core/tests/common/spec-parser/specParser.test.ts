@@ -17,6 +17,7 @@ import { SpecParserError } from "../../../src/common/spec-parser/specParserError
 import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { OpenAPIV3 } from "openapi-types";
 import * as SpecFilter from "../../../src/common/spec-parser/specFilter";
+import * as ManifestUpdater from "../../../src/common/spec-parser/manifestUpdater";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -45,6 +46,7 @@ describe("SpecParser", () => {
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
 
       const result = await specParser.validate();
 
@@ -65,6 +67,7 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
       const result = await specParser.validate();
 
       expect(result).to.deep.equal({
@@ -85,6 +88,7 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
       const result = await specParser.validate();
 
       expect(result).to.deep.equal({
@@ -108,6 +112,7 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
       const result = await specParser.validate();
 
       expect(result).to.deep.equal({
@@ -164,8 +169,10 @@ describe("SpecParser", () => {
           },
         },
       } as OpenAPIV3.Document;
-
-      const result = await new SpecParser(spec as any).validate();
+      const specPath = "path/to/spec";
+      const specParser = new SpecParser(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
 
       expect(result.errors[0].type).equal(ErrorType.RemoteRefNotSupported);
       expect(result.status).equal(ValidationStatus.Error);
@@ -214,6 +221,7 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
       const result = await specParser.validate();
 
       expect(result).to.deep.equal({
@@ -273,6 +281,7 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
       const result = await specParser.validate();
       console.log(result);
       expect(result.status).to.equal(ValidationStatus.Valid);
@@ -307,31 +316,24 @@ describe("SpecParser", () => {
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
       const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+      const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
 
       const filter = ["get /hello"];
 
       const outputSpecPath = "path/to/output.yaml";
-      await specParser.generate("path/to/manifest.json", filter, outputSpecPath);
+      await specParser.generate(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        "path/to/adaptiveCardFolder"
+      );
 
       expect(specFilterStub.calledOnce).to.be.true;
       expect(writeFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
       expect(writeFileStub.firstCall.args[0]).to.equal(outputSpecPath);
-    });
-
-    it("should generate a new spec and not write it to a file if outputSpecPath is not provided", async () => {
-      const specParser = new SpecParser("path/to/spec.yaml");
-      const spec = { openapi: "3.0.0", paths: {} };
-      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
-      const writeFileStub = sinon.stub(fs, "writeFile").resolves();
-
-      const filter = ["get /hello"];
-
-      await specParser.generate("path/to/manifest.json", filter);
-
-      expect(specFilterStub.calledOnce).to.be.true;
-      expect(writeFileStub.calledOnce).to.be.false;
     });
   });
 

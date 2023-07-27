@@ -6,6 +6,7 @@ import axios from "axios";
 import fs from "fs-extra";
 import { ConstantString } from "./constants";
 import { OpenAPIV3 } from "openapi-types";
+import path from "path";
 
 export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
@@ -27,11 +28,10 @@ export async function isYamlSpecFile(specPath: string): Promise<boolean> {
 }
 
 export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Document): boolean {
-  debugger;
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
   if (pathObj) {
-    if (method === ConstantString.GetMethod && !pathObj[method]?.security) {
+    if (method === ConstantString.GetMethod && pathObj[method] && !pathObj[method]?.security) {
       const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
       const paramObject = operationObject.parameters;
 
@@ -59,4 +59,13 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
   }
 
   return false;
+}
+
+export function updateFirstLetter(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function getRelativePath(from: string, to: string): string {
+  const relativePath = path.relative(path.dirname(from), to);
+  return path.normalize(relativePath).replace(/\\/g, "/");
 }

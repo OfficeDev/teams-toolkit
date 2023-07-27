@@ -86,3 +86,41 @@ export enum ValidationStatus {
   Warning, // If there are any warnings, the file is still valid
   Error, // If there are any errors, the file is not valid
 }
+
+export interface PartialManifest {
+  name: Name;
+  description: Description;
+  composeExtensions: ComposeExtension[];
+}
+
+export interface Name {
+  short: string;
+  full: string;
+}
+
+export interface Description {
+  short: string;
+  full: string;
+}
+
+export interface ComposeExtension {
+  type: string;
+  apiSpecFile: string;
+  commands: Command[];
+}
+
+export interface Command {
+  id: string;
+  type: string;
+  context: string[];
+  title: string;
+  description?: string;
+  parameters: Parameter[];
+  apiResponseRenderingTemplate?: string;
+}
+
+export interface Parameter {
+  name: string;
+  title: string;
+  description: string;
+}

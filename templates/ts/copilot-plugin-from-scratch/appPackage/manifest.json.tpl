@@ -28,7 +28,7 @@
         {
             "type": "apiBased",
             "apiSpecFile": "./apiSpecFiles/repair-openapi.yml",
-            supportsConversationAI: false,
+            "supportsConversationAI": false,
             "commands": [
                 {
                     "id": "repair",

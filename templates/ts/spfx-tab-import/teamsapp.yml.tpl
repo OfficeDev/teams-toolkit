@@ -7,10 +7,12 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:
+  # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
-      args: install
       workingDirectory: src
+      args: install
   - uses: cli/runNpxCommand
     with:
       workingDirectory: src
@@ -24,7 +26,6 @@ deploy:
       createAppCatalogIfNotExist: false
       packageSolutionPath: ./src/config/package-solution.json
 
-
 # Triggered when 'teamsfx provision' is executed
 provision:
   # Creates a Teams app
@@ -34,7 +35,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Validate using manifest schema
@@ -74,12 +75,13 @@ publish:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/manifest.${{TEAMSFX_ENV}}.json
+      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/copyAppPackageToSPFx
     with:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip

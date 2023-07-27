@@ -11,7 +11,7 @@ import {
 } from "botbuilder";
 
 // This bot's main dialog.
-import { TeamsBot } from "./teamsBot";
+import { SearchApp } from "./searchApp";
 import config from "./config";
 
 // Create adapter.
@@ -53,7 +53,7 @@ const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
 adapter.onTurnError = onTurnErrorHandler;
 
 // Create the bot that will handle incoming messages.
-const bot = new TeamsBot();
+const searchApp = new SearchApp();
 
 // Create HTTP server.
 const server = restify.createServer();
@@ -65,6 +65,6 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
 // Listen for incoming requests.
 server.post("/api/messages", async (req, res) => {
   await adapter.process(req, res, async (context) => {
-    await bot.run(context);
+    await searchApp.run(context);
   });
 });

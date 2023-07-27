@@ -1,18 +1,18 @@
 {
     "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit m365 message extension sample",
+    "description": "Microsoft Teams Toolkit message extension search sample",
     "engines": {
         "node": "16 || 18"
     },
     "author": "Microsoft",
     "license": "MIT",
-    "main": "./lib/index.js",
+    "main": "./lib/src/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
-        "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
+        "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
         "build": "tsc --build",
-        "start": "node ./lib/index.js",
+        "start": "node ./lib/src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "nodemon --exec \"npm run start\""
     },
@@ -26,7 +26,7 @@
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^14.0.0",
+        "@types/node": "^16.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

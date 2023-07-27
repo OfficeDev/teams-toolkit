@@ -106,7 +106,7 @@ describe("New Command Tests", function () {
     const result = await listCmd.runCommand({});
     expect(result.isOk()).equals(true);
     expect(logs.length).equals(3);
-    expect(logs[1]).includes(JSON.stringify(constants.templates, undefined, 4));
+    expect(logs[1]).includes(JSON.stringify(await utils.getTemplates(), undefined, 4));
     expect(logs[2]).includes("teamsfx new template <sampleAppName>");
   });
 });

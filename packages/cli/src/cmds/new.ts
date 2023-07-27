@@ -16,9 +16,9 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
+import { flattenNodes, getSystemInputs, getTemplates, toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { FileNotFoundError } from "@microsoft/teamsfx-core";
+import { FileNotFoundError, sampleProvider } from "@microsoft/teamsfx-core";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -90,12 +90,12 @@ class NewTemplate extends YargsCommand {
 
   public readonly subCommands: YargsCommand[] = [new NewTemplateList()];
 
-  public builder(yargs: Argv): Argv<any> {
+  public async builder(yargs: Argv): Promise<Argv<any>> {
     const RootFolderNodeData = constants.RootFolderNode.data as Question;
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    const templatesNames = constants.templates.map((t) => toLocaleLowerCase(t.sampleAppName));
+    const templatesNames = (await getTemplates()).map((t) => toLocaleLowerCase(t.sampleAppName));
     yargs
       .positional("template-name", {
         description: "Enter the template name",
@@ -132,7 +132,7 @@ class NewTemplate extends YargsCommand {
 
     const core = activeRes.value;
 
-    const hitTempaltes = constants.templates.filter(
+    const hitTempaltes = (await getTemplates()).filter(
       (t) => t.sampleAppName.toLocaleLowerCase() === args["template-name"]
     );
     const templateName = hitTempaltes[0].sampleAppName;
@@ -182,7 +182,7 @@ class NewTemplateList extends YargsCommand {
     CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
     CLILogProvider.necessaryLog(
       LogLevel.Info,
-      JSON.stringify(constants.templates, undefined, 4),
+      JSON.stringify(await getTemplates(), undefined, 4),
       true
     );
     CLILogProvider.necessaryLog(

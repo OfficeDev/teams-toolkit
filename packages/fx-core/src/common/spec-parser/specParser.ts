@@ -19,6 +19,7 @@ import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
 import { isSupportedApi } from "./utils";
+import { updateManifest } from "./manifestUpdater";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -50,6 +51,7 @@ export class SpecParser {
     const warnings: WarningResult[] = [];
     try {
       await this.loadSpec();
+      await this.parser.validate(this.spec!);
     } catch (e) {
       // Spec not valid
       errors.push({ type: ErrorType.SpecNotValid, content: (e as Error).toString() });
@@ -155,14 +157,14 @@ export class SpecParser {
    * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
-   * @param outputSpecPath An optional file path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
-   * @param adaptiveCardFolder An optional folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
+   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
    */
   async generate(
     manifestPath: string,
     filter: string[],
-    outputSpecPath?: string,
-    adaptiveCardFolder?: string,
+    outputSpecPath: string,
+    adaptiveCardFolder: string,
     signal?: AbortSignal
   ): Promise<void> {
     if (signal?.aborted) {
@@ -171,15 +173,24 @@ export class SpecParser {
 
     await this.loadSpec();
     const newUnResolvedSpec = await specFilter(filter, this.unResolveSpec!);
-    if (outputSpecPath) {
-      let resultStr;
-      if (this.specPath.endsWith(".yaml")) {
-        resultStr = jsyaml.dump(newUnResolvedSpec);
-      } else {
-        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
-      }
-      await fs.writeFile(outputSpecPath, resultStr);
+    let resultStr;
+    if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
+      resultStr = jsyaml.dump(newUnResolvedSpec);
+    } else {
+      resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
     }
+    await fs.writeFile(outputSpecPath, resultStr);
+
+    const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+
+    const updatedManifest = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      newSpec
+    );
+
+    await fs.writeJSON(manifestPath, updatedManifest, { spaces: 2 });
 
     // TODO: other implementations
   }

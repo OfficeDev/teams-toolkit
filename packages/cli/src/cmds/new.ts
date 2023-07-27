@@ -18,7 +18,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { flattenNodes, getSystemInputs, getTemplates, toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { FileNotFoundError, sampleProvider } from "@microsoft/teamsfx-core";
+import { FileNotFoundError } from "@microsoft/teamsfx-core";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;

@@ -927,9 +927,11 @@ describe("scaffold question", () => {
           const inputs: Inputs = {
             platform: Platform.VSCode,
             [QuestionNames.ApiSpecLocation]: "apispec",
-            supportedApisFromApiSpec: ["operation1", "operation2"],
+            supportedApisFromApiSpec: [
+              { id: "operation1", label: "operation1", groupName: "1" },
+              { id: "operation2", label: "operation2", groupName: "2" },
+            ],
           };
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
 
           const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
 
@@ -943,7 +945,10 @@ describe("scaffold question", () => {
           const inputs: Inputs = {
             platform: Platform.VSCode,
             [QuestionNames.ApiSpecLocation]: "apispec",
-            supportedApisFromApiSpec: ["operation1", "operation2"],
+            supportedApisFromApiSpec: [
+              { id: "operation1", label: "operation1", groupName: "1" },
+              { id: "operation2", label: "operation2", groupName: "2" },
+            ],
           };
           sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
@@ -983,7 +988,7 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
@@ -1102,7 +1107,7 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
 
           const validate = question.inputBoxConfig.additionalValidationOnAccept!;
           const res = await validate("url1", inputs);

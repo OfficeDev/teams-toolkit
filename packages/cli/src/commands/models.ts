@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import { FxError, Result } from "@microsoft/teamsfx-api";
-
+import { FxCore } from "@microsoft/teamsfx-core";
 export interface CliCommand {
   name: string;
+  fullName?: string;
   description: string;
   arguments?: CliArgument[];
   options?: CliOption[];
@@ -18,9 +19,10 @@ export interface CliCommand {
 
 export interface CliCommandWithContext extends CliCommand {
   inputs: Record<string, any>;
-  loglevel: "verbose" | "debug" | "info";
+  logLevel: "verbose" | "debug" | "info";
   interactive: boolean;
   telemetryProperties: Record<string, string>;
+  fxCore?: FxCore;
 }
 
 interface CliOptionBase {

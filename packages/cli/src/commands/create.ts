@@ -1,55 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogLevel, ok } from "@microsoft/teamsfx-api";
-import { CliCommand, CliCommandWithContext } from "./models";
+import { err, LogLevel, ok } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
-import { templates } from "../constants";
-import { getSystemInputs, toLocaleLowerCase } from "../utils";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+import { assign } from "lodash";
+import * as uuid from "uuid";
+import { createFxCore } from "../activate";
 import CLILogProvider from "../commonlib/log";
-
-export const listSampleCommandModel: CliCommand = {
-  name: "list",
-  description: "List all Teams App samples.",
-  handler: async (cmd: CliCommandWithContext) => {
-    CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
-    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(templates, undefined, 4), true);
-    return ok(undefined);
-  },
-  telemetry: {
-    event: TelemetryEvent.ListSample,
-  },
-};
-
-export const createSampleCommand: CliCommand = {
-  name: "template",
-  description: "Create a new Teams application from a sample.",
-  arguments: [
-    {
-      name: "sample-name",
-      type: "singleSelect",
-      description: "Specifies the Teams App sample name.",
-      choices: templates.map((t) => toLocaleLowerCase(t.sampleAppName)),
-      choiceListCommand: "teamsfx new template list",
-    },
-  ],
-  options: [
-    {
-      name: "folder",
-      shortName: "f",
-      description: "Root folder of the project.",
-      type: "text",
-      default: '"./"',
-    },
-  ],
-  handler: async (cmd: CliCommandWithContext) => {
-    return ok(undefined);
-  },
-  telemetry: {
-    event: TelemetryEvent.DownloadSample,
-  },
-  commands: [listSampleCommandModel],
-};
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
+import { getSystemInputs } from "../utils";
+import { createSampleCommand } from "./createSample";
+import { CliCommand, CliCommandWithContext } from "./models";
 
 export const createCommandModel: CliCommand = {
   name: "new",
@@ -61,13 +25,25 @@ export const createCommandModel: CliCommand = {
       shortName: "c",
       description: "Specifies the Teams App capability.",
       required: true,
+      choices: [
+        "bot",
+        "notification",
+        "command-bot",
+        "workflow-bot",
+        "tab-non-sso",
+        "sso-launch-page",
+        "dashboard-tab",
+        "tab-spfx",
+        "link-unfurling",
+        "search-app",
+      ],
       choiceListCommand: "teamsfx help --list-capabilities",
     },
     {
       name: "bot-host-type-trigger",
       type: "singleSelect",
       shortName: "t",
-      description: "Specifies the trigger for `Cat Notification Messasge` app template.",
+      description: "Specifies the trigger for `Chat Notification Message` app template.",
       choiceListCommand: "teamsfx help --list-notification-triggers",
     },
     {
@@ -112,7 +88,8 @@ export const createCommandModel: CliCommand = {
       shortName: "f",
       description: "Root folder of the project.",
       type: "text",
-      default: '"./"',
+      required: true,
+      default: "./",
     },
     {
       name: "app-name",
@@ -130,19 +107,28 @@ export const createCommandModel: CliCommand = {
       "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp"
     )}`,
   ],
-  handler: async (cmd: CliCommandWithContext) => {
-    console.log(
-      `teamsfx new called with inputs: ${JSON.stringify(cmd.inputs)}, loglevel: ${
-        cmd.loglevel
-      }, interactive: ${cmd.interactive}`
-    );
-    const inputs = getSystemInputs();
-    //TODO Call FxCore
-    cmd.telemetryProperties[TelemetryProperty.IsCreatingM365] = inputs.isM365 + "";
-    return ok(undefined);
-  },
   commands: [createSampleCommand],
   telemetry: {
     event: TelemetryEvent.CreateProject,
+  },
+  handler: async (cmd: CliCommandWithContext) => {
+    const inputs = getSystemInputs();
+    if (!cmd.interactive) assign(inputs, cmd.inputs);
+    inputs.projectId = inputs.projectId ?? uuid.v4();
+    const core = createFxCore();
+    const res = await core.createProject(inputs);
+    assign(cmd.telemetryProperties, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.NewProjectId]: inputs.projectId,
+      [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
+    });
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      `Project created at: ${chalk.cyanBright(res.value)}`
+    );
+    return ok(undefined);
   },
 };

@@ -1,23 +1,35 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  assembleError,
+  InputValidationError,
+  MissingRequiredInputError,
+} from "@microsoft/teamsfx-core";
 import chalk from "chalk";
-import { Argument, Command, Option, Help, HelpConfiguration } from "commander";
-import { CliArgument, CliCommand, CliOption, CliCommandWithContext } from "./models";
-import { FooterText } from "../constants";
-import { camelCase, capitalize } from "lodash";
-import CliTelemetry from "../telemetry/cliTelemetry";
-import { InputValidationError, MissingRequiredInputError } from "@microsoft/teamsfx-core";
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Argument, Command, Help, HelpConfiguration, Option } from "commander";
+import { camelCase, capitalize, cloneDeep } from "lodash";
 import * as util from "util";
+import { colorize, TextType } from "../colorize";
+import CLILogProvider from "../commonlib/log";
+import { FooterText } from "../constants";
 import { strings } from "../resource";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import UI from "../userInteraction";
+import { CliArgument, CliCommand, CliCommandWithContext, CliOption } from "./models";
 
 const help = new Help();
-const displayRequiredProperty = true;
-const requiredUseOneColumn = false;
-const requireColumnText = "  [Required]";
-const maxChoincesToDisplay = 3;
+const DisplayRequiredProperty = true;
+const DisplayRequiredAsOneColumn = false;
+const RequiredColumnText = "  [Required]";
+const MaxChoicesToDisplay = 3;
 
-export function createCommand(model: CliCommand, forceParentCommand?: Command): Command {
+export function createCommand(
+  model: CliCommand,
+  prefix: string,
+  forceParentCommand?: Command
+): Command {
+  model.fullName = prefix + " " + model.name;
   const command = new Command(model.name);
   command.description(model.description);
   if (model.arguments) {
@@ -34,7 +46,7 @@ export function createCommand(model: CliCommand, forceParentCommand?: Command): 
 
   if (model.commands) {
     for (const cModel of model.commands) {
-      const subCommand = createCommand(cModel, forceParentCommand);
+      const subCommand = createCommand(cModel, model.fullName, forceParentCommand);
       command.addCommand(subCommand);
     }
   }
@@ -70,13 +82,14 @@ export function createCommand(model: CliCommand, forceParentCommand?: Command): 
 
   const maxOptionLength = computePadWidth(model, command);
 
-  if (displayRequiredProperty && model.options) {
+  if (DisplayRequiredProperty && model.options) {
     for (let i = 0; i < model.options.length; ++i) {
       const optionModel = model.options[i];
       if (optionModel.hidden) continue;
       const option = command.options[i];
       const namePart = optionName(optionModel, false);
-      const requiredPart = optionModel.required ? requireColumnText : "";
+      const requiredPart =
+        optionModel.required && optionModel.default === undefined ? RequiredColumnText : "";
       const flags = namePart + requiredPart.padStart(maxOptionLength - namePart.length);
       option.flags = flags;
     }
@@ -86,59 +99,104 @@ export function createCommand(model: CliCommand, forceParentCommand?: Command): 
     if (model.telemetry) {
       CliTelemetry.sendTelemetryEvent(model.telemetry.event + "-start");
     }
-
-    // read global options
+    console.log(`options: ${JSON.stringify(command.opts())}`);
+    console.log(`args: ${command.args}`);
+    //read global options and build context
     const parent = getRootCommand(command);
-
     const globalOptions = parent.opts();
-
-    const loglevel = globalOptions.debug ? "debug" : globalOptions.verbose ? "verbose" : "info";
+    const logLevel = globalOptions.debug ? "debug" : globalOptions.verbose ? "verbose" : "info";
     const interactive = globalOptions["I"] === "false" ? false : true;
-
-    let res: Result<undefined, FxError>;
-
-    //read option values
-    const inputs: Record<string, any> = {};
-    if (model.options) {
-      for (const option of model.options) {
-        const key = capitalize(camelCase(option.name));
-        const abbr = option.shortName ? capitalize(camelCase(option.shortName)) : key;
-        if (options[key] || options[abbr]) {
-          option.value = options[key] || options[abbr];
-          inputs[option.name] = option.value;
-          if (!interactive) {
-            res = validateOptionInputs(option);
-            if (res.isErr()) {
-              if (model.telemetry) {
-                CliTelemetry.sendTelemetryErrorEvent(model.telemetry.event, res.error);
-              }
-              console.error(chalk.redBright(res.error.message));
-              process.exit(1);
-            }
-          }
-        }
-      }
-    }
-
+    UI.interactive = interactive;
     const context: CliCommandWithContext = {
-      ...model,
-      loglevel: loglevel,
-      inputs: inputs,
+      ...cloneDeep(model),
+      logLevel: logLevel,
+      inputs: {},
       interactive: interactive,
       telemetryProperties: {},
     };
 
-    res = await model.handler(context);
-    if (res.isErr()) {
-      if (model.telemetry) {
-        CliTelemetry.sendTelemetryErrorEvent(model.telemetry.event, res.error);
-      }
-      console.error(chalk.redBright(res.error.message));
-      process.exit(1);
+    //read and validate option values
+    const readRes = readAndValidateOptionValues(model, options, interactive);
+    if (readRes.isErr()) {
+      processResult(context, readRes.error);
+      return;
     }
+
+    try {
+      context.inputs = readRes.value;
+      const handleRes = await model.handler(context);
+      if (handleRes.isErr()) {
+        processResult(context, handleRes.error);
+      } else {
+        processResult(context);
+      }
+    } catch (e) {
+      const fxError = assembleError(e);
+      processResult(context, fxError);
+    }
+    process.exit(0);
   });
 
   return command;
+}
+
+function readAndValidateOptionValues(
+  model: CliCommand,
+  options: any,
+  interactive: boolean
+): Result<Record<string, any>, InputValidationError | MissingRequiredInputError> {
+  const inputs: Record<string, any> = {};
+  if (model.options) {
+    for (const option of model.options) {
+      const key = capitalize(camelCase(option.name));
+      const abbr = option.shortName ? capitalize(camelCase(option.shortName)) : key;
+      if (options[key] || options[abbr]) {
+        option.value = options[key] || options[abbr];
+        inputs[option.name] = option.value;
+        if (!interactive) {
+          const res = validateOptionInputs(option);
+          if (res.isErr()) {
+            return err(res.error);
+          }
+        }
+      } else {
+        if (option.required && option.default) {
+          // set default value for required option
+          inputs[option.name] = option.default;
+        }
+      }
+    }
+  }
+  return ok(inputs);
+}
+
+function processResult(context: CliCommandWithContext, fxError?: FxError): void {
+  if (context.telemetry) {
+    if (fxError) {
+      CliTelemetry.sendTelemetryErrorEvent(
+        context.telemetry.event,
+        fxError,
+        context.telemetryProperties
+      );
+    } else {
+      CliTelemetry.sendTelemetryEvent(context.telemetry.event, context.telemetryProperties);
+    }
+  }
+  if (fxError) {
+    CLILogProvider.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);
+    if ("helpLink" in fxError && fxError["helpLink"]) {
+      CLILogProvider.outputError(
+        `Get help from `,
+        colorize(fxError["helpLink"], TextType.Hyperlink)
+      );
+    }
+    if ("issueLink" in fxError && fxError["issueLink"]) {
+      CLILogProvider.outputError(
+        `Report this issue at `,
+        colorize(fxError["issueLink"], TextType.Hyperlink)
+      );
+    }
+  }
 }
 
 /**
@@ -163,7 +221,7 @@ function validateOptionInputs(
             util.format(
               strings["error.InvalidOptionErrorReason"],
               option.value,
-              option.choices.join(",")
+              option.choices.map((i) => JSON.stringify(i)).join(", ")
             )
           )
         );
@@ -190,8 +248,8 @@ function validateOptionInputs(
 }
 
 function computePadWidth(model: CliCommand, command: Command) {
-  if (requiredUseOneColumn) {
-    return help.padWidth(command, help) + requireColumnText.length;
+  if (DisplayRequiredAsOneColumn) {
+    return help.padWidth(command, help) + RequiredColumnText.length;
   } else {
     const optionNames = model.options?.map((o) => optionName(o, true)) ?? [];
     optionNames.push("--interactive -i");
@@ -210,14 +268,19 @@ function getRootCommand(command: Command): Command {
 function optionName(option: CliOption, withRequiredColumn = true) {
   let flags = `--${option.name}`;
   if (option.shortName) flags += ` -${option.shortName}`;
-  if (displayRequiredProperty && withRequiredColumn && option.required) flags += requireColumnText;
+  if (
+    DisplayRequiredProperty &&
+    withRequiredColumn &&
+    option.required &&
+    option.default === undefined
+  )
+    flags += RequiredColumnText;
   return flags;
 }
 
 export function createArgument(model: CliArgument): Argument {
   const description = argumentDescription(model);
-  const argument = new Argument(model.name);
-  argument.description = description;
+  const argument = new Argument("<" + model.name + ">", description);
   return argument;
 }
 
@@ -240,7 +303,7 @@ function argumentDescription(argument: CliArgument) {
     extraInfo.push(formatAllowedValue(argument.choices));
   }
   if (argument.default !== undefined) {
-    extraInfo.push(`Default value: ${argument.default}.`);
+    extraInfo.push(`Default value: ${JSON.stringify(argument.default)}.`);
   }
 
   let result = argument.description;
@@ -263,13 +326,13 @@ function optionDescription(option: CliOption) {
     extraInfo.push(formatAllowedValue(option.choices));
   }
   if (option.default !== undefined) {
-    extraInfo.push(`Default value: ${option.default}.`);
+    extraInfo.push(`Default value: ${JSON.stringify(option.default)}.`);
   }
 
   let result = option.description;
 
   if (extraInfo.length > 0) {
-    result += ` ${extraInfo.join(". ")}`;
+    result += ` ${extraInfo.join(" ")}`;
   }
   if (
     (option.type === "multiSelect" || option.type === "singleSelect") &&
@@ -281,10 +344,10 @@ function optionDescription(option: CliOption) {
 }
 
 function formatAllowedValue(choices: any[]) {
-  const maxLength = Math.min(choices.length, maxChoincesToDisplay);
+  const maxLength = Math.min(choices.length, MaxChoicesToDisplay);
   const list = choices.slice(0, maxLength);
   if (list.length < choices.length) list.push("etc.");
-  return `Allowed value: [${list.join(", ")}].`;
+  return `Allowed value: [${list.map((i) => JSON.stringify(i)).join(", ")}].`;
 }
 
 export function compareOptions(a: Option, b: Option): number {

@@ -19,8 +19,10 @@ export class ExtensionUpgrade {
 
   public async showChangeLog() {
     const extensionId = versionUtil.getExtensionId();
-    const teamsToolkit = vscode.extensions.getExtension(extensionId);
-    const teamsToolkitVersion = teamsToolkit?.packageJSON.version;
+    const teamsToolkit = vscode.extensions.getExtension(extensionId) as {
+      packageJSON: { version: string };
+    };
+    const teamsToolkitVersion = teamsToolkit.packageJSON.version;
     const syncedVersion = this.context.globalState.get<string>(SyncedState.Version);
 
     if (

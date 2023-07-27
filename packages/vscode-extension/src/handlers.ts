@@ -118,7 +118,6 @@ import {
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
   getTriggerFromProperty,
-  isExistingTabApp,
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
@@ -135,7 +134,10 @@ export function activate(): Result<Void, FxError> {
     const fixedProjectSettings = getFixedCommonProjectSettings(
       globalVariables.workspaceUri?.fsPath
     );
-    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
+    ExtTelemetry.addSharedProperty(
+      TelemetryProperty.ProjectId,
+      fixedProjectSettings?.projectId as string
+    );
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     void AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
@@ -178,7 +180,6 @@ export function activate(): Result<Void, FxError> {
         m365TokenProvider: m365Login,
       },
       telemetryReporter: ExtTelemetry.reporter,
-      treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
       expServiceProvider: exp.getExpService(),
     };
@@ -353,13 +354,8 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   }
 
   const projectPathUri = result.value as Uri;
-  if (await isExistingTabApp(projectPathUri.fsPath)) {
-    // show local preview button for existing tab app
-    await openFolder(projectPathUri, false, true, args);
-  } else {
-    // show local debug button by default
-    await openFolder(projectPathUri, true, false, args);
-  }
+  // show local debug button by default
+  await openFolder(projectPathUri, true, false, args);
   return result;
 }
 

@@ -187,10 +187,13 @@ export namespace ExtTelemetry {
   }
 
   export async function sendCachedTelemetryEventsAsync() {
-    const existingValue = await globalStateGet(TelemetryCacheKey);
+    const existingValue = (await globalStateGet(TelemetryCacheKey)) as string | undefined;
     if (existingValue) {
       try {
-        const telemetryEvent = JSON.parse(existingValue);
+        const telemetryEvent = JSON.parse(existingValue) as {
+          eventName: string;
+          properties: { [p: string]: string } | undefined;
+        };
         reporter.sendTelemetryEvent(telemetryEvent.eventName, telemetryEvent.properties);
       } catch (e) {}
       await globalStateUpdate(TelemetryCacheKey, undefined);

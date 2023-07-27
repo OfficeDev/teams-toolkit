@@ -24,8 +24,8 @@ describe("TreeViewManager", () => {
 
     const lifecycleTreeView = treeViewManager.getTreeView("teamsfx-lifecycle");
     chai.assert.isDefined(lifecycleTreeView);
-    chai.assert.equal(lifecycleTreeView.commands.length, 3);
-    chai.assert.equal(lifecycleTreeView.commands[0].commandId, "fx-extension.provision");
+    chai.assert.equal((lifecycleTreeView as any).commands.length, 3);
+    chai.assert.equal((lifecycleTreeView as any).commands[0].commandId, "fx-extension.provision");
   });
 
   it("registerTreeViews", async () => {
@@ -37,7 +37,7 @@ describe("TreeViewManager", () => {
 
     const developmentTreeview = treeViewManager.getTreeView("teamsfx-development");
     chai.assert.isDefined(developmentTreeview);
-    chai.assert.equal(developmentTreeview.commands.length, 4);
+    chai.assert.equal((developmentTreeview as any).commands.length, 4);
   });
 
   it("setRunningCommand", async () => {

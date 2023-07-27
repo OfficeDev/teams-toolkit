@@ -785,11 +785,11 @@ export class VsCodeUI implements UserInteraction {
           if (selectedItems && selectedItems.length > 0) {
             const item = selectedItems[0];
             if (item.id === "default") {
-              result = config.default;
+              result = config.default as string;
             } else if (item.id === "browse") {
               fileSelectorIsOpen = true;
               const uriList: Uri[] | undefined = await window.showOpenDialog({
-                defaultUri: config.default ? Uri.file(config.default) : undefined,
+                defaultUri: config.default ? Uri.file(config.default as string) : undefined,
                 canSelectFiles: true,
                 canSelectFolders: false,
                 canSelectMany: type === "files",
@@ -978,14 +978,14 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async executeFunction(config: ExecuteFuncConfig) {
+  async executeFunction(config: ExecuteFuncConfig): Promise<unknown> {
     const quickPick = window.createQuickPick<FxQuickPickItem>();
     quickPick.title = config.title;
     quickPick.busy = true;
     quickPick.enabled = false;
     quickPick.show();
     try {
-      return await config.func(config.inputs);
+      return (await config.func(config.inputs)) as unknown;
     } finally {
       quickPick.hide();
       quickPick.dispose();

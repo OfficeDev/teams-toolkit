@@ -213,7 +213,6 @@ describe("handlers", () => {
       const clock = sinon.useFakeTimers();
 
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
       const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
@@ -1185,7 +1184,6 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
       const getApp = sinon.stub(AppStudioClient, "getApp").throws("error");
@@ -1211,7 +1209,6 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");

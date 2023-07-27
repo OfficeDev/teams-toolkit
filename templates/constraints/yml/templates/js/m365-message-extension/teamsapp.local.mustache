@@ -7,7 +7,7 @@ provision:
 
 {{#botFrameworkCreate}} m365extensions {{/botFrameworkCreate}}
 
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}

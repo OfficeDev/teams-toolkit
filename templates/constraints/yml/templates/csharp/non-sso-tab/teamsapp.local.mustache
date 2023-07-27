@@ -4,7 +4,7 @@ provision:
 {{#script}} TAB, DOTNET {{/script}}
 {{{teamsAppCreate}}}
 
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}

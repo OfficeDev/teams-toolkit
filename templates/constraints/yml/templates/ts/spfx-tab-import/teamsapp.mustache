@@ -13,14 +13,14 @@ deploy:
 provision:
 {{{teamsAppCreate}}}
 
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppUpdate}}}
 {{{teamsAppExtendToM365}}}
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppCopyAppPackageToSPFx}}}
 {{{teamsAppUpdate}}}

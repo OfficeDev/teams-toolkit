@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { expect } from "chai";
 import "mocha";
 import { specFilter } from "../../../src/common/spec-parser/specFilter";
@@ -79,22 +82,6 @@ describe("specFilter", () => {
             summary: "Returns a greeting",
             responses: {
               "200": {
-                description: "A greeting message",
-                content: {
-                  "text/plain": {
-                    schema: {
-                      type: "string",
-                    },
-                  },
-                },
-              },
-            },
-          },
-          post: {
-            operationId: "postHello",
-            summary: "Creates a greeting",
-            responses: {
-              "201": {
                 description: "A greeting message",
                 content: {
                   "text/plain": {

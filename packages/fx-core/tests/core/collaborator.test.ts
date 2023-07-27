@@ -671,6 +671,44 @@ describe("Collaborator APIs for V3", () => {
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
       assert.isTrue(result.isErr());
     });
+
+    it("load empty manifest id in Teams app", async () => {
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      sandbox
+        .stub(CollaborationUtil, "loadManifestId")
+        .callsFake(async (manifestFilePath: string) => {
+          if (manifestFilePath == "aadManifestPath") {
+            return ok("aadObjectId");
+          } else {
+            return ok("teamsAppId");
+          }
+        });
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
+        return undefined;
+      });
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isErr() && result.error.name === "FailedToLoadManifestId");
+    });
+
+    it("load empty manifest id in aad app", async () => {
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
+      sandbox
+        .stub(CollaborationUtil, "loadManifestId")
+        .callsFake(async (manifestFilePath: string) => {
+          if (manifestFilePath == "aadManifestPath") {
+            return ok("aadObjectId");
+          } else {
+            return ok("teamsAppId");
+          }
+        });
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
+        return undefined;
+      });
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isErr() && result.error.name === "FailedToLoadManifestId");
+    });
   });
 
   describe("collaboration v3", () => {

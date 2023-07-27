@@ -224,8 +224,6 @@ export class Constants {
 
   // HTTP headers are case insensitive. Axios lowercases all headers.
   public static readonly CORRELATION_ID = "x-correlation-id";
-
-  public static readonly SharePointAppId = "00000003-0000-0ff1-ce00-000000000000";
 }
 
 export class ErrorMessages {

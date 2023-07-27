@@ -123,7 +123,7 @@ export class ManifestUtil {
       capabilities: capabilities,
       manifestVersion: manifest.manifestVersion,
       isCopilotPlugin: false,
-      isSPFx: true,
+      isSPFx: false,
     };
 
     // If it's copilot plugin app
@@ -156,14 +156,15 @@ export class ManifestUtil {
   static parseCommonTelemetryProperties(manifest: TeamsAppManifest): { [p: string]: string } {
     const properties = ManifestUtil.parseCommonProperties(manifest);
 
-    const telemetryProperties: { [p: string]: string } = {
-      //   [TelemetryProperty.ManifestVersion]: properties.manifestVersion,
-      //   [TelemetryProperty.AppId]: properties.appId,
-      //   [TelemetryProperty.IsSPFx]: String(properties.isSPFx),
-    };
-    // const map = new Map<string, string>(Object.entries(properties));
-
-    // telemetryProperties[TelemetryProperty.Capabilities] = properties.capabilities.join(";");
+    const telemetryProperties: { [p: string]: string } = {};
+    const propertiesMap = new Map<string, any>(Object.entries(properties));
+    propertiesMap.forEach((value, key) => {
+      if (Array.isArray(value)) {
+        telemetryProperties[key] = value.join(";");
+      } else {
+        telemetryProperties[key] = value;
+      }
+    });
 
     return telemetryProperties;
   }

@@ -47,8 +47,5 @@
     "permissions": [
         "identity",
         "messageTeamMembers"
-    ],
-    "validDomains": [
-        "*.example.com"
     ]
 }

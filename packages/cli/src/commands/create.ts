@@ -1,8 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ok } from "@microsoft/teamsfx-api";
-import { CliCommand, CliParsedCommand } from "./models";
+import { CliCommand, CliCommandWithContext } from "./models";
 import chalk from "chalk";
+import { templates } from "../constants";
+import { getSystemInputs, toLocaleLowerCase } from "../utils";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+
+export const createSampleCommand: CliCommand = {
+  name: "template",
+  description: "Create a new Teams application from a sample.",
+  arguments: [
+    {
+      name: "sample-name",
+      type: "singleSelect",
+      description: "Specifies the Teams App sample name.",
+      choices: templates.map((t) => toLocaleLowerCase(t.sampleAppName)),
+      choiceListCommand: "teamsfx new template list",
+    },
+  ],
+  options: [
+    {
+      name: "folder",
+      shortName: "f",
+      description: "Root folder of the project.",
+      type: "text",
+      default: '"./"',
+    },
+  ],
+  handler: async (cmd: CliCommandWithContext) => {
+    return ok(undefined);
+  },
+  telemetry: {
+    event: TelemetryEvent.DownloadSample,
+  },
+};
 
 export const createCommandModel: CliCommand = {
   name: "new",
@@ -83,12 +115,19 @@ export const createCommandModel: CliCommand = {
       "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp"
     )}`,
   ],
-  handler: async (cmd: CliParsedCommand) => {
+  handler: async (cmd: CliCommandWithContext) => {
     console.log(
       `teamsfx new called with inputs: ${JSON.stringify(cmd.inputs)}, loglevel: ${
         cmd.loglevel
-      }, interactive: ${cmd.interactive}}`
+      }, interactive: ${cmd.interactive}`
     );
+    const inputs = getSystemInputs();
+    //TODO Call FxCore
+    cmd.telemetryProperties[TelemetryProperty.IsCreatingM365] = inputs.isM365 + "";
     return ok(undefined);
+  },
+  commands: [createSampleCommand],
+  telemetry: {
+    event: TelemetryEvent.CreateProject,
   },
 };

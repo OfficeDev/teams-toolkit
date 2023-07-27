@@ -10,13 +10,17 @@ export interface CliCommand {
   options?: CliOption[];
   examples?: string[];
   commands?: CliCommand[];
-  handler: (cmd: CliParsedCommand) => Promise<Result<undefined, FxError>>;
+  handler: (cmd: CliCommandWithContext) => Promise<Result<undefined, FxError>>;
+  telemetry?: {
+    event: string;
+  };
 }
 
-export interface CliParsedCommand extends CliCommand {
+export interface CliCommandWithContext extends CliCommand {
   inputs: Record<string, any>;
   loglevel: "verbose" | "debug" | "info";
   interactive: boolean;
+  telemetryProperties: Record<string, string>;
 }
 
 interface CliOptionBase {

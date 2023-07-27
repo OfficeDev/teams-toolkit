@@ -1,16 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import chalk from "chalk";
-import { Argument, Command, Option, Help } from "commander";
-import { CliArgument, CliCommand, CliOption, CliParsedCommand } from "./models";
+import { Argument, Command, Option, Help, HelpConfiguration } from "commander";
+import { CliArgument, CliCommand, CliOption, CliCommandWithContext } from "./models";
 import { FooterText } from "../constants";
 import { camelCase, capitalize } from "lodash";
+import CliTelemetry from "../telemetry/cliTelemetry";
 
 const help = new Help();
-const enableRequiredColumn = true;
+const displayRequiredProperty = true;
+const requiredUseOneColumn = false;
 const requireColumnText = "  [Required]";
+const maxChoincesToDisplay = 3;
 
-export function createCommand(model: CliCommand): Command {
+export function createCommand(model: CliCommand, forceParentCommand?: Command): Command {
   const command = new Command(model.name);
   command.description(model.description);
   if (model.arguments) {
@@ -24,8 +27,32 @@ export function createCommand(model: CliCommand): Command {
       command.addOption(createOption(oModel));
     }
   }
-  command.configureHelp({ showGlobalOptions: true });
-  command.helpOption("--help -h", "Show help");
+
+  if (model.commands) {
+    for (const cModel of model.commands) {
+      const subCommand = createCommand(cModel, forceParentCommand);
+      command.addCommand(subCommand);
+    }
+  }
+  const helpConfig: HelpConfiguration = {
+    showGlobalOptions: true,
+    sortOptions: true,
+    sortSubcommands: true,
+    visibleOptions: (cmd) => {
+      let res = cmd.options.filter((option) => !option.hidden);
+      res = res.sort(compareOptions);
+      return res;
+    },
+  };
+  if (forceParentCommand) {
+    helpConfig.visibleGlobalOptions = (cmd) => {
+      let res = forceParentCommand.options.filter((option) => !option.hidden);
+      res.push(cmd.createOption("--help -h", "Show help message."));
+      res = res.sort(compareOptions);
+      return res;
+    };
+  }
+  command.configureHelp(helpConfig);
 
   const afterTexts: string[] = [];
   if (model.examples) {
@@ -37,8 +64,9 @@ export function createCommand(model: CliCommand): Command {
   afterTexts.push(FooterText);
   command.addHelpText("after", afterTexts.join("\n"));
 
-  const maxOptionLength = help.padWidth(command, help) + requireColumnText.length;
-  if (enableRequiredColumn && model.options) {
+  const maxOptionLength = computePadWidth(model, command);
+
+  if (displayRequiredProperty && model.options) {
     for (let i = 0; i < model.options.length; ++i) {
       const optionModel = model.options[i];
       if (optionModel.hidden) continue;
@@ -51,7 +79,9 @@ export function createCommand(model: CliCommand): Command {
   }
 
   command.action(async (options) => {
-    // console.log("options returned by commander: ", options);
+    if (model.telemetry) {
+      CliTelemetry.sendTelemetryEvent(model.telemetry.event + "-start");
+    }
 
     // read global options
     const parent = getRootCommand(command);
@@ -67,7 +97,6 @@ export function createCommand(model: CliCommand): Command {
       for (const option of model.options) {
         const key = capitalize(camelCase(option.name));
         const abbr = option.shortName ? capitalize(camelCase(option.shortName)) : key;
-        // console.log(`key=${key}, abbreviation=${abbr}`);
         if (options[key] || options[abbr]) {
           option.value = options[key] || options[abbr];
           inputs[option.name] = option.value;
@@ -75,21 +104,35 @@ export function createCommand(model: CliCommand): Command {
       }
     }
 
-    const parsedCommand: CliParsedCommand = {
+    const parsedCommand: CliCommandWithContext = {
       ...model,
       loglevel: loglevel,
       inputs: inputs,
       interactive: interactive,
+      telemetryProperties: {},
     };
 
     const res = await model.handler(parsedCommand);
     if (res.isErr()) {
+      if (model.telemetry) {
+        CliTelemetry.sendTelemetryErrorEvent(model.telemetry.event, res.error);
+      }
       console.error(chalk.redBright(res.error.message));
       process.exit(1);
     }
   });
 
   return command;
+}
+
+function computePadWidth(model: CliCommand, command: Command) {
+  if (requiredUseOneColumn) {
+    return help.padWidth(command, help) + requireColumnText.length;
+  } else {
+    const optionNames = model.options?.map((o) => optionName(o, true)) ?? [];
+    optionNames.push("--interactive -i");
+    return Math.max(...optionNames.map((n) => n.length));
+  }
 }
 
 function getRootCommand(command: Command): Command {
@@ -103,7 +146,7 @@ function getRootCommand(command: Command): Command {
 function optionName(option: CliOption, withRequiredColumn = true) {
   let flags = `--${option.name}`;
   if (option.shortName) flags += ` -${option.shortName}`;
-  if (enableRequiredColumn && withRequiredColumn && option.required) flags += requireColumnText;
+  if (displayRequiredProperty && withRequiredColumn && option.required) flags += requireColumnText;
   return flags;
 }
 
@@ -130,7 +173,7 @@ function argumentDescription(argument: CliArgument) {
   const extraInfo = [];
 
   if (argument.type === "singleSelect" && argument.choices) {
-    extraInfo.push(`Allowed value: [${argument.choices.join(", ")}].`);
+    extraInfo.push(formatAllowedValue(argument.choices));
   }
   if (argument.default !== undefined) {
     extraInfo.push(`Default value: ${argument.default}.`);
@@ -139,12 +182,12 @@ function argumentDescription(argument: CliArgument) {
   let result = argument.description;
 
   if (extraInfo.length > 0) {
-    result += ` (${extraInfo.join(" ")})`;
+    result += ` ${extraInfo.join(". ")}`;
   }
   if (argument.type === "singleSelect" && argument.choiceListCommand) {
-    result += `, Use '${chalk.blueBright(
+    result += ` Use '${chalk.blueBright(
       argument.choiceListCommand
-    )}' to see all available options`;
+    )}' to see all available options.`;
   }
   return result;
 }
@@ -153,7 +196,7 @@ function optionDescription(option: CliOption) {
   const extraInfo = [];
 
   if ((option.type === "multiSelect" || option.type === "singleSelect") && option.choices) {
-    extraInfo.push(`Allowed value: [${option.choices.join(", ")}]`);
+    extraInfo.push(formatAllowedValue(option.choices));
   }
   if (option.default !== undefined) {
     extraInfo.push(`Default value: ${option.default}.`);
@@ -171,4 +214,18 @@ function optionDescription(option: CliOption) {
     result += ` Use '${chalk.blueBright(option.choiceListCommand)}' to see all available options.`;
   }
   return result;
+}
+
+function formatAllowedValue(choices: any[]) {
+  const maxLength = Math.min(choices.length, maxChoincesToDisplay);
+  const list = choices.slice(0, maxLength);
+  if (list.length < choices.length) list.push("etc.");
+  return `Allowed value: [${list.join(", ")}].`;
+}
+
+export function compareOptions(a: Option, b: Option): number {
+  const sortKey = (option: Option) => {
+    return option.name().replace(/-/, "").toLowerCase();
+  };
+  return sortKey(a).localeCompare(sortKey(b));
 }

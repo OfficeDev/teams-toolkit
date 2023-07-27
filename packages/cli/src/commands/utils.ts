@@ -6,6 +6,10 @@ import { CliArgument, CliCommand, CliOption, CliCommandWithContext } from "./mod
 import { FooterText } from "../constants";
 import { camelCase, capitalize } from "lodash";
 import CliTelemetry from "../telemetry/cliTelemetry";
+import { InputValidationError, MissingRequiredInputError } from "@microsoft/teamsfx-core";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import * as util from "util";
+import { strings } from "../resource";
 
 const help = new Help();
 const displayRequiredProperty = true;
@@ -91,6 +95,8 @@ export function createCommand(model: CliCommand, forceParentCommand?: Command): 
     const loglevel = globalOptions.debug ? "debug" : globalOptions.verbose ? "verbose" : "info";
     const interactive = globalOptions["I"] === "false" ? false : true;
 
+    let res: Result<undefined, FxError>;
+
     //read option values
     const inputs: Record<string, any> = {};
     if (model.options) {
@@ -100,11 +106,21 @@ export function createCommand(model: CliCommand, forceParentCommand?: Command): 
         if (options[key] || options[abbr]) {
           option.value = options[key] || options[abbr];
           inputs[option.name] = option.value;
+          if (!interactive) {
+            res = validateOptionInputs(option);
+            if (res.isErr()) {
+              if (model.telemetry) {
+                CliTelemetry.sendTelemetryErrorEvent(model.telemetry.event, res.error);
+              }
+              console.error(chalk.redBright(res.error.message));
+              process.exit(1);
+            }
+          }
         }
       }
     }
 
-    const parsedCommand: CliCommandWithContext = {
+    const context: CliCommandWithContext = {
       ...model,
       loglevel: loglevel,
       inputs: inputs,
@@ -112,7 +128,7 @@ export function createCommand(model: CliCommand, forceParentCommand?: Command): 
       telemetryProperties: {},
     };
 
-    const res = await model.handler(parsedCommand);
+    res = await model.handler(context);
     if (res.isErr()) {
       if (model.telemetry) {
         CliTelemetry.sendTelemetryErrorEvent(model.telemetry.event, res.error);
@@ -123,6 +139,54 @@ export function createCommand(model: CliCommand, forceParentCommand?: Command): 
   });
 
   return command;
+}
+
+/**
+ * validate option values
+ */
+function validateOptionInputs(
+  option: CliOption
+): Result<undefined, InputValidationError | MissingRequiredInputError> {
+  if (option.required && option.value === undefined) {
+    return err(new MissingRequiredInputError(optionName(option, false)));
+  }
+  if (
+    (option.type === "singleSelect" || option.type === "multiSelect") &&
+    option.choices &&
+    option.value !== undefined
+  ) {
+    if (option.type === "singleSelect") {
+      if (!(option.choices as string[]).includes(option.value as string)) {
+        return err(
+          new InputValidationError(
+            optionName(option, false),
+            util.format(
+              strings["error.InvalidOptionErrorReason"],
+              option.value,
+              option.choices.join(",")
+            )
+          )
+        );
+      }
+    } else {
+      const values = option.value as string[];
+      for (const v of values) {
+        if (!(option.choices as string[]).includes(v)) {
+          return err(
+            new InputValidationError(
+              optionName(option, false),
+              util.format(
+                strings["error.InvalidOptionErrorReason"],
+                option.value,
+                option.choices.join(",")
+              )
+            )
+          );
+        }
+      }
+    }
+  }
+  return ok(undefined);
 }
 
 function computePadWidth(model: CliCommand, command: Command) {

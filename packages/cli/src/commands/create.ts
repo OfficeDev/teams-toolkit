@@ -1,11 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok } from "@microsoft/teamsfx-api";
+import { LogLevel, ok } from "@microsoft/teamsfx-api";
 import { CliCommand, CliCommandWithContext } from "./models";
 import chalk from "chalk";
 import { templates } from "../constants";
 import { getSystemInputs, toLocaleLowerCase } from "../utils";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+import CLILogProvider from "../commonlib/log";
+
+export const listSampleCommandModel: CliCommand = {
+  name: "list",
+  description: "List all Teams App samples.",
+  handler: async (cmd: CliCommandWithContext) => {
+    CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
+    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(templates, undefined, 4), true);
+    return ok(undefined);
+  },
+  telemetry: {
+    event: TelemetryEvent.ListSample,
+  },
+};
 
 export const createSampleCommand: CliCommand = {
   name: "template",
@@ -34,6 +48,7 @@ export const createSampleCommand: CliCommand = {
   telemetry: {
     event: TelemetryEvent.DownloadSample,
   },
+  commands: [listSampleCommandModel],
 };
 
 export const createCommandModel: CliCommand = {

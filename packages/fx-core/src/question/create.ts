@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   CLIPlatforms,
   FolderQuestion,
   IQTreeNode,
@@ -1369,27 +1370,23 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
       if (!inputs.supportedApisFromApiSpec) {
         throw new EmptyOptionError();
       }
-      if (includeExistingAPIs) {
-        return inputs.supportedApisFromApiSpec.map((operation: string) => {
-          return {
-            id: operation,
-            label: operation,
-          };
-        });
-      } else {
+
+      let operations = inputs.supportedApisFromApiSpec;
+
+      if (!includeExistingAPIs) {
         const teamsManifestPath = inputs.teamsManifestPath;
         const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
         if (manifest.isOk()) {
           const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-          return inputs.supportedApisFromApiSpec
-            .filter((operation: string) => !existingOperationIds.includes(operation))
-            .map((operation: string) => {
-              return { id: operation, label: operation };
-            });
+          operations = inputs.supportedApisFromApiSpec.filter(
+            (operation: ApiOperation) => !existingOperationIds.includes(operation.id)
+          );
         } else {
           throw manifest.error;
         }
       }
+
+      return operations;
     },
   };
 }

@@ -3,6 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
+  ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
   Func,
@@ -661,7 +662,9 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW])
-  async copilotPluginListOperations(inputs: Inputs): Promise<Result<string[], ErrorResult[]>> {
+  async copilotPluginListOperations(
+    inputs: Inputs
+  ): Promise<Result<ApiOperation[], ErrorResult[]>> {
     return await listOperations(
       createContextV3(),
       inputs.manifest,

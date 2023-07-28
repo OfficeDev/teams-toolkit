@@ -224,14 +224,14 @@ export class ManifestUtils {
     switch (capability) {
       case "staticTab":
         return (
-          manifest.staticTabs !== undefined && manifest.staticTabs!.length >= STATIC_TABS_MAX_ITEMS
+          manifest.staticTabs !== undefined && manifest.staticTabs.length >= STATIC_TABS_MAX_ITEMS
         );
       case "configurableTab":
-        return manifest.configurableTabs !== undefined && manifest.configurableTabs!.length >= 1;
+        return manifest.configurableTabs !== undefined && manifest.configurableTabs.length >= 1;
       case "Bot":
-        return manifest.bots !== undefined && manifest.bots!.length >= 1;
+        return manifest.bots !== undefined && manifest.bots.length >= 1;
       case "MessageExtension":
-        return manifest.composeExtensions !== undefined && manifest.composeExtensions!.length >= 1;
+        return manifest.composeExtensions !== undefined && manifest.composeExtensions.length >= 1;
       case "WebApplicationInfo":
         return false;
       default:
@@ -240,13 +240,13 @@ export class ManifestUtils {
   }
   public getCapabilities(template: TeamsAppManifest): string[] {
     const capabilities: string[] = [];
-    if (template.staticTabs && template.staticTabs!.length > 0) {
+    if (template.staticTabs && template.staticTabs.length > 0) {
       capabilities.push("staticTab");
     }
-    if (template.configurableTabs && template.configurableTabs!.length > 0) {
+    if (template.configurableTabs && template.configurableTabs.length > 0) {
       capabilities.push("configurableTab");
     }
-    if (template.bots && template.bots!.length > 0) {
+    if (template.bots && template.bots.length > 0) {
       capabilities.push("Bot");
     }
     if (template.composeExtensions) {

@@ -27,14 +27,14 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
     if (typeof obj["environmentFolderPath"] !== "string") {
       return err(new YamlFieldTypeError("environmentFolderPath", "string"));
     }
-    result.environmentFolderPath = obj[environmentFolderPath] as string;
+    result.environmentFolderPath = obj[environmentFolderPath];
   }
 
   if ("version" in obj) {
     if (typeof obj["version"] !== "string") {
       return err(new YamlFieldTypeError("version", "string"));
     }
-    result.version = obj["version"] as string;
+    result.version = obj["version"];
   } else {
     return err(new YamlFieldMissingError("version"));
   }
@@ -43,7 +43,7 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
     if (typeof obj["sampleTag"] !== "string") {
       return err(new YamlFieldTypeError("sampleTag", "string"));
     }
-    result.sampleTag = obj["sampleTag"] as string;
+    result.sampleTag = obj["sampleTag"];
   }
 
   for (const name of LifecycleNames) {

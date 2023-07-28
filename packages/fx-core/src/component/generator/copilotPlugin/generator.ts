@@ -84,7 +84,7 @@ export class CopilotPluginGenerator {
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =
-          inputs!.platform === Platform.VSCode
+          inputs.platform === Platform.VSCode
             ? getLocalizedString(
                 "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
               )

@@ -66,7 +66,7 @@ class SampleProvider {
         time: sample.time,
         configuration: sample.configuration,
         suggested: sample.suggested,
-        url: (sample as any).url ? (sample as any).url : `${this.getBaseSampleUrl()}${sample.id}`,
+        url: sample.url ? sample.url : `${this.getBaseSampleUrl()}${sample.id}`,
       } as SampleInfo;
     });
 

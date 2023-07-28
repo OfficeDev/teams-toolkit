@@ -271,7 +271,7 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
     await sendRequestWithRetry(async () => {
       return await axios.get(fileInfoUrl);
     }, retryLimits)
-  ).data as any;
+  ).data;
 
   const fileInfoTree = fileInfo.tree as any[];
   const samplePaths = fileInfoTree
@@ -295,7 +295,7 @@ async function downloadSampleFiles(
     }, retryLimits);
     const filePath = path.join(dstPath, path.relative(`${relativePath}/`, samplePath));
     await fs.ensureFile(filePath);
-    await fs.writeFile(filePath, Buffer.from(file.data as any));
+    await fs.writeFile(filePath, Buffer.from(file.data));
   };
   await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
 }

@@ -298,7 +298,7 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
-  let provisionResult: Record<string, any> | undefined;
+  let provisionResult: Record<string, unknown> | undefined;
 
   try {
     provisionResult = await getProvisionResultJson(env);
@@ -312,7 +312,7 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
     return undefined;
   }
 
-  return provisionResult.solution?.resourceGroupName;
+  return (provisionResult.solution as { resourceGroupName: string })?.resourceGroupName;
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
@@ -342,7 +342,7 @@ async function getProvisionResultJson(env: string): Promise<Record<string, strin
       return undefined;
     }
 
-    const provisionResult = await fs.readJSON(provisionOutputFile);
+    const provisionResult = (await fs.readJSON(provisionOutputFile)) as Record<string, string>;
 
     return provisionResult;
   }
@@ -356,8 +356,8 @@ export function isTriggerFromWalkThrough(args?: any[]): boolean {
   if (!args || (args && args.length === 0)) {
     return false;
   } else if (
-    args[0].toString() === TelemetryTriggerFrom.WalkThrough ||
-    args[0].toString() === TelemetryTriggerFrom.Notification
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.WalkThrough ||
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.Notification
   ) {
     return true;
   }
@@ -373,7 +373,7 @@ export function getTriggerFromProperty(args?: any[]) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette };
   }
 
-  switch (args[0].toString()) {
+  switch ((args[0] as TelemetryTriggerFrom).toString()) {
     case TelemetryTriggerFrom.TreeView:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
     case TelemetryTriggerFrom.ViewTitleNavigation:

@@ -191,10 +191,10 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
       const targetUri = await Correlator.run(handlers.createProjectFromWalkthroughHandler, args);
       if (targetUri.isOk()) {
-        await handlers.updateAutoOpenGlobalKey(true, false, targetUri.value, args);
+        await handlers.updateAutoOpenGlobalKey(true, false, targetUri.value as vscode.Uri, args);
         await ExtTelemetry.dispose();
         await delay(2000);
-        return { openFolder: targetUri.value };
+        return { openFolder: targetUri.value as vscode.Uri };
       }
     })
   );
@@ -303,7 +303,10 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openSurveyCmd);
 
   const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
-    Correlator.run(handlers.openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...args])
+    Correlator.run(handlers.openTutorialHandler, [
+      TelemetryTriggerFrom.QuickPick,
+      ...(args as unknown[]),
+    ])
   );
   context.subscriptions.push(openTutorial);
 
@@ -437,7 +440,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const decryptCmd = vscode.commands.registerCommand(
     "fx-extension.decryptSecret",
-    (cipher, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
+    (cipher: string, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
   );
   context.subscriptions.push(decryptCmd);
 
@@ -453,9 +456,12 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand("fx-extension.preview", async (node) => {
-    await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-  });
+  const preview = vscode.commands.registerCommand(
+    "fx-extension.preview",
+    async (node: Record<string, string>) => {
+      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+    }
+  );
   context.subscriptions.push(preview);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
@@ -493,7 +499,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const manageCollaborator = vscode.commands.registerCommand(
     "fx-extension.manageCollaborator",
-    async (node) => {
+    async (node: Record<string, string>) => {
       const envName = node.identifier;
       await Correlator.run(handlers.manageCollaboratorHandler, envName);
     }
@@ -568,7 +574,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const openResourceGroupInPortal = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
-    async (node) => {
+    async (node: Record<string, string>) => {
       const envName = node.identifier;
       await Correlator.run(handlers.openResourceGroupInPortal, envName);
     }
@@ -595,7 +601,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
-    async (node) => {
+    async (node: Record<string, string>) => {
       const envName = node.identifier;
       await Correlator.run(handlers.openSubscriptionInPortal, envName);
     }
@@ -604,7 +610,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const previewWithIcon = vscode.commands.registerCommand(
     "fx-extension.previewWithIcon",
-    async (node) => {
+    async (node: Record<string, string>) => {
       await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
     }
   );

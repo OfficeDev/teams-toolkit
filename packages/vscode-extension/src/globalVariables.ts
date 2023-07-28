@@ -47,7 +47,7 @@ function checkIsSPFx(directory: string): boolean {
   const files = fs.readdirSync(directory);
   for (const file of files) {
     if (file === ".yo-rc.json") {
-      const content = fs.readJsonSync(path.join(directory, file));
+      const content = fs.readJsonSync(path.join(directory, file)) as Record<string, unknown>;
       if (content["@microsoft/generator-sharepoint"]) {
         return true;
       }

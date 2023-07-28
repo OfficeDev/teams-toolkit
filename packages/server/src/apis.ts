@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   Colors,
   FxError,
   Inputs,
@@ -167,7 +168,7 @@ export interface IServerConnection {
   listOpenAPISpecOperationsRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<string[], FxError>>;
+  ) => Promise<Result<ApiOperation[], FxError>>;
 }
 
 /**

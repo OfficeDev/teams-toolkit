@@ -626,5 +626,7 @@
   "error.deploy.AzureStorageGetContainerPropertiesError.Notification": "Unable to get properties of container '%s' in Azure Storage Account '%s' due to error: %s. Refer to the [Output panel](command:fx-extension.showOutputChannel) for more details.",
   "error.deploy.AzureStorageGetContainerPropertiesError": "Unable to get properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again.",
   "error.deploy.AzureStorageSetContainerPropertiesError.Notification": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. Refer to the [Output panel](command:fx-extension.showOutputChannel) for more details.",
-  "error.deploy.AzureStorageSetContainerPropertiesError": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again."
+  "error.deploy.AzureStorageSetContainerPropertiesError": "Unable to set properties of container '%s' in Azure Storage Account '%s' due to error: %s. The error responses from Azure are:\n %s. \nIf the error message specifies the reason, fix the error and try again.",
+  "error.core.failedToLoadManifestId": "Unable to load manifest id from path: %s. You must run provision first.",
+  "error.core.appIdNotExist": "Cannot find app id: %s. Maybe your current M365 account does not have permission, or the app has alredy been deleted."
 }

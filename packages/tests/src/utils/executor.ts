@@ -232,10 +232,16 @@ export class Executor {
     appName: string,
     testFolder: string,
     template: TemplateProjectFolder,
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    subFolder?: string
   ) {
     const timeout = 100000;
-    const oldPath = path.resolve("./resource", template);
+    let oldPath = "";
+    if (subFolder) {
+      oldPath = path.resolve("./resource", subFolder, template);
+    } else {
+      oldPath = path.resolve("./resource", template);
+    }
     const newPath = path.resolve(testFolder, appName);
     try {
       await this.execute(

@@ -87,6 +87,7 @@ export enum TemplateNames {
   BotAndMessageExtension = "default-bot-message-extension",
   SsoTabObo = "sso-tab-with-obo-flow",
   LinkUnfurling = "link-unfurling",
+  CopilotPluginFromScratch = "copilot-plugin-from-scratch",
 }
 
 const Feature2TemplateName: any = {
@@ -115,6 +116,8 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
+    TemplateNames.CopilotPluginFromScratch,
 };
 
 const M365Actions = [

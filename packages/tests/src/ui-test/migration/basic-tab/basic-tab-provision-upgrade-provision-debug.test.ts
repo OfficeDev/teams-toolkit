@@ -1,6 +1,5 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -40,7 +39,7 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.BasicTab,
+      Capability.TabNonSso,
       "javascript"
     );
     await mirgationDebugTestContext.before();

@@ -85,7 +85,7 @@ export interface Inputs extends Record<string, any> {
   inProductDoc?: boolean; // AB test for in product doc feature
   teamsAppFromTdp?: any;
   openAIPluginManifest?: OpenAIPluginManifest;
-  supportedApisFromApiSpec?: string[];
+  supportedApisFromApiSpec?: ApiOperation[];
   globalYeomanPackageVersion?: string;
   globalSpfxPackageVersion?: string;
   latestSpfxPackageVersion?: string;
@@ -157,4 +157,10 @@ export interface OpenAIPluginManifest {
   logo_url: string;
   contact_email: string;
   legal_info_url: string;
+}
+
+export interface ApiOperation {
+  id: string;
+  label: string;
+  groupName: string;
 }

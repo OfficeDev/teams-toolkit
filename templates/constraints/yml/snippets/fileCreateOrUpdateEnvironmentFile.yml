@@ -1,4 +1,0 @@
-  # Generate runtime environment variables
-  - uses: file/createOrUpdateEnvironmentFile
-    with:
-      target: ./.localConfigs

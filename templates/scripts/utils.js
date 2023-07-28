@@ -27,15 +27,22 @@ function filterMustacheFiles(dir, fileList = []) {
   return filterFiles(dir, fileList, (file) => file.endsWith(Ext.Mustache));
 }
 
-function escapeEmptyVariable(template, view, tags = ["{{", "}}"]) {
-  const parsed = Mustache.parse(template, tags);
-  let tokens = JSON.parse(JSON.stringify(parsed)); // deep copy
+function parseToken(tokens, view, tags) {
   for (const v of tokens) {
     if (v[0] === "name" && !view[v[1]]) {
       v[0] = "text";
       v[1] = tags[0] + v[1] + tags[1];
     }
+    if (v[4]) {
+      parseToken(v[4], view, tags);
+    }
   }
+}
+
+function escapeEmptyVariable(template, view, tags = ["{{", "}}"]) {
+  const parsed = Mustache.parse(template, tags);
+  let tokens = JSON.parse(JSON.stringify(parsed)); // deep copy
+  parseToken(tokens, view, tags);
   return tokens;
 }
 

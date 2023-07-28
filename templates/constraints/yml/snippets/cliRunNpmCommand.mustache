@@ -6,7 +6,12 @@
     {{#workingDirectory}}
       workingDirectory: {{{workingDirectory}}}
     {{/workingDirectory}}
+    {{#args}}
+      args: {{{args}}}
+    {{/args}}
+    {{^args}}
       args: install
+    {{/args}}
   {{/install}}
   {{#build}}
   - uses: cli/runNpmCommand
@@ -15,5 +20,10 @@
     {{#workingDirectory}}
       workingDirectory: {{{workingDirectory}}}
     {{/workingDirectory}}
+    {{#args}}
+      args: {{{args}}}
+    {{/args}}
+    {{^args}}
       args: run build --if-present
+    {{/args}}
   {{/build}}

@@ -17,7 +17,7 @@ export async function updateManifest(
   // TODO: manifest interface can be updated when manifest parser library is ready
   const originalManifest: PartialManifest = await fs.readJSON(manifestPath);
 
-  const commands = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+  const commands = generateCommands(spec, adaptiveCardFolder, manifestPath);
   const ComposeExtension: ComposeExtension = {
     type: "apiBased",
     apiSpecFile: path.basename(outputSpecPath),
@@ -41,11 +41,11 @@ export async function updateManifest(
   return updatedManifest;
 }
 
-export async function generateCommands(
+export function generateCommands(
   spec: OpenAPIV3.Document,
   adaptiveCardFolder: string,
   manifestPath: string
-): Promise<Command[]> {
+): Command[] {
   const paths = spec.paths;
   const commands: Command[] = [];
   if (paths) {
@@ -62,14 +62,14 @@ export async function generateCommands(
           const paramObject = operationItem.parameters;
 
           if (paramObject) {
-            for (const index in paramObject) {
-              const param = paramObject[index] as OpenAPIV3.ParameterObject;
+            paramObject.forEach((param: OpenAPIV3.ParameterObject | OpenAPIV3.ReferenceObject) => {
+              param = param as OpenAPIV3.ParameterObject;
               parameters.push({
                 name: param.name,
                 title: updateFirstLetter(param.name),
                 description: param.description ?? "",
               });
-            }
+            });
           }
 
           const adaptiveCardPath = path.join(

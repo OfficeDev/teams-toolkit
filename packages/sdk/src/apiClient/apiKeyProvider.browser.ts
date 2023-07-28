@@ -41,7 +41,7 @@ export class ApiKeyProvider implements AuthProvider {
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when API key already exists in request header or url query parameter.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
-  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+  public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "ApiKeyProvider"),
       ErrorCode.RuntimeNotSupported

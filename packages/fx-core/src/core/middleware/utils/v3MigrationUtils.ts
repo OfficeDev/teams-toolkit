@@ -271,7 +271,7 @@ export function replaceAppIdUri(manifest: string, appIdUri: string): string {
   return manifest;
 }
 
-export async function readAndConvertUserdata(
+export function readAndConvertUserdata(
   context: MigrationContext,
   filePath: string,
   bicepContent: any
@@ -285,7 +285,7 @@ export async function readAndConvertUserdata(
     if (res.isOk()) returnAnswer += `${res.value}=${secretes[secreteKey]}${EOL}`;
   }
 
-  return returnAnswer;
+  return Promise.resolve(returnAnswer);
 }
 
 export async function updateAndSaveManifestForSpfx(

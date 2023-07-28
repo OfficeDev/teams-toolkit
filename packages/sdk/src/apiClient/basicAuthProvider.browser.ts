@@ -39,7 +39,7 @@ export class BasicAuthProvider implements AuthProvider {
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when Authorization header or auth property already exists in request configuration.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
-  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+  public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "BasicAuthProvider"),
       ErrorCode.RuntimeNotSupported

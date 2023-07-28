@@ -1042,6 +1042,17 @@ function sampleSelectQuestion(): SingleSelectQuestion {
         detail: sample.shortDescription,
       } as OptionItem;
     }),
+    dynamicOptions: async () => {
+      await sampleProvider.fetchSampleConfig();
+      return sampleProvider.SampleCollection.samples.map((sample) => {
+        return {
+          id: sample.id,
+          label: sample.title,
+          description: `${sample.time} • ${sample.configuration}`,
+          detail: sample.shortDescription,
+        } as OptionItem;
+      });
+    },
     placeholder: getLocalizedString("core.SampleSelect.placeholder"),
     buttons: [
       {

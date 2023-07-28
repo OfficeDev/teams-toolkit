@@ -103,7 +103,7 @@ export const createCommandModel: CliCommand = {
     `1. Create a new timer triggered notification bot: \n    ${chalk.blueBright(
       "teamsfx new -c notification -t timer-functions -l typescript -n myapp"
     )}`,
-    `2. Import an existing SharePoint Framework solution \n    ${chalk.blueBright(
+    `2. Import an existing SharePoint Framework solution: \n    ${chalk.blueBright(
       "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp"
     )}`,
   ],

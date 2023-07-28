@@ -161,6 +161,6 @@ export const EmptyQTreeNode = new QTreeNode({ type: "group" });
 
 export const SUPPORTED_SPFX_VERSION = "1.16.1";
 
-export const FooterText = `\nFor more information about the Teams Toolkit: ${chalk.cyanBright(
+export const FooterText = `For more information about the Teams Toolkit: ${chalk.cyanBright(
   "https://aka.ms/teamsfx-cli"
 )}.`;

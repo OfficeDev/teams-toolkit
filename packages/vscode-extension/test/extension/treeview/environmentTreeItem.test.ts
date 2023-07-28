@@ -115,7 +115,7 @@ describe("EnvironmentNode", () => {
 
     const subscriptionNodeChildren = await subscriptionNode.getChildren();
     const resourceGroupNode = (subscriptionNodeChildren as DynamicNode[])[0];
-    chai.assert.equal(resourceGroupNode.getTreeItem(), null);
+    chai.assert.equal(resourceGroupNode.getTreeItem(), resourceGroupNode);
     chai.assert.isNull(resourceGroupNode.getChildren());
   });
 });

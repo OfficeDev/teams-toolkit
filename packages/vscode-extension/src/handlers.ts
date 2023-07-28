@@ -178,7 +178,6 @@ export function activate(): Result<Void, FxError> {
         m365TokenProvider: m365Login,
       },
       telemetryReporter: ExtTelemetry.reporter,
-      treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
       expServiceProvider: exp.getExpService(),
     };

@@ -31,30 +31,30 @@ class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
   }
 
   public subscribeToStatusChanges(tokenProvider: TokenProvider) {
-    tokenProvider.m365TokenProvider?.setStatusChangeMap(
+    void tokenProvider.m365TokenProvider?.setStatusChangeMap(
       "tree-view",
       { scopes: AppStudioScopes },
       (status, token, accountInfo) =>
         m365AccountStatusChangeHandler("appStudio", status, token, accountInfo)
     );
-    tokenProvider.azureAccountProvider?.setStatusChangeMap(
+    void tokenProvider.azureAccountProvider?.setStatusChangeMap(
       "tree-view",
       azureAccountStatusChangeHandler
     );
   }
 
-  public getTreeItem(element: DynamicNode): Thenable<vscode.TreeItem> | vscode.TreeItem {
+  public getTreeItem(element: DynamicNode): vscode.TreeItem | Promise<vscode.TreeItem> {
     return element.getTreeItem();
   }
 
-  public getChildren(element?: DynamicNode): Thenable<DynamicNode[] | undefined | null> {
+  public getChildren(element?: DynamicNode): vscode.ProviderResult<DynamicNode[]> {
     if (!element) {
       return this.getAccountNodes();
     }
     return element.getChildren();
   }
 
-  private async getAccountNodes(): Promise<DynamicNode[]> {
+  private getAccountNodes(): DynamicNode[] {
     if (isSPFxProject) {
       return [this.m365AccountNode];
     } else {
@@ -99,15 +99,15 @@ async function azureAccountStatusChangeHandler(
   if (status === "SignedIn") {
     const username = (accountInfo?.email as string) || (accountInfo?.upn as string);
     if (username) {
-      await instance.azureAccountNode.setSignedIn(username);
-      envTreeProviderInstance.refreshRemoteEnvWarning();
+      instance.azureAccountNode.setSignedIn(username);
+      await envTreeProviderInstance.refreshRemoteEnvWarning();
     }
   } else if (status === "SigningIn") {
     // "Azure Account" extension only sends SigningIn signal without SignededOut in 0.10.x, so remove this status change until it's fixed.
     // instance.azureAccountNode.setSigningIn();
   } else if (status === "SignedOut") {
     instance.azureAccountNode.setSignedOut();
-    envTreeProviderInstance.refreshRemoteEnvWarning();
+    await envTreeProviderInstance.refreshRemoteEnvWarning();
   }
   return Promise.resolve();
 }

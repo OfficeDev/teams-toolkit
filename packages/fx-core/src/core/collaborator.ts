@@ -35,7 +35,7 @@ import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 import { FileNotFoundError } from "../error/common";
 import { QuestionNames } from "../question/questionNames";
-import { CoreSource } from "./error";
+import { CoreSource, FailedToLoadManifestId } from "./error";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -205,6 +205,9 @@ export class CollaborationUtil {
       const teamsAppIdRes = await this.loadManifestId(teamsAppManifestFilePath);
       if (teamsAppIdRes.isOk()) {
         teamsAppId = await this.parseManifestId(teamsAppIdRes.value);
+        if (!teamsAppId) {
+          return err(new FailedToLoadManifestId(teamsAppManifestFilePath));
+        }
       } else {
         return err(teamsAppIdRes.error);
       }
@@ -214,6 +217,9 @@ export class CollaborationUtil {
       const aadObjectIdRes = await this.loadManifestId(aadAppManifestFilePath);
       if (aadObjectIdRes.isOk()) {
         aadObjectId = await this.parseManifestId(aadObjectIdRes.value);
+        if (!aadObjectId) {
+          return err(new FailedToLoadManifestId(aadAppManifestFilePath));
+        }
       } else {
         return err(aadObjectIdRes.error);
       }

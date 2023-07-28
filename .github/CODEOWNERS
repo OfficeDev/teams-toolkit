@@ -81,8 +81,9 @@
 
 /templates/*/non-sso-tab-default-bot @hund030 @yuqizhou77
 /templates/common/office-addin @1yefuwang1 @jayzhang
+/templates/common/simplified-message-extension-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/ts/office-addin @1yefuwang1 @jayzhang
-/templates/ts/spfx-tab @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/templates/ts/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 
 /templates/*/sso-tab-with-obo-flow @KennethBWSong @adashen @SLdragon
 
@@ -267,18 +268,18 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
 /packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
 /packages/fx-core/src/common/samples-config-v3.json @HuihuiWu-Microsoft @wenytang-ms @jayzhang
-/packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
-/packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 /packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang @LongOddCode
 /packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @1yefuwang1 @jayzhang @LongOddCode
-/packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
-/packages/fx-core/tests/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
+/packages/fx-core/tests/component/driver/deploy/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
-/packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
+/packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/tests/component/generator/copilotPluginGenerator.test.ts @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 

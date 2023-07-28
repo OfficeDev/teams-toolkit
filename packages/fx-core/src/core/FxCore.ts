@@ -3,6 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
+  ApiOperation,
   CoreCallbackEvent,
   CryptoProvider,
   err,
@@ -494,7 +495,9 @@ export class FxCore {
     return this.v3Implement.dispatch(this.copilotPluginLoadOpenAIManifest, inputs);
   }
 
-  async copilotPluginListOperations(inputs: Inputs): Promise<Result<string[], ErrorResult[]>> {
+  async copilotPluginListOperations(
+    inputs: Inputs
+  ): Promise<Result<ApiOperation[], ErrorResult[]>> {
     return this.v3Implement.dispatch(this.copilotPluginListOperations, inputs);
   }
 }

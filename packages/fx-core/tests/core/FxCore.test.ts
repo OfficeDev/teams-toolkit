@@ -1400,12 +1400,15 @@ describe("copilotPlugin", async () => {
       apiSpecUrl: "https://example.com/api-spec",
       shouldLogWarning: true,
     };
-    const expectedResult = ["operation1", "operation2"];
+    const expectedResult = [
+      { id: "operation1", label: "operation1", groupName: "1" },
+      { id: "operation2", label: "operation2", groupName: "2" },
+    ];
     sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(ok(expectedResult)));
     const result = await core.copilotPluginListOperations(inputs as any);
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      assert.equal(result.value, expectedResult);
+      assert.deepEqual(result.value, expectedResult);
     }
   });
 

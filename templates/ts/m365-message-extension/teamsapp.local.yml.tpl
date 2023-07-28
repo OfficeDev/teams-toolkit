@@ -77,6 +77,7 @@ provision:
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install --no-audit
 

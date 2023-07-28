@@ -3,9 +3,9 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
+import { isSupportedApi } from "./utils";
 
 const allMethodNames = ["get", "post", "put", "delete", "patch", "head", "options", "trace"];
-const supportedMethodNames = ["get", "post"];
 
 export function specFilter(
   filter: string[],
@@ -17,7 +17,7 @@ export function specFilter(
     const [method, path] = filterItem.split(" ");
     const methodName = method.toLowerCase();
 
-    if (!unResolveSpec.paths[path] || !(unResolveSpec.paths[path] as any)[methodName]) {
+    if (!isSupportedApi(methodName, path, unResolveSpec)) {
       continue;
     }
 
@@ -28,15 +28,13 @@ export function specFilter(
       }
     }
 
-    if (supportedMethodNames.includes(methodName)) {
-      (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
+    (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
 
-      // Add the operationId if missing
-      if (!(newPaths[path] as any)[methodName].operationId) {
-        (newPaths[path] as any)[methodName].operationId = `${methodName}${convertPathToCamelCase(
-          path
-        )}`;
-      }
+    // Add the operationId if missing
+    if (!(newPaths[path] as any)[methodName].operationId) {
+      (newPaths[path] as any)[methodName].operationId = `${methodName}${convertPathToCamelCase(
+        path
+      )}`;
     }
   }
 

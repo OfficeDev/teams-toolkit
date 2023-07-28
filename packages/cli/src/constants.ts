@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
-import { sampleProvider, CoreQuestionNames } from "@microsoft/teamsfx-core";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
 import chalk from "chalk";
 
@@ -121,16 +121,6 @@ export const TeamsAppManifestOptions: OptionsMap = {
       "Enter the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
   },
 };
-
-export const templates = sampleProvider.SampleCollection.samples.map((sample) => {
-  return {
-    tags: sample.tags,
-    title: sample.title,
-    description: sample.shortDescription,
-    sampleAppName: sample.id,
-    sampleAppUrl: sample.url,
-  };
-});
 
 export enum CLILogLevel {
   error = 0,

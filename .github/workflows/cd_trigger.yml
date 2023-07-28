@@ -70,7 +70,7 @@ jobs:
         id: series
         uses: actions/github-script@v6
         with:
-          scripts: |
+          script: |
             let rawData = require('fs').readFileSync('./series.txt', {encoding:'utf8', flag:'r'});
             console.log('-----------------', rawData)
             return rawData;

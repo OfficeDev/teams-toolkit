@@ -6,7 +6,7 @@
 
 Get Microsoft graph client.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare function createMicrosoftGraphClientWithCredential(credential: TokenCredential, scopes?: string | string[]): Client;
@@ -17,9 +17,9 @@ export declare function createMicrosoftGraphClientWithCredential(credential: Tok
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  credential | TokenCredential | Used to provide configuration and auth. |
-|  scopes | string \| string\[\] | _(Optional)_ The array of Microsoft Token scope of access. Default value is <code>[.default]</code>. |
+|  scopes | string \| string\[\] | The array of Microsoft Token scope of access. Default value is <code>[.default]</code>. |
 
-**Returns:**
+<b>Returns:</b>
 
 Client
 

@@ -6,7 +6,7 @@
 
 Usually used by service plugins to retrieve specific config
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 getConfig(key: string): string;
@@ -18,7 +18,7 @@ getConfig(key: string): string;
 |  --- | --- | --- |
 |  key | string | configuration key. |
 
-**Returns:**
+<b>Returns:</b>
 
 string
 

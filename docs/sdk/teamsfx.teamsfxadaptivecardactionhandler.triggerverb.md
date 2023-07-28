@@ -6,7 +6,7 @@
 
 The verb defined in adaptive card action that can trigger this handler. The verb string here is case-insensitive.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 triggerVerb: string;

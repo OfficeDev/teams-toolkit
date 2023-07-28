@@ -6,7 +6,7 @@
 
 The entrypoint of notification.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly notification?: NotificationBot;

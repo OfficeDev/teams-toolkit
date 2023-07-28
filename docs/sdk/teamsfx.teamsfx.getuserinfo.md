@@ -6,7 +6,7 @@
 
 Get user information.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 getUserInfo(resources?: string[]): Promise<UserInfo>;
@@ -16,9 +16,9 @@ getUserInfo(resources?: string[]): Promise<UserInfo>;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  resources | string\[\] | _(Optional)_ The optional list of resources for full trust Teams apps. |
+|  resources | string\[\] | The optional list of resources for full trust Teams apps. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;[UserInfo](./teamsfx.userinfo.md)<!-- -->&gt;
 

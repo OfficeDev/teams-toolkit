@@ -6,7 +6,7 @@
 
 Get access token from credential.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
@@ -17,9 +17,9 @@ getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessTo
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
-|  options | GetTokenOptions | _(Optional)_ The options used to configure any requests this TokenCredential implementation might make. |
+|  options | GetTokenOptions | The options used to configure any requests this TokenCredential implementation might make. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;AccessToken \| null&gt;
 

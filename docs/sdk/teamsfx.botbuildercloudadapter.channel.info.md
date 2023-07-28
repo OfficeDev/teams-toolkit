@@ -6,7 +6,7 @@
 
 Detailed channel information.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly info: ChannelInfo;

@@ -6,7 +6,7 @@
 
 The handler function that will be invoked when the action is fired.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse>;
@@ -19,7 +19,7 @@ handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeRespon
 |  context | TurnContext | The turn context. |
 |  actionData | any | The contextual data that associated with the action. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;InvokeResponse&gt;
 

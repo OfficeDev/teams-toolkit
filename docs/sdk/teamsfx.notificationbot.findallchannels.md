@@ -6,7 +6,7 @@
 
 Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel[]>;
@@ -18,7 +18,7 @@ findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefin
 |  --- | --- | --- |
 |  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | find calls predicate for each channel of the installation. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;[Channel](./teamsfx.channel.md)<!-- -->\[\]&gt;
 

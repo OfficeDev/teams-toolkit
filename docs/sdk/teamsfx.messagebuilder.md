@@ -6,7 +6,7 @@
 
 Provides utility method to build bot message with cards that supported in Teams.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class MessageBuilder 

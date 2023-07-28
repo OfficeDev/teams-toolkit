@@ -6,7 +6,7 @@
 
 Represent a notification target.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface NotificationTarget 
@@ -14,9 +14,9 @@ export interface NotificationTarget
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [type?](./teamsfx.notificationtarget.type.md) | <code>readonly</code> | [NotificationTargetType](./teamsfx.notificationtargettype.md) | _(Optional)_ The type of target, could be "Channel" or "Group" or "Person". |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [type?](./teamsfx.notificationtarget.type.md) | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <i>(Optional)</i> The type of target, could be "Channel" or "Group" or "Person". |
 
 ## Methods
 

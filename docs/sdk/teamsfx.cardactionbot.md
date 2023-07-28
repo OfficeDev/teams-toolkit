@@ -9,7 +9,7 @@
 > Use `BotBuilderCloudAdapter.CardActionBot` instead.
 > 
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class CardActionBot 

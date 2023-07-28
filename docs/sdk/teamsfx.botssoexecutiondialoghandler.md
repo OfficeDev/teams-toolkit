@@ -4,10 +4,10 @@
 
 ## BotSsoExecutionDialogHandler type
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare type BotSsoExecutionDialogHandler = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage) => Promise<void>;
 ```
-**References:** [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md)<!-- -->, [CommandMessage](./teamsfx.commandmessage.md)
+<b>References:</b> [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md)<!-- -->, [CommandMessage](./teamsfx.commandmessage.md)
 

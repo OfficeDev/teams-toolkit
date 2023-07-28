@@ -6,7 +6,7 @@
 
 The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare type TriggerPatterns = string | RegExp | (string | RegExp)[];

@@ -6,7 +6,7 @@
 
 Called to initiate the event emission process.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 run(context: TurnContext): Promise<void>;
@@ -18,7 +18,7 @@ run(context: TurnContext): Promise<void>;
 |  --- | --- | --- |
 |  context | TurnContext | The context object for the current turn. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;void&gt;
 

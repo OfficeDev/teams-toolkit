@@ -6,7 +6,7 @@
 
 The request handler to integrate with web request.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 requestHandler(req: Request, res: Response, logic?: (context: TurnContext) => Promise<any>): Promise<void>;
@@ -18,9 +18,9 @@ requestHandler(req: Request, res: Response, logic?: (context: TurnContext) => Pr
 |  --- | --- | --- |
 |  req | Request | An incoming HTTP \[Request\](xref:botbuilder.Request). |
 |  res | Response | The corresponding HTTP \[Response\](xref:botbuilder.Response). |
-|  logic | (context: TurnContext) =&gt; Promise&lt;any&gt; | _(Optional)_ The additional function to handle bot context. |
+|  logic | (context: TurnContext) =&gt; Promise&lt;any&gt; | The additional function to handle bot context. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;void&gt;
 

@@ -6,7 +6,7 @@
 
 The run method handles the incoming activity (in the form of a DialogContext) and passes it through the dialog system.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
@@ -19,7 +19,7 @@ run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
 |  context | TurnContext | The context object for the current turn. |
 |  accessor | StatePropertyAccessor | The instance of StatePropertyAccessor for dialog system. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;void&gt;
 

@@ -6,7 +6,7 @@
 
 Notification target type.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly type?: NotificationTargetType;

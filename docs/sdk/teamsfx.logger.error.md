@@ -6,7 +6,7 @@
 
 Writes to error level logging or lower.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 error(message: string): void;
@@ -18,7 +18,7 @@ error(message: string): void;
 |  --- | --- | --- |
 |  message | string |  |
 
-**Returns:**
+<b>Returns:</b>
 
 void
 

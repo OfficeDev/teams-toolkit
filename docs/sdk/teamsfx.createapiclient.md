@@ -6,7 +6,7 @@
 
 Initializes new Axios instance with specific auth provider
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
@@ -19,7 +19,7 @@ export declare function createApiClient(apiEndpoint: string, authProvider: AuthP
 |  apiEndpoint | string | Base url of the API |
 |  authProvider | [AuthProvider](./teamsfx.authprovider.md) | Auth provider that injects authentication info to each request |
 
-**Returns:**
+<b>Returns:</b>
 
 AxiosInstance
 

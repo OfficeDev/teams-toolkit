@@ -11,7 +11,7 @@
 
 Interface for a storage provider that stores and retrieves notification target references.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface NotificationTargetStorage 

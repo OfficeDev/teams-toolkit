@@ -6,7 +6,7 @@
 
 Registers a card action handler to the bot.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
@@ -18,7 +18,7 @@ registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
 |  --- | --- | --- |
 |  actionHandler | [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) | A card action handler to be registered. |
 
-**Returns:**
+<b>Returns:</b>
 
 void
 

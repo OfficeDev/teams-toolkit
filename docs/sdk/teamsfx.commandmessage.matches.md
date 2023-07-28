@@ -6,7 +6,7 @@
 
 The capture groups that matched to the [TriggerPatterns](./teamsfx.triggerpatterns.md) in a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 matches?: RegExpMatchArray;

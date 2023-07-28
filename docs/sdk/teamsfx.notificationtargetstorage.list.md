@@ -6,14 +6,14 @@
 
 List all stored notification targets.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 list(): Promise<{
         [key: string]: unknown;
     }[]>;
 ```
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;{ \[key: string\]: unknown; }\[\]&gt;
 

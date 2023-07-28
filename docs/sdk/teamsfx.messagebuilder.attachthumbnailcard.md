@@ -4,7 +4,7 @@
 
 ## MessageBuilder.attachThumbnailCard() method
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 static attachThumbnailCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<ThumbnailCard>): Partial<Activity>;
@@ -15,11 +15,11 @@ static attachThumbnailCard(title: string, images?: (CardImage | string)[], butto
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  title | string | The card title. |
-|  images | (CardImage \| string)\[\] | _(Optional)_ Optional. The array of images to include on the card. |
-|  buttons | (CardAction \| string)\[\] | _(Optional)_ Optional. The array of buttons to include on the card. Each <code>string</code> in the array is converted to an <code>imBack</code> button with a title and value set to the value of the string. |
-|  other | Partial&lt;ThumbnailCard&gt; | _(Optional)_ Optional. Any additional properties to include on the card. |
+|  images | (CardImage \| string)\[\] | Optional. The array of images to include on the card. |
+|  buttons | (CardAction \| string)\[\] | Optional. The array of buttons to include on the card. Each <code>string</code> in the array is converted to an <code>imBack</code> button with a title and value set to the value of the string. |
+|  other | Partial&lt;ThumbnailCard&gt; | Optional. Any additional properties to include on the card. |
 
-**Returns:**
+<b>Returns:</b>
 
 Partial&lt;Activity&gt;
 

@@ -6,7 +6,7 @@
 
 Options used to control how the response card will be sent to users.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare enum AdaptiveCardResponse 

@@ -6,7 +6,7 @@
 
 Return all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member[]>;
@@ -16,12 +16,12 @@ findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchSc
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  predicate | (member: Member) =&gt; Promise&lt;boolean&gt; | Find calls predicate for each member of the installation. |
-|  scope | SearchScope | _(Optional)_ The scope to find members from the installations (personal chat, group chat, Teams channel). |
+|  predicate | (member: [Member](./teamsfx.member.md)<!-- -->) =&gt; Promise&lt;boolean&gt; | Find calls predicate for each member of the installation. |
+|  scope | [SearchScope](./teamsfx.searchscope.md) | The scope to find members from the installations (personal chat, group chat, Teams channel). |
 
-**Returns:**
+<b>Returns:</b>
 
-Promise&lt;Member\[\]&gt;
+Promise&lt;[Member](./teamsfx.member.md)<!-- -->\[\]&gt;
 
 An array of [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise.
 

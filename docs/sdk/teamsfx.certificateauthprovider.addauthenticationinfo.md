@@ -6,7 +6,7 @@
 
 Adds authentication info to http requests.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
@@ -18,7 +18,7 @@ AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 |  --- | --- | --- |
 |  config | AxiosRequestConfig | Contains all the request information and can be updated to include extra authentication info. Refer https://axios-http.com/docs/req\_config for detailed document. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;AxiosRequestConfig&gt;
 

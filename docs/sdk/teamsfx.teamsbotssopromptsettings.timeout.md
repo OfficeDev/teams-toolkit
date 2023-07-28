@@ -6,7 +6,7 @@
 
 (Optional) number of milliseconds the prompt will wait for the user to authenticate. Defaults to a value `900,000` (15 minutes.)
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 timeout?: number;

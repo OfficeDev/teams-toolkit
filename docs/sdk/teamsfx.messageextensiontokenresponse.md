@@ -6,17 +6,17 @@
 
 Token response provided by Teams Bot SSO prompt
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface MessageExtensionTokenResponse extends TokenResponse 
 ```
-**Extends:** TokenResponse
+<b>Extends:</b> TokenResponse
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [ssoToken](./teamsfx.messageextensiontokenresponse.ssotoken.md) |  | string | SSO token for user |
-|  [ssoTokenExpiration](./teamsfx.messageextensiontokenresponse.ssotokenexpiration.md) |  | string | Expire time of SSO token |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [ssoToken](./teamsfx.messageextensiontokenresponse.ssotoken.md) | string | SSO token for user |
+|  [ssoTokenExpiration](./teamsfx.messageextensiontokenresponse.ssotokenexpiration.md) | string | Expire time of SSO token |
 

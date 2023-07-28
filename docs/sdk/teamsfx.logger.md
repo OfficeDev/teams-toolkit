@@ -6,7 +6,7 @@
 
 Interface for customized logger.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface Logger 

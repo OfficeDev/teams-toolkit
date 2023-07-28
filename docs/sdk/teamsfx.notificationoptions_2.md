@@ -11,7 +11,7 @@
 
 Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface NotificationOptions 
@@ -19,7 +19,7 @@ export interface NotificationOptions
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [storage?](./teamsfx.notificationoptions_2.storage.md) |  | [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | _(Optional)_ An optional storage to persist bot notification connections. |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [storage?](./teamsfx.notificationoptions_2.storage.md) | [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | <i>(Optional)</i> An optional storage to persist bot notification connections. |
 

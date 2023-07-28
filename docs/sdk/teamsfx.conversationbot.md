@@ -9,7 +9,7 @@
 > Use `BotBuilderCloudAdapter.ConversationBot` instead.
 > 
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class ConversationBot 
@@ -25,10 +25,10 @@ export declare class ConversationBot
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [adapter](./teamsfx.conversationbot.adapter.md) | <code>readonly</code> | BotFrameworkAdapter | The bot adapter. |
-|  [cardAction?](./teamsfx.conversationbot.cardaction.md) | <code>readonly</code> | [CardActionBot](./teamsfx.cardactionbot.md) | _(Optional)_ The action handler used for adaptive card universal actions. |
-|  [command?](./teamsfx.conversationbot.command.md) | <code>readonly</code> | [CommandBot](./teamsfx.commandbot.md) | _(Optional)_ The entrypoint of command and response. |
-|  [notification?](./teamsfx.conversationbot.notification.md) | <code>readonly</code> | [NotificationBot](./teamsfx.notificationbot.md) | _(Optional)_ The entrypoint of notification. |
+|  [adapter](./teamsfx.conversationbot.adapter.md) |  | BotFrameworkAdapter | The bot adapter. |
+|  [cardAction?](./teamsfx.conversationbot.cardaction.md) |  | [CardActionBot](./teamsfx.cardactionbot.md) | <i>(Optional)</i> The action handler used for adaptive card universal actions. |
+|  [command?](./teamsfx.conversationbot.command.md) |  | [CommandBot](./teamsfx.commandbot.md) | <i>(Optional)</i> The entrypoint of command and response. |
+|  [notification?](./teamsfx.conversationbot.notification.md) |  | [NotificationBot](./teamsfx.notificationbot.md) | <i>(Optional)</i> The entrypoint of notification. |
 
 ## Methods
 

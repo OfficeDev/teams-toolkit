@@ -6,7 +6,7 @@
 
 Constructor.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(parent: TeamsBotInstallation, info: ChannelInfo);
@@ -16,7 +16,7 @@ constructor(parent: TeamsBotInstallation, info: ChannelInfo);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  parent | TeamsBotInstallation | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
+|  parent | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
 |  info | ChannelInfo | Detailed channel information. |
 
 ## Remarks

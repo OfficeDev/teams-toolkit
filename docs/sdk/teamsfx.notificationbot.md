@@ -9,7 +9,7 @@
 > Use `BotBuilderCloudAdapter.NotificationBot` instead.
 > 
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class NotificationBot 

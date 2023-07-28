@@ -6,7 +6,7 @@
 
 Provide utilities to send notification to varies targets (e.g., member, group, channel).
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class NotificationBot 

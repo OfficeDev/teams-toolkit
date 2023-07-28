@@ -6,7 +6,7 @@
 
 Create new instance of the `ConversationBot`<!-- -->.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(options: ConversationOptions);
@@ -16,7 +16,7 @@ constructor(options: ConversationOptions);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  options | ConversationOptions | The initialize options. |
+|  options | [ConversationOptions](./teamsfx.conversationoptions.md) | The initialize options. |
 
 ## Remarks
 

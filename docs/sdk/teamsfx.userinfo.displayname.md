@@ -6,7 +6,7 @@
 
 User Display Name.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 displayName: string;

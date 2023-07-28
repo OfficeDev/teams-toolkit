@@ -6,7 +6,7 @@
 
 Validate the installation by getting paged memebers.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 validateInstallation(conversationReference: Partial<ConversationReference>): Promise<boolean>;
@@ -18,7 +18,7 @@ validateInstallation(conversationReference: Partial<ConversationReference>): Pro
 |  --- | --- | --- |
 |  conversationReference | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;boolean&gt;
 

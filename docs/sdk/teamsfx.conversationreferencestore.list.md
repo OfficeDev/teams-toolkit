@@ -6,7 +6,7 @@
 
 List stored conversation reference by page.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 list(pageSize?: number, continuationToken?: string): Promise<PagedData<Partial<ConversationReference>>>;
@@ -16,10 +16,10 @@ list(pageSize?: number, continuationToken?: string): Promise<PagedData<Partial<C
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  pageSize | number | _(Optional)_ the page size. |
-|  continuationToken | string | _(Optional)_ the continuation token to get next page. |
+|  pageSize | number | the page size. |
+|  continuationToken | string | the continuation token to get next page. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;[PagedData](./teamsfx.pageddata.md)<!-- -->&lt;Partial&lt;ConversationReference&gt;&gt;&gt;
 

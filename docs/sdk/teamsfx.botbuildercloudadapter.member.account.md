@@ -6,7 +6,7 @@
 
 Detailed member account information.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly account: TeamsChannelAccount;

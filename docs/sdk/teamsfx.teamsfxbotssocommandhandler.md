@@ -6,7 +6,7 @@
 
 Interface for a command handler that can process sso command to a TeamsFx bot and return a response.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface TeamsFxBotSsoCommandHandler 
@@ -14,9 +14,9 @@ export interface TeamsFxBotSsoCommandHandler
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [triggerPatterns](./teamsfx.teamsfxbotssocommandhandler.triggerpatterns.md) |  | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The string or regular expression patterns that can trigger this handler. |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [triggerPatterns](./teamsfx.teamsfxbotssocommandhandler.triggerpatterns.md) | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The string or regular expression patterns that can trigger this handler. |
 
 ## Methods
 

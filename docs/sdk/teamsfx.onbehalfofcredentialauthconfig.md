@@ -6,7 +6,7 @@
 
 Authentication configuration for OnBehalfOfCredential used in node environment
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare type OnBehalfOfCredentialAuthConfig = {

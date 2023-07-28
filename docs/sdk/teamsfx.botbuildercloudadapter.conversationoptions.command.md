@@ -6,7 +6,7 @@
 
 The command part.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 command?: CommandOptions & {

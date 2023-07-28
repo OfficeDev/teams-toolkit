@@ -6,7 +6,7 @@
 
 The bot adapter.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly adapter: CloudAdapter;

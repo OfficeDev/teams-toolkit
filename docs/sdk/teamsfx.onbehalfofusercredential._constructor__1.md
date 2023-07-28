@@ -6,7 +6,7 @@
 
 Constructor of OnBehalfOfUserCredential
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(ssoToken: string, config: AuthenticationConfiguration);

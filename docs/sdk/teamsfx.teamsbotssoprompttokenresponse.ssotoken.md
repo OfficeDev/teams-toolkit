@@ -6,7 +6,7 @@
 
 SSO token for user
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 ssoToken: string;

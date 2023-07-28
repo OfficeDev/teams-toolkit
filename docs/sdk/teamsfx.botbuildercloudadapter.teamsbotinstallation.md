@@ -6,12 +6,12 @@
 
 A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the `General` channel)
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class TeamsBotInstallation implements NotificationTarget 
 ```
-**Implements:** [NotificationTarget](./teamsfx.notificationtarget.md)
+<b>Implements:</b> [NotificationTarget](./teamsfx.notificationtarget.md)
 
 ## Remarks
 
@@ -27,10 +27,10 @@ It's recommended to get bot installations from .
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [adapter](./teamsfx.botbuildercloudadapter.teamsbotinstallation.adapter.md) | <code>readonly</code> | CloudAdapter | The bound <code>CloudAdapter</code>. |
-|  [botAppId](./teamsfx.botbuildercloudadapter.teamsbotinstallation.botappid.md) | <code>readonly</code> | string | The bot app id. |
-|  [conversationReference](./teamsfx.botbuildercloudadapter.teamsbotinstallation.conversationreference.md) | <code>readonly</code> | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
-|  [type?](./teamsfx.botbuildercloudadapter.teamsbotinstallation.type.md) | <code>readonly</code> | [NotificationTargetType](./teamsfx.notificationtargettype.md) | _(Optional)_ Notification target type. |
+|  [adapter](./teamsfx.botbuildercloudadapter.teamsbotinstallation.adapter.md) |  | CloudAdapter | The bound <code>CloudAdapter</code>. |
+|  [botAppId](./teamsfx.botbuildercloudadapter.teamsbotinstallation.botappid.md) |  | string | The bot app id. |
+|  [conversationReference](./teamsfx.botbuildercloudadapter.teamsbotinstallation.conversationreference.md) |  | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
+|  [type?](./teamsfx.botbuildercloudadapter.teamsbotinstallation.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <i>(Optional)</i> Notification target type. |
 
 ## Methods
 

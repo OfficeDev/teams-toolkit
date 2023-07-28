@@ -6,12 +6,12 @@
 
 Provider that handles Bearer Token authentication
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class BearerTokenAuthProvider implements AuthProvider 
 ```
-**Implements:** [AuthProvider](./teamsfx.authprovider.md)
+<b>Implements:</b> [AuthProvider](./teamsfx.authprovider.md)
 
 ## Constructors
 

@@ -6,7 +6,7 @@
 
 The client (application) ID of an App Registration in the tenant, default value comes from M365\_CLIENT\_ID environment variable
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly clientId?: string;

@@ -6,7 +6,7 @@
 
 Interface for SSO configuration for Bot SSO
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface BotSsoConfig 
@@ -14,8 +14,8 @@ export interface BotSsoConfig
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [aad](./teamsfx.botssoconfig.aad.md) |  | { scopes: string\[\]; } &amp; (([OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) &amp; { initiateLoginEndpoint: string; }) \| [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md)<!-- -->) | aad related configurations |
-|  [dialog?](./teamsfx.botssoconfig.dialog.md) |  | { CustomBotSsoExecutionActivityHandler?: new (ssoConfig: [BotSsoConfig](./teamsfx.botssoconfig.md)<!-- -->) =&gt; [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md)<!-- -->; conversationState?: ConversationState; userState?: UserState; dedupStorage?: Storage; ssoPromptConfig?: { timeout?: number; endOnInvalidMessage?: boolean; }; } | _(Optional)_ |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [aad](./teamsfx.botssoconfig.aad.md) | { scopes: string\[\]; } &amp; (([OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) &amp; { initiateLoginEndpoint: string; }) \| [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md)<!-- -->) | aad related configurations |
+|  [dialog?](./teamsfx.botssoconfig.dialog.md) | { CustomBotSsoExecutionActivityHandler?: new (ssoConfig: [BotSsoConfig](./teamsfx.botssoconfig.md)<!-- -->) =&gt; [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md)<!-- -->; conversationState?: ConversationState; userState?: UserState; dedupStorage?: Storage; ssoPromptConfig?: { timeout?: number; endOnInvalidMessage?: boolean; }; } | <i>(Optional)</i> |
 

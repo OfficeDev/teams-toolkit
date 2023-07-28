@@ -6,12 +6,12 @@
 
 Get basic user info from SSO token.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 getUserInfo(): UserInfo;
 ```
-**Returns:**
+<b>Returns:</b>
 
 [UserInfo](./teamsfx.userinfo.md)
 

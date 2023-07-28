@@ -6,7 +6,7 @@
 
 Text of the message sent by the user.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 text: string;

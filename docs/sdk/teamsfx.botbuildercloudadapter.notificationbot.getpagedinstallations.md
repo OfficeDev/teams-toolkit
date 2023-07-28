@@ -6,7 +6,7 @@
 
 Gets a pagined list of targets where the bot is installed.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 getPagedInstallations(pageSize?: number, continuationToken?: string, validationEnabled?: boolean): Promise<PagedData<TeamsBotInstallation>>;
@@ -16,13 +16,13 @@ getPagedInstallations(pageSize?: number, continuationToken?: string, validationE
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  pageSize | number | _(Optional)_ Suggested number of entries on a page. |
-|  continuationToken | string | _(Optional)_ A continuation token. |
-|  validationEnabled | boolean | _(Optional)_ |
+|  pageSize | number | Suggested number of entries on a page. |
+|  continuationToken | string | A continuation token. |
+|  validationEnabled | boolean |  |
 
-**Returns:**
+<b>Returns:</b>
 
-Promise&lt;[PagedData](./teamsfx.pageddata.md)<!-- -->&lt;TeamsBotInstallation&gt;&gt;
+Promise&lt;[PagedData](./teamsfx.pageddata.md)<!-- -->&lt;[TeamsBotInstallation](./teamsfx.teamsbotinstallation.md)<!-- -->&gt;&gt;
 
 An array of [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) with paged data and continuation token.
 

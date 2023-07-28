@@ -6,7 +6,7 @@
 
 The bot adapter. If not provided, a default adapter will be created: - with `adapterConfig` as constructor parameter. - with a default error handler that logs error to console, sends trace activity, and sends error message to user.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 adapter?: BotFrameworkAdapter;

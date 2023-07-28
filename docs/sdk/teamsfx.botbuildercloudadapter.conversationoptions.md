@@ -6,7 +6,7 @@
 
 Options to initialize [ConversationBot](./teamsfx.conversationbot.md)
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface ConversationOptions 
@@ -14,12 +14,12 @@ export interface ConversationOptions
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [adapter?](./teamsfx.botbuildercloudadapter.conversationoptions.adapter.md) |  | CloudAdapter | _(Optional)_ The bot adapter. If not provided, a default adapter will be created: - with <code>adapterConfig</code> as constructor parameter. - with a default error handler that logs error to console, sends trace activity, and sends error message to user. |
-|  [adapterConfig?](./teamsfx.botbuildercloudadapter.conversationoptions.adapterconfig.md) |  | { \[key: string\]: unknown; } | _(Optional)_ If <code>adapter</code> is not provided, this <code>adapterConfig</code> will be passed to the new <code>CloudAdapter</code> when created internally. |
-|  [cardAction?](./teamsfx.botbuildercloudadapter.conversationoptions.cardaction.md) |  | [CardActionOptions](./teamsfx.cardactionoptions.md) &amp; { enabled?: boolean; } | _(Optional)_ The adaptive card action handler part. |
-|  [command?](./teamsfx.botbuildercloudadapter.conversationoptions.command.md) |  | [CommandOptions](./teamsfx.commandoptions.md) &amp; { enabled?: boolean; } | _(Optional)_ The command part. |
-|  [notification?](./teamsfx.botbuildercloudadapter.conversationoptions.notification.md) |  | NotificationOptions &amp; { enabled?: boolean; } | _(Optional)_ The notification part. |
-|  [ssoConfig?](./teamsfx.botbuildercloudadapter.conversationoptions.ssoconfig.md) |  | [BotSsoConfig](./teamsfx.botssoconfig.md) | _(Optional)_ Configurations for sso command bot |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [adapter?](./teamsfx.botbuildercloudadapter.conversationoptions.adapter.md) | CloudAdapter | <i>(Optional)</i> The bot adapter. If not provided, a default adapter will be created: - with <code>adapterConfig</code> as constructor parameter. - with a default error handler that logs error to console, sends trace activity, and sends error message to user. |
+|  [adapterConfig?](./teamsfx.botbuildercloudadapter.conversationoptions.adapterconfig.md) | { \[key: string\]: unknown; } | <i>(Optional)</i> If <code>adapter</code> is not provided, this <code>adapterConfig</code> will be passed to the new <code>CloudAdapter</code> when created internally. |
+|  [cardAction?](./teamsfx.botbuildercloudadapter.conversationoptions.cardaction.md) | [CardActionOptions](./teamsfx.cardactionoptions.md) &amp; { enabled?: boolean; } | <i>(Optional)</i> The adaptive card action handler part. |
+|  [command?](./teamsfx.botbuildercloudadapter.conversationoptions.command.md) | [CommandOptions](./teamsfx.commandoptions.md) &amp; { enabled?: boolean; } | <i>(Optional)</i> The command part. |
+|  [notification?](./teamsfx.botbuildercloudadapter.conversationoptions.notification.md) | NotificationOptions &amp; { enabled?: boolean; } | <i>(Optional)</i> The notification part. |
+|  [ssoConfig?](./teamsfx.botbuildercloudadapter.conversationoptions.ssoconfig.md) | [BotSsoConfig](./teamsfx.botssoconfig.md) | <i>(Optional)</i> Configurations for sso command bot |
 

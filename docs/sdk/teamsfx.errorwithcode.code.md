@@ -6,7 +6,7 @@
 
 Error code
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 code: string | undefined;

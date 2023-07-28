@@ -9,12 +9,12 @@
 > Use `BotBuilderCloudAdapter.TeamsBotInstallation` instead.
 > 
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class TeamsBotInstallation implements NotificationTarget 
 ```
-**Implements:** [NotificationTarget](./teamsfx.notificationtarget.md)
+<b>Implements:</b> [NotificationTarget](./teamsfx.notificationtarget.md)
 
 ## Constructors
 
@@ -26,9 +26,9 @@ export declare class TeamsBotInstallation implements NotificationTarget
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [adapter](./teamsfx.teamsbotinstallation.adapter.md) | <code>readonly</code> | BotFrameworkAdapter | The bound <code>BotFrameworkAdapter</code>. |
-|  [conversationReference](./teamsfx.teamsbotinstallation.conversationreference.md) | <code>readonly</code> | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
-|  [type?](./teamsfx.teamsbotinstallation.type.md) | <code>readonly</code> | [NotificationTargetType](./teamsfx.notificationtargettype.md) | _(Optional)_ Notification target type. |
+|  [adapter](./teamsfx.teamsbotinstallation.adapter.md) |  | BotFrameworkAdapter | The bound <code>BotFrameworkAdapter</code>. |
+|  [conversationReference](./teamsfx.teamsbotinstallation.conversationreference.md) |  | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
+|  [type?](./teamsfx.teamsbotinstallation.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <i>(Optional)</i> Notification target type. |
 
 ## Methods
 

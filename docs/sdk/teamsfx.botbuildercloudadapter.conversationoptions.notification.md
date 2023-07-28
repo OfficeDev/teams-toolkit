@@ -6,7 +6,7 @@
 
 The notification part.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 notification?: NotificationOptions & {

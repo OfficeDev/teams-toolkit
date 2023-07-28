@@ -6,7 +6,7 @@
 
 Users execute query in message extension with SSO or access token.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
@@ -21,7 +21,7 @@ export declare function handleMessageExtensionQueryWithToken(context: TurnContex
 |  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
 |  logic | (token: [MessageExtensionTokenResponse](./teamsfx.messageextensiontokenresponse.md)<!-- -->) =&gt; Promise&lt;any&gt; | Business logic when executing the query in message extension with SSO or access token. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;MessagingExtensionResponse \| void&gt;
 

@@ -6,7 +6,7 @@
 
 Constructs a new instance of the `BearerTokenAuthProvider` class
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(getToken: () => Promise<string>);

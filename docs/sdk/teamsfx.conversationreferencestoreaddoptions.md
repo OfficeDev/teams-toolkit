@@ -6,7 +6,7 @@
 
 Options to add a conversation reference to the store.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface ConversationReferenceStoreAddOptions 
@@ -14,7 +14,7 @@ export interface ConversationReferenceStoreAddOptions
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [overwrite?](./teamsfx.conversationreferencestoreaddoptions.overwrite.md) |  | boolean | _(Optional)_ Whether to overwrite the existing conversation reference. |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [overwrite?](./teamsfx.conversationreferencestoreaddoptions.overwrite.md) | boolean | <i>(Optional)</i> Whether to overwrite the existing conversation reference. |
 

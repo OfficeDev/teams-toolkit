@@ -6,7 +6,7 @@
 
 Create a new instance of the `CardActionBot`<!-- -->.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(adapter: CloudAdapter, options?: CardActionOptions);
@@ -17,5 +17,5 @@ constructor(adapter: CloudAdapter, options?: CardActionOptions);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | CloudAdapter | The bound <code>CloudAdapter</code>. |
-|  options | [CardActionOptions](./teamsfx.cardactionoptions.md) | _(Optional)_ The initialize options. |
+|  options | [CardActionOptions](./teamsfx.cardactionoptions.md) | The initialize options. |
 

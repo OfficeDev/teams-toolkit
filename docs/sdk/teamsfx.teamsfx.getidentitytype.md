@@ -6,12 +6,12 @@
 
 Identity type set by user.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 getIdentityType(): IdentityType;
 ```
-**Returns:**
+<b>Returns:</b>
 
 [IdentityType](./teamsfx.identitytype.md)
 

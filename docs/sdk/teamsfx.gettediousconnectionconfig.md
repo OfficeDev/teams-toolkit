@@ -11,7 +11,7 @@
 
 Generate connection configuration consumed by tedious.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
@@ -22,9 +22,9 @@ export declare function getTediousConnectionConfig(teamsfx: TeamsFx, databaseNam
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) | Used to provide configuration and auth |
-|  databaseName | string | _(Optional)_ specify database name to override default one if there are multiple databases. |
+|  databaseName | string | specify database name to override default one if there are multiple databases. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;ConnectionConfig&gt;
 

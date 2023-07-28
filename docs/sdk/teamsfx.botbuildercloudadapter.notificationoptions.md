@@ -6,7 +6,7 @@
 
 Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface NotificationOptions 
@@ -14,9 +14,9 @@ export interface NotificationOptions
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [botAppId?](./teamsfx.botbuildercloudadapter.notificationoptions.botappid.md) |  | string | _(Optional)_ An optional input of bot app Id. |
-|  [storage?](./teamsfx.botbuildercloudadapter.notificationoptions.storage.md) |  | [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | _(Optional)_ An optional storage to persist bot notification target references. |
-|  [store?](./teamsfx.botbuildercloudadapter.notificationoptions.store.md) |  | [ConversationReferenceStore](./teamsfx.conversationreferencestore.md) | _(Optional)_ An optional store to persist bot notification target references. |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [botAppId?](./teamsfx.botbuildercloudadapter.notificationoptions.botappid.md) | string | <i>(Optional)</i> An optional input of bot app Id. |
+|  [storage?](./teamsfx.botbuildercloudadapter.notificationoptions.storage.md) | [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | <i>(Optional)</i> An optional storage to persist bot notification target references. |
+|  [store?](./teamsfx.botbuildercloudadapter.notificationoptions.store.md) | [ConversationReferenceStore](./teamsfx.conversationreferencestore.md) | <i>(Optional)</i> An optional store to persist bot notification target references. |
 

@@ -6,7 +6,7 @@
 
 The action handler used for adaptive card universal actions.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly cardAction?: CardActionBot;

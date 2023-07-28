@@ -6,7 +6,7 @@
 
 Send a plain text message.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
@@ -17,9 +17,9 @@ sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Prom
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  text | string | The plain text message. |
-|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | _(Optional)_ An optional error handler that can catch exceptions during message sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
+|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | An optional error handler that can catch exceptions during message sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;MessageResponse&gt;
 

@@ -6,7 +6,7 @@
 
 AAD tenant id, default value comes from M365\_TENANT\_ID environment variable.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly tenantId?: string;

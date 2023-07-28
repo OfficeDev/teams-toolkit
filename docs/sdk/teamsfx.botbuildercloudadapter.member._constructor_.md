@@ -6,7 +6,7 @@
 
 Constructor.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
@@ -16,7 +16,7 @@ constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  parent | TeamsBotInstallation | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this member is created from. |
+|  parent | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this member is created from. |
 |  account | TeamsChannelAccount | Detailed member account information. |
 
 ## Remarks

@@ -6,7 +6,7 @@
 
 Whether to overwrite the existing conversation reference.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 overwrite?: boolean;

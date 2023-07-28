@@ -6,7 +6,7 @@
 
 Called when the component is ending.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 protected onEndDialog(context: TurnContext): Promise<void>;
@@ -18,7 +18,7 @@ protected onEndDialog(context: TurnContext): Promise<void>;
 |  --- | --- | --- |
 |  context | TurnContext | Context for the current turn of conversation. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;void&gt;
 

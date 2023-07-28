@@ -6,7 +6,7 @@
 
 The string or regular expression patterns that can trigger this handler.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 triggerPatterns: TriggerPatterns;

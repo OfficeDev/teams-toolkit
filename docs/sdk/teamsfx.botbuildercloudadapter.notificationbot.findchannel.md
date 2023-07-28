@@ -6,7 +6,7 @@
 
 Return the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the `General` channel, otherwise undefined will be returned.)
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel | undefined>;
@@ -16,11 +16,11 @@ findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) 
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  predicate | (channel: Channel, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | Find calls predicate once for each channel of the installation, until it finds one where predicate returns true. If such a channel is found, find immediately returns that channel. Otherwise, find returns <code>undefined</code>. |
+|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | Find calls predicate once for each channel of the installation, until it finds one where predicate returns true. If such a channel is found, find immediately returns that channel. Otherwise, find returns <code>undefined</code>. |
 
-**Returns:**
+<b>Returns:</b>
 
-Promise&lt;Channel \| undefined&gt;
+Promise&lt;[Channel](./teamsfx.channel.md) \| undefined&gt;
 
 The first [Channel](./teamsfx.channel.md) where predicate is true, and `undefined` otherwise.
 

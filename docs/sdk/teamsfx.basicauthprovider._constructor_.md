@@ -6,7 +6,7 @@
 
 Constructs a new instance of the `BasicAuthProvider` class
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(userName: string, password: string);

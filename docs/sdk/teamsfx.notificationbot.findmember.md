@@ -6,7 +6,7 @@
 
 Returns the first [Member](./teamsfx.member.md) where predicate is true, and undefined otherwise.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 findMember(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member | undefined>;
@@ -17,9 +17,9 @@ findMember(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope)
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  predicate | (member: [Member](./teamsfx.member.md)<!-- -->) =&gt; Promise&lt;boolean&gt; | find calls predicate once for each member of the installation, until it finds one where predicate returns true. If such a member is found, find immediately returns that member. Otherwise, find returns undefined. |
-|  scope | [SearchScope](./teamsfx.searchscope.md) | _(Optional)_ the scope to find members from the installations (personal chat, group chat, Teams channel). |
+|  scope | [SearchScope](./teamsfx.searchscope.md) | the scope to find members from the installations (personal chat, group chat, Teams channel). |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;[Member](./teamsfx.member.md) \| undefined&gt;
 

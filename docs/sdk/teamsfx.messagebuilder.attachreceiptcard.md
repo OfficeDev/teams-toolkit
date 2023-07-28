@@ -6,7 +6,7 @@
 
 Build a message activity attached with a receipt card.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 static AttachReceiptCard(card: ReceiptCard): Partial<Activity>;
@@ -18,7 +18,7 @@ static AttachReceiptCard(card: ReceiptCard): Partial<Activity>;
 |  --- | --- | --- |
 |  card | ReceiptCard | A description of the receipt card. |
 
-**Returns:**
+<b>Returns:</b>
 
 Partial&lt;Activity&gt;
 

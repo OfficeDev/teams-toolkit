@@ -6,7 +6,7 @@
 
 Constructor of TeamsBotSsoPrompt.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogId: string, settings: TeamsBotSsoPromptSettings);

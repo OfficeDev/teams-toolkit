@@ -6,7 +6,7 @@
 
 Write one notification target by its key.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 write(key: string, object: {
@@ -21,7 +21,7 @@ write(key: string, object: {
 |  key | string | the key of a notification target. |
 |  object | { \[key: string\]: unknown; } | the notification target. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;void&gt;
 

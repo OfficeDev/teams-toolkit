@@ -6,7 +6,7 @@
 
 Constructor of MsGraphAuthProvider.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(credential: TokenCredential, scopes?: string | string[]);
@@ -17,7 +17,7 @@ constructor(credential: TokenCredential, scopes?: string | string[]);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  credential | TokenCredential | credential used to provide configuration and auth. |
-|  scopes | string \| string\[\] | _(Optional)_ The list of scopes for which the token will have access. |
+|  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
 
 ## Exceptions
 

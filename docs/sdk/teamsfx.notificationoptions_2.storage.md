@@ -6,7 +6,7 @@
 
 An optional storage to persist bot notification connections.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 storage?: NotificationTargetStorage;

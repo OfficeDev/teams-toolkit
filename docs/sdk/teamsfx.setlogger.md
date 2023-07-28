@@ -6,7 +6,7 @@
 
 Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare function setLogger(logger?: Logger): void;
@@ -16,9 +16,9 @@ export declare function setLogger(logger?: Logger): void;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  logger | [Logger](./teamsfx.logger.md) | _(Optional)_ custom logger. If it's undefined, custom logger will be cleared. |
+|  logger | [Logger](./teamsfx.logger.md) | custom logger. If it's undefined, custom logger will be cleared. |
 
-**Returns:**
+<b>Returns:</b>
 
 void
 

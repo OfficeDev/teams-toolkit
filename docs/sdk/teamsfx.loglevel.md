@@ -6,7 +6,7 @@
 
 Log level.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare enum LogLevel 

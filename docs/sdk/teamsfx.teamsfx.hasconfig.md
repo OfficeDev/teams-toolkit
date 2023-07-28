@@ -6,7 +6,7 @@
 
 Check the value of specific key.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 hasConfig(key: string): boolean;
@@ -18,7 +18,7 @@ hasConfig(key: string): boolean;
 |  --- | --- | --- |
 |  key | string | configuration key. |
 
-**Returns:**
+<b>Returns:</b>
 
 boolean
 

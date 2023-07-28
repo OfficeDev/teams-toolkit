@@ -6,12 +6,12 @@
 
 Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class TeamsBotSsoPrompt extends Dialog 
 ```
-**Extends:** Dialog
+<b>Extends:</b> Dialog
 
 ## Remarks
 

@@ -6,10 +6,10 @@
 
 Authentication configuration for AppCredential used in node environment
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare type AppCredentialAuthConfig = OnBehalfOfCredentialAuthConfig;
 ```
-**References:** [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md)
+<b>References:</b> [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md)
 

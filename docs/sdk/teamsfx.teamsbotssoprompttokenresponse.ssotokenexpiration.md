@@ -6,7 +6,7 @@
 
 Expire time of SSO token
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 ssoTokenExpiration: string;

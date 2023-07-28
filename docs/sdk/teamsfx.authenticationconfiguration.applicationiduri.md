@@ -6,7 +6,7 @@
 
 Application ID URI. Default value comes from M365\_APPLICATION\_ID\_URI environment variable.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly applicationIdUri?: string;

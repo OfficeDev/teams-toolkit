@@ -6,7 +6,7 @@
 
 Constructor of TeamsBotSsoPrompt.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(teamsfx: TeamsFx, dialogId: string, settings: TeamsBotSsoPromptSettings);

@@ -6,7 +6,7 @@
 
 Writes to verbose level logging.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 verbose(message: string): void;
@@ -18,7 +18,7 @@ verbose(message: string): void;
 |  --- | --- | --- |
 |  message | string |  |
 
-**Returns:**
+<b>Returns:</b>
 
 void
 

@@ -6,7 +6,7 @@
 
 Constructs a new instance of the `CertificateAuthProvider` class
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 constructor(certOption: SecureContextOptions);

@@ -6,12 +6,12 @@
 
 A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class Channel implements NotificationTarget 
 ```
-**Implements:** [NotificationTarget](./teamsfx.notificationtarget.md)
+<b>Implements:</b> [NotificationTarget](./teamsfx.notificationtarget.md)
 
 ## Remarks
 
@@ -27,9 +27,9 @@ It's recommended to get channels from .
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [info](./teamsfx.channel.info.md) | <code>readonly</code> | ChannelInfo | Detailed channel information. |
-|  [parent](./teamsfx.channel.parent.md) | <code>readonly</code> | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
-|  [type](./teamsfx.channel.type.md) | <code>readonly</code> | [NotificationTargetType](./teamsfx.notificationtargettype.md) | Notification target type. For channel it's always "Channel". |
+|  [info](./teamsfx.channel.info.md) |  | ChannelInfo | Detailed channel information. |
+|  [parent](./teamsfx.channel.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
+|  [type](./teamsfx.channel.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | Notification target type. For channel it's always "Channel". |
 
 ## Methods
 

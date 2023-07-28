@@ -6,7 +6,7 @@
 
 Returns an attachment for a sign-in card.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 static attachSigninCard(title: string, url: string, text?: string): Partial<Activity>;
@@ -18,9 +18,9 @@ static attachSigninCard(title: string, url: string, text?: string): Partial<Acti
 |  --- | --- | --- |
 |  title | string | The title for the card's sign-in button. |
 |  url | string | The URL of the sign-in page to use. |
-|  text | string | _(Optional)_ Optional. Additional text to include on the card. |
+|  text | string | Optional. Additional text to include on the card. |
 
-**Returns:**
+<b>Returns:</b>
 
 Partial&lt;Activity&gt;
 

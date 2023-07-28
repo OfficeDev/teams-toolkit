@@ -6,7 +6,7 @@
 
 The target type where the notification will be sent to.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare enum NotificationTargetType 

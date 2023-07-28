@@ -6,12 +6,12 @@
 
 Represent Teams current user's identity, and it is used within Teams client applications.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class TeamsUserCredential implements TokenCredential 
 ```
-**Implements:** TokenCredential
+<b>Implements:</b> TokenCredential
 
 ## Remarks
 

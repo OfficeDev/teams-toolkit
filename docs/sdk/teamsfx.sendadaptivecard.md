@@ -6,7 +6,7 @@
 
 Send an adaptive card message to a notification target.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare function sendAdaptiveCard(target: NotificationTarget, card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
@@ -18,9 +18,9 @@ export declare function sendAdaptiveCard(target: NotificationTarget, card: unkno
 |  --- | --- | --- |
 |  target | [NotificationTarget](./teamsfx.notificationtarget.md) | the notification target. |
 |  card | unknown | the adaptive card raw JSON. |
-|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | _(Optional)_ an optional error handler that can catch exceptions during adaptive card sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
+|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | an optional error handler that can catch exceptions during adaptive card sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
 
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;MessageResponse&gt;
 

@@ -6,12 +6,12 @@
 
 Microsoft Graph auth provider for Teams Framework
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class MsGraphAuthProvider implements AuthenticationProvider 
 ```
-**Implements:** AuthenticationProvider
+<b>Implements:</b> AuthenticationProvider
 
 ## Constructors
 

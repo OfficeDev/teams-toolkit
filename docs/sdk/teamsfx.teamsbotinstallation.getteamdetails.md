@@ -6,12 +6,12 @@
 
 Get team details from this bot installation
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 getTeamDetails(): Promise<TeamDetails | undefined>;
 ```
-**Returns:**
+<b>Returns:</b>
 
 Promise&lt;TeamDetails \| undefined&gt;
 

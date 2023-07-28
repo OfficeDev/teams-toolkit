@@ -6,7 +6,7 @@
 
 Build a bot message activity attached with an Office 365 connector card.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 static attachO365ConnectorCard(card: O365ConnectorCard): Partial<Activity>;
@@ -18,7 +18,7 @@ static attachO365ConnectorCard(card: O365ConnectorCard): Partial<Activity>;
 |  --- | --- | --- |
 |  card | O365ConnectorCard | A description of the Office 365 connector card. |
 
-**Returns:**
+<b>Returns:</b>
 
 Partial&lt;Activity&gt;
 

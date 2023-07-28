@@ -6,7 +6,7 @@
 
 Registers commands into the command bot.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 registerCommands(commands: TeamsFxBotCommandHandler[]): void;
@@ -18,7 +18,7 @@ registerCommands(commands: TeamsFxBotCommandHandler[]): void;
 |  --- | --- | --- |
 |  commands | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | The commands to register. |
 
-**Returns:**
+<b>Returns:</b>
 
 void
 

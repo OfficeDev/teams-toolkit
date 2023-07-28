@@ -6,7 +6,7 @@
 
 Hostname of AAD authority. Default value comes from M365\_AUTHORITY\_HOST environment variable.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly authorityHost?: string;

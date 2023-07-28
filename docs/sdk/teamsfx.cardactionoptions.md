@@ -6,7 +6,7 @@
 
 Options to initialize [CardActionBot](./teamsfx.cardactionbot.md)<!-- -->.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export interface CardActionOptions 
@@ -14,7 +14,7 @@ export interface CardActionOptions
 
 ## Properties
 
-|  Property | Modifiers | Type | Description |
-|  --- | --- | --- | --- |
-|  [actions?](./teamsfx.cardactionoptions.actions.md) |  | [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md)<!-- -->\[\] | _(Optional)_ The action handlers to registered with the action bot. Each command should implement the interface [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) so that it can be correctly handled by this bot. |
+|  Property | Type | Description |
+|  --- | --- | --- |
+|  [actions?](./teamsfx.cardactionoptions.actions.md) | [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md)<!-- -->\[\] | <i>(Optional)</i> The action handlers to registered with the action bot. Each command should implement the interface [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) so that it can be correctly handled by this bot. |
 

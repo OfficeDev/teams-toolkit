@@ -6,7 +6,7 @@
 
 The bound `CloudAdapter`<!-- -->.
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 readonly adapter: CloudAdapter;

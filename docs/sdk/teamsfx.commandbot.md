@@ -9,7 +9,7 @@
 > Use `BotBuilderCloudAdapter.CommandBot` instead.
 > 
 
-**Signature:**
+<b>Signature:</b>
 
 ```typescript
 export declare class CommandBot 

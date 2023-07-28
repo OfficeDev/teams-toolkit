@@ -117,8 +117,8 @@ class TreeViewManager {
     developmentTreeviewProvider.refresh();
   }
 
-  public getTreeView(viewName: string): CommandsTreeViewProvider | undefined {
-    return this.treeviewMap.get(viewName) as CommandsTreeViewProvider;
+  public getTreeView(viewName: string): unknown {
+    return this.treeviewMap.get(viewName);
   }
 
   public setRunningCommand(

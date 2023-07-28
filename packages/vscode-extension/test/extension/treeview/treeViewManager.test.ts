@@ -16,7 +16,7 @@ describe("TreeViewManager", () => {
     sandbox.restore();
   });
 
-  it("registerTreeViews", async () => {
+  it("registerTreeViews", () => {
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
@@ -28,7 +28,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal((lifecycleTreeView as any).commands[0].commandId, "fx-extension.provision");
   });
 
-  it("registerTreeViews", async () => {
+  it("registerTreeViews", () => {
     sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
@@ -40,7 +40,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal((developmentTreeview as any).commands.length, 4);
   });
 
-  it("setRunningCommand", async () => {
+  it("setRunningCommand", () => {
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
@@ -121,7 +121,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(commands.length, 2);
   });
 
-  it("updateTreeViewsOnSPFxChanged", async () => {
+  it("updateTreeViewsOnSPFxChanged", () => {
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],

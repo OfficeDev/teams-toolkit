@@ -26,7 +26,7 @@ import {
   JSONSyntaxError,
   MissingEnvironmentVariablesError,
 } from "../../../../src/error/common";
-import { Platform, ok, err } from "@microsoft/teamsfx-api";
+import { Platform, ok, err, UserError } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -475,6 +475,41 @@ describe("aadAppUpdate", async () => {
       .and.property("message")
       .equals(
         'A http server error happened while performing the aadApp/update task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+      );
+  });
+
+  it("should throw permissionErrorCode when update failed with CannotDeleteOrUpdateEnabledEntitlement", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").rejects({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: {
+          error: {
+            code: "CannotDeleteOrUpdateEnabledEntitlement",
+            message:
+              "Permission (scope or role) cannot be deleted or updated unless disabled first.",
+          },
+        },
+      },
+    });
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
+    };
+
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(HttpClientError)
+      .and.property("message")
+      .equals(
+        'A http client error happened while performing the aadApp/update task. The error response is: "Permission (scope or role) cannot be deleted or updated unless disabled first."'
       );
   });
 

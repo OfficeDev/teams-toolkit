@@ -20,6 +20,7 @@ import {
   UnhandledError,
 } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
+import { aadErrorCode } from "./utility/constants";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -100,6 +101,19 @@ export class UpdateAadAppDriver implements StepDriver {
         };
       }
       if (axios.isAxiosError(error)) {
+        if (
+          error.response!.status == 400 &&
+          error.response!.data.error.code === aadErrorCode.permissionErrorCode
+        ) {
+          const message = JSON.stringify(error.response!.data.error.message);
+          context.logProvider?.error(
+            getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
+          );
+          return {
+            result: err(new HttpClientError(actionName, message, helpLink)),
+            summaries: summaries,
+          };
+        }
         const message = JSON.stringify(error.response!.data);
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)

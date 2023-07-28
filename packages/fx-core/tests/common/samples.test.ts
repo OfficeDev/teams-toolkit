@@ -112,14 +112,7 @@ describe("Samples", () => {
         },
       ],
     };
-    sinon.stub(axios, "get").callsFake(async (url: string, config) => {
-      if (
-        url ===
-        `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v2.2.0/.config/samples-config-v3.json`
-      ) {
-        return { data: fakedSampleConfig, status: 200 };
-      }
-    });
+    sinon.stub(axios, "get").resolves({ data: fakedSampleConfig, status: 200 });
 
     await sampleProvider.fetchSampleConfig();
 

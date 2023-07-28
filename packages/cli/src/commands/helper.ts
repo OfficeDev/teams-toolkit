@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { CliArgument, CliCommand, CliOption } from "./types";
-import chalk from "chalk";
 
 class Helper {
   itemIndentWidth = 2;

@@ -1,4 +1,6 @@
-// login m365 account via username and password for ui test
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   PublicClientApplication,
   LogLevel,
@@ -22,7 +24,7 @@ const cachePathEnd = ".json";
 // the friendly service name to store secret in keytar
 const serviceName = "Microsoft Teams Toolkit";
 
-const accountName = "appStudio";
+const accountName = "m365";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 
 const beforeCacheAccess = getBeforeCacheAccess(accountName);

@@ -14,6 +14,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   Colors,
   Context,
+  CreateProjectResult,
   err,
   FxError,
   Inputs,
@@ -150,13 +151,14 @@ class Coordinator {
     context: Context,
     inputs: Inputs,
     actionContext?: ActionContext
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<CreateProjectResult, FxError>> {
     const folder = inputs["folder"] as string;
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));
     }
     const scratch = inputs[QuestionNames.Scratch] as string;
     let projectPath = "";
+    let warnings = undefined;
     if (scratch === ScratchOptions.no().id) {
       // create from sample
       const sampleId = inputs[QuestionNames.Samples] as string;
@@ -219,6 +221,8 @@ class Coordinator {
         const res = await CopilotPluginGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
+        } else  {
+          warnings = res.value.warnings;
         }
       } else {
         if (
@@ -260,7 +264,7 @@ class Coordinator {
         return err(res.error);
       }
     }
-    return ok(projectPath);
+    return ok({projectPath: projectPath, warnings});
   }
 
   async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {

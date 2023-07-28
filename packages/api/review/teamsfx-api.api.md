@@ -144,6 +144,17 @@ export enum CoreCallbackEvent {
     unlock = "unlock"
 }
 
+// @public (undocumented)
+export interface CreateProjectResult {
+    // (undocumented)
+    projectPath: string;
+    // (undocumented)
+    warnings?: {
+        type: string;
+        content: string;
+    }[];
+}
+
 // @public
 export interface CryptoProvider {
     decrypt(ciphertext: string): Result<string, FxError>;
@@ -422,6 +433,9 @@ export type ManifestCapability = {
     snippet?: IWebApplicationInfo;
     existingApp?: boolean;
 };
+
+// @public (undocumented)
+export const ManifestTemplateFileName = "manifest.json";
 
 // @public (undocumented)
 export type MaybePromise<T> = T | Promise<T>;

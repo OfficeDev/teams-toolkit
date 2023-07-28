@@ -18,6 +18,7 @@ import {
   ConfigFolderName,
   Context,
   CoreCallbackEvent,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,
@@ -124,6 +125,7 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
+import { manifestUtils } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -356,7 +358,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
     return err(result.error);
   }
 
-  const projectPathUri = result.value as Uri;
+  const projectPathUri = Uri.file((result.value as CreateProjectResult).projectPath);
   // show local debug button by default
   await openFolder(projectPathUri, true, false, args);
   return result;
@@ -400,7 +402,7 @@ export async function updateAutoOpenGlobalKey(
 
 export async function createProjectFromWalkthroughHandler(
   args?: any[]
-): Promise<Result<any, FxError>> {
+): Promise<Result<CreateProjectResult, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;
@@ -694,8 +696,7 @@ export async function runCommand(
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {
-          const uri = Uri.file(tmpResult.value);
-          result = ok(uri);
+          result = ok(tmpResult.value);
         }
         break;
       }
@@ -786,7 +787,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
     if (tmpResult.isErr()) {
       result = err(tmpResult.error);
     } else {
-      const uri = Uri.file(tmpResult.value);
+      const uri = Uri.file((tmpResult.value as CreateProjectResult).projectPath);
       result = ok(uri);
     }
   } catch (e) {
@@ -1215,6 +1216,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
     void showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
+    //await globalStateUpdate(GlobalKey.TEST, []);
   }
   if (isOpenSampleReadMe) {
     await showLocalDebugMessage();

@@ -164,3 +164,11 @@ export interface ApiOperation {
   label: string;
   groupName: string;
 }
+
+export interface CreateProjectResult {
+  projectPath: string;
+  warnings?: {
+    type: string;
+    content: string;
+  }[];
+}

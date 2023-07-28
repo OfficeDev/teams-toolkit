@@ -5,6 +5,7 @@ import {
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,
@@ -109,7 +110,7 @@ export default class ServerConnection implements IServerConnection {
   public async createProjectRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<CreateProjectResult, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,

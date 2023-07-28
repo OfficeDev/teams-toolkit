@@ -9,6 +9,7 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
+  CreateProjectResult,
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
@@ -189,12 +190,21 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
-      const targetUri = await Correlator.run(handlers.createProjectFromWalkthroughHandler, args);
+      const targetUri: Result<CreateProjectResult, FxError> = await Correlator.run(
+        handlers.createProjectFromWalkthroughHandler,
+        args
+      );
       if (targetUri.isOk()) {
-        await handlers.updateAutoOpenGlobalKey(true, false, targetUri.value as vscode.Uri, args);
+        const projectPath = targetUri.value.projectPath;
+        await handlers.updateAutoOpenGlobalKey(
+          true,
+          false,
+          vscode.Uri.file(projectPath),
+          args
+        );
         await ExtTelemetry.dispose();
         await delay(2000);
-        return { openFolder: targetUri.value as vscode.Uri };
+        return { openFolder: projectPath };
       }
     })
   );

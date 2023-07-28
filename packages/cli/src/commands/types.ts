@@ -2,27 +2,32 @@
 // Licensed under the MIT license.
 
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+
+export type OptionValue = string | boolean | string[] | boolean[];
+
 export interface CliCommand {
   name: string;
   fullName?: string;
+  version?: string;
   description: string;
   arguments?: CliArgument[];
   options?: CliOption[];
   examples?: string[];
   commands?: CliCommand[];
-  handler: (cmd: CliCommandWithContext) => Promise<Result<undefined, FxError>>;
+  handler: (cmd: CliContext) => Promise<Result<undefined, FxError>>;
   telemetry?: {
     event: string;
   };
+  header?: string;
+  footer?: string;
 }
 
-export interface CliCommandWithContext extends CliCommand {
-  inputs: Record<string, any>;
-  logLevel: "verbose" | "debug" | "info";
-  interactive: boolean;
+export interface CliContext {
+  command: CliCommand;
+  optionValues: Record<string, OptionValue>;
+  globalOptionValues: Record<string, OptionValue>;
+  argumentValues: string[];
   telemetryProperties: Record<string, string>;
-  fxCore?: FxCore;
 }
 
 interface CliOptionBase {

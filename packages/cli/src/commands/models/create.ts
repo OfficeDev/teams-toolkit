@@ -4,16 +4,16 @@ import { err, LogLevel, ok } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
-import { createFxCore } from "../activate";
-import CLILogProvider from "../commonlib/log";
+import { createFxCore } from "../../activate";
+import CLILogProvider from "../../commonlib/log";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
-} from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../utils";
+} from "../../telemetry/cliTelemetryEvents";
+import { getSystemInputs } from "../../utils";
 import { createSampleCommand } from "./createSample";
-import { CliCommand, CliCommandWithContext } from "./models";
+import { CliCommand, CliContext } from "../types";
 
 export const createCommandModel: CliCommand = {
   name: "new",
@@ -111,9 +111,13 @@ export const createCommandModel: CliCommand = {
   telemetry: {
     event: TelemetryEvent.CreateProject,
   },
-  handler: async (cmd: CliCommandWithContext) => {
+  handler: async (cmd: CliContext) => {
+    console.log(cmd.optionValues);
     const inputs = getSystemInputs();
-    if (!cmd.interactive) assign(inputs, cmd.inputs);
+    if (!cmd.globalOptionValues.interactive) {
+      assign(inputs, cmd.optionValues);
+      inputs.capabilities = inputs.capability;
+    }
     inputs.projectId = inputs.projectId ?? uuid.v4();
     const core = createFxCore();
     const res = await core.createProject(inputs);

@@ -271,21 +271,21 @@ export function replaceAppIdUri(manifest: string, appIdUri: string): string {
   return manifest;
 }
 
-export function readAndConvertUserdata(
+export async function readAndConvertUserdata(
   context: MigrationContext,
   filePath: string,
   bicepContent: any
 ): Promise<string> {
   let returnAnswer = "";
 
-  const userdataContent = fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const userdataContent = await fs.readFile(path.join(context.projectPath, filePath), "utf8");
   const secretes = dotenv.parse(userdataContent);
   for (const secreteKey of Object.keys(secretes)) {
     const res = namingConverterV3("state." + secreteKey, FileType.USERDATA, bicepContent);
     if (res.isOk()) returnAnswer += `${res.value}=${secretes[secreteKey]}${EOL}`;
   }
 
-  return Promise.resolve(returnAnswer);
+  return returnAnswer;
 }
 
 export async function updateAndSaveManifestForSpfx(

@@ -1,21 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, LogLevel, ok } from "@microsoft/teamsfx-api";
+import { err, ok } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
 import { createFxCore } from "../../activate";
-import CLILogProvider from "../../commonlib/log";
+import { logger } from "../../commonlib/logger";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
+import { CLICommand, CLIContext } from "../types";
 import { createSampleCommand } from "./createSample";
-import { CliCommand, CliContext } from "../types";
 
-export const createCommandModel: CliCommand = {
+export const createCommandModel: CLICommand = {
   name: "new",
   description: "Create a new Teams application.",
   options: [
@@ -111,8 +111,7 @@ export const createCommandModel: CliCommand = {
   telemetry: {
     event: TelemetryEvent.CreateProject,
   },
-  handler: async (cmd: CliContext) => {
-    console.log(cmd.optionValues);
+  handler: async (cmd: CLIContext) => {
     const inputs = getSystemInputs();
     if (!cmd.globalOptionValues.interactive) {
       assign(inputs, cmd.optionValues);
@@ -129,10 +128,7 @@ export const createCommandModel: CliCommand = {
     if (res.isErr()) {
       return err(res.error);
     }
-    CLILogProvider.necessaryLog(
-      LogLevel.Info,
-      `Project created at: ${chalk.cyanBright(res.value)}`
-    );
+    logger.info(`Project created at: ${chalk.cyanBright(res.value)}`);
     return ok(undefined);
   },
 };

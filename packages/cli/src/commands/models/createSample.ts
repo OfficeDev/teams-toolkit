@@ -1,24 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, LogLevel, ok } from "@microsoft/teamsfx-api";
+import { err, ok } from "@microsoft/teamsfx-api";
+import { CoreQuestionNames, ScratchOptions } from "@microsoft/teamsfx-core";
+import chalk from "chalk";
 import { assign } from "lodash";
+import * as uuid from "uuid";
 import { createFxCore } from "../../activate";
-import { templates } from "../../constants";
+import { logger } from "../../commonlib/logger";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs, toLocaleLowerCase } from "../../utils";
+import { getSystemInputs } from "../../utils";
+import { CLICommand, CLIContext } from "../types";
 import { listSampleCommandModel } from "./listSamples";
-import { CliCommand, CliContext } from "../types";
-import * as uuid from "uuid";
-import CLILogProvider from "../../commonlib/log";
-import chalk from "chalk";
-import { CoreQuestionNames, ScratchOptions } from "@microsoft/teamsfx-core";
 
-export const createSampleCommand: CliCommand = {
+export const createSampleCommand: CLICommand = {
   name: "template",
   description: "Create a new Teams application from a sample.",
   arguments: [
@@ -27,7 +26,6 @@ export const createSampleCommand: CliCommand = {
       type: "singleSelect",
       description: "Specifies the Teams App sample name.",
       required: true,
-      choices: templates.map((t) => toLocaleLowerCase(t.sampleAppName)),
       choiceListCommand: "teamsfx new template list",
     },
   ],
@@ -45,7 +43,7 @@ export const createSampleCommand: CliCommand = {
     event: TelemetryEvent.DownloadSample,
   },
   commands: [listSampleCommandModel],
-  handler: async (cmd: CliContext) => {
+  handler: async (cmd: CLIContext) => {
     const sampleName = cmd.argumentValues?.[0] || "";
     const inputs = getSystemInputs();
     inputs.projectId = inputs.projectId ?? uuid.v4();
@@ -63,11 +61,8 @@ export const createSampleCommand: CliCommand = {
     if (res.isErr()) {
       return err(res.error);
     }
-    CLILogProvider.necessaryLog(
-      LogLevel.Info,
-      `Sample project '${CLILogProvider.white(sampleName)}' downloaded at: ${chalk.cyanBright(
-        res.value
-      )}`
+    logger.info(
+      `Sample project '${chalk.white(sampleName)}' downloaded at: ${chalk.cyanBright(res.value)}`
     );
     return ok(undefined);
   },

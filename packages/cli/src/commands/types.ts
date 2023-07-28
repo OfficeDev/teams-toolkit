@@ -5,16 +5,16 @@ import { FxError, Result } from "@microsoft/teamsfx-api";
 
 export type OptionValue = string | boolean | string[] | boolean[];
 
-export interface CliCommand {
+export interface CLICommand {
   name: string;
   fullName?: string;
   version?: string;
   description: string;
-  arguments?: CliArgument[];
-  options?: CliOption[];
+  arguments?: CLICommandArgument[];
+  options?: CLICommandOption[];
   examples?: string[];
-  commands?: CliCommand[];
-  handler: (cmd: CliContext) => Promise<Result<undefined, FxError>>;
+  commands?: CLICommand[];
+  handler: (cmd: CLIContext) => Promise<Result<undefined, FxError>>;
   telemetry?: {
     event: string;
   };
@@ -22,15 +22,15 @@ export interface CliCommand {
   footer?: string;
 }
 
-export interface CliContext {
-  command: CliCommand;
+export interface CLIContext {
+  command: CLICommand;
   optionValues: Record<string, OptionValue>;
   globalOptionValues: Record<string, OptionValue>;
   argumentValues: string[];
   telemetryProperties: Record<string, string>;
 }
 
-interface CliOptionBase {
+interface CLICommandOptionBase {
   name: string;
   description: string;
   shortName?: string;
@@ -39,19 +39,19 @@ interface CliOptionBase {
   hidden?: boolean;
 }
 
-interface CliBooleanOption extends CliOptionBase {
+interface CLIBooleanOption extends CLICommandOptionBase {
   type: "boolean";
   default?: boolean;
   value?: boolean;
 }
 
-interface CliTextOption extends CliOptionBase {
+interface CLITextOption extends CLICommandOptionBase {
   type: "text";
   default?: string;
   value?: string;
 }
 
-interface CliSingleSelectOption extends CliOptionBase {
+interface CLISingleSelectOption extends CLICommandOptionBase {
   type: "singleSelect";
   default?: string | boolean;
   choices?: string[] | boolean[];
@@ -59,7 +59,7 @@ interface CliSingleSelectOption extends CliOptionBase {
   value?: string | boolean;
 }
 
-interface CliMultiSelectOption extends CliOptionBase {
+interface CLIMultiSelectOption extends CLICommandOptionBase {
   type: "multiSelect";
   default?: string[] | boolean[];
   choices?: string[] | boolean[];
@@ -67,10 +67,10 @@ interface CliMultiSelectOption extends CliOptionBase {
   value?: string[] | boolean[];
 }
 
-export type CliOption =
-  | CliBooleanOption
-  | CliTextOption
-  | CliSingleSelectOption
-  | CliMultiSelectOption;
+export type CLICommandOption =
+  | CLIBooleanOption
+  | CLITextOption
+  | CLISingleSelectOption
+  | CLIMultiSelectOption;
 
-export type CliArgument = CliTextOption | CliSingleSelectOption;
+export type CLICommandArgument = CLITextOption | CLISingleSelectOption;

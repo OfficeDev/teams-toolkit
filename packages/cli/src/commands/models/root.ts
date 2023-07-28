@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ok } from "@microsoft/teamsfx-api";
-import chalk from "chalk";
-import { CliCommand, CliContext } from "../types";
-import { createCommandModel } from "./create";
+import { logger } from "../../commonlib/logger";
 import { FooterText } from "../../constants";
+import { helper } from "../helper";
+import { CLICommand, CLIContext } from "../types";
+import { createCommandModel } from "./create";
 
-export const rootCommand: CliCommand = {
+export const rootCommand: CLICommand = {
   name: "teamsfx",
   description: "Teams toolkit CLI.",
   footer: FooterText,
@@ -44,8 +45,9 @@ export const rootCommand: CliCommand = {
       default: false,
     },
   ],
-  handler: async (cmd: CliContext) => {
-    process.stdout.write(chalk.yellowBright.bold("Microsoft Teams Toolkit\n"));
+  handler: async (cmd: CLIContext) => {
+    const helpText = helper.formatHelp(rootCommand, rootCommand);
+    logger.info(helpText);
     return ok(undefined);
   },
 };

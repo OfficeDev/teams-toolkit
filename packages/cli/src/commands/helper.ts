@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CliArgument, CliCommand, CliOption } from "./types";
+import { CLICommandArgument, CLICommand, CLICommandOption } from "./types";
 
 class Helper {
   itemIndentWidth = 2;
@@ -13,7 +13,7 @@ class Helper {
   termWidth = 0;
   helpWidth = process.stdout.isTTY ? process.stdout.columns : 80;
 
-  formatOptionName(option: CliOption, withRequired = true) {
+  formatOptionName(option: CLICommandOption, withRequired = true) {
     let flags = `--${option.name}`;
     if (option.shortName) flags += ` -${option.shortName}`;
     if (
@@ -25,18 +25,18 @@ class Helper {
       flags += this.requiredColumnText;
     return flags;
   }
-  formatArgumentName(argument: CliArgument) {
+  formatArgumentName(argument: CLICommandArgument) {
     if (argument.required) {
       return `<${argument.name}>`;
     } else {
       return `[${argument.name}]`;
     }
   }
-  formatCommandName(command: CliCommand) {
+  formatCommandName(command: CLICommand) {
     const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
     return `${command.name} ${command.options?.length ? "[options]" : ""} ${args}`.trim();
   }
-  computePadWidth(command: CliCommand, rootCommand: CliCommand) {
+  computePadWidth(command: CLICommand, rootCommand: CLICommand) {
     const names: string[] = [];
 
     command.options?.forEach((o) => {
@@ -97,7 +97,7 @@ class Helper {
     return textArray.join("\n").replace(/^/gm, " ".repeat(this.itemIndentWidth));
   }
 
-  formatCommandUsage(command: CliCommand) {
+  formatCommandUsage(command: CLICommand) {
     return `Usage: ${this.formatCommandName(command)}`;
   }
   formatAllowedValue(choices: string[] | boolean[]) {
@@ -107,7 +107,7 @@ class Helper {
       list.length < choices.length ? ", etc." : ""
     }].`;
   }
-  formatArgumentDescription(argument: CliArgument) {
+  formatArgumentDescription(argument: CLICommandArgument) {
     const extraInfo = [];
 
     if (argument.type === "singleSelect" && argument.choices) {
@@ -127,7 +127,7 @@ class Helper {
     }
     return result;
   }
-  formatOptionDescription(option: CliOption) {
+  formatOptionDescription(option: CLICommandOption) {
     const extraInfo = [];
 
     if ((option.type === "multiSelect" || option.type === "singleSelect") && option.choices) {
@@ -150,7 +150,7 @@ class Helper {
     }
     return result;
   }
-  formatHelp(command: CliCommand, rootCommand: CliCommand): string {
+  formatHelp(command: CLICommand, rootCommand: CLICommand): string {
     this.termWidth = this.computePadWidth(command, rootCommand);
 
     let output: string[] = [];
@@ -222,8 +222,8 @@ class Helper {
 
 export const helper = new Helper();
 
-export function compareOptions(a: CliOption, b: CliOption): number {
-  const sortKey = (option: CliOption) => {
+export function compareOptions(a: CLICommandOption, b: CLICommandOption): number {
+  const sortKey = (option: CLICommandOption) => {
     return option.name.replace(/-/g, "").toLowerCase();
   };
   return sortKey(a).localeCompare(sortKey(b));

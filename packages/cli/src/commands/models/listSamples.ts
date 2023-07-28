@@ -1,17 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogLevel, ok } from "@microsoft/teamsfx-api";
-import CLILogProvider from "../../commonlib/log";
-import { templates } from "../../constants";
+import { ok } from "@microsoft/teamsfx-api";
+import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { CliCommand, CliContext } from "../types";
+import { getTemplates } from "../../utils";
+import { CLICommand, CLIContext } from "../types";
 
-export const listSampleCommandModel: CliCommand = {
+export const listSampleCommandModel: CLICommand = {
   name: "list",
   description: "List all Teams App samples.",
-  handler: async (cmd: CliContext) => {
-    CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
-    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(templates, undefined, 4), true);
+  handler: async (cmd: CLIContext) => {
+    logger.info("The following are sample apps:");
+    const samples = await getTemplates();
+    logger.info(JSON.stringify(samples, undefined, 4));
     return ok(undefined);
   },
   telemetry: {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
   MissingRequiredInputError,
@@ -10,15 +10,15 @@ import {
 import { cloneDeep } from "lodash";
 import { format } from "util";
 import { TextType, colorize } from "../colorize";
-import CLILogProvider from "../commonlib/log";
+import { logger } from "../commonlib/logger";
 import { strings } from "../resource";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { helper } from "./helper";
-import { CliCommand, CliContext, CliOption } from "./types";
+import { CLICommand, CLICommandOption, CLIContext } from "./types";
 
 // Licensed under the MIT license.
-class Engine {
-  async start(rootCmd: CliCommand): Promise<void> {
+class CLIEngine {
+  async start(rootCmd: CLICommand): Promise<void> {
     const root = cloneDeep(rootCmd);
     const args = process.argv.slice(2);
 
@@ -34,14 +34,14 @@ class Engine {
 
     // 3. --version
     if (context.globalOptionValues.version === true) {
-      CLILogProvider.necessaryLog(LogLevel.Info, rootCmd.version ?? "1.0.0", true);
+      logger.info(rootCmd.version ?? "1.0.0");
       return;
     }
 
     // 4. --help
     if (context.globalOptionValues.help === true) {
       const helpText = helper.formatHelp(context.command, root);
-      CLILogProvider.necessaryLog(LogLevel.Info, helpText, true);
+      logger.info(helpText);
       return;
     }
 
@@ -66,7 +66,7 @@ class Engine {
     }
   }
 
-  findCommand(model: CliCommand, args: string[]): { cmd: CliCommand; remainingArgs: string[] } {
+  findCommand(model: CLICommand, args: string[]): { cmd: CLICommand; remainingArgs: string[] } {
     let i = 0;
     let cmd = model;
     for (; i < args.length; i++) {
@@ -83,10 +83,10 @@ class Engine {
     return { cmd: command, remainingArgs: args.slice(i) };
   }
 
-  parseArgs(command: CliCommand, rootCommand: CliCommand, args: string[]): CliContext {
+  parseArgs(command: CLICommand, rootCommand: CLICommand, args: string[]): CLIContext {
     let i = 0;
     let j = 0;
-    const context: CliContext = {
+    const context: CLIContext = {
       command: command,
       optionValues: {},
       globalOptionValues: {},
@@ -132,7 +132,7 @@ class Engine {
   }
 
   validateOptionsAndArguments(
-    command: CliCommand
+    command: CLICommand
   ): Result<undefined, InputValidationError | MissingRequiredInputError> {
     if (command.options) {
       for (const option of command.options) {
@@ -157,7 +157,7 @@ class Engine {
    * validate option value
    */
   validateOption(
-    option: CliOption
+    option: CLICommandOption
   ): Result<undefined, InputValidationError | MissingRequiredInputError> {
     if (option.required && option.default === undefined && option.value === undefined) {
       return err(new MissingRequiredInputError(helper.formatOptionName(option, false)));
@@ -200,7 +200,7 @@ class Engine {
     }
     return ok(undefined);
   }
-  processResult(context: CliContext, fxError?: FxError): void {
+  processResult(context: CLIContext, fxError?: FxError): void {
     if (context.command.telemetry) {
       if (fxError) {
         CliTelemetry.sendTelemetryErrorEvent(
@@ -216,15 +216,15 @@ class Engine {
       }
     }
     if (fxError) {
-      CLILogProvider.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);
+      logger.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);
       if ("helpLink" in fxError && fxError["helpLink"]) {
-        CLILogProvider.outputError(
+        logger.outputError(
           `Get help from `,
           colorize(fxError["helpLink"] as string, TextType.Hyperlink)
         );
       }
       if ("issueLink" in fxError && fxError["issueLink"]) {
-        CLILogProvider.outputError(
+        logger.outputError(
           `Report this issue at `,
           colorize(fxError["issueLink"] as string, TextType.Hyperlink)
         );
@@ -233,4 +233,4 @@ class Engine {
   }
 }
 
-export const engine = new Engine();
+export const engine = new CLIEngine();

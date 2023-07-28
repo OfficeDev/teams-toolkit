@@ -37,9 +37,11 @@ export class CertificateAuthProvider implements AuthProvider {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
   public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CertificateAuthProvider"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "CertificateAuthProvider"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

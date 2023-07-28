@@ -49,9 +49,11 @@ export class CertificateAuthProvider implements AuthProvider {
       const existingProperties = new Set(Object.keys(config.httpsAgent.options));
       for (const property of Object.keys(this.certOption)) {
         if (existingProperties.has(property)) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateHttpsOptionProperty, property),
-            ErrorCode.InvalidParameter
+          return Promise.reject(
+            new ErrorWithCode(
+              formatString(ErrorMessage.DuplicateHttpsOptionProperty, property),
+              ErrorCode.InvalidParameter
+            )
           );
         }
       }

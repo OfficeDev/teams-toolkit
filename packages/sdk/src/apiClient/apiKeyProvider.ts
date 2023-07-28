@@ -59,9 +59,11 @@ export class ApiKeyProvider implements AuthProvider {
           config.headers = {};
         }
         if (config.headers[this.keyName]) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateApiKeyInHeader, this.keyName),
-            ErrorCode.AuthorizationInfoAlreadyExists
+          return Promise.reject(
+            new ErrorWithCode(
+              formatString(ErrorMessage.DuplicateApiKeyInHeader, this.keyName),
+              ErrorCode.AuthorizationInfoAlreadyExists
+            )
           );
         }
         config.headers[this.keyName] = this.keyValue;
@@ -76,9 +78,11 @@ export class ApiKeyProvider implements AuthProvider {
           urlHasDefinedApiKey = url.searchParams.has(this.keyName);
         }
         if (config.params[this.keyName] || urlHasDefinedApiKey) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
-            ErrorCode.AuthorizationInfoAlreadyExists
+          return Promise.reject(
+            new ErrorWithCode(
+              formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
+              ErrorCode.AuthorizationInfoAlreadyExists
+            )
           );
         }
         config.params[this.keyName] = this.keyValue;

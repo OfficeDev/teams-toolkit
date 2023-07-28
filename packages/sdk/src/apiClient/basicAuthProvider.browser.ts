@@ -40,9 +40,11 @@ export class BasicAuthProvider implements AuthProvider {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
   public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BasicAuthProvider"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "BasicAuthProvider"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

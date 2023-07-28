@@ -51,15 +51,19 @@ export class BasicAuthProvider implements AuthProvider {
    */
   public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     if (config.headers && config.headers["Authorization"]) {
-      throw new ErrorWithCode(
-        ErrorMessage.AuthorizationHeaderAlreadyExists,
-        ErrorCode.AuthorizationInfoAlreadyExists
+      return Promise.reject(
+        new ErrorWithCode(
+          ErrorMessage.AuthorizationHeaderAlreadyExists,
+          ErrorCode.AuthorizationInfoAlreadyExists
+        )
       );
     }
     if (config.auth) {
-      throw new ErrorWithCode(
-        ErrorMessage.BasicCredentialAlreadyExists,
-        ErrorCode.AuthorizationInfoAlreadyExists
+      return Promise.reject(
+        new ErrorWithCode(
+          ErrorMessage.BasicCredentialAlreadyExists,
+          ErrorCode.AuthorizationInfoAlreadyExists
+        )
       );
     }
 

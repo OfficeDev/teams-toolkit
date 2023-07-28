@@ -51,4 +51,9 @@ describe("AzureNode", () => {
     chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
     chai.assert.equal(treeItem.contextValue, "signinAzure");
   });
+
+  it("getChildren", () => {
+    const azureNode = new AzureAccountNode(eventEmitter);
+    chai.assert.isNull(azureNode.getChildren());
+  });
 });

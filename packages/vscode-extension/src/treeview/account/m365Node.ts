@@ -67,7 +67,7 @@ export class M365AccountNode extends DynamicNode {
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
-    return Promise.resolve([this.sideloadingNode]);
+    return [this.sideloadingNode];
   }
 
   public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {

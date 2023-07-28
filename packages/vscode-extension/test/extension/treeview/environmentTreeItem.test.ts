@@ -61,9 +61,11 @@ describe("EnvironmentNode", () => {
     const children = await environmentNode.getChildren();
 
     chai.assert.equal(children?.length, 2);
-    const warningNode = await (children as DynamicNode[])[0].getTreeItem();
+    const warningNode = (await (children as DynamicNode[])[0].getTreeItem()) as DynamicNode;
     chai.assert.deepEqual(warningNode.iconPath, warningIcon);
     chai.assert.equal(warningNode.tooltip, "test string");
+    chai.assert.equal(warningNode.getChildren(), null);
+    chai.assert.equal(warningNode.getTreeItem(), warningNode);
   });
 
   it("getChildren returns subscription", async () => {

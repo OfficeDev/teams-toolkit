@@ -9,7 +9,7 @@ Gets a pagined list of targets where the bot is installed.
 <b>Signature:</b>
 
 ```typescript
-getPagedInstallations(pageSize?: number, continuationToken?: string): Promise<PagedData<TeamsBotInstallation>>;
+getPagedInstallations(pageSize?: number, continuationToken?: string, validationEnabled?: boolean): Promise<PagedData<TeamsBotInstallation>>;
 ```
 
 ## Parameters
@@ -18,6 +18,7 @@ getPagedInstallations(pageSize?: number, continuationToken?: string): Promise<Pa
 |  --- | --- | --- |
 |  pageSize | number | Suggested number of entries on a page. |
 |  continuationToken | string | A continuation token. |
+|  validationEnabled | boolean |  |
 
 <b>Returns:</b>
 

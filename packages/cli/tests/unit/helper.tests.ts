@@ -263,6 +263,7 @@ describe("CLI helper", () => {
       const rcommand = cloneDeep(rootCommand);
       rcommand.header = "Header:";
       rcommand.footer = "Footer:";
+      rcommand.sortOptions = true;
       const res = helper.formatHelp(createCommand, rcommand);
       assert.include(res, "Header:");
       assert.include(res, "Footer:");

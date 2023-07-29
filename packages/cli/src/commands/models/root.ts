@@ -6,10 +6,12 @@ import { FooterText } from "../../constants";
 import { helper } from "../helper";
 import { CLICommand, CLIContext } from "../types";
 import { createCommand } from "./create";
+import { getVersion } from "../../utils";
 
 export const rootCommand: CLICommand = {
   name: "teamsfx",
   description: "Teams toolkit CLI.",
+  version: getVersion(),
   footer: FooterText,
   commands: [createCommand],
   options: [

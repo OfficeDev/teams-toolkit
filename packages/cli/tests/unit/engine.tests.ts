@@ -98,6 +98,25 @@ describe("CLI Engine", () => {
       await engine.start(rootCommand);
       assert.isTrue(loggerStub.calledOnce);
     });
+    it("should validate argument failed", async () => {
+      sandbox.stub(createSampleCommand, "arguments").value([
+        {
+          type: "singleSelect",
+          name: "template",
+          description: "Select a sample app to create",
+          choices: ["a", "b", "c"],
+        },
+      ]);
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok("..."));
+      sandbox.stub(process, "argv").value(["node", "cli", "d"]);
+      let error: any = {};
+      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+        error = fxError;
+      });
+      sandbox.stub(logger, "info");
+      await engine.start(createSampleCommand);
+      assert.isTrue(error instanceof InputValidationError);
+    });
     it("should run handler return error", async () => {
       sandbox.stub(process, "argv").value(["node", "cli"]);
       sandbox.stub(rootCommand, "handler").resolves(err(new UserCancelError()));

@@ -13,7 +13,7 @@ class Helper {
   termWidth = 0;
   helpWidth = process.stdout.isTTY ? process.stdout.columns : 80;
 
-  formatOptionName(option: CLICommandOption, withRequired = true) {
+  formatOptionName(option: CLICommandOption, withRequired = true, insertIndent = false) {
     let flags = `--${option.name}`;
     if (option.shortName) flags += ` -${option.shortName}`;
     if (
@@ -21,8 +21,12 @@ class Helper {
       withRequired &&
       option.required &&
       option.default === undefined
-    )
+    ) {
+      if (insertIndent)
+        flags += " ".repeat(this.termWidth - flags.length - this.requiredColumnText.length);
       flags += this.requiredColumnText;
+    }
+
     return flags;
   }
   formatArgumentName(argument: CLICommandArgument) {
@@ -34,7 +38,7 @@ class Helper {
   }
   formatCommandName(command: CLICommand) {
     const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
-    return `${command.name} ${command.options?.length ? "[options]" : ""} ${args}`.trim();
+    return `${command.fullName} ${command.options?.length ? "[options]" : ""} ${args}`.trim();
   }
   computePadWidth(command: CLICommand, rootCommand: CLICommand) {
     const names: string[] = [];
@@ -178,9 +182,11 @@ class Helper {
     }
 
     // Options
-    const optionList = (command.options || []).sort(compareOptions).map((option) => {
+    let options = command.options || [];
+    if (command.sortOptions) options = options.sort(compareOptions);
+    const optionList = options.map((option) => {
       return this.formatItem(
-        this.formatOptionName(option, true),
+        this.formatOptionName(option, true, true),
         this.formatOptionDescription(option)
       );
     });
@@ -188,9 +194,12 @@ class Helper {
       output = output.concat(["Options:", this.formatList(optionList), ""]);
     }
 
-    const globalOptionList = (rootCommand.options || []).sort(compareOptions).map((option) => {
+    // Global Options
+    let globalOptions = rootCommand.options || [];
+    if (rootCommand.sortOptions) globalOptions = globalOptions.sort(compareOptions);
+    const globalOptionList = globalOptions.map((option) => {
       return this.formatItem(
-        this.formatOptionName(option, true),
+        this.formatOptionName(option, true, true),
         this.formatOptionDescription(option)
       );
     });

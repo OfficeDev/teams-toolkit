@@ -11,6 +11,7 @@ export interface CLICommand {
   version?: string;
   description: string;
   arguments?: CLICommandArgument[];
+  sortOptions?: boolean;
   options?: CLICommandOption[];
   examples?: string[];
   commands?: CLICommand[];

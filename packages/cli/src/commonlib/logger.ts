@@ -22,9 +22,9 @@ export class CLILogger implements LogProvider {
   debug(message: string): Promise<boolean> {
     return this.log(LogLevel.Debug, message);
   }
-  verbose(message: string): Promise<boolean> {
-    return this.log(LogLevel.Verbose, message);
-  }
+  // verbose(message: string): Promise<boolean> {
+  //   return this.log(LogLevel.Verbose, message);
+  // }
   info(message: Array<{ content: string; color: Colors }>): Promise<boolean>;
 
   info(message: string): Promise<boolean>;
@@ -38,10 +38,6 @@ export class CLILogger implements LogProvider {
     return this.log(LogLevel.Info, message);
   }
 
-  white(msg: string): string {
-    return chalk.whiteBright(msg);
-  }
-
   warning(message: string): Promise<boolean> {
     return this.log(LogLevel.Warning, message);
   }
@@ -52,10 +48,6 @@ export class CLILogger implements LogProvider {
 
   fatal(message: string): Promise<boolean> {
     return this.log(LogLevel.Fatal, message);
-  }
-
-  linkColor(msg: string): string {
-    return chalk.cyanBright.underline(msg);
   }
 
   async log(logLevel: LogLevel, message: string): Promise<boolean> {

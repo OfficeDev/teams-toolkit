@@ -49,9 +49,7 @@ export class CLILogProvider implements LogProvider {
   trace(message: string): Promise<boolean> {
     return this.log(LogLevel.Trace, message);
   }
-  verbose(message: string): Promise<boolean> {
-    return this.log(LogLevel.Debug, message);
-  }
+
   debug(message: string): Promise<boolean> {
     return this.log(LogLevel.Debug, message);
   }

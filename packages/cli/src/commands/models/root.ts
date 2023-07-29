@@ -5,13 +5,13 @@ import { logger } from "../../commonlib/logger";
 import { FooterText } from "../../constants";
 import { helper } from "../helper";
 import { CLICommand, CLIContext } from "../types";
-import { createCommandModel } from "./create";
+import { createCommand } from "./create";
 
 export const rootCommand: CLICommand = {
   name: "teamsfx",
   description: "Teams toolkit CLI.",
   footer: FooterText,
-  commands: [createCommandModel],
+  commands: [createCommand],
   options: [
     {
       type: "boolean",

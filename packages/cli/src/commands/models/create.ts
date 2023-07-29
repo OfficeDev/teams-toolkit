@@ -15,7 +15,7 @@ import { getSystemInputs } from "../../utils";
 import { CLICommand, CLIContext } from "../types";
 import { createSampleCommand } from "./createSample";
 
-export const createCommandModel: CLICommand = {
+export const createCommand: CLICommand = {
   name: "new",
   description: "Create a new Teams application.",
   options: [

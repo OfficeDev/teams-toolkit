@@ -6,8 +6,7 @@ import { CLICommandArgument, CLICommand, CLICommandOption } from "./types";
 class Helper {
   itemIndentWidth = 2;
   itemSeparatorWidth = 2; // between term and description
-  displayRequiredProperty = true;
-  displayRequiredAsOneColumn = false;
+  displayRequired = true;
   requiredColumnText = "  [Required]";
   maxChoicesToDisplay = 3;
   termWidth = 0;
@@ -16,17 +15,11 @@ class Helper {
   formatOptionName(option: CLICommandOption, withRequired = true, insertIndent = false) {
     let flags = `--${option.name}`;
     if (option.shortName) flags += ` -${option.shortName}`;
-    if (
-      this.displayRequiredProperty &&
-      withRequired &&
-      option.required &&
-      option.default === undefined
-    ) {
+    if (this.displayRequired && withRequired && option.required && option.default === undefined) {
       if (insertIndent)
         flags += " ".repeat(this.termWidth - flags.length - this.requiredColumnText.length);
       flags += this.requiredColumnText;
     }
-
     return flags;
   }
   formatArgumentName(argument: CLICommandArgument) {
@@ -35,6 +28,10 @@ class Helper {
     } else {
       return `[${argument.name}]`;
     }
+  }
+  formatSubCommandName(command: CLICommand) {
+    const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
+    return `${command.name} ${command.options?.length ? "[options]" : ""} ${args}`.trim();
   }
   formatCommandName(command: CLICommand) {
     const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
@@ -60,40 +57,39 @@ class Helper {
 
     return Math.max(...names.map((n) => n.length));
   }
-  wrap(str: string, width: number, indent: number, minColumnWidth = 40) {
+  prettifyReturnLine(text: string, width: number, indent: number, minWidth = 40) {
     const indentChars = " \\f\\t\\v\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff";
     const manualIndentRegex = new RegExp(`[\\n][${indentChars}]+`);
-    if (str.match(manualIndentRegex)) return str;
-    const columnWidth = width - indent;
-    if (columnWidth < minColumnWidth) return str;
-    const header = str.slice(0, indent);
-    const columnText = str.slice(indent).replace("\r\n", "\n");
-    const indentString = " ".repeat(indent);
-    const zeroWidthSpace = "\u200B";
-    const breaks = `\\s${zeroWidthSpace}`;
+    if (text.match(manualIndentRegex)) return text;
+    const cwidth = width - indent;
+    if (cwidth < minWidth) return text;
+    const header = text.slice(0, indent);
+    const ctext = text.slice(indent).replace("\r\n", "\n");
+    const breaks = "\\s\u200B";
     const regex = new RegExp(
-      `\n|.{1,${columnWidth - 1}}([${breaks}]|$)|[^${breaks}]+?([${breaks}]|$)`,
+      `\n|.{1,${cwidth - 1}}([${breaks}]|$)|[^${breaks}]+?([${breaks}]|$)`,
       "g"
     );
-    const lines = columnText.match(regex) || [];
-    return (
+    const lines = ctext.match(regex) || [];
+    const res =
       header +
       lines
         .map((line, i) => {
-          if (line === "\n") return ""; // preserve empty lines
-          return (i > 0 ? indentString : "") + line.trimEnd();
+          if (line === "\n") return "";
+          return (i > 0 ? " ".repeat(indent) : "") + line.trimEnd();
         })
-        .join("\n")
-    );
+        .join("\n");
+    return res;
   }
   formatItem(term: string, description: string) {
     if (description) {
       const fullText = `${term.padEnd(this.termWidth + this.itemSeparatorWidth)}${description}`;
-      return this.wrap(
+      const res = this.prettifyReturnLine(
         fullText,
         this.helpWidth - this.itemIndentWidth,
         this.termWidth + this.itemSeparatorWidth
       );
+      return res;
     }
     return term;
   }
@@ -112,47 +108,33 @@ class Helper {
     }].`;
   }
   formatArgumentDescription(argument: CLICommandArgument) {
-    const extraInfo = [];
-
+    const sentances = [argument.description];
     if (argument.type === "singleSelect" && argument.choices) {
-      extraInfo.push(this.formatAllowedValue(argument.choices));
+      sentances.push(this.formatAllowedValue(argument.choices));
     }
     if (argument.default !== undefined) {
-      extraInfo.push(`Default value: ${JSON.stringify(argument.default)}.`);
-    }
-
-    let result = argument.description;
-
-    if (extraInfo.length > 0) {
-      result += ` ${extraInfo.join(". ")}`;
+      sentances.push(`Default value: ${JSON.stringify(argument.default)}.`);
     }
     if (argument.type === "singleSelect" && argument.choiceListCommand) {
-      result += ` Use '${argument.choiceListCommand}' to see all available options.`;
+      sentances.push(`Use '${argument.choiceListCommand}' to see all available options.`);
     }
-    return result;
+    return sentances.join(" ");
   }
   formatOptionDescription(option: CLICommandOption) {
-    const extraInfo = [];
-
+    const sentances = [option.description];
     if ((option.type === "multiSelect" || option.type === "singleSelect") && option.choices) {
-      extraInfo.push(this.formatAllowedValue(option.choices));
+      sentances.push(this.formatAllowedValue(option.choices));
     }
     if (option.default !== undefined) {
-      extraInfo.push(`Default value: ${JSON.stringify(option.default)}.`);
-    }
-
-    let result = option.description;
-
-    if (extraInfo.length > 0) {
-      result += ` ${extraInfo.join(" ")}`;
+      sentances.push(`Default value: ${JSON.stringify(option.default)}.`);
     }
     if (
       (option.type === "multiSelect" || option.type === "singleSelect") &&
       option.choiceListCommand
     ) {
-      result += ` Use '${option.choiceListCommand}' to see all available options.`;
+      sentances.push(`Use '${option.choiceListCommand}' to see all available options.`);
     }
-    return result;
+    return sentances.join(" ");
   }
   formatHelp(command: CLICommand, rootCommand: CLICommand): string {
     this.termWidth = this.computePadWidth(command, rootCommand);
@@ -170,7 +152,10 @@ class Helper {
     // Description
     const commandDescription = command.description;
     if (commandDescription.length > 0) {
-      output = output.concat([helper.wrap(commandDescription, this.helpWidth, 0), ""]);
+      output = output.concat([
+        helper.prettifyReturnLine(commandDescription, this.helpWidth, 0),
+        "",
+      ]);
     }
 
     // Arguments
@@ -209,7 +194,7 @@ class Helper {
 
     // SubCommands
     const commandList = (command.commands || []).map((cmd) => {
-      return this.formatItem(this.formatCommandName(cmd), cmd.description);
+      return this.formatItem(this.formatSubCommandName(cmd), cmd.description);
     });
     if (commandList.length > 0) {
       output = output.concat(["Commands:", this.formatList(commandList), ""]);

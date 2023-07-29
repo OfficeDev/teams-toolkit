@@ -15,7 +15,7 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { CLICommand, CLIContext } from "../types";
-import { listSampleCommandModel } from "./listSamples";
+import { listSampleCommand } from "./listSamples";
 
 export const createSampleCommand: CLICommand = {
   name: "template",
@@ -42,7 +42,7 @@ export const createSampleCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.DownloadSample,
   },
-  commands: [listSampleCommandModel],
+  commands: [listSampleCommand],
   handler: async (cmd: CLIContext) => {
     const sampleName = cmd.argumentValues?.[0] || "";
     const inputs = getSystemInputs();

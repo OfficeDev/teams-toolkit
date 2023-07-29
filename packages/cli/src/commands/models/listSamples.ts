@@ -6,7 +6,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getTemplates } from "../../utils";
 import { CLICommand, CLIContext } from "../types";
 
-export const listSampleCommandModel: CLICommand = {
+export const listSampleCommand: CLICommand = {
   name: "list",
   description: "List all Teams App samples.",
   handler: async (cmd: CLIContext) => {

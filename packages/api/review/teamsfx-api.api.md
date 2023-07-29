@@ -98,7 +98,6 @@ export const CLIPlatforms: Platform[];
 
 // @public
 export enum Colors {
-    BRIGHT_BLUE = 7,
     BRIGHT_CYAN = 6,
     BRIGHT_GREEN = 3,
     BRIGHT_MAGENTA = 2,
@@ -366,12 +365,11 @@ export type LoginStatus = {
 // @public (undocumented)
 export enum LogLevel {
     Debug = 1,
-    Error = 5,
-    Fatal = 6,
-    Info = 3,
+    Error = 4,
+    Fatal = 5,
+    Info = 2,
     Trace = 0,
-    Verbose = 2,
-    Warning = 4
+    Warning = 3
 }
 
 // @public (undocumented)
@@ -387,7 +385,6 @@ export interface LogProvider {
     }>, logToFile?: boolean): Promise<boolean>;
     log(logLevel: LogLevel, message: string): Promise<boolean>;
     trace(message: string): Promise<boolean>;
-    verbose(message: string): Promise<boolean>;
     warning(message: string, logToFile?: boolean): Promise<boolean>;
 }
 

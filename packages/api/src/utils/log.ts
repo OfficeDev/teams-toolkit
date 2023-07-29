@@ -11,28 +11,22 @@ export enum LogLevel {
    * For debugging and development.
    */
   Debug = 1,
-
-  /**
-   * Diagnostics for users.
-   */
-  Verbose = 2,
-
   /**
    * Tracks the general flow of the app. May have long-term value.
    */
-  Info = 3,
+  Info = 2,
   /**
    * For abnormal or unexpected events. Typically includes errors or conditions that don't cause the app to fail.
    */
-  Warning = 4,
+  Warning = 3,
   /**
    * For errors and exceptions that cannot be handled. These messages indicate a failure in the current operation or request, not an app-wide failure.
    */
-  Error = 5,
+  Error = 4,
   /**
    * For failures that require immediate attention. Examples: data loss scenarios.
    */
-  Fatal = 6,
+  Fatal = 5,
 }
 
 export interface LogProvider {
@@ -50,12 +44,8 @@ export interface LogProvider {
   trace(message: string): Promise<boolean>;
 
   /**
-   * Verbose should include every event that happened, but not necessarily as much detail as debug.
-   */
-  verbose(message: string): Promise<boolean>;
-
-  /**
-   * Debug level can contain things like stack traces, input and output parameters, or special messages for developers.
+   * Use to record debug information
+   * @param message Information of log event
    */
   debug(message: string): Promise<boolean>;
 
@@ -127,8 +117,4 @@ export enum Colors {
    * Hyperlink
    */
   BRIGHT_CYAN = 6,
-  /**
-   * Commands, parameters, system inputs
-   */
-  BRIGHT_BLUE = 7,
 }

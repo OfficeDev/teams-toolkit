@@ -11,6 +11,8 @@ import { getVersion } from "../../src/utils";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { createCommand } from "../../src/commands/models/create";
 import { err } from "@microsoft/teamsfx-api";
+import * as main from "../../src/index";
+import { start } from "../../src/commands/index";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -106,6 +108,15 @@ describe("CLI Engine", () => {
       });
       await engine.start(rootCommand);
       assert.isTrue(error instanceof UserCancelError);
+    });
+  });
+  describe("index.start", async () => {
+    it("happy path", async () => {
+      sandbox.stub(main, "initTelemetryReporter").returns();
+      sandbox.stub(main, "sendCommandUsageTelemetry").returns();
+      sandbox.stub(engine, "start").resolves();
+      await start();
+      assert.isTrue(true);
     });
   });
 });

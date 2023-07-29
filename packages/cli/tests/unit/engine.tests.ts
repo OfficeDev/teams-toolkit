@@ -1,4 +1,4 @@
-import { InputValidationError, UserCancelError } from "@microsoft/teamsfx-core";
+import { FxCore, InputValidationError, UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
@@ -10,9 +10,10 @@ import { logger } from "../../src/commonlib/logger";
 import { getVersion } from "../../src/utils";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { createCommand } from "../../src/commands/models/create";
-import { err } from "@microsoft/teamsfx-api";
+import { err, ok } from "@microsoft/teamsfx-api";
 import * as main from "../../src/index";
 import { start } from "../../src/commands/index";
+import * as activate from "../../src/activate";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -84,7 +85,15 @@ describe("CLI Engine", () => {
       assert.isTrue(error && error instanceof InputValidationError);
     });
     it("should run handler success", async () => {
-      sandbox.stub(process, "argv").value(["node", "cli"]);
+      sandbox.stub(process, "argv").value(["node", "cli", "-i", "true"]);
+      const loggerStub = sandbox.stub(logger, "info");
+      await engine.start(rootCommand);
+      assert.isTrue(loggerStub.calledOnce);
+    });
+    it("should run command with argument success", async () => {
+      sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok("..."));
+      sandbox.stub(process, "argv").value(["node", "cli", "new", "template", "samleName"]);
       const loggerStub = sandbox.stub(logger, "info");
       await engine.start(rootCommand);
       assert.isTrue(loggerStub.calledOnce);

@@ -6,6 +6,8 @@ import { ok } from "@microsoft/teamsfx-api";
 import { CLICommand } from "../../src/commands/types";
 import { createCommand } from "../../src/commands/models/create";
 import { rootCommand } from "../../src/commands/models/root";
+import { createSampleCommand } from "../../src/commands/models/createSample";
+import { cloneDeep } from "lodash";
 
 describe("CLI helper", () => {
   const sandbox = sinon.createSandbox();
@@ -257,13 +259,23 @@ describe("CLI helper", () => {
     });
   });
   describe("formatHelp", async () => {
-    it("happy path", async () => {
-      const res = helper.formatHelp(createCommand, rootCommand);
+    it("happy path for 'teamsfx new'", async () => {
+      const rcommand = cloneDeep(rootCommand);
+      rcommand.header = "Header:";
+      rcommand.footer = "Footer:";
+      const res = helper.formatHelp(createCommand, rcommand);
+      assert.include(res, "Header:");
+      assert.include(res, "Footer:");
       assert.include(res, "Usage:");
       assert.include(res, "Options:");
       assert.include(res, "Global Options:");
       assert.include(res, "Commands:");
       assert.include(res, "Examples:");
+    });
+    it("happy path for 'teamsfx new template'", async () => {
+      const command = createSampleCommand;
+      const res = helper.formatHelp(command, rootCommand);
+      assert.include(res, "<sample-name>");
     });
   });
 });

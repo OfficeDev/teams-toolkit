@@ -35,7 +35,9 @@ class Helper {
   }
   formatCommandName(command: CLICommand) {
     const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
-    return `${command.fullName} ${command.options?.length ? "[options]" : ""} ${args}`.trim();
+    return `${command.fullName || command.name} ${
+      command.options?.length ? "[options]" : ""
+    } ${args}`.trim();
   }
   computePadWidth(command: CLICommand, rootCommand: CLICommand) {
     const names: string[] = [];

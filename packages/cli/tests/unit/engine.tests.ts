@@ -1,4 +1,4 @@
-import { InputValidationError } from "@microsoft/teamsfx-core";
+import { InputValidationError, UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
@@ -10,6 +10,7 @@ import { logger } from "../../src/commonlib/logger";
 import { getVersion } from "../../src/utils";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { createCommand } from "../../src/commands/models/create";
+import { err } from "@microsoft/teamsfx-api";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -79,6 +80,32 @@ describe("CLI Engine", () => {
       });
       await engine.start(rootCommand);
       assert.isTrue(error && error instanceof InputValidationError);
+    });
+    it("should run handler success", async () => {
+      sandbox.stub(process, "argv").value(["node", "cli"]);
+      const loggerStub = sandbox.stub(logger, "info");
+      await engine.start(rootCommand);
+      assert.isTrue(loggerStub.calledOnce);
+    });
+    it("should run handler return error", async () => {
+      sandbox.stub(process, "argv").value(["node", "cli"]);
+      sandbox.stub(rootCommand, "handler").resolves(err(new UserCancelError()));
+      let error: any = {};
+      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isTrue(error instanceof UserCancelError);
+    });
+    it("should run handler throw error", async () => {
+      sandbox.stub(process, "argv").value(["node", "cli"]);
+      sandbox.stub(rootCommand, "handler").rejects(new UserCancelError());
+      let error: any = {};
+      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isTrue(error instanceof UserCancelError);
     });
   });
 });

@@ -9,7 +9,7 @@ import { strings } from "../resource";
 import { getColorizedString } from "../utils";
 
 export class CLILogger implements LogProvider {
-  minimalLogLevel: LogLevel = LogLevel.Info;
+  logLevel: LogLevel = LogLevel.Info;
 
   getLogFilePath(): string {
     return "";
@@ -51,7 +51,7 @@ export class CLILogger implements LogProvider {
   }
 
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    if (logLevel < this.minimalLogLevel) {
+    if (logLevel < this.logLevel) {
       return true;
     }
     if (logLevel < LogLevel.Info) {

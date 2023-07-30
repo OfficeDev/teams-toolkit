@@ -8,6 +8,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { CLICommand, CLIContext } from "../types";
 import { EnvOption, FolderOption } from "../common";
+import path from "path";
 
 export const provisionCommand: CLICommand = {
   name: "provision",
@@ -17,7 +18,7 @@ export const provisionCommand: CLICommand = {
     event: TelemetryEvent.Provision,
   },
   handler: async (ctx: CLIContext) => {
-    const projectPath = ctx.optionValues.folder as string;
+    const projectPath = path.resolve((ctx.optionValues.folder as string) || "./");
     const core = createFxCore();
     const inputs = getSystemInputs(projectPath);
     if (!ctx.globalOptionValues.interactive) {

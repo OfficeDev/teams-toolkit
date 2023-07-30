@@ -8,8 +8,12 @@ import { addCommand } from "./add";
 import { createCommand } from "./create";
 import { deployCommand } from "./deploy";
 import { m365Command } from "./m365";
+import { permissionCommand } from "./permission";
+import { previewCommand } from "./preview";
 import { provisionCommand } from "./provision";
 import { publishCommand } from "./publish";
+import { updateCommand } from "./update";
+import { validateCommand } from "./validate";
 
 export const rootCommand: CLICommand = {
   name: "teamsfx",
@@ -25,6 +29,11 @@ export const rootCommand: CLICommand = {
     deployCommand,
     publishCommand,
     m365Command,
+    updateCommand,
+    previewCommand,
+    validateCommand,
+    permissionCommand,
+    //TODO: config, env, upgrade
   ],
   options: [
     {

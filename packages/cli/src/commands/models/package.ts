@@ -44,6 +44,7 @@ export const packageCommand: CLICommand = {
     const projectPath = ctx.optionValues.folder as string;
     const core = createFxCore();
     const inputs = getSystemInputs(projectPath);
+    inputs.ignoreEnvInfo = false;
     if (!ctx.globalOptionValues.interactive) {
       assign(inputs, ctx.optionValues);
     }

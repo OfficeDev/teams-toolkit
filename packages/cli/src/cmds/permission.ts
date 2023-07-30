@@ -20,13 +20,13 @@ import { YargsCommand } from "../yargsCommand";
 import { MissingRequiredArgumentError } from "../error";
 import { globals } from "../globals";
 
-const azureMessage =
+export const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
   "required to grant permission to Azure resources.\n" +
   "Assign Azure roles using the Azure portal: " +
   "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
 
-const spfxMessage =
+export const spfxMessage =
   "Notice: SPFX deployment permission needs to be handled manually by SharePoint site administrator.\n" +
   "Manage site admins using SharePoint admin center: " +
   "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";

@@ -5,14 +5,18 @@ import { getVersion } from "../../utils";
 import { CLICommand } from "../types";
 import { accountCommand } from "./account";
 import { addCommand } from "./add";
+import { configCommand } from "./config";
 import { createCommand } from "./create";
 import { deployCommand } from "./deploy";
+import { envCommand } from "./env";
 import { m365Command } from "./m365";
+import { packageCommand } from "./package";
 import { permissionCommand } from "./permission";
 import { previewCommand } from "./preview";
 import { provisionCommand } from "./provision";
 import { publishCommand } from "./publish";
 import { updateCommand } from "./update";
+import { upgradeCommand } from "./upgrade";
 import { validateCommand } from "./validate";
 
 export const rootCommand: CLICommand = {
@@ -22,18 +26,21 @@ export const rootCommand: CLICommand = {
   version: getVersion(),
   footer: FooterText,
   commands: [
-    createCommand,
     accountCommand,
+    createCommand,
     addCommand,
     provisionCommand,
     deployCommand,
-    publishCommand,
-    m365Command,
-    updateCommand,
-    previewCommand,
+    packageCommand,
     validateCommand,
+    publishCommand,
+    configCommand,
+    previewCommand,
+    envCommand,
     permissionCommand,
-    //TODO: config, env, upgrade
+    updateCommand,
+    upgradeCommand,
+    m365Command,
   ],
   options: [
     {

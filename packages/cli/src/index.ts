@@ -19,6 +19,8 @@ import { registerPrompts } from "./prompts";
 import cliTelemetry from "./telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/cliTelemetryEvents";
 import { getVersion } from "./utils";
+import { isNewUXEnabled } from "./constants";
+import { start as startNewUX } from "./commands/index";
 
 function changeArgv(argv: string[]): string[] {
   return argv.map((s) => (s.startsWith("--") ? s.toLocaleLowerCase() : s));
@@ -61,6 +63,9 @@ export async function start(): Promise<void> {
   initTelemetryReporter();
   sendCommandUsageTelemetry(process.argv);
   registerPrompts();
+  if (isNewUXEnabled()) {
+    return startNewUX();
+  }
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
     "camel-case-expansion": false,

@@ -31,17 +31,31 @@ class Helper {
     }
   }
   formatSubCommandName(command: CLICommand) {
-    const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
-    return `${command.name}${command.options?.length ? " [options]" : ""} ${args}`.trim();
+    const items: string[] = [command.name];
+    if (command.options) {
+      items.push("[options]");
+    }
+    if (command.arguments) {
+      command.arguments.forEach((a) => {
+        items.push(this.formatArgumentName(a));
+      });
+    }
+    return items.join(" ");
   }
   formatExample(example: CLIExample) {
     return `  '${chalk.blueBright(example.command)}': ${example.description}`;
   }
   formatCommandName(command: CLICommand) {
-    const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
-    return `${command.fullName || command.name} ${
-      command.options?.length ? "[options]" : ""
-    } ${args}`.trim();
+    const items: string[] = [command.fullName || command.name];
+    if (command.options) {
+      items.push("[options]");
+    }
+    if (command.arguments) {
+      command.arguments.forEach((a) => {
+        items.push(this.formatArgumentName(a));
+      });
+    }
+    return items.join(" ");
   }
   computePadWidth(command: CLICommand, rootCommand?: CLICommand) {
     const names: string[] = [];

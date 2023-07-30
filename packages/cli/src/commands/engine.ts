@@ -3,8 +3,11 @@
 
 import { FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
 import {
+  Correlator,
+  IncompatibleProjectError,
   InputValidationError,
   MissingRequiredInputError,
+  VersionState,
   assembleError,
   getHashedEnv,
   isUserCancelError,
@@ -20,6 +23,9 @@ import { CLICommand, CLICommandOption, CLIContext } from "./types";
 import UI from "../userInteraction";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { cliSource } from "../constants";
+import Progress from "../console/progress";
+import { getSystemInputs } from "../utils";
+import { createFxCore } from "../activate";
 
 // Licensed under the MIT license.
 class CLIEngine {
@@ -31,8 +37,6 @@ class CLIEngine {
     const findRes = this.findCommand(rootCmd, args);
     const cmd = findRes.cmd;
     const remainingArgs = findRes.remainingArgs;
-    // process.stdout.write("name:" + cmd.name + "\n");
-    // console.log("find command:", cmd.fullName!);
 
     // 2. parse args
     const context = this.parseArgs(cmd, root, remainingArgs);
@@ -40,6 +44,7 @@ class CLIEngine {
     // 3. --version
     if (context.globalOptionValues.version === true) {
       logger.info(rootCmd.version ?? "1.0.0");
+      this.processResult(context);
       return;
     }
 
@@ -50,6 +55,7 @@ class CLIEngine {
         context.command.fullName !== root.fullName ? root : undefined
       );
       logger.info(helpText);
+      this.processResult(context);
       return;
     }
 
@@ -60,22 +66,52 @@ class CLIEngine {
       return;
     }
 
-    // 6. run handler
-    if (context.command.handler) {
-      try {
-        const handleRes = await context.command.handler(context);
+    try {
+      // 6. version check
+      const inputs = getSystemInputs(context.optionValues.folder as string);
+      inputs.ignoreEnvInfo = true;
+      const skipCommands = ["new", "template", "infra", "debug", "upgrade"];
+      if (!skipCommands.includes(context.command.name) && context.optionValues.folder) {
+        const core = createFxCore();
+        const res = await core.projectVersionCheck(inputs);
+        if (res.isErr()) {
+          throw res.error;
+        } else {
+          if (res.value.isSupport === VersionState.unsupported) {
+            throw IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion");
+          } else if (res.value.isSupport === VersionState.upgradeable) {
+            const upgrade = await core.phantomMigrationV3(inputs);
+            if (upgrade.isErr()) {
+              throw upgrade.error;
+            }
+          }
+        }
+      }
+
+      // 7. run handler
+      if (context.command.handler) {
+        const handleRes = await Correlator.run(context.command.handler, context);
+        // const handleRes = await context.command.handler(context);
         if (handleRes.isErr()) {
           this.processResult(context, handleRes.error);
         } else {
           this.processResult(context);
         }
-      } catch (e) {
-        const fxError = assembleError(e);
-        this.processResult(context, fxError);
+      } else {
+        const helpText = helper.formatHelp(rootCmd);
+        logger.info(helpText);
       }
-    } else {
-      const helpText = helper.formatHelp(rootCmd);
-      logger.info(helpText);
+    } catch (e) {
+      Progress.end(false); // TODO to remove this in the future
+      const fxError = assembleError(e);
+      this.processResult(context, fxError);
+    } finally {
+      await CliTelemetry.flush();
+      Progress.end(true); // TODO to remove this in the future
+      if (context.command.name !== "preview") {
+        // TODO: consider to remove the hardcode
+        process.exit();
+      }
     }
   }
 

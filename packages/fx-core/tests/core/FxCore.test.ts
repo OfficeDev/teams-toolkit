@@ -1175,7 +1175,10 @@ describe("isEnvFile", async () => {
       mockedEnvRestore();
     });
     it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_CLI_DOTNET: "false",
+        [FeatureFlagName.CopilotPlugin]: "false",
+      });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
       assert.isTrue(res.isOk());
@@ -1198,7 +1201,10 @@ describe("isEnvFile", async () => {
       }
     });
     it("happy path with runtime", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_CLI_DOTNET: "true",
+        [FeatureFlagName.CopilotPlugin]: "false",
+      });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
       assert.isTrue(res.isOk());
@@ -1241,6 +1247,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
+          "copilot-plugin-option",
           "api-spec-location",
           "openai-plugin-manifest-location",
           "api-operation",

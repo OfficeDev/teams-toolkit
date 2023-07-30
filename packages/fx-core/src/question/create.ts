@@ -47,6 +47,11 @@ import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, assembleError } from "../error";
 import { QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
+import {
+  copilotPluginApiSpecOptionId,
+  copilotPluginExistingApiOptionIds,
+  copilotPluginOpenAIPluginOptionId,
+} from "./constants";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -379,6 +384,14 @@ export class CapabilityOptions {
     ];
   }
 
+  static copilotPluginCli(): OptionItem {
+    return {
+      id: "copilot-plugin-capability",
+      label: `${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
+    };
+  }
+
   static all(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
@@ -387,7 +400,7 @@ export class CapabilityOptions {
     ];
 
     if (isCopilotPluginEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+      capabilityOptions.push(CapabilityOptions.copilotPluginCli());
     }
     return capabilityOptions;
   }
@@ -444,7 +457,7 @@ export class CapabilityOptions {
 
   static copilotPluginApiSpec(): OptionItem {
     return {
-      id: "copilot-api-spec",
+      id: copilotPluginApiSpecOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
@@ -456,7 +469,7 @@ export class CapabilityOptions {
 
   static copilotPluginOpenAIPlugin(): OptionItem {
     return {
-      id: "copilot-ai-plugin",
+      id: copilotPluginOpenAIPluginOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginAIPluginOption.label"
       ),
@@ -527,7 +540,7 @@ function capabilityQuestion(): SingleSelectQuestion {
         ];
 
         if (isCopilotPluginEnabled()) {
-          capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+          capabilityOptions.push(CapabilityOptions.copilotPluginCli());
         }
         return capabilityOptions;
       }
@@ -675,6 +688,15 @@ function botTriggerQuestion(): SingleSelectQuestion {
         : NotificationTriggerOptions.appService().id;
     },
     placeholder: getLocalizedString("plugins.bot.questionHostTypeTrigger.placeholder"),
+  };
+}
+
+function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.CopilotPluginDevelopment,
+    title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
+    type: "singleSelect",
+    staticOptions: CapabilityOptions.copilotPlugins(),
   };
 }
 
@@ -1402,6 +1424,14 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
   };
 }
 
+function getCopilotPluginFeatureId(inputs: Inputs): string {
+  if (CLIPlatforms.includes(inputs.platform)) {
+    return inputs[QuestionNames.CopilotPluginDevelopment];
+  } else {
+    return inputs[QuestionNames.Capabilities];
+  }
+}
+
 export function capabilitySubTree(): IQTreeNode {
   const node: IQTreeNode = {
     data: capabilityQuestion(),
@@ -1582,6 +1612,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
   }
   if (!isCopilotPluginEnabled()) {
     deleteNames.push(QuestionNames.CopilotPluginExistingApi);
+    deleteNames.push(QuestionNames.CopilotPluginDevelopment);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;

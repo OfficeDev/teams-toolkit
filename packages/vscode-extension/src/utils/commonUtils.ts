@@ -118,10 +118,6 @@ export function openFolderInExplorer(folderPath: string): void {
   exec(command);
 }
 
-export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
-  return false;
-}
-
 export async function isM365Project(workspacePath: string): Promise<boolean> {
   const projectSettingsPath = path.resolve(
     workspacePath,
@@ -131,7 +127,7 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
   );
 
   if (await fs.pathExists(projectSettingsPath)) {
-    const projectSettings = await fs.readJson(projectSettingsPath);
+    const projectSettings = (await fs.readJson(projectSettingsPath)) as { isM365: boolean };
     return projectSettings.isM365;
   } else {
     return false;
@@ -239,11 +235,11 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 export function getAllFeatureFlags(): string[] | undefined {
   const result = Object.values(FeatureFlags)
 
-    .filter((featureFlag) => {
+    .filter((featureFlag: string) => {
       return isFeatureFlagEnabled(featureFlag);
     })
 
-    .map((featureFlag) => {
+    .map((featureFlag: string) => {
       return featureFlag;
     });
 
@@ -267,13 +263,16 @@ export async function getSubscriptionInfoFromEnv(
     return undefined;
   }
 
-  if (provisionResult.solution && provisionResult.solution.subscriptionId) {
+  const solution = provisionResult.solution as {
+    subscriptionId: string;
+    subscriptionName: string;
+    tenantId: string;
+  };
+  if (solution && solution.subscriptionId) {
     return {
-      subscriptionName: provisionResult.solution.subscriptionName,
-
-      subscriptionId: provisionResult.solution.subscriptionId,
-
-      tenantId: provisionResult.solution.tenantId,
+      subscriptionName: solution.subscriptionName,
+      subscriptionId: solution.subscriptionId,
+      tenantId: solution.tenantId,
     };
   } else {
     return undefined;
@@ -294,11 +293,12 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
     return undefined;
   }
 
-  return provisionResult?.[PluginNames.SOLUTION]?.teamsAppTenantId;
+  return (provisionResult[PluginNames.SOLUTION] as { teamsAppTenantId: string } | undefined)
+    ?.teamsAppTenantId;
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
-  let provisionResult: Record<string, any> | undefined;
+  let provisionResult: Record<string, unknown> | undefined;
 
   try {
     provisionResult = await getProvisionResultJson(env);
@@ -312,7 +312,7 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
     return undefined;
   }
 
-  return provisionResult.solution?.resourceGroupName;
+  return (provisionResult.solution as { resourceGroupName: string })?.resourceGroupName;
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
@@ -342,7 +342,7 @@ async function getProvisionResultJson(env: string): Promise<Record<string, strin
       return undefined;
     }
 
-    const provisionResult = await fs.readJSON(provisionOutputFile);
+    const provisionResult = (await fs.readJSON(provisionOutputFile)) as Record<string, string>;
 
     return provisionResult;
   }
@@ -356,8 +356,8 @@ export function isTriggerFromWalkThrough(args?: any[]): boolean {
   if (!args || (args && args.length === 0)) {
     return false;
   } else if (
-    args[0].toString() === TelemetryTriggerFrom.WalkThrough ||
-    args[0].toString() === TelemetryTriggerFrom.Notification
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.WalkThrough ||
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.Notification
   ) {
     return true;
   }
@@ -373,7 +373,7 @@ export function getTriggerFromProperty(args?: any[]) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette };
   }
 
-  switch (args[0].toString()) {
+  switch ((args[0] as TelemetryTriggerFrom).toString()) {
     case TelemetryTriggerFrom.TreeView:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
     case TelemetryTriggerFrom.ViewTitleNavigation:

@@ -33,7 +33,7 @@ describe("CLI commands", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await createCommand.handler(ctx);
+      const res = await createCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
     it("core return error", async () => {
@@ -46,7 +46,7 @@ describe("CLI commands", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await createCommand.handler(ctx);
+      const res = await createCommand.handler!(ctx);
       assert.isTrue(res.isErr());
     });
   });
@@ -62,7 +62,7 @@ describe("CLI commands", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await createSampleCommand.handler(ctx);
+      const res = await createSampleCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
     it("core return error", async () => {
@@ -75,7 +75,7 @@ describe("CLI commands", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await createSampleCommand.handler(ctx);
+      const res = await createSampleCommand.handler!(ctx);
       assert.isTrue(res.isErr());
     });
   });
@@ -89,7 +89,7 @@ describe("CLI commands", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await listSampleCommand.handler(ctx);
+      const res = await listSampleCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

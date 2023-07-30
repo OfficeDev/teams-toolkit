@@ -6,14 +6,11 @@ import { assign } from "lodash";
 import * as uuid from "uuid";
 import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../../telemetry/cliTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { CLICommand, CLIContext } from "../types";
 import { createSampleCommand } from "./createSample";
+import { FolderOption } from "../common";
 
 export const createCommand: CLICommand = {
   name: "new",
@@ -63,7 +60,7 @@ export const createCommand: CLICommand = {
       default: true,
     },
     {
-      name: "spfx-web-part",
+      name: "spfx-webpart-name",
       type: "text",
       shortName: "sw",
       description: "Name for SharePoint Framework Web Part.",
@@ -83,14 +80,7 @@ export const createCommand: CLICommand = {
       choices: ["javascript", "typescript", "csharp"],
       default: "javascript",
     },
-    {
-      name: "folder",
-      shortName: "f",
-      description: "Root folder of the project.",
-      type: "text",
-      required: true,
-      default: "./",
-    },
+    FolderOption,
     {
       name: "app-name",
       shortName: "n",
@@ -100,12 +90,14 @@ export const createCommand: CLICommand = {
     },
   ],
   examples: [
-    `1. Create a new timer triggered notification bot: \n    ${chalk.blueBright(
-      "teamsfx new -c notification -t timer-functions -l typescript -n myapp"
-    )}`,
-    `2. Import an existing SharePoint Framework solution: \n    ${chalk.blueBright(
-      "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp"
-    )}`,
+    {
+      command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp",
+      description: "Create a new timer triggered notification bot",
+    },
+    {
+      command: "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp",
+      description: "Import an existing SharePoint Framework solution",
+    },
   ],
   commands: [createSampleCommand],
   telemetry: {
@@ -121,7 +113,6 @@ export const createCommand: CLICommand = {
     const core = createFxCore();
     const res = await core.createProject(inputs);
     assign(cmd.telemetryProperties, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       [TelemetryProperty.NewProjectId]: inputs.projectId,
       [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
     });

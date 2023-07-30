@@ -3,7 +3,7 @@
 
 import { FxError, Result } from "@microsoft/teamsfx-api";
 
-export type OptionValue = string | boolean | string[] | boolean[];
+export type OptionValue = string | boolean | string[] | boolean[] | undefined;
 
 export interface CLICommand {
   name: string;
@@ -12,15 +12,17 @@ export interface CLICommand {
   description: string;
   arguments?: CLICommandArgument[];
   sortOptions?: boolean;
+  sortCommands?: boolean;
   options?: CLICommandOption[];
-  examples?: string[];
+  examples?: CLIExample[];
   commands?: CLICommand[];
-  handler: (cmd: CLIContext) => Promise<Result<undefined, FxError>>;
+  handler?: (cmd: CLIContext) => Promise<Result<undefined, FxError>>;
   telemetry?: {
     event: string;
   };
   header?: string;
   footer?: string;
+  hidden?: boolean;
 }
 
 export interface CLIContext {
@@ -75,3 +77,8 @@ export type CLICommandOption =
   | CLIMultiSelectOption;
 
 export type CLICommandArgument = CLITextOption | CLISingleSelectOption;
+
+export interface CLIExample {
+  command: string;
+  description: string;
+}

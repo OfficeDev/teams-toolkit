@@ -28,7 +28,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import CliTelemetry from "../telemetry/cliTelemetry";
 
-async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
+export async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
   const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
   if (result) {
@@ -49,7 +49,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   return Promise.resolve(result !== undefined);
 }
 
-async function outputAzureInfo(
+export async function outputAzureInfo(
   commandType: "login" | "show",
   tenantId = "",
   isServicePrincipal = false,
@@ -85,7 +85,10 @@ async function outputAzureInfo(
   return Promise.resolve(result !== undefined);
 }
 
-async function outputAccountInfoOffline(accountType: string, username: string): Promise<boolean> {
+export async function outputAccountInfoOffline(
+  accountType: string,
+  username: string
+): Promise<boolean> {
   CLILogProvider.outputInfo(
     strings["account.show.info"],
     accountType,

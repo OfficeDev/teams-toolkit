@@ -8,14 +8,11 @@ import { assign } from "lodash";
 import * as uuid from "uuid";
 import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../../telemetry/cliTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { CLICommand, CLIContext } from "../types";
 import { listSampleCommand } from "./listSamples";
+import { FolderOption } from "../common";
 
 export const createSampleCommand: CLICommand = {
   name: "template",
@@ -29,16 +26,7 @@ export const createSampleCommand: CLICommand = {
       choiceListCommand: "teamsfx new template list",
     },
   ],
-  options: [
-    {
-      name: "folder",
-      shortName: "f",
-      description: "Root folder of the project.",
-      type: "text",
-      required: true,
-      default: "./",
-    },
-  ],
+  options: [FolderOption],
   telemetry: {
     event: TelemetryEvent.DownloadSample,
   },
@@ -54,7 +42,6 @@ export const createSampleCommand: CLICommand = {
     const core = createFxCore();
     const res = await core.createProject(inputs);
     assign(cmd.telemetryProperties, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       [TelemetryProperty.NewProjectId]: inputs.projectId,
       [TelemetryProperty.SampleName]: sampleName,
     });

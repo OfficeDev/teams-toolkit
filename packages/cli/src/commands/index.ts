@@ -10,4 +10,7 @@ export async function start(): Promise<void> {
   sendCommandUsageTelemetry(process.argv);
   registerPrompts();
   await engine.start(rootCommand);
+  process.exit(0);
 }
+
+start();

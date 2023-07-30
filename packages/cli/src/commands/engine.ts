@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
   MissingRequiredInputError,
   assembleError,
+  getHashedEnv,
+  isUserCancelError,
 } from "@microsoft/teamsfx-core";
 import { cloneDeep } from "lodash";
 import { format } from "util";
@@ -15,6 +17,9 @@ import { strings } from "../resource";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { helper } from "./helper";
 import { CLICommand, CLICommandOption, CLIContext } from "./types";
+import UI from "../userInteraction";
+import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+import { cliSource } from "../constants";
 
 // Licensed under the MIT license.
 class CLIEngine {
@@ -40,7 +45,10 @@ class CLIEngine {
 
     // 4. --help
     if (context.globalOptionValues.help === true) {
-      const helpText = helper.formatHelp(context.command, root);
+      const helpText = helper.formatHelp(
+        context.command,
+        context.command.fullName !== root.fullName ? root : undefined
+      );
       logger.info(helpText);
       return;
     }
@@ -53,16 +61,21 @@ class CLIEngine {
     }
 
     // 6. run handler
-    try {
-      const handleRes = await context.command.handler(context);
-      if (handleRes.isErr()) {
-        this.processResult(context, handleRes.error);
-      } else {
-        this.processResult(context);
+    if (context.command.handler) {
+      try {
+        const handleRes = await context.command.handler(context);
+        if (handleRes.isErr()) {
+          this.processResult(context, handleRes.error);
+        } else {
+          this.processResult(context);
+        }
+      } catch (e) {
+        const fxError = assembleError(e);
+        this.processResult(context, fxError);
       }
-    } catch (e) {
-      const fxError = assembleError(e);
-      this.processResult(context, fxError);
+    } else {
+      const helpText = helper.formatHelp(rootCmd);
+      logger.info(helpText);
     }
   }
 
@@ -128,6 +141,57 @@ class CLIEngine {
         }
       }
     }
+    // for required options or arguments, set default value if not set
+    if (command.options) {
+      for (const option of command.options) {
+        if (option.required && option.default !== undefined && option.value === undefined) {
+          option.value = option.default;
+          context.optionValues[option.name] = option.default;
+        }
+      }
+    }
+    if (command.arguments) {
+      for (let i = 0; i < command.arguments.length; ++i) {
+        const argument = command.arguments[i];
+        if (argument.required && argument.default !== undefined && argument.value === undefined) {
+          argument.value = argument.default;
+          context.argumentValues[i] = argument.default as string;
+        }
+      }
+    }
+
+    // special process for global options
+    // process interactive
+    context.globalOptionValues.interactive =
+      context.globalOptionValues.interactive === false ? false : true;
+
+    // set log level
+    const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;
+    logger.logLevel = logLevel;
+
+    // set root folder
+    const projectPath = context.optionValues.folder as string;
+    if (projectPath) {
+      CliTelemetry.withRootFolder(projectPath);
+    }
+
+    UI.interactive = context.globalOptionValues.interactive as boolean;
+
+    if (context.globalOptionValues.interactive) {
+      const sameKeys = Object.keys(context.optionValues).filter(
+        (k) => k !== "folder" && k in args && context.optionValues[k] !== undefined
+      );
+      if (sameKeys.length > 0) {
+        /// only if there are intersects between parameters and arguments, show the log,
+        /// because it means some parameters will be used by fx-core.
+        logger.info(
+          `Some arguments/options are useless because the interactive mode is opened.` +
+            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
+            ` or set the global setting by 'teamsfx config set interactive false'.`
+        );
+      }
+    }
+
     return context;
   }
 
@@ -160,7 +224,7 @@ class CLIEngine {
     option: CLICommandOption
   ): Result<undefined, InputValidationError | MissingRequiredInputError> {
     if (option.required && option.default === undefined && option.value === undefined) {
-      return err(new MissingRequiredInputError(helper.formatOptionName(option, false)));
+      return err(new MissingRequiredInputError(helper.formatOptionName(option, false), cliSource));
     }
     if (
       (option.type === "singleSelect" || option.type === "multiSelect") &&
@@ -202,6 +266,11 @@ class CLIEngine {
   }
   processResult(context: CLIContext, fxError?: FxError): void {
     if (context.command.telemetry) {
+      if (context.optionValues.env) {
+        context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
+          context.optionValues.env as string
+        );
+      }
       if (fxError) {
         CliTelemetry.sendTelemetryErrorEvent(
           context.command.telemetry.event,
@@ -216,6 +285,10 @@ class CLIEngine {
       }
     }
     if (fxError) {
+      if (isUserCancelError(fxError)) {
+        logger.info("User canceled.");
+        return;
+      }
       logger.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);
       if ("helpLink" in fxError && fxError["helpLink"]) {
         logger.outputError(

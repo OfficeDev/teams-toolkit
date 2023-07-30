@@ -1,19 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok } from "@microsoft/teamsfx-api";
-import { logger } from "../../commonlib/logger";
 import { FooterText } from "../../constants";
-import { helper } from "../helper";
-import { CLICommand, CLIContext } from "../types";
-import { createCommand } from "./create";
 import { getVersion } from "../../utils";
+import { CLICommand } from "../types";
+import { accountCommand } from "./account";
+import { addCommand } from "./add";
+import { createCommand } from "./create";
+import { deployCommand } from "./deploy";
+import { m365Command } from "./m365";
+import { provisionCommand } from "./provision";
+import { publishCommand } from "./publish";
 
 export const rootCommand: CLICommand = {
   name: "teamsfx",
+  fullName: "teamsfx",
   description: "Teams toolkit CLI.",
   version: getVersion(),
   footer: FooterText,
-  commands: [createCommand],
+  commands: [
+    createCommand,
+    accountCommand,
+    addCommand,
+    provisionCommand,
+    deployCommand,
+    publishCommand,
+    m365Command,
+  ],
   options: [
     {
       type: "boolean",
@@ -47,9 +59,4 @@ export const rootCommand: CLICommand = {
       default: false,
     },
   ],
-  handler: async (cmd: CLIContext) => {
-    const helpText = helper.formatHelp(rootCommand, rootCommand);
-    logger.info(helpText);
-    return ok(undefined);
-  },
 };

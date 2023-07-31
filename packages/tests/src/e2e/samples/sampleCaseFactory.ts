@@ -56,6 +56,8 @@ export default function sampleCaseFactory(
         const projectPath = path.resolve(testFolder, appName);
         const env = environmentManager.getDefaultEnvName();
         samplePath = projectPath;
+        // fix outlook signature sample failed in deploy
+        process.env.TEAMSFX_AAD_DEPLOY_ONLY = "false";
 
         before(async () => {});
 

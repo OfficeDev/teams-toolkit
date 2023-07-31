@@ -261,12 +261,12 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        type: "apiSpecification",
+        type: "apiBased",
         apiSpecFile: "manifest.template.json",
         commands: [
           {
             id: "GET /repairs",
-            responseAdaptiveCardTemplate: "manifest.template.json",
+            apiResponseRenderingTemplate: "manifest.template.json",
             title: "fake",
           },
         ],
@@ -314,7 +314,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        type: "apiSpecification",
+        type: "apiBased",
         apiSpecFile: "manifest.template.json",
         commands: [
           {

@@ -157,7 +157,7 @@ export class CreateAppPackageDriver implements StepDriver {
       isCopilotPluginEnabled() &&
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
-      manifest.composeExtensions[0].type == "apiSpecification" &&
+      manifest.composeExtensions[0].type == "apiBased" &&
       manifest.composeExtensions[0].apiSpecFile
     ) {
       const apiSpecFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecFile}`;
@@ -175,8 +175,8 @@ export class CreateAppPackageDriver implements StepDriver {
 
       if (manifest.composeExtensions[0].commands.length > 0) {
         for (const command of manifest.composeExtensions[0].commands) {
-          if (command.responseAdaptiveCardTemplate) {
-            const adaptiveCardFile = `${appDirectory}/${command.responseAdaptiveCardTemplate}`;
+          if (command.apiResponseRenderingTemplate) {
+            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplate}`;
             if (!(await fs.pathExists(adaptiveCardFile))) {
               return err(
                 new FileNotFoundError(
@@ -186,7 +186,7 @@ export class CreateAppPackageDriver implements StepDriver {
                 )
               );
             }
-            const dir = path.dirname(command.responseAdaptiveCardTemplate);
+            const dir = path.dirname(command.apiResponseRenderingTemplate);
             zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
         }

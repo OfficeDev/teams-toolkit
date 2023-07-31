@@ -56,10 +56,6 @@ export default function sampleCaseFactory(
         const projectPath = path.resolve(testFolder, appName);
         const env = environmentManager.getDefaultEnvName();
         samplePath = projectPath;
-        // fix outlook signature sample failed in deploy
-        process.env.TEAMSFX_AAD_DEPLOY_ONLY = "false";
-        process.env.TEAMSFX_DEBUG_TEMPLATE = "false";
-        process.env.CI_ENABLE = "false";
         before(async () => {});
 
         it(sampleName, { testPlanCaseId, author }, async function () {
@@ -145,6 +141,15 @@ export default function sampleCaseFactory(
             }
           }
 
+          // [BUG] https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/24689200o
+          // workaround: change path HTML to html
+          if (sampleName === TemplateProjectFolder.OutlookSignature) {
+            const htmlPath = path.join(projectPath, "src", "runtime", "html");
+            fs.renameSync(
+              htmlPath,
+              path.join(projectPath, "src", "runtime", "HTML")
+            );
+          }
           // deploy
           {
             const { success } = await Executor.deploy(projectPath);

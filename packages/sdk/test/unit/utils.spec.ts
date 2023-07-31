@@ -23,6 +23,7 @@ describe("Utils Tests", () => {
      }
    */
   const fakeSSOTokenFull =
+    // eslint-disable-next-line no-secrets/no-secrets
     "eyJhbGciOiJIUzI1NiJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIxLjAiLCJleHAiOjE1MzcyMzQ5NDgsInVwbiI6ImZha2UtdXBuIiwidGlkIjoiZmFrZS10aWQiLCJhdWQiOiJmYWtlLWF1ZCJ9.rLK5VlJK1FsGZJD0yb-ussSjl2Z4sSqG1Nhj7NqjNs4";
 
   function getAuthCodeTokenResponse(accessToken: string): AuthenticationResult {

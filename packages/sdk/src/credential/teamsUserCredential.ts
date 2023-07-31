@@ -39,10 +39,12 @@ export class TeamsUserCredential implements TokenCredential {
    * @remarks
    * Can only be used within Teams.
    */
-  public async login(scopes: string | string[], resources?: string[]): Promise<void> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
-      ErrorCode.RuntimeNotSupported
+  public login(scopes: string | string[], resources?: string[]): Promise<void> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -51,13 +53,12 @@ export class TeamsUserCredential implements TokenCredential {
    * @remarks
    * Can only be used within Teams.
    */
-  async getToken(
-    scopes: string | string[],
-    options?: GetTokenOptions
-  ): Promise<AccessToken | null> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
-      ErrorCode.RuntimeNotSupported
+  getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -70,9 +71,11 @@ export class TeamsUserCredential implements TokenCredential {
    * Can only be used within Teams.
    */
   public getUserInfo(resources?: string[]): Promise<UserInfo> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

@@ -74,7 +74,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    *
    */
   public async getAccessToken(): Promise<string> {
-    internalLogger.info(`Get Graph Access token with scopes: '${this.scopes}'`);
+    internalLogger.info(`Get Graph Access token with scopes: '${this.scopes.toString()}'`);
 
     let accessToken: AccessToken | null;
     if ((this.credentialOrTeamsFx as TeamsFxConfiguration).getCredential) {

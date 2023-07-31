@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { CloudAdapter } from "botbuilder";
 import { CardActionMiddleware } from "../conversation/middlewares/cardActionMiddleware";
 import { CardActionOptions, TeamsFxAdaptiveCardActionHandler } from "../conversation/interface";

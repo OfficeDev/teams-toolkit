@@ -14,12 +14,17 @@ import { formatString } from "../util/utils";
  * @remarks
  * Only works in in server side.
  */
-export async function getTediousConnectionConfig(
+export function getTediousConnectionConfig(
   teamsfx: TeamsFx,
   databaseName?: string
 ): Promise<ConnectionConfig> {
-  throw new ErrorWithCode(
-    formatString(ErrorMessage.BrowserRuntimeNotSupported, "DefaultTediousConnectionConfiguration"),
-    ErrorCode.RuntimeNotSupported
+  return Promise.reject(
+    new ErrorWithCode(
+      formatString(
+        ErrorMessage.BrowserRuntimeNotSupported,
+        "DefaultTediousConnectionConfiguration"
+      ),
+      ErrorCode.RuntimeNotSupported
+    )
   );
 }

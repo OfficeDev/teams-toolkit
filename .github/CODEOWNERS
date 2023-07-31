@@ -58,6 +58,7 @@
 /packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
 /.github/workflows/cd.yml @adashen @LongOddCode @Siglud @qinezh @wenytang-ms
+/.github/workflows/templates-ci.yml @hund030 @eriolchan @huimiu
 /.github/actions @xzf0587 @wenytang-ms @blackchoey @adashen
 /.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
 /packages/server @chagong @Alive-Fish @jayzhang

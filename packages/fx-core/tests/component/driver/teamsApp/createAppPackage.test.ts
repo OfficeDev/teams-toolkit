@@ -105,12 +105,12 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        type: "apiSpecification",
+        type: "apiBased",
         apiSpecFile: "resources/openai.yml",
         commands: [
           {
             id: "GET /repairs",
-            responseAdaptiveCardTemplate: "resources/repairs.json",
+            apiResponseRenderingTemplate: "resources/repairs.json",
             title: "fake",
           },
         ],
@@ -157,12 +157,12 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        type: "apiSpecification",
+        type: "apiBased",
         apiSpecFile: "resources/openai.yml",
         commands: [
           {
             id: "GET /repairs",
-            responseAdaptiveCardTemplate: "resources/repairs.json",
+            apiResponseRenderingTemplate: "resources/repairs.json",
             title: "fake",
           },
         ],
@@ -208,12 +208,12 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        type: "apiSpecification",
+        type: "apiBased",
         apiSpecFile: "resources/openai.yml",
         commands: [
           {
             id: "GET /repairs",
-            responseAdaptiveCardTemplate: "resources/repairs.json",
+            apiResponseRenderingTemplate: "resources/repairs.json",
             title: "fake",
           },
         ],

@@ -302,7 +302,7 @@ class DotenvUtil {
         obj[key] = value;
         const parsedLine: DotenvParsedLine = { key: key, value: value };
         if (inlineComment) parsedLine.comment = inlineComment;
-        if (firstChar === '"' || firstChar === "'") parsedLine.quote = firstChar as '"' | "'";
+        if (firstChar === '"' || firstChar === "'") parsedLine.quote = firstChar;
         lines.push(parsedLine);
       } else {
         lines.push(line);

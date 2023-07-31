@@ -40,8 +40,8 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
       }
 
       if (paramObject && paramObject.length === 1) {
-        for (const index in paramObject) {
-          const param = paramObject[index] as OpenAPIV3.ParameterObject;
+        for (let i = 0; i < paramObject.length; i++) {
+          const param = paramObject[i] as OpenAPIV3.ParameterObject;
           if (param.in === "query" || param.in === "path") {
             const schema = param.schema as OpenAPIV3.SchemaObject;
             if (

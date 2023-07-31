@@ -29,7 +29,7 @@ import { EmptyOptionError, UserCancelError, assembleError } from "../error";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
-    const select = q as SingleSelectQuestion | MultiSelectQuestion;
+    const select = q;
     if (select.skipSingleOption && select.staticOptions.length === 1) {
       return true;
     }
@@ -139,11 +139,11 @@ const questionVisitor: QuestionTreeVisitor = async function (
       const additionalValidationOnAcceptFunc = question.additionalValidationOnAccept
         ? getValidationFunction<string>(question.additionalValidationOnAccept, inputs)
         : undefined;
-      const inputQuestion = question as TextInputQuestion;
+      const inputQuestion = question;
       return await ui.inputText({
         name: question.name,
         title: title,
-        password: (inputQuestion as TextInputQuestion).password,
+        password: inputQuestion.password,
         default: defaultValue as string | (() => Promise<string>),
         placeholder: placeholder,
         prompt: prompt,
@@ -153,7 +153,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
         additionalValidationOnAccept: additionalValidationOnAcceptFunc,
       });
     } else if (question.type === "singleSelect" || question.type === "multiSelect") {
-      const selectQuestion = question as SingleSelectQuestion | MultiSelectQuestion;
+      const selectQuestion = question;
       let options: StaticOptions | (() => Promise<StaticOptions>) | undefined = undefined;
       if (selectQuestion.dynamicOptions) {
         options = async () => {
@@ -306,7 +306,7 @@ export async function traverse(
     if (!curr) continue;
     //visit
     if (curr.data.type !== "group") {
-      const question = curr.data as Question;
+      const question = curr.data;
       totalStep = step + stack.length;
       let qvRes;
       try {
@@ -401,12 +401,12 @@ function findValue(
   if (curr.data.type !== "group") {
     // need to convert OptionItem value into id for validation
     if (curr.data.type === "singleSelect") {
-      const sq: SingleSelectQuestion = curr.data as SingleSelectQuestion;
-      if (sq.value && typeof sq.value !== "string" && (sq.value as OptionItem).id) {
-        return (sq.value as OptionItem).id;
+      const sq: SingleSelectQuestion = curr.data;
+      if (sq.value && typeof sq.value !== "string" && sq.value.id) {
+        return sq.value.id;
       }
     } else if (curr.data.type === "multiSelect") {
-      const mq: MultiSelectQuestion = curr.data as MultiSelectQuestion;
+      const mq: MultiSelectQuestion = curr.data;
       if (mq.value && typeof mq.value[0] !== "string") {
         return (mq.value as OptionItem[]).map((i) => i.id);
       }

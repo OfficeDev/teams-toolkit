@@ -36,10 +36,12 @@ export class CertificateAuthProvider implements AuthProvider {
    * @throws {@link ErrorCode|InvalidParameter} - when custom httpsAgent in the request has duplicate properties with certOption provided in constructor.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
-  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CertificateAuthProvider"),
-      ErrorCode.RuntimeNotSupported
+  public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "CertificateAuthProvider"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

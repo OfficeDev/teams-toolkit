@@ -1,5 +1,5 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.1.0/",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.3.0/",
     "samples": [
         {
             "id": "hello-world-tab-with-backend",

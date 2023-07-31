@@ -26,6 +26,8 @@ export enum TelemetryEvent {
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
 
+  ListSample = "list-sample",
+
   UpdateProjectStart = "add-resource-start",
   UpdateProject = "add-resource",
 

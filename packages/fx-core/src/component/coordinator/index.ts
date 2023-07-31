@@ -445,7 +445,7 @@ class Coordinator {
     let containsAzure = false;
     const tenantSwitchCheckActions: string[] = [];
     cycles.forEach((cycle) => {
-      cycle!.driverDefs?.forEach((def) => {
+      cycle.driverDefs?.forEach((def) => {
         if (M365Actions.includes(def.uses)) {
           containsM365 = true;
         } else if (AzureActions.includes(def.uses)) {

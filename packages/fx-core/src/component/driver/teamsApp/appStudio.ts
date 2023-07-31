@@ -102,7 +102,7 @@ export async function updateManifestV3(
     appPackagePath: createAppPackageArgs.outputZipPath,
   };
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
-  await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!);
+  await envUtil.readEnv(inputs.projectPath, state.ENV_NAME!);
 
   // render manifest
   let manifest: any;
@@ -158,7 +158,7 @@ export async function updateManifestV3(
   try {
     const localUpdateTime = process.env.TEAMS_APP_UPDATE_TIME;
     if (localUpdateTime) {
-      const app = await AppStudioClient.getApp(teamsAppId!, appStudioToken, ctx.logProvider);
+      const app = await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
       const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
       if (new Date(localUpdateTime).getTime() < devPortalUpdateTime) {
         const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
@@ -221,7 +221,7 @@ export async function updateManifestV3(
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.UpdateManifestWithInvalidAppError.name,
-          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId!)
+          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId)
         )
       );
     } else {

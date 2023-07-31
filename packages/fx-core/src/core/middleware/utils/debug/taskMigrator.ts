@@ -93,7 +93,7 @@ export async function migrateTransparentPrerequisite(
   }
 }
 
-export async function migrateTransparentLocalTunnel(context: DebugMigrationContext): Promise<void> {
+export function migrateTransparentLocalTunnel(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -146,6 +146,7 @@ export async function migrateTransparentLocalTunnel(context: DebugMigrationConte
     context.tasks.splice(index, 1, newTask);
     ++index;
   }
+  return Promise.resolve();
 }
 
 function getNgrokPort(ngrokCommand: string): number | undefined {
@@ -158,7 +159,7 @@ function getNgrokPort(ngrokCommand: string): number | undefined {
   return Number.isInteger(portNumber) ? portNumber : undefined;
 }
 
-export async function migrateTransparentNpmInstall(context: DebugMigrationContext): Promise<void> {
+export function migrateTransparentNpmInstall(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -204,9 +205,10 @@ export async function migrateTransparentNpmInstall(context: DebugMigrationContex
     }
     context.tasks.splice(index, 1);
   }
+  return Promise.resolve();
 }
 
-export async function migrateSetUpTab(context: DebugMigrationContext): Promise<void> {
+export function migrateSetUpTab(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -246,6 +248,7 @@ export async function migrateSetUpTab(context: DebugMigrationContext): Promise<v
     const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
+  return Promise.resolve();
 }
 
 export async function migrateSetUpBot(context: DebugMigrationContext): Promise<void> {
@@ -370,7 +373,7 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
   }
 }
 
-export async function migratePrepareManifest(context: DebugMigrationContext): Promise<void> {
+export function migratePrepareManifest(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -406,9 +409,10 @@ export async function migratePrepareManifest(context: DebugMigrationContext): Pr
     const label = task["label"] as string;
     index = handleProvisionAndDeploy(context, index, label);
   }
+  return Promise.resolve();
 }
 
-export async function migrateInstallAppInTeams(context: DebugMigrationContext): Promise<void> {
+export function migrateInstallAppInTeams(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -428,6 +432,7 @@ export async function migrateInstallAppInTeams(context: DebugMigrationContext): 
     }
     context.tasks.splice(index, 1);
   }
+  return Promise.resolve();
 }
 
 export async function migrateValidateDependencies(context: DebugMigrationContext): Promise<void> {
@@ -474,9 +479,7 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
   }
 }
 
-export async function migrateBackendExtensionsInstall(
-  context: DebugMigrationContext
-): Promise<void> {
+export function migrateBackendExtensionsInstall(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -507,9 +510,10 @@ export async function migrateBackendExtensionsInstall(
     }
     context.tasks.splice(index, 1);
   }
+  return Promise.resolve();
 }
 
-export async function migrateFrontendStart(context: DebugMigrationContext): Promise<void> {
+export function migrateFrontendStart(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -549,9 +553,10 @@ export async function migrateFrontendStart(context: DebugMigrationContext): Prom
       ++index;
     }
   }
+  return Promise.resolve();
 }
 
-export async function migrateAuthStart(context: DebugMigrationContext): Promise<void> {
+export function migrateAuthStart(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -582,9 +587,10 @@ export async function migrateAuthStart(context: DebugMigrationContext): Promise<
       ++index;
     }
   }
+  return Promise.resolve();
 }
 
-export async function migrateBotStart(context: DebugMigrationContext): Promise<void> {
+export function migrateBotStart(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -625,9 +631,10 @@ export async function migrateBotStart(context: DebugMigrationContext): Promise<v
       ++index;
     }
   }
+  return Promise.resolve();
 }
 
-export async function migrateBackendWatch(context: DebugMigrationContext): Promise<void> {
+export function migrateBackendWatch(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -646,9 +653,10 @@ export async function migrateBackendWatch(context: DebugMigrationContext): Promi
       ++index;
     }
   }
+  return Promise.resolve();
 }
 
-export async function migrateBackendStart(context: DebugMigrationContext): Promise<void> {
+export function migrateBackendStart(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -684,6 +692,7 @@ export async function migrateBackendStart(context: DebugMigrationContext): Promi
       ++index;
     }
   }
+  return Promise.resolve();
 }
 
 export async function migrateValidateLocalPrerequisites(
@@ -766,7 +775,7 @@ export async function migrateValidateLocalPrerequisites(
   }
 }
 
-export async function migratePreDebugCheck(context: DebugMigrationContext): Promise<void> {
+export function migratePreDebugCheck(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -851,9 +860,10 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
 
     break;
   }
+  return Promise.resolve();
 }
 
-export async function migrateNgrokStartTask(context: DebugMigrationContext): Promise<void> {
+export function migrateNgrokStartTask(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -870,9 +880,10 @@ export async function migrateNgrokStartTask(context: DebugMigrationContext): Pro
     }
   }
   replaceInDependsOn("teamsfx: ngrok start", context.tasks, TaskLabel.StartLocalTunnel);
+  return Promise.resolve();
 }
 
-export async function migrateNgrokStartCommand(context: DebugMigrationContext): Promise<void> {
+export function migrateNgrokStartCommand(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -889,9 +900,10 @@ export async function migrateNgrokStartCommand(context: DebugMigrationContext): 
     context.tasks.splice(index, 1, newTask);
     ++index;
   }
+  return Promise.resolve();
 }
 
-export async function migrateGetFuncPathCommand(context: DebugMigrationContext): Promise<void> {
+export function migrateGetFuncPathCommand(context: DebugMigrationContext): Promise<void> {
   const getFuncPathCommand = "${command:fx-extension.get-func-path}";
   const getFuncPathDelimiterCommand = "${command:fx-extension.get-path-delimiter}";
   for (const task of context.tasks) {
@@ -939,6 +951,7 @@ export async function migrateGetFuncPathCommand(context: DebugMigrationContext):
       }
     });
   }
+  return Promise.resolve();
 }
 
 function generatePrerequisiteTask(

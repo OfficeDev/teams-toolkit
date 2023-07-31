@@ -203,7 +203,7 @@ export class TeamsCollaboration {
       const result: ResourcePermission[] = [
         {
           name: Constants.PERMISSIONS.name,
-          roles: [teamsAppRoles as string],
+          roles: [teamsAppRoles],
           type: Constants.PERMISSIONS.type,
           resourceId: teamsAppId,
         },

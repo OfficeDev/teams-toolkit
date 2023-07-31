@@ -247,7 +247,7 @@ export class FxCore {
         (d: any) => d.uses === "teamsApp/create"
       );
       if (teamsAppCreate) {
-        const name = (teamsAppCreate.with as any).name;
+        const name = teamsAppCreate.with.name;
         if (name) {
           return ok(name.replace("-${{TEAMSFX_ENV}}", "") || "");
         }
@@ -411,8 +411,8 @@ export class FxCore {
 
     const projectModel = maybeProjectModel.value;
     const driverContext: DriverContext = {
-      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider!,
-      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider!,
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
       ui: TOOLS.ui,
       progressBar: undefined,
       logProvider: TOOLS.logProvider,

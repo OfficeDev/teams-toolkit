@@ -797,6 +797,43 @@ describe("Notification Bot Tests - Node", () => {
     assert.deepStrictEqual(storage.items, {});
   });
 
+  it("getPagedInstallations should skip validation", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      throw {
+        name: "test",
+        message: "test",
+        code: "BotNotInConversationRoster",
+      };
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+    const { data: installations } = await notificationBot.getPagedInstallations(
+      undefined,
+      undefined,
+      false
+    );
+    assert.strictEqual(installations.length, 1);
+    assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
+    assert.deepStrictEqual(storage.items, {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    });
+  });
+
   it("installations should remove invalid target", async () => {
     sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
       throw {

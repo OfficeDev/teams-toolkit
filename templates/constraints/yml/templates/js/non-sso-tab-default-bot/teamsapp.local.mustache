@@ -1,0 +1,25 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#botAadAppCreate}} {{/botAadAppCreate}}
+
+{{#botFrameworkCreate}} {{/botFrameworkCreate}}
+
+{{#script}} TAB {{/script}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+deploy:
+{{#devToolInstall}} devCert {{/devToolInstall}}
+
+{{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}
+
+  # Generate runtime environment variables for tab
+{{#fileCreateOrUpdateEnvironmentFile}} target: ./tab/.localConfigs, TAB, noComment {{/fileCreateOrUpdateEnvironmentFile}}
+
+  # Generate runtime environment variables for bot
+{{#fileCreateOrUpdateEnvironmentFile}} target: ./bot/.localConfigs, BOT, noComment {{/fileCreateOrUpdateEnvironmentFile}}

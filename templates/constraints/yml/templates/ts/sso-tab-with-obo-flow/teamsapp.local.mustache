@@ -1,23 +1,23 @@
 {{#header}} version: 1.0.0 {{/header}}
 
 provision:
-{{{aadAppCreate}}}
+{{#aadAppCreate}} {{/aadAppCreate}}
 
-{{{teamsAppCreate}}}
+{{#teamsAppCreate}} {{/teamsAppCreate}}
 
 {{#script}} TAB, FUNC {{/script}}
 
-{{{aadAppUpdate}}}
+{{#aadAppUpdate}} {{/aadAppUpdate}}
 
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
 
-{{{teamsAppValidateAppPackage}}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 
-{{{teamsAppUpdate}}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
 
-{{{teamsAppExtendToM365}}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 deploy:
 {{#devToolInstall}} devCert, func, dotnet {{/devToolInstall}}

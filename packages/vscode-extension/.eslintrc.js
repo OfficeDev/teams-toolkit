@@ -6,11 +6,7 @@ module.exports = {
   overrides: [
     {
       files: ["src/**/*.ts"],
-      extends: [
-        "../eslint-plugin-teamsfx/config/header.js",
-        "../eslint-plugin-teamsfx/config/promise.js",
-        "../eslint-plugin-teamsfx/config/type.js",
-      ],
+      extends: ["../eslint-plugin-teamsfx/config/header.js"],
     },
   ],
 };

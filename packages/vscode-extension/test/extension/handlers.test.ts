@@ -67,7 +67,6 @@ import { MockCore } from "../mocks/mockCore";
 describe("handlers", () => {
   describe("activate()", function () {
     const sandbox = sinon.createSandbox();
-    let setStatusChangeMap: any;
 
     beforeEach(() => {
       sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
@@ -92,6 +91,15 @@ describe("handlers", () => {
       const setCommandIsRunningStub = sandbox.stub(globalVariables, "setCommandIsRunning");
       const lockedByOperationStub = sandbox.stub(commandController, "lockedByOperation");
       const unlockedByOperationStub = sandbox.stub(commandController, "unlockedByOperation");
+      const azureAccountSetStatusChangeMapStub = sandbox.stub(
+        AzureAccountManager.prototype,
+        "setStatusChangeMap"
+      );
+      const m365AccountSetStatusChangeMapStub = sandbox.stub(
+        M365TokenInstance,
+        "setStatusChangeMap"
+      );
+      const showMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
       let lockCallback: any;
       let unlockCallback: any;
 
@@ -102,6 +110,37 @@ describe("handlers", () => {
           unlockCallback = callback;
         }
       });
+      azureAccountSetStatusChangeMapStub.callsFake(
+        (
+          name: string,
+          statusChange: (
+            status: string,
+            token?: string,
+            accountInfo?: Record<string, unknown>
+          ) => Promise<void>,
+          immediateCall?: boolean
+        ) => {
+          statusChange(signedIn).then(() => {});
+          statusChange(signedOut).then(() => {});
+          return Promise.resolve(true);
+        }
+      );
+      m365AccountSetStatusChangeMapStub.callsFake(
+        (
+          name: string,
+          tokenRequest: unknown,
+          statusChange: (
+            status: string,
+            token?: string,
+            accountInfo?: Record<string, unknown>
+          ) => Promise<void>,
+          immediateCall?: boolean
+        ) => {
+          statusChange(signedIn).then(() => {});
+          statusChange(signedOut).then(() => {});
+          return Promise.resolve(ok(true));
+        }
+      );
       const result = await handlers.activate();
 
       chai.assert.isTrue(addSharedPropertyStub.called);
@@ -114,6 +153,8 @@ describe("handlers", () => {
 
       unlockCallback("test");
       unlockedByOperationStub.calledOnceWith("test");
+
+      chai.assert.isTrue(showMessageStub.called);
     });
   });
   const sandbox = sinon.createSandbox();
@@ -987,6 +1028,24 @@ describe("handlers", () => {
     chai.assert.isTrue(createProject.calledOnceWith(inputs));
   });
 
+  it("downloadSample - error", async () => {
+    const inputs: Inputs = {
+      scratch: "no",
+      platform: Platform.VSCode,
+    };
+    sandbox.stub(handlers, "core").value(new MockCore());
+    const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
+    const createProject = sandbox
+      .stub(handlers.core, "createProject")
+      .rejects(err(new Error("Cannot get user login information")));
+
+    await handlers.downloadSample(inputs);
+
+    inputs.stage = Stage.create;
+    chai.assert.isTrue(createProject.calledOnceWith(inputs));
+    chai.assert.isTrue(showErrorMessageStub.calledOnce);
+  });
+
   it("deployAadAppmanifest", async () => {
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -1537,5 +1596,65 @@ describe("openPreviewAadFile", () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     const res = await handlers.openPreviewAadFile([]);
     chai.assert.isTrue(res.isErr());
+  });
+});
+
+describe("autoOpenProjectHandler", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("opens walk through", async () => {
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openWalkThrough") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommandFunc = sandbox.stub(vscode.commands, "executeCommand");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.calledOnce);
+    chai.assert.isTrue(executeCommandFunc.calledOnce);
+  });
+
+  it("opens README", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.calledOnce);
+  });
+
+  it("opens sample README", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([]);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openSampleReadMe") {
+        return true;
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    await handlers.autoOpenProjectHandler();
   });
 });

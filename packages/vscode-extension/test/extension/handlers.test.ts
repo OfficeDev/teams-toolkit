@@ -1625,7 +1625,9 @@ describe("autoOpenProjectHandler", () => {
   it("opens README", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
-    const showMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "fx-extension.openReadMe") {
         return vscode.Uri.file("test").fsPath;

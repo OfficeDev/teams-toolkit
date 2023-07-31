@@ -1003,7 +1003,7 @@ export function appNameQuestion(): TextInputQuestion {
           pattern: AppNamePattern,
           maxLength: 30,
         };
-        const appName = input as string;
+        const appName = input;
         const validateResult = jsonschema.validate(appName, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
           if (validateResult.errors[0].name === "pattern") {
@@ -1185,10 +1185,10 @@ function getBotIdAndMeId(appDefinition: AppDefinition) {
   const bots = appDefinition.bots;
   const messageExtensions = appDefinition.messagingExtensions;
   // can add only one bot. If existing, the length is 1.
-  const botId = !!bots && bots.length > 0 ? bots![0].botId : undefined;
+  const botId = !!bots && bots.length > 0 ? bots[0].botId : undefined;
   // can add only one message extension. If existing, the length is 1.
   const messageExtensionId =
-    !!messageExtensions && messageExtensions.length > 0 ? messageExtensions![0].botId : undefined;
+    !!messageExtensions && messageExtensions.length > 0 ? messageExtensions[0].botId : undefined;
   return [botId, messageExtensionId];
 }
 

@@ -110,7 +110,7 @@ export class Channel implements NotificationTarget {
     await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
-        const conversation = await this.newConversation(context);
+        const conversation = this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
           try {
             const res = await ctx.sendActivity(text);
@@ -144,7 +144,7 @@ export class Channel implements NotificationTarget {
     await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
-        const conversation = await this.newConversation(context);
+        const conversation = this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
           try {
             const res = await ctx.sendActivity({
@@ -167,7 +167,7 @@ export class Channel implements NotificationTarget {
   /**
    * @internal
    */
-  private async newConversation(context: TurnContext): Promise<ConversationReference> {
+  private newConversation(context: TurnContext): ConversationReference {
     const reference = TurnContext.getConversationReference(context.activity);
     const channelConversation = utils.cloneConversation(reference);
     channelConversation.conversation.id = this.info.id || "";

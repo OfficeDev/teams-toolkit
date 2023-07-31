@@ -139,10 +139,10 @@ export class CopilotPluginGenerator {
 
       // TODO: format log warnings
       for (const warn of warnings) {
-        context.logProvider.warning(warn.content);
+        void context.logProvider.warning(warn.content);
       }
       for (const warn of manifestWarnings) {
-        context.logProvider.warning(warn);
+        void context.logProvider.warning(warn);
       }
       return ok(undefined);
     } catch (e) {

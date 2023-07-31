@@ -1,17 +1,17 @@
 {{#header}} version: 1.0.0 {{/header}}
 
 provision:
-{{{teamsAppCreate}}}
+{{#teamsAppCreate}} {{/teamsAppCreate}}
 
-{{{botAadAppCreate}}}
+{{#botAadAppCreate}} {{/botAadAppCreate}}
 
 {{#botFrameworkCreate}} m365extensions {{/botFrameworkCreate}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
-{{{teamsAppUpdate}}}
-{{{teamsAppExtendToM365}}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 deploy:
 {{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}

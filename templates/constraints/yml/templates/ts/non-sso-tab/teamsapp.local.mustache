@@ -1,7 +1,7 @@
 {{#header}} version: 1.0.0 {{/header}}
 
 provision:
-{{{teamsAppCreate}}}
+{{#teamsAppCreate}} {{/teamsAppCreate}}
 
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
   - uses: script
@@ -11,10 +11,10 @@ provision:
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
-{{{teamsAppUpdate}}}
-{{{teamsAppExtendToM365}}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 deploy:
 {{#devToolInstall}} devCert {{/devToolInstall}}

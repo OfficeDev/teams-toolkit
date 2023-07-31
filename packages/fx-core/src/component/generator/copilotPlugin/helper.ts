@@ -227,7 +227,7 @@ export function logValidationResults(
         warningMessage
       );
 
-  context.logProvider.info(outputMessage);
+  void context.logProvider.info(outputMessage);
 }
 
 function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResult[] {

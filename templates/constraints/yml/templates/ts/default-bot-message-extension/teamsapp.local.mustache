@@ -1,18 +1,18 @@
 {{#header}} version: 1.0.0 {{/header}}
 
 provision:
-{{{teamsAppCreate}}}
+{{#teamsAppCreate}} {{/teamsAppCreate}}
 
-{{{botAadAppCreate}}}
+{{#botAadAppCreate}} {{/botAadAppCreate}}
 
-{{#botFrameworkCreate}}  {{/botFrameworkCreate}}
+{{#botFrameworkCreate}} {{/botFrameworkCreate}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 
-{{{teamsAppUpdate}}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
 
 deploy:
 {{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}

@@ -330,13 +330,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
-  // localdebug session starts from environment checker
-  const validateSpfxDependenciesCmd = vscode.commands.registerCommand(
-    "fx-extension.validate-spfx-dependencies",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateSpfxDependenciesHandler)
-  );
-  context.subscriptions.push(validateSpfxDependenciesCmd);
-
   const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
     Correlator.run(handlers.signinAzureCallback, args)
   );

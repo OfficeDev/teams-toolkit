@@ -127,7 +127,7 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
   );
 
   if (await fs.pathExists(projectSettingsPath)) {
-    const projectSettings = (await fs.readJson(projectSettingsPath)) as { isM365: boolean };
+    const projectSettings = await fs.readJson(projectSettingsPath);
     return projectSettings.isM365;
   } else {
     return false;
@@ -239,7 +239,7 @@ export function getAllFeatureFlags(): string[] | undefined {
       return isFeatureFlagEnabled(featureFlag);
     })
 
-    .map((featureFlag: string) => {
+    .map((featureFlag) => {
       return featureFlag;
     });
 
@@ -263,16 +263,13 @@ export async function getSubscriptionInfoFromEnv(
     return undefined;
   }
 
-  const solution = provisionResult.solution as {
-    subscriptionId: string;
-    subscriptionName: string;
-    tenantId: string;
-  };
-  if (solution && solution.subscriptionId) {
+  if (provisionResult.solution && provisionResult.solution.subscriptionId) {
     return {
-      subscriptionName: solution.subscriptionName,
-      subscriptionId: solution.subscriptionId,
-      tenantId: solution.tenantId,
+      subscriptionName: provisionResult.solution.subscriptionName,
+
+      subscriptionId: provisionResult.solution.subscriptionId,
+
+      tenantId: provisionResult.solution.tenantId,
     };
   } else {
     return undefined;
@@ -293,12 +290,11 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
     return undefined;
   }
 
-  return (provisionResult[PluginNames.SOLUTION] as { teamsAppTenantId: string } | undefined)
-    ?.teamsAppTenantId;
+  return provisionResult?.[PluginNames.SOLUTION]?.teamsAppTenantId;
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
-  let provisionResult: Record<string, unknown> | undefined;
+  let provisionResult: Record<string, any> | undefined;
 
   try {
     provisionResult = await getProvisionResultJson(env);
@@ -312,7 +308,7 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
     return undefined;
   }
 
-  return (provisionResult.solution as { resourceGroupName: string })?.resourceGroupName;
+  return provisionResult.solution?.resourceGroupName;
 }
 
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
@@ -342,7 +338,7 @@ async function getProvisionResultJson(env: string): Promise<Record<string, strin
       return undefined;
     }
 
-    const provisionResult = (await fs.readJSON(provisionOutputFile)) as Record<string, string>;
+    const provisionResult = await fs.readJSON(provisionOutputFile);
 
     return provisionResult;
   }

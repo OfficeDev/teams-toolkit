@@ -182,7 +182,7 @@ export class PublishAppPackageDriver implements StepDriver {
       return err(e);
     }
 
-    context.logProvider.info(`Publish success!`);
+    await context.logProvider.info(`Publish success!`);
     context.addSummary(
       getLocalizedString("driver.teamsApp.summary.publishTeamsAppSuccess", manifest.id)
     );

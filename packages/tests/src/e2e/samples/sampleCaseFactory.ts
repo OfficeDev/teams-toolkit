@@ -146,8 +146,8 @@ export default function sampleCaseFactory(
           if (sampleName === TemplateProjectFolder.OutlookSignature) {
             const htmlPath = path.join(projectPath, "src", "runtime", "html");
             fs.renameSync(
-              htmlPath,
-              path.join(projectPath, "src", "runtime", "HTML")
+              path.join(projectPath, "src", "runtime", "HTML"),
+              htmlPath
             );
           }
           // deploy

@@ -133,6 +133,11 @@ export interface UserInputQuestion extends BaseQuestion {
    * An optional validation message indicating or explaining the problem with the current input value.
    */
   validationHelp?: string;
+
+  /**
+   * A flag to indicate whether the question is required for CLI non-interactive mode.
+   */
+  required?: boolean;
 }
 
 /**

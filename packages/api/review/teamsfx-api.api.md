@@ -979,6 +979,7 @@ export interface UserInputQuestion extends BaseQuestion {
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
+    required?: boolean;
     title: string | LocalFunc<string | undefined>;
     type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
     validation?: ValidationSchema;

@@ -40,4 +40,9 @@ describe("sideloadingNode", () => {
 
     chai.assert.equal(treeItem.iconPath, passIcon);
   });
+
+  it("getChildren", () => {
+    const sideloadingNode = new SideloadingNode(eventEmitter, "token");
+    chai.assert.isNull(sideloadingNode.getChildren());
+  });
 });

@@ -118,10 +118,6 @@ export function openFolderInExplorer(folderPath: string): void {
   exec(command);
 }
 
-export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
-  return false;
-}
-
 export async function isM365Project(workspacePath: string): Promise<boolean> {
   const projectSettingsPath = path.resolve(
     workspacePath,
@@ -239,7 +235,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 export function getAllFeatureFlags(): string[] | undefined {
   const result = Object.values(FeatureFlags)
 
-    .filter((featureFlag) => {
+    .filter((featureFlag: string) => {
       return isFeatureFlagEnabled(featureFlag);
     })
 
@@ -356,8 +352,8 @@ export function isTriggerFromWalkThrough(args?: any[]): boolean {
   if (!args || (args && args.length === 0)) {
     return false;
   } else if (
-    args[0].toString() === TelemetryTriggerFrom.WalkThrough ||
-    args[0].toString() === TelemetryTriggerFrom.Notification
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.WalkThrough ||
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.Notification
   ) {
     return true;
   }
@@ -373,7 +369,7 @@ export function getTriggerFromProperty(args?: any[]) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette };
   }
 
-  switch (args[0].toString()) {
+  switch ((args[0] as TelemetryTriggerFrom).toString()) {
     case TelemetryTriggerFrom.TreeView:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
     case TelemetryTriggerFrom.ViewTitleNavigation:

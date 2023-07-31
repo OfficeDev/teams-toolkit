@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-
 import * as vscode from "vscode";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
 import { Correlator, fillInTelemetryPropsForFxError } from "@microsoft/teamsfx-core";
@@ -110,7 +107,7 @@ export namespace ExtTelemetry {
     }
 
     if (settingsVersion !== undefined) {
-      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryEvent(eventName, properties, measurements);
@@ -140,7 +137,7 @@ export namespace ExtTelemetry {
     }
 
     if (settingsVersion !== undefined) {
-      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
@@ -166,7 +163,7 @@ export namespace ExtTelemetry {
     }
 
     if (settingsVersion !== undefined) {
-      properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryException(error, properties, measurements);
@@ -190,10 +187,13 @@ export namespace ExtTelemetry {
   }
 
   export async function sendCachedTelemetryEventsAsync() {
-    const existingValue = await globalStateGet(TelemetryCacheKey);
+    const existingValue = (await globalStateGet(TelemetryCacheKey)) as string | undefined;
     if (existingValue) {
       try {
-        const telemetryEvent = JSON.parse(existingValue);
+        const telemetryEvent = JSON.parse(existingValue) as {
+          eventName: string;
+          properties: { [p: string]: string } | undefined;
+        };
         reporter.sendTelemetryEvent(telemetryEvent.eventName, telemetryEvent.properties);
       } catch (e) {}
       await globalStateUpdate(TelemetryCacheKey, undefined);

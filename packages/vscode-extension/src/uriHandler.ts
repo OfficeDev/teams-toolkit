@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import * as queryString from "query-string";
 import * as vscode from "vscode";
 

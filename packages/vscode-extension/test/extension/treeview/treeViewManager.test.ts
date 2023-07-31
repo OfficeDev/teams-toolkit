@@ -16,7 +16,7 @@ describe("TreeViewManager", () => {
     sandbox.restore();
   });
 
-  it("registerTreeViews", async () => {
+  it("registerTreeViews", () => {
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
@@ -24,11 +24,11 @@ describe("TreeViewManager", () => {
 
     const lifecycleTreeView = treeViewManager.getTreeView("teamsfx-lifecycle");
     chai.assert.isDefined(lifecycleTreeView);
-    chai.assert.equal(lifecycleTreeView.commands.length, 3);
-    chai.assert.equal(lifecycleTreeView.commands[0].commandId, "fx-extension.provision");
+    chai.assert.equal((lifecycleTreeView as any).commands.length, 3);
+    chai.assert.equal((lifecycleTreeView as any).commands[0].commandId, "fx-extension.provision");
   });
 
-  it("registerTreeViews", async () => {
+  it("registerTreeViews", () => {
     sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
@@ -37,10 +37,10 @@ describe("TreeViewManager", () => {
 
     const developmentTreeview = treeViewManager.getTreeView("teamsfx-development");
     chai.assert.isDefined(developmentTreeview);
-    chai.assert.equal(developmentTreeview.commands.length, 4);
+    chai.assert.equal((developmentTreeview as any).commands.length, 4);
   });
 
-  it("setRunningCommand", async () => {
+  it("setRunningCommand", () => {
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
@@ -121,7 +121,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(commands.length, 2);
   });
 
-  it("updateTreeViewsOnSPFxChanged", async () => {
+  it("updateTreeViewsOnSPFxChanged", () => {
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],
@@ -134,7 +134,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(commands.length, 4);
 
     sandbox.stub(globalVariables, "isSPFxProject").value(true);
-    await treeViewManager.updateTreeViewsOnSPFxChanged();
+    treeViewManager.updateTreeViewsOnSPFxChanged();
 
     chai.assert.equal(commands.length, 5);
   });

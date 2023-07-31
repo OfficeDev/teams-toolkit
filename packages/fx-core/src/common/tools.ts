@@ -312,9 +312,9 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
   try {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       TunnelManagementUserAgent,
-      async () => {
+      () => {
         const res = `Bearer ${token}`;
-        return res;
+        return Promise.resolve(res);
       }
     );
 

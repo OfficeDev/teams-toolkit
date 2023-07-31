@@ -51,18 +51,18 @@ export enum GeneratorActionName {
 // * This action is only for debug purpose
 export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateZipFromSourceCode,
-  run: async (context: GeneratorContext) => {
+  run: (context: GeneratorContext) => {
     const isDebugMode = () => {
       const DebugTemplateFlag = process.env[FeatureFlagName.DebugTemplate];
       return DebugTemplateFlag?.toLowerCase() === "true" && process.env.NODE_ENV === "development";
     };
 
     if (!isDebugMode()) {
-      return;
+      return Promise.resolve();
     }
 
     if (context.zip) {
-      return;
+      return Promise.resolve();
     }
 
     //! This path only works in debug mode
@@ -74,6 +74,7 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
     );
 
     context.zip = zipFolder(templateSourceCodePath);
+    return Promise.resolve();
   },
 };
 

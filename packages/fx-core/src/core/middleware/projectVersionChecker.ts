@@ -39,24 +39,30 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
   if (inputs.platform === Platform.VSCode) {
     const messageKey = "core.projectVersionChecker.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
-      if (res.isOk() && res.value === moreInfoButton) {
-        TOOLS.ui.openUrl(MetadataV2.updateToolkitLink);
-      }
-    });
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then(
+      (res) => {
+        if (res.isOk() && res.value === moreInfoButton) {
+          void TOOLS.ui.openUrl(MetadataV2.updateToolkitLink);
+        }
+      },
+      () => {}
+    );
     return IncompatibleProjectError(messageKey);
   } else if (inputs.platform === Platform.CLI) {
     const messageKey = "core.projectVersionChecker.cliUseNewVersion";
-    TOOLS.logProvider.warning(getLocalizedString(messageKey));
+    await TOOLS.logProvider.warning(getLocalizedString(messageKey));
     return IncompatibleProjectError(messageKey);
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
-      if (res.isOk() && res.value === moreInfoButton) {
-        TOOLS.ui.openUrl(learnMoreLink);
-      }
-    });
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then(
+      (res) => {
+        if (res.isOk() && res.value === moreInfoButton) {
+          void TOOLS.ui.openUrl(learnMoreLink);
+        }
+      },
+      () => {}
+    );
     return IncompatibleProjectError(messageKey);
   }
 }

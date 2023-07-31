@@ -487,7 +487,7 @@ describe("aadAppUpdate", async () => {
           error: {
             code: "CannotDeleteOrUpdateEnabledEntitlement",
             message:
-              "Permission (scope or role) cannot be deleted or updated unless disabled first.",
+              "Update Azure Active Directory app failed. Please double check the permission id you specified is correct or try again later.\n",
           },
         },
       },
@@ -509,7 +509,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(HttpClientError)
       .and.property("message")
       .equals(
-        "Update Azure Active Directory app failed. Please double check the permission id you specified is correct or try again later.\n"
+        'A http client error happened while performing the aadApp/update task. The error response is: {"error":{"code":"Request_BadRequest","message":"Update Azure Active Directory app failed. Please double check the permission id you specified is correct or try again later.\n"}}'
       );
   });
 

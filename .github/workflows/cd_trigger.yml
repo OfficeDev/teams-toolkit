@@ -73,7 +73,7 @@ jobs:
           scripts: |
             let rawData = require('fs').readFileSync('./series.txt', {encoding:'utf8', flag:'r'});
             console.log('-----------------', rawData)
-            return rawData;
+            return rawData ?? "";
 
       - run: npm install semver
       - name: Get teamsfx-server preid

@@ -291,10 +291,8 @@ const config = {
     },
   },
   cache: {
-    cachePlugin:
-      os.type() === "Windows_NT"
-        ? new CryptoCachePlugin(accountName)
-        : cachePluginNonWindows,
+    // The account cache will be saved to a file with no encryption since VS Code keytar is not available on Windows. Teams toolkit will use plain text when decryption fails.
+    cachePlugin: cachePluginNonWindows,
   },
 };
 

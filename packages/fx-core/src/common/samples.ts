@@ -23,7 +23,7 @@ export interface SampleInfo {
   time: string;
   configuration: string;
   suggested: boolean;
-  url: string;
+  url?: string;
 }
 
 interface SampleCollection {
@@ -32,10 +32,9 @@ interface SampleCollection {
 
 class SampleProvider {
   private sampleCollection: SampleCollection | undefined;
-  private sampleConfigs: any;
+  private samplesConfig: SampleCollection | undefined;
 
   public async fetchSampleConfig() {
-    this.sampleConfigs = undefined;
     try {
       const fileResponse = await sendRequestWithTimeout(
         async () => {
@@ -49,31 +48,24 @@ class SampleProvider {
       );
 
       if (fileResponse && fileResponse.data) {
-        this.sampleConfigs = fileResponse.data;
+        this.samplesConfig = fileResponse.data as SampleCollection;
       }
     } catch (e) {
-      this.sampleConfigs = undefined;
+      this.samplesConfig = undefined;
     }
   }
   public get SampleCollection(): SampleCollection {
-    const samples = (this.sampleConfigs ?? sampleConfigV3).samples.map((sample: any) => {
+    const samples = (this.samplesConfig ?? sampleConfigV3).samples.map((sample: SampleInfo) => {
       return {
-        id: sample.id,
-        title: sample.title,
-        shortDescription: sample.shortDescription,
-        fullDescription: sample.fullDescription,
-        tags: sample.tags,
-        time: sample.time,
-        configuration: sample.configuration,
-        suggested: sample.suggested,
-        url: (sample as any).url ? (sample as any).url : `${this.getBaseSampleUrl()}${sample.id}`,
+        ...sample,
+        url: sample.url ? sample.url : `${this.getBaseSampleUrl()}${sample.id}`,
       } as SampleInfo;
     });
 
     // remove video filter sample app if feature flag is disabled.
     if (!isVideoFilterEnabled()) {
       const videoFilterSampleId = "teams-videoapp-sample";
-      const index = samples.findIndex((sample: any) => sample.id === videoFilterSampleId);
+      const index = samples.findIndex((sample) => sample.id === videoFilterSampleId);
       if (index !== -1) {
         samples.splice(index, 1);
       }
@@ -94,7 +86,9 @@ class SampleProvider {
     if (version.includes("rc")) {
       return "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/";
     }
-    return (this.sampleConfigs ?? sampleConfigV3).baseUrl;
+    return this.samplesConfig
+      ? `https://github.com/${configInfo.owner}/${configInfo.repo}/tree/${configInfo.tree}/`
+      : sampleConfigV3.baseUrl;
   }
 }
 

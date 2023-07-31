@@ -56,7 +56,6 @@ export default function sampleCaseFactory(
         const projectPath = path.resolve(testFolder, appName);
         const env = environmentManager.getDefaultEnvName();
         samplePath = projectPath;
-
         before(async () => {});
 
         it(sampleName, { testPlanCaseId, author }, async function () {
@@ -142,6 +141,11 @@ export default function sampleCaseFactory(
             }
           }
 
+          // [BUG] https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/24689200
+          // workaround: wait for partner to fix issue
+          if (sampleName === TemplateProjectFolder.OutlookSignature) {
+            return;
+          }
           // deploy
           {
             const { success } = await Executor.deploy(projectPath);

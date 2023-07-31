@@ -22,13 +22,13 @@ export async function createAuthFiles(input: Inputs): Promise<Result<unknown, Fx
     return err(e);
   }
 
-  const projectFolderExists = await fs.pathExists(projectPath!);
+  const projectFolderExists = await fs.pathExists(projectPath);
   if (!projectFolderExists) {
     const e = new FileNotFoundError("aad", projectPath);
     return err(e);
   }
 
-  const authFolder = path.join(projectPath!, AddSsoParameters.V3AuthFolder);
+  const authFolder = path.join(projectPath, AddSsoParameters.V3AuthFolder);
   try {
     const authFolderExists = await fs.pathExists(authFolder);
     if (!authFolderExists) {

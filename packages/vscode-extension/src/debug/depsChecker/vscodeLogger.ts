@@ -17,9 +17,9 @@ export class VSCodeLogger implements DepsLogger {
     this.logger = logger;
   }
 
-  public async debug(message: string): Promise<boolean> {
+  public debug(message: string): Promise<boolean> {
     this.addToDetailCache(LogLevel.Debug, message);
-    return true;
+    return Promise.resolve(true);
   }
 
   public async info(message: string): Promise<boolean> {

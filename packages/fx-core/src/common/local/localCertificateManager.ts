@@ -362,7 +362,7 @@ export class LocalCertificateManager {
         );
         userSelected = res.isOk() ? res.value : undefined;
         if (userSelected === learnMoreText()) {
-          this.ui.openUrl(learnMoreUrl);
+          void this.ui.openUrl(learnMoreUrl);
         }
       } while (userSelected === learnMoreText());
       return userSelected === installText();

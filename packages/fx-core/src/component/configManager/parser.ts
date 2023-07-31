@@ -24,10 +24,10 @@ const versionNotSupportedKey = "error.yaml.VersionNotSupported";
 function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
   const result: RawProjectModel = { version: "" };
   if (environmentFolderPath in obj) {
-    if (typeof obj["environmentFolderPath"] !== "string") {
+    if (typeof obj[environmentFolderPath] !== "string") {
       return err(new YamlFieldTypeError("environmentFolderPath", "string"));
     }
-    result.environmentFolderPath = obj[environmentFolderPath];
+    result.environmentFolderPath = obj[environmentFolderPath] as unknown as any;
   }
 
   if ("version" in obj) {

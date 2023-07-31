@@ -58,7 +58,8 @@ export default function sampleCaseFactory(
         samplePath = projectPath;
         // fix outlook signature sample failed in deploy
         process.env.TEAMSFX_AAD_DEPLOY_ONLY = "false";
-
+        process.env.TEAMSFX_DEBUG_TEMPLATE = "false";
+        process.env.CI_ENABLE = "false";
         before(async () => {});
 
         it(sampleName, { testPlanCaseId, author }, async function () {

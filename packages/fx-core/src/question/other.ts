@@ -264,6 +264,7 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
         },
       ];
     },
+    interactiveOnly: true,
   };
 }
 

@@ -15,15 +15,7 @@ export interface SPFxAddWebpart {
    */
   manifestPath: string;
   /**
-   * @description: Select Teams manifest.json file
-   */
-  confirmManifest?: string;
-  /**
    * @description: Select local Teams manifest.json file
    */
   localManifestPath: string;
-  /**
-   * @description: Select local Teams manifest.json file
-   */
-  confirmLocalManifest?: string;
 }

@@ -168,6 +168,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     forgetLastValue: true,
     skipSingleOption: true,
+    interactiveOnly: true,
   };
 }
 

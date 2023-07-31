@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IQTreeNode } from "@microsoft/teamsfx-api";
+import { IQTreeNode, UserInputQuestion } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { camelCase } from "lodash";
 import path from "path";
@@ -11,10 +11,23 @@ function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
   if (node.data.type !== "group") {
     nodeList.push(node);
   }
-
   if (node.children) {
     for (const child of node.children) {
       collect(child, nodeList);
+    }
+  }
+}
+
+function collectNonConditional(node: IQTreeNode) {
+  console.log(`collectNonConditional: ${node.data.name}`);
+  if (node.data.type !== "group") {
+    if (!node.condition) {
+      (node.data as UserInputQuestion).required = true;
+    }
+  }
+  if (node.children) {
+    for (const child of node.children) {
+      if (!child.condition) collectNonConditional(child);
     }
   }
 }
@@ -23,6 +36,8 @@ export function generate(node: IQTreeNode, name: string, folder = "./inputs") {
   const nodeList: IQTreeNode[] = [];
 
   collect(node, nodeList);
+
+  collectNonConditional(node);
 
   let lines: string[] = [
     "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n",
@@ -37,6 +52,10 @@ export function generate(node: IQTreeNode, name: string, folder = "./inputs") {
   for (const node of nodeList) {
     const data = node.data as any;
 
+    if ((node.data as UserInputQuestion).interactiveOnly) {
+      continue;
+    }
+
     const propName = camelCase(node.data.name);
 
     if (propertySet.has(propName)) {
@@ -50,7 +69,7 @@ export function generate(node: IQTreeNode, name: string, folder = "./inputs") {
       }`,
       " */",
     ]);
-    const requiredFlag = node.condition ? "?" : "";
+    const requiredFlag = (node.data as UserInputQuestion).required ? "" : "?";
     let type = "string";
 
     if (node.data.type === "singleSelect") {
@@ -85,3 +104,5 @@ export function generate(node: IQTreeNode, name: string, folder = "./inputs") {
 }
 
 generate(createProjectQuestionNode(), "CreateProject");
+
+generate(addWebPartQuestionNode(), "SPFxAddWebpart");

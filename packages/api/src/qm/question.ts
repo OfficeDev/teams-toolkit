@@ -136,8 +136,25 @@ export interface UserInputQuestion extends BaseQuestion {
 
   /**
    * A flag to indicate whether the question is required for CLI non-interactive mode.
+   * Default value is false.
+   * If not explicitly defined, the framework will try to fillin this field.
    */
   required?: boolean;
+
+  /**
+   * alternative names of the question that use to map the input properties into final Input object
+   */
+  alternativeNames?: string[];
+
+  /**
+   * CLI option/argument name, if not specified, the question name will be used as the CLI option/argument name
+   */
+  cliName?: string;
+
+  /**
+   * the question is only for interactive mode, if true, the question will be skipped in non-interactive mode
+   */
+  interactiveOnly?: boolean;
 }
 
 /**

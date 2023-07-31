@@ -11,13 +11,9 @@ export interface CreateProject {
    */
   runtime?: "node" | "dotnet";
   /**
-   * @description: New Project
-   */
-  projectType?: string;
-  /**
    * @description: capabilities
    */
-  capabilities: string;
+  capabilities?: string;
   /**
    * @description: Choose triggers
    */
@@ -29,15 +25,15 @@ export interface CreateProject {
   /**
    * @description: SharePoint Framework
    */
-  spfxInstallLatestPackage: string;
+  spfxInstallLatestPackage?: string;
   /**
    * @description: Framework
    */
-  spfxFrameworkType: "react" | "minimal" | "none";
+  spfxFrameworkType?: "react" | "minimal" | "none";
   /**
    * @description: Web Part Name
    */
-  spfxWebpartName: string;
+  spfxWebpartName?: string;
   /**
    * @description: SPFx solution folder
    */
@@ -45,11 +41,11 @@ export interface CreateProject {
   /**
    * @description: Existing add-in project folder
    */
-  addinProjectFolder: string;
+  addinProjectFolder?: string;
   /**
    * @description: Select import project manifest file
    */
-  addinProjectManifest: string;
+  addinProjectManifest?: string;
   /**
    * @description: Add-in Host
    */
@@ -65,7 +61,7 @@ export interface CreateProject {
   /**
    * @description: Select an Operation
    */
-  apiOperation: string[];
+  apiOperation?: string[];
   /**
    * @description: Programming Language
    */
@@ -73,11 +69,11 @@ export interface CreateProject {
   /**
    * @description: Workspace folder
    */
-  folder: string;
+  folder?: string;
   /**
    * @description: Application name
    */
-  appName: string;
+  appName?: string;
   /**
    * @description: Configure website URL(s) for debugging
    */

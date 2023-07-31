@@ -482,6 +482,22 @@ describe("App-manifest Component - v3", () => {
     await updateManifestV3(context, cliInputs);
   });
 
+  it("updateManifestV3 - happy path", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.id = "";
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJSON").resolves(manifest);
+    sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok("View in Developer Portal"));
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
+
+    await updateManifestV3(context, inputs);
+  });
+
   it("updateManifestV3 - rebuild", async function () {
     const manifest = new TeamsAppManifest();
     manifest.id = "";

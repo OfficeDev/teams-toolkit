@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   ASTPath,
   CommentLine,
@@ -151,15 +154,15 @@ function visitRootMemberExpression(node: ExpressionKind | Identifier): string[] 
  * @param path the expression path
  * @param comment the comment to add
  */
-function addComment(path: ASTPath, comment: CommentLine): void {
-  let node: any = path.node;
+function addComment(path: ASTPath<CallExpression>, comment: CommentLine): void {
+  let node = path.node;
   const startLine = node.loc?.start?.line;
   if (startLine !== undefined) {
     // locate the current line's statement
     while (path.parent !== undefined) {
       node = path.node;
       path = path.parent;
-      if ((path.node as any).loc?.start?.line !== startLine) {
+      if (path.node.loc?.start?.line !== startLine) {
         break;
       }
     }
@@ -168,6 +171,6 @@ function addComment(path: ASTPath, comment: CommentLine): void {
   if (node.comments === undefined) {
     node.comments = [comment];
   } else {
-    node.comments.push(comment);
+    node.comments?.push(comment);
   }
 }

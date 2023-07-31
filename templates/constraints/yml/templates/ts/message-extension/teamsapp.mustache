@@ -4,16 +4,16 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsfx provision' is executed
 provision:
-{{{teamsAppCreate}}}
+{{#teamsAppCreate}} {{/teamsAppCreate}}
 
-{{{botAadAppCreate}}}
+{{#botAadAppCreate}} {{/botAadAppCreate}}
 
 {{#armDeploy}} deploymentName: Create-resources-for-mxt {{/armDeploy}}
 
-{{{teamsAppValidateManifest}}}
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
-{{{teamsAppUpdate}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:
@@ -23,8 +23,8 @@ deploy:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-{{{teamsAppValidateManifest}}}
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
-{{{teamsAppUpdate}}}
-{{{teamsAppPublishAppPackage}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

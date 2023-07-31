@@ -52,16 +52,18 @@ export class ApiKeyProvider implements AuthProvider {
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when API key already exists in request header or url query parameter.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
-  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+  public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     switch (this.keyLocation) {
       case ApiKeyLocation.Header:
         if (!config.headers) {
           config.headers = {};
         }
         if (config.headers[this.keyName]) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateApiKeyInHeader, this.keyName),
-            ErrorCode.AuthorizationInfoAlreadyExists
+          return Promise.reject(
+            new ErrorWithCode(
+              formatString(ErrorMessage.DuplicateApiKeyInHeader, this.keyName),
+              ErrorCode.AuthorizationInfoAlreadyExists
+            )
           );
         }
         config.headers[this.keyName] = this.keyValue;
@@ -76,16 +78,18 @@ export class ApiKeyProvider implements AuthProvider {
           urlHasDefinedApiKey = url.searchParams.has(this.keyName);
         }
         if (config.params[this.keyName] || urlHasDefinedApiKey) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
-            ErrorCode.AuthorizationInfoAlreadyExists
+          return Promise.reject(
+            new ErrorWithCode(
+              formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
+              ErrorCode.AuthorizationInfoAlreadyExists
+            )
           );
         }
         config.params[this.keyName] = this.keyValue;
         break;
     }
 
-    return config;
+    return Promise.resolve(config);
   }
 }
 

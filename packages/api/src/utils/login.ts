@@ -221,7 +221,7 @@ export abstract class BasicLogin {
     if (immediateCall) {
       const loginStatusRes = await this.getStatus(tokenRequest);
       if (loginStatusRes.isOk()) {
-        statusChange(
+        await statusChange(
           loginStatusRes.value.status,
           loginStatusRes.value.token,
           loginStatusRes.value.accountInfo
@@ -231,9 +231,9 @@ export abstract class BasicLogin {
     return ok(true);
   }
 
-  async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     this.statusChangeMap.delete(name);
-    return ok(true);
+    return Promise.resolve(ok(true));
   }
 
   abstract getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;

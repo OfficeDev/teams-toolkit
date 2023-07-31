@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { Result } from "neverthrow";
+import { FxError } from "./error";
 
 export type OptionValue = string | boolean | string[] | boolean[] | undefined;
 
@@ -42,19 +43,19 @@ interface CLICommandOptionBase {
   hidden?: boolean;
 }
 
-interface CLIBooleanOption extends CLICommandOptionBase {
+export interface CLIBooleanOption extends CLICommandOptionBase {
   type: "boolean";
   default?: boolean;
   value?: boolean;
 }
 
-interface CLITextOption extends CLICommandOptionBase {
+export interface CLITextOption extends CLICommandOptionBase {
   type: "text";
   default?: string;
   value?: string;
 }
 
-interface CLISingleSelectOption extends CLICommandOptionBase {
+export interface CLISingleSelectOption extends CLICommandOptionBase {
   type: "singleSelect";
   default?: string | boolean;
   choices?: string[] | boolean[];
@@ -62,7 +63,7 @@ interface CLISingleSelectOption extends CLICommandOptionBase {
   value?: string | boolean;
 }
 
-interface CLIMultiSelectOption extends CLICommandOptionBase {
+export interface CLIMultiSelectOption extends CLICommandOptionBase {
   type: "multiSelect";
   default?: string[] | boolean[];
   choices?: string[] | boolean[];
@@ -76,7 +77,7 @@ export type CLICommandOption =
   | CLISingleSelectOption
   | CLIMultiSelectOption;
 
-export type CLICommandArgument = CLITextOption | CLISingleSelectOption;
+export type CLICommandArgument = CLICommandOption;
 
 export interface CLIExample {
   command: string;

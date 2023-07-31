@@ -162,9 +162,16 @@ export interface UserInputQuestion extends BaseQuestion {
   cliShortName?: string;
 
   /**
-   * the command is only for CLI option description
+   * whether the value is a boolean string value, if true, it will support '--option', which is equivalant to '--option true'
    */
-  cliChoiceListCommand?: string;
+  isBoolean?: boolean;
+
+  /**
+   * whether the question is mapped to CLI option or argument, default is option
+   */
+  cliType?: "option" | "argument";
+
+  cliDescription?: string;
 }
 
 /**
@@ -206,6 +213,11 @@ export interface SingleSelectQuestion extends UserInputQuestion {
    * if false: use still need to do the selection manually even there is no other choice.
    */
   skipSingleOption?: boolean;
+
+  /**
+   * the command is only for CLI option description
+   */
+  cliChoiceListCommand?: string;
 }
 
 /**
@@ -258,6 +270,11 @@ export interface MultiSelectQuestion extends UserInputQuestion {
    * validation schema for the answer values
    */
   validation?: StringArrayValidation | FuncValidation<string[]>;
+
+  /**
+   * the command is only for CLI option description
+   */
+  cliChoiceListCommand?: string;
 }
 
 /**

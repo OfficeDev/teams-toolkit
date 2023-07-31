@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand } from "../types";
-import { permissionStatusCommand } from "./permissionStatus";
+import { CLICommand } from "@microsoft/teamsfx-api";
 import { permissionGrantCommand } from "./permissionGrant";
+import { permissionStatusCommand } from "./permissionStatus";
 
 export const permissionCommand: CLICommand = {
   name: "permission",

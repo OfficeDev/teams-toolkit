@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import { outputAccountInfoOffline, outputAzureInfo, outputM365Info } from "../../cmds/account";
 import AzureTokenProvider from "../../commonlib/azureLogin";
@@ -9,7 +9,6 @@ import { signedIn } from "../../commonlib/common/constant";
 import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { CLICommand, CLIContext } from "../types";
 
 export const accountShowCommand: CLICommand = {
   name: "show",
@@ -17,7 +16,7 @@ export const accountShowCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.AccountShow,
   },
-  handler: async (cmd: CLIContext) => {
+  handler: async (ctx) => {
     const m365StatusRes = await M365TokenProvider.getStatus({ scopes: AppStudioScopes });
     if (m365StatusRes.isErr()) {
       return err(m365StatusRes.error);

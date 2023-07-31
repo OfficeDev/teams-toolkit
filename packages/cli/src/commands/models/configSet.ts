@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { UserSettings } from "../../userSetttings";
-import { CLICommand } from "../types";
 
 export const configSetCommand: CLICommand = {
   name: "set",

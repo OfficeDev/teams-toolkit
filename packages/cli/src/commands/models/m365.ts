@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand } from "../types";
+import { CLICommand } from "@microsoft/teamsfx-api";
 import { m365LaunchInfoCommand } from "./m365LaunchInfo";
 import { m365SideloadingCommand } from "./m365Sideloading";
 import { m365UnacquireCommand } from "./m365Unacquire";

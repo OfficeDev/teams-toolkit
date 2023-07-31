@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { CLICommand, CLIContext } from "../types";
 import { FolderOption } from "../common";
 
 export const addSPFxWebpartCommand: CLICommand = {
@@ -44,7 +43,7 @@ export const addSPFxWebpartCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.AddWebpart,
   },
-  handler: async (ctx: CLIContext) => {
+  handler: async (ctx) => {
     const projectPath = ctx.optionValues.folder as string;
     const core = createFxCore();
     const inputs = getSystemInputs(projectPath);

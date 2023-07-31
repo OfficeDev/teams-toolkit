@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import { assign } from "lodash";
 import * as constants from "../../cmds/preview/constants";
 import PreviewEnv from "../../cmds/preview/previewEnv";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { EnvOption, FolderOption } from "../common";
-import { CLICommand, CLIContext } from "../types";
 
 export const previewCommand: CLICommand = {
   name: "preview",

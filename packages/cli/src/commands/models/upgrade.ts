@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import path from "path";
 import { createFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import UI from "../../userInteraction";
 import { getSystemInputs } from "../../utils";
-import { CLICommand } from "../types";
 
 export const upgradeCommand: CLICommand = {
   name: "upgrade",

@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok } from "@microsoft/teamsfx-api";
+import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import { PackageService, serviceEndpoint } from "@microsoft/teamsfx-core";
 import { getTokenAndUpn } from "../../cmds/m365/m365";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { CLICommand } from "../types";
 
 export const sideloadingServiceEndpoint =
   process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;

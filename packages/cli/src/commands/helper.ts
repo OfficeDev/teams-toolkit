@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CLICommandArgument, CLICommand, CLICommandOption, CLIExample } from "./types";
+import {
+  CLICommandArgument,
+  CLICommand,
+  CLICommandOption,
+  CLIExample,
+} from "@microsoft/teamsfx-api";
 import chalk from "chalk";
 
 class Helper {

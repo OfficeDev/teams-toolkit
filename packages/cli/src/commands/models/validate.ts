@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import {
   CoreQuestionNames,
   MissingRequiredInputError,
@@ -14,7 +14,6 @@ import { ArgumentConflictError, MissingRequiredArgumentError } from "../../error
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { EnvOption, FolderOption } from "../common";
-import { CLICommand } from "../types";
 
 export const validateCommand: CLICommand = {
   name: "validate",

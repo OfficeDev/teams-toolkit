@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
-import { CLICommand } from "../types";
-import { EnvOption, FolderOption } from "../common";
-import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import path from "path";
-import { getSystemInputs } from "../../utils";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { assign } from "lodash";
+import path from "path";
+import { createFxCore } from "../../activate";
 import { azureMessage, setAppTypeInputs, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { createFxCore } from "../../activate";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { getSystemInputs } from "../../utils";
+import { EnvOption, FolderOption } from "../common";
 
 export const permissionGrantCommand: CLICommand = {
   name: "grant",

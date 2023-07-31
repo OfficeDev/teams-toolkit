@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommandOption } from "./types";
+
+import { CLICommandOption } from "@microsoft/teamsfx-api";
 
 export const FolderOption: CLICommandOption = {
   name: "folder",

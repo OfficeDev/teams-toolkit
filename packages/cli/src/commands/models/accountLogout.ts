@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok } from "@microsoft/teamsfx-api";
+import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import AzureTokenProvider from "../../commonlib/azureLogin";
 import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
 import { cliSource } from "../../constants";
-import { CLICommand } from "../types";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountLogoutCommand: CLICommand = {

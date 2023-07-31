@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { CLICommand, CLIContext } from "../types";
 import { EnvOption, FolderOption } from "../common";
 
 export const publishCommand: CLICommand = {

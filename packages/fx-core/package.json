@@ -199,6 +199,7 @@
     "source-map-support": "^0.5.19",
     "tmp": "^0.2.1",
     "ts-loader": "^8.0.3",
+    "ts-morph": "^19.0.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3",
     "webpack": "^5.61.0"

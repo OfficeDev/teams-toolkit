@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import { CoreQuestionNames, ScratchOptions } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -10,9 +10,8 @@ import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { CLICommand, CLIContext } from "../types";
-import { listSampleCommand } from "./listSamples";
 import { FolderOption } from "../common";
+import { listSampleCommand } from "./listSamples";
 
 export const createSampleCommand: CLICommand = {
   name: "template",

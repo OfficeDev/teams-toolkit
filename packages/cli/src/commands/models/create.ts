@@ -8,7 +8,7 @@ import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { CLICommand, CLIContext } from "../types";
+import { CLICommand, CLIContext } from "@microsoft/teamsfx-api";
 import { createSampleCommand } from "./createSample";
 import { FolderOption } from "../common";
 

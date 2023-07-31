@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  CLICommand,
+  CLICommandOption,
+  CLIContext,
+  FxError,
+  LogLevel,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import {
   Correlator,
   IncompatibleProjectError,
@@ -19,7 +28,6 @@ import { logger } from "../commonlib/logger";
 import { strings } from "../resource";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { helper } from "./helper";
-import { CLICommand, CLICommandOption, CLIContext } from "./types";
 import UI from "../userInteraction";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { cliSource } from "../constants";

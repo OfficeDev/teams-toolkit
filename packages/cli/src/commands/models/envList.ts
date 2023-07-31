@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
 import os from "os";
 import path from "path";
@@ -9,7 +9,6 @@ import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { isWorkspaceSupported } from "../../utils";
 import { FolderOption } from "../common";
-import { CLICommand } from "../types";
 
 export const envListCommand: CLICommand = {
   name: "list",

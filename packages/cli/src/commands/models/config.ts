@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand } from "../types";
+import { CLICommand } from "@microsoft/teamsfx-api";
 import { configGetCommand } from "./configGet";
 import { configSetCommand } from "./configSet";
 

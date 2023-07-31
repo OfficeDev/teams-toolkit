@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import path from "path";
 import { createFxCore } from "../../activate";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs, isWorkspaceSupported } from "../../utils";
 import { FolderOption } from "../common";
-import { CLICommand } from "../types";
 
 export const envAddCommand: CLICommand = {
   name: "add",

@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import { MissingRequiredInputError } from "@microsoft/teamsfx-core";
-import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { AadManifestPathOption, EnvOption, FolderOption } from "../common";
-import { CLICommand } from "../types";
-import { cliSource } from "../../constants";
-import { err, ok } from "@microsoft/teamsfx-api";
 import path from "path";
-import { getSystemInputs } from "../../utils";
 import { createFxCore } from "../../activate";
+import { cliSource } from "../../constants";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { getSystemInputs } from "../../utils";
+import { AadManifestPathOption, EnvOption, FolderOption } from "../common";
 
 export const updateAadAppCommand: CLICommand = {
   name: "aad-app",

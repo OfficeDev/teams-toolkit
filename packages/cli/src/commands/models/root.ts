@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { CLICommand } from "@microsoft/teamsfx-api";
 import { FooterText } from "../../constants";
 import { getVersion } from "../../utils";
-import { CLICommand } from "../types";
 import { accountCommand } from "./account";
 import { addCommand } from "./add";
 import { configCommand } from "./config";

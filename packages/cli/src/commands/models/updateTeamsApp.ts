@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import { MissingRequiredInputError } from "@microsoft/teamsfx-core";
 import path from "path";
 import { createFxCore } from "../../activate";
@@ -8,7 +8,6 @@ import { cliSource } from "../../constants";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { EnvOption, FolderOption, TeamsManifestPathOption } from "../common";
-import { CLICommand } from "../types";
 
 export const updateTeamsAppCommand: CLICommand = {
   name: "teams-app",

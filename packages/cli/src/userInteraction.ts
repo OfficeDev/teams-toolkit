@@ -575,7 +575,7 @@ class CLIUserInteraction implements UserInteraction {
   public async selectFileOrInput(
     config: SingleFileOrInputConfig
   ): Promise<Result<InputTextResult, FxError>> {
-    const loadRes = await this.loadDefaultValue(config);
+    const loadRes = await this.loadDefaultValue(config.inputBoxConfig);
     if (loadRes.isErr()) {
       return err(loadRes.error);
     }

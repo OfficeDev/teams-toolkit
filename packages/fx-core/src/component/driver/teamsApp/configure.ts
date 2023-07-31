@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, Platform } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, ManifestUtil } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { hooks } from "@feathersjs/hooks/lib";
 import isUUID from "validator/lib/isUUID";
@@ -18,7 +18,6 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { AppStudioError } from "./errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { TelemetryProperty } from "../../../common/telemetry";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
@@ -97,16 +96,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     if (manifest.isErr()) {
       return err(manifest.error);
     }
-    const capabilities = manifestUtils.getCapabilities(manifest.value).map((x) => {
-      if (x == "staticTab" || x == "configurableTab") {
-        return "Tab";
-      } else {
-        return x;
-      }
-    });
-    merge(context.telemetryProperties, {
-      [TelemetryProperty.Capabilities]: [...new Set(capabilities)].join(";"),
-    });
+
+    const manifestTelemetries = ManifestUtil.parseCommonTelemetryProperties(manifest.value);
+    merge(context.telemetryProperties, manifestTelemetries);
 
     // Fail if Teams app not exists, as this action only update the Teams app, not create
     // See work item 17187087
@@ -145,7 +137,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         "plugins.appstudio.teamsAppUpdatedLog",
         appDefinition.teamsAppId!
       );
-      context.logProvider.info(message);
+      await context.logProvider.info(message);
       context.addSummary(message);
       return ok(
         new Map([

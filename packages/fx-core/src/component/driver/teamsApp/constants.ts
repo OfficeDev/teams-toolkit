@@ -11,8 +11,6 @@ const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
 const BOT_STATE_KEY = ComponentNames.TeamsBot;
 
-export const manifestStateDataRegex = /{{{?state\.[a-zA-Z-_]+\.\w+}}}?/g;
-
 export const STATIC_TABS_TPL_V3: IStaticTab[] = [
   {
     entityId: "index",

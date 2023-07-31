@@ -7,6 +7,7 @@ import "reflect-metadata";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
 import { newEnvInfoV3 } from "../../../helpers";
 
@@ -66,7 +67,7 @@ describe("getManifest V3", () => {
     sandbox.restore();
   });
 
-  it("getManifestV3 unresolved placeholder Error", async () => {
+  it("getManifestV3 MissingEnvironmentVariablesError", async () => {
     const envInfo = newEnvInfoV3();
     envInfo.envName = "dev";
     manifest.name.short = "${{MY_APP_NAME}}";

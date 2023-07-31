@@ -7,6 +7,7 @@ import {
   AppPackageFolderName,
   AdaptiveFolderName,
   BuildFolderName,
+  Context,
   Func,
   FxError,
   Inputs,
@@ -90,6 +91,7 @@ import {
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
 import { SpecParser } from "../common/spec-parser/specParser";
+import { SSO } from "../component/feature/sso";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -301,8 +303,8 @@ export class FxCoreV3Implement {
       // used in v3 only in VS
       inputs.stage = Stage.addFeature;
       inputs[QuestionNames.Features] = SingleSignOnOptionItem.id;
-      const component = Container.get("sso") as any;
-      res = await component.add(context, inputs as InputsWithProjectPath);
+      const component = Container.get<SSO>("sso");
+      res = await component.add(context as unknown as Context, inputs as InputsWithProjectPath);
     }
     return res;
   }

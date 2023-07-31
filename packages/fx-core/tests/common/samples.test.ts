@@ -11,7 +11,7 @@ const packageJson = require("../../package.json");
 describe("Samples", () => {
   afterEach(() => {
     sinon.restore();
-    sampleProvider["sampleConfigs"] = undefined;
+    sampleProvider["samplesConfig"] = undefined;
   });
 
   it("Get v3 samples - default sample config", () => {
@@ -24,7 +24,7 @@ describe("Samples", () => {
   });
 
   it("Get v3 samples - online sample config", () => {
-    sampleProvider["sampleConfigs"] = sampleConfigV3;
+    sampleProvider["samplesConfig"] = sampleConfigV3;
 
     const samples = sampleProvider.SampleCollection.samples;
     for (const sample of samples) {
@@ -91,7 +91,7 @@ describe("Samples", () => {
 
     await sampleProvider.fetchSampleConfig();
 
-    chai.expect(sampleProvider["sampleConfigs"]).equals(undefined);
+    chai.expect(sampleProvider["samplesConfig"]).equals(undefined);
   });
 
   it("fetchSampleConfig - online sample config succeeds to obtain", async () => {
@@ -116,7 +116,7 @@ describe("Samples", () => {
 
     await sampleProvider.fetchSampleConfig();
 
-    chai.expect(sampleProvider["sampleConfigs"]).equals(fakedSampleConfig);
+    chai.expect(sampleProvider["samplesConfig"]).equals(fakedSampleConfig);
   });
 
   it("Download sample from dev branch for alpha build", () => {
@@ -137,7 +137,7 @@ describe("Samples", () => {
         },
       ],
     };
-    sampleProvider["sampleConfigs"] = fakedSampleConfig;
+    sampleProvider["samplesConfig"] = fakedSampleConfig;
     packageJson.version = "2.0.4-alpha.888a35067.0";
 
     const samples = sampleProvider.SampleCollection.samples;
@@ -165,7 +165,7 @@ describe("Samples", () => {
         },
       ],
     };
-    sampleProvider["sampleConfigs"] = fakedSampleConfig;
+    sampleProvider["samplesConfig"] = fakedSampleConfig;
     packageJson.version = "2.0.3-rc.1";
 
     const samples = sampleProvider.SampleCollection.samples;

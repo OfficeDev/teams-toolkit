@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { BrowserContext, Page, chromium, Frame } from "playwright";
 import { assert } from "chai";
 import { Timeout, ValidationContent } from "./constants";
@@ -234,7 +236,7 @@ export async function initTeamsPage(
         );
         const frame = await frameElementHandle?.contentFrame();
         await frame?.waitForSelector(
-          `h1:has-text('Add ${teamsAppName} to a meeting')`
+          `h1:has-text('Add ${teamsAppName} to a team')`
         );
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");

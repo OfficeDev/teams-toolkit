@@ -6,6 +6,7 @@ import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { CLICommand, CLIContext } from "../types";
+import { FolderOption } from "../common";
 
 export const addSPFxWebpartCommand: CLICommand = {
   name: "spfx-web-part",
@@ -29,23 +30,16 @@ export const addSPFxWebpartCommand: CLICommand = {
     {
       name: "manifest-path",
       type: "text",
-      shortName: "mr",
+      shortName: "rm",
       description: "Specifies Teams manifest.json file path.",
     },
     {
       name: "local-manifest-path",
       type: "text",
-      shortName: "ml",
+      shortName: "lm",
       description: "Specifies local Teams manifest.json file path.",
     },
-    {
-      name: "folder",
-      shortName: "f",
-      description: "Root folder of the project.",
-      type: "text",
-      required: true,
-      default: "./",
-    },
+    FolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.AddWebpart,

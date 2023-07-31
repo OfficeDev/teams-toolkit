@@ -29,9 +29,16 @@ import { createFxCore } from "../activate";
 
 // Licensed under the MIT license.
 class CLIEngine {
+  isBundledElectronApp(): boolean {
+    return process.versions && process.versions.electron && !(process as any).defaultApp
+      ? true
+      : false;
+  }
   async start(rootCmd: CLICommand): Promise<void> {
     const root = cloneDeep(rootCmd);
-    const args = process.argv.slice(2);
+
+    // 0. get user args
+    const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
 
     // 1. find command
     const findRes = this.findCommand(rootCmd, args);

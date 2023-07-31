@@ -8,7 +8,6 @@ import { checkIsOnline } from "../../commonlib/codeFlowLogin";
 import { signedIn } from "../../commonlib/common/constant";
 import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
-import CliTelemetry from "../../telemetry/cliTelemetry";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { CLICommand, CLIContext } from "../types";
 
@@ -21,7 +20,6 @@ export const accountShowCommand: CLICommand = {
   handler: async (cmd: CLIContext) => {
     const m365StatusRes = await M365TokenProvider.getStatus({ scopes: AppStudioScopes });
     if (m365StatusRes.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AccountShow, m365StatusRes.error);
       return err(m365StatusRes.error);
     }
     const m365Status = m365StatusRes.value;

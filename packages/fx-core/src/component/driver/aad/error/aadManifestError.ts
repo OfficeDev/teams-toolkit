@@ -28,6 +28,9 @@ export class AadManifestErrorMessage {
     "error.aad.manifest.OptionalClaimsMissingIdtypClaim"
   );
   static readonly AADManifestIssues = getLocalizedString("error.aad.manifest.AADManifestIssues");
+  static readonly AADPermissionIssues = getLocalizedString(
+    "error.aad.manifest.AADPermissionIssues"
+  );
 }
 
 export class UnknownResourceAppIdUserError extends UserError {

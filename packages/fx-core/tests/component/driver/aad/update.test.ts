@@ -509,7 +509,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(HttpClientError)
       .and.property("message")
       .equals(
-        'A http client error happened while performing the aadApp/update task. The error response is: "Permission (scope or role) cannot be deleted or updated unless disabled first."'
+        "Update Azure Active Directory app failed. Please double check the permission id you specified is correct or try again later.\n"
       );
   });
 

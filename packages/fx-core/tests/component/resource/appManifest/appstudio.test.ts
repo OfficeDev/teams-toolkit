@@ -428,6 +428,12 @@ describe("App-manifest Component - v3", () => {
     "app-name": appName,
     appPackagePath: "fakePath",
   };
+  const cliInputs = {
+    projectPath: getAzureProjectRoot(),
+    platform: Platform.CLI,
+    "app-name": appName,
+    appPackagePath: "fakePath",
+  };
   let context: Context;
   setTools(tools);
 
@@ -473,7 +479,7 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
     sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
 
-    await updateManifestV3(context, inputs);
+    await updateManifestV3(context, cliInputs);
   });
 
   it("updateManifestV3 - rebuild", async function () {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { TeamsAppManifest } from "./manifest";
+import { TeamsAppManifest, IComposeExtension } from "./manifest";
 import fs from "fs-extra";
 import Ajv from "ajv-draft-04";
 import { JSONSchemaType } from "ajv";
@@ -128,10 +128,9 @@ export class ManifestUtil {
 
     // If it's copilot plugin app
     if (
-      manifest instanceof TeamsAppManifest &&
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
-      manifest.composeExtensions[0].type == "apiSpecification"
+      (manifest.composeExtensions[0] as IComposeExtension).type == "apiBased"
     ) {
       properties.isCopilotPlugin = true;
     }

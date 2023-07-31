@@ -11,7 +11,7 @@ export interface ManifestCommonProperties {
    */
   id: string;
   /**
-   * Teams app version, e.g.
+   * Teams app version, e.g.1.0.0
    */
   version: string;
   /**
@@ -19,11 +19,11 @@ export interface ManifestCommonProperties {
    */
   manifestVersion: string;
   /**
-   * If it's copilot plugin app
+   * Whether it's copilot plugin app
    */
   isCopilotPlugin: boolean;
   /**
-   * If it's SPFx Teams app
+   * Whether it's SPFx Teams app
    */
   isSPFx: boolean;
 }

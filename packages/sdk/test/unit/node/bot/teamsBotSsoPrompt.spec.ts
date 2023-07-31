@@ -85,6 +85,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     Success = "Success",
     Fail = "Fail",
   }
+  let getMemberStub: sinon.SinonStub;
   const sandbox = sinon.createSandbox();
 
   beforeEach(function () {
@@ -116,7 +117,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
     });
 
-    sandbox.stub(TeamsInfo, "getMember").callsFake(async () => {
+    getMemberStub = sandbox.stub(TeamsInfo, "getMember").callsFake(async () => {
       const account: TeamsChannelAccount = {
         id: "fake_id",
         name: "fake_name",
@@ -337,6 +338,29 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       assert.strictEqual(
         error.message,
         "Teams Bot SSO Prompt is only supported in MS Teams Channel"
+      );
+    });
+  });
+
+  it("teams bot sso prompt should work with undefined user Principal Name", async function () {
+    getMemberStub.restore();
+    sandbox.stub(TeamsInfo, "getMember").callsFake(async () => {
+      const account: TeamsChannelAccount = {
+        id: "fake_id",
+        name: "fake_name",
+        userPrincipalName: "",
+      };
+      return account;
+    });
+    const adapter: TestAdapter = await initializeTestEnv();
+
+    await adapter.send("Hello").assertReply((activity) => {
+      // Assert bot send out OAuthCard
+      assert.strictEqual(
+        activity.attachments![0].content.buttons[0].value,
+        `${initiateLoginEndpoint}?scope=${encodeURI(
+          requiredScopes.join(" ")
+        )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=`
       );
     });
   });

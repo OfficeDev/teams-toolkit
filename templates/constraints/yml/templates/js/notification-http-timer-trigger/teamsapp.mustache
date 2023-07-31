@@ -21,7 +21,7 @@ deploy:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}

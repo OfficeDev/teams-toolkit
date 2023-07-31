@@ -1,6 +1,9 @@
   # Deploy bits to Azure Storage Static Website
   - uses: azureStorage/deploy
     with:
+    {{#workingDirectory}}
+      workingDirectory: {{{workingDirectory}}}
+    {{/workingDirectory}}
     {{#ignoreFile}}
       # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
     {{/ignoreFile}}

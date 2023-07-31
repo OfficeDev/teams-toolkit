@@ -10,7 +10,7 @@ provision:
 
 {{#armDeploy}} deploymentName: Create-resources-for-bot {{/armDeploy}}
 
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}

@@ -10,7 +10,7 @@ provision:
 
 {{#armDeploy}} deploymentName: Create-resources-for-mxt {{/armDeploy}}
 
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}
@@ -23,7 +23,7 @@ deploy:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-{{{teamsAppValidateManifest}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 {{{teamsAppValidateAppPackage}}}
 {{{teamsAppUpdate}}}

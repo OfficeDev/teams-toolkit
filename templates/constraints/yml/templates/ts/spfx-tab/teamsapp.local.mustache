@@ -1,0 +1,15 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+provision:
+{{{teamsAppCreate}}}
+
+{{#teamsAppValidateManifest}} localManifest {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} localManifest {{/teamsAppZipAppPackage}}
+{{{teamsAppValidateAppPackage}}}
+
+{{{teamsAppUpdate}}}
+
+{{{teamsAppExtendToM365}}}
+
+deploy:
+{{#cliRunNpmCommand}} install, workingDirectory: src, args: install --no-audit {{/cliRunNpmCommand}}

@@ -13,6 +13,9 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
+export const AdaptiveFolderName = "adaptiveCards";
+
+// @public (undocumented)
 export interface ApiOperation {
     // (undocumented)
     groupName: string;

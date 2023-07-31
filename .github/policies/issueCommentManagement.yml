@@ -24,4 +24,4 @@ configuration:
                       issueAuthor: False
         then:
           - addLabel:
-            label: needs attention
+              label: needs attention

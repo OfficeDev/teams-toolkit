@@ -46,7 +46,7 @@ import { TelemetryPropertyKey } from "./telemetry";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
-    const filePath = await this.getTeamsAppManifestPath(projectPath);
+    const filePath = this.getTeamsAppManifestPath(projectPath);
     return await this._readAppManifest(filePath);
   }
 
@@ -73,7 +73,7 @@ export class ManifestUtils {
     return ok(undefined);
   }
 
-  async getTeamsAppManifestPath(projectPath: string): Promise<string> {
+  getTeamsAppManifestPath(projectPath: string): string {
     const filePath = path.join(projectPath, "appPackage", "manifest.json");
     return filePath;
   }

@@ -166,7 +166,7 @@ export class ValidateManifestDriver implements StepDriver {
         summaryStr
       );
       if (context.platform === Platform.VS) {
-        context.logProvider.info(validationSuccess);
+        await context.logProvider.info(validationSuccess);
       }
       if (args.showMessage) {
         context.ui?.showMessage("info", validationSuccess, false);

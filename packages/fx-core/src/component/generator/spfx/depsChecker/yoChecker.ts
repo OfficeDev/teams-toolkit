@@ -37,9 +37,9 @@ export class YoChecker implements DependencyChecker {
   public async ensureLatestDependency(ctx: Context): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYoStart);
     try {
-      this._logger.info(`${displayName} not found, installing...`);
+      void this._logger.info(`${displayName} not found, installing...`);
       await this.install();
-      this._logger.info(`Successfully installed ${displayName}`);
+      void this._logger.info(`Successfully installed ${displayName}`);
 
       telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYo);
     } catch (error) {
@@ -70,19 +70,19 @@ export class YoChecker implements DependencyChecker {
   }
 
   public async install(): Promise<void> {
-    this._logger.info("Start installing...");
+    void this._logger.info("Start installing...");
     await this.cleanup();
     await this.installYo();
 
-    this._logger.info("Validating package...");
+    void this._logger.info("Validating package...");
     if (!(await this.validate())) {
-      this._logger.debug("Failed to validate yo, cleaning up...");
+      void this._logger.debug("Failed to validate yo, cleaning up...");
       await this.cleanup();
       throw DependencyValidateError(name);
     }
   }
 
-  public async getBinFolders(): Promise<string[]> {
+  public getBinFolders(): string[] {
     const defaultPath = this.getDefaultInstallPath();
     return [defaultPath, path.join(defaultPath, "node_modules", ".bin")];
   }
@@ -176,7 +176,7 @@ export class YoChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      this._logger.error("Failed to execute npm install yo");
+      void this._logger.error("Failed to execute npm install yo");
       throw NpmInstallError(error as Error);
     }
   }

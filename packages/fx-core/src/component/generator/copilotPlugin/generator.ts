@@ -113,7 +113,9 @@ export class CopilotPluginGenerator {
         apiSpecFolderPath,
         isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
       );
-      await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveFolderName);
+
+      const adaptiveCardFolder = path.join(destinationPath, appPackageName, adaptiveFolderName);
+      await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveCardFolder);
 
       // update manifest based on openAI plugin manifest
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);

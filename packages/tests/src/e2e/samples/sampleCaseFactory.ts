@@ -141,7 +141,7 @@ export default function sampleCaseFactory(
             }
           }
 
-          // [BUG] https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/24689200o
+          // [BUG] https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/24689200
           // workaround: change path HTML to html
           if (sampleName === TemplateProjectFolder.OutlookSignature) {
             const htmlPath = path.join(projectPath, "src", "runtime", "html");

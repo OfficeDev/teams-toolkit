@@ -155,6 +155,16 @@ export interface UserInputQuestion extends BaseQuestion {
    * the question is only for interactive mode, if true, the question will be skipped in non-interactive mode
    */
   interactiveOnly?: boolean;
+
+  /**
+   * the question is only for CLI option abbrevation
+   */
+  cliShortName?: string;
+
+  /**
+   * the command is only for CLI option description
+   */
+  cliChoiceListCommand?: string;
 }
 
 /**

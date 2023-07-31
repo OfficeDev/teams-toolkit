@@ -977,7 +977,9 @@ export interface UserErrorOptions extends ErrorOptionBase {
 // @public
 export interface UserInputQuestion extends BaseQuestion {
     alternativeNames?: string[];
+    cliChoiceListCommand?: string;
     cliName?: string;
+    cliShortName?: string;
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
     interactiveOnly?: boolean;
     placeholder?: string | LocalFunc<string | undefined>;

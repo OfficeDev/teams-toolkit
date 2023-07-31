@@ -19,9 +19,8 @@ function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
 }
 
 function collectNonConditional(node: IQTreeNode) {
-  console.log(`collectNonConditional: ${node.data.name}`);
   if (node.data.type !== "group") {
-    if (!node.condition) {
+    if (!node.condition && (node.data as UserInputQuestion).required === undefined) {
       (node.data as UserInputQuestion).required = true;
     }
   }
@@ -39,11 +38,17 @@ export function generate(node: IQTreeNode, name: string, folder = "./inputs") {
 
   collectNonConditional(node);
 
-  let lines: string[] = [
+  let typeLines: string[] = [
     "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n",
   ];
 
-  lines.push(`export interface ${name} {`);
+  const optionLines: string[] = [
+    "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n",
+  ];
+
+  typeLines.push(`export interface ${name} {`);
+
+  optionLines.push(`export const ${name}Options = [`);
 
   let properties: string[] = [];
 
@@ -57,6 +62,8 @@ export function generate(node: IQTreeNode, name: string, folder = "./inputs") {
     }
 
     const propName = camelCase(node.data.name);
+
+    const cliName = (node.data as UserInputQuestion).cliName || node.data.name;
 
     if (propertySet.has(propName)) {
       continue;
@@ -92,15 +99,24 @@ export function generate(node: IQTreeNode, name: string, folder = "./inputs") {
     properties.push(propName + requiredFlag + `: ${type};`);
 
     propertySet.add(propName);
+    optionLines.push("{\n");
+    optionLines.push(`name: "${cliName}",`);
+    optionLines.push(`type: "${node.data.type}",`);
+    optionLines.push("},\n");
   }
 
   properties = properties.map((l) => "  " + l);
 
-  lines = lines.concat(properties);
+  typeLines = typeLines.concat(properties);
 
-  lines.push("}\n");
+  typeLines.push("}\n");
 
-  fs.writeFileSync(path.resolve(folder, name + ".ts"), lines.join("\n"));
+  optionLines.push("];\n");
+
+  fs.writeFileSync(
+    path.resolve(folder, name + ".ts"),
+    typeLines.join("\n") + "\n" + optionLines.join("\n")
+  );
 }
 
 generate(createProjectQuestionNode(), "CreateProject");

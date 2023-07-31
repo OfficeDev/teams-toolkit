@@ -91,3 +91,118 @@ export interface CreateProject {
    */
   samples?: string;
 }
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+export const CreateProjectOptions = [
+  {
+    name: "scratch",
+    type: "singleSelect",
+  },
+
+  {
+    name: "runtime",
+    type: "singleSelect",
+  },
+
+  {
+    name: "capabilities",
+    type: "singleSelect",
+  },
+
+  {
+    name: "bot-host-type-trigger",
+    type: "singleSelect",
+  },
+
+  {
+    name: "spfx-solution",
+    type: "singleSelect",
+  },
+
+  {
+    name: "spfx-install-latest-package",
+    type: "singleSelect",
+  },
+
+  {
+    name: "spfx-framework-type",
+    type: "singleSelect",
+  },
+
+  {
+    name: "spfx-webpart-name",
+    type: "text",
+  },
+
+  {
+    name: "spfx-folder",
+    type: "folder",
+  },
+
+  {
+    name: "addin-project-folder",
+    type: "folder",
+  },
+
+  {
+    name: "addin-project-manifest",
+    type: "singleFile",
+  },
+
+  {
+    name: "addin-host",
+    type: "singleSelect",
+  },
+
+  {
+    name: "api-spec-location",
+    type: "singleFileOrText",
+  },
+
+  {
+    name: "openai-plugin-manifest-location",
+    type: "text",
+  },
+
+  {
+    name: "api-operation",
+    type: "multiSelect",
+  },
+
+  {
+    name: "programming-language",
+    type: "singleSelect",
+  },
+
+  {
+    name: "folder",
+    type: "folder",
+  },
+
+  {
+    name: "app-name",
+    type: "text",
+  },
+
+  {
+    name: "replaceWebsiteUrl",
+    type: "multiSelect",
+  },
+
+  {
+    name: "replaceContentUrl",
+    type: "multiSelect",
+  },
+
+  {
+    name: "replaceBotIds",
+    type: "multiSelect",
+  },
+
+  {
+    name: "samples",
+    type: "singleSelect",
+  },
+];

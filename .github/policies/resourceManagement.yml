@@ -211,23 +211,6 @@ configuration:
           label: needs attention
       description: 
     - if:
-      - payloadType: Issue_Comment
-      - not:
-          hasLabel:
-            label: needs attention
-      - not:
-          activitySenderHasAssociation:
-            association: Member
-      - not:
-          isActivitySender:
-            user: github-actions[bot]
-            issueAuthor: False
-      - isOpen
-      then:
-      - addLabel:
-          label: needs attention
-      description: 
-    - if:
       - payloadType: Issues
       - isAction:
           action: Opened

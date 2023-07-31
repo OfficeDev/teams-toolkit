@@ -89,7 +89,7 @@ export class SpecParser {
     }
 
     // Remote reference not supported
-    const refPaths = this.parser!.$refs.paths();
+    const refPaths = this.parser.$refs.paths();
 
     // refPaths [0] is the current spec file path
     if (refPaths.length > 1) {
@@ -100,7 +100,7 @@ export class SpecParser {
     }
 
     // No supported API
-    const apiMap = await this.getAllSupportedApi(this.spec!);
+    const apiMap = this.getAllSupportedApi(this.spec!);
     if (Object.keys(apiMap).length === 0) {
       errors.push({
         type: ErrorType.NoSupportedApi,
@@ -146,7 +146,7 @@ export class SpecParser {
   async list(): Promise<string[]> {
     try {
       await this.loadSpec();
-      const apiMap = await this.getAllSupportedApi(this.spec!);
+      const apiMap = this.getAllSupportedApi(this.spec!);
       return Array.from(Object.keys(apiMap));
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
@@ -172,7 +172,7 @@ export class SpecParser {
     }
 
     await this.loadSpec();
-    const newUnResolvedSpec = await specFilter(filter, this.unResolveSpec!);
+    const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!);
     let resultStr;
     if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
       resultStr = jsyaml.dump(newUnResolvedSpec);
@@ -202,9 +202,9 @@ export class SpecParser {
     }
   }
 
-  private async getAllSupportedApi(
-    spec: OpenAPIV3.Document
-  ): Promise<{ [key: string]: OpenAPIV3.OperationObject }> {
+  private getAllSupportedApi(spec: OpenAPIV3.Document): {
+    [key: string]: OpenAPIV3.OperationObject;
+  } {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }

@@ -24,7 +24,7 @@ const cachePathEnd = ".json";
 // the friendly service name to store secret in keytar
 const serviceName = "Microsoft Teams Toolkit";
 
-const accountName = "appStudio";
+const accountName = "m365";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 
 const beforeCacheAccess = getBeforeCacheAccess(accountName);

@@ -77,6 +77,7 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
 
 export async function wrapRun(
   exec: () => Promise<Map<string, string>>,
+  errorSource: string,
   errorHandler?: () => Promise<void>,
   logProvider?: LogProvider
 ): Promise<Result<Map<string, string>, FxError>> {
@@ -95,7 +96,7 @@ export async function wrapRun(
       return err(error);
     }
     // always return error as SystemError
-    return err(BaseComponentInnerError.unknownError("Deploy", error).toFxError());
+    return err(BaseComponentInnerError.unknownError(errorSource, error).toFxError());
   }
 }
 

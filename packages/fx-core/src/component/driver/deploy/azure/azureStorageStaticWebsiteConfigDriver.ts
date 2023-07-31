@@ -50,7 +50,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     context.progressBar?.next(ProgressMessages.configureAzureStorageEnableStaticWebsite);
-    return wrapRun(() => this.config(args, context), undefined, context.logProvider);
+    return wrapRun(() => this.config(args, context), ACTION_NAME, undefined, context.logProvider);
   }
 
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {

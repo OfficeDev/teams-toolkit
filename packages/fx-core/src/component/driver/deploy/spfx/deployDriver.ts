@@ -54,7 +54,7 @@ export class SPFxDeployDriver implements StepDriver {
       Constants.TelemetryDeployEventName,
       Constants.TelemetryComponentName
     );
-    return wrapRun(() => this.deploy(args, wrapContext));
+    return wrapRun(() => this.deploy(args, wrapContext), Constants.DeployDriverName);
   }
 
   public async execute(args: DeploySPFxArgs, ctx: DriverContext): Promise<ExecutionResult> {

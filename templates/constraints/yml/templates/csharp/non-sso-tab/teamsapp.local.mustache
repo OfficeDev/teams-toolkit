@@ -2,11 +2,11 @@
 
 provision:
 {{#script}} TAB, DOTNET {{/script}}
-{{{teamsAppCreate}}}
+{{#teamsAppCreate}} {{/teamsAppCreate}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
-{{{teamsAppUpdate}}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
 
 {{#fileCreateOrUpdateJsonFile}} {"launchSettings": true, "applicationUrl": "\"https://localhost:44302;http://localhost:2544\"", "hotReload": true} {{/fileCreateOrUpdateJsonFile}}

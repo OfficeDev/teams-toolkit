@@ -1376,6 +1376,21 @@ describe("copilotPlugin", async () => {
     assert.isTrue(result.isOk());
   });
 
+  it("add API - assembleError", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "https://example.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isErr());
+  });
+
   it("load OpenAI manifest - should run successful", async () => {
     const core = new FxCore(tools);
     const inputs = { domain: "mydomain.com" };

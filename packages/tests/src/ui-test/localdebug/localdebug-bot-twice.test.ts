@@ -1,6 +1,6 @@
-/**
- * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import {
   startDebugging,
@@ -50,6 +50,7 @@ describe("Local Debug Tests", function () {
       try {
         await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
         await stopDebugging();
+        await VSBrowser.instance.driver.sleep(30 * 1000);
         await startDebugging();
         await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
         await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");

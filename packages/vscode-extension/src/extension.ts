@@ -195,18 +195,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
         args
       );
       if (res.isOk()) {
-        const projectPath = res.value.projectPath;
+        const fileUri = vscode.Uri.file(res.value.projectPath);
         const warnings = res.value.warnings;
-        await handlers.updateAutoOpenGlobalKey(
-          true,
-          false,
-          vscode.Uri.file(projectPath),
-          warnings,
-          args
-        );
+        await handlers.updateAutoOpenGlobalKey(true, false, fileUri, warnings, args);
         await ExtTelemetry.dispose();
         await delay(2000);
-        return { openFolder: projectPath };
+        return { openFolder: fileUri };
       }
     })
   );

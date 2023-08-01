@@ -750,16 +750,17 @@ export async function validateBot(
     } catch (error) {
       console.log("no message to dismiss");
     }
-    try {
-      console.log("sending message ", command);
-      await executeBotSuggestionCommand(page, frame, command);
-      await frame?.click('button[name="send"]');
-    } catch (e: any) {
-      console.log(
-        `[Command "${command}" not executed successfully] ${e.message}`
-      );
-    }
+
     if (command === "show") {
+      try {
+        console.log("sending message ", command);
+        await executeBotSuggestionCommand(page, frame, command);
+        await frame?.click('button[name="send"]');
+      } catch (e: any) {
+        console.log(
+          `[Command "${command}" not executed successfully] ${e.message}`
+        );
+      }
       await RetryHandler.retry(async () => {
         // wait for alert message to show
         const btn = await frame?.waitForSelector(
@@ -794,6 +795,7 @@ export async function validateBot(
       console.log(`${expected}`);
     } else {
       await RetryHandler.retry(async () => {
+        console.log("sending message ", command);
         await executeBotSuggestionCommand(page, frame, command);
         await frame?.click('button[name="send"]');
         await frame?.waitForSelector(`p:has-text("${expected}")`);
@@ -1356,7 +1358,7 @@ async function executeBotSuggestionCommand(
     await page.click('div[role="presentation"]:has-text("Chat")');
     console.log("open quick select");
     await page.click('div[role="presentation"]:has-text("Chat")');
-    await frame?.click('div.cke_textarea_inline[role="textbox"]');
+    await frame?.click('div[placeholder="Type a new message"]');
     console.log("select: ", command);
     await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
   }

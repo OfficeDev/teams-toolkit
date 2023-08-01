@@ -1,8 +1,15 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  startDebugging,
+  stopDebugging,
+  waitForTerminal,
+} from "../../utils/vscodeOperation";
 import { initPage, validateBot } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
@@ -13,6 +20,7 @@ import {
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
+import { ModalDialog, VSBrowser } from "vscode-extension-tester";
 
 // TODO: Change preview test to normal test before rc release
 describe("Command And Response Bot Local Debug Tests", function () {
@@ -45,14 +53,44 @@ describe("Command And Response Bot Local Debug Tests", function () {
         localDebugTestContext.appName
       );
       validateFileExist(projectPath, "src/index.js");
+      const driver = VSBrowser.instance.driver;
 
       await startDebugging();
 
-      await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartBotApp,
-        LocalDebugTaskInfo.StartBotAppInfo
-      );
+      try {
+        await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartBotApp,
+          LocalDebugTaskInfo.StartBotAppInfo
+        );
+      } catch {
+        const dialog = new ModalDialog();
+        console.log("click Cancel button for error dialog");
+        await dialog.pushButton("Cancel");
+        await driver.sleep(Timeout.shortTimeLoading);
+        console.log(
+          "Clicked button Cancel for failing to attach to main target"
+        );
+        await stopDebugging();
+        await driver.sleep(30 * 1000);
+        await startDebugging();
+        try {
+          await waitForTerminal(
+            LocalDebugTaskLabel.StartBotApp,
+            LocalDebugTaskInfo.StartBotAppInfo
+          );
+        } catch {
+          const dialog = new ModalDialog();
+          console.log("click Cancel button for error dialog");
+          await dialog.pushButton("Debug Anyway");
+          console.log("Clicked button Debug Anyway");
+          await driver.sleep(Timeout.shortTimeLoading);
+          await waitForTerminal(
+            LocalDebugTaskLabel.StartBotApp,
+            LocalDebugTaskInfo.StartBotAppInfo
+          );
+        }
+      }
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(

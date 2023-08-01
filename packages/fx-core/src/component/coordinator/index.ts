@@ -221,7 +221,7 @@ class Coordinator {
         const res = await CopilotPluginGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
-        } else  {
+        } else {
           warnings = res.value.warnings;
         }
       } else {
@@ -264,7 +264,7 @@ class Coordinator {
         return err(res.error);
       }
     }
-    return ok({projectPath: projectPath, warnings});
+    return ok({ projectPath: projectPath, warnings });
   }
 
   async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {

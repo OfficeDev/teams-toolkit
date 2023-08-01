@@ -168,9 +168,9 @@ function addComment(path: ASTPath<CallExpression>, comment: CommentLine): void {
     }
   }
 
-  if (node.comments === undefined) {
+  if (node.comments === undefined || node.comments === null) {
     node.comments = [comment];
   } else {
-    node.comments?.push(comment);
+    node.comments.push(comment);
   }
 }

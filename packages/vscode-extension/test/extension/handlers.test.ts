@@ -1687,7 +1687,7 @@ describe("autoOpenProjectHandler", () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(
       ok({
         name: { short: "short", full: "full" },
-        description: { short: "short", full: "full" },
+        description: { short: "short", full: "" },
       } as any)
     );
     const parseRes = {
@@ -1708,6 +1708,7 @@ describe("autoOpenProjectHandler", () => {
     await handlers.autoOpenProjectHandler();
 
     chai.assert.isTrue(sendTelemetryStub.called);
+    chai.assert.isTrue(sendTelemetryStub.calledTwice);
     chai.assert.isTrue(parseManifestStub.called);
   });
 

@@ -71,6 +71,7 @@ import {
   isValidProject,
   pathUtils,
   setRegion,
+  manifestUtils,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -129,7 +130,6 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { manifestUtils } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;

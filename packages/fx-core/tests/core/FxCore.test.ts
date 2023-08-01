@@ -72,6 +72,7 @@ import { MockTools, deleteFolder, randomAppName } from "./utils";
 import { FeatureFlagName } from "../../src/common/constants";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
+import { SpecParser } from "../../src/common/spec-parser/specParser";
 
 const tools = new MockTools();
 
@@ -1369,6 +1370,8 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves();
+
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
   });

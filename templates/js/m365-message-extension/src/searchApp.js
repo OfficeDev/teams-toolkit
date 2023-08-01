@@ -54,4 +54,4 @@ class SearchApp extends TeamsActivityHandler {
   }
 }
 
-module.exports.TeamsBot = TeamsBot;
+module.exports.SearchApp = SearchApp;

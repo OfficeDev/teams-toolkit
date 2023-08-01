@@ -2,7 +2,29 @@
 
 This app showcases how to craft a visually appealing web page that can be embedded in Microsoft Teams, Outlook and the Microsoft 365 app with React and Fluent UI. The app also enhances the end-user experiences with built-in single sign-on and data from Microsoft Graph.
 
-This app has adopted [On-Behalf-Of flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-on-behalf-of-flow) to implement SSO, and uses Azure Function as middle-tier service, and make authenticated requests to call Graph from Azure Function.
+## Architecture
+![Architecture](images/Architecture.png)
+
+This app has the following main components:
+
+1. Azure Storage: Host the React app with Fluent UI. Code of the React app can be found in `src` folder.
+    
+2. Azure Function: Middle-tier service to call Graph. Adopted [On-Behalf-Of flow](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-on-behalf-of-flow). Code of the Azure Function can be found in `api` folder.
+
+3. Azure Active Directory: Both `Azure Storage` and `Azure Function` are configured with Azure Active Directory(AAD) app and using the AAD app for authentication.
+
+## Authentication
+![Authentication](images/Authentication.png)
+
+For scenario that user has not consent for permissions, app will run `Interactive Login` flow to ask user for consent. Once consented, app will run `OBO flow` to call Graph to get user's profile.
+
+Some key points in the authentication flow:
+1. Get SSO token and call Azure Function with SSO token
+
+    This app uses `TeamsFx` SDK to get SSO token from Microsoft 365 apps. Related code can be found in `src\components\samples\AzureFunction.ts`.
+2. Get access token with SSO token
+
+    This app uses `createMicrosoftGraphClientWithCredential` to create a graph client and will automatically request for access token with provided SSO token. Related code can be found in `api\index.ts`.
 
 ## Get started with the React with Fluent UI template
 

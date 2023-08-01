@@ -48,6 +48,7 @@ export enum TemplateProject {
   DiceRoller = "Dice Roller in meeting",
   OutlookTab = "Hello World Teams Tab Outlook add-in",
   OutlookSignature = "Set signature using Outlook add-in",
+  ChefBot = "Teams Chef Bot",
 }
 
 export enum TemplateProjectFolder {
@@ -73,6 +74,7 @@ export enum TemplateProjectFolder {
   OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",
+  ChefBot = "teams-chef-bot",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }

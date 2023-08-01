@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { BrowserContext, Page, chromium, Frame } from "playwright";
 import { assert } from "chai";
-import { Timeout, ValidationContent } from "./constants";
+import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
 import { getPlaywrightScreenshotPath } from "./nameUtil";
 import axios from "axios";
@@ -10,6 +10,35 @@ import { SampledebugContext } from "../ui-test/samples/sampledebugContext";
 import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./envUtil";
+
+export const sampleValidationMap: Record<
+  TemplateProject,
+  (page: Page, ...args: any) => Promise<void>
+> = {
+  [TemplateProject.HelloWorldTabBackEnd]: validateTab,
+  [TemplateProject.ContactExporter]: validateContact,
+  [TemplateProject.OneProductivityHub]: validateOneProducitvity,
+  [TemplateProject.HelloWorldBotSSO]: validateBot,
+  [TemplateProject.TodoListBackend]: validateTodoList,
+  [TemplateProject.TodoListSpfx]: validateSpfx,
+  [TemplateProject.ShareNow]: validateShareNow,
+  [TemplateProject.MyFirstMetting]: () => Promise.resolve(),
+  [TemplateProject.TodoListM365]: validateTodoList,
+  [TemplateProject.NpmSearch]: validateNpm,
+  [TemplateProject.ProactiveMessaging]: validateProactiveMessaging,
+  [TemplateProject.AdaptiveCard]: validateAdaptiveCard,
+  [TemplateProject.IncomingWebhook]: () => Promise.resolve(),
+  [TemplateProject.GraphConnector]: validateGraphConnector,
+  [TemplateProject.StockUpdate]: validateStockUpdate,
+  [TemplateProject.QueryOrg]: validateQueryOrg,
+  [TemplateProject.Deeplinking]: () => Promise.resolve(),
+  [TemplateProject.Dashboard]: validateDashboardTab,
+  [TemplateProject.AssistDashboard]: validateDashboardTab,
+  [TemplateProject.DiceRoller]: () => Promise.resolve(),
+  [TemplateProject.OutlookTab]: validatePersonalTab,
+  [TemplateProject.OutlookSignature]: () => Promise.resolve(),
+  [TemplateProject.ChefBot]: () => Promise.resolve(),
+};
 
 export async function initPage(
   context: BrowserContext,
@@ -1634,8 +1663,8 @@ export async function validateNotificationTimeBot(page: Page) {
 }
 
 export async function validateAdaptiveCard(
-  context: SampledebugContext,
   page: Page,
+  context: SampledebugContext,
   env: "local" | "dev" = "local"
 ) {
   try {

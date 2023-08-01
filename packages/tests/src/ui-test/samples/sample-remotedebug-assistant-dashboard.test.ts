@@ -9,9 +9,9 @@ import { TemplateProjectFolder, TemplateProject } from "../../utils/constants";
 import sampleCaseFactory from "./sampleCaseFactory";
 
 const sampleCase = sampleCaseFactory(
-  TemplateProject.OutlookTab,
-  TemplateProjectFolder.OutlookTab,
-  24121457,
+  TemplateProject.AssistDashboard,
+  TemplateProjectFolder.AssistDashboard,
+  24121439,
   "v-ivanchen@microsoft.com",
   "dev"
 );

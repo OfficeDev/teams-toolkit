@@ -18,6 +18,7 @@ import {
   UserError,
   AdaptiveFolderName,
   AppPackageFolderName,
+  Warning,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -37,18 +38,10 @@ import { ProgrammingLanguage } from "../../../question";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import { isYamlSpecFile } from "../../../common/spec-parser/utils";
-import { SummaryConstant } from "../../configManager/constant";
-import { EOL } from "os";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
-<<<<<<< HEAD
-const manifestFileName = "manifest.json";
-=======
-const appPackageName = "appPackage";
 const manifestFileName = ManifestTemplateFileName;
-const adaptiveFolderName = "adaptiveCards";
->>>>>>> 0f7c54553 (refactor: test output warn message)
 const apiSpecFolderName = "apiSpecFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
@@ -56,10 +49,7 @@ const apiSpecJsonFileName = "openapi.json";
 const invalidApiSpecErrorName = "invalid-api-spec";
 
 export interface CopilotPluginGeneratorResult {
-  warnings?: {
-    type: string;
-    content: string;
-  }[];
+  warnings?: Warning[];
 }
 
 export class CopilotPluginGenerator {
@@ -154,9 +144,8 @@ export class CopilotPluginGenerator {
         if (updateManifestRes.isErr()) return err(updateManifestRes.error);
       }
 
-      // check Teams manifest
-
-      if (true) {
+      // log warnings
+      if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
         const warnSummary = generateScaffoldingSummary(specWarnings, teamsManifest);
 
         if (warnSummary) {

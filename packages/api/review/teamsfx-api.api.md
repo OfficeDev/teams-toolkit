@@ -149,10 +149,7 @@ export interface CreateProjectResult {
     // (undocumented)
     projectPath: string;
     // (undocumented)
-    warnings?: {
-        type: string;
-        content: string;
-    }[];
+    warnings?: Warning[];
 }
 
 // @public
@@ -1057,6 +1054,14 @@ export enum VsCodeEnv {
     local = "local",
     // (undocumented)
     remote = "remote"
+}
+
+// @public (undocumented)
+export interface Warning {
+    // (undocumented)
+    content: string;
+    // (undocumented)
+    type: string;
 }
 
 

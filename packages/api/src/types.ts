@@ -165,10 +165,12 @@ export interface ApiOperation {
   groupName: string;
 }
 
+export interface Warning {
+  type: string;
+  content: string;
+}
+
 export interface CreateProjectResult {
   projectPath: string;
-  warnings?: {
-    type: string;
-    content: string;
-  }[];
+  warnings?: Warning[];
 }

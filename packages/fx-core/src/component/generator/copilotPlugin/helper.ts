@@ -17,6 +17,7 @@ import {
   TeamsAppManifest,
   ApiOperation,
   ManifestTemplateFileName,
+  Warning,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -251,7 +252,7 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
 }
 
 export function generateScaffoldingSummary(
-  specWarnings: WarningResult[],
+  specWarnings: Warning[],
   teamsManifest: TeamsAppManifest
 ): string {
   const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(specWarnings);
@@ -267,7 +268,13 @@ export function generateScaffoldingSummary(
     }
 
     if (manifestWarningMessage.length) {
-      details += EOL + manifestWarningMessage.join(EOL);
+      details +=
+        EOL +
+        `${SummaryConstant.NotExecuted} ${getLocalizedString(
+          "core.copilotPlugin.scaffold.summary.warning.teamsManifest",
+          ManifestTemplateFileName
+        )}`;
+      details += EOL + " " + manifestWarningMessage.join(EOL + " ");
     }
 
     return getLocalizedString("core.copilotPlugin.scaffold.summary", details);
@@ -276,9 +283,9 @@ export function generateScaffoldingSummary(
   }
 }
 
-function formatApiSpecValidationWarningMessage(specWarnings: WarningResult[]): string {
+function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string {
   const apiSpecWarning =
-    specWarnings.length >= 0 && specWarnings[0].type === WarningType.OperationIdMissing
+    specWarnings.length > 0 && specWarnings[0].type === WarningType.OperationIdMissing
       ? `${SummaryConstant.NotExecuted} ${specWarnings[0].content}`
       : "";
 
@@ -303,7 +310,7 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
     warnings.push(formatLengthExceedingErrorMessage("/name/short", nameShortLimit));
   }
 
-  if (true) {
+  if (!!teamsManifest.name.full && teamsManifest.name.full?.length > nameFullLimit) {
     warnings.push(formatLengthExceedingErrorMessage("/name/full", nameFullLimit));
   }
 
@@ -314,13 +321,9 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
   if (!teamsManifest.description.full?.length) {
     warnings.push(
       getLocalizedString(
-        "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingFullDescription"
-      ) +
-        getLocalizedString(
-          "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation",
-          "description/full",
-          ManifestTemplateFileName
-        )
+        "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingField",
+        "description/full"
+      )
     );
   }
   if (teamsManifest.description.full!.length > descriptionFullLimit) {
@@ -331,16 +334,9 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
 }
 
 function formatLengthExceedingErrorMessage(field: string, limit: number): string {
-  return (
-    getLocalizedString(
-      "core.copilotPlugin.scaffold.summary.warning.teamsManifest.lengthExceeding",
-      field,
-      limit.toString()
-    ) +
-    getLocalizedString(
-      "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation",
-      field,
-      ManifestTemplateFileName
-    )
+  return getLocalizedString(
+    "core.copilotPlugin.scaffold.summary.warning.teamsManifest.lengthExceeding",
+    field,
+    limit.toString()
   );
 }

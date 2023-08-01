@@ -190,16 +190,18 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
-      const targetUri: Result<CreateProjectResult, FxError> = await Correlator.run(
+      const res: Result<CreateProjectResult, FxError> = await Correlator.run(
         handlers.createProjectFromWalkthroughHandler,
         args
       );
-      if (targetUri.isOk()) {
-        const projectPath = targetUri.value.projectPath;
+      if (res.isOk()) {
+        const projectPath = res.value.projectPath;
+        const warnings = res.value.warnings;
         await handlers.updateAutoOpenGlobalKey(
           true,
           false,
           vscode.Uri.file(projectPath),
+          warnings,
           args
         );
         await ExtTelemetry.dispose();

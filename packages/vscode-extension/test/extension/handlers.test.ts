@@ -240,9 +240,11 @@ describe("handlers", () => {
     sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
     const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
-    await handlers.updateAutoOpenGlobalKey(false, false, vscode.Uri.file("test"));
+    await handlers.updateAutoOpenGlobalKey(false, false, vscode.Uri.file("test"), [
+      { type: "type", content: "content" },
+    ]);
 
-    chai.assert.isTrue(globalStateUpdateStub.calledTwice);
+    chai.assert.isTrue(globalStateUpdateStub.calledThrice);
   });
 
   describe("command handlers", function () {

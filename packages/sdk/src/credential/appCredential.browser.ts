@@ -34,13 +34,12 @@ export class AppCredential implements TokenCredential {
    * @remarks
    * Only works in in server side.
    */
-  async getToken(
-    scopes: string | string[],
-    options?: GetTokenOptions
-  ): Promise<AccessToken | null> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "AppCredential"),
-      ErrorCode.RuntimeNotSupported
+  getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "AppCredential"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

@@ -106,6 +106,20 @@ describe("DefaultTediousConnection Tests - Node", () => {
     assert.strictEqual(tediousConnectConfig.options?.database, anotherSqlDatabaseName);
   });
 
+  it("getConfig should warn with empty database name", async function () {
+    restore = mockedEnv({
+      SQL_ENDPOINT: fakeSQLServerEndpoint,
+      SQL_USER_NAME: fakeSQLUserName,
+      SQL_PASSWORD: fakeSQLPassword,
+    });
+
+    const teamsfx = new TeamsFx();
+    const tediousConnectConfig = await getTediousConnectionConfig(teamsfx, "");
+
+    assert.isNotNull(tediousConnectConfig);
+    assert.strictEqual(tediousConnectConfig.options?.database, "");
+  });
+
   it("getConfig should throw InvalidConfiguration error without host name", async function () {
     restore = mockedEnv({
       SQL_DATABASE: fakeSQLDataName,

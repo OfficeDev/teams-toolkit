@@ -76,6 +76,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
    * }
    */
   const ssoToken =
+    // eslint-disable-next-line no-secrets/no-secrets
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0X2F1ZGllbmNlIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tL3Rlc3RfYWFkX2lkL3YyLjAiLCJpYXQiOjE1MzcyMzEwNDgsIm5iZiI6MTUzNzIzMTA0OCwiZXhwIjoxNTM3MjM0OTQ4LCJhaW8iOiJ0ZXN0X2FpbyIsIm5hbWUiOiJNT0RTIFRvb2xraXQgU0RLIFVuaXQgVGVzdCIsIm9pZCI6IjExMTExMTExLTIyMjItMzMzMy00NDQ0LTU1NTU1NTU1NTU1NSIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3RAbWljcm9zb2Z0LmNvbSIsInJoIjoidGVzdF9yaCIsInNjcCI6ImFjY2Vzc19hc191c2VyIiwic3ViIjoidGVzdF9zdWIiLCJ0aWQiOiJ0ZXN0X3RlbmFudF9pZCIsInV0aSI6InRlc3RfdXRpIiwidmVyIjoiMi4wIn0.SshbL1xuE1aNZD5swrWOQYgTR9QCNXkZqUebautBvKM";
   const ssoTokenExpiration = "2018-09-18T01:42:28.000Z";
   const timeoutValue = 50;
@@ -84,6 +85,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     Success = "Success",
     Fail = "Fail",
   }
+  let getMemberStub: sinon.SinonStub;
   const sandbox = sinon.createSandbox();
 
   beforeEach(function () {
@@ -115,7 +117,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
     });
 
-    sandbox.stub(TeamsInfo, "getMember").callsFake(async () => {
+    getMemberStub = sandbox.stub(TeamsInfo, "getMember").callsFake(async () => {
       const account: TeamsChannelAccount = {
         id: "fake_id",
         name: "fake_name",
@@ -336,6 +338,29 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       assert.strictEqual(
         error.message,
         "Teams Bot SSO Prompt is only supported in MS Teams Channel"
+      );
+    });
+  });
+
+  it("teams bot sso prompt should work with undefined user Principal Name", async function () {
+    getMemberStub.restore();
+    sandbox.stub(TeamsInfo, "getMember").callsFake(async () => {
+      const account: TeamsChannelAccount = {
+        id: "fake_id",
+        name: "fake_name",
+        userPrincipalName: "",
+      };
+      return account;
+    });
+    const adapter: TestAdapter = await initializeTestEnv();
+
+    await adapter.send("Hello").assertReply((activity) => {
+      // Assert bot send out OAuthCard
+      assert.strictEqual(
+        activity.attachments![0].content.buttons[0].value,
+        `${initiateLoginEndpoint}?scope=${encodeURI(
+          requiredScopes.join(" ")
+        )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=`
       );
     });
   });

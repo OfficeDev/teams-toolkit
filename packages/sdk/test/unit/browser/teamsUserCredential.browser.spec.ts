@@ -6,16 +6,12 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { TeamsUserCredential } from "../../../src/index.browser";
 import * as sinon from "sinon";
-import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../src/core/errors";
+import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
 chaiUse(chaiPromises);
 
 describe("TeamsUserCredential Tests - Browser", () => {
-  const token = "fake_access_token";
-  const scopes = "fake_scope";
-  const userId = "fake_user";
-  const tenantId = "fake_tenant_id";
   const clientId = "fake_client_id";
   const loginUrl = "https://fake_login_url";
   const authEndpoint = "fake_auth_endpoint";
@@ -31,6 +27,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
    *  }
    */
   const fakeSSOTokenV1 =
+    // eslint-disable-next-line no-secrets/no-secrets
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvaWQiOiJmYWtlLW9pZCIsInRpZCI6ImZha2UtdGlkIiwibmFtZSI6ImZha2UtbmFtZSIsInZlciI6IjEuMCIsImV4cCI6MTUzNzIzNDk0OCwidXBuIjoiZmFrZS11cG4ifQ.zPxn7kxIX2MpIiQZ2NMimrPMo7Laalzy8pzGzyyvxFY";
 
   /** Fake sso token v2 payload
@@ -44,6 +41,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
    *  }
    */
   const fakeSSOTokenV2 =
+    // eslint-disable-next-line no-secrets/no-secrets
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvaWQiOiJmYWtlLW9pZCIsInRpZCI6ImZha2UtdGlkIiwibmFtZSI6ImZha2UtbmFtZSIsInZlciI6IjIuMCIsImV4cCI6MTUzNzIzNDk0OCwicHJlZmVycmVkX3VzZXJuYW1lIjoiZmFrZS1wcmVmZXJyZWRfdXNlcm5hbWUifQ.q7r1WcrWfYRNsz2gXj8-hiTKjZVOIw6eTnZxSzcH3lg";
 
   /**
@@ -58,6 +56,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
      }
    */
   const fakeSSOTokenFull =
+    // eslint-disable-next-line no-secrets/no-secrets
     "eyJhbGciOiJIUzI1NiJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIxLjAiLCJleHAiOjE1MzcyMzQ5NDgsInVwbiI6ImZha2UtdXBuIiwidGlkIjoiZmFrZS10aWQiLCJhdWQiOiJmYWtlLWF1ZCJ9.rLK5VlJK1FsGZJD0yb-ussSjl2Z4sSqG1Nhj7NqjNs4";
 
   const invalidSSOToken = "invalid-sso-token";

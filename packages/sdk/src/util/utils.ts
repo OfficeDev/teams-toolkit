@@ -19,7 +19,7 @@ import { AuthenticationResult } from "@azure/msal-browser";
  */
 export function parseJwt(token: string): SSOTokenInfoBase {
   try {
-    const tokenObj = jwt_decode(token) as SSOTokenInfoBase;
+    const tokenObj: SSOTokenInfoBase = jwt_decode(token);
     if (!tokenObj || !tokenObj.exp) {
       throw new ErrorWithCode(
         "Decoded token is null or exp claim does not exists.",
@@ -29,7 +29,7 @@ export function parseJwt(token: string): SSOTokenInfoBase {
 
     return tokenObj;
   } catch (err: any) {
-    const errorMsg = "Parse jwt token failed in node env with error: " + err.message;
+    const errorMsg = "Parse jwt token failed in node env with error: " + (err.message as string);
     internalLogger.error(errorMsg);
     throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
   }
@@ -118,7 +118,7 @@ export function parseAccessTokenFromAuthCodeTokenResponse(
   } catch (error: any) {
     const errorMsg =
       "Parse access token failed from Auth Code token response in node env with error: " +
-      error.message;
+      (error.message as string);
     internalLogger.error(errorMsg);
     throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
   }

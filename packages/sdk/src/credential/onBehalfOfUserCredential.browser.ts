@@ -40,13 +40,12 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * @remarks
    * Can only be used in server side.
    */
-  async getToken(
-    scopes: string | string[],
-    options?: GetTokenOptions
-  ): Promise<AccessToken | null> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "OnBehalfOfUserCredential"),
-      ErrorCode.RuntimeNotSupported
+  getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "OnBehalfOfUserCredential"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -56,9 +55,11 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * Can only be used in server side.
    */
   public getUserInfo(): Promise<UserInfo> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "OnBehalfOfUserCredential"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "OnBehalfOfUserCredential"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

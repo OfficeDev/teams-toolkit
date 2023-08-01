@@ -101,7 +101,7 @@ export class AppCredential implements TokenCredential {
         };
       }
     } catch (err: any) {
-      const errorMsg = "Get M365 tenant credential failed with error: " + err.message;
+      const errorMsg = "Get M365 tenant credential failed with error: " + (err.message as string);
       internalLogger.error(errorMsg);
       throw new ErrorWithCode(errorMsg, ErrorCode.ServiceError);
     }

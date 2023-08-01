@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assert, expect, use as chaiUse } from "chai";
+import { assert } from "chai";
 import mockedEnv from "mocked-env";
 import { TeamsFx } from "../../../src";
 

@@ -39,6 +39,7 @@ describe("ConversationBot Tests - Node", () => {
     const conversationBot = new ConversationBot({});
     assert.isDefined(conversationBot.adapter);
     assert.isDefined(conversationBot.adapter.onTurnError);
+
     assert.isUndefined(conversationBot.command);
     assert.isUndefined(conversationBot.notification);
     assert.isUndefined(conversationBot.cardAction);
@@ -122,5 +123,21 @@ describe("ConversationBot Tests - Node", () => {
       called = true;
     });
     assert.isTrue(called);
+  });
+
+  it("onTurnError correctly handles error", async () => {
+    const context = sandbox.createStubInstance(TurnContext);
+    const conversationBot = new ConversationBot({});
+    const error = new Error("test error");
+    await conversationBot.adapter.onTurnError(context, error);
+    assert.isTrue(context.sendActivity.calledTwice);
+    assert.isTrue(
+      context.sendActivity.calledWith(`The bot encountered unhandled error: ${error.message}`)
+    );
+    assert.isTrue(
+      context.sendActivity.calledWith(
+        "To continue to run this bot, please fix the bot source code."
+      )
+    );
   });
 });

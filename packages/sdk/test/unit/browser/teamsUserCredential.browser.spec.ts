@@ -6,7 +6,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { TeamsUserCredential } from "../../../src/index.browser";
 import * as sinon from "sinon";
-import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../src/core/errors";
+import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
 chaiUse(chaiPromises);

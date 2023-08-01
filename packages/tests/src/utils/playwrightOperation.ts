@@ -1354,13 +1354,21 @@ async function executeBotSuggestionCommand(
   try {
     await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
   } catch (e: any) {
-    console.log("can't find quickly select, try another way");
-    await page.click('div[role="presentation"]:has-text("Chat")');
-    console.log("open quick select");
-    await page.click('div[role="presentation"]:has-text("Chat")');
-    await frame?.click('div[placeholder="Type a new message"]');
-    console.log("select: ", command);
-    await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
+    try {
+      console.log("can't find quickly select, try another way");
+      await page.click('div[role="presentation"]:has-text("Chat")');
+      console.log("open quick select");
+      await page.click('div[role="presentation"]:has-text("Chat")');
+      await frame?.click('div[placeholder="Type a new message"]');
+      console.log("select: ", command);
+      await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
+    } catch (e: any) {
+      console.log(
+        console.log(
+          `[Command ${command} not executed successfully] ${e.message}`
+        )
+      );
+    }
   }
 }
 

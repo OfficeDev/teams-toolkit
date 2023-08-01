@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { ImportInfo } from "./importInfo";
 import * as rules from "./mappings.json";
 import { FunctionReplacement, Replacement, ImportInfoInReplacement } from "./replacement";

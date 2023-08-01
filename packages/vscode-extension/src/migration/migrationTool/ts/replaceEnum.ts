@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { JSCodeshift, Collection, Identifier, ASTPath, identifier } from "jscodeshift";
 import { ImportInfo } from "./importInfo";
 import { Replacement, TargetReplacement } from "./replacement";

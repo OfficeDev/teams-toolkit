@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CLICommand, CLIContext, Platform, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import { CreateSampleProjectArguments, CreateSampleProjectInputs } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -21,25 +21,24 @@ export const createSampleCommand: CLICommand = {
     event: TelemetryEvent.DownloadSample,
   },
   handler: async (cmd: CLIContext) => {
-    const sampleName = cmd.argumentValues?.[0] || "";
-    const inputs: CreateSampleProjectInputs = {
-      platform: Platform.CLI,
-      samples: sampleName as any,
-      folder: cmd.optionValues.folder as string,
-    };
-    assign(inputs, getSystemInputs());
+    const sampleName = cmd.argumentValues?.[0];
+    const inputs = getSystemInputs() as CreateSampleProjectInputs;
+    assign(inputs, cmd.optionValues);
+    inputs.samples = sampleName as any;
     inputs.projectId = inputs.projectId ?? uuid.v4();
     const core = createFxCore();
     const res = await core.createSampleProject(inputs);
     assign(cmd.telemetryProperties, {
       [TelemetryProperty.NewProjectId]: inputs.projectId,
-      [TelemetryProperty.SampleName]: sampleName,
+      [TelemetryProperty.SampleName]: inputs.samples,
     });
     if (res.isErr()) {
       return err(res.error);
     }
     logger.info(
-      `Sample project '${chalk.white(sampleName)}' downloaded at: ${chalk.cyanBright(res.value)}`
+      `Sample project '${chalk.white(inputs.samples)}' downloaded at: ${chalk.cyanBright(
+        res.value
+      )}`
     );
     return ok(undefined);
   },

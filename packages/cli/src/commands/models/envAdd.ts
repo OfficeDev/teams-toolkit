@@ -6,44 +6,28 @@ import { createFxCore } from "../../activate";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs, isWorkspaceSupported } from "../../utils";
-import { RootFolderOption } from "../common";
+import { CreateEnvArguments, CreateEnvInputs, CreateEnvOptions } from "@microsoft/teamsfx-core";
+import { ProjectFolderOption } from "../common";
+import { assign } from "lodash";
 
 export const envAddCommand: CLICommand = {
   name: "add",
   description: "Add a new environment by copying from the specified environment.",
-  options: [
-    {
-      name: "env",
-      description: "Specifies an existing environment name to copy from.",
-      type: "text",
-      required: true,
-    },
-    RootFolderOption,
-  ],
-  arguments: [
-    {
-      name: "name",
-      description: "Specifies the new environment name.",
-      type: "text",
-      required: true,
-    },
-  ],
+  options: [...CreateEnvOptions, ProjectFolderOption],
+  arguments: CreateEnvArguments,
   telemetry: {
     event: TelemetryEvent.CreateNewEnvironment,
   },
   handler: async (ctx) => {
-    const projectDir = path.resolve((ctx.optionValues.folder as string) || process.cwd());
-
-    const targetEnv = ctx.argumentValues[0] as string;
-    const sourceEnv = ctx.optionValues.env as string;
-
+    const options = ctx.optionValues as CreateEnvInputs;
+    const projectDir = options.projectPath || process.cwd();
+    options.newTargetEnvName = ctx.argumentValues[0];
     if (!isWorkspaceSupported(projectDir)) {
       return err(WorkspaceNotSupported(projectDir));
     }
 
     const inputs = getSystemInputs(projectDir);
-    inputs.newTargetEnvName = targetEnv;
-    inputs.sourceEnvName = sourceEnv;
+    assign(inputs, options);
 
     const core = createFxCore();
     const result = await core.createEnv(inputs);

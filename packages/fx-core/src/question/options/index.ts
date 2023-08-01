@@ -3,3 +3,5 @@
 export * from "./CreateProjectOptions";
 export * from "./CreateSampleProjectOptions";
 export * from "./SFPxAddWebpartOptions";
+export * from "./CreateEnvOptions";
+export * from "./SelectTeamsManifestOptions";

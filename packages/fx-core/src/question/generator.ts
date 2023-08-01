@@ -21,8 +21,7 @@ import {
   PropertySignatureStructure,
   VariableDeclarationKind,
 } from "ts-morph";
-import { addWebPartQuestionNode } from "./other";
-import { capabilitySubTree, createSampleProjectQuestionNode } from "./create";
+import { questionNodes } from ".";
 
 async function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
   if (node.interactiveOnly === "all") return;
@@ -294,6 +293,8 @@ function getOptionType(
   return "text";
 }
 
-generate(capabilitySubTree(), "CreateProject");
-generate(createSampleProjectQuestionNode(), "CreateSampleProject");
-generate(addWebPartQuestionNode(), "SFPxAddWebpart");
+// generate(questionNodes.createProject()!, "CreateProject");
+// generate(questionNodes.createSampleProject()!, "CreateSampleProject");
+// generate(questionNodes.addWebpart()!, "SFPxAddWebpart");
+// generate(questionNodes.createNewEnv()!, "CreateEnv");
+generate(questionNodes.selectTeamsAppManifest()!, "SelectTeamsManifest");

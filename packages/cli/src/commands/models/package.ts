@@ -1,24 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, RootFolderOption } from "../common";
+import { EnvOption, ProjectFolderOption } from "../common";
 
 export const packageCommand: CLICommand = {
   name: "package",
   description: "Build your Teams app into a package for publishing.",
   options: [
-    {
-      name: "manifest-path",
-      type: "text",
-      shortName: "m",
-      required: true,
-      description:
-        "Specifies the Teams app manifest template path, defaults to '${folder}/appPackage/manifest.json'.",
-    },
+    ...SelectTeamsManifestOptions,
     {
       name: "output-zip-path",
       type: "text",
@@ -34,19 +28,15 @@ export const packageCommand: CLICommand = {
         "Specifies the output path of the generated manifest path, defaults to '${folder}/appPackage/build/manifest.${env}.json'",
     },
     EnvOption,
-    RootFolderOption,
+    ProjectFolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.Build,
   },
   handler: async (ctx: CLIContext) => {
-    const projectPath = ctx.optionValues.folder as string;
     const core = createFxCore();
-    const inputs = getSystemInputs(projectPath);
-    inputs.ignoreEnvInfo = false;
-    if (!ctx.globalOptionValues.interactive) {
-      assign(inputs, ctx.optionValues);
-    }
+    const inputs = getSystemInputs();
+    assign(inputs, ctx.optionValues);
     const res = await core.createAppPackage(inputs);
     if (res.isErr()) {
       return err(res.error);

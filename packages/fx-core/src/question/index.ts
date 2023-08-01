@@ -75,7 +75,7 @@ class Questions {
     return ok(questionNodes.createProject());
   }
   createSampleProject(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.createProject());
+    return ok(questionNodes.createSampleProject());
   }
   createProjectCliHelp(): Result<IQTreeNode | undefined, FxError> {
     return ok(questionNodes.createProjectCliHelp());

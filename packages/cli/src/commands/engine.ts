@@ -34,6 +34,7 @@ import { cliSource } from "../constants";
 import Progress from "../console/progress";
 import { getSystemInputs } from "../utils";
 import { createFxCore } from "../activate";
+import path from "path";
 
 // Licensed under the MIT license.
 class CLIEngine {
@@ -88,10 +89,10 @@ class CLIEngine {
 
     try {
       // 6. version check
-      const inputs = getSystemInputs(context.optionValues.folder as string);
+      const inputs = getSystemInputs(context.optionValues.projectPath as string);
       inputs.ignoreEnvInfo = true;
       const skipCommands = ["new", "sample", "upgrade"];
-      if (!skipCommands.includes(context.command.name) && context.optionValues.folder) {
+      if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
         const core = createFxCore();
         const res = await core.projectVersionCheck(inputs);
         if (res.isErr()) {
@@ -231,7 +232,10 @@ class CLIEngine {
       (o) => o.questionName === "projectPath"
     );
     if (projectFolderOption) {
-      const projectPath = projectFolderOption.value as string;
+      // resolve project path
+      const projectPath = path.resolve(projectFolderOption.value as string);
+      projectFolderOption.value = projectPath;
+      context.optionValues.projectPath = projectPath;
       if (projectPath) {
         CliTelemetry.withRootFolder(projectPath);
       }

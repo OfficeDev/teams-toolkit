@@ -44,9 +44,8 @@ export const createCommand: CLICommand = {
     event: TelemetryEvent.CreateProject,
   },
   handler: async (cmd: CLIContext) => {
-    const optionValues = cmd.optionValues as CreateProjectInputs;
     const inputs = getSystemInputs();
-    assign(inputs, optionValues);
+    assign(inputs, cmd.optionValues);
     inputs.projectId = inputs.projectId ?? uuid.v4();
     const core = createFxCore();
     const res = await core.createProject(inputs);

@@ -10,7 +10,7 @@
       "name": "Launch new command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["add", "--interactive", "false",  "spfx-web-part"],
+      "args": ["env", "add", "-i", "false", "--env", "dev", "dev2", "-f", "C:\\Users\\huajiezhang\\TeamsApps\\huajie080101"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

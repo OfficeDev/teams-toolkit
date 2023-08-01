@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import { FxError, IQTreeNode, Result, ok } from "@microsoft/teamsfx-api";
-import { createProjectCliHelpNode, createProjectQuestionNode } from "./create";
+import {
+  createProjectCliHelpNode,
+  createProjectQuestionNode,
+  createSampleProjectQuestionNode,
+} from "./create";
 import {
   addWebPartQuestionNode,
   copilotPluginAddAPIQuestionNode,
@@ -25,6 +29,9 @@ export * from "./options";
 class QuestionNodes {
   createProject(): IQTreeNode | undefined {
     return createProjectQuestionNode();
+  }
+  createSampleProject(): IQTreeNode | undefined {
+    return createSampleProjectQuestionNode();
   }
   createProjectCliHelp(): IQTreeNode | undefined {
     return createProjectCliHelpNode();
@@ -67,7 +74,9 @@ class Questions {
   createProject(): Result<IQTreeNode | undefined, FxError> {
     return ok(questionNodes.createProject());
   }
-
+  createSampleProject(): Result<IQTreeNode | undefined, FxError> {
+    return ok(questionNodes.createProject());
+  }
   createProjectCliHelp(): Result<IQTreeNode | undefined, FxError> {
     return ok(questionNodes.createProjectCliHelp());
   }

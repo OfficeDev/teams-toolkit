@@ -122,7 +122,6 @@ function scratchOrSampleQuestion(): SingleSelectQuestion {
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
     forgetLastValue: true,
-    interactiveOnly: true,
   };
 }
 
@@ -169,7 +168,6 @@ function projectTypeQuestion(): SingleSelectQuestion {
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     forgetLastValue: true,
     skipSingleOption: true,
-    interactiveOnly: true,
   };
 }
 
@@ -1034,14 +1032,14 @@ export function appNameQuestion(): TextInputQuestion {
   return question;
 }
 
-function sampleSelectQuestion(isArgument = false): SingleSelectQuestion {
+function sampleSelectQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.Samples,
     cliName: "sample-name",
     cliDescription: "Specifies the Teams App sample name.",
     cliChoiceListCommand: "teamsfx list samples",
-    cliType: isArgument ? "argument" : "option",
+    cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),
     staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
       return {
@@ -1505,62 +1503,47 @@ export function capabilitySubTree(): IQTreeNode {
 
 export function createProjectQuestionNode(): IQTreeNode {
   const createProjectQuestion: IQTreeNode = {
-    data: scratchOrSampleQuestion(),
+    data: { type: "group" },
     children: [
+      ...(isCLIDotNetEnabled()
+        ? [
+            {
+              condition: (inputs: Inputs) => CLIPlatforms.includes(inputs.platform),
+              data: runtimeQuestion(),
+            },
+          ]
+        : []),
       {
-        condition: { equals: ScratchOptions.yes().id },
-        data: { type: "group", name: QuestionNames.SctatchYes },
+        condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
+        data: projectTypeQuestion(),
+        interactiveOnly: "self",
+      },
+      capabilitySubTree(),
+      {
+        condition: (inputs: Inputs) =>
+          inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
+        data: { type: "group", name: QuestionNames.RepalceTabUrl },
         children: [
-          ...(isCLIDotNetEnabled()
-            ? [
-                {
-                  condition: (inputs: Inputs) => CLIPlatforms.includes(inputs.platform),
-                  data: runtimeQuestion(),
-                },
-              ]
-            : []),
-          {
-            condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
-            data: projectTypeQuestion(),
-          },
-          capabilitySubTree(),
           {
             condition: (inputs: Inputs) =>
-              inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
-            data: { type: "group", name: QuestionNames.RepalceTabUrl },
-            children: [
-              {
-                condition: (inputs: Inputs) =>
-                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.websiteUrl) || [])
-                    .length > 0,
-                data: selectTabWebsiteUrlQuestion(),
-              },
-              {
-                condition: (inputs: Inputs) =>
-                  (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.contentUrl) || [])
-                    .length > 0,
-                data: selectTabsContentUrlQuestion(),
-              },
-            ],
+              (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.websiteUrl) || []).length >
+              0,
+            data: selectTabWebsiteUrlQuestion(),
           },
           {
-            condition: (inputs: Inputs) => {
-              const appDef = inputs.teamsAppFromTdp as AppDefinition;
-              return appDef && needBotCode(appDef);
-            },
-            data: selectBotIdsQuestion(),
+            condition: (inputs: Inputs) =>
+              (inputs.teamsAppFromTdp?.staticTabs.filter((o: any) => !!o.contentUrl) || []).length >
+              0,
+            data: selectTabsContentUrlQuestion(),
           },
         ],
       },
       {
-        condition: { equals: ScratchOptions.no().id },
-        data: sampleSelectQuestion(),
-        children: [
-          {
-            // root folder
-            data: rootFolderQuestion(),
-          },
-        ],
+        condition: (inputs: Inputs) => {
+          const appDef = inputs.teamsAppFromTdp as AppDefinition;
+          return appDef && needBotCode(appDef);
+        },
+        data: selectBotIdsQuestion(),
       },
     ],
   };
@@ -1569,7 +1552,7 @@ export function createProjectQuestionNode(): IQTreeNode {
 
 export function createSampleProjectQuestionNode(): IQTreeNode {
   return {
-    data: sampleSelectQuestion(true), // for create sample command, sample name is argument
+    data: sampleSelectQuestion(), // for create sample command, sample name is argument
     children: [
       {
         data: rootFolderQuestion(),

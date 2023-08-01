@@ -105,6 +105,7 @@ export function deployAadManifestQuestionNode(): IQTreeNode {
               path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
                 path.join(inputs.projectPath, "aad.manifest.json"),
             data: confirmManifestQuestion(false, false),
+            interactiveOnly: "self",
           },
           {
             condition: isAadMainifestContainsPlaceholder,
@@ -123,6 +124,7 @@ export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => confirmCondition(inputs, false),
         data: confirmManifestQuestion(true, false),
+        interactiveOnly: "self",
       },
     ],
   };
@@ -173,6 +175,7 @@ export function addWebPartQuestionNode(): IQTreeNode {
               {
                 condition: (inputs: Inputs) => confirmCondition(inputs, false),
                 data: confirmManifestQuestion(true, false),
+                interactiveOnly: "self",
               },
               {
                 data: selectTeamsAppManifestQuestion(true),
@@ -180,6 +183,7 @@ export function addWebPartQuestionNode(): IQTreeNode {
                   {
                     condition: (inputs: Inputs) => confirmCondition(inputs, true),
                     data: confirmManifestQuestion(true, true),
+                    interactiveOnly: "self",
                   },
                 ],
               },
@@ -264,7 +268,6 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
         },
       ];
     },
-    interactiveOnly: true,
   };
 }
 

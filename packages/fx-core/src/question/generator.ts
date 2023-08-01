@@ -8,7 +8,6 @@ import {
   CLISingleSelectOption,
   IQTreeNode,
   MultiSelectQuestion,
-  OptionValue,
   Platform,
   SingleSelectQuestion,
   UserInputQuestion,
@@ -22,29 +21,60 @@ import {
   PropertySignatureStructure,
   VariableDeclarationKind,
 } from "ts-morph";
-import { capabilitySubTree, createProjectQuestionNode, createSampleProjectQuestionNode } from ".";
+import { addWebPartQuestionNode } from "./other";
+import { capabilitySubTree, createSampleProjectQuestionNode } from "./create";
 
-function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
-  if (node.data.type !== "group") {
+async function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
+  if (node.interactiveOnly === "all") return;
+  if (node.data.type !== "group" && (!node.interactiveOnly || node.interactiveOnly !== "self")) {
     nodeList.push(node);
   }
-  if (node.children) {
+  let currentOptions: string[] = [];
+  if (node.data.type === "singleSelect" || node.data.type === "multiSelect") {
+    currentOptions = (node.data as SingleSelectQuestion | MultiSelectQuestion).staticOptions.map(
+      (option) => (typeof option === "string" ? option : option.id)
+    );
+  }
+  if (node.children && (!node.interactiveOnly || node.interactiveOnly !== "children")) {
     for (const child of node.children) {
-      collect(child, nodeList);
+      if (child.condition) {
+        let someChoiceIsValid = false;
+        for (const parentValue of currentOptions) {
+          const vres = await validate(child.condition, parentValue, {
+            platform: Platform.CLI_HELP,
+          });
+          // console.log("condition:", child.condition, "parentValue:", parentValue, "vres:", vres);
+          if (vres === undefined) {
+            someChoiceIsValid = true;
+            break;
+          }
+        }
+        // console.log(
+        //   child.data.name,
+        //   "parent choinces:",
+        //   currentOptions,
+        //   "someChoiceIsValid:",
+        //   someChoiceIsValid
+        // );
+        if (someChoiceIsValid) {
+          await collect(child, nodeList);
+        }
+        // if all choinces are invalid, trim the child node
+      } else {
+        await collect(child, nodeList);
+      }
     }
   }
 }
 
-async function collectNonConditional(node: IQTreeNode) {
-  console.log("collectNonConditional", node.data.name, "required:", (node.data as any).required);
+async function computeRequired(node: IQTreeNode) {
+  // console.log("computeRequired", node.data.name, "required:", (node.data as any).required);
   if (node.children) {
+    const parentRequired = (node.data as any).required || false;
     for (const child of node.children) {
-      console.log(child.data.name);
-      console.log("has condittion:", child.condition);
-      const parentRequired = (node.data as any).required || false;
       let childRequired = (child.data as any).required || false;
       if (!childRequired) {
-        if (!child.condition) {
+        if (!child.condition && parentRequired) {
           childRequired = true;
         } else {
           if (typeof child.condition === "function") {
@@ -58,8 +88,18 @@ async function collectNonConditional(node: IQTreeNode) {
         }
       }
       if (childRequired) (child.data as any).required = true;
-      console.log("required:", (child.data as any).required);
-      await collectNonConditional(child);
+      // console.log(
+      //   child.data.name,
+      //   "parent required:",
+      //   parentRequired,
+      //   "child required:",
+      //   (child.data as any).required,
+      //   "child condition:",
+      //   child.condition,
+      //   "computed required:",
+      //   (child.data as any).required
+      // );
+      await computeRequired(child);
     }
   }
 }
@@ -68,7 +108,8 @@ export async function generate(
   node: IQTreeNode,
   name: string,
   inputsFolder = "./src/question/inputs",
-  optionFolder = "./src/question/options"
+  optionFolder = "./src/question/options",
+  excludes = ["folder"]
 ) {
   // initialize
   const project = new Project({
@@ -87,11 +128,13 @@ export async function generate(
 
   const nodeList: IQTreeNode[] = [];
 
-  collect(node, nodeList);
+  await collect(node, nodeList);
+
+  // console.log(`node trimed: ${nodeList.map((n) => n.data.name).join(",")}`);
 
   (node.data as any).required = true;
 
-  await collectNonConditional(node);
+  await computeRequired(node);
 
   const questionNames = new Set<string>();
 
@@ -103,12 +146,11 @@ export async function generate(
   for (const node of nodeList) {
     const data = node.data as UserInputQuestion;
 
-    if (data.interactiveOnly) {
-      continue;
-    }
     const questionName = data.name as string;
 
     const cliName = data.cliName || questionName;
+
+    if (excludes.includes(cliName)) continue;
 
     if (questionNames.has(questionName)) {
       continue;
@@ -253,5 +295,5 @@ function getOptionType(
 }
 
 generate(capabilitySubTree(), "CreateProject");
-
 generate(createSampleProjectQuestionNode(), "CreateSampleProject");
+generate(addWebPartQuestionNode(), "SFPxAddWebpart");

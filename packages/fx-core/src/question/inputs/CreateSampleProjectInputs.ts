@@ -27,6 +27,4 @@ export interface CreateSampleProjectInputs extends Inputs {
     | "outlook-add-in-set-signature"
     | "developer-assist-dashboard"
     | "live-share-dice-roller";
-  /** @description Root folder of the project. */
-  folder: string;
 }

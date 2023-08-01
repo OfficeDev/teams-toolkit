@@ -4,10 +4,10 @@ import * as sinon from "sinon";
 import { createCommand } from "../../src/commands/models/create";
 import * as activate from "../../src/activate";
 import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
-import { err, ok } from "@microsoft/teamsfx-api";
-import { CLIContext } from "../../src/commands/types";
+import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import { createSampleCommand } from "../../src/commands/models/createSample";
-import { listSampleCommand } from "../../src/commands/models/listSamples";
+import { listSamplesCommand } from "../../src/commands/models/listSamples";
+import { listCapabilitiesCommand } from "../../src/commands/models/listCapabilities";
 import { accountShowCommand } from "../../src/commands/models/accountShow";
 import { accountLoginAzureCommand } from "../../src/commands/models/accountLoginAzure";
 import { accountLoginM365Command } from "../../src/commands/models/accountLoginM365";
@@ -93,13 +93,26 @@ describe("CLI new commands", () => {
     it("happy path", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
-        command: listSampleCommand,
+        command: listSamplesCommand,
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await listSampleCommand.handler!(ctx);
+      const res = await listSamplesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("listCapabilitiesCommand", async () => {
+    it("happy path", async () => {
+      const ctx: CLIContext = {
+        command: listCapabilitiesCommand,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await listCapabilitiesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

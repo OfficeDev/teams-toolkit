@@ -79,6 +79,13 @@ export class FxCore {
   }
 
   /**
+   * lifecycle command: create new sample project
+   */
+  async createSampleProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    return this.v3Implement.dispatch(this.createSampleProject, inputs);
+  }
+
+  /**
    * lifecycle commands: provision
    */
   async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {

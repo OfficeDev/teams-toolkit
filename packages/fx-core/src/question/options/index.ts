@@ -2,3 +2,4 @@
 // Licensed under the MIT license.
 export * from "./CreateProjectOptions";
 export * from "./CreateSampleProjectOptions";
+export * from "./SFPxAddWebpartOptions";

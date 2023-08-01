@@ -690,7 +690,6 @@ export async function runCommand(
         if (!isImportSPFxEnabled()) {
           inputs["spfx-solution"] = "new";
         }
-        inputs["scratch"] = "yes";
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -782,8 +781,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
     }
 
     inputs.stage = Stage.create;
-    inputs["scratch"] = "no";
-    const tmpResult = await core.createProject(inputs);
+    const tmpResult = await core.createSampleProject(inputs);
     if (tmpResult.isErr()) {
       result = err(tmpResult.error);
     } else {

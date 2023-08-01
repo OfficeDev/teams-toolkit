@@ -461,6 +461,7 @@ export interface IQTreeNode {
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
+    interactiveOnly?: "self" | "children" | "all";
 }
 
 // @public (undocumented)
@@ -669,6 +670,7 @@ export class QTreeNode implements IQTreeNode {
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
+    interactiveOnly?: "self" | "children" | "all";
     trim(): QTreeNode | undefined;
     // (undocumented)
     validate(): boolean;
@@ -1102,7 +1104,6 @@ export interface UserInputQuestion extends BaseQuestion {
     cliShortName?: string;
     cliType?: "option" | "argument";
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
-    interactiveOnly?: boolean;
     isBoolean?: boolean;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;

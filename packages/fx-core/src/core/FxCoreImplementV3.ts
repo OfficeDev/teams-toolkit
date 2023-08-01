@@ -65,7 +65,7 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { questions } from "../question";
+import { ScratchOptions, questions } from "../question";
 import { SPFxVersionOptionIds } from "../question/create";
 import { isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
@@ -126,6 +126,7 @@ export class FxCoreV3Implement {
   @hooks([ErrorHandlerMW, QuestionMW(questions.createProject)])
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     const context = createContextV3();
+    inputs[QuestionNames.Scratch] = ScratchOptions.yes().id;
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
@@ -139,7 +140,17 @@ export class FxCoreV3Implement {
         });
       }
     }
-    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    const res = await coordinator.create(context, inputs);
+    if (res.isErr()) return err(res.error);
+    inputs.projectPath = context.projectPath;
+    return ok(inputs.projectPath!);
+  }
+
+  @hooks([ErrorHandlerMW, QuestionMW(questions.createSampleProject)])
+  async createSampleProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    const context = createContextV3();
+    inputs[QuestionNames.Scratch] = ScratchOptions.no().id;
+    const res = await coordinator.create(context, inputs);
     if (res.isErr()) return err(res.error);
     inputs.projectPath = context.projectPath;
     return ok(inputs.projectPath!);

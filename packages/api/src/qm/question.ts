@@ -152,11 +152,6 @@ export interface UserInputQuestion extends BaseQuestion {
   cliName?: string;
 
   /**
-   * the question is only for interactive mode, if true, the question will be skipped in non-interactive mode
-   */
-  interactiveOnly?: boolean;
-
-  /**
    * the question is only for CLI option abbrevation
    */
   cliShortName?: string;
@@ -436,6 +431,13 @@ export class QTreeNode implements IQTreeNode {
   data: Question | Group;
   condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: QTreeNode[];
+  /**
+   * @description the question is only for interactive mode, if defined, the question will be skipped in non-interactive mode
+   * "self" - only skip the question itself
+   * "children" - skip all children
+   * "all" - skip self and all children
+   */
+  interactiveOnly?: "self" | "children" | "all";
   addChild(node: QTreeNode): QTreeNode {
     if (!this.children) {
       this.children = [];
@@ -484,4 +486,11 @@ export interface IQTreeNode {
   data: Question | Group;
   condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: IQTreeNode[];
+  /**
+   * @description the question is only for interactive mode, if defined, the question will be skipped in non-interactive mode
+   * "self" - only skip the question itself
+   * "children" - skip all children
+   * "all" - skip self and all children
+   */
+  interactiveOnly?: "self" | "children" | "all";
 }

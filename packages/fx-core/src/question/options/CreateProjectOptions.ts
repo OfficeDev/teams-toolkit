@@ -53,7 +53,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "boolean",
     shortName: "sp",
     description: "Install latest SharePoint Framework version.",
-    required: true,
     default: true,
   },
   {
@@ -61,7 +60,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "singleSelect",
     shortName: "sfk",
     description: "Framework",
-    required: true,
     default: "react",
     choices: ["react", "minimal", "none"],
   },
@@ -70,7 +68,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "text",
     shortName: "sw",
     description: "Name for SharePoint Framework Web Part.",
-    required: true,
     default: "helloworld",
   },
   {
@@ -80,54 +77,12 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Directory path that contains the existing SarePoint Framework solutions.",
   },
   {
-    name: "addin-project-folder",
-    type: "text",
-    description: "Existing add-in project folder",
-    required: true,
-  },
-  {
-    name: "addin-project-manifest",
-    type: "text",
-    description: "Select import project manifest file",
-    required: true,
-  },
-  {
-    name: "addin-host",
-    type: "singleSelect",
-    description: "Add-in Host",
-    default: "No Options",
-  },
-  {
-    name: "api-spec-location",
-    type: "text",
-    description: "OpenAPI Spec",
-  },
-  {
-    name: "openai-plugin-manifest-location",
-    type: "text",
-    description: "OpenAI Plugin Manifest",
-  },
-  {
-    name: "api-operation",
-    type: "multiSelect",
-    description: "Select an Operation",
-    required: true,
-  },
-  {
     name: "programming-language",
     type: "singleSelect",
     shortName: "l",
     description: "Programming Language.",
     default: "javascript",
     choices: ["javascript", "typescript", "csharp"],
-  },
-  {
-    name: "folder",
-    type: "text",
-    shortName: "f",
-    description: "Root folder of the project.",
-    required: true,
-    default: "C:\\Users\\huajiezhang\\TeamsApps",
   },
   {
     name: "app-name",

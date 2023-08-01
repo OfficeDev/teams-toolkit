@@ -2,12 +2,7 @@
 // Licensed under the MIT license.
 
 import { CLICommand, CLIContext, Platform, err, ok } from "@microsoft/teamsfx-api";
-import {
-  CoreQuestionNames,
-  CreateSampleProjectArguments,
-  CreateSampleProjectInputs,
-  ScratchOptions,
-} from "@microsoft/teamsfx-core";
+import { CreateSampleProjectArguments, CreateSampleProjectInputs } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
@@ -31,12 +26,11 @@ export const createSampleCommand: CLICommand = {
       platform: Platform.CLI,
       samples: sampleName as any,
       folder: cmd.optionValues.folder as string,
-      [CoreQuestionNames.Scratch]: ScratchOptions.no().id,
     };
     assign(inputs, getSystemInputs());
     inputs.projectId = inputs.projectId ?? uuid.v4();
     const core = createFxCore();
-    const res = await core.createProject(inputs);
+    const res = await core.createSampleProject(inputs);
     assign(cmd.telemetryProperties, {
       [TelemetryProperty.NewProjectId]: inputs.projectId,
       [TelemetryProperty.SampleName]: sampleName,

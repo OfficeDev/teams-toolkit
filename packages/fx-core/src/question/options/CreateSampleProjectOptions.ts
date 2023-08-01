@@ -3,16 +3,7 @@
 
 import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
-export const CreateSampleProjectOptions: CLICommandOption[] = [
-  {
-    name: "folder",
-    type: "text",
-    shortName: "f",
-    description: "Root folder of the project.",
-    required: true,
-    default: "C:\\Users\\huajiezhang\\TeamsApps",
-  },
-];
+export const CreateSampleProjectOptions: CLICommandOption[] = [];
 export const CreateSampleProjectArguments: CLICommandArgument[] = [
   {
     name: "sample-name",

@@ -21,6 +21,7 @@ import {
 } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
 import { aadErrorCode } from "./utility/constants";
+import { AadManifestErrorMessage } from "./error/aadManifestError";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -105,7 +106,7 @@ export class UpdateAadAppDriver implements StepDriver {
           error.response!.status == 400 &&
           error.response!.data.error.code === aadErrorCode.permissionErrorCode
         ) {
-          const message = JSON.stringify(error.response!.data.error.message);
+          const message = AadManifestErrorMessage.AADPermissionIssues;
           context.logProvider?.error(
             getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
           );

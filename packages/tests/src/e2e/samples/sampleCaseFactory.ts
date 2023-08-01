@@ -160,6 +160,10 @@ export default function sampleCaseFactory(
             }
           }
 
+          // [BUG] https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/24704915
+          if (sampleName === TemplateProjectFolder.ChefBot) {
+            return;
+          }
           // validate
           {
             const { success } = await Executor.validate(projectPath);

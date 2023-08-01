@@ -12,6 +12,7 @@ import {
   ConfigFolderName,
   FxError,
   Inputs,
+  ManifestUtil,
   OptionItem,
   Platform,
   Result,
@@ -36,13 +37,14 @@ import {
   UnhandledError,
   UserCancelError,
   environmentManager,
+  manifestUtils,
 } from "@microsoft/teamsfx-core";
 import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import M365TokenInstance from "../../src/commonlib/m365Login";
-import { DeveloperPortalHomeLink } from "../../src/constants";
+import { DeveloperPortalHomeLink, GlobalKey } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
@@ -63,6 +65,7 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { MockCore } from "../mocks/mockCore";
+import VsCodeLogInstance from "../../src/commonlib/log";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1637,6 +1640,8 @@ describe("autoOpenProjectHandler", () => {
         return "";
       }
     });
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+    sandbox.stub(ManifestUtil, "parseCommonProperties").resolves({ isCopilotPlugin: false });
     sandbox.stub(globalState, "globalStateUpdate");
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -1660,5 +1665,101 @@ describe("autoOpenProjectHandler", () => {
     sandbox.stub(globalState, "globalStateUpdate");
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     await handlers.autoOpenProjectHandler();
+  });
+
+  it("opens README and show warnings successfully", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return JSON.stringify([{ type: "type", content: "content" }]);
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        name: { short: "short", full: "full" },
+        description: { short: "short", full: "full" },
+      } as any)
+    );
+    const parseRes = {
+      id: "",
+      version: "",
+      capabilities: [""],
+      manifestVersion: "",
+      isCopilotPlugin: true,
+      isSPFx: false,
+    };
+    const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
+    VsCodeLogInstance.outputChannel = {
+      show: () => {},
+      info: () => {},
+    } as unknown as vscode.OutputChannel;
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.called);
+    chai.assert.isTrue(parseManifestStub.called);
+  });
+
+  it("skip show warnings if parsing error", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return "string";
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const sendErrorTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendErrorTelemetryStub.called);
+  });
+
+  it("skip show warnings if cannot get manifest", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return "string";
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox
+      .stub(manifestUtils, "_readAppManifest")
+      .resolves(err(new UserError("source", "name", "", "")));
+
+    const sendErrorTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendErrorTelemetryStub.called);
   });
 });

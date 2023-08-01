@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export interface SampleInfo {
   id: string;
   title: string;
@@ -7,7 +10,8 @@ export interface SampleInfo {
   time: string;
   configuration: string;
   suggested: boolean;
-  url: string;
+  downloadUrl: string;
+  gifUrl: string;
 }
 
 export interface SampleCollection {

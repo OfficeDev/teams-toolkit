@@ -24,7 +24,6 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
 import { Commands } from "./Commands";
-import { EventMessages } from "./messages";
 import { PanelType } from "./PanelType";
 
 export class WebviewPanel {
@@ -197,7 +196,7 @@ export class WebviewPanel {
     await sampleProvider.fetchSampleConfig();
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
-        message: EventMessages.LoadSampleCollection,
+        message: Commands.LoadSampleCollection,
         data: sampleProvider.SampleCollection,
       });
     }

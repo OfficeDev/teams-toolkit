@@ -149,13 +149,8 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
-  @hooks([QuestionMW(questions.selectTeamsAppValidationMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (inputs[QuestionNames.ValidateMethod] === validateSchemaOption.id) {
-      return await this.validateManifest(inputs);
-    } else {
-      return await this.validateAppPackage(inputs);
-    }
+    return this.v3Implement.dispatch(this.validateApplication, inputs);
   }
   /**
    * v3 only none lifecycle command

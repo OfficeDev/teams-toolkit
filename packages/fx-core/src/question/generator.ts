@@ -297,4 +297,5 @@ function getOptionType(
 // generate(questionNodes.createSampleProject()!, "CreateSampleProject");
 // generate(questionNodes.addWebpart()!, "SFPxAddWebpart");
 // generate(questionNodes.createNewEnv()!, "CreateEnv");
-generate(questionNodes.selectTeamsAppManifest()!, "SelectTeamsManifest");
+// generate(questionNodes.selectTeamsAppManifest()!, "SelectTeamsManifest");
+generate(questionNodes.validateTeamsApp()!, "ValidateTeamsApp");

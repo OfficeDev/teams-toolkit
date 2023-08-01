@@ -18,6 +18,7 @@ import {
   selectTeamsAppManifestQuestionNode,
   selectTeamsAppPackageQuestionNode,
   selectTeamsAppValidationMethodQuestionNode,
+  validateTeamsAppQuestionNode,
 } from "./other";
 
 export * from "./questionNames";
@@ -41,6 +42,9 @@ class QuestionNodes {
   }
   selectTeamsAppManifest(): IQTreeNode | undefined {
     return selectTeamsAppManifestQuestionNode();
+  }
+  validateTeamsApp(): IQTreeNode | undefined {
+    return validateTeamsAppQuestionNode();
   }
   selectTeamsAppValidationMethod(): IQTreeNode | undefined {
     return selectTeamsAppValidationMethodQuestionNode();
@@ -88,7 +92,9 @@ class Questions {
   selectTeamsAppManifest(): Result<IQTreeNode | undefined, FxError> {
     return ok(questionNodes.selectTeamsAppManifest());
   }
-
+  validateTeamsApp(): Result<IQTreeNode | undefined, FxError> {
+    return ok(questionNodes.validateTeamsApp());
+  }
   selectTeamsAppValidationMethod(): Result<IQTreeNode | undefined, FxError> {
     return ok(questionNodes.selectTeamsAppValidationMethod());
   }

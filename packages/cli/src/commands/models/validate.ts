@@ -4,6 +4,7 @@ import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import {
   CoreQuestionNames,
   MissingRequiredInputError,
+  ValidateTeamsAppOptions,
   validateAppPackageOption,
   validateSchemaOption,
 } from "@microsoft/teamsfx-core";
@@ -13,36 +14,19 @@ import { cliSource } from "../../constants";
 import { ArgumentConflictError, MissingRequiredArgumentError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, RootFolderOption } from "../common";
+import { EnvOption, ProjectFolderOption } from "../common";
+import { ValidateTeamsAppInputs } from "@microsoft/teamsfx-core";
 
 export const validateCommand: CLICommand = {
   name: "validate",
   description: "Validate the Teams app using manifest schema or validation rules.",
-  options: [
-    {
-      name: "manifest-path",
-      type: "text",
-      default: "./appPackage/manifest.json",
-      description:
-        "Specifies the input Teams app manifest file path. This manifest will be validated using manifest schema.",
-    },
-    {
-      name: "app-package-file-path",
-      type: "text",
-      description:
-        "Specifies the zipped Teams app package path. Default value: '${folder}/appPackage/build/appPackage.${env}.zip'. This package will be validated with validation rules.",
-    },
-    EnvOption,
-    RootFolderOption,
-  ],
+  options: [...ValidateTeamsAppOptions, EnvOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.ValidateManifest,
   },
   handler: async (ctx) => {
-    const inputs = getSystemInputs();
-    if (!ctx.globalOptionValues.interactive) {
-      assign(inputs, ctx.optionValues);
-    }
+    const inputs = getSystemInputs() as ValidateTeamsAppInputs;
+    assign(inputs, ctx.optionValues);
 
     if (!ctx.globalOptionValues.interactive) {
       if (inputs["manifest-path"] && inputs["app-package-file-path"]) {

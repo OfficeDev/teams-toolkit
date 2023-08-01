@@ -117,6 +117,23 @@ export function deployAadManifestQuestionNode(): IQTreeNode {
   };
 }
 
+export function validateTeamsAppQuestionNode(): IQTreeNode {
+  return {
+    data: selectTeamsAppValidationMethodQuestion(),
+    interactiveOnly: "self",
+    children: [
+      {
+        condition: { equals: TeamsAppValidationOptions.schema().id },
+        data: selectTeamsAppManifestQuestion(),
+      },
+      {
+        condition: { equals: TeamsAppValidationOptions.package().id },
+        data: selectTeamsAppPackageQuestion(),
+      },
+    ],
+  };
+}
+
 export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
   return {
     data: selectTeamsAppManifestQuestion(),
@@ -336,6 +353,10 @@ function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.TeamsAppPackageFilePath,
     title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
+    cliDescription:
+      "Specifies the zipped Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
+    cliName: "app-package-file",
+    cliShortName: "pf",
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
       if (!inputs.projectPath) return undefined;

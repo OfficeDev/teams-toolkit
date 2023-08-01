@@ -67,7 +67,7 @@ import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ScratchOptions, questions } from "../question";
 import { SPFxVersionOptionIds } from "../question/create";
-import { isAadMainifestContainsPlaceholder } from "../question/other";
+import { TeamsAppValidationOptions, isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError } from "./error";
@@ -566,19 +566,19 @@ export class FxCoreV3Implement {
     await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }
-
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW(questions.selectTeamsAppManifest),
-    ConcurrentLockerMW,
-    EnvLoaderMW(true),
-  ])
+  @hooks([QuestionMW(questions.validateTeamsApp)])
+  async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.schema().id) {
+      return await this.validateManifest(inputs);
+    } else {
+      return await this.validateAppPackage(inputs);
+    }
+  }
+  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ConcurrentLockerMW])
   async validateManifest(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
-
     const context: DriverContext = createDriverContext(inputs);
-
-    const teamsAppManifestFilePath = inputs?.[QuestionNames.TeamsAppManifestFilePath] as string;
+    const teamsAppManifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
       showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
@@ -587,13 +587,11 @@ export class FxCoreV3Implement {
     const result = await driver.run(args, context);
     return result;
   }
-
-  @hooks([ErrorHandlerMW, QuestionMW(questions.selectTeamsAppPackage), ConcurrentLockerMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW])
   async validateAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
-
     const context: DriverContext = createDriverContext(inputs);
-    const teamsAppPackageFilePath = inputs?.[QuestionNames.TeamsAppPackageFilePath] as string;
+    const teamsAppPackageFilePath = inputs[QuestionNames.TeamsAppPackageFilePath] as string;
     const args: ValidateAppPackageArgs = {
       appPackagePath: teamsAppPackageFilePath,
       showMessage: true,

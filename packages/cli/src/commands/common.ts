@@ -28,7 +28,6 @@ export const EnvOption: CLICommandOption = {
   name: "env",
   type: "text",
   description: "Specifies the environment name for the project.",
-  required: true,
 };
 
 export const TeamsManifestPathOption: CLICommandOption = {

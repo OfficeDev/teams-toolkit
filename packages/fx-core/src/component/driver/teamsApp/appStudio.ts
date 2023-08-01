@@ -82,8 +82,7 @@ export async function updateManifestV3(
     ENV_NAME: process.env.TEAMSFX_ENV,
   };
   const manifestTemplatePath =
-    inputs.manifestTemplatePath ??
-    (await manifestUtils.getTeamsAppManifestPath(inputs.projectPath));
+    inputs.manifestTemplatePath ?? manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
   const manifestFileName = path.join(
     inputs.projectPath,
     AppPackageFolderName,
@@ -197,21 +196,21 @@ export async function updateManifestV3(
         },
         { content: url, color: Colors.BRIGHT_CYAN },
       ];
-      ctx.userInteraction.showMessage("info", message, false);
+      await ctx.userInteraction.showMessage("info", message, false);
     } else {
-      ctx.userInteraction
+      await ctx.userInteraction
         .showMessage(
           "info",
           getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
           false,
           getLocalizedString("plugins.appstudio.viewDeveloperPortal")
         )
-        .then((res) => {
+        .then(async (res) => {
           if (
             res?.isOk() &&
             res.value === getLocalizedString("plugins.appstudio.viewDeveloperPortal")
           ) {
-            ctx.userInteraction.openUrl(url);
+            await ctx.userInteraction.openUrl(url);
           }
         });
     }
@@ -344,7 +343,9 @@ export async function getAppPackage(
           if (supportedLanguageCodes.findIndex((code) => code === base) > -1) {
             set(appPackage, ["languages", base], data);
           } else {
-            logProvider?.warning(getLocalizedString("plugins.appstudio.unprocessedFile", name));
+            await logProvider?.warning(
+              getLocalizedString("plugins.appstudio.unprocessedFile", name)
+            );
           }
       }
     });

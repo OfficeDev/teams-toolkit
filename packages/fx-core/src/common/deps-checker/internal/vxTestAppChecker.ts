@@ -194,7 +194,7 @@ export class VxTestAppChecker implements DepsChecker {
 
   private async isValidInstalltion(installDir: string, version: string): Promise<boolean> {
     const vxTestAppExecutable = path.join(installDir, VxTestAppExecutableName);
-    if (!fs.pathExistsSync(vxTestAppExecutable)) {
+    if (!(await fs.pathExists(vxTestAppExecutable))) {
       return false;
     }
 

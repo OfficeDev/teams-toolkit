@@ -94,6 +94,7 @@ describe("ExtTelemetry", () => {
     const sandbox = sinon.createSandbox();
     before(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
+      chai.util.addProperty(ExtTelemetry, "settingsVersion", () => "1.0.0");
       sandbox.stub(fs, "pathExistsSync").returns(false);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(globalVariables, "isSPFxProject").value(false);
@@ -118,6 +119,7 @@ describe("ExtTelemetry", () => {
           component: "extension",
           "is-existing-user": "no",
           "is-spfx": "false",
+          "settings-version": "1.0.0",
         },
         { numericMeasure: 123 }
       );
@@ -146,6 +148,7 @@ describe("ExtTelemetry", () => {
           success: "no",
           "is-existing-user": "no",
           "is-spfx": "false",
+          "settings-version": "1.0.0",
           "error-type": "user",
           "error-name": "UserTestError",
           "error-message": error.message,
@@ -190,6 +193,7 @@ describe("ExtTelemetry", () => {
           component: "extension",
           "is-existing-user": "no",
           "is-spfx": "false",
+          "settings-version": "1.0.0",
         },
         { numericMeasure: 123 }
       );

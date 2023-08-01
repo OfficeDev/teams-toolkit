@@ -228,8 +228,8 @@ export class SPFxGenerator {
 
       await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.dependencyCheck"));
 
-      const yoChecker = new YoChecker(context.logProvider!);
-      const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
+      const yoChecker = new YoChecker(context.logProvider);
+      const spGeneratorChecker = new GeneratorChecker(context.logProvider);
 
       if (shouldInstallLocally) {
         const latestYoInstalled = await yoChecker.isLatestInstalled();
@@ -336,7 +336,7 @@ export class SPFxGenerator {
 
       const newPath = path.join(destinationPath, "src");
       if (!isAddSPFx) {
-        const currentPath = path.join(destinationPath, solutionName!);
+        const currentPath = path.join(destinationPath, solutionName);
         await fs.rename(currentPath, newPath);
       }
 

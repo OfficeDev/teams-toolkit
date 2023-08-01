@@ -275,7 +275,7 @@ describe("helperMethods", async () => {
         return;
       });
 
-      sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves(manifestTemplatePath);
+      sandbox.stub(manifestUtils, "getTeamsAppManifestPath").returns(manifestTemplatePath);
     });
 
     afterEach(() => {

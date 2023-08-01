@@ -61,9 +61,11 @@ describe("EnvironmentNode", () => {
     const children = await environmentNode.getChildren();
 
     chai.assert.equal(children?.length, 2);
-    const warningNode = await (children as DynamicNode[])[0].getTreeItem();
+    const warningNode = (await (children as DynamicNode[])[0].getTreeItem()) as DynamicNode;
     chai.assert.deepEqual(warningNode.iconPath, warningIcon);
     chai.assert.equal(warningNode.tooltip, "test string");
+    chai.assert.equal(warningNode.getChildren(), null);
+    chai.assert.equal(warningNode.getTreeItem(), warningNode);
   });
 
   it("getChildren returns subscription", async () => {
@@ -100,7 +102,7 @@ describe("EnvironmentNode", () => {
     const children = await environmentNode.getChildren();
 
     chai.assert.equal(children?.length, 1);
-    const subscriptionNode = await (children as DynamicNode[])[0].getTreeItem();
+    const subscriptionNode = (await (children as DynamicNode[])[0].getTreeItem()) as DynamicNode;
     chai.assert.deepEqual(subscriptionNode.iconPath, new vscode.ThemeIcon("key"));
     chai.assert.equal(subscriptionNode.label, "subscriptionName");
     chai.assert.equal(
@@ -108,5 +110,12 @@ describe("EnvironmentNode", () => {
       "'test' environment is provisioned in Azure subscription 'subscriptionName' (ID: subscriptionId)"
     );
     chai.assert.equal(subscriptionNode.description, "subscriptionId");
+    const subscriptionNodeTreeItem = await subscriptionNode.getTreeItem();
+    chai.assert.equal(subscriptionNodeTreeItem, subscriptionNode);
+
+    const subscriptionNodeChildren = await subscriptionNode.getChildren();
+    const resourceGroupNode = (subscriptionNodeChildren as DynamicNode[])[0];
+    chai.assert.equal(resourceGroupNode.getTreeItem(), resourceGroupNode);
+    chai.assert.isNull(resourceGroupNode.getChildren());
   });
 });

@@ -80,7 +80,7 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
             message += `**${envName}** Trigger debug to see placeholder value \n\n`;
           } else {
             const commandUri = vscode.Uri.parse("command:fx-extension.provision");
-            message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri}) \n\n`;
+            message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri.toString()}) \n\n`;
           }
         }
       }
@@ -90,7 +90,7 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
     const commandUri = vscode.Uri.parse(
       `command:fx-extension.openConfigState?${encodeURIComponent(JSON.stringify(args))}`
     );
-    message += `[✏️Edit env file](${commandUri})`;
+    message += `[✏️Edit env file](${commandUri.toString()})`;
 
     const markdown = new vscode.MarkdownString(message);
     markdown.isTrusted = true;

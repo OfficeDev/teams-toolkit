@@ -86,7 +86,7 @@ export class FuncToolChecker implements DepsChecker {
         installationInfo.isInstalled &&
         installationInfo.details.installVersion
       ) {
-        const expectedFuncNodeError = await this.checkExpectedFuncAndNode(
+        const expectedFuncNodeError = this.checkExpectedFuncAndNode(
           installationInfo.details.installVersion,
           nodeVersion
         );
@@ -161,10 +161,10 @@ export class FuncToolChecker implements DepsChecker {
     return nodeVersion;
   }
 
-  private async checkExpectedFuncAndNode(
+  private checkExpectedFuncAndNode(
     funcVersion: string,
     nodeVersion: string
-  ): Promise<DepsCheckerError | undefined> {
+  ): DepsCheckerError | undefined {
     const funcVersionRange = nodeFuncVersionRangeMapping[nodeVersion];
     if (funcVersionRange && !semver.satisfies(funcVersion, funcVersionRange)) {
       return new DepsCheckerError(

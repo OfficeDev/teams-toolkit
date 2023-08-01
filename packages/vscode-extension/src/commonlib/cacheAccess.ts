@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -147,7 +149,9 @@ export class CryptoCachePlugin {
           }
         }
       } catch (err) {
-        VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.readTokenFail") + err.message);
+        await VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.readTokenFail") + err.message
+        );
       }
     } else {
       try {
@@ -155,7 +159,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.warning(
+        await VsCodeLogInstance.warning(
           localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message
         );
       }
@@ -171,7 +175,9 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message);
+        await VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message
+        );
       }
     }
   }
@@ -191,7 +197,7 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
   } catch (err) {
-    VsCodeLogInstance.warning(
+    await VsCodeLogInstance.warning(
       localize("teamstoolkit.cacheAccess.saveHomeAccountIdFail") + err.message
     );
   }
@@ -202,7 +208,9 @@ export async function clearCache(accountName: string) {
   try {
     await fs.writeFile(cachePath + accountName + cachePathEnd, "");
   } catch (err) {
-    VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message);
+    await VsCodeLogInstance.warning(
+      localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message
+    );
   }
 }
 
@@ -211,7 +219,7 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      VsCodeLogInstance.warning(
+      await VsCodeLogInstance.warning(
         localize("teamstoolkit.cacheAccess.readHomeAccountIdFail") + err.message
       );
     }

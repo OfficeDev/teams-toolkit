@@ -4,6 +4,7 @@ import {
   SingleSelectConfig,
   UserError,
   err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
@@ -221,6 +222,43 @@ describe("UserInteraction(CLI)", () => {
         name: "test",
         default: async () => {
           throw new Error();
+        },
+      });
+      assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("selectFileOrInput", () => {
+    it("happy path", async () => {
+      sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "value" }));
+      const res = await UI.selectFileOrInput({
+        name: "test",
+        title: "test",
+        inputBoxConfig: {
+          title: "test",
+          name: "test",
+        },
+        inputOptionItem: {
+          id: "test",
+          label: "test",
+        },
+      });
+      assert.isTrue(res.isOk());
+    });
+    it("load default value error", async () => {
+      const res = await UI.selectFileOrInput({
+        name: "test",
+        title: "test",
+        inputBoxConfig: {
+          title: "test",
+          name: "test",
+          default: async () => {
+            throw new Error();
+          },
+        },
+        inputOptionItem: {
+          id: "test",
+          label: "test",
         },
       });
       assert.isTrue(res.isErr());

@@ -103,7 +103,7 @@ export class ExtensionSurvey {
 
   public async openSurveyLink() {
     const link = SURVEY_URL_V3;
-    vscode.commands.executeCommand(
+    void vscode.commands.executeCommand(
       "vscode.open",
       vscode.Uri.parse(
         `${link}?o=${encodeURIComponent(process.platform)}&v=${encodeURIComponent(

@@ -10,7 +10,7 @@ const {
   ConfigurationServiceClientCredentialFactory,
   ConfigurationBotFrameworkAuthentication,
 } = require("botbuilder");
-const { TeamsBot } = require("./teamsBot");
+const { SearchApp } = require("./searchApp");
 const config = require("./config");
 
 // Create adapter.
@@ -41,7 +41,7 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Create the bot that will handle incoming messages.
-const bot = new TeamsBot();
+const searchApp = new SearchApp();
 
 // Create HTTP server.
 const server = restify.createServer();
@@ -53,7 +53,7 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 // Listen for incoming requests.
 server.post("/api/messages", async (req, res) => {
   await adapter.process(req, res, async (context) => {
-    await bot.run(context);
+    await searchApp.run(context);
   });
 });
 

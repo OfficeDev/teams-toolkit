@@ -24,6 +24,7 @@ import {
   Inputs,
   M365TokenProvider,
   ManifestTemplateFileName,
+  ManifestUtil,
   OptionItem,
   Platform,
   Result,
@@ -1227,23 +1228,26 @@ export async function autoOpenProjectHandler(): Promise<void> {
     void showLocalPreviewMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+
+    if (globalVariables.workspaceUri?.fsPath) {
+      await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+      await globalStateUpdate(GlobalKey.CreateWarnings, "");
+    }
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
     void showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
+
+    await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    await globalStateUpdate(GlobalKey.CreateWarnings, "");
   }
   if (isOpenSampleReadMe) {
     await showLocalDebugMessage();
     void showLocalPreviewMessage();
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
-  }
-
-  if (globalVariables.workspaceUri?.fsPath) {
-    await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
-    await globalStateUpdate(GlobalKey.CreateWarnings, "");
   }
 }
 
@@ -1417,7 +1421,10 @@ async function showLocalPreviewMessage() {
   }
 }
 
-async function ShowScaffoldingWarningSummary(workspacePath: string, warning: string) {
+async function ShowScaffoldingWarningSummary(
+  workspacePath: string,
+  warning: string
+): Promise<void> {
   try {
     let createWarnings: Warning[] = [];
 
@@ -1436,11 +1443,13 @@ async function ShowScaffoldingWarningSummary(workspacePath: string, warning: str
       path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
     );
     if (manifestRes.isOk()) {
-      const message = generateScaffoldingSummary(createWarnings, manifestRes.value);
-      if (message) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
-        VsCodeLogInstance.outputChannel.show();
-        void VsCodeLogInstance.info(message);
+      if (ManifestUtil.parseCommonProperties(manifestRes.value).isCopilotPlugin) {
+        const message = generateScaffoldingSummary(createWarnings, manifestRes.value);
+        if (message) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
+          VsCodeLogInstance.outputChannel.show();
+          void VsCodeLogInstance.info(message);
+        }
       }
     } else {
       ExtTelemetry.sendTelemetryErrorEvent(

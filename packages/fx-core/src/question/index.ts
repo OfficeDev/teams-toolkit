@@ -19,6 +19,9 @@ import {
 export * from "./questionNames";
 export * from "./create";
 
+export * from "./inputs";
+export * from "./options";
+
 class QuestionNodes {
   createProject(): IQTreeNode | undefined {
     return createProjectQuestionNode();

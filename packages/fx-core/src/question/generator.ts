@@ -4,26 +4,25 @@
 import {
   CLICommandArgument,
   CLICommandOption,
-  IQTreeNode,
-  UserInputQuestion,
-  CLISingleSelectOption,
   CLIMultiSelectOption,
-  SingleSelectQuestion,
+  CLISingleSelectOption,
+  IQTreeNode,
   MultiSelectQuestion,
+  OptionValue,
+  Platform,
+  SingleSelectQuestion,
+  UserInputQuestion,
+  validate,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import { camelCase } from "lodash";
 import path from "path";
-import { addWebPartQuestionNode } from "./other";
-import { createProjectQuestionNode } from ".";
 import {
   IndentationText,
-  Project,
-  StructureKind,
   OptionalKind,
-  VariableDeclarationKind,
+  Project,
   PropertySignatureStructure,
+  VariableDeclarationKind,
 } from "ts-morph";
+import { createProjectQuestionNode, createSampleProjectQuestionNode } from ".";
 
 function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
   if (node.data.type !== "group") {
@@ -36,24 +35,38 @@ function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
   }
 }
 
-function collectNonConditional(node: IQTreeNode) {
-  if (node.data.type !== "group") {
-    if (!node.condition && (node.data as UserInputQuestion).required === undefined) {
-      (node.data as UserInputQuestion).required = true;
-    }
-  }
-  if (node.children) {
-    for (const child of node.children) {
-      if (!child.condition) collectNonConditional(child);
-    }
-  }
-}
+// async function collectNonConditional(node: IQTreeNode) {
+//   if (node.data.type !== "group") {
+//     if (!node.condition && (node.data as UserInputQuestion).required === undefined) {
+//       (node.data as UserInputQuestion).required = true;
+//     }
+//   }
+//   if (node.children) {
+//     for (const child of node.children) {
+//       console.log("child name:", child.data.name);
+//       if (!child.condition) {
+//         console.log("!child.condition， pass");
+//         await collectNonConditional(child);
+//         continue;
+//       }
+//       const validRes = await validate(child.condition, undefined, {
+//         platform: Platform.CLI_HELP,
+//       });
+//       if (validRes === undefined) {
+//         console.log("validate， pass");
+//         await collectNonConditional(child);
+//         continue;
+//       }
+//       console.log("not pass");
+//     }
+//   }
+// }
 
-export function generate(
+export async function generate(
   node: IQTreeNode,
   name: string,
-  inputsFolder = "./inputs",
-  optionFolder = "./options"
+  inputsFolder = "./src/question/inputs",
+  optionFolder = "./src/question/options"
 ) {
   // initialize
   const project = new Project({
@@ -74,9 +87,9 @@ export function generate(
 
   collect(node, nodeList);
 
-  collectNonConditional(node);
+  // await collectNonConditional(node);
 
-  const propertySet = new Set<string>();
+  const questionNames = new Set<string>();
 
   const properties: OptionalKind<PropertySignatureStructure>[] = [];
 
@@ -89,34 +102,46 @@ export function generate(
     if (data.interactiveOnly) {
       continue;
     }
+    const questionName = data.name as string;
 
-    const propName = camelCase(node.data.name);
+    const cliName = data.cliName || questionName;
 
-    if (propertySet.has(propName)) {
+    if (questionNames.has(questionName)) {
       continue;
     }
 
     let type = "string";
 
-    const description =
-      typeof data.title === "string"
+    const title = data.title
+      ? typeof data.title !== "function"
         ? data.title
-        : undefined || (data as any).placeholders || data.name;
+        : await data.title({ platform: Platform.CLI_HELP })
+      : undefined;
+    const defaultValue = data.default
+      ? typeof data.default !== "function"
+        ? data.default
+        : await data.default({ platform: Platform.CLI_HELP })
+      : undefined;
 
-    const cliName = data.cliName || data.name;
+    const propDocDescription = title || data.name;
+
     const option: CLICommandOption | CLICommandArgument = {
       name: cliName,
+      questionName: questionName === cliName ? undefined : questionName,
       type: getOptionType(data),
       shortName: data.cliShortName,
-      description: data.cliDescription || description,
+      description: data.cliDescription || propDocDescription,
       required: data.required,
+      default: data.isBoolean ? Boolean(defaultValue as any) : (defaultValue as any),
     };
 
     if (data.type === "singleSelect" || data.type === "multiSelect") {
       const selection = data as SingleSelectQuestion | MultiSelectQuestion;
 
       const options = selection.staticOptions;
-      if (options.length > 0 && !selection.dynamicOptions) {
+      if (data.isBoolean) {
+        type = "boolean";
+      } else if (options.length > 0) {
         const optionStrings = options.map((o) => (typeof o === "string" ? o : o.id));
         type = optionStrings.map((i) => `"${i}"`).join(" | ");
         (option as CLISingleSelectOption).choices = optionStrings;
@@ -131,15 +156,15 @@ export function generate(
       (option as CLISingleSelectOption | CLIMultiSelectOption).choiceListCommand =
         selection.cliChoiceListCommand;
     }
-
+    const inputPropName = questionName.includes("-") ? `"${questionName}"` : questionName;
     properties.push({
-      name: propName,
+      name: inputPropName,
       type: type,
       hasQuestionToken: !data.required,
-      docs: [`@description ${description}`],
+      docs: [`@description ${propDocDescription}`],
     });
 
-    propertySet.add(propName);
+    questionNames.add(questionName);
 
     if (data.cliType !== "argument") {
       cliOptions.push(option);
@@ -225,4 +250,4 @@ function getOptionType(
 
 generate(createProjectQuestionNode(), "CreateProject");
 
-generate(addWebPartQuestionNode(), "SPFxAddWebpart");
+generate(createSampleProjectQuestionNode(), "CreateSampleProject");

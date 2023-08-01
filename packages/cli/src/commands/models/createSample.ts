@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
-import { CoreQuestionNames, ScratchOptions } from "@microsoft/teamsfx-core";
+import {
+  CoreQuestionNames,
+  CreateSampleProjectArguments,
+  ScratchOptions,
+} from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
@@ -10,22 +14,14 @@ import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { FolderOption } from "../common";
+import { RootFolderOption } from "../common";
 import { listSampleCommand } from "./listSamples";
 
 export const createSampleCommand: CLICommand = {
   name: "template",
   description: "Create a new Teams application from a sample.",
-  arguments: [
-    {
-      name: "sample-name",
-      type: "singleSelect",
-      description: "Specifies the Teams App sample name.",
-      required: true,
-      choiceListCommand: "teamsfx new template list",
-    },
-  ],
-  options: [FolderOption],
+  arguments: CreateSampleProjectArguments,
+  options: [RootFolderOption],
   telemetry: {
     event: TelemetryEvent.DownloadSample,
   },

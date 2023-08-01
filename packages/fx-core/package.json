@@ -70,7 +70,8 @@
     "install:tabs": "cd tabs && npm install",
     "installAll": "npm run install:tabs",
     "checkUnusedStrings": "node ./scripts/find-unused-strings.js ./resource/package.nls.json ./src || exit 1",
-    "deleteUnusedStrings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src"
+    "deleteUnusedStrings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src",
+    "gen": "ts-node ./src/question/generator.ts"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",

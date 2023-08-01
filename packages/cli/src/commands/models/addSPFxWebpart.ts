@@ -5,7 +5,7 @@ import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { FolderOption } from "../common";
+import { RootFolderOption } from "../common";
 
 export const addSPFxWebpartCommand: CLICommand = {
   name: "spfx-web-part",
@@ -38,7 +38,7 @@ export const addSPFxWebpartCommand: CLICommand = {
       shortName: "lm",
       description: "Specifies local Teams manifest.json file path.",
     },
-    FolderOption,
+    RootFolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.AddWebpart,

@@ -6,7 +6,7 @@ import * as constants from "../../cmds/preview/constants";
 import PreviewEnv from "../../cmds/preview/previewEnv";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, FolderOption } from "../common";
+import { EnvOption, RootFolderOption } from "../common";
 
 export const previewCommand: CLICommand = {
   name: "preview",
@@ -72,7 +72,7 @@ export const previewCommand: CLICommand = {
         'The paths that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
       default: constants.defaultExecPath,
     },
-    FolderOption,
+    RootFolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.Preview,

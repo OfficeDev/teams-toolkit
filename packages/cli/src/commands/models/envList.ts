@@ -8,12 +8,12 @@ import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { isWorkspaceSupported } from "../../utils";
-import { FolderOption } from "../common";
+import { RootFolderOption } from "../common";
 
 export const envListCommand: CLICommand = {
   name: "list",
   description: "List all environments.",
-  options: [FolderOption],
+  options: [RootFolderOption],
   telemetry: {
     event: TelemetryEvent.GrantPermission,
   },

@@ -35,7 +35,10 @@ export interface CLIContext {
 }
 
 interface CLICommandOptionBase {
+  /** @description option/argument name used in CLI */
   name: string;
+  /** @description question name used in FxCore */
+  questionName?: string;
   description: string;
   shortName?: string;
   type: "text" | "boolean" | "singleSelect" | "multiSelect";

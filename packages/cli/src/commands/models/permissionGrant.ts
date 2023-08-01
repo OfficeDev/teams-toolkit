@@ -9,7 +9,7 @@ import { azureMessage, setAppTypeInputs, spfxMessage } from "../../cmds/permissi
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, FolderOption } from "../common";
+import { EnvOption, RootFolderOption } from "../common";
 
 export const permissionGrantCommand: CLICommand = {
   name: "grant",
@@ -31,7 +31,7 @@ export const permissionGrantCommand: CLICommand = {
       description: "Manifest of your Azure AD app.",
     },
     EnvOption,
-    FolderOption,
+    RootFolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.GrantPermission,

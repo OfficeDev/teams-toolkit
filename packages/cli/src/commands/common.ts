@@ -2,11 +2,22 @@
 // Licensed under the MIT license.
 
 import { CLICommandOption } from "@microsoft/teamsfx-api";
+import path from "path";
+import os from "os";
 
-export const FolderOption: CLICommandOption = {
+export const RootFolderOption: CLICommandOption = {
   name: "folder",
   shortName: "f",
   description: "Root folder of the project.",
+  type: "text",
+  required: true,
+  default: path.join(os.homedir(), "TeamsApps"),
+};
+
+export const ProjectFolderOption: CLICommandOption = {
+  name: "folder",
+  shortName: "f",
+  description: "Project folder.",
   type: "text",
   required: true,
   default: "./",

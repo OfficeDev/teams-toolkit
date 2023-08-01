@@ -5,7 +5,7 @@ import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, FolderOption } from "../common";
+import { EnvOption, RootFolderOption } from "../common";
 
 export const packageCommand: CLICommand = {
   name: "package",
@@ -34,7 +34,7 @@ export const packageCommand: CLICommand = {
         "Specifies the output path of the generated manifest path, defaults to '${folder}/appPackage/build/manifest.${env}.json'",
     },
     EnvOption,
-    FolderOption,
+    RootFolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.Build,

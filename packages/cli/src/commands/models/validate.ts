@@ -13,7 +13,7 @@ import { cliSource } from "../../constants";
 import { ArgumentConflictError, MissingRequiredArgumentError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, FolderOption } from "../common";
+import { EnvOption, RootFolderOption } from "../common";
 
 export const validateCommand: CLICommand = {
   name: "validate",
@@ -33,7 +33,7 @@ export const validateCommand: CLICommand = {
         "Specifies the zipped Teams app package path. Default value: '${folder}/appPackage/build/appPackage.${env}.zip'. This package will be validated with validation rules.",
     },
     EnvOption,
-    FolderOption,
+    RootFolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.ValidateManifest,

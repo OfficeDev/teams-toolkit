@@ -6,7 +6,7 @@ import { createFxCore } from "../../activate";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs, isWorkspaceSupported } from "../../utils";
-import { FolderOption } from "../common";
+import { RootFolderOption } from "../common";
 
 export const envAddCommand: CLICommand = {
   name: "add",
@@ -18,7 +18,7 @@ export const envAddCommand: CLICommand = {
       type: "text",
       required: true,
     },
-    FolderOption,
+    RootFolderOption,
   ],
   arguments: [
     {

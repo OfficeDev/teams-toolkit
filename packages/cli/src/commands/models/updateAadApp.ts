@@ -7,12 +7,12 @@ import { createFxCore } from "../../activate";
 import { cliSource } from "../../constants";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { AadManifestPathOption, EnvOption, FolderOption } from "../common";
+import { AadManifestPathOption, EnvOption, RootFolderOption } from "../common";
 
 export const updateAadAppCommand: CLICommand = {
   name: "aad-app",
   description: "Update the AAD App in the current application.",
-  options: [AadManifestPathOption, EnvOption, FolderOption],
+  options: [AadManifestPathOption, EnvOption, RootFolderOption],
   telemetry: {
     event: TelemetryEvent.UpdateAadApp,
   },

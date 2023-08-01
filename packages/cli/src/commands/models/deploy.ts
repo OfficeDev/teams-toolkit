@@ -6,12 +6,12 @@ import { createFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, FolderOption } from "../common";
+import { EnvOption, ProjectFolderOption } from "../common";
 
 export const deployCommand: CLICommand = {
   name: "deploy",
   description: strings.command.deploy.description,
-  options: [EnvOption, FolderOption],
+  options: [EnvOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.Deploy,
   },

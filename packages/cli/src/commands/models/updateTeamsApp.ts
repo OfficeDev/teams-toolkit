@@ -7,12 +7,12 @@ import { createFxCore } from "../../activate";
 import { cliSource } from "../../constants";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, FolderOption, TeamsManifestPathOption } from "../common";
+import { EnvOption, RootFolderOption, TeamsManifestPathOption } from "../common";
 
 export const updateTeamsAppCommand: CLICommand = {
   name: "teams-app",
   description: "Update the Teams App manifest to Teams Developer Portal.",
-  options: [TeamsManifestPathOption, EnvOption, FolderOption],
+  options: [TeamsManifestPathOption, EnvOption, RootFolderOption],
   telemetry: {
     event: TelemetryEvent.UpdateTeamsApp,
   },

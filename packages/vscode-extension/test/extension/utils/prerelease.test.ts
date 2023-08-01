@@ -4,7 +4,7 @@ import { PrereleasePage } from "../../../src/utils/prerelease";
 import { ExtensionContext, Memento } from "vscode";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as spies from "chai-spies";
-import * as commonTools from "@microsoft/teamsfx-core";
+import * as vscode from "vscode";
 chai.use(spies);
 const spy = chai.spy;
 const ShowWhatIsNewNotification = "show-what-is-new-notification";
@@ -38,7 +38,8 @@ describe("versionUtil", () => {
   });
   beforeEach(() => {
     sandbox.restore();
-    sandbox.stub(PrereleasePage.prototype, "show").resolves();
+    sandbox.stub(vscode.workspace, "openTextDocument").resolves();
+    sandbox.stub(vscode.commands, "executeCommand").resolves();
     context = {
       subscriptions: [],
       globalState: mockGlobalState,
@@ -84,5 +85,24 @@ describe("versionUtil", () => {
     await instance.checkAndShow();
     chai.assert(spyChecker.callCount == 0);
     spyChecker.restore();
+  });
+  it("checkandshow with undefined version", async () => {
+    sandbox.stub(PrereleasePage.prototype, "getTeamsToolkitVersion").returns(undefined);
+    sandbox.stub(context.globalState, "get").returns("5.0.0");
+    const instance = new PrereleasePage(context);
+    const spyChecker = sandbox.spy(context.globalState, "update");
+    await instance.checkAndShow();
+    chai.assert(spyChecker.callCount == 0);
+    spyChecker.restore();
+  });
+  it("check show command", async () => {
+    sandbox.restore();
+    const openText = sandbox.stub(vscode.workspace, "openTextDocument").resolves();
+    const execMethod = sandbox.stub(vscode.commands, "executeCommand").resolves();
+    const instance = new PrereleasePage(context);
+    await instance.show();
+    chai.expect(openText.callCount == 1);
+    chai.expect(execMethod.callCount == 1);
+    chai.expect(execMethod.getCall(0).args[0] == "markdown.showPreview");
   });
 });

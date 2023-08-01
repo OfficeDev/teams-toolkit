@@ -19,7 +19,7 @@
         "1.78.0",
         "--code_settings",
         "./settings.json",
-        "./out/ui-test/**/sample-localdebug-todo-list-with-spfx.test.js"
+        "./out/ui-test/**/${{ YOUR TEST CASE }}.test.js"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

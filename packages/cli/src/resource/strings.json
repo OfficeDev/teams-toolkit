@@ -1,6 +1,6 @@
 {
-  "account.login.azure": "You have sucessfully logged into Azure.",
-  "account.login.m365": "You have sucessfully logged into Microsoft 365.",
+  "account.login.azure": "You have successfully logged into Azure.",
+  "account.login.m365": "You have successfully logged into Microsoft 365.",
   "account.show.azure": "Your Azure account is: %s. Your subscriptions are: %s",
   "account.show.m365": "Your Microsoft 365 account is: %s.",
   "account.show.info": "Your %s account is: %s.",

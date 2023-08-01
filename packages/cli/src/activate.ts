@@ -16,7 +16,7 @@ export default async function activate(
 ): Promise<Result<FxCore, FxError>> {
   if (rootPath) {
     try {
-      AzureAccountManager.setRootPath(rootPath);
+      AzureAccountManager.setRootPath(rootPath); //legacy code
       const subscriptionInfo = await AzureAccountManager.readSubscription();
       if (subscriptionInfo) {
         await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
@@ -28,7 +28,11 @@ export default async function activate(
       }
     }
   }
+  const core = createFxCore();
+  return ok(core);
+}
 
+export function createFxCore(): FxCore {
   const tools: Tools = {
     logProvider: CLILogProvider,
     tokenProvider: {
@@ -39,5 +43,5 @@ export default async function activate(
     ui: CLIUserInteraction,
   };
   const core = new FxCore(tools);
-  return ok(core);
+  return core;
 }

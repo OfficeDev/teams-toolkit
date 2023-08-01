@@ -11,18 +11,19 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:
-      manifestPath: ./appPackage/manifest.local.json # Path to manifest template
-
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.local.json
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.local.json # Path to manifest template
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.local.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
 
@@ -48,6 +49,7 @@ provision:
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
-      args: install --no-audit
       workingDirectory: src
+      args: install --no-audit

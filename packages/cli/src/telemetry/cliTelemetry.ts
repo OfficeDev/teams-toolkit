@@ -6,7 +6,7 @@ import { fillInTelemetryPropsForFxError, getHashedEnv } from "@microsoft/teamsfx
 import { CliTelemetryReporter } from "../commonlib/telemetry";
 import CLIUIInstance from "../userInteraction";
 import { getSettingsVersion } from "../utils";
-import { TelemetryComponentType, TelemetryProperty } from "./cliTelemetryEvents";
+import { TelemetryComponentType, TelemetryProperty, TelemetrySuccess } from "./cliTelemetryEvents";
 
 export function makeEnvRelatedProperty(
   projectDir: string,
@@ -41,6 +41,8 @@ class CliTelemetry {
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
+
+    properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
 
     const settingsVersion = getSettingsVersion(this.rootFolder);
     if (settingsVersion !== undefined) {

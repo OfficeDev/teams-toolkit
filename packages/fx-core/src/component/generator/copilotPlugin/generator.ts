@@ -84,7 +84,7 @@ export class CopilotPluginGenerator {
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =
-          inputs!.platform === Platform.VSCode
+          inputs.platform === Platform.VSCode
             ? getLocalizedString(
                 "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
               )
@@ -113,7 +113,9 @@ export class CopilotPluginGenerator {
         apiSpecFolderPath,
         isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
       );
-      await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveFolderName);
+
+      const adaptiveCardFolder = path.join(destinationPath, appPackageName, adaptiveFolderName);
+      await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveCardFolder);
 
       // update manifest based on openAI plugin manifest
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);
@@ -137,10 +139,10 @@ export class CopilotPluginGenerator {
 
       // TODO: format log warnings
       for (const warn of warnings) {
-        context.logProvider.warning(warn.content);
+        void context.logProvider.warning(warn.content);
       }
       for (const warn of manifestWarnings) {
-        context.logProvider.warning(warn);
+        void context.logProvider.warning(warn);
       }
       return ok(undefined);
     } catch (e) {

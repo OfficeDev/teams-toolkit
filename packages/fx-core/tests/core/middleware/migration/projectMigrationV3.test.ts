@@ -937,9 +937,9 @@ describe("userdataMigration", () => {
 
   it("Should successfully resolve different EOLs of userdata", async () => {
     sandbox
-      .stub(fs, "readFileSync")
-      .returns(
-        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n"
+      .stub(fs, "readFile")
+      .resolves(
+        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n" as unknown as Buffer
       );
 
     const migrationContext = await mockMigrationContext(projectPath);

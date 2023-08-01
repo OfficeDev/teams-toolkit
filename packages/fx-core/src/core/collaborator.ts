@@ -300,17 +300,17 @@ export async function listCollaborator(
   }
   const appIds = getAppIdsResult.value;
 
-  const hasAad = appIds!.aadObjectId != undefined;
-  const hasTeams = appIds!.teamsAppId != undefined;
+  const hasAad = appIds.aadObjectId != undefined;
+  const hasTeams = appIds.teamsAppId != undefined;
   const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
   const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
   const appStudioRes = hasTeams
-    ? await teamsCollaboration.listCollaborator(ctx, appIds!.teamsAppId!)
+    ? await teamsCollaboration.listCollaborator(ctx, appIds.teamsAppId!)
     : ok([]);
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
   const aadRes = hasAad
-    ? await aadCollaboration.listCollaborator(ctx, appIds!.aadObjectId!)
+    ? await aadCollaboration.listCollaborator(ctx, appIds.aadObjectId!)
     : ok([]);
   if (aadRes.isErr()) return err(aadRes.error);
   const aadOwners: AadOwner[] = aadRes.value;
@@ -422,7 +422,7 @@ export async function checkPermission(
     return err(result.error);
   }
 
-  const userInfo = result.value as AppUser;
+  const userInfo = result.value;
 
   if (inputs.platform === Platform.CLI) {
     // TODO: get tenant id from .env
@@ -452,19 +452,19 @@ export async function checkPermission(
   const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
   const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
 
-  const isTeamsActivated = appIds!.teamsAppId != undefined;
+  const isTeamsActivated = appIds.teamsAppId != undefined;
   const appStudioRes = isTeamsActivated
-    ? await teamsCollaboration.checkPermission(ctx, appIds!.teamsAppId!, userInfo)
+    ? await teamsCollaboration.checkPermission(ctx, appIds.teamsAppId!, userInfo)
     : ok([] as ResourcePermission[]);
   if (appStudioRes.isErr()) {
     return err(appStudioRes.error);
   }
   const permissions = appStudioRes.value;
-  const isAadActivated = appIds!.aadObjectId != undefined;
+  const isAadActivated = appIds.aadObjectId != undefined;
   if (isAadActivated) {
     const aadRes = await aadCollaboration.checkPermission(
       ctx,
-      appIds!.aadObjectId!,
+      appIds.aadObjectId!,
       result.value.aadId
     );
     if (aadRes.isErr()) return err(aadRes.error);
@@ -585,12 +585,12 @@ export async function grantPermission(
 
       ctx.userInteraction.showMessage("info", message, false);
     }
-    const isAadActivated = appIds!.aadObjectId != undefined;
-    const isTeamsActivated = appIds!.teamsAppId != undefined;
+    const isAadActivated = appIds.aadObjectId != undefined;
+    const isTeamsActivated = appIds.teamsAppId != undefined;
     const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
     const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
     const appStudioRes = isTeamsActivated
-      ? await teamsCollaboration.grantPermission(ctx, appIds!.teamsAppId!, userInfo)
+      ? await teamsCollaboration.grantPermission(ctx, appIds.teamsAppId!, userInfo)
       : ok([] as ResourcePermission[]);
     if (appStudioRes.isErr()) {
       return err(appStudioRes.error);
@@ -599,7 +599,7 @@ export async function grantPermission(
     if (isAadActivated) {
       const aadRes = await aadCollaboration.grantPermission(
         ctx,
-        appIds!.aadObjectId!,
+        appIds.aadObjectId!,
         userInfo.aadId
       );
       if (aadRes.isErr()) return err(aadRes.error);

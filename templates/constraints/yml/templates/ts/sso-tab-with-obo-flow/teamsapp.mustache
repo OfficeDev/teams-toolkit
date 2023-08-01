@@ -4,21 +4,21 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsfx provision' is executed
 provision:
-{{{aadAppCreate}}}
+{{#aadAppCreate}} {{/aadAppCreate}}
 
-{{{teamsAppCreate}}}
+{{#teamsAppCreate}} {{/teamsAppCreate}}
 
 {{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
 
-{{{azureStorageEnableStaticWebsite}}}
+{{#azureStorageEnableStaticWebsite}} {{/azureStorageEnableStaticWebsite}}
 
-{{{aadAppUpdate}}}
+{{#aadAppUpdate}} {{/aadAppUpdate}}
 
-{{{teamsAppValidateManifest}}}
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
-{{{teamsAppUpdate}}}
-{{{teamsAppExtendToM365}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:
@@ -38,8 +38,8 @@ deploy:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-{{{teamsAppValidateManifest}}}
-{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
-{{{teamsAppValidateAppPackage}}}
-{{{teamsAppUpdate}}}
-{{{teamsAppPublishAppPackage}}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

@@ -1,0 +1,27 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsfx deploy' is executed
+deploy:
+{{#cliRunNpmCommand}} install, workingDirectory: src, args: install {{/cliRunNpmCommand}}
+{{#cliRunNpxCommand}} workingDirectory: src, bundle {{/cliRunNpxCommand}}
+{{#cliRunNpxCommand}} workingDirectory: src, package {{/cliRunNpxCommand}}
+{{#spfxDeploy}} {{/spfxDeploy}}
+
+# Triggered when 'teamsfx provision' is executed
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+# Triggered when 'teamsfx publish' is executed
+publish:
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppCopyAppPackageToSPFx}} {{/teamsAppCopyAppPackageToSPFx}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

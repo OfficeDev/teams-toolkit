@@ -794,6 +794,8 @@ export async function validateBot(
       console.log(`${expected}`);
     } else {
       await RetryHandler.retry(async () => {
+        await executeBotSuggestionCommand(page, frame, command);
+        await frame?.click('button[name="send"]');
         await frame?.waitForSelector(`p:has-text("${expected}")`);
         console.log("verify bot successfully!!!");
       }, 2);

@@ -21,7 +21,7 @@ import {
   getHashedEnv,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
-import { cloneDeep } from "lodash";
+import { cloneDeep, pick } from "lodash";
 import { format } from "util";
 import { TextType, colorize } from "../colorize";
 import { logger } from "../commonlib/logger";
@@ -75,17 +75,22 @@ class CLIEngine {
     }
 
     // 5. validate
-    const validateRes = this.validateOptionsAndArguments(context.command);
-    if (validateRes.isErr()) {
-      this.processResult(context, validateRes.error);
-      return;
+    if (!context.globalOptionValues.interactive) {
+      const validateRes = this.validateOptionsAndArguments(context.command);
+      if (validateRes.isErr()) {
+        this.processResult(context, validateRes.error);
+        return;
+      }
+    } else {
+      // discard other options and args for interactive mode
+      context.optionValues = pick(context.optionValues, ["projectPath"]);
     }
 
     try {
       // 6. version check
       const inputs = getSystemInputs(context.optionValues.folder as string);
       inputs.ignoreEnvInfo = true;
-      const skipCommands = ["new", "template", "infra", "debug", "upgrade"];
+      const skipCommands = ["new", "sample", "upgrade"];
       if (!skipCommands.includes(context.command.name) && context.optionValues.folder) {
         const core = createFxCore();
         const res = await core.projectVersionCheck(inputs);
@@ -161,7 +166,7 @@ class CLIEngine {
     for (; i < args.length; i++) {
       const arg = args[i];
       if (arg.startsWith("-")) {
-        const argName = arg.replace(/-/g, "");
+        const argName = arg.startsWith("--") ? arg.substring(2) : arg.substring(1);
         const option = options.find((o) => o.name === argName || o.shortName === argName);
         if (option) {
           if (option.type === "boolean") {
@@ -183,7 +188,8 @@ class CLIEngine {
           const inputValues = command.options?.includes(option)
             ? context.optionValues
             : context.globalOptionValues;
-          if (option.value !== undefined) inputValues[option.name] = option.value;
+          const inputKey = option.questionName || option.name;
+          if (option.value !== undefined) inputValues[inputKey] = option.value;
         }
       } else {
         if (command.arguments && command.arguments[j]) {
@@ -221,9 +227,14 @@ class CLIEngine {
     logger.logLevel = logLevel;
 
     // set root folder
-    const projectPath = context.optionValues.folder as string;
-    if (projectPath) {
-      CliTelemetry.withRootFolder(projectPath);
+    const projectFolderOption = context.command.options?.find(
+      (o) => o.questionName === "projectPath"
+    );
+    if (projectFolderOption) {
+      const projectPath = projectFolderOption.value as string;
+      if (projectPath) {
+        CliTelemetry.withRootFolder(projectPath);
+      }
     }
 
     UI.interactive = context.globalOptionValues.interactive as boolean;

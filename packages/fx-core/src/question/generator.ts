@@ -22,7 +22,7 @@ import {
   PropertySignatureStructure,
   VariableDeclarationKind,
 } from "ts-morph";
-import { createProjectQuestionNode, createSampleProjectQuestionNode } from ".";
+import { capabilitySubTree, createProjectQuestionNode, createSampleProjectQuestionNode } from ".";
 
 function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
   if (node.data.type !== "group") {
@@ -35,32 +35,34 @@ function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
   }
 }
 
-// async function collectNonConditional(node: IQTreeNode) {
-//   if (node.data.type !== "group") {
-//     if (!node.condition && (node.data as UserInputQuestion).required === undefined) {
-//       (node.data as UserInputQuestion).required = true;
-//     }
-//   }
-//   if (node.children) {
-//     for (const child of node.children) {
-//       console.log("child name:", child.data.name);
-//       if (!child.condition) {
-//         console.log("!child.condition， pass");
-//         await collectNonConditional(child);
-//         continue;
-//       }
-//       const validRes = await validate(child.condition, undefined, {
-//         platform: Platform.CLI_HELP,
-//       });
-//       if (validRes === undefined) {
-//         console.log("validate， pass");
-//         await collectNonConditional(child);
-//         continue;
-//       }
-//       console.log("not pass");
-//     }
-//   }
-// }
+async function collectNonConditional(node: IQTreeNode) {
+  console.log("collectNonConditional", node.data.name, "required:", (node.data as any).required);
+  if (node.children) {
+    for (const child of node.children) {
+      console.log(child.data.name);
+      console.log("has condittion:", child.condition);
+      const parentRequired = (node.data as any).required || false;
+      let childRequired = (child.data as any).required || false;
+      if (!childRequired) {
+        if (!child.condition) {
+          childRequired = true;
+        } else {
+          if (typeof child.condition === "function") {
+            const isValid = await child.condition({
+              platform: Platform.CLI_HELP,
+            });
+            if (isValid && parentRequired) {
+              childRequired = true;
+            }
+          }
+        }
+      }
+      if (childRequired) (child.data as any).required = true;
+      console.log("required:", (child.data as any).required);
+      await collectNonConditional(child);
+    }
+  }
+}
 
 export async function generate(
   node: IQTreeNode,
@@ -87,7 +89,9 @@ export async function generate(
 
   collect(node, nodeList);
 
-  // await collectNonConditional(node);
+  (node.data as any).required = true;
+
+  await collectNonConditional(node);
 
   const questionNames = new Set<string>();
 
@@ -174,7 +178,7 @@ export async function generate(
   }
 
   inputsFile.addInterface({
-    name: name,
+    name: name + "Inputs",
     isExported: true,
     properties: properties,
     extends: ["Inputs"],
@@ -248,6 +252,6 @@ function getOptionType(
   return "text";
 }
 
-generate(createProjectQuestionNode(), "CreateProject");
+generate(capabilitySubTree(), "CreateProject");
 
 generate(createSampleProjectQuestionNode(), "CreateSampleProject");

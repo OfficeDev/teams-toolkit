@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, CLIContext, Platform, err, ok } from "@microsoft/teamsfx-api";
 import {
   CoreQuestionNames,
   CreateSampleProjectArguments,
+  CreateSampleProjectInputs,
   ScratchOptions,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
@@ -15,25 +16,25 @@ import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { RootFolderOption } from "../common";
-import { listSampleCommand } from "./listSamples";
 
 export const createSampleCommand: CLICommand = {
-  name: "template",
-  description: "Create a new Teams application from a sample.",
+  name: "sample",
+  description: "Create an app from existing sample.",
   arguments: CreateSampleProjectArguments,
   options: [RootFolderOption],
   telemetry: {
     event: TelemetryEvent.DownloadSample,
   },
-  commands: [listSampleCommand],
   handler: async (cmd: CLIContext) => {
     const sampleName = cmd.argumentValues?.[0] || "";
-    const inputs = getSystemInputs();
+    const inputs: CreateSampleProjectInputs = {
+      platform: Platform.CLI,
+      samples: sampleName as any,
+      folder: cmd.optionValues.folder as string,
+      [CoreQuestionNames.Scratch]: ScratchOptions.no().id,
+    };
+    assign(inputs, getSystemInputs());
     inputs.projectId = inputs.projectId ?? uuid.v4();
-    inputs[CoreQuestionNames.Scratch] = ScratchOptions.no().id;
-    inputs[CoreQuestionNames.Samples] = sampleName;
-    const folderOption = cmd.command.options?.find((o) => o.name === "folder");
-    inputs[CoreQuestionNames.Folder] = folderOption?.value || folderOption?.default || "./";
     const core = createFxCore();
     const res = await core.createProject(inputs);
     assign(cmd.telemetryProperties, {

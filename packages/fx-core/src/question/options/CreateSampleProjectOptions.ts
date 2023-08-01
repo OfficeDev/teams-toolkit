@@ -9,6 +9,7 @@ export const CreateSampleProjectOptions: CLICommandOption[] = [
     type: "text",
     shortName: "f",
     description: "Root folder of the project.",
+    required: true,
     default: "C:\\Users\\huajiezhang\\TeamsApps",
   },
 ];
@@ -18,6 +19,7 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
     questionName: "samples",
     type: "singleSelect",
     description: "Specifies the Teams App sample name.",
+    required: true,
     choices: [
       "hello-world-tab-with-backend",
       "graph-toolkit-contact-exporter",
@@ -41,6 +43,6 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
       "developer-assist-dashboard",
       "live-share-dice-roller",
     ],
-    choiceListCommand: "teamsfx new template list",
+    choiceListCommand: "teamsfx list samples",
   },
 ];

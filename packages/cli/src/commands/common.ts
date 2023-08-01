@@ -16,6 +16,7 @@ export const RootFolderOption: CLICommandOption = {
 
 export const ProjectFolderOption: CLICommandOption = {
   name: "folder",
+  questionName: "projectPath",
   shortName: "f",
   description: "Project folder.",
   type: "text",

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, CLIContext, Platform, err, ok } from "@microsoft/teamsfx-api";
+import { CreateProjectOptions, CreateProjectInputs } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
@@ -8,10 +9,8 @@ import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { CLICommand, CLIContext } from "@microsoft/teamsfx-api";
-import { createSampleCommand } from "./createSample";
 import { RootFolderOption } from "../common";
-import { CreateProjectOptions } from "@microsoft/teamsfx-core";
+import { createSampleCommand } from "./createSample";
 
 const options = CreateProjectOptions.filter((option) =>
   [
@@ -26,7 +25,6 @@ const options = CreateProjectOptions.filter((option) =>
     "app-name",
   ].includes(option.name)
 );
-
 export const createCommand: CLICommand = {
   name: "new",
   description: "Create a new Teams application.",
@@ -46,11 +44,9 @@ export const createCommand: CLICommand = {
     event: TelemetryEvent.CreateProject,
   },
   handler: async (cmd: CLIContext) => {
+    const optionValues = cmd.optionValues as CreateProjectInputs;
     const inputs = getSystemInputs();
-    if (!cmd.globalOptionValues.interactive) {
-      assign(inputs, cmd.optionValues);
-      inputs.capabilities = inputs.capability;
-    }
+    assign(inputs, optionValues);
     inputs.projectId = inputs.projectId ?? uuid.v4();
     const core = createFxCore();
     const res = await core.createProject(inputs);

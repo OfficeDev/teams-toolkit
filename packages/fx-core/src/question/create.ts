@@ -502,7 +502,7 @@ function capabilityQuestion(): SingleSelectQuestion {
     cliDescription: "Specifies the Teams App capability.",
     cliName: "capability",
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx help --list-capabilities",
+    cliChoiceListCommand: "teamsfx list capabilities",
     type: "singleSelect",
     staticOptions: CapabilityOptions.all(),
     dynamicOptions: (inputs: Inputs) => {
@@ -1040,7 +1040,7 @@ function sampleSelectQuestion(isArgument = false): SingleSelectQuestion {
     name: QuestionNames.Samples,
     cliName: "sample-name",
     cliDescription: "Specifies the Teams App sample name.",
-    cliChoiceListCommand: "teamsfx new template list",
+    cliChoiceListCommand: "teamsfx list samples",
     cliType: isArgument ? "argument" : "option",
     title: getLocalizedString("core.SampleSelect.title"),
     staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
@@ -1400,6 +1400,109 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
   };
 }
 
+export function capabilitySubTree(): IQTreeNode {
+  const node: IQTreeNode = {
+    data: capabilityQuestion(),
+    children: [
+      {
+        // Notification bot trigger sub-tree
+        condition: { equals: CapabilityOptions.notificationBot().id },
+        data: botTriggerQuestion(),
+      },
+      {
+        // SPFx sub-tree
+        condition: { equals: CapabilityOptions.SPFxTab().id },
+        data: SPFxSolutionQuestion(),
+        children: [
+          {
+            data: { type: "group" },
+            children: [
+              { data: SPFxPackageSelectQuestion() },
+              { data: SPFxFrameworkQuestion() },
+              { data: SPFxWebpartNameQuestion() },
+            ],
+            condition: { equals: "new" },
+          },
+          {
+            data: SPFxImportFolderQuestion(),
+            condition: { equals: "import" },
+          },
+        ],
+      },
+      {
+        // office addin import sub-tree
+        condition: { equals: CapabilityOptions.officeAddinImport().id },
+        data: { type: "group", name: QuestionNames.OfficeAddinImport },
+        children: [
+          {
+            data: {
+              type: "folder",
+              name: QuestionNames.OfficeAddinFolder,
+              title: "Existing add-in project folder",
+            },
+          },
+          {
+            data: {
+              type: "singleFile",
+              name: QuestionNames.OfficeAddinManifest,
+              title: "Select import project manifest file",
+            },
+          },
+        ],
+      },
+      {
+        // office addin other items sub-tree
+        condition: {
+          enum: CapabilityOptions.officeAddinItems().map((i) => i.id),
+        },
+        data: officeAddinHostingQuestion(),
+      },
+      {
+        // Copilot plugin from API spec or AI Plugin
+        condition: {
+          enum: [
+            CapabilityOptions.copilotPluginApiSpec().id,
+            CapabilityOptions.copilotPluginOpenAIPlugin().id,
+          ],
+        },
+        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
+        children: [
+          {
+            condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
+            data: apiSpecLocationQuestion(),
+          },
+          {
+            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
+            data: openAIPluginManifestLocationQuestion(),
+          },
+          {
+            data: apiOperationQuestion(),
+          },
+        ],
+      },
+      {
+        // programming language
+        data: programmingLanguageQuestion(),
+        condition: {
+          excludesEnum: [
+            CapabilityOptions.copilotPluginApiSpec().id,
+            CapabilityOptions.copilotPluginOpenAIPlugin().id,
+          ],
+        },
+      },
+      {
+        // root folder
+        data: rootFolderQuestion(),
+      },
+      {
+        // app name
+        data: appNameQuestion(),
+      },
+    ],
+  };
+  return node;
+}
+
 export function createProjectQuestionNode(): IQTreeNode {
   const createProjectQuestion: IQTreeNode = {
     data: scratchOrSampleQuestion(),
@@ -1417,104 +1520,10 @@ export function createProjectQuestionNode(): IQTreeNode {
               ]
             : []),
           {
-            data: capabilityQuestion(),
-            children: [
-              {
-                // Notification bot trigger sub-tree
-                condition: { equals: CapabilityOptions.notificationBot().id },
-                data: botTriggerQuestion(),
-              },
-              {
-                // SPFx sub-tree
-                condition: { equals: CapabilityOptions.SPFxTab().id },
-                data: SPFxSolutionQuestion(),
-                children: [
-                  {
-                    data: { type: "group" },
-                    children: [
-                      { data: SPFxPackageSelectQuestion() },
-                      { data: SPFxFrameworkQuestion() },
-                      { data: SPFxWebpartNameQuestion() },
-                    ],
-                    condition: { equals: "new" },
-                  },
-                  {
-                    data: SPFxImportFolderQuestion(),
-                    condition: { equals: "import" },
-                  },
-                ],
-              },
-              {
-                // office addin import sub-tree
-                condition: { equals: CapabilityOptions.officeAddinImport().id },
-                data: { type: "group", name: QuestionNames.OfficeAddinImport },
-                children: [
-                  {
-                    data: {
-                      type: "folder",
-                      name: QuestionNames.OfficeAddinFolder,
-                      title: "Existing add-in project folder",
-                    },
-                  },
-                  {
-                    data: {
-                      type: "singleFile",
-                      name: QuestionNames.OfficeAddinManifest,
-                      title: "Select import project manifest file",
-                    },
-                  },
-                ],
-              },
-              {
-                // office addin other items sub-tree
-                condition: {
-                  enum: CapabilityOptions.officeAddinItems().map((i) => i.id),
-                },
-                data: officeAddinHostingQuestion(),
-              },
-              {
-                // Copilot plugin from API spec or AI Plugin
-                condition: {
-                  enum: [
-                    CapabilityOptions.copilotPluginApiSpec().id,
-                    CapabilityOptions.copilotPluginOpenAIPlugin().id,
-                  ],
-                },
-                data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
-                children: [
-                  {
-                    condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
-                    data: apiSpecLocationQuestion(),
-                  },
-                  {
-                    condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
-                    data: openAIPluginManifestLocationQuestion(),
-                  },
-                  {
-                    data: apiOperationQuestion(),
-                  },
-                ],
-              },
-              {
-                // programming language
-                data: programmingLanguageQuestion(),
-                condition: {
-                  excludesEnum: [
-                    CapabilityOptions.copilotPluginApiSpec().id,
-                    CapabilityOptions.copilotPluginOpenAIPlugin().id,
-                  ],
-                },
-              },
-              {
-                // root folder
-                data: rootFolderQuestion(),
-              },
-              {
-                // app name
-                data: appNameQuestion(),
-              },
-            ],
+            condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
+            data: projectTypeQuestion(),
           },
+          capabilitySubTree(),
           {
             condition: (inputs: Inputs) =>
               inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),

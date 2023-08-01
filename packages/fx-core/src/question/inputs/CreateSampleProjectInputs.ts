@@ -3,9 +3,9 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 
-export interface CreateSampleProject extends Inputs {
+export interface CreateSampleProjectInputs extends Inputs {
   /** @description Start from a sample */
-  samples?:
+  samples:
     | "hello-world-tab-with-backend"
     | "graph-toolkit-contact-exporter"
     | "bot-sso"
@@ -28,5 +28,5 @@ export interface CreateSampleProject extends Inputs {
     | "developer-assist-dashboard"
     | "live-share-dice-roller";
   /** @description Root folder of the project. */
-  folder?: string;
+  folder: string;
 }

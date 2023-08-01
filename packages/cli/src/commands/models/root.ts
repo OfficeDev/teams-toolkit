@@ -18,6 +18,7 @@ import { publishCommand } from "./publish";
 import { updateCommand } from "./update";
 import { upgradeCommand } from "./upgrade";
 import { validateCommand } from "./validate";
+import { listCommand } from "./list";
 
 export const rootCommand: CLICommand = {
   name: "teamsfx",
@@ -41,6 +42,7 @@ export const rootCommand: CLICommand = {
     updateCommand,
     upgradeCommand,
     m365Command,
+    listCommand,
   ],
   options: [
     {

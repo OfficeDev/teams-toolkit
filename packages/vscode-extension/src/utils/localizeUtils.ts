@@ -49,7 +49,9 @@ export function parseLocale(): string {
     }
   } catch {}
   const vscodeConfigString = process.env.VSCODE_NLS_CONFIG;
-  return vscodeConfigString ? JSON.parse(vscodeConfigString).locale : "en-us";
+  return vscodeConfigString
+    ? (JSON.parse(vscodeConfigString) as Record<string, string>).locale
+    : "en-us";
 }
 
 function getLocalizedString(key: string, isDefault: boolean, defValue?: string): string {
@@ -81,7 +83,7 @@ export function loadLocalizedStrings(): void {
     `package.nls.${loadedLocale}.json`
   );
   if (fs.pathExistsSync(nlsFile)) {
-    loadedCollection = fs.readJsonSync(nlsFile);
+    loadedCollection = fs.readJsonSync(nlsFile) as Record<string, string> | undefined;
   } else {
     loadedCollection = {};
   }
@@ -96,7 +98,7 @@ function loadDefaultStrings(): void {
       "package.nls.json"
     );
     if (fs.pathExistsSync(defaultNlsFile)) {
-      defaultCollection = fs.readJsonSync(defaultNlsFile);
+      defaultCollection = fs.readJsonSync(defaultNlsFile) as Record<string, string> | undefined;
     } else {
       defaultCollection = {};
     }

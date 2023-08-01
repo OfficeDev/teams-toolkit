@@ -102,7 +102,7 @@ export class SPFxDeployDriver implements StepDriver {
       let retry = 0;
       appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
       while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
-        context.logProvider.warning(
+        void context.logProvider.warning(
           getLocalizedString("driver.spfx.warn.noTenantAppCatalogFound", retry)
         );
         await sleep(Constants.APP_CATALOG_REFRESH_TIME);
@@ -111,7 +111,7 @@ export class SPFxDeployDriver implements StepDriver {
       }
       if (appCatalogSite) {
         SPOClient.setBaseUrl(appCatalogSite);
-        context.logProvider.info(
+        void context.logProvider.info(
           getLocalizedString("driver.spfx.info.tenantAppCatalogCreated", appCatalogSite)
         );
         await sleep(Constants.APP_CATALOG_ACTIVE_TIME);

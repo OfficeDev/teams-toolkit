@@ -5,7 +5,7 @@ import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface CreateProjectInputs extends Inputs {
   /** @description Capabilities */
-  capabilities:
+  capabilities?:
     | "bot"
     | "notification"
     | "command-bot"
@@ -37,5 +37,5 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Programming Language. */
   "programming-language"?: "javascript" | "typescript" | "csharp";
   /** @description Application name */
-  "app-name": string;
+  "app-name"?: string;
 }

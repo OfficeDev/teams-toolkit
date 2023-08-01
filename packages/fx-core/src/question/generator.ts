@@ -206,7 +206,7 @@ export async function generate(
     properties.push({
       name: inputPropName,
       type: type,
-      hasQuestionToken: !data.required,
+      hasQuestionToken: true,
       docs: [`@description ${propDocDescription}`],
     });
 

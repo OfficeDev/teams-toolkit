@@ -5,7 +5,7 @@ import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface CreateSampleProjectInputs extends Inputs {
   /** @description Start from a sample */
-  samples:
+  samples?:
     | "hello-world-tab-with-backend"
     | "graph-toolkit-contact-exporter"
     | "bot-sso"

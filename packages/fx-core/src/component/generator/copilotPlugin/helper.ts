@@ -18,6 +18,7 @@ import {
   ApiOperation,
   ManifestTemplateFileName,
   Warning,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -32,6 +33,7 @@ import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
+import path from "path";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -268,13 +270,7 @@ export function generateScaffoldingSummary(
     }
 
     if (manifestWarningMessage.length) {
-      details +=
-        EOL +
-        `${SummaryConstant.NotExecuted} ${getLocalizedString(
-          "core.copilotPlugin.scaffold.summary.warning.teamsManifest",
-          ManifestTemplateFileName
-        )}`;
-      details += EOL + " " + manifestWarningMessage.join(EOL + " ");
+      details += EOL + manifestWarningMessage.join(EOL);
     }
 
     return getLocalizedString("core.copilotPlugin.scaffold.summary", details);
@@ -321,9 +317,13 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
   if (!teamsManifest.description.full?.length) {
     warnings.push(
       getLocalizedString(
-        "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingField",
-        "description/full"
-      )
+        "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingFullDescription"
+      ) +
+        getLocalizedString(
+          "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation",
+          "full/description",
+          path.join(AppPackageFolderName, ManifestTemplateFileName)
+        )
     );
   }
   if (teamsManifest.description.full!.length > descriptionFullLimit) {
@@ -334,9 +334,16 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
 }
 
 function formatLengthExceedingErrorMessage(field: string, limit: number): string {
-  return getLocalizedString(
-    "core.copilotPlugin.scaffold.summary.warning.teamsManifest.lengthExceeding",
-    field,
-    limit.toString()
+  return (
+    getLocalizedString(
+      "core.copilotPlugin.scaffold.summary.warning.teamsManifest.lengthExceeding",
+      field,
+      limit.toString()
+    ) +
+    getLocalizedString(
+      "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation",
+      field,
+      path.join(AppPackageFolderName, ManifestTemplateFileName)
+    )
   );
 }

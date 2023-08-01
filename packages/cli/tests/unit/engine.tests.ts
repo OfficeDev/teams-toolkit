@@ -92,7 +92,7 @@ describe("CLI Engine", () => {
     });
     it("should run command with argument success", async () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok("..."));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
       sandbox.stub(process, "argv").value(["node", "cli", "new", "template", "samleName"]);
       const loggerStub = sandbox.stub(logger, "info");
       await engine.start(rootCommand);
@@ -107,7 +107,7 @@ describe("CLI Engine", () => {
           choices: ["a", "b", "c"],
         },
       ]);
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok("..."));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
       sandbox.stub(process, "argv").value(["node", "cli", "d"]);
       let error: any = {};
       sandbox.stub(engine, "processResult").callsFake((context, fxError) => {

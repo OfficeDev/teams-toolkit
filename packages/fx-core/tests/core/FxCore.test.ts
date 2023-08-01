@@ -549,7 +549,7 @@ describe("Core basic APIs", () => {
       };
       const res = await core.createProject(inputs);
       projectPath = inputs.projectPath!;
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
       const implement = new FxCoreV3Implement(tools);
 
@@ -586,7 +586,7 @@ describe("Core basic APIs", () => {
       };
       const res = await core.createProject(inputs);
       projectPath = inputs.projectPath!;
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
       const implement = new FxCoreV3Implement(tools);
 

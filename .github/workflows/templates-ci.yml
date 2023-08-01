@@ -1,0 +1,40 @@
+name: template CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - hotfix/**/*
+  push:
+    branches:
+      - main
+      - dev
+      - hotfix/**/*
+    paths:
+      - templates/**
+  workflow_dispatch:
+
+jobs:
+  verify-template-constraints:
+    name: Verify template constraints
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup project
+        run: |
+          npm install
+        working-directory: ./templates
+
+      - name: Verify
+        run: |
+          npm run verify
+        working-directory: ./templates

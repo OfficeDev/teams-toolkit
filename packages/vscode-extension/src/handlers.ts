@@ -1439,6 +1439,7 @@ async function ShowScaffoldingWarningSummary(workspacePath: string, warning: str
       const message = generateScaffoldingSummary(createWarnings, manifestRes.value);
       if (message) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
+        VsCodeLogInstance.outputChannel.show();
         void VsCodeLogInstance.info(message);
       }
     } else {

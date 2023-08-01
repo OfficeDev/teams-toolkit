@@ -1,4 +1,4 @@
-name: template CI
+name: Template CI
 
 on:
   pull_request:
@@ -16,8 +16,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify-template-constraints:
-    name: Verify template constraints
+  verify-constraints:
+    name: verify-constraints
     runs-on: ubuntu-latest
 
     steps:

@@ -6,14 +6,11 @@ import {
   MultiSelectQuestion,
   OptionItem,
   Question,
-  Result,
   SingleSelectQuestion,
   StaticOptions,
-  err,
   getValidationFunction,
-  ok,
 } from "@microsoft/teamsfx-api";
-import { EmptyOptionError, InputValidationError } from "../error/common";
+import { EmptyOptionError } from "../error/common";
 
 class ValidationUtils {
   async validateInputForSingleSelectQuestion(

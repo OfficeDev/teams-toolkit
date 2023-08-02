@@ -27,7 +27,6 @@ import {
 import { assign, cloneDeep } from "lodash";
 import { EmptyOptionError, InputValidationError, UserCancelError, assembleError } from "../error";
 import { validationUtils } from "./validationUtils";
-import { InvalidInputError } from "../core/error";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {

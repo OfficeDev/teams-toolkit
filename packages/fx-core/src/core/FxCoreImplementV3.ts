@@ -689,6 +689,8 @@ export class FxCoreV3Implement {
       createContextV3(),
       inputs.manifest,
       inputs.apiSpecUrl,
+      true,
+      undefined,
       inputs.shouldLogWarning
     );
   }

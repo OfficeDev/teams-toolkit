@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  ApiOperation,
   CLIPlatforms,
   FolderQuestion,
   IQTreeNode,
@@ -29,7 +28,6 @@ import { convertToAlphanumericOnly } from "../common/utils";
 import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
-import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
 import {
   OpenAIPluginManifestHelper,
@@ -1224,14 +1222,21 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
-export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs
   ): Promise<string | undefined> => {
     try {
       const context = createContextV3();
-      const res = await listOperations(context, undefined, input, false);
+      const res = await listOperations(
+        context,
+        undefined,
+        input,
+        includeExistingAPIs,
+        inputs?.teamsManifestPath,
+        false
+      );
       if (res.isOk()) {
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
@@ -1325,6 +1330,8 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             context,
             manifest,
             inputs![QuestionNames.ApiSpecLocation],
+            true,
+            undefined,
             true
           );
           if (res.isOk()) {
@@ -1371,20 +1378,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         throw new EmptyOptionError();
       }
 
-      let operations = inputs.supportedApisFromApiSpec;
-
-      if (!includeExistingAPIs) {
-        const teamsManifestPath = inputs.teamsManifestPath;
-        const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
-        if (manifest.isOk()) {
-          const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-          operations = inputs.supportedApisFromApiSpec.filter(
-            (operation: ApiOperation) => !existingOperationIds.includes(operation.id)
-          );
-        } else {
-          throw manifest.error;
-        }
-      }
+      const operations = inputs.supportedApisFromApiSpec;
 
       return operations;
     },

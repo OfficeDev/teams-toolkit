@@ -1352,7 +1352,7 @@ async function executeBotSuggestionCommand(
   command: string
 ) {
   try {
-    await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
+    await frame?.click(`div.autocompleteItem__header:has-text("${command}")`);
   } catch (e: any) {
     try {
       console.log("can't find quickly select, try another way");
@@ -1361,12 +1361,10 @@ async function executeBotSuggestionCommand(
       await frame?.click('div.ui-flex[role="main"]');
       await frame?.click('div.ck-content[role="textbox"]');
       console.log("select: ", command);
-      await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
+      await frame?.click(`div.autocompleteItem__header:has-text("${command}")`);
     } catch (e: any) {
       console.log(
-        console.log(
-          `[Command ${command} not executed successfully] ${e.message}`
-        )
+        `[Command ${command} not executed successfully] ${e.message}`
       );
     }
   }

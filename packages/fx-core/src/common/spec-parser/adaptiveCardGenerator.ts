@@ -20,7 +20,7 @@ export function generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): 
   if (cardBody.length === 0 && (json.examples || json.example)) {
     cardBody = [
       {
-        type: "TextBlock",
+        type: ConstantString.TextBlockType,
         text: "${jsonStringify($root)}",
         wrap: true,
       },
@@ -31,7 +31,7 @@ export function generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): 
   if (cardBody.length === 0) {
     cardBody = [
       {
-        type: "TextBlock",
+        type: ConstantString.TextBlockType,
         text: "success",
         wrap: true,
       },
@@ -39,9 +39,9 @@ export function generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): 
   }
 
   const fullCard: AdaptiveCard = {
-    type: "AdaptiveCard",
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-    version: "1.5",
+    type: ConstantString.AdaptiveCardType,
+    $schema: ConstantString.AdaptiveCardSchema,
+    version: ConstantString.AdaptiveCardVersion,
     body: cardBody,
   };
 
@@ -58,7 +58,7 @@ export function generateCardFromResponse(
     if (Object.keys(schema.items).length === 0) {
       return [
         {
-          type: "TextBlock",
+          type: ConstantString.TextBlockType,
           text: name ? `${name}: \${jsonStringify(${name})}` : "result: ${jsonStringify($root)}",
           wrap: true,
         },
@@ -67,7 +67,7 @@ export function generateCardFromResponse(
 
     const obj = generateCardFromResponse(schema.items as OpenAPIV3.SchemaObject, "", name);
     const template = {
-      type: "Container",
+      type: ConstantString.ContainerType,
       $data: name ? `\${${name}}` : "${$root}",
       items: Array<TextBlockElement | ArrayElement>(),
     };
@@ -117,7 +117,7 @@ export function generateCardFromResponse(
 
     return [
       {
-        type: "TextBlock",
+        type: ConstantString.TextBlockType,
         text,
         wrap: true,
       },

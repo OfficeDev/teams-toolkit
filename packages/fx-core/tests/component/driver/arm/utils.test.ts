@@ -15,7 +15,8 @@ import {
 import { MockedM365Provider, MyTokenCredential } from "../../../plugins/solution/util";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
-import { getAbsolutePath } from "../../../../src/component/utils/common";
+import { getAbsolutePath, getEnvironmentVariables } from "../../../../src/component/utils/common";
+import * as common from "../../../../src/component/utils/common";
 import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
 import {
   ArmErrorHandle,
@@ -31,6 +32,8 @@ import { ResourceGroupNotExistError } from "../../../../src/error/azure";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
 import { ConstantString } from "../../../../src/common/constants";
+import { MissingEnvironmentVariablesError } from "../../../../src/error";
+import fs from "fs-extra";
 
 describe("utils test", () => {
   const sandbox = createSandbox();
@@ -281,7 +284,7 @@ describe("arm deploy error handle test", () => {
     }
   });
 
-  it("deployTemplate throw FxError", async () => {
+  it("deployTemplate throw DeployTemplate FxError", async () => {
     const deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",
       resourceGroupName: "mock-group",
@@ -290,7 +293,7 @@ describe("arm deploy error handle test", () => {
     } as any;
     const impl = new ArmDeployImpl(deployArgs, mockedDriverContext);
     sandbox
-      .stub(impl, "getDeployParameters")
+      .stub(impl, "getDeployTemplate")
       .throws(new CompileBicepError(".", new Error("compile error")));
     mockedDriverContext.createProgressBar = () => {};
     const res = await impl.deployTemplate({
@@ -304,7 +307,29 @@ describe("arm deploy error handle test", () => {
     }
   });
 
-  it("deployTemplate throw none FxError", async () => {
+  it("deployTemplate throw unresolved env variable FxError", async () => {
+    const deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [],
+    } as any;
+    const impl = new ArmDeployImpl(deployArgs, mockedDriverContext);
+    sandbox.stub(fs, "readFile").resolves("{}" as any);
+    sandbox.stub(common, "getEnvironmentVariables").returns(["env1", "env2", "env3"]);
+    mockedDriverContext.createProgressBar = () => {};
+    const res = await impl.deployTemplate({
+      path: "",
+      parameters: "mockParam",
+      deploymentName: "mkdpn",
+    });
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingEnvironmentVariablesError);
+    }
+  });
+
+  it("deployTemplate throw MissingEnvironmentVariablesError FxError", async () => {
     const deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",
       resourceGroupName: "mock-group",

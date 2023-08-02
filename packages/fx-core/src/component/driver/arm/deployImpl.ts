@@ -172,7 +172,7 @@ export class ArmDeployImpl {
     }
   }
 
-  private async getDeployTemplate(templatePath: string): Promise<string> {
+  async getDeployTemplate(templatePath: string): Promise<string> {
     const templateType = getFileExtension(templatePath);
     const filePath = getAbsolutePath(templatePath, this.context.projectPath);
     let templateJsonString;

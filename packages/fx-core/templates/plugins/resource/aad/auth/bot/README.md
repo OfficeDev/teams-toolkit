@@ -24,13 +24,13 @@ When you added the SSO feature to your application, Teams Toolkit updated your p
 
 After you successfully added SSO into your project, Teams Toolkit will create and modify some files that helps you implement SSO feature.
 
-| Action | File                                                         | Description                                                  |
-| ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Modify | `azureWebAppBotConfig.bicep` under `templates/azure/teamsFx` and `azure.parameters.dev.json` under `.fx/configs` | Insert environment variables used for bot web app to enable SSO feature |
-| Modify | `manifest.template.json` under `templates/appPackage`        | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
-| Modify | `projectSettings.json` under `.fx/configs`                   | Add bot sso capability, which will be used internally by Teams Toolkit. |
-| Create | `aad.template.json` under `templates/appPackage`             | The Azure Active Directory application manifest that is used to register the application with AAD. |
-| Create | `auth/bot`                                                   | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
+| Action | File                                                                                                             | Description                                                                                                                            |
+| ------ | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Modify | `azureWebAppBotConfig.bicep` under `templates/azure/teamsFx` and `azure.parameters.dev.json` under `.fx/configs` | Insert environment variables used for bot web app to enable SSO feature                                                                |
+| Modify | `manifest.template.json` under `templates/appPackage`                                                            | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
+| Modify | `projectSettings.json` under `.fx/configs`                                                                       | Add bot sso capability, which will be used internally by Teams Toolkit.                                                                |
+| Create | `aad.template.json` under `templates/appPackage`                                                                 | The Azure Active Directory application manifest that is used to register the application with AAD.                                     |
+| Create | `auth/bot`                                                                                                       | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information.         |
 
 <h2 id='2'>Update your code to Use SSO for Bot</h2>
 
@@ -45,7 +45,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
    ```ts
    const path = require("path");
-   
+
    server.get(
      "/auth-:name(start|end).html",
      restify.plugins.serveStatic({
@@ -86,9 +86,9 @@ To make this work in your application:
             await commandBot.requestHandler(req, res);
         });
         ```
-        
+
         with:
-        
+
         ```ts
         server.post("/api/messages", async (req, res) => {
             await commandBot.requestHandler(req, res).catch((err) => {
@@ -158,9 +158,10 @@ After successfully add SSO in your project, you can also add a new sso command.
        TeamsFxBotSsoCommandHandler,
        TeamsBotSsoPromptTokenResponse,
        OnBehalfOfUserCredential,
-       createMicrosoftGraphClientWithCredential,
        OnBehalfOfCredentialAuthConfig,
    } from "@microsoft/teamsfx";
+   import { Client } from "@microsoft/microsoft-graph-client";
+   import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
 
    const oboAuthConfig: OnBehalfOfCredentialAuthConfig = {
        authorityHost: process.env.M365_AUTHORITY_HOST,
@@ -181,8 +182,15 @@ After successfully add SSO in your project, you can also add a new sso command.
 
            // Init OnBehalfOfUserCredential instance with SSO token
            const oboCredential = new OnBehalfOfUserCredential(tokenResponse.ssoToken, oboAuthConfig);
-           // Add scope for your Azure AD app. For example: Mail.Read, etc.
-           const graphClient = createMicrosoftGraphClientWithCredential(oboCredential, ["User.Read"]);
+           // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+           const authProvider = new TokenCredentialAuthenticationProvider(oboCredential, {
+           scopes: ["User.Read"],
+           });
+
+           // Initialize Graph client instance with authProvider
+           const graphClient = Client.initWithMiddleware({
+           authProvider: authProvider,
+           });
 
            let photoUrl = "";
            try {
@@ -217,10 +225,11 @@ After successfully add SSO in your project, you can also add a new sso command.
    // for JavaScript:
    const { ActivityTypes } = require("botbuilder");
    require("isomorphic-fetch");
+   const { OnBehalfOfUserCredential } = require("@microsoft/teamsfx");
+   const { Client } = require("@microsoft/microsoft-graph-client");
    const {
-     OnBehalfOfUserCredential,
-     createMicrosoftGraphClientWithCredential,
-   } = require("@microsoft/teamsfx");
+     TokenCredentialAuthenticationProvider,
+   } = require("@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials");
 
    const oboAuthConfig = {
      authorityHost: process.env.M365_AUTHORITY_HOST,
@@ -237,8 +246,15 @@ After successfully add SSO in your project, you can also add a new sso command.
 
        // Init OnBehalfOfUserCredential instance with SSO token
        const oboCredential = new OnBehalfOfUserCredential(tokenResponse.ssoToken, oboAuthConfig);
-       // Add scope for your Azure AD app. For example: Mail.Read, etc.
-       const graphClient = createMicrosoftGraphClientWithCredential(oboCredential, ["User.Read"]);
+       // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+       const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+         scopes: ["User.Read"],
+       });
+
+       // Initialize Graph client instance with authProvider
+       const graphClient = Client.initWithMiddleware({
+         authProvider: authProvider,
+       });
 
        let photoUrl = "";
        try {

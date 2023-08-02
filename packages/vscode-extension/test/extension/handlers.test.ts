@@ -156,6 +156,18 @@ describe("handlers", () => {
 
       chai.assert.isTrue(showMessageStub.called);
     });
+
+    it("throws error", async () => {
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
+      sandbox.stub(M365TokenInstance, "setStatusChangeMap");
+      sandbox.stub(FxCore.prototype, "on").throws(new Error("test"));
+      const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
+
+      const result = await handlers.activate();
+
+      chai.assert.isTrue(result.isErr());
+      chai.assert.isTrue(showErrorMessageStub.called);
+    });
   });
   const sandbox = sinon.createSandbox();
   afterEach(() => {
@@ -1046,6 +1058,24 @@ describe("handlers", () => {
     chai.assert.isTrue(showErrorMessageStub.calledOnce);
   });
 
+  it("downloadSample - LoginFailureError", async () => {
+    const inputs: Inputs = {
+      scratch: "no",
+      platform: Platform.VSCode,
+    };
+    sandbox.stub(handlers, "core").value(new MockCore());
+    const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
+    const createProject = sandbox
+      .stub(handlers.core, "createProject")
+      .resolves(err(new SystemError("test", "test", "Cannot get user login information")));
+
+    await handlers.downloadSample(inputs);
+
+    inputs.stage = Stage.create;
+    chai.assert.isTrue(createProject.calledOnceWith(inputs));
+    chai.assert.isTrue(showErrorMessageStub.calledOnce);
+  });
+
   it("deployAadAppmanifest", async () => {
     sandbox.stub(handlers, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -1658,5 +1688,14 @@ describe("autoOpenProjectHandler", () => {
     sandbox.stub(globalState, "globalStateUpdate");
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     await handlers.autoOpenProjectHandler();
+  });
+
+  it("openFolderHandler()", async () => {
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    const result = await handlers.openFolderHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.called);
+    chai.assert.isTrue(result.isOk());
   });
 });

@@ -184,14 +184,26 @@ export async function validate<T extends string | string[] | OptionItem | Option
     if ((validSchema as StaticValidation).required === true) return `input value is required.`;
   }
 
+  const noneEmptyKeyNum = Object.keys(validSchema).filter(
+    (key) => (validSchema as any)[key] !== undefined
+  ).length;
+
+  if (noneEmptyKeyNum === 0) {
+    return undefined;
+  }
+
   {
     // StringValidation
     const stringValidation: StringValidation = validSchema as StringValidation;
     const strToValidate = value as string;
-    if (typeof strToValidate === "string") {
+    if (strToValidate === undefined || typeof strToValidate === "string") {
       const schema: any = {};
-      if (stringValidation.equals && typeof stringValidation.equals === "string")
+      if (stringValidation.equals && typeof stringValidation.equals === "string") {
+        if (strToValidate === undefined) {
+          return `'${strToValidate}' does not meet equals:'${stringValidation.equals}'`;
+        }
         schema.const = stringValidation.equals;
+      }
       if (
         stringValidation.enum &&
         stringValidation.enum.length > 0 &&
@@ -209,27 +221,26 @@ export async function validate<T extends string | string[] | OptionItem | Option
       }
 
       if (stringValidation.startsWith) {
-        if (!strToValidate.startsWith(stringValidation.startsWith)) {
+        if (strToValidate === undefined || !strToValidate.startsWith(stringValidation.startsWith)) {
           return `'${strToValidate}' does not meet startsWith:'${stringValidation.startsWith}'`;
         }
       }
       if (stringValidation.endsWith) {
-        if (!strToValidate.endsWith(stringValidation.endsWith)) {
+        if (strToValidate === undefined || !strToValidate.endsWith(stringValidation.endsWith)) {
           return `'${strToValidate}' does not meet endsWith:'${stringValidation.endsWith}'`;
         }
       }
       if (stringValidation.includes && typeof strToValidate === "string") {
-        if (!strToValidate.includes(stringValidation.includes)) {
+        if (strToValidate === undefined || !strToValidate.includes(stringValidation.includes)) {
           return `'${strToValidate}' does not meet includes:'${stringValidation.includes}'`;
         }
       }
-      if (stringValidation.notEquals && typeof strToValidate === "string") {
+      if (stringValidation.notEquals) {
         if (strToValidate === stringValidation.notEquals) {
           return `'${strToValidate}' does not meet notEquals:'${stringValidation.notEquals}'`;
         }
       }
-
-      if (stringValidation.excludesEnum && typeof strToValidate === "string") {
+      if (stringValidation.excludesEnum) {
         if (stringValidation.excludesEnum.includes(strToValidate)) {
           return `'${strToValidate}' does not meet excludesEnum:'${stringValidation.excludesEnum}'`;
         }
@@ -241,7 +252,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
   {
     const stringArrayValidation: StringArrayValidation = validSchema as StringArrayValidation;
     const arrayToValidate = value as string[];
-    if (arrayToValidate instanceof Array) {
+    if (arrayToValidate === undefined || arrayToValidate instanceof Array) {
       const schema: any = {};
       if (stringArrayValidation.maxItems) schema.maxItems = stringArrayValidation.maxItems;
       if (stringArrayValidation.minItems) schema.minItems = stringArrayValidation.minItems;
@@ -257,10 +268,13 @@ export async function validate<T extends string | string[] | OptionItem | Option
           stringArrayValidation.enum = stringArrayValidation.equals;
           stringArrayValidation.containsAll = stringArrayValidation.equals;
         } else {
-          return `Array '${arrayToValidate}' does not equals to string:'${stringArrayValidation.equals}'`;
+          return `Array '${arrayToValidate}' does not equals to none array:'${stringArrayValidation.equals}'`;
         }
       }
       if (stringArrayValidation.enum) {
+        if (arrayToValidate === undefined) {
+          return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
+        }
         for (const item of arrayToValidate) {
           if (!stringArrayValidation.enum.includes(item)) {
             return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
@@ -268,12 +282,15 @@ export async function validate<T extends string | string[] | OptionItem | Option
         }
       }
       if (stringArrayValidation.excludes) {
-        if (arrayToValidate.includes(stringArrayValidation.excludes)) {
+        if (arrayToValidate && arrayToValidate.includes(stringArrayValidation.excludes)) {
           return `'${arrayToValidate}' does not meet with excludes:'${stringArrayValidation.excludes}'`;
         }
       }
       if (stringArrayValidation.contains) {
-        if (!arrayToValidate.includes(stringArrayValidation.contains)) {
+        if (
+          arrayToValidate === undefined ||
+          !arrayToValidate.includes(stringArrayValidation.contains)
+        ) {
           return `'${arrayToValidate}' does not meet with contains:'${stringArrayValidation.contains}'`;
         }
       }
@@ -281,7 +298,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
         const containsAll: string[] = stringArrayValidation.containsAll;
         if (containsAll.length > 0) {
           for (const i of containsAll) {
-            if (!arrayToValidate.includes(i)) {
+            if (arrayToValidate === undefined || !arrayToValidate.includes(i)) {
               return `'${arrayToValidate}' does not meet with containsAll:'${containsAll}'`;
             }
           }
@@ -293,7 +310,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
           // let array = valueToValidate as string[];
           let found = false;
           for (const i of containsAny) {
-            if (arrayToValidate.includes(i)) {
+            if (arrayToValidate && arrayToValidate.includes(i)) {
               found = true;
               break;
             }

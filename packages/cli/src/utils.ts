@@ -196,7 +196,7 @@ export async function getTemplates() {
       title: sample.title,
       description: sample.shortDescription,
       sampleAppName: sample.id,
-      sampleAppUrl: sample.url,
+      sampleAppUrl: sample.downloadUrl,
     };
   });
   return samples;

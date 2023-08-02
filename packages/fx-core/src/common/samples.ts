@@ -25,8 +25,7 @@ export interface SampleConfig {
   configuration: string;
   suggested: boolean;
   gifUrl: string;
-  // minimum version to run sample
-  minimumToolkitVersion: string;
+  // maximum TTK version to run sample
   maximumToolkitVersion?: string;
   downloadUrl?: string;
 }

@@ -50,7 +50,6 @@ const mockedSampleInfo: SampleConfig = {
   configuration: "test-configuration",
   suggested: false,
   gifUrl: "",
-  minimumToolkitVersion: "5.0.0",
   downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
 };
 

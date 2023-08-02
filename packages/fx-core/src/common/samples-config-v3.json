@@ -17,7 +17,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/helloWorld-tab-with-backend.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": true
         },
         {
@@ -36,7 +35,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/overview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": true
         },
         {
@@ -57,7 +55,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/preview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -77,7 +74,6 @@
             "time": "1hr to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/ToDoListCRUD.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -96,7 +92,6 @@
             "time": "30min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/preview.png",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -118,7 +113,6 @@
             "time": "30min to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/preview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -138,7 +132,6 @@
             "time": "45min to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/preview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -157,7 +150,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/send-proactive-messages.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false,
             "downloadUrl": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/bot-proactive-messaging-teamsfx"
         },
@@ -177,7 +169,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/adaptivecard.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -196,7 +187,6 @@
             "time": "5min to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/incoming-webhook.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -217,7 +207,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/app.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -236,7 +225,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/preview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -257,7 +245,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/team-central-dashboard.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -278,7 +265,6 @@
             "time": "10min to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/graph-connector-app-demo.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -298,7 +284,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/oneproductivityhub-overview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -320,7 +305,6 @@
             "time": "30min to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/ToDoListCRUD.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -341,7 +325,6 @@
             "time": "30min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/shareNow.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -360,7 +343,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "images/preview.png",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -378,7 +360,6 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "gifPath": "assets/outlook-set-signature-overview.png",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false,
             "downloadUrl": "https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature"
         },
@@ -399,7 +380,6 @@
             "time": "15min to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/preview.png",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -420,7 +400,6 @@
             "time": "5 min to run",
             "configuration": "Manual configurations required",
             "gifPath": "images/preview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         },
         {
@@ -440,7 +419,6 @@
             "time": "5min to run",
             "configuration": "Manual configurations required",
             "gifPath": "assets/preview.gif",
-            "minimumToolkitVersion": "5.0.0",
             "suggested": false
         }
     ]

@@ -28,12 +28,13 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { ObjectIsUndefinedError } from "../../core/error";
+import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   assembleError,
   InputValidationError,
+  InvalidActionInputError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
 } from "../../error/common";
@@ -236,6 +237,8 @@ class Coordinator {
           context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
+        } else {
+          return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }
       }
     }

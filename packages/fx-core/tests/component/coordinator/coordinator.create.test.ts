@@ -110,7 +110,7 @@ describe("coordinator create", () => {
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab(),
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
     };
     const fxCore = new FxCore(tools);
@@ -514,7 +514,6 @@ describe("coordinator create", () => {
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
-
     assert.isTrue(res2.isErr());
   });
 

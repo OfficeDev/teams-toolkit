@@ -192,6 +192,27 @@ export async function validate<T extends string | string[] | OptionItem | Option
     return undefined;
   }
 
+  if (
+    value === undefined &&
+    ((validSchema as any).required ||
+      (validSchema as any).equals ||
+      (validSchema as any).maxLength ||
+      (validSchema as any).minLength ||
+      (validSchema as any).pattern ||
+      (validSchema as any).enum ||
+      (validSchema as any).startsWith ||
+      (validSchema as any).endsWith ||
+      (validSchema as any).includes ||
+      (validSchema as any).maxItems ||
+      (validSchema as any).minItems ||
+      (validSchema as any).uniqueItems ||
+      (validSchema as any).contains ||
+      (validSchema as any).containsAll ||
+      (validSchema as any).containsAny)
+  ) {
+    return `'undefined' does not meet condition:'${JSON.stringify(validSchema)}'`;
+  }
+
   {
     // StringValidation
     const stringValidation: StringValidation = validSchema as StringValidation;
@@ -221,17 +242,17 @@ export async function validate<T extends string | string[] | OptionItem | Option
       }
 
       if (stringValidation.startsWith) {
-        if (strToValidate === undefined || !strToValidate.startsWith(stringValidation.startsWith)) {
+        if (!strToValidate.startsWith(stringValidation.startsWith)) {
           return `'${strToValidate}' does not meet startsWith:'${stringValidation.startsWith}'`;
         }
       }
       if (stringValidation.endsWith) {
-        if (strToValidate === undefined || !strToValidate.endsWith(stringValidation.endsWith)) {
+        if (!strToValidate.endsWith(stringValidation.endsWith)) {
           return `'${strToValidate}' does not meet endsWith:'${stringValidation.endsWith}'`;
         }
       }
       if (stringValidation.includes) {
-        if (strToValidate === undefined || !strToValidate.includes(stringValidation.includes)) {
+        if (!strToValidate.includes(stringValidation.includes)) {
           return `'${strToValidate}' does not meet includes:'${stringValidation.includes}'`;
         }
       }
@@ -268,13 +289,10 @@ export async function validate<T extends string | string[] | OptionItem | Option
           stringArrayValidation.enum = stringArrayValidation.equals;
           stringArrayValidation.containsAll = stringArrayValidation.equals;
         } else {
-          return `Array '${arrayToValidate}' does not equals to none array:'${stringArrayValidation.equals}'`;
+          return `'${arrayToValidate}' does not equals to:'${stringArrayValidation.equals}'`;
         }
       }
-      if (stringArrayValidation.enum) {
-        if (arrayToValidate === undefined) {
-          return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
-        }
+      if (stringArrayValidation.enum && arrayToValidate) {
         for (const item of arrayToValidate) {
           if (!stringArrayValidation.enum.includes(item)) {
             return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
@@ -287,10 +305,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
         }
       }
       if (stringArrayValidation.contains) {
-        if (
-          arrayToValidate === undefined ||
-          !arrayToValidate.includes(stringArrayValidation.contains)
-        ) {
+        if (arrayToValidate && !arrayToValidate.includes(stringArrayValidation.contains)) {
           return `'${arrayToValidate}' does not meet with contains:'${stringArrayValidation.contains}'`;
         }
       }
@@ -298,7 +313,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
         const containsAll: string[] = stringArrayValidation.containsAll;
         if (containsAll.length > 0) {
           for (const i of containsAll) {
-            if (arrayToValidate === undefined || !arrayToValidate.includes(i)) {
+            if (arrayToValidate && !arrayToValidate.includes(i)) {
               return `'${arrayToValidate}' does not meet with containsAll:'${containsAll}'`;
             }
           }

@@ -6,3 +6,4 @@ export * from "./SFPxAddWebpartInputs";
 export * from "./CreateEnvInputs";
 export * from "./SelectTeamsManifestInputs";
 export * from "./ValidateTeamsAppInputs";
+export * from "./PreviewTeamsAppInputs";

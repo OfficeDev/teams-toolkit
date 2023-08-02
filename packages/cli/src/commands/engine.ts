@@ -36,7 +36,6 @@ import { getSystemInputs } from "../utils";
 import { createFxCore } from "../activate";
 import path from "path";
 
-// Licensed under the MIT license.
 class CLIEngine {
   isBundledElectronApp(): boolean {
     return process.versions && process.versions.electron && !(process as any).defaultApp
@@ -48,6 +47,7 @@ class CLIEngine {
 
     // 0. get user args
     const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
+    console.log(process.argv);
 
     // 1. find command
     const findRes = this.findCommand(rootCmd, args);

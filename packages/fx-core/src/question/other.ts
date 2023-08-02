@@ -20,7 +20,6 @@ import fs from "fs-extra";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
-import { Hub } from "../common/m365/constants";
 import { AppStudioScopes } from "../common/tools";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { envUtil } from "../component/utils/envUtil";
@@ -30,8 +29,8 @@ import { TOOLS } from "../core/globalVars";
 import {
   SPFxImportFolderQuestion,
   SPFxWebpartNameQuestion,
-  apiSpecLocationQuestion,
   apiOperationQuestion,
+  apiSpecLocationQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
 
@@ -101,6 +100,7 @@ export function deployAadManifestQuestionNode(): IQTreeNode {
         children: [
           {
             condition: (inputs: Inputs) =>
+              inputs.platform === Platform.VSCode && // confirm question only works for VSC
               inputs.projectPath !== undefined &&
               path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
                 path.join(inputs.projectPath, "aad.manifest.json"),
@@ -153,6 +153,7 @@ export function selectAadAppManifestQuestionNode(): IQTreeNode {
     children: [
       {
         condition: (inputs: Inputs) =>
+          inputs.platform === Platform.VSCode && // confirm question only works for VSC
           inputs.projectPath &&
           inputs[QuestionNames.AadAppManifestFilePath] &&
           path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
@@ -166,7 +167,7 @@ export function selectAadAppManifestQuestionNode(): IQTreeNode {
 
 function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
   return (
-    inputs.platform === Platform.VSCode &&
+    inputs.platform === Platform.VSCode && // confirm question only works for VSC
     inputs.projectPath &&
     inputs[QuestionNames.TeamsAppManifestFilePath] &&
     path.resolve(inputs[QuestionNames.TeamsAppManifestFilePath]) !==
@@ -311,12 +312,6 @@ function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
   };
 }
 
-export function selectTeamsAppValidationMethodQuestionNode(): IQTreeNode {
-  return {
-    data: selectTeamsAppValidationMethodQuestion(),
-  };
-}
-
 export function copilotPluginAddAPIQuestionNode(): IQTreeNode {
   return {
     data: apiSpecLocationQuestion(),
@@ -381,12 +376,39 @@ export function selectTeamsAppPackageQuestionNode(): IQTreeNode {
   };
 }
 
+export class HubOptions {
+  static teams(): OptionItem {
+    return {
+      id: "teams",
+      label: "Teams",
+    };
+  }
+  static outlook(): OptionItem {
+    return {
+      id: "outlook",
+      label: "Outlook",
+    };
+  }
+  static office(): OptionItem {
+    return {
+      id: "office",
+      label: "the Microsoft 365 app",
+    };
+  }
+  static all(): OptionItem[] {
+    return [this.teams(), this.outlook(), this.office()];
+  }
+}
+
 function selectM365HostQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.M365Host,
+    cliShortName: "mh",
+    cliDescription: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     title: getLocalizedString("core.M365HostQuestion.title"),
+    default: HubOptions.teams().id,
     type: "singleSelect",
-    staticOptions: [Hub.teams, Hub.outlook, Hub.office],
+    staticOptions: HubOptions.all(),
     placeholder: getLocalizedString("core.M365HostQuestion.placeholder"),
   };
 }

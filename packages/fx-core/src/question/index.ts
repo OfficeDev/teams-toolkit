@@ -16,8 +16,6 @@ import {
   listCollaboratorQuestionNode,
   previewWithTeamsAppManifestQuestionNode,
   selectTeamsAppManifestQuestionNode,
-  selectTeamsAppPackageQuestionNode,
-  selectTeamsAppValidationMethodQuestionNode,
   validateTeamsAppQuestionNode,
 } from "./other";
 
@@ -45,12 +43,6 @@ class QuestionNodes {
   }
   validateTeamsApp(): IQTreeNode {
     return validateTeamsAppQuestionNode();
-  }
-  selectTeamsAppValidationMethod(): IQTreeNode {
-    return selectTeamsAppValidationMethodQuestionNode();
-  }
-  selectTeamsAppPackage(): IQTreeNode {
-    return selectTeamsAppPackageQuestionNode();
   }
   previewWithTeamsAppManifest(): IQTreeNode {
     return previewWithTeamsAppManifestQuestionNode();

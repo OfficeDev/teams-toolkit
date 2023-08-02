@@ -293,9 +293,10 @@ function getOptionType(
   return "text";
 }
 
-// generate(questionNodes.createProject()!, "CreateProject");
-// generate(questionNodes.createSampleProject()!, "CreateSampleProject");
-// generate(questionNodes.addWebpart()!, "SFPxAddWebpart");
-// generate(questionNodes.createNewEnv()!, "CreateEnv");
-// generate(questionNodes.selectTeamsAppManifest()!, "SelectTeamsManifest");
-generate(questionNodes.validateTeamsApp()!, "ValidateTeamsApp");
+// generate(questionNodes.createProject(), "CreateProject");
+// generate(questionNodes.createSampleProject(), "CreateSampleProject");
+// generate(questionNodes.addWebpart(), "SFPxAddWebpart");
+// generate(questionNodes.createNewEnv(), "CreateEnv");
+// generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
+// generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
+generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");

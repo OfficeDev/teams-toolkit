@@ -6,21 +6,20 @@ import * as constants from "../../cmds/preview/constants";
 import PreviewEnv from "../../cmds/preview/previewEnv";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, RootFolderOption } from "../common";
+import { EnvOption, ProjectFolderOption } from "../common";
+import { PreviewTeamsAppInputs, PreviewTeamsAppOptions } from "@microsoft/teamsfx-core";
+import { Hub } from "../../cmds/preview/constants";
 
 export const previewCommand: CLICommand = {
   name: "preview",
   description: "Preview the current application.",
   options: [
-    EnvOption,
-    {
-      name: "manifest-file-path",
-      shortName: "m",
-      type: "text",
-      default: "./appPackage/manifest.json",
-      description: "Specifies the Teams app manifest file path.",
-      required: true,
-    },
+    ...PreviewTeamsAppOptions.map((option) => {
+      if (option.name === "teams-manifest-file") {
+        option.default = "./appPackage/manifest.json";
+      }
+      return option;
+    }),
     {
       name: "run-command",
       type: "text",
@@ -30,7 +29,7 @@ export const previewCommand: CLICommand = {
     },
     {
       name: "running-pattern",
-      shortName: "sp",
+      shortName: "p",
       type: "text",
       description: `The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("${constants.defaultRunningPattern.source}"). If empty, teamsfx treats process start as ready signal.`,
     },
@@ -41,14 +40,6 @@ export const previewCommand: CLICommand = {
       description:
         "Work for 'local' environment only. If true, directly open web client without launching local service.",
       default: false,
-    },
-    {
-      name: "m365-host",
-      type: "singleSelect",
-      shortName: "mh",
-      description: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
-      choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
-      default: constants.Hub.teams,
     },
     {
       name: "browser",
@@ -67,21 +58,30 @@ export const previewCommand: CLICommand = {
     {
       name: "exec-path",
       type: "text",
-      shortName: "ba",
+      shortName: "ep",
       description:
         'The paths that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
       default: constants.defaultExecPath,
     },
-    RootFolderOption,
+    EnvOption,
+    ProjectFolderOption,
   ],
   telemetry: {
     event: TelemetryEvent.Preview,
   },
   handler: async (ctx: CLIContext) => {
-    const inputs = getSystemInputs();
-    if (!ctx.globalOptionValues.interactive) {
-      assign(inputs, ctx.optionValues);
-    }
+    const inputs = getSystemInputs() as PreviewTeamsAppInputs;
+    assign(inputs, ctx.optionValues);
+    const workspaceFolder = inputs.projectPath as string;
+    const env = inputs.env as string;
+    const manifestFilePath = inputs["manifest-path"] as string;
+    const command = inputs["run-command"] as string;
+    const runningPattern = inputs["running-pattern"] as string;
+    const openOnly = inputs["open-only"] as boolean;
+    const m365Host = inputs["m365-host"] as constants.Hub;
+    const execPath: string = inputs["exec-path"] as string;
+    const browser = inputs.browser as constants.Browser;
+    const browserArguments = (inputs["browser-arg"] as string[]) ?? [];
     const cmd = new PreviewEnv();
     const res = await cmd.runCommand(inputs);
     if (res.isErr()) {

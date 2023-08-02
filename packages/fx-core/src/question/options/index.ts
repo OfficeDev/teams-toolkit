@@ -6,3 +6,4 @@ export * from "./SFPxAddWebpartOptions";
 export * from "./CreateEnvOptions";
 export * from "./SelectTeamsManifestOptions";
 export * from "./ValidateTeamsAppOptions";
+export * from "./PreviewTeamsAppOptions";

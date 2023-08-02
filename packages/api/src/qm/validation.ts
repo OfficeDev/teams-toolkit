@@ -230,7 +230,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
           return `'${strToValidate}' does not meet endsWith:'${stringValidation.endsWith}'`;
         }
       }
-      if (stringValidation.includes && typeof strToValidate === "string") {
+      if (stringValidation.includes) {
         if (strToValidate === undefined || !strToValidate.includes(stringValidation.includes)) {
           return `'${strToValidate}' does not meet includes:'${stringValidation.includes}'`;
         }

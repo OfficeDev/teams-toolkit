@@ -12,7 +12,7 @@ export const accountLogoutCommand: CLICommand = {
   description: "Log out of the selected cloud service.",
   arguments: [
     {
-      type: "singleSelect",
+      type: "string",
       name: "service",
       description: "Azure or Microsoft 365.",
       choices: ["azure", "m365"],

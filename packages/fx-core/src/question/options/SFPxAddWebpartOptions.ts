@@ -6,28 +6,31 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 export const SFPxAddWebpartOptions: CLICommandOption[] = [
   {
     name: "spfx-folder",
-    type: "text",
+    type: "string",
     shortName: "sf",
     description: "Directory path that contains the existing SarePoint Framework solutions.",
     required: true,
   },
   {
     name: "spfx-webpart-name",
-    type: "text",
+    type: "string",
     shortName: "sw",
     description: "Name for SharePoint Framework Web Part.",
     required: true,
     default: "helloworld",
   },
   {
-    name: "manifest-path",
-    type: "text",
-    description: "Select Teams manifest.json file",
+    name: "teams-manifest-file",
+    questionName: "manifest-path",
+    type: "string",
+    shortName: "tm",
+    description:
+      "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
     required: true,
   },
   {
     name: "local-manifest-path",
-    type: "text",
+    type: "string",
     description: "Select local Teams manifest.json file",
     required: true,
   },

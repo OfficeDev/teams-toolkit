@@ -99,6 +99,20 @@ export const BuildFolderName = "build";
 // Warning: (ae-forgotten-export) The symbol "CLICommandOptionBase" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
+export interface CLIArrayOption extends CLICommandOptionBase {
+    // (undocumented)
+    choiceListCommand?: string;
+    // (undocumented)
+    choices?: string[];
+    // (undocumented)
+    default?: string[];
+    // (undocumented)
+    type: "array";
+    // (undocumented)
+    value?: string[];
+}
+
+// @public (undocumented)
 export interface CLIBooleanOption extends CLICommandOptionBase {
     // (undocumented)
     default?: boolean;
@@ -148,7 +162,7 @@ export interface CLICommand {
 export type CLICommandArgument = CLICommandOption;
 
 // @public (undocumented)
-export type CLICommandOption = CLIBooleanOption | CLITextOption | CLISingleSelectOption | CLIMultiSelectOption;
+export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOption;
 
 // @public (undocumented)
 export interface CLIContext {
@@ -173,42 +187,21 @@ export interface CLIExample {
 }
 
 // @public (undocumented)
-export interface CLIMultiSelectOption extends CLICommandOptionBase {
-    // (undocumented)
-    choiceListCommand?: string;
-    // (undocumented)
-    choices?: string[] | boolean[];
-    // (undocumented)
-    default?: string[] | boolean[];
-    // (undocumented)
-    type: "multiSelect";
-    // (undocumented)
-    value?: string[] | boolean[];
-}
+export type CLIOptionType = "boolean" | "string" | "array";
 
 // @public (undocumented)
 export const CLIPlatforms: Platform[];
 
 // @public (undocumented)
-export interface CLISingleSelectOption extends CLICommandOptionBase {
+export interface CLIStringOption extends CLICommandOptionBase {
     // (undocumented)
     choiceListCommand?: string;
     // (undocumented)
-    choices?: string[] | boolean[];
-    // (undocumented)
-    default?: string | boolean;
-    // (undocumented)
-    type: "singleSelect";
-    // (undocumented)
-    value?: string | boolean;
-}
-
-// @public (undocumented)
-export interface CLITextOption extends CLICommandOptionBase {
+    choices?: string[];
     // (undocumented)
     default?: string;
     // (undocumented)
-    type: "text";
+    type: "string";
     // (undocumented)
     value?: string;
 }
@@ -639,7 +632,7 @@ export interface OptionItem {
 }
 
 // @public (undocumented)
-export type OptionValue = string | boolean | string[] | boolean[] | undefined;
+export type OptionValue = string | boolean | string[] | undefined;
 
 // @public
 export interface PermissionRequestProvider {

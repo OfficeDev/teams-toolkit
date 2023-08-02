@@ -6,7 +6,7 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 export const PreviewTeamsAppOptions: CLICommandOption[] = [
   {
     name: "m365-host",
-    type: "singleSelect",
+    type: "string",
     shortName: "mh",
     description: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     required: true,
@@ -16,7 +16,7 @@ export const PreviewTeamsAppOptions: CLICommandOption[] = [
   {
     name: "teams-manifest-file",
     questionName: "manifest-path",
-    type: "text",
+    type: "string",
     shortName: "tm",
     description:
       "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",

@@ -138,33 +138,30 @@ class Helper {
     }].`;
   }
   formatArgumentDescription(argument: CLICommandArgument) {
-    const sentances = [argument.description];
-    if (argument.type === "singleSelect" && argument.choices) {
-      sentances.push(this.formatAllowedValue(argument.choices));
+    const sentences = [argument.description];
+    if ((argument.type === "string" || argument.type === "array") && argument.choices) {
+      sentences.push(this.formatAllowedValue(argument.choices));
     }
     if (argument.default !== undefined) {
-      sentances.push(`Default value: ${JSON.stringify(argument.default)}.`);
+      sentences.push(`Default value: ${JSON.stringify(argument.default)}.`);
     }
-    if (argument.type === "singleSelect" && argument.choiceListCommand) {
-      sentances.push(`Use '${argument.choiceListCommand}' to see all available options.`);
+    if ((argument.type === "string" || argument.type === "array") && argument.choiceListCommand) {
+      sentences.push(`Use '${argument.choiceListCommand}' to see all available options.`);
     }
-    return sentances.join(" ");
+    return sentences.join(" ");
   }
   formatOptionDescription(option: CLICommandOption) {
-    const sentances = [option.description];
-    if ((option.type === "multiSelect" || option.type === "singleSelect") && option.choices) {
-      sentances.push(this.formatAllowedValue(option.choices));
+    const sentences = [option.description];
+    if ((option.type === "string" || option.type === "array") && option.choices) {
+      sentences.push(this.formatAllowedValue(option.choices));
     }
     if (option.default !== undefined) {
-      sentances.push(`Default value: ${JSON.stringify(option.default)}.`);
+      sentences.push(`Default value: ${JSON.stringify(option.default)}.`);
     }
-    if (
-      (option.type === "multiSelect" || option.type === "singleSelect") &&
-      option.choiceListCommand
-    ) {
-      sentances.push(`Use '${option.choiceListCommand}' to see all available options.`);
+    if ((option.type === "string" || option.type === "array") && option.choiceListCommand) {
+      sentences.push(`Use '${option.choiceListCommand}' to see all available options.`);
     }
-    return sentances.join(" ");
+    return sentences.join(" ");
   }
   formatHelp(command: CLICommand, rootCommand?: CLICommand): string {
     this.termWidth = this.computePadWidth(command, rootCommand);

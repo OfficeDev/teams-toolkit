@@ -4,7 +4,8 @@
 import { Result } from "neverthrow";
 import { FxError } from "./error";
 
-export type OptionValue = string | boolean | string[] | boolean[] | undefined;
+export type OptionValue = string | boolean | string[] | undefined;
+export type CLIOptionType = "boolean" | "string" | "array";
 
 export interface CLICommand {
   name: string;
@@ -41,7 +42,7 @@ interface CLICommandOptionBase {
   questionName?: string;
   description: string;
   shortName?: string;
-  type: "text" | "boolean" | "singleSelect" | "multiSelect";
+  type: CLIOptionType;
   required?: boolean;
   hidden?: boolean;
 }
@@ -52,33 +53,23 @@ export interface CLIBooleanOption extends CLICommandOptionBase {
   value?: boolean;
 }
 
-export interface CLITextOption extends CLICommandOptionBase {
-  type: "text";
+export interface CLIStringOption extends CLICommandOptionBase {
+  type: "string";
   default?: string;
   value?: string;
-}
-
-export interface CLISingleSelectOption extends CLICommandOptionBase {
-  type: "singleSelect";
-  default?: string | boolean;
-  choices?: string[] | boolean[];
+  choices?: string[];
   choiceListCommand?: string;
-  value?: string | boolean;
 }
 
-export interface CLIMultiSelectOption extends CLICommandOptionBase {
-  type: "multiSelect";
-  default?: string[] | boolean[];
-  choices?: string[] | boolean[];
+export interface CLIArrayOption extends CLICommandOptionBase {
+  type: "array";
+  default?: string[];
+  choices?: string[];
   choiceListCommand?: string;
-  value?: string[] | boolean[];
+  value?: string[];
 }
 
-export type CLICommandOption =
-  | CLIBooleanOption
-  | CLITextOption
-  | CLISingleSelectOption
-  | CLIMultiSelectOption;
+export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOption;
 
 export type CLICommandArgument = CLICommandOption;
 

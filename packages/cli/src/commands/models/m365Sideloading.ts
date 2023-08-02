@@ -17,7 +17,7 @@ export const m365SideloadingCommand: CLICommand = {
     {
       name: "file-path",
       description: "Path to the App manifest zip package.",
-      type: "text",
+      type: "string",
       required: true,
     },
   ],

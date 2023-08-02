@@ -15,14 +15,14 @@ export const packageCommand: CLICommand = {
     ...SelectTeamsManifestOptions,
     {
       name: "output-zip-path",
-      type: "text",
+      type: "string",
       shortName: "oz",
       description:
         "Specifies the output path of the zipped app package, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'.",
     },
     {
       name: "output-manifest-path",
-      type: "text",
+      type: "string",
       shortName: "om",
       description:
         "Specifies the output path of the generated manifest path, defaults to '${folder}/appPackage/build/manifest.${env}.json'",

@@ -12,7 +12,7 @@ export const configGetCommand: CLICommand = {
     {
       name: "name",
       description: "Specifies the global configuration name.",
-      type: "singleSelect",
+      type: "string",
       choices: ["telemetry", "interactive"],
     },
   ],

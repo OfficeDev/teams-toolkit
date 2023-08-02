@@ -18,16 +18,16 @@ export const permissionGrantCommand: CLICommand = {
     {
       name: "email",
       description: "Email address of the collaborator.",
-      type: "text",
+      type: "string",
     },
     {
       name: "teams-app-manifest",
-      type: "text",
+      type: "string",
       description: "Manifest of Your Teams app.",
     },
     {
       name: "aad-app-manifest",
-      type: "text",
+      type: "string",
       description: "Manifest of your Azure AD app.",
     },
     EnvOption,

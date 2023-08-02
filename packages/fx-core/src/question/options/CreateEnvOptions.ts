@@ -7,7 +7,7 @@ export const CreateEnvOptions: CLICommandOption[] = [
   {
     name: "env",
     questionName: "sourceEnvName",
-    type: "singleSelect",
+    type: "string",
     description: "Specifies an existing environment name to copy from.",
     required: true,
   },
@@ -16,7 +16,7 @@ export const CreateEnvArguments: CLICommandArgument[] = [
   {
     name: "name",
     questionName: "newTargetEnvName",
-    type: "text",
+    type: "string",
     description: "Specifies the new environment name.",
     required: true,
   },

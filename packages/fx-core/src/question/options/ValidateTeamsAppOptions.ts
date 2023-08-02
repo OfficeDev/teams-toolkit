@@ -7,7 +7,7 @@ export const ValidateTeamsAppOptions: CLICommandOption[] = [
   {
     name: "teams-manifest-file",
     questionName: "manifest-path",
-    type: "text",
+    type: "string",
     shortName: "tm",
     description:
       "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
@@ -15,7 +15,7 @@ export const ValidateTeamsAppOptions: CLICommandOption[] = [
   {
     name: "app-package-file",
     questionName: "app-package-file-path",
-    type: "text",
+    type: "string",
     shortName: "pf",
     description:
       "Specifies the zipped Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",

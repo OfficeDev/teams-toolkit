@@ -1,14 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, CLIContext, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  PreviewTeamsAppInputs,
+  PreviewTeamsAppOptions,
+  TelemetryContext,
+  environmentManager,
+} from "@microsoft/teamsfx-core";
 import { assign } from "lodash";
 import * as constants from "../../cmds/preview/constants";
-import PreviewEnv from "../../cmds/preview/previewEnv";
-import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, ProjectFolderOption } from "../common";
-import { PreviewTeamsAppInputs, PreviewTeamsAppOptions } from "@microsoft/teamsfx-core";
-import { Hub } from "../../cmds/preview/constants";
+import { ProjectFolderOption } from "../common";
+import PreviewEnv from "../../cmds/preview/previewEnv";
+import { localTelemetryReporter } from "../../cmds/preview/localTelemetryReporter";
 
 export const previewCommand: CLICommand = {
   name: "preview",
@@ -22,7 +27,7 @@ export const previewCommand: CLICommand = {
     }),
     {
       name: "run-command",
-      type: "text",
+      type: "string",
       shortName: "c",
       description:
         "The command to start local service. Work for 'local' environment only. If undefined, teamsfx will use the auto detected one from project type (`npm run dev:teamsfx` or `dotnet run` or `func start`). If empty, teamsfx will skip starting local service.",
@@ -30,8 +35,9 @@ export const previewCommand: CLICommand = {
     {
       name: "running-pattern",
       shortName: "p",
-      type: "text",
+      type: "string",
       description: `The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("${constants.defaultRunningPattern.source}"). If empty, teamsfx treats process start as ready signal.`,
+      required: true,
     },
     {
       name: "open-only",
@@ -40,30 +46,39 @@ export const previewCommand: CLICommand = {
       description:
         "Work for 'local' environment only. If true, directly open web client without launching local service.",
       default: false,
+      required: true,
     },
     {
       name: "browser",
-      type: "singleSelect",
+      type: "string",
       shortName: "b",
       description: "Select browser to open Teams web client.",
       choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
       default: constants.Browser.default,
+      required: true,
     },
     {
       name: "browser-arg",
-      type: "text",
+      type: "array",
       shortName: "ba",
       description: `Argument to pass to the browser (e.g. --browser-args="--guest")`,
     },
     {
       name: "exec-path",
-      type: "text",
+      type: "string",
       shortName: "ep",
       description:
         'The paths that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
       default: constants.defaultExecPath,
+      required: true,
     },
-    EnvOption,
+    {
+      name: "env",
+      type: "string",
+      description: "Specifies the environment name for the project.",
+      required: true,
+      default: "local",
+    },
     ProjectFolderOption,
   ],
   telemetry: {
@@ -82,8 +97,34 @@ export const previewCommand: CLICommand = {
     const execPath: string = inputs["exec-path"] as string;
     const browser = inputs.browser as constants.Browser;
     const browserArguments = (inputs["browser-arg"] as string[]) ?? [];
+    ctx.telemetryProperties[TelemetryProperty.PreviewType] =
+      env.toLowerCase() === environmentManager.getLocalEnvName() ? "local" : `remote-${env}`;
+    ctx.telemetryProperties[TelemetryProperty.PreviewHub] = m365Host;
+    ctx.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
     const cmd = new PreviewEnv();
-    const res = await cmd.runCommand(inputs);
+    const res = await localTelemetryReporter.runWithTelemetryGeneric(
+      TelemetryEvent.Preview,
+      async () =>
+        cmd.doPreview(
+          workspaceFolder,
+          env,
+          manifestFilePath,
+          command,
+          runningPattern,
+          openOnly,
+          m365Host,
+          browser,
+          browserArguments,
+          execPath
+        ),
+      (result: Result<null, FxError>, c: TelemetryContext) => {
+        // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements
+        Object.assign(c.properties, ctx.telemetryProperties);
+        Object.assign(c.measurements, []);
+        return result.isErr() ? result.error : undefined;
+      },
+      ctx.telemetryProperties
+    );
     if (res.isErr()) {
       return err(res.error);
     }

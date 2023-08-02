@@ -18,7 +18,7 @@ export const accountLoginAzureCommand: CLICommand = {
     {
       name: "tenant",
       description: "Authenticate with a specific Azure Active Directory tenant.",
-      type: "text",
+      type: "string",
       default: "",
     },
     {
@@ -31,14 +31,14 @@ export const accountLoginAzureCommand: CLICommand = {
       name: "username",
       shortName: "u",
       description: "Client ID for service principal",
-      type: "text",
+      type: "string",
       default: "",
     },
     {
       name: "password",
       shortName: "p",
       description: "Provide client secret or a pem file with key and public certificate.",
-      type: "text",
+      type: "string",
       default: "",
     },
   ],

@@ -15,12 +15,12 @@ export const m365LaunchInfoCommand: CLICommand = {
     {
       name: "title-id",
       description: "Title ID of the acquired M365 App.",
-      type: "text",
+      type: "string",
     },
     {
       name: "manifest-id",
       description: "Manifest ID of the acquired M365 App.",
-      type: "text",
+      type: "string",
     },
   ],
   examples: [

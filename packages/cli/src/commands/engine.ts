@@ -35,6 +35,7 @@ import Progress from "../console/progress";
 import { getSystemInputs } from "../utils";
 import { createFxCore } from "../activate";
 import path from "path";
+import { UnknownOptionError } from "../error";
 
 class CLIEngine {
   isBundledElectronApp(): boolean {
@@ -47,7 +48,7 @@ class CLIEngine {
 
     // 0. get user args
     const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
-    console.log(process.argv);
+    // console.log(process.argv);
 
     // 1. find command
     const findRes = this.findCommand(rootCmd, args);
@@ -154,8 +155,8 @@ class CLIEngine {
   }
 
   parseArgs(command: CLICommand, rootCommand: CLICommand, args: string[]): CLIContext {
-    let i = 0;
-    let j = 0;
+    const i = 0;
+    let argumentIndex = 0;
     const context: CLIContext = {
       command: command,
       optionValues: {},
@@ -164,26 +165,60 @@ class CLIEngine {
       telemetryProperties: {},
     };
     const options = (rootCommand.options || []).concat(command.options || []);
-    for (; i < args.length; i++) {
-      const arg = args[i];
-      if (arg.startsWith("-")) {
-        const argName = arg.startsWith("--") ? arg.substring(2) : arg.substring(1);
-        const option = options.find((o) => o.name === argName || o.shortName === argName);
+
+    const list = cloneDeep(args);
+    while (list.length) {
+      const arg = list.shift();
+      if (!arg) continue;
+      if (arg.startsWith("-") || arg.startsWith("--")) {
+        const trimed = arg.startsWith("--") ? arg.substring(2) : arg.substring(1);
+        let key: string;
+        let value: string | undefined;
+        if (trimed.includes("=")) {
+          [key, value] = trimed.split("=");
+          // console.log("found key=value expression", key, value);
+          //process key, value
+          list.unshift(value);
+        } else {
+          key = trimed;
+        }
+        const option = options.find((o) => o.name === key || o.shortName === key);
+        // console.log("key: ", key, "option: ", option);
         if (option) {
           if (option.type === "boolean") {
-            if (args[i + 1] === "false") {
-              option.value = false;
-              ++i;
-            } else if (args[i + 1] === "true") {
-              option.value = true;
-              ++i;
+            // boolean
+            // try next token
+            value = list[0];
+            if (value) {
+              if (value.toLowerCase() === "false") {
+                option.value = false;
+                list.shift();
+              } else if (value.toLowerCase() === "true") {
+                option.value = true;
+                list.shift();
+              }
             } else {
               option.value = true;
             }
-          } else {
-            const value = args[++i];
+          } else if (option.type === "string") {
+            // string
+            value = list.shift();
             if (value) {
               option.value = value;
+            }
+          } else {
+            // array
+            value = list.shift();
+            // console.log("found array key, value: ", value);
+            if (value) {
+              if (option.value === undefined) {
+                option.value = [];
+              }
+              const values = value.split(",");
+              // console.log("found multiple values: ", values);
+              for (const v of values) {
+                option.value.push(v);
+              }
             }
           }
           const inputValues = command.options?.includes(option)
@@ -191,10 +226,12 @@ class CLIEngine {
             : context.globalOptionValues;
           const inputKey = option.questionName || option.name;
           if (option.value !== undefined) inputValues[inputKey] = option.value;
+        } else {
+          throw new UnknownOptionError(command.fullName!, key);
         }
       } else {
-        if (command.arguments && command.arguments[j]) {
-          command.arguments[j++].value = args[i];
+        if (command.arguments && command.arguments[argumentIndex]) {
+          command.arguments[argumentIndex++].value = args[i];
           context.argumentValues.push(args[i]);
         }
       }
@@ -293,11 +330,11 @@ class CLIEngine {
       return err(new MissingRequiredInputError(helper.formatOptionName(option, false), cliSource));
     }
     if (
-      (option.type === "singleSelect" || option.type === "multiSelect") &&
+      (option.type === "string" || option.type === "array") &&
       option.choices &&
       option.value !== undefined
     ) {
-      if (option.type === "singleSelect") {
+      if (option.type === "string") {
         if (!(option.choices as string[]).includes(option.value as string)) {
           return err(
             new InputValidationError(

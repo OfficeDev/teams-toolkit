@@ -7,7 +7,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "capability",
     questionName: "capabilities",
-    type: "singleSelect",
+    type: "string",
     shortName: "c",
     description: "Specifies the Teams App capability.",
     required: true,
@@ -28,7 +28,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   },
   {
     name: "bot-host-type-trigger",
-    type: "singleSelect",
+    type: "string",
     shortName: "t",
     description: "Specifies the trigger for `Chat Notification Message` app template.",
     default: "http-restify",
@@ -42,7 +42,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   },
   {
     name: "spfx-solution",
-    type: "singleSelect",
+    type: "string",
     shortName: "ss",
     description: "Create a new or import an existing SharePoint Framework solution.",
     default: "new",
@@ -57,7 +57,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   },
   {
     name: "spfx-framework-type",
-    type: "singleSelect",
+    type: "string",
     shortName: "sfk",
     description: "Framework",
     default: "react",
@@ -65,20 +65,20 @@ export const CreateProjectOptions: CLICommandOption[] = [
   },
   {
     name: "spfx-webpart-name",
-    type: "text",
+    type: "string",
     shortName: "sw",
     description: "Name for SharePoint Framework Web Part.",
     default: "helloworld",
   },
   {
     name: "spfx-folder",
-    type: "text",
+    type: "string",
     shortName: "sf",
     description: "Directory path that contains the existing SarePoint Framework solutions.",
   },
   {
     name: "programming-language",
-    type: "singleSelect",
+    type: "string",
     shortName: "l",
     description: "Programming Language.",
     default: "javascript",
@@ -86,7 +86,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   },
   {
     name: "app-name",
-    type: "text",
+    type: "string",
     shortName: "n",
     description: "Application name",
     required: true,

@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import {
+  CLIArrayOption,
   CLICommandArgument,
   CLICommandOption,
-  CLIMultiSelectOption,
-  CLISingleSelectOption,
+  CLIOptionType,
+  CLIStringOption,
   IQTreeNode,
   MultiSelectQuestion,
   Platform,
@@ -189,7 +190,7 @@ export async function generate(
       } else if (options.length > 0) {
         const optionStrings = options.map((o) => (typeof o === "string" ? o : o.id));
         type = optionStrings.map((i) => `"${i}"`).join(" | ");
-        (option as CLISingleSelectOption).choices = optionStrings;
+        (option as CLIStringOption | CLIArrayOption).choices = optionStrings;
       } else {
         type = "string";
       }
@@ -198,7 +199,7 @@ export async function generate(
         type += "[]";
       }
 
-      (option as CLISingleSelectOption | CLIMultiSelectOption).choiceListCommand =
+      (option as CLIStringOption | CLIArrayOption).choiceListCommand =
         selection.cliChoiceListCommand;
     }
     const inputPropName = questionName.includes("-") ? `"${questionName}"` : questionName;
@@ -281,22 +282,18 @@ export async function generate(
   project.saveSync();
 }
 
-function getOptionType(
-  question: UserInputQuestion
-): "text" | "boolean" | "singleSelect" | "multiSelect" {
+function getOptionType(question: UserInputQuestion): CLIOptionType {
   if (question.isBoolean) return "boolean";
   if (question.type === "multiSelect") {
-    return "multiSelect";
-  } else if (question.type === "singleSelect") {
-    return "singleSelect";
+    return "array";
   }
-  return "text";
+  return "string";
 }
 
-// generate(questionNodes.createProject(), "CreateProject");
-// generate(questionNodes.createSampleProject(), "CreateSampleProject");
-// generate(questionNodes.addWebpart(), "SFPxAddWebpart");
-// generate(questionNodes.createNewEnv(), "CreateEnv");
-// generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
-// generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
+generate(questionNodes.createProject(), "CreateProject");
+generate(questionNodes.createSampleProject(), "CreateSampleProject");
+generate(questionNodes.addWebpart(), "SFPxAddWebpart");
+generate(questionNodes.createNewEnv(), "CreateEnv");
+generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
+generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
 generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");

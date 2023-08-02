@@ -166,7 +166,7 @@ export default class PreviewEnv extends YargsCommand {
     );
   }
 
-  protected async doPreview(
+  async doPreview(
     workspaceFolder: string,
     env: string,
     manifestFilePath: string,

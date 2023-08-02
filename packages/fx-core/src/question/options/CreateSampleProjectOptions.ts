@@ -8,7 +8,7 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
   {
     name: "sample-name",
     questionName: "samples",
-    type: "singleSelect",
+    type: "string",
     description: "Specifies the Teams App sample name.",
     required: true,
     choices: [

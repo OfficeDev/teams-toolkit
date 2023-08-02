@@ -23,3 +23,12 @@ export class ArgumentConflictError extends UserError {
     });
   }
 }
+
+export class UnknownOptionError extends UserError {
+  constructor(command: string, name: string) {
+    super({
+      source: constants.cliSource,
+      message: util.format(strings["error.UnknownOptionError"], command, name),
+    });
+  }
+}

@@ -9,7 +9,7 @@ export const RootFolderOption: CLICommandOption = {
   name: "folder",
   shortName: "f",
   description: "Root folder of the project.",
-  type: "text",
+  type: "string",
   required: true,
   default: path.join(os.homedir(), "TeamsApps"),
 };
@@ -19,19 +19,26 @@ export const ProjectFolderOption: CLICommandOption = {
   questionName: "projectPath",
   shortName: "f",
   description: "Project folder.",
-  type: "text",
+  type: "string",
   required: true,
   default: "./",
 };
 
 export const EnvOption: CLICommandOption = {
   name: "env",
-  type: "text",
+  type: "string",
   description: "Specifies the environment name for the project.",
 };
 
+export const RequiredEnvOption: CLICommandOption = {
+  name: "env",
+  type: "string",
+  description: "Specifies the environment name for the project.",
+  required: true,
+};
+
 export const TeamsManifestPathOption: CLICommandOption = {
-  type: "text",
+  type: "string",
   name: "manifest-file-path",
   shortName: "m",
   description:
@@ -39,7 +46,7 @@ export const TeamsManifestPathOption: CLICommandOption = {
 };
 
 export const AadManifestPathOption: CLICommandOption = {
-  type: "text",
+  type: "string",
   name: "manifest-file-path",
   shortName: "m",
   description:

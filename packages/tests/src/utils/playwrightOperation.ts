@@ -60,7 +60,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.AssistDashboard]: async () => {
-    await startDebugging();
+    await startDebugging("Debug in Teams (Chrome)");
   },
   [TemplateProject.ContactExporter]: async () => {
     await startDebugging();
@@ -72,7 +72,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.OutlookTab]: async () => {
-    await startDebugging();
+    await startDebugging("Debug in Teams (Chrome)");
   },
   [TemplateProject.HelloWorldTabBackEnd]: async () => {
     await startDebugging();
@@ -193,7 +193,7 @@ export const middleWareMap: Record<
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
   ) => {
-    incomingWebhookMiddleWare(sampledebugContext, env);
+    await incomingWebhookMiddleWare(sampledebugContext, env);
   },
   [TemplateProject.NpmSearch]: () => Promise.resolve(),
   [TemplateProject.OneProductivityHub]: () => Promise.resolve(),
@@ -205,13 +205,13 @@ export const middleWareMap: Record<
     azSqlHelper?: AzSqlHelper,
     step2?: boolean
   ) => {
-    shareNowMiddleWare(sampledebugContext, env, azSqlHelper, step2);
+    await shareNowMiddleWare(sampledebugContext, env, azSqlHelper, step2);
   },
   [TemplateProject.StockUpdate]: async (
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
   ) => {
-    stockUpdateMiddleWare(sampledebugContext, env);
+    await stockUpdateMiddleWare(sampledebugContext, env);
   },
   [TemplateProject.TodoListBackend]: async (
     sampledebugContext: SampledebugContext,
@@ -219,13 +219,13 @@ export const middleWareMap: Record<
     azSqlHelper?: AzSqlHelper,
     step2?: boolean
   ) => {
-    todoListSqlMiddleWare(sampledebugContext, env, azSqlHelper, step2);
+    await todoListSqlMiddleWare(sampledebugContext, env, azSqlHelper, step2);
   },
   [TemplateProject.TodoListM365]: async (
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
   ) => {
-    TodoListM365MiddleWare(sampledebugContext, env);
+    await TodoListM365MiddleWare(sampledebugContext, env);
   },
   [TemplateProject.TodoListSpfx]: () => Promise.resolve(),
   [TemplateProject.Deeplinking]: () => Promise.resolve(),
@@ -1446,16 +1446,6 @@ export async function validateStockUpdate(page: Page) {
       "iframe.embedded-iframe"
     );
     const frame = await frameElementHandle?.contentFrame();
-    try {
-      console.log("dismiss message");
-      await page
-        .click('button:has-text("Dismiss")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no message to dismiss");
-    }
     try {
       console.log("click stock update");
       await frame?.waitForSelector('p:has-text("Microsoft Corporation")');

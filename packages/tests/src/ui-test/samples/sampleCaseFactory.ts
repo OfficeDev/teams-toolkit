@@ -255,7 +255,6 @@ export default function sampleCaseFactory(
                 "teamsAppId is empty, please check if the app is start successfully"
               );
             }
-            console.log(teamsAppId);
 
             // use 2nd middleware to process typical sample
             await middleWareMap[sampleName](

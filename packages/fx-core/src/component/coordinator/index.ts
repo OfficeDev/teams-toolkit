@@ -28,13 +28,12 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
+import { ObjectIsUndefinedError } from "../../core/error";
 import { globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   assembleError,
   InputValidationError,
-  InvalidActionInputError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
 } from "../../error/common";
@@ -55,6 +54,7 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
+import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
@@ -67,7 +67,6 @@ import { pathUtils } from "../utils/pathUtils";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",

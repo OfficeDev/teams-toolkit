@@ -79,6 +79,8 @@
 /templates/*/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/*/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/*/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/*/message-extension-action @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/csharp/message-extension-search @JerryYangKai @eriolchan @Siglud @Yukun-dong
 
 /templates/*/non-sso-tab-default-bot @hund030 @yuqizhou77
 /templates/common/office-addin @1yefuwang1 @jayzhang

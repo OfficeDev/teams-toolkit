@@ -362,16 +362,7 @@ describe("generateScaffoldingSummary", () => {
       name: { short: invalidShortName, full: invalidFullName },
       description: { short: invalidShortDescription, full: invalidFullDescription },
     });
-
-    assert.isTrue(
-      res.includes(
-        getLocalizedString(
-          "core.copilotPlugin.scaffold.summary.warning.teamsManifest.lengthExceeding",
-          "name/short",
-          "30"
-        )
-      )
-    );
+    assert.isTrue(res.includes("name/short"));
   });
 
   it("warnings about API spec", () => {

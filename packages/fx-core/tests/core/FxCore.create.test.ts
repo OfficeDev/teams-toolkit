@@ -27,7 +27,7 @@ describe("FxCore.createProject", () => {
       platform: Platform.VSCode,
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.AppName]: randomAppName(),

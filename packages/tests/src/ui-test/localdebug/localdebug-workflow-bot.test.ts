@@ -58,9 +58,15 @@ describe("Workflow Bot Local Debug Tests", function () {
       const driver = VSBrowser.instance.driver;
 
       await startDebugging();
+      await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
+      await waitForTerminal(
+        LocalDebugTaskLabel.StartBotApp,
+        LocalDebugTaskInfo.StartBotInfo
+      );
 
+      // check if there is error "Could not attach to main target"
+      await driver.sleep(60 * 1000);
       try {
-        await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
         await waitForTerminal(
           LocalDebugTaskLabel.StartBotApp,
           LocalDebugTaskInfo.StartBotInfo

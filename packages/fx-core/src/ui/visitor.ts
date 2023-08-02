@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  TextInputQuestion,
   QTreeNode,
   Question,
   SingleSelectQuestion,
@@ -26,7 +25,6 @@ import {
   IQTreeNode,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError, InputValidationError, UserCancelError, assembleError } from "../error";
-import { TOOLS } from "../core/globalVars";
 import { assign, cloneDeep } from "lodash";
 
 export function isAutoSkipSelect(q: Question): boolean {

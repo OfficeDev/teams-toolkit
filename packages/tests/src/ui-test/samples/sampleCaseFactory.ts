@@ -187,7 +187,7 @@ export default function sampleCaseFactory(
                 // local debug
                 await debugInitMap[sampleName]();
                 for (const label of validate) {
-                  debugMap[label]();
+                  await debugMap[label]();
                 }
               } catch (error) {
                 await VSBrowser.instance.takeScreenshot(

@@ -1,14 +1,17 @@
-import * as mocha from "mocha";
+import axios from "axios";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import mockedEnv from "mocked-env";
-import { sampleProvider } from "../../src/common/samples";
-import sampleConfigV3 from "../../src/common/samples-config-v3.json";
-import axios from "axios";
+
 import { err } from "@microsoft/teamsfx-api";
+
+import { SampleConfigTag, sampleProvider } from "../../src/common/samples";
+import sampleConfigV3 from "../../src/common/samples-config-v3.json";
+
 const packageJson = require("../../package.json");
 
 describe("Samples", () => {
+  const baseUrl = `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/`;
+
   afterEach(() => {
     sinon.restore();
     sampleProvider["samplesConfig"] = undefined;
@@ -44,36 +47,14 @@ describe("Samples", () => {
       time: "5min to run",
       configuration: "Ready for debug",
       suggested: false,
-      url: "https://faked-external-sample",
+      downloadUrl: "https://github.com/Test/Test-Samples/tree/main/faked-external-sample",
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
     const samples = sampleProvider.SampleCollection.samples;
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
-    chai.expect(faked?.url).equals(fakedExternalSample.url);
-
-    (sampleProvider as any).sampleCollection = undefined;
-    sampleConfigV3.samples.splice(sampleConfigV3.samples.length - 1, 1);
-  });
-
-  it("External sample url fallback to base url in v3", () => {
-    const fakedExternalSample = {
-      id: "external-sample",
-      title: "Test external sample",
-      shortDescription: "short description for external sample",
-      fullDescription: "full description for external sample",
-      tags: ["External"],
-      time: "5min to run",
-      configuration: "Ready for debug",
-      suggested: false,
-    };
-    sampleConfigV3.samples.push(fakedExternalSample as any);
-
-    const samples = sampleProvider.SampleCollection.samples;
-    const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
-    chai.expect(faked).exist;
-    chai.expect(faked?.url).equals(sampleConfigV3.baseUrl + fakedExternalSample.id);
+    chai.expect(faked?.downloadUrl).equals(fakedExternalSample.downloadUrl);
 
     (sampleProvider as any).sampleCollection = undefined;
     sampleConfigV3.samples.splice(sampleConfigV3.samples.length - 1, 1);
@@ -96,7 +77,6 @@ describe("Samples", () => {
 
   it("fetchSampleConfig - online sample config succeeds to obtain", async () => {
     const fakedSampleConfig = {
-      baseUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.1.0/",
       samples: [
         {
           id: "hello-world-tab-with-backend",
@@ -121,7 +101,6 @@ describe("Samples", () => {
 
   it("Download sample from dev branch for alpha build", () => {
     const fakedSampleConfig = {
-      baseUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.1.0/",
       samples: [
         {
           id: "hello-world-tab-with-backend",
@@ -142,14 +121,13 @@ describe("Samples", () => {
 
     const samples = sampleProvider.SampleCollection.samples;
     chai
-      .expect(samples[0].url)
+      .expect(samples[0].downloadUrl)
       .equal(`https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/hello-world-tab-with-backend`);
     (sampleProvider as any).sampleCollection = undefined;
   });
 
   it("Download sample from v3 branch for rc build", () => {
     const fakedSampleConfig = {
-      baseUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.1.0/",
       samples: [
         {
           id: "hello-world-tab-with-backend",
@@ -170,7 +148,7 @@ describe("Samples", () => {
 
     const samples = sampleProvider.SampleCollection.samples;
     chai
-      .expect(samples[0].url)
+      .expect(samples[0].downloadUrl)
       .equal(`https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/hello-world-tab-with-backend`);
     (sampleProvider as any).sampleCollection = undefined;
   });

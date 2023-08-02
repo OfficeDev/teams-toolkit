@@ -7,12 +7,10 @@ import sampleConfigV3 from "./samples-config-v3.json";
 import { isVideoFilterEnabled } from "./featureFlags";
 const packageJson = require("../../package.json");
 
-class configInfo {
-  static readonly owner = "OfficeDev";
-  static readonly repo = "TeamsFx-Samples";
-  static readonly tree = "v2.3.0";
-  static readonly file = ".config/samples-config-v3.json";
-}
+const SampleConfigOwner = "OfficeDev";
+const SampleConfigRepo = "TeamsFx-Samples";
+const SampleConfigFile = ".config/samples-config-v3.json";
+export const SampleConfigTag = "v2.4.0";
 
 export interface SampleConfig {
   id: string;
@@ -46,7 +44,7 @@ class SampleProvider {
       const fileResponse = await sendRequestWithTimeout(
         async () => {
           return await axios.get(
-            `https://raw.githubusercontent.com/${configInfo.owner}/${configInfo.repo}/${configInfo.tree}/${configInfo.file}`,
+            `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${SampleConfigFile}`,
             { responseType: "json" }
           );
         },
@@ -65,7 +63,7 @@ class SampleProvider {
     const samples = (this.samplesConfig ? this.samplesConfig.samples : sampleConfigV3.samples).map(
       (sample) => {
         const isExternal = sample["downloadUrl"] ? true : false;
-        let gifUrl = `https://raw.githubusercontent.com/${configInfo.owner}/${configInfo.repo}/${configInfo.tree}/${sample["id"]}/${sample["gifPath"]}`;
+        let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${sample["id"]}/${sample["gifPath"]}`;
         if (isExternal) {
           const info = parseSampleUrl(sample["downloadUrl"] as string);
           gifUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${info.dir}/${sample["gifPath"]}`;
@@ -105,7 +103,7 @@ class SampleProvider {
     if (version.includes("rc")) {
       return "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/";
     }
-    return `https://github.com/${configInfo.owner}/${configInfo.repo}/tree/${configInfo.tree}/`;
+    return `https://github.com/${SampleConfigOwner}/${SampleConfigRepo}/tree/${SampleConfigTag}/`;
   }
 }
 

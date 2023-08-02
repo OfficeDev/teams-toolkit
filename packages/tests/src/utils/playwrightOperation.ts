@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { BrowserContext, Page, chromium, Frame } from "playwright";
 import { assert } from "chai";
 import { Timeout, ValidationContent } from "./constants";
@@ -234,7 +236,7 @@ export async function initTeamsPage(
         );
         const frame = await frameElementHandle?.contentFrame();
         await frame?.waitForSelector(
-          `h1:has-text('Add ${teamsAppName} to a meeting')`
+          `h1:has-text('Add ${teamsAppName} to a team')`
         );
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");
@@ -283,21 +285,26 @@ export async function initTeamsPage(
         );
         const frame = await frameElementHandle?.contentFrame();
         if (type === "spfx") {
-          console.log("Load debug scripts");
-          await frame?.click('button:has-text("Load debug scripts")');
-          console.log("Debug scripts loaded");
+          try {
+            console.log("Load debug scripts");
+            await frame?.click('button:has-text("Load debug scripts")');
+            console.log("Debug scripts loaded");
+          } catch (error) {
+            console.log("No debug scripts to load");
+          }
         }
-        const saveBtn = await page.waitForSelector(`button:has-text("Save")`);
-        await saveBtn?.click();
-        await page.waitForSelector(`button:has-text("Save")`, {
-          state: "detached",
-        });
+        try {
+          const saveBtn = await page.waitForSelector(`button:has-text("Save")`);
+          await saveBtn?.click();
+          await page.waitForSelector(`button:has-text("Save")`, {
+            state: "detached",
+          });
+        } catch (error) {
+          console.log("No save button to click");
+        }
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("successful to add teams app!!!");
-
-      console.log("app loaded");
-      await page.waitForTimeout(Timeout.shortTimeLoading);
     });
 
     return page;
@@ -1237,21 +1244,14 @@ export async function validateStockUpdate(page: Page) {
 export async function validateTodoList(page: Page, displayName: string) {
   try {
     console.log("start to verify todo list");
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-iframe"
-    );
-    const frame = await frameElementHandle?.contentFrame();
     try {
-      console.log("dismiss message");
-      await page
-        .click('button:has-text("Dismiss")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no message to dismiss");
-    }
-    try {
+      const tabs = await page.$$("button[role='tab']");
+      const tab = tabs.find(async (tab) => {
+        const text = await tab.innerText();
+        return text?.includes("Todo List");
+      });
+      await tab?.click();
+      await page.waitForTimeout(Timeout.shortTimeLoading);
       const frameElementHandle = await page.waitForSelector(
         "iframe.embedded-iframe"
       );
@@ -1288,6 +1288,11 @@ export async function validateTodoList(page: Page, displayName: string) {
         );
         await addBtn?.click();
         //TODO: verify add task
+
+        // clean tab, right click
+        await tab?.click({ button: "right" });
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        const contextMenu = await page.waitForSelector("ul[role='menu']");
       });
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);

@@ -56,4 +56,9 @@ describe("m365Node", () => {
     chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
     chai.assert.equal(treeItem.contextValue, "");
   });
+
+  it("getChildren", () => {
+    const m365Node = new M365AccountNode(eventEmitter);
+    chai.assert.isDefined(m365Node.getChildren());
+  });
 });

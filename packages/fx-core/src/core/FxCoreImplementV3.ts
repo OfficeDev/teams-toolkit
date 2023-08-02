@@ -5,7 +5,9 @@ import { hooks } from "@feathersjs/hooks";
 import {
   ApiOperation,
   AppPackageFolderName,
+  AdaptiveFolderName,
   BuildFolderName,
+  Context,
   Func,
   FxError,
   Inputs,
@@ -62,7 +64,7 @@ import { QuestionMW } from "../component/middleware/questionMW";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { envUtil } from "../component/utils/envUtil";
 import { pathUtils } from "../component/utils/pathUtils";
-import { FileNotFoundError, InvalidProjectError } from "../error/common";
+import { FileNotFoundError, InvalidProjectError, assembleError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ScratchOptions, questionNodes } from "../question";
@@ -88,6 +90,8 @@ import {
   OpenAIPluginManifestHelper,
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
+import { SpecParser } from "../common/spec-parser/specParser";
+import { SSO } from "../component/feature/sso";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -310,8 +314,8 @@ export class FxCoreV3Implement {
       // used in v3 only in VS
       inputs.stage = Stage.addFeature;
       inputs[QuestionNames.Features] = SingleSignOnOptionItem.id;
-      const component = Container.get("sso") as any;
-      res = await component.add(context, inputs as InputsWithProjectPath);
+      const component = Container.get<SSO>("sso");
+      res = await component.add(context as unknown as Context, inputs as InputsWithProjectPath);
     }
     return res;
   }
@@ -648,14 +652,30 @@ export class FxCoreV3Implement {
 
   @hooks([ErrorHandlerMW, QuestionMW(questionNodes.copilotPluginAddAPI), ConcurrentLockerMW])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
-    // TODO: call generator to add API
     const operations = inputs[QuestionNames.ApiOperation] as string[];
+    const openapiSpecPath =
+      inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    const manifestPath = inputs.teamsManifestPath;
+    const specParser = new SpecParser(openapiSpecPath);
+    const adaptiveCardFolder = path.join(
+      inputs.projectPath!,
+      AppPackageFolderName,
+      AdaptiveFolderName
+    );
+
+    try {
+      await specParser.generate(manifestPath, operations, openapiSpecPath, adaptiveCardFolder);
+    } catch (e) {
+      const error = assembleError(e);
+      return err(error);
+    }
+
     const message = getLocalizedString(
       "core.copilot.addAPI.success",
       operations,
       inputs.projectPath
     );
-    this.tools.ui.showMessage("info", message, false);
+    await this.tools.ui.showMessage("info", message, false);
     return ok("");
   }
 

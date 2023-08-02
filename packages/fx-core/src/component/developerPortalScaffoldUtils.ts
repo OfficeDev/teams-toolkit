@@ -69,7 +69,7 @@ export class DeveloperPortalScaffoldUtils {
       return err(manifestRes.error);
     }
 
-    const envRes = await updateEnv(appDefinition.teamsAppId!, ctx.projectPath!);
+    const envRes = await updateEnv(appDefinition.teamsAppId!, ctx.projectPath);
     if (envRes.isErr()) {
       return err(envRes.error);
     }

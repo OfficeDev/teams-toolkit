@@ -183,12 +183,12 @@ export class Channel implements NotificationTarget {
   /**
    * @internal
    */
-  private async newConversation(context: TurnContext): Promise<ConversationReference> {
+  private newConversation(context: TurnContext): Promise<ConversationReference> {
     const reference = TurnContext.getConversationReference(context.activity);
     const channelConversation = utils.cloneConversation(reference);
     channelConversation.conversation.id = this.info.id || "";
 
-    return channelConversation;
+    return Promise.resolve(channelConversation);
   }
 }
 

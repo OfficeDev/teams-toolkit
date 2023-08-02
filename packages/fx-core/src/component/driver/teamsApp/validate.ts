@@ -63,7 +63,7 @@ export class ValidateManifestDriver implements StepDriver {
       return err(result.error);
     }
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath!, context.projectPath)
+      getAbsolutePath(args.manifestPath, context.projectPath)
     );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
@@ -166,7 +166,7 @@ export class ValidateManifestDriver implements StepDriver {
         summaryStr
       );
       if (context.platform === Platform.VS) {
-        context.logProvider.info(validationSuccess);
+        await context.logProvider.info(validationSuccess);
       }
       if (args.showMessage) {
         context.ui?.showMessage("info", validationSuccess, false);

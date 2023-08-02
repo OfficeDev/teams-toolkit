@@ -204,7 +204,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
   }
 
   private generateAuthServerError(err: any): Error {
-    const errorMessage = err.errorMessage;
+    const errorMessage = err.errorMessage as string;
     if (err.name === "InteractionRequiredAuthError") {
       const fullErrorMsg =
         "Failed to get access token from AAD server, interaction required: " + errorMessage;

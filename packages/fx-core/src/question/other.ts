@@ -588,7 +588,7 @@ export async function newEnvNameValidation(
     return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation4");
   }
 
-  inputs!.existingEnvNames = envListRes.value; //cache existing env names
+  inputs.existingEnvNames = envListRes.value; //cache existing env names
 
   const found =
     envListRes.value.find(
@@ -710,7 +710,7 @@ function selectResourceGroupQuestion(
 }
 
 export function validateResourceGroupName(input: string, inputs?: Inputs): string | undefined {
-  const name = input as string;
+  const name = input;
   // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
   const match = name.match(/^[-\w._()]+$/);
   if (!match) {

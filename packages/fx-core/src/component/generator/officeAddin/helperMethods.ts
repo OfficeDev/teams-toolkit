@@ -94,7 +94,7 @@ export class HelperMethods {
     );
 
     // Open project manifest file
-    const manifestTemplatePath = await manifestUtils.getTeamsAppManifestPath(projectRoot);
+    const manifestTemplatePath = manifestUtils.getTeamsAppManifestPath(projectRoot);
     const manifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
       manifestTemplatePath
     );

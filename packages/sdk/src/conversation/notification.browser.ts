@@ -139,7 +139,7 @@ export class Channel implements NotificationTarget {
    * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
    * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(
+  public sendAdaptiveCard(
     card: unknown,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
@@ -231,7 +231,7 @@ export class Member implements NotificationTarget {
    * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
    * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(
+  public sendAdaptiveCard(
     card: unknown,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
@@ -351,7 +351,7 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @returns an array of channels if bot is installed into a team, otherwise returns an empty array.
    */
-  public async channels(): Promise<Channel[]> {
+  public channels(): Promise<Channel[]> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
       ErrorCode.RuntimeNotSupported
@@ -366,7 +366,7 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @returns an array of members from where the bot is installed.
    */
-  public async members(): Promise<Member[]> {
+  public members(): Promise<Member[]> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
       ErrorCode.RuntimeNotSupported
@@ -378,7 +378,7 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @returns the team details if bot is installed into a team, otherwise returns undefined.
    */
-  public async getTeamDetails(): Promise<TeamDetails | undefined> {
+  public getTeamDetails(): Promise<TeamDetails | undefined> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
       ErrorCode.RuntimeNotSupported
@@ -447,7 +447,7 @@ export class NotificationBot {
    *
    * @returns - an array of {@link TeamsBotInstallation}.
    */
-  public static async installations(): Promise<TeamsBotInstallation[]> {
+  public static installations(): Promise<TeamsBotInstallation[]> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
       ErrorCode.RuntimeNotSupported
@@ -467,7 +467,7 @@ export class NotificationBot {
    * (personal chat, group chat, Teams channel).
    * @returns the first {@link Member} where predicate is true, and undefined otherwise.
    */
-  public async findMember(
+  public findMember(
     predicate: (member: Member) => Promise<boolean>,
     scope?: SearchScope
   ): Promise<Member | undefined> {
@@ -489,7 +489,7 @@ export class NotificationBot {
    * immediately returns that channel. Otherwise, find returns undefined.
    * @returns the first {@link Channel} where predicate is true, and undefined otherwise.
    */
-  public async findChannel(
+  public findChannel(
     predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel | undefined> {
     throw new ErrorWithCode(
@@ -509,7 +509,7 @@ export class NotificationBot {
    * (personal chat, group chat, Teams channel).
    * @returns an array of {@link Member} where predicate is true, and empty array otherwise.
    */
-  public async findAllMembers(
+  public findAllMembers(
     predicate: (member: Member) => Promise<boolean>,
     scope?: SearchScope
   ): Promise<Member[]> {
@@ -529,7 +529,7 @@ export class NotificationBot {
    * @param predicate find calls predicate for each channel of the installation.
    * @returns an array of {@link Channel} where predicate is true, and empty array otherwise.
    */
-  public async findAllChannels(
+  public findAllChannels(
     predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel[]> {
     throw new ErrorWithCode(

@@ -20,11 +20,11 @@ export class SideloadingNode extends DynamicNode {
     this.contextValue = "checkSideloading";
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override async getTreeItem(): Promise<vscode.TreeItem> {
     let isSideloadingAllowed: boolean | undefined;
     if (this.token != "") {
       isSideloadingAllowed = await getSideloadingStatus(this.token);

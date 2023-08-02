@@ -116,10 +116,12 @@ export class TeamsBotSsoPrompt {
    *
    * @returns A `Promise` representing the asynchronous operation.
    */
-  public async beginDialog(dc: DialogContext): Promise<DialogTurnResult> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotSsoPrompt"),
-      ErrorCode.RuntimeNotSupported
+  public beginDialog(dc: DialogContext): Promise<DialogTurnResult> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotSsoPrompt"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -139,10 +141,12 @@ export class TeamsBotSsoPrompt {
    * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
-  public async continueDialog(dc: DialogContext): Promise<DialogTurnResult> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotSsoPrompt"),
-      ErrorCode.RuntimeNotSupported
+  public continueDialog(dc: DialogContext): Promise<DialogTurnResult> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotSsoPrompt"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

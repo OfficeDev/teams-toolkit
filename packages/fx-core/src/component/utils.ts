@@ -25,8 +25,8 @@ export function createContextV3(): Context {
 }
 export function createDriverContext(inputs: Inputs): DriverContext {
   const driverContext: DriverContext = {
-    azureAccountProvider: TOOLS.tokenProvider!.azureAccountProvider,
-    m365TokenProvider: TOOLS.tokenProvider!.m365TokenProvider,
+    azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
+    m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
     ui: TOOLS.ui,
     progressBar: undefined,
     logProvider: TOOLS.logProvider,
@@ -63,7 +63,7 @@ export function ensureComponentConnections(settingsV3: any): void {
   const exists = (c: string) => getComponent(settingsV3, c) !== undefined;
   const existingConfigNames = Object.keys(ComponentConnections).filter(exists);
   for (const configName of existingConfigNames) {
-    const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
+    const existingResources = ComponentConnections[configName].filter(exists);
     const configs = settingsV3.components.filter((c: any) => c.name === configName);
     for (const config of configs) {
       config.connections = cloneDeep(existingResources);

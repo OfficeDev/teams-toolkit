@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * For TODO related to print log to console, try to use jsdiff, a package which could compare two files/blocks/lines
  * https://www.npmjs.com/package/diff/v/3.5.0

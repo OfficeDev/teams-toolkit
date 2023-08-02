@@ -66,11 +66,11 @@ export class M365AccountNode extends DynamicNode {
     this.eventEmitter.fire(this);
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     return [this.sideloadingNode];
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {
     this.collapsibleState = vscode.TreeItemCollapsibleState.None;
     if (this.status !== AccountItemStatus.SignedIn) {
       this.label = localize("teamstoolkit.handlers.signIn365");

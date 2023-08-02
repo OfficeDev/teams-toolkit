@@ -5,6 +5,7 @@
 export const ConfigFolderName = "fx";
 export const AppPackageFolderName = "appPackage";
 export const BuildFolderName = "build";
+export const AdaptiveFolderName = "adaptiveCards";
 export const TemplateFolderName = "templates";
 export const LocalEnvironmentName = "local";
 export const ProductName = "teamsfx";

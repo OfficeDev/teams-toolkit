@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-this-alias */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/* eslint-disable @typescript-eslint/no-this-alias */
 "use strict";
 
 import { Mutex } from "async-mutex";
@@ -20,7 +20,7 @@ export class ProgressHandler implements IProgressHandler {
   private mutex: Mutex;
   private view: string;
 
-  private resolve?: any;
+  private resolve?: (value: unknown) => void;
 
   constructor(title: string, totalSteps: number, view: "output" | "terminal" = "output") {
     this.totalSteps = totalSteps;
@@ -65,7 +65,7 @@ export class ProgressHandler implements IProgressHandler {
 
     this.detail = detail;
 
-    window.withProgress(
+    void window.withProgress(
       {
         location: ProgressLocation.Notification,
         cancellable: false,
@@ -81,20 +81,21 @@ export class ProgressHandler implements IProgressHandler {
     );
   }
 
-  public async end(success: boolean) {
+  public end(success: boolean) {
     this.ended = true;
     if (this.resolve) {
-      this.resolve();
+      this.resolve(null);
     }
+    return Promise.resolve(undefined);
   }
 
   public async next(detail?: string) {
-    await this.mutex.runExclusive(async () => {
+    await this.mutex.runExclusive(() => {
       this.detail = detail;
       this.currentStep++;
       this.totalSteps = Math.max(this.currentStep, this.totalSteps);
       if (this.resolve) {
-        this.resolve();
+        this.resolve(null);
       }
     });
   }

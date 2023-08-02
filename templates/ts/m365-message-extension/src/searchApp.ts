@@ -8,16 +8,11 @@ import {
   MessagingExtensionResponse,
 } from "botbuilder";
 
-export interface DataInterface {
-  likeCount: number;
-}
-
-export class TeamsBot extends TeamsActivityHandler {
+export class SearchApp extends TeamsActivityHandler {
   constructor() {
     super();
   }
 
-  // Message extension Code
   // Search.
   public async handleTeamsMessagingExtensionQuery(
     context: TurnContext,
@@ -33,13 +28,27 @@ export class TeamsBot extends TeamsActivityHandler {
 
     const attachments = [];
     response.data.objects.forEach((obj) => {
-      const heroCard = CardFactory.heroCard(obj.package.name);
+      const adaptiveCard = CardFactory.adaptiveCard({
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        type: "AdaptiveCard",
+        version: "1.4",
+        body: [
+          {
+            type: "TextBlock",
+            text: `${obj.package.name}`,
+            wrap: true,
+            size: "Large",
+          },
+          {
+            type: "TextBlock",
+            text: `${obj.package.description}`,
+            wrap: true,
+            size: "medium",
+          },
+        ],
+      });
       const preview = CardFactory.heroCard(obj.package.name);
-      preview.content.tap = {
-        type: "invoke",
-        value: { name: obj.package.name, description: obj.package.description },
-      };
-      const attachment = { ...heroCard, preview };
+      const attachment = { ...adaptiveCard, preview };
       attachments.push(attachment);
     });
 
@@ -48,19 +57,6 @@ export class TeamsBot extends TeamsActivityHandler {
         type: "result",
         attachmentLayout: "list",
         attachments: attachments,
-      },
-    };
-  }
-
-  public async handleTeamsMessagingExtensionSelectItem(
-    context: TurnContext,
-    obj: any
-  ): Promise<MessagingExtensionResponse> {
-    return {
-      composeExtension: {
-        type: "result",
-        attachmentLayout: "list",
-        attachments: [CardFactory.heroCard(obj.name, obj.description)],
       },
     };
   }

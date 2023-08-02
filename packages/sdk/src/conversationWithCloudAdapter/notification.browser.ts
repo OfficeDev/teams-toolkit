@@ -35,9 +35,11 @@ export function sendMessage(
   text: string,
   onError?: (context: TurnContext, error: Error) => Promise<void>
 ): Promise<void> {
-  throw new ErrorWithCode(
-    formatString(ErrorMessage.BrowserRuntimeNotSupported, "sendMessage"),
-    ErrorCode.RuntimeNotSupported
+  return Promise.reject(
+    new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "sendMessage"),
+      ErrorCode.RuntimeNotSupported
+    )
   );
 }
 
@@ -58,9 +60,11 @@ export function sendAdaptiveCard(
   card: unknown,
   onError?: (context: TurnContext, error: Error) => Promise<void>
 ): Promise<void> {
-  throw new ErrorWithCode(
-    formatString(ErrorMessage.BrowserRuntimeNotSupported, "sendAdaptiveCard"),
-    ErrorCode.RuntimeNotSupported
+  return Promise.reject(
+    new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "sendAdaptiveCard"),
+      ErrorCode.RuntimeNotSupported
+    )
   );
 }
 
@@ -130,9 +134,11 @@ export class Channel implements NotificationTarget {
     text: string,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "Channel"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "Channel"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -147,13 +153,15 @@ export class Channel implements NotificationTarget {
    *
    * @returns The response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(
+  public sendAdaptiveCard(
     card: unknown,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "Channel"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "Channel"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }
@@ -224,9 +232,11 @@ export class Member implements NotificationTarget {
     text: string,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "Member"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "Member"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -241,13 +251,17 @@ export class Member implements NotificationTarget {
    *
    * @returns The response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(
+  public sendAdaptiveCard(
     card: unknown,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "Member"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      Promise.reject(
+        new ErrorWithCode(
+          formatString(ErrorMessage.BrowserRuntimeNotSupported, "Member"),
+          ErrorCode.RuntimeNotSupported
+        )
+      )
     );
   }
 }
@@ -324,9 +338,11 @@ export class TeamsBotInstallation implements NotificationTarget {
     text: string,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -345,9 +361,11 @@ export class TeamsBotInstallation implements NotificationTarget {
     card: unknown,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -359,10 +377,12 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @returns An array of channels if bot is installed into a team, otherwise returns an empty array.
    */
-  public async channels(): Promise<Channel[]> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
-      ErrorCode.RuntimeNotSupported
+  public channels(): Promise<Channel[]> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -374,10 +394,12 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @returns An array of members from where the bot is installed.
    */
-  public async members(): Promise<Member[]> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
-      ErrorCode.RuntimeNotSupported
+  public members(): Promise<Member[]> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -386,10 +408,12 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @returns The team details if bot is installed into a team, otherwise returns undefined.
    */
-  public async getTeamDetails(): Promise<TeamDetails | undefined> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
-      ErrorCode.RuntimeNotSupported
+  public getTeamDetails(): Promise<TeamDetails | undefined> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }
@@ -451,10 +475,12 @@ export class NotificationBot {
    *
    * @returns An array of {@link TeamsBotInstallation}.
    */
-  public static async installations(): Promise<TeamsBotInstallation[]> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
-      ErrorCode.RuntimeNotSupported
+  public static installations(): Promise<TeamsBotInstallation[]> {
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -471,13 +497,15 @@ export class NotificationBot {
    *
    * @returns The first {@link Member} where predicate is true, and undefined otherwise.
    */
-  public async findMember(
+  public findMember(
     predicate: (member: Member) => Promise<boolean>,
     scope?: SearchScope
   ): Promise<Member | undefined> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -494,12 +522,14 @@ export class NotificationBot {
    *
    * @returns The first {@link Channel} where predicate is true, and `undefined` otherwise.
    */
-  public async findChannel(
+  public findChannel(
     predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel | undefined> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -515,13 +545,15 @@ export class NotificationBot {
    *
    * @returns An array of {@link Member} where predicate is true, and empty array otherwise.
    */
-  public async findAllMembers(
+  public findAllMembers(
     predicate: (member: Member) => Promise<boolean>,
     scope?: SearchScope
   ): Promise<Member[]> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -536,12 +568,14 @@ export class NotificationBot {
    *
    * @returns An array of {@link Channel} where predicate is true, and empty array otherwise.
    */
-  public async findAllChannels(
+  public findAllChannels(
     predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel[]> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

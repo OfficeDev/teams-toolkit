@@ -15,6 +15,8 @@ import {
   Platform,
   Result,
   UserError,
+  AdaptiveFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -37,9 +39,7 @@ import { isYamlSpecFile } from "../../../common/spec-parser/utils";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
-const appPackageName = "appPackage";
 const manifestFileName = "manifest.json";
-const adaptiveFolderName = "adaptiveCards";
 const apiSpecFolderName = "apiSpecFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
@@ -84,7 +84,7 @@ export class CopilotPluginGenerator {
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =
-          inputs!.platform === Platform.VSCode
+          inputs.platform === Platform.VSCode
             ? getLocalizedString(
                 "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
               )
@@ -97,10 +97,10 @@ export class CopilotPluginGenerator {
       }
 
       // generate files
-      const manifestPath = path.join(destinationPath, appPackageName, manifestFileName);
+      const manifestPath = path.join(destinationPath, AppPackageFolderName, manifestFileName);
       const filters = inputs[QuestionNames.ApiOperation] as string[];
 
-      const apiSpecFolderPath = path.join(destinationPath, appPackageName, apiSpecFolderName);
+      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);
 
       let isYaml: boolean;
@@ -114,7 +114,11 @@ export class CopilotPluginGenerator {
         isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
       );
 
-      const adaptiveCardFolder = path.join(destinationPath, appPackageName, adaptiveFolderName);
+      const adaptiveCardFolder = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        AdaptiveFolderName
+      );
       await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveCardFolder);
 
       // update manifest based on openAI plugin manifest
@@ -139,10 +143,10 @@ export class CopilotPluginGenerator {
 
       // TODO: format log warnings
       for (const warn of warnings) {
-        context.logProvider.warning(warn.content);
+        void context.logProvider.warning(warn.content);
       }
       for (const warn of manifestWarnings) {
-        context.logProvider.warning(warn);
+        void context.logProvider.warning(warn);
       }
       return ok(undefined);
     } catch (e) {

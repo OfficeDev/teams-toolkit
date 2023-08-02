@@ -47,7 +47,7 @@ export function asBoolean(s: unknown, key: string, helpLink?: string): boolean {
 
 export function asString(s: unknown, key: string, helpLink?: string): string {
   if (typeof s === "string") {
-    return s as string;
+    return s;
   }
   throw PrerequisiteError.somethingMissing("Deploy", key, helpLink);
 }

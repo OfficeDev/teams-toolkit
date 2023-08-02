@@ -187,7 +187,7 @@ export function getUuid(): string {
 }
 
 export function isSPFxProject(projectSettings?: any): boolean {
-  const solutionSettings = projectSettings?.solutionSettings as any;
+  const solutionSettings = projectSettings?.solutionSettings;
   if (solutionSettings) {
     const selectedPlugins = solutionSettings.activeResourcePlugins;
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;

@@ -4,6 +4,10 @@
 
 ## createMicrosoftGraphClientWithCredential() function
 
+> Warning: This API is now obsolete.
+> 
+> 
+
 Get Microsoft graph client.
 
 <b>Signature:</b>

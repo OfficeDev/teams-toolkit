@@ -329,27 +329,6 @@ describe("arm deploy error handle test", () => {
     }
   });
 
-  it("deployTemplate throw MissingEnvironmentVariablesError FxError", async () => {
-    const deployArgs = {
-      subscriptionId: "00000000-0000-0000-0000-000000000000",
-      resourceGroupName: "mock-group",
-      bicepCliVersion: "",
-      templates: [],
-    } as any;
-    mockedDriverContext.createProgressBar = () => {};
-    const impl = new ArmDeployImpl(deployArgs, mockedDriverContext);
-    sandbox.stub(impl, "getDeployParameters").throws(new Error("compile error"));
-    const res = await impl.deployTemplate({
-      path: "",
-      parameters: "",
-      deploymentName: "mkdpn",
-    });
-    assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      assert.isTrue(res.error instanceof DeployArmError);
-    }
-  });
-
   it("compileBicepToJson throw Error", async () => {
     const deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",

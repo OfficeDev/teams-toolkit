@@ -315,8 +315,27 @@ describe("arm deploy error handle test", () => {
       templates: [],
     } as any;
     const impl = new ArmDeployImpl(deployArgs, mockedDriverContext);
-    sandbox.stub(fs, "readFile").resolves("{}" as any);
-    sandbox.stub(common, "getEnvironmentVariables").returns(["env1", "env2", "env3"]);
+    const parameterContents = `
+    {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "resourceBaseName": {
+          "value": "bot\${{RESOURCE_SUFFIX}}"
+        },
+        "botAadAppClientId": {
+          "value": "\${{BOT_ID}}"
+        },
+        "botAadAppClientSecret": {
+          "value": "\${{SECRET_BOT_PASSWORD}}"
+        },
+        "webAppSKU": {
+          "value": "B1"
+        },
+      }
+    }
+    `;
+    sandbox.stub(fs, "readFile").resolves(parameterContents as any);
     mockedDriverContext.createProgressBar = () => {};
     const res = await impl.deployTemplate({
       path: "",
@@ -326,6 +345,9 @@ describe("arm deploy error handle test", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       assert.isTrue(res.error instanceof MissingEnvironmentVariablesError);
+      assert.isTrue(res.error.message.includes("RESOURCE_SUFFIX"));
+      assert.isTrue(res.error.message.includes("BOT_ID"));
+      assert.isTrue(res.error.message.includes("SECRET_BOT_PASSWORD"));
     }
   });
 

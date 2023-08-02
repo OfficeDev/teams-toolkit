@@ -1,6 +1,5 @@
-/**
- * @author Aocheng Wang <aochengwang@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import { initPage, validateBot } from "../../utils/playwrightOperation";
@@ -61,7 +60,10 @@ describe("Command And Response Bot Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, "helloWorld", "Your Hello World App is Running");
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World App is Running",
+      });
     }
   );
 });

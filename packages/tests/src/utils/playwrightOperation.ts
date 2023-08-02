@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BrowserContext, Page, chromium, Frame } from "playwright";
+import { BrowserContext, Page, Frame } from "playwright";
 import { assert } from "chai";
 import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
@@ -10,10 +10,136 @@ import { SampledebugContext } from "../ui-test/samples/sampledebugContext";
 import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./envUtil";
+import { startDebugging } from "./vscodeOperation";
+import { editDotEnvFile } from "./commonUtils";
+import { AzSqlHelper } from "./azureCliHelper";
+import { expect } from "chai";
+import * as uuid from "uuid";
+
+export const sampleInitMap: Record<
+  TemplateProject,
+  (
+    context: BrowserContext,
+    teamsAppId: string,
+    username: string,
+    password: string,
+    args?: {
+      teamsAppName?: string;
+      dashboardFlag?: boolean;
+      type?: string;
+    }
+  ) => Promise<Page | void>
+> = {
+  [TemplateProject.AdaptiveCard]: initPage,
+  [TemplateProject.AssistDashboard]: initPage,
+  [TemplateProject.ContactExporter]: initPage,
+  [TemplateProject.Dashboard]: initPage,
+  [TemplateProject.GraphConnector]: initPage,
+  [TemplateProject.OutlookTab]: initPage,
+  [TemplateProject.HelloWorldTabBackEnd]: initPage,
+  [TemplateProject.MyFirstMetting]: initTeamsPage,
+  [TemplateProject.HelloWorldBotSSO]: initPage,
+  [TemplateProject.IncomingWebhook]: () => Promise.resolve(),
+  [TemplateProject.NpmSearch]: initPage,
+  [TemplateProject.OneProductivityHub]: initPage,
+  [TemplateProject.ProactiveMessaging]: initPage,
+  [TemplateProject.QueryOrg]: initPage,
+  [TemplateProject.ShareNow]: initPage,
+  [TemplateProject.StockUpdate]: initPage,
+  [TemplateProject.TodoListBackend]: initTeamsPage,
+  [TemplateProject.TodoListM365]: initPage,
+  [TemplateProject.TodoListSpfx]: initTeamsPage,
+  [TemplateProject.Deeplinking]: initPage,
+  [TemplateProject.DiceRoller]: initPage,
+  [TemplateProject.OutlookSignature]: () => Promise.resolve(),
+  [TemplateProject.ChefBot]: initPage,
+};
+
+export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
+  [TemplateProject.AdaptiveCard]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.AssistDashboard]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.ContactExporter]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.Dashboard]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.GraphConnector]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.OutlookTab]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.HelloWorldTabBackEnd]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.MyFirstMetting]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.HelloWorldBotSSO]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.IncomingWebhook]: async () => {
+    await startDebugging("Attach to Incoming Webhook");
+  },
+  [TemplateProject.NpmSearch]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
+  [TemplateProject.OneProductivityHub]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.ProactiveMessaging]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.QueryOrg]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.ShareNow]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.StockUpdate]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.TodoListBackend]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.TodoListM365]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
+  [TemplateProject.TodoListSpfx]: async () => {
+    await startDebugging("Teams workbench (Chrome)");
+  },
+  [TemplateProject.Deeplinking]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.DiceRoller]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.OutlookSignature]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.ChefBot]: async () => {
+    await startDebugging();
+  },
+};
 
 export const sampleValidationMap: Record<
   TemplateProject,
-  (page: Page, ...args: any) => Promise<void>
+  (
+    page: Page,
+    args?: {
+      displayName?: string;
+      context?: SampledebugContext;
+      includeFunction?: boolean;
+      botCommand?: string;
+      expected?: ValidationContent;
+      npmName?: string;
+    }
+  ) => Promise<void>
 > = {
   [TemplateProject.HelloWorldTabBackEnd]: validateTab,
   [TemplateProject.ContactExporter]: validateContact,
@@ -40,12 +166,83 @@ export const sampleValidationMap: Record<
   [TemplateProject.ChefBot]: () => Promise.resolve(),
 };
 
+export const middleWareMap: Record<
+  TemplateProject,
+  (
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper,
+    step2?: boolean
+  ) => Promise<void>
+> = {
+  [TemplateProject.AdaptiveCard]: () => Promise.resolve(),
+  [TemplateProject.AssistDashboard]: async (
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ) => {
+    assistantDashboardMiddleWare(sampledebugContext, env);
+  },
+  [TemplateProject.ContactExporter]: () => Promise.resolve(),
+  [TemplateProject.Dashboard]: () => Promise.resolve(),
+  [TemplateProject.GraphConnector]: () => Promise.resolve(),
+  [TemplateProject.OutlookTab]: () => Promise.resolve(),
+  [TemplateProject.HelloWorldTabBackEnd]: () => Promise.resolve(),
+  [TemplateProject.MyFirstMetting]: () => Promise.resolve(),
+  [TemplateProject.HelloWorldBotSSO]: () => Promise.resolve(),
+  [TemplateProject.IncomingWebhook]: async (
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ) => {
+    incomingWebhookMiddleWare(sampledebugContext, env);
+  },
+  [TemplateProject.NpmSearch]: () => Promise.resolve(),
+  [TemplateProject.OneProductivityHub]: () => Promise.resolve(),
+  [TemplateProject.ProactiveMessaging]: () => Promise.resolve(),
+  [TemplateProject.QueryOrg]: () => Promise.resolve(),
+  [TemplateProject.ShareNow]: async (
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper,
+    step2?: boolean
+  ) => {
+    shareNowMiddleWare(sampledebugContext, env, azSqlHelper, step2);
+  },
+  [TemplateProject.StockUpdate]: async (
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ) => {
+    stockUpdateMiddleWare(sampledebugContext, env);
+  },
+  [TemplateProject.TodoListBackend]: async (
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper,
+    step2?: boolean
+  ) => {
+    todoListSqlMiddleWare(sampledebugContext, env, azSqlHelper, step2);
+  },
+  [TemplateProject.TodoListM365]: async (
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ) => {
+    TodoListM365MiddleWare(sampledebugContext, env);
+  },
+  [TemplateProject.TodoListSpfx]: () => Promise.resolve(),
+  [TemplateProject.Deeplinking]: () => Promise.resolve(),
+  [TemplateProject.DiceRoller]: () => Promise.resolve(),
+  [TemplateProject.OutlookSignature]: () => Promise.resolve(),
+  [TemplateProject.ChefBot]: () => Promise.resolve(),
+};
+
 export async function initPage(
   context: BrowserContext,
   teamsAppId: string,
   username: string,
   password: string,
-  dashboardFlag = false
+  args?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+  }
 ): Promise<Page> {
   let page = await context.newPage();
   page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
@@ -113,7 +310,7 @@ export async function initPage(
     const addBtn = await frame?.waitForSelector("button span:has-text('Add')");
 
     // dashboard template will have a popup
-    if (dashboardFlag) {
+    if (args?.dashboardFlag) {
       console.log("Before popup");
       const [popup] = await Promise.all([
         page
@@ -179,8 +376,11 @@ export async function initTeamsPage(
   teamsAppId: string,
   username: string,
   password: string,
-  teamsAppName: string,
-  type = ""
+  args?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+    type?: string;
+  }
 ): Promise<Page> {
   let page = await context.newPage();
   try {
@@ -258,14 +458,14 @@ export async function initTeamsPage(
       await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
-      if (type === "meeting") {
+      if (args?.type === "meeting") {
         // verify add page is closed
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-page-content"
         );
         const frame = await frameElementHandle?.contentFrame();
         await frame?.waitForSelector(
-          `h1:has-text('Add ${teamsAppName} to a team')`
+          `h1:has-text('Add ${args?.teamsAppName} to a team')`
         );
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");
@@ -274,7 +474,7 @@ export async function initTeamsPage(
 
       // verify add page is closed
       await frame?.waitForSelector(
-        `h1:has-text('Add ${teamsAppName} to a team')`
+        `h1:has-text('Add ${args?.teamsAppName} to a team')`
       );
 
       try {
@@ -313,7 +513,7 @@ export async function initTeamsPage(
           "iframe.embedded-iframe"
         );
         const frame = await frameElementHandle?.contentFrame();
-        if (type === "spfx") {
+        if (args?.type === "spfx") {
           try {
             console.log("Load debug scripts");
             await frame?.click('button:has-text("Load debug scripts")');
@@ -346,7 +546,10 @@ export async function initTeamsPage(
   }
 }
 
-export async function validateOneProducitvity(page: Page, displayName: string) {
+export async function validateOneProducitvity(
+  page: Page,
+  args?: { displayName?: string }
+) {
   try {
     console.log("start to verify One Productivity Hub");
     const frameElementHandle = await page.waitForSelector(
@@ -393,7 +596,7 @@ export async function validateOneProducitvity(page: Page, displayName: string) {
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-        await frame?.waitForSelector(`div:has-text("${displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${args?.displayName}")`);
         // TODO: need to add more logic
       });
     } catch (e: any) {
@@ -417,8 +620,7 @@ export async function validateOneProducitvity(page: Page, displayName: string) {
 
 export async function validateTab(
   page: Page,
-  displayName: string,
-  includeFunction?: boolean
+  args?: { displayName?: string; includeFunction?: boolean }
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
@@ -458,10 +660,10 @@ export async function validateTab(
         await popup.click("input.button[type='submit'][value='Accept']");
       }
 
-      await frame?.waitForSelector(`b:has-text("${displayName}")`);
+      await frame?.waitForSelector(`b:has-text("${args?.displayName}")`);
     });
 
-    if (includeFunction) {
+    if (args?.includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("verify function info");
         const authorizeButton = await frame?.waitForSelector(
@@ -763,8 +965,7 @@ export async function validateOutlookTab(
 
 export async function validateBot(
   page: Page,
-  command = "welcome",
-  expected = ValidationContent.Bot
+  args?: { botCommand?: string; expected?: ValidationContent }
 ) {
   try {
     console.log("start to verify bot");
@@ -785,15 +986,19 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
     try {
-      console.log("sending message ", command);
-      await executeBotSuggestionCommand(page, frame, command);
+      console.log("sending message ", args?.botCommand);
+      await executeBotSuggestionCommand(
+        page,
+        frame,
+        args?.botCommand || "hello world"
+      );
       await frame?.click('button[name="send"]');
     } catch (e: any) {
       console.log(
-        `[Command "${command}" not executed successfully] ${e.message}`
+        `[Command "${args?.botCommand}" not executed successfully] ${e.message}`
       );
     }
-    if (command === "show") {
+    if (args?.botCommand === "show") {
       await RetryHandler.retry(async () => {
         // wait for alert message to show
         const btn = await frame?.waitForSelector(
@@ -820,18 +1025,18 @@ export async function validateBot(
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         await RetryHandler.retry(async () => {
-          await frame?.waitForSelector(`p:has-text("${expected}")`);
+          await frame?.waitForSelector(`p:has-text("${args?.expected}")`);
           console.log("verify bot successfully!!!");
         }, 2);
-        console.log(`${expected}`);
+        console.log(`${args?.expected}`);
       }, 2);
-      console.log(`${expected}`);
+      console.log(`${args?.expected}`);
     } else {
       await RetryHandler.retry(async () => {
-        await frame?.waitForSelector(`p:has-text("${expected}")`);
+        await frame?.waitForSelector(`p:has-text("${args?.expected}")`);
         console.log("verify bot successfully!!!");
       }, 2);
-      console.log(`${expected}`);
+      console.log(`${args?.expected}`);
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
@@ -843,7 +1048,7 @@ export async function validateBot(
   }
 }
 
-export async function validateNpm(page: Page, npmName: string) {
+export async function validateNpm(page: Page, args?: { npmName?: string }) {
   try {
     console.log("start to verify npm search");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -862,15 +1067,15 @@ export async function validateNpm(page: Page, npmName: string) {
     } catch (error) {
       console.log("no message to dismiss");
     }
-    console.log("search npm ", npmName);
+    console.log("search npm ", args?.npmName);
     const input = await frame?.waitForSelector("div.ui-box input.ui-box");
-    await input?.type(npmName);
+    await input?.type(args?.npmName || "axios");
     try {
       const targetItem = await frame?.waitForSelector(
-        `span:has-text("${npmName}")`
+        `span:has-text("${args?.npmName}")`
       );
       await targetItem?.click();
-      await frame?.waitForSelector(`card span:has-text("${npmName}")`);
+      await frame?.waitForSelector(`card span:has-text("${args?.npmName}")`);
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
@@ -1023,7 +1228,10 @@ export async function validateDeeplinking(page: Page, displayName: string) {
   }
 }
 
-export async function validateQueryOrg(page: Page, displayName: string) {
+export async function validateQueryOrg(
+  page: Page,
+  args?: { displayName?: string }
+) {
   try {
     console.log("start to verify query org");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1045,7 +1253,7 @@ export async function validateQueryOrg(page: Page, displayName: string) {
     const inputBar = await frame?.waitForSelector(
       "div.ui-popup__content input.ui-box"
     );
-    await inputBar?.fill(displayName);
+    await inputBar?.fill(args?.displayName || "");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const loginBtn = await frame?.waitForSelector(
       'div.ui-popup__content a:has-text("sign in")'
@@ -1270,7 +1478,10 @@ export async function validateStockUpdate(page: Page) {
   }
 }
 
-export async function validateTodoList(page: Page, displayName: string) {
+export async function validateTodoList(
+  page: Page,
+  args?: { displayName?: string }
+) {
   try {
     console.log("start to verify todo list");
     try {
@@ -1410,13 +1621,16 @@ export async function validateTeamsWorkbench(page: Page, displayName: string) {
   }
 }
 
-export async function validateSpfx(page: Page, displayName: string) {
+export async function validateSpfx(
+  page: Page,
+  args?: { displayName?: string }
+) {
   try {
     const frameElementHandle = await page.waitForSelector(
       "iframe.embedded-iframe"
     );
     const frame = await frameElementHandle?.contentFrame();
-    await frame?.waitForSelector(`text=${displayName}`);
+    await frame?.waitForSelector(`text=${args?.displayName}`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1438,7 +1652,10 @@ export async function switchToTab(page: Page) {
   }
 }
 
-export async function validateContact(page: Page, displayName: string) {
+export async function validateContact(
+  page: Page,
+  args?: { displayName?: string }
+) {
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1484,14 +1701,14 @@ export async function validateContact(page: Page, displayName: string) {
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
-        await frame?.waitForSelector(`div:has-text("${displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${args?.displayName}")`);
       });
       page.waitForTimeout(1000);
 
       // verify add person
-      await addPerson(frame, displayName);
+      await addPerson(frame, args?.displayName || "");
       // verify delete person
-      await delPerson(frame, displayName);
+      await delPerson(frame, args?.displayName || "");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({
@@ -1513,7 +1730,10 @@ export async function validateContact(page: Page, displayName: string) {
   }
 }
 
-export async function validateGraphConnector(page: Page, displayName: string) {
+export async function validateGraphConnector(
+  page: Page,
+  args?: { displayName?: string }
+) {
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1549,7 +1769,7 @@ export async function validateGraphConnector(page: Page, displayName: string) {
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
-        await frame?.waitForSelector(`div:has-text("${displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${args?.displayName}")`);
       });
       page.waitForTimeout(1000);
     } catch (e: any) {
@@ -1664,8 +1884,7 @@ export async function validateNotificationTimeBot(page: Page) {
 
 export async function validateAdaptiveCard(
   page: Page,
-  context: SampledebugContext,
-  env: "local" | "dev" = "local"
+  args?: { context?: SampledebugContext; env?: "local" | "dev" }
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
@@ -1683,9 +1902,9 @@ export async function validateAdaptiveCard(
         // send post request to bot
         console.log("Post request sent to bot");
         let url: string;
-        if (env === "dev") {
+        if (args?.env === "dev") {
           const endpointFilePath = path.join(
-            context.projectPath,
+            args?.context?.projectPath ?? "",
             "env",
             ".env.dev"
           );
@@ -1750,3 +1969,278 @@ export async function delPerson(
     { state: "detached" }
   );
 }
+
+const assistantDashboardMiddleWare = (
+  sampledebugContext: SampledebugContext,
+  env: "local" | "dev"
+) => {
+  const envFilePath = path.resolve(
+    sampledebugContext.projectPath,
+    "env",
+    `.env.${env}.user`
+  );
+  editDotEnvFile(envFilePath, "DEVOPS_ORGANIZATION_NAME", "msazure");
+  editDotEnvFile(
+    envFilePath,
+    "DEVOPS_PROJECT_NAME",
+    "Microsoft Teams Extensibility"
+  );
+  editDotEnvFile(envFilePath, "GITHUB_REPO_NAME", "test002");
+  editDotEnvFile(envFilePath, "GITHUB_REPO_OWNER", "hellyzh");
+  editDotEnvFile(envFilePath, "PlANNER_GROUP_ID", "YOUR_GROUP_ID");
+  editDotEnvFile(envFilePath, "PLANNER_PLAN_ID", "YOUR_PLAN_ID");
+  editDotEnvFile(envFilePath, "PLANNER_BUCKET_ID", "YOUR_BUCKET_ID");
+  editDotEnvFile(
+    envFilePath,
+    "SECRET_DEVOPS_ACCESS_TOKEN",
+    "YOUR_DEVOPS_ACCESS_TOKEN"
+  );
+  editDotEnvFile(
+    envFilePath,
+    "SECRET_GITHUB_ACCESS_TOKEN",
+    "YOUR_GITHUB_ACCESS_TOKEN"
+  );
+};
+
+const incomingWebhookMiddleWare = (
+  sampledebugContext: SampledebugContext,
+  env: "local" | "dev"
+) => {
+  // replace "<webhook-url>" to "https://test.com"
+  console.log("replace webhook url");
+  const targetFile = path.resolve(
+    sampledebugContext.projectPath,
+    "src",
+    "index.ts"
+  );
+  let data = fs.readFileSync(targetFile, "utf-8");
+  data = data.replace(/<webhook-url>/g, "https://test.com");
+  fs.writeFileSync(targetFile, data);
+  console.log("replace webhook url finish!");
+};
+
+const shareNowMiddleWare = async (
+  sampledebugContext: SampledebugContext,
+  env: "local" | "dev",
+  azSqlHelper?: AzSqlHelper,
+  step2?: boolean
+) => {
+  const sqlUserName = "Abc123321";
+  const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
+  if (!step2) {
+    if (env === "dev") {
+      const envFilePath = path.resolve(
+        sampledebugContext.projectPath,
+        "env",
+        ".env.dev.user"
+      );
+      editDotEnvFile(envFilePath, "SQL_USER_NAME", sqlUserName);
+      editDotEnvFile(envFilePath, "SQL_PASSWORD", sqlPassword);
+    } else {
+      const res = await azSqlHelper?.createSql();
+      expect(res).to.be.true;
+      const envFilePath = path.resolve(
+        sampledebugContext.projectPath,
+        "env",
+        ".env.local.user"
+      );
+      editDotEnvFile(envFilePath, "SQL_USER_NAME", azSqlHelper?.sqlAdmin ?? "");
+      editDotEnvFile(
+        envFilePath,
+        "SQL_PASSWORD",
+        azSqlHelper?.sqlPassword ?? ""
+      );
+      editDotEnvFile(
+        envFilePath,
+        "SQL_ENDPOINT",
+        azSqlHelper?.sqlEndpoint ?? ""
+      );
+      editDotEnvFile(
+        envFilePath,
+        "SQL_DATABASE_NAME",
+        azSqlHelper?.sqlDatabaseName ?? ""
+      );
+    }
+  } else {
+    if (env === "local") return;
+    const devEnvFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      ".env.dev"
+    );
+    // read database from devEnvFilePath
+    const sqlDatabaseNameLine = fs
+      .readFileSync(devEnvFilePath, "utf-8")
+      .split("\n")
+      .find((line: string) =>
+        line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__DATABASENAME")
+      );
+
+    const sqlDatabaseName = sqlDatabaseNameLine
+      ? sqlDatabaseNameLine.split("=")[1]
+      : undefined;
+
+    const sqlEndpointLine = fs
+      .readFileSync(devEnvFilePath, "utf-8")
+      .split("\n")
+      .find((line: string) =>
+        line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__SQLENDPOINT")
+      );
+
+    const sqlEndpoint = sqlEndpointLine
+      ? sqlEndpointLine.split("=")[1]
+      : undefined;
+
+    const sqlCommands = [
+      `CREATE TABLE [TeamPostEntity](
+          [PostID] [int] PRIMARY KEY IDENTITY,
+          [ContentUrl] [nvarchar](400) NOT NULL,
+          [CreatedByName] [nvarchar](50) NOT NULL,
+          [CreatedDate] [datetime] NOT NULL,
+          [Description] [nvarchar](500) NOT NULL,
+          [IsRemoved] [bit] NOT NULL,
+          [Tags] [nvarchar](100) NULL,
+          [Title] [nvarchar](100) NOT NULL,
+          [TotalVotes] [int] NOT NULL,
+          [Type] [int] NOT NULL,
+          [UpdatedDate] [datetime] NOT NULL,
+          [UserID] [uniqueidentifier] NOT NULL
+       );`,
+      `CREATE TABLE [UserVoteEntity](
+        [VoteID] [int] PRIMARY KEY IDENTITY,
+        [PostID] [int] NOT NULL,
+        [UserID] [uniqueidentifier] NOT NULL
+      );`,
+    ];
+    const sqlHelper = new AzSqlHelper(
+      `${sampledebugContext.appName}-dev-rg`,
+      sqlCommands,
+      sqlDatabaseName,
+      sqlDatabaseName,
+      sqlUserName,
+      sqlPassword
+    );
+    await sqlHelper.createTable(sqlEndpoint ?? "");
+  }
+};
+
+const stockUpdateMiddleWare = async (
+  sampledebugContext: SampledebugContext,
+  env: "local" | "dev"
+) => {
+  const targetFile = path.resolve(
+    sampledebugContext.projectPath,
+    "env",
+    `.env.${env}`
+  );
+  let data = fs.readFileSync(targetFile, "utf-8");
+  data +=
+    "\nTEAMSFX_API_ALPHAVANTAGE_ENDPOINT=https://www.alphavantage.co\nTEAMSFX_API_ALPHAVANTAGE_API_KEY=demo";
+  fs.writeFileSync(targetFile, data);
+  console.log(`write .env.${env} finish!`);
+};
+
+const todoListSqlMiddleWare = async (
+  sampledebugContext: SampledebugContext,
+  env: "local" | "dev",
+  azSqlHelper?: AzSqlHelper,
+  step2?: boolean
+) => {
+  const sqlUserName = "Abc123321";
+  const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
+  if (!step2) {
+    const envFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}.user`
+    );
+    if (env === "dev") {
+      editDotEnvFile(envFilePath, "SQL_USER_NAME", sqlUserName);
+      editDotEnvFile(envFilePath, "SQL_PASSWORD", sqlPassword);
+    } else {
+      const res = await azSqlHelper?.createSql();
+      expect(res).to.be.true;
+      editDotEnvFile(envFilePath, "SQL_USER_NAME", azSqlHelper?.sqlAdmin ?? "");
+      editDotEnvFile(
+        envFilePath,
+        "SQL_PASSWORD",
+        azSqlHelper?.sqlPassword ?? ""
+      );
+      editDotEnvFile(
+        envFilePath,
+        "SQL_ENDPOINT",
+        azSqlHelper?.sqlEndpoint ?? ""
+      );
+      editDotEnvFile(
+        envFilePath,
+        "SQL_DATABASE_NAME",
+        azSqlHelper?.sqlDatabaseName ?? ""
+      );
+    }
+  } else {
+    if (env === "local") return;
+    // read database from devEnvFilePath
+    const devEnvFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      ".env.dev"
+    );
+    const sqlDatabaseName = fs
+      .readFileSync(devEnvFilePath, "utf-8")
+      .split("\n")
+      .find((line) =>
+        line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__DATABASENAME")
+      )
+      ?.split("=")[1];
+    const sqlEndpoint = fs
+      .readFileSync(devEnvFilePath, "utf-8")
+      .split("\n")
+      .find((line) =>
+        line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__SQLENDPOINT")
+      )
+      ?.split("=")[1];
+
+    const sqlCommands = [
+      `CREATE TABLE Todo
+            (
+                id INT IDENTITY PRIMARY KEY,
+                description NVARCHAR(128) NOT NULL,
+                objectId NVARCHAR(36),
+                channelOrChatId NVARCHAR(128),
+                isCompleted TinyInt NOT NULL default 0,
+            )`,
+    ];
+    const sqlHelper = new AzSqlHelper(
+      `${sampledebugContext.appName}-dev-rg`,
+      sqlCommands,
+      sqlDatabaseName,
+      sqlDatabaseName,
+      sqlUserName,
+      sqlPassword
+    );
+    await sqlHelper.createTable(sqlEndpoint ?? "");
+  }
+};
+
+const TodoListM365MiddleWare = async (
+  sampledebugContext: SampledebugContext,
+  env: "local" | "dev"
+) => {
+  if (env === "dev") {
+    const envFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      ".env.dev.user"
+    );
+    editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
+    editDotEnvFile(
+      envFilePath,
+      "SQL_PASSWORD",
+      "Cab232332" + uuid.v4().substring(0, 6)
+    );
+  }
+  const targetPath = path.resolve(sampledebugContext.projectPath, "tabs");
+  const data = "src/";
+  // create .eslintignore
+  fs.writeFileSync(targetPath + "/.eslintignore", data);
+};

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
@@ -75,7 +77,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateQueryOrg(page, Env.displayName);
+      await validateQueryOrg(page, { displayName: Env.displayName });
       console.log("debug finish!");
     }
   );

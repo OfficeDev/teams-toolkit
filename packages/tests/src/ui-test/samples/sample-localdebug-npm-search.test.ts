@@ -5,19 +5,15 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import {
-  TemplateProjectFolder,
-  TemplateProject,
-  LocalDebugTaskLabel,
-} from "../../utils/constants";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import sampleCaseFactory from "./sampleCaseFactory";
 
 const sampleCase = sampleCaseFactory(
   TemplateProject.NpmSearch,
-  TemplateProjectFolder.NpmSearch,
   12664761,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp]
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
+  { npmName: "axios" }
 );
 sampleCase.test();

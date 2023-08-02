@@ -5,16 +5,11 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import {
-  TemplateProjectFolder,
-  TemplateProject,
-  LocalDebugTaskLabel,
-} from "../../utils/constants";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import sampleCaseFactory from "./sampleCaseFactory";
 
 const sampleCase = sampleCaseFactory(
   TemplateProject.Dashboard,
-  TemplateProjectFolder.Dashboard,
   17290453,
   "v-ivanchen@microsoft.com",
   "local",
@@ -22,6 +17,7 @@ const sampleCase = sampleCaseFactory(
     LocalDebugTaskLabel.StartFrontend,
     LocalDebugTaskLabel.WatchBackend,
     LocalDebugTaskLabel.StartBackend,
-  ]
+  ],
+  { dashboardFlag: true }
 );
 sampleCase.test();

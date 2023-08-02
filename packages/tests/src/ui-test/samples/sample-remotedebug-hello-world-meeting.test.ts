@@ -5,14 +5,19 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProjectFolder, TemplateProject } from "../../utils/constants";
+import { TemplateProject } from "../../utils/constants";
 import sampleCaseFactory from "./sampleCaseFactory";
 
 const sampleCase = sampleCaseFactory(
   TemplateProject.MyFirstMetting,
-  TemplateProjectFolder.MyFirstMetting,
   14571880,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  {
+    teamsAppName: "hello-world-in-meeting-dev",
+    type: "meeting",
+    skipValidation: true,
+  }
 );
 sampleCase.test();

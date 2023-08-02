@@ -8,15 +8,16 @@
 import {
   Timeout,
   TemplateProject,
-  TemplateProjectFolder,
+  sampleProjectMap,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
 } from "../../utils/constants";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import { waitForTerminal } from "../../utils/vscodeOperation";
 import {
-  initPage,
-  initTeamsPage,
+  sampleInitMap,
+  debugInitMap,
   sampleValidationMap,
+  middleWareMap,
 } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
@@ -24,45 +25,115 @@ import { it } from "../../utils/it";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
 import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
-import { editDotEnvFile } from "../../utils/commonUtils";
-import path from "path";
 import { Page } from "playwright";
+import { AzSqlHelper } from "../../utils/azureCliHelper";
 
+/**
+ *
+ * @param sampleName sample name
+ * @param testPlanCaseId ado test plan case id
+ * @param author email
+ * @param env local or dev
+ * @param validate local debug terminal jobs
+ * @param options teamsAppName: teams app name, dashboardFlag: is dashboard or not, type: meeting | spfx, skipInit: whether to skip init, skipValidation: whether to skip validation
+ * @returns void
+ */
 export default function sampleCaseFactory(
   sampleName: TemplateProject,
-  sampleFolderName: TemplateProjectFolder,
   testPlanCaseId: number,
   author: string,
   env: "local" | "dev",
-  validate: LocalDebugTaskLabel[] = []
+  validate: LocalDebugTaskLabel[] = [],
+  options?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+    type?: string;
+    includeFunction?: boolean;
+    npmName?: string;
+    skipInit?: boolean;
+    skipValidation?: boolean;
+  }
 ) {
-  const samplePath = "";
   return {
-    sampleName,
-    samplePath,
     test: function () {
       describe("Sample Tests", function () {
         this.timeout(Timeout.testAzureCase);
         let sampledebugContext: SampledebugContext;
         let page: Page;
+        let azSqlHelper: AzSqlHelper;
+        let rgName: string;
 
         beforeEach(async function () {
           // ensure workbench is ready
           this.timeout(Timeout.prepareTestCase);
           sampledebugContext = new SampledebugContext(
             sampleName,
-            sampleFolderName
+            sampleProjectMap[sampleName]
           );
           await sampledebugContext.before();
+          if (sampleName === TemplateProject.ShareNow) {
+            // create sql db server
+            rgName = `${sampledebugContext.appName}-dev-rg`;
+            const sqlCommands = [
+              `CREATE TABLE [TeamPostEntity](
+                                [PostID] [int] PRIMARY KEY IDENTITY,
+                                [ContentUrl] [nvarchar](400) NOT NULL,
+                                [CreatedByName] [nvarchar](50) NOT NULL,
+                                [CreatedDate] [datetime] NOT NULL,
+                                [Description] [nvarchar](500) NOT NULL,
+                                [IsRemoved] [bit] NOT NULL,
+                                [Tags] [nvarchar](100) NULL,
+                                [Title] [nvarchar](100) NOT NULL,
+                                [TotalVotes] [int] NOT NULL,
+                                [Type] [int] NOT NULL,
+                                [UpdatedDate] [datetime] NOT NULL,
+                                [UserID] [uniqueidentifier] NOT NULL
+                            );`,
+              `CREATE TABLE [UserVoteEntity](
+                                [VoteID] [int] PRIMARY KEY IDENTITY,
+                                [PostID] [int] NOT NULL,
+                                [UserID] [uniqueidentifier] NOT NULL
+                            );`,
+            ];
+            azSqlHelper = new AzSqlHelper(rgName, sqlCommands);
+          }
+          if (sampleName === TemplateProject.TodoListBackend) {
+            // create sql db server
+            rgName = `${sampledebugContext.appName}-dev-rg`;
+            const sqlCommands = [
+              `CREATE TABLE Todo
+                            (
+                                id INT IDENTITY PRIMARY KEY,
+                                description NVARCHAR(128) NOT NULL,
+                                objectId NVARCHAR(36),
+                                channelOrChatId NVARCHAR(128),
+                                isCompleted TinyInt NOT NULL default 0,
+                            )`,
+            ];
+            azSqlHelper = new AzSqlHelper(rgName, sqlCommands);
+          }
         });
 
         afterEach(async function () {
           this.timeout(Timeout.finishAzureTestCase);
-          if (env === "local") await sampledebugContext.after();
-          else
-            await sampledebugContext.sampleAfter(
-              `${sampledebugContext.appName}-dev-rg`
-            );
+          if (env === "local") {
+            if (
+              sampleName === TemplateProject.ShareNow ||
+              sampleName === TemplateProject.TodoListBackend
+            )
+              await sampledebugContext.sampleAfter(rgName);
+            else await sampledebugContext.after();
+          } else {
+            if (
+              sampleName === TemplateProject.TodoListM365 ||
+              sampleName === TemplateProject.TodoListSpfx
+            )
+              await sampledebugContext.after();
+            else
+              await sampledebugContext.sampleAfter(
+                `${sampledebugContext.appName}-dev-rg`
+              );
+          }
         });
 
         it(
@@ -77,51 +148,18 @@ export default function sampleCaseFactory(
             // create project
             await sampledebugContext.openResourceFolder();
 
-            if (sampleName === TemplateProject.AssistDashboard) {
-              const envFilePath = path.resolve(
-                sampledebugContext.projectPath,
-                "env",
-                `.env.${env}.user`
-              );
-              editDotEnvFile(
-                envFilePath,
-                "DEVOPS_ORGANIZATION_NAME",
-                "msazure"
-              );
-              editDotEnvFile(
-                envFilePath,
-                "DEVOPS_PROJECT_NAME",
-                "Microsoft Teams Extensibility"
-              );
-              editDotEnvFile(envFilePath, "GITHUB_REPO_NAME", "test002");
-              editDotEnvFile(envFilePath, "GITHUB_REPO_OWNER", "hellyzh");
-              editDotEnvFile(envFilePath, "PlANNER_GROUP_ID", "YOUR_GROUP_ID");
-              editDotEnvFile(envFilePath, "PLANNER_PLAN_ID", "YOUR_PLAN_ID");
-              editDotEnvFile(
-                envFilePath,
-                "PLANNER_BUCKET_ID",
-                "YOUR_BUCKET_ID"
-              );
-              editDotEnvFile(
-                envFilePath,
-                "SECRET_DEVOPS_ACCESS_TOKEN",
-                "YOUR_DEVOPS_ACCESS_TOKEN"
-              );
-              editDotEnvFile(
-                envFilePath,
-                "SECRET_GITHUB_ACCESS_TOKEN",
-                "YOUR_GITHUB_ACCESS_TOKEN"
-              );
-            }
+            // use 1st middleware to process typical sample
+            await middleWareMap[sampleName](
+              sampledebugContext,
+              env,
+              azSqlHelper,
+              false
+            );
 
             if (env === "local") {
               try {
                 // local debug
-                if (sampleName === TemplateProject.NpmSearch) {
-                  await startDebugging("Debug in Teams (Chrome)");
-                } else {
-                  await startDebugging();
-                }
+                await debugInitMap[sampleName]();
 
                 for (const label of validate) {
                   switch (label) {
@@ -188,8 +226,13 @@ export default function sampleCaseFactory(
                 );
               }
             } else {
-              await runProvision(sampledebugContext.appName);
-              await runDeploy();
+              await runProvision(
+                sampledebugContext.appName,
+                env,
+                false,
+                options?.type === "spfx"
+              );
+              await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
             }
 
             const teamsAppId =
@@ -201,34 +244,48 @@ export default function sampleCaseFactory(
             }
             console.log(teamsAppId);
 
-            if (sampleName === TemplateProject.MyFirstMetting) {
-              page = await initTeamsPage(
+            // use 2nd middleware to process typical sample
+            await middleWareMap[sampleName](
+              sampledebugContext,
+              env,
+              azSqlHelper,
+              true
+            );
+
+            if (options?.skipInit) {
+              console.log("skip ui init...");
+              console.log("debug finish!");
+              return;
+            }
+
+            // init
+            sampleInitMap[sampleName] &&
+              (await sampleInitMap[sampleName](
                 sampledebugContext.context!,
                 teamsAppId,
                 Env.username,
                 Env.password,
-                `hello-world-in-meeting-${env}`,
-                "meeting"
-              );
-            } else {
-              page = await initPage(
-                sampledebugContext.context!,
-                teamsAppId,
-                Env.username,
-                Env.password,
-                sampleName.includes("Dashboard") ? true : false
-              );
+                {
+                  teamsAppName: options?.teamsAppName,
+                  dashboardFlag: options?.dashboardFlag,
+                  type: options?.type,
+                }
+              ));
+
+            if (options?.skipValidation) {
+              console.log("skip ui validation...");
+              console.log("debug finish!");
+              return;
             }
 
             // validate
-            if (sampleValidationMap[sampleName]) {
-              await sampleValidationMap[sampleName](
-                page,
-                sampledebugContext,
-                Env.displayName,
-                true
-              );
-            }
+            sampleValidationMap[sampleName] &&
+              (await sampleValidationMap[sampleName](page, {
+                context: sampledebugContext,
+                displayName: Env.displayName,
+                includeFunction: options?.includeFunction,
+                npmName: options?.npmName,
+              }));
             console.log("debug finish!");
           }
         );

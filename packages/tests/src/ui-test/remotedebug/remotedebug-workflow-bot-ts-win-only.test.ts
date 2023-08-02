@@ -1,6 +1,5 @@
-/**
- * @author Anne Fu <v-annefu@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
@@ -83,7 +82,10 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateBot(page, "helloWorld");
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World App is Running",
+      });
       await validateWorkFlowBot(page);
     }
   );

@@ -5,14 +5,15 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProjectFolder, TemplateProject } from "../../utils/constants";
+import { TemplateProject } from "../../utils/constants";
 import sampleCaseFactory from "./sampleCaseFactory";
 
 const sampleCase = sampleCaseFactory(
   TemplateProject.NpmSearch,
-  TemplateProjectFolder.NpmSearch,
   14571879,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  { npmName: "axios" }
 );
 sampleCase.test();

@@ -79,6 +79,36 @@ export enum TemplateProjectFolder {
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
 
+export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
+  {
+    [TemplateProject.HelloWorldTabBackEnd]:
+      TemplateProjectFolder.HelloWorldTabBackEnd,
+    [TemplateProject.ContactExporter]: TemplateProjectFolder.ContactExporter,
+    [TemplateProject.OneProductivityHub]:
+      TemplateProjectFolder.OneProductivityHub,
+    [TemplateProject.HelloWorldBotSSO]: TemplateProjectFolder.HelloWorldBotSSO,
+    [TemplateProject.TodoListBackend]: TemplateProjectFolder.TodoListBackend,
+    [TemplateProject.TodoListSpfx]: TemplateProjectFolder.TodoListSpfx,
+    [TemplateProject.ShareNow]: TemplateProjectFolder.ShareNow,
+    [TemplateProject.MyFirstMetting]: TemplateProjectFolder.MyFirstMetting,
+    [TemplateProject.TodoListM365]: TemplateProjectFolder.TodoListM365,
+    [TemplateProject.NpmSearch]: TemplateProjectFolder.NpmSearch,
+    [TemplateProject.ProactiveMessaging]:
+      TemplateProjectFolder.ProactiveMessaging,
+    [TemplateProject.AdaptiveCard]: TemplateProjectFolder.AdaptiveCard,
+    [TemplateProject.IncomingWebhook]: TemplateProjectFolder.IncomingWebhook,
+    [TemplateProject.GraphConnector]: TemplateProjectFolder.GraphConnector,
+    [TemplateProject.StockUpdate]: TemplateProjectFolder.StockUpdate,
+    [TemplateProject.QueryOrg]: TemplateProjectFolder.QueryOrg,
+    [TemplateProject.Deeplinking]: TemplateProjectFolder.Deeplinking,
+    [TemplateProject.Dashboard]: TemplateProjectFolder.Dashboard,
+    [TemplateProject.OutlookSignature]: TemplateProjectFolder.OutlookSignature,
+    [TemplateProject.OutlookTab]: TemplateProjectFolder.OutlookTab,
+    [TemplateProject.AssistDashboard]: TemplateProjectFolder.AssistDashboard,
+    [TemplateProject.DiceRoller]: TemplateProjectFolder.DiceRoller,
+    [TemplateProject.ChefBot]: TemplateProjectFolder.ChefBot,
+  };
+
 export enum Resource {
   AzureKeyVault = "azure-keyvault",
   AzureFunction = "azure-function",

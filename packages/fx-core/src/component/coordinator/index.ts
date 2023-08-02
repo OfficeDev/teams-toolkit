@@ -81,7 +81,7 @@ export enum TemplateNames {
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
   DefaultBot = "default-bot",
-  MessageExtension = "message-extension",
+  MessageExtension = "message-extension-action",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",

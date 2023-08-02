@@ -65,7 +65,7 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ScratchOptions, questions } from "../question";
+import { ScratchOptions, questionNodes } from "../question";
 import { SPFxVersionOptionIds } from "../question/create";
 import { TeamsAppValidationOptions, isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
@@ -123,7 +123,7 @@ export class FxCoreV3Implement {
     return await method.call(this, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(questions.createProject)])
+  @hooks([ErrorHandlerMW, QuestionMW(questionNodes.createProject)])
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
     const context = createContextV3();
     inputs[QuestionNames.Scratch] = ScratchOptions.yes().id;
@@ -146,7 +146,7 @@ export class FxCoreV3Implement {
     return ok(inputs.projectPath!);
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(questions.createSampleProject)])
+  @hooks([ErrorHandlerMW, QuestionMW(questionNodes.createSampleProject)])
   async createSampleProject(inputs: Inputs): Promise<Result<string, FxError>> {
     const context = createContextV3();
     inputs[QuestionNames.Scratch] = ScratchOptions.no().id;
@@ -210,7 +210,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.deployAadManifest),
+    QuestionMW(questionNodes.deployAadManifest),
     EnvLoaderMW(true, true),
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -286,7 +286,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.selectTeamsAppManifest),
+    QuestionMW(questionNodes.selectTeamsAppManifest),
     EnvLoaderMW(true),
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -318,7 +318,7 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    QuestionMW(questions.addWebpart),
+    QuestionMW(questionNodes.addWebpart),
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
   ])
@@ -345,7 +345,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.grantPermission),
+    QuestionMW(questionNodes.grantPermission),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,
@@ -382,7 +382,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.listCollaborator),
+    QuestionMW(questionNodes.listCollaborator),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,
@@ -500,7 +500,7 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(questions.createNewEnv), ConcurrentLockerMW])
+  @hooks([ErrorHandlerMW, QuestionMW(questionNodes.createNewEnv), ConcurrentLockerMW])
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.createEnvCopyV3(
       inputs[QuestionNames.NewTargetEnvName]!,
@@ -566,7 +566,7 @@ export class FxCoreV3Implement {
     await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }
-  @hooks([QuestionMW(questions.validateTeamsApp)])
+  @hooks([QuestionMW(questionNodes.validateTeamsApp)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.schema().id) {
       return await this.validateManifest(inputs);
@@ -602,7 +602,7 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    QuestionMW(questions.selectTeamsAppManifest),
+    QuestionMW(questionNodes.selectTeamsAppManifest),
     EnvLoaderMW(true),
     ConcurrentLockerMW,
   ])
@@ -646,7 +646,7 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(questions.copilotPluginAddAPI), ConcurrentLockerMW])
+  @hooks([ErrorHandlerMW, QuestionMW(questionNodes.copilotPluginAddAPI), ConcurrentLockerMW])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
     // TODO: call generator to add API
     const operations = inputs[QuestionNames.ApiOperation] as string[];
@@ -684,7 +684,7 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    QuestionMW(questions.previewWithTeamsAppManifest),
+    QuestionMW(questionNodes.previewWithTeamsAppManifest),
     EnvLoaderMW(false),
     ConcurrentLockerMW,
   ])

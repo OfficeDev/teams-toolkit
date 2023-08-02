@@ -57,6 +57,7 @@
     "test:specFilter": "npx mocha \"tests/common/spec-parser/**/specFilter.test.ts\"",
     "test:specParserUtils": "npx mocha \"tests/common/spec-parser/**/utils.test.ts\"",
     "test:manifestUpdater": "npx mocha \"tests/common/spec-parser/**/manifestUpdater.test.ts\"",
+    "test:adaptiveCardGenerator":  "npx mocha \"tests/common/spec-parser/**/adaptiveCardGenerator.test.ts\"",
     "test:error": "nyc mocha \"tests/error/*.test.ts\"",
     "test:cutils": "nyc mocha \"tests/component/utils.test.ts\"",
     "clean": "rm -rf build",

@@ -9,6 +9,7 @@ import os from "os";
 import "mocha";
 import {
   getRelativePath,
+  getResponseJson,
   isSupportedApi,
   isYamlSpecFile,
   updateFirstLetter,
@@ -192,6 +193,171 @@ describe("utils", () => {
       };
       const result = isSupportedApi(method, path, spec as any);
       assert.strictEqual(result, true);
+    });
+  });
+
+  describe("getResponseJson", () => {
+    it("should return an empty object if no JSON response is defined", () => {
+      const operationObject = {};
+      const json = getResponseJson(operationObject);
+      expect(json).to.deep.equal({});
+    });
+
+    it("should return the JSON response for status code 200", () => {
+      const operationObject = {
+        responses: {
+          "200": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+      });
+    });
+
+    it("should return the JSON response for status code 201", () => {
+      const operationObject = {
+        responses: {
+          "201": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: { type: "number" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            id: { type: "number" },
+          },
+        },
+      });
+    });
+
+    it("should return the JSON response for the default status code", () => {
+      const operationObject = {
+        responses: {
+          default: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            error: { type: "string" },
+          },
+        },
+      });
+    });
+
+    it("should return the JSON response for the 200 status code", () => {
+      const operationObject = {
+        responses: {
+          "201": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: { type: "number" },
+                  },
+                },
+              },
+            },
+          },
+          "200": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+      });
+    });
+
+    it("should return an empty object if all JSON responses are undefined", () => {
+      const operationObject = {
+        responses: {
+          "400": {
+            content: {
+              "application/xml": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          "500": {
+            content: {
+              "text/plain": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = getResponseJson(operationObject);
+      expect(json).to.deep.equal({});
     });
   });
 });

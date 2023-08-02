@@ -26,6 +26,7 @@ class CliTelemetry {
 
   public withRootFolder(rootFolder: string | undefined): CliTelemetry {
     this.rootFolder = rootFolder;
+    this.reporter?.withRootFolder(rootFolder);
     return this;
   }
 

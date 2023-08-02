@@ -25,7 +25,7 @@ import { YargsCommand } from "../../yargsCommand";
 const sideloadingServiceEndpoint = process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
 const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
 
-async function getTokenAndUpn(): Promise<[string, string]> {
+export async function getTokenAndUpn(): Promise<[string, string]> {
   const tokenRes = await M365TokenProvider.getAccessToken({ scopes: [sideloadingServiceScope] });
   if (tokenRes.isErr()) {
     CLILogProvider.necessaryLog(

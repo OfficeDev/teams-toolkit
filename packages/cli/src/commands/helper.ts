@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CLICommandArgument, CLICommand, CLICommandOption } from "./types";
+import {
+  CLICommandArgument,
+  CLICommand,
+  CLICommandOption,
+  CLIExample,
+} from "@microsoft/teamsfx-api";
+import chalk from "chalk";
 
 class Helper {
   itemIndentWidth = 2;
@@ -30,16 +36,33 @@ class Helper {
     }
   }
   formatSubCommandName(command: CLICommand) {
-    const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
-    return `${command.name} ${command.options?.length ? "[options]" : ""} ${args}`.trim();
+    const items: string[] = [command.name];
+    if (command.options) {
+      items.push("[options]");
+    }
+    if (command.arguments) {
+      command.arguments.forEach((a) => {
+        items.push(this.formatArgumentName(a));
+      });
+    }
+    return items.join(" ");
+  }
+  formatExample(example: CLIExample) {
+    return `  '${chalk.blueBright(example.command)}': ${example.description}`;
   }
   formatCommandName(command: CLICommand) {
-    const args = command.arguments?.map((a) => this.formatArgumentName(a)).join(" ") || "";
-    return `${command.fullName || command.name} ${
-      command.options?.length ? "[options]" : ""
-    } ${args}`.trim();
+    const items: string[] = [command.fullName || command.name];
+    if (command.options) {
+      items.push("[options]");
+    }
+    if (command.arguments) {
+      command.arguments.forEach((a) => {
+        items.push(this.formatArgumentName(a));
+      });
+    }
+    return items.join(" ");
   }
-  computePadWidth(command: CLICommand, rootCommand: CLICommand) {
+  computePadWidth(command: CLICommand, rootCommand?: CLICommand) {
     const names: string[] = [];
 
     command.options?.forEach((o) => {
@@ -52,8 +75,13 @@ class Helper {
       names.push(name);
     });
 
-    rootCommand.options?.forEach((o) => {
+    rootCommand?.options?.forEach((o) => {
       const name = this.formatOptionName(o);
+      names.push(name);
+    });
+
+    command.commands?.forEach((c) => {
+      const name = this.formatSubCommandName(c);
       names.push(name);
     });
 
@@ -138,13 +166,13 @@ class Helper {
     }
     return sentances.join(" ");
   }
-  formatHelp(command: CLICommand, rootCommand: CLICommand): string {
+  formatHelp(command: CLICommand, rootCommand?: CLICommand): string {
     this.termWidth = this.computePadWidth(command, rootCommand);
 
     let output: string[] = [];
 
     // Header
-    if (rootCommand.header) {
+    if (rootCommand?.header) {
       output = output.concat([rootCommand.header, ""]);
     }
 
@@ -182,8 +210,8 @@ class Helper {
     }
 
     // Global Options
-    let globalOptions = rootCommand.options || [];
-    if (rootCommand.sortOptions) globalOptions = globalOptions.sort(compareOptions);
+    let globalOptions = rootCommand?.options || [];
+    if (rootCommand?.sortOptions) globalOptions = globalOptions.sort(compareOptions);
     const globalOptionList = globalOptions.map((option) => {
       return this.formatItem(
         this.formatOptionName(option, true, true),
@@ -195,7 +223,9 @@ class Helper {
     }
 
     // SubCommands
-    const commandList = (command.commands || []).map((cmd) => {
+    let subCommands = (command.commands || []).filter((c) => !c.hidden);
+    if (command.sortCommands) subCommands = subCommands.sort(compareCommands);
+    const commandList = subCommands.map((cmd) => {
       return this.formatItem(this.formatSubCommandName(cmd), cmd.description);
     });
     if (commandList.length > 0) {
@@ -204,11 +234,12 @@ class Helper {
 
     // Examples
     if (command.examples) {
-      output = output.concat(["Examples:", ...command.examples.map((e) => "  " + e)]);
+      output = output.concat(["Examples:", ...command.examples.map((e) => this.formatExample(e))]);
     }
 
     // Footer
-    if (rootCommand.footer) {
+    if (rootCommand?.footer) {
+      output.push("");
       output.push(rootCommand.footer);
     }
 
@@ -220,6 +251,13 @@ export const helper = new Helper();
 
 export function compareOptions(a: CLICommandOption, b: CLICommandOption): number {
   const sortKey = (option: CLICommandOption) => {
+    return option.name.replace(/-/g, "").toLowerCase();
+  };
+  return sortKey(a).localeCompare(sortKey(b));
+}
+
+export function compareCommands(a: CLICommand, b: CLICommand): number {
+  const sortKey = (option: CLICommand) => {
     return option.name.replace(/-/g, "").toLowerCase();
   };
   return sortKey(a).localeCompare(sortKey(b));

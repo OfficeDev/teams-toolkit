@@ -96,8 +96,122 @@ export abstract class BasicLogin {
 // @public (undocumented)
 export const BuildFolderName = "build";
 
+// Warning: (ae-forgotten-export) The symbol "CLICommandOptionBase" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export interface CLIBooleanOption extends CLICommandOptionBase {
+    // (undocumented)
+    default?: boolean;
+    // (undocumented)
+    type: "boolean";
+    // (undocumented)
+    value?: boolean;
+}
+
+// @public (undocumented)
+export interface CLICommand {
+    // (undocumented)
+    arguments?: CLICommandArgument[];
+    // (undocumented)
+    commands?: CLICommand[];
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    examples?: CLIExample[];
+    // (undocumented)
+    footer?: string;
+    // (undocumented)
+    fullName?: string;
+    // (undocumented)
+    handler?: (cmd: CLIContext) => Promise<Result<undefined, FxError>>;
+    // (undocumented)
+    header?: string;
+    // (undocumented)
+    hidden?: boolean;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    options?: CLICommandOption[];
+    // (undocumented)
+    sortCommands?: boolean;
+    // (undocumented)
+    sortOptions?: boolean;
+    // (undocumented)
+    telemetry?: {
+        event: string;
+    };
+    // (undocumented)
+    version?: string;
+}
+
+// @public (undocumented)
+export type CLICommandArgument = CLICommandOption;
+
+// @public (undocumented)
+export type CLICommandOption = CLIBooleanOption | CLITextOption | CLISingleSelectOption | CLIMultiSelectOption;
+
+// @public (undocumented)
+export interface CLIContext {
+    // (undocumented)
+    argumentValues: string[];
+    // (undocumented)
+    command: CLICommand;
+    // (undocumented)
+    globalOptionValues: Record<string, OptionValue>;
+    // (undocumented)
+    optionValues: Record<string, OptionValue>;
+    // (undocumented)
+    telemetryProperties: Record<string, string>;
+}
+
+// @public (undocumented)
+export interface CLIExample {
+    // (undocumented)
+    command: string;
+    // (undocumented)
+    description: string;
+}
+
+// @public (undocumented)
+export interface CLIMultiSelectOption extends CLICommandOptionBase {
+    // (undocumented)
+    choiceListCommand?: string;
+    // (undocumented)
+    choices?: string[] | boolean[];
+    // (undocumented)
+    default?: string[] | boolean[];
+    // (undocumented)
+    type: "multiSelect";
+    // (undocumented)
+    value?: string[] | boolean[];
+}
+
 // @public (undocumented)
 export const CLIPlatforms: Platform[];
+
+// @public (undocumented)
+export interface CLISingleSelectOption extends CLICommandOptionBase {
+    // (undocumented)
+    choiceListCommand?: string;
+    // (undocumented)
+    choices?: string[] | boolean[];
+    // (undocumented)
+    default?: string | boolean;
+    // (undocumented)
+    type: "singleSelect";
+    // (undocumented)
+    value?: string | boolean;
+}
+
+// @public (undocumented)
+export interface CLITextOption extends CLICommandOptionBase {
+    // (undocumented)
+    default?: string;
+    // (undocumented)
+    type: "text";
+    // (undocumented)
+    value?: string;
+}
 
 // @public
 export enum Colors {
@@ -350,6 +464,7 @@ export interface IQTreeNode {
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
+    interactiveOnly?: "self" | "children" | "all";
 }
 
 // @public (undocumented)
@@ -447,6 +562,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 
 // @public
 export interface MultiSelectQuestion extends UserInputQuestion {
+    cliChoiceListCommand?: string;
     default?: string[] | LocalFunc<string[] | undefined>;
     dynamicOptions?: DynamicOptions;
     onDidChangeSelection?: OnSelectionChangeFunc;
@@ -522,6 +638,9 @@ export interface OptionItem {
     label: string;
 }
 
+// @public (undocumented)
+export type OptionValue = string | boolean | string[] | boolean[] | undefined;
+
 // @public
 export interface PermissionRequestProvider {
     checkPermissionRequest(): Promise<Result<undefined, FxError>>;
@@ -554,6 +673,7 @@ export class QTreeNode implements IQTreeNode {
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
+    interactiveOnly?: "self" | "children" | "all";
     trim(): QTreeNode | undefined;
     // (undocumented)
     validate(): boolean;
@@ -651,6 +771,7 @@ export interface SingleSelectConfig extends UIConfig<string> {
 
 // @public
 export interface SingleSelectQuestion extends UserInputQuestion {
+    cliChoiceListCommand?: string;
     default?: string | LocalFunc<string | undefined>;
     dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
@@ -979,9 +1100,17 @@ export interface UserErrorOptions extends ErrorOptionBase {
 
 // @public
 export interface UserInputQuestion extends BaseQuestion {
+    alternativeNames?: string[];
+    // (undocumented)
+    cliDescription?: string;
+    cliName?: string;
+    cliShortName?: string;
+    cliType?: "option" | "argument";
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
+    isBoolean?: boolean;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
+    required?: boolean;
     title: string | LocalFunc<string | undefined>;
     type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
     validation?: ValidationSchema;

@@ -395,7 +395,7 @@
   "error.aad.manifest.OptionalClaimsIsMissing": "optionalClaims is missing\n",
   "error.aad.manifest.OptionalClaimsMissingIdtypClaim": "optionalClaims access token doesn't contain idtyp claim\n",
   "error.aad.manifest.AADManifestIssues": "AAD manifest has following issues that may potentially break the Teams App:\n",
-  "error.aad.manifest.AADPermissionIssues": "Update Azure Active Directory app failed. Please double check the permission id you specified is correct.\n",
+  "error.aad.manifest.DeleteOrUpdatePermissionFailed": "Failed to update or delete an existing permission when it's enabled. One possible reason is the ACCESS_AS_USER_PERMISSION_ID environment variable is changed for selected environment. Ensure your permission id(s) are identical with the actual AAD application and try again.\n",
   "error.aad.manifest.UnknownResourceAppId": "Unknown resourceAppId %s",
   "error.aad.manifest.UnknownResourceAccessType": "Unknown resourceAccess: %s",
   "error.aad.manifest.UnknownResourceAccessId": "Unknown resourceAccess id: %s, if you're using permission as resourceAccess id, please try to use permission id instead.",

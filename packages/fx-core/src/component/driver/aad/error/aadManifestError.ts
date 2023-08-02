@@ -71,3 +71,15 @@ export class UnknownResourceAccessTypeUserError extends UserError {
     });
   }
 }
+
+export class DeleteOrUpdatePermissionFailedError extends UserError {
+  constructor(actionName: string) {
+    super({
+      source: actionName,
+      name: "DeleteOrUpdatePermissionFailed",
+      message: getDefaultString("error.aad.manifest.DeleteOrUpdatePermissionFailed"),
+      displayMessage: getLocalizedString("error.aad.manifest.DeleteOrUpdatePermissionFailed"),
+      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+    });
+  }
+}

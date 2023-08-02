@@ -2,16 +2,17 @@
 // Licensed under the MIT license.
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
-import axios, { AxiosInstance, AxiosError } from "axios";
+import axios, { AxiosInstance, AxiosError, AxiosResponse } from "axios";
 import { IAADDefinition } from "../interface/IAADDefinition";
 import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import { AadManifestHelper } from "./aadManifestHelper";
 import { GraphScopes } from "../../../../common/tools";
-import { constants } from "./constants";
+import { constants, aadErrorCode } from "./constants";
 import axiosRetry from "axios-retry";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadOwner } from "../../../../common/permissionInterface";
+import { DeleteOrUpdatePermissionFailedError } from "../error/aadManifestError";
 
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
@@ -84,20 +85,28 @@ export class AadAppClient {
     return response.data.secretText;
   }
 
-  public async updateAadApp(manifest: AADManifest): Promise<void> {
+  public async updateAadApp(manifest: AADManifest): Promise<AxiosResponse<any>> {
     const objectId = manifest.id!; // You need to ensure the object id exists in manifest
     const requestBody = AadManifestHelper.manifestToApplication(manifest);
-    await this.axios.patch(`applications/${objectId}`, requestBody, {
-      "axios-retry": {
-        retries: this.retryNumber,
-        retryDelay: axiosRetry.exponentialDelay,
-        retryCondition: (error) =>
-          axiosRetry.isNetworkError(error) ||
-          axiosRetry.isRetryableError(error) ||
-          this.is404Error(error) || // also retry 404 error since AAD need sometime to sync created AAD app data
-          this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
-      },
-    });
+    try {
+      const response = await this.axios.patch(`applications/${objectId}`, requestBody, {
+        "axios-retry": {
+          retries: this.retryNumber,
+          retryDelay: axiosRetry.exponentialDelay,
+          retryCondition: (error) =>
+            axiosRetry.isNetworkError(error) ||
+            axiosRetry.isRetryableError(error) ||
+            this.is404Error(error) || // also retry 404 error since AAD need sometime to sync created AAD app data
+            this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
+        },
+      });
+      if(response.status === 400 && response.) {
+        throw new DeleteOrUpdatePermissionFailedError(AadAppClient.name);
+      }
+      return response;
+    }catch(err) {
+      throw err;
+    }
   }
 
   public async getOwners(objectId: string): Promise<AadOwner[] | undefined> {

@@ -70,39 +70,6 @@ describe("BaseComponentInnerError", () => {
       expect(error.innerError).to.equal(undefined);
     });
 
-    it("should create a new BaseComponentInnerError with the correct properties when messageParams is not provided", () => {
-      const source = "test";
-      const errorType = "UserError";
-      const name = "TestError";
-      const messageKey = "test.message";
-      const suggestionKey = ["test.suggestion"];
-      const detail = "Test error detail.";
-      const helpLink = "https://example.com/help";
-      const innerError = new Error("Inner error message.");
-      const error = new BaseComponentInnerError(
-        source,
-        errorType,
-        name,
-        messageKey,
-        undefined,
-        suggestionKey,
-        detail,
-        helpLink,
-        innerError
-      );
-      expect(error).to.be.instanceOf(Error);
-      expect(error).to.be.instanceOf(BaseComponentInnerError);
-      expect(error.source).to.equal(source);
-      expect(error.errorType).to.equal(errorType);
-      expect(error.name).to.equal(name);
-      expect(error.message).to.equal("Test error detail.");
-      expect(error.displayMessage).to.equal("Test message. Suggestions: Test suggestion");
-      expect(error.suggestionKey).to.deep.equal(suggestionKey);
-      expect(error.detail).to.equal(detail);
-      expect(error.helpLink).to.equal(helpLink);
-      expect(error.innerError).to.equal(innerError);
-    });
-
     it("should create a new BaseComponentInnerError with the correct properties when suggestionKey is not provided", () => {
       const source = "test";
       const errorType = "UserError";

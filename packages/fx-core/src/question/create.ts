@@ -1227,6 +1227,8 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
+const maximumLengthOfDetailsErrorMessageInInputBox = 90;
+
 export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   const validationOnAccept = async (
     input: string,
@@ -1239,7 +1241,10 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
         const errors = res.error;
-        if (errors.length === 1) {
+        if (
+          errors.length === 1 &&
+          errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
+        ) {
           return errors[0].content;
         } else {
           return inputs!.platform === Platform.VSCode
@@ -1334,7 +1339,10 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             inputs!.supportedApisFromApiSpec = res.value;
           } else {
             const errors = res.error;
-            if (errors.length === 1) {
+            if (
+              errors.length === 1 &&
+              errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
+            ) {
               return errors[0].content;
             } else {
               return inputs!.platform === Platform.VSCode

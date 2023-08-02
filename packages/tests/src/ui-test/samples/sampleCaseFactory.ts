@@ -213,6 +213,12 @@ export default function sampleCaseFactory(
                         LocalDebugTaskResult.BotAppSuccess
                       );
                       break;
+                    case LocalDebugTaskLabel.GulpServe:
+                      console.log("wait gulp serve start");
+                      await waitForTerminal(
+                        LocalDebugTaskLabel.GulpServe,
+                        LocalDebugTaskResult.GulpServeSuccess
+                      );
                     default:
                       break;
                   }
@@ -236,6 +242,12 @@ export default function sampleCaseFactory(
               await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
             }
 
+            if (options?.skipInit) {
+              console.log("skip ui init...");
+              console.log("debug finish!");
+              return;
+            }
+
             const teamsAppId =
               (await sampledebugContext.getTeamsAppId(env)) ?? "";
             if (teamsAppId === "") {
@@ -252,12 +264,6 @@ export default function sampleCaseFactory(
               azSqlHelper,
               true
             );
-
-            if (options?.skipInit) {
-              console.log("skip ui init...");
-              console.log("debug finish!");
-              return;
-            }
 
             // init
             const page = await sampleInitMap[sampleName](

@@ -48,6 +48,7 @@ export default function sampleCaseFactory(
     teamsAppName?: string;
     dashboardFlag?: boolean;
     type?: string;
+    testRootFolder?: string;
     includeFunction?: boolean;
     npmName?: string;
     skipInit?: boolean;
@@ -59,7 +60,6 @@ export default function sampleCaseFactory(
       describe("Sample Tests", function () {
         this.timeout(Timeout.testAzureCase);
         let sampledebugContext: SampledebugContext;
-        let page: Page;
         let azSqlHelper: AzSqlHelper;
         let rgName: string;
 
@@ -68,7 +68,8 @@ export default function sampleCaseFactory(
           this.timeout(Timeout.prepareTestCase);
           sampledebugContext = new SampledebugContext(
             sampleName,
-            sampleProjectMap[sampleName]
+            sampleProjectMap[sampleName],
+            options?.testRootFolder ?? "./resource"
           );
           await sampledebugContext.before();
           if (sampleName === TemplateProject.ShareNow) {
@@ -259,18 +260,17 @@ export default function sampleCaseFactory(
             }
 
             // init
-            sampleInitMap[sampleName] &&
-              (await sampleInitMap[sampleName](
-                sampledebugContext.context!,
-                teamsAppId,
-                Env.username,
-                Env.password,
-                {
-                  teamsAppName: options?.teamsAppName,
-                  dashboardFlag: options?.dashboardFlag,
-                  type: options?.type,
-                }
-              ));
+            const page = await sampleInitMap[sampleName](
+              sampledebugContext.context!,
+              teamsAppId,
+              Env.username,
+              Env.password,
+              {
+                teamsAppName: options?.teamsAppName,
+                dashboardFlag: options?.dashboardFlag,
+                type: options?.type,
+              }
+            );
 
             if (options?.skipValidation) {
               console.log("skip ui validation...");
@@ -280,7 +280,7 @@ export default function sampleCaseFactory(
 
             // validate
             sampleValidationMap[sampleName] &&
-              (await sampleValidationMap[sampleName](page, {
+              (await sampleValidationMap[sampleName](page!, {
                 context: sampledebugContext,
                 displayName: Env.displayName,
                 includeFunction: options?.includeFunction,

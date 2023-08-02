@@ -14,6 +14,6 @@ const sampleCase = sampleCaseFactory(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
-  { skipValidation: true }
+  { testRootFolder: "./resource/samples", skipValidation: true }
 );
 sampleCase.test();

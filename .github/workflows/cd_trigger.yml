@@ -72,7 +72,7 @@ jobs:
         with:
           script: |
             let rawData = require('fs').readFileSync('./series.txt', {encoding:'utf8', flag:'r'});
-            if ((rawData ?? "") === "") rawData = "undefined"
+            if (rawData.trim() === "") rawData = "undefined"
             console.log('-----------------', rawData)
             return rawData;
 

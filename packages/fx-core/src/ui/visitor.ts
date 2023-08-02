@@ -68,6 +68,102 @@ export type QuestionTreeVisitor = (
   totalSteps?: number
 ) => Promise<Result<InputResult<any>, FxError>>;
 
+function convertOptionItemtoId(question: Question, value: any): string | string[] {
+  if (question.type === "singleSelect") {
+    if (question.returnObject || typeof value !== "string") return value.id as string;
+    return value as string;
+  } else if (question.type === "multiSelect") {
+    if (question.returnObject || typeof value[0] !== "string") {
+      return (value as OptionItem[]).map((item) => item.id) as string[];
+    } else {
+      return value as string[];
+    }
+  }
+  return value as string | string[];
+}
+
+async function validateInputForSingleSelectQuestion(
+  question: SingleSelectQuestion,
+  inputs: Inputs
+): Promise<string | undefined> {
+  const value = inputs[question.name] as string | OptionItem;
+  let options = question.staticOptions;
+  if (question.dynamicOptions) {
+    options = await question.dynamicOptions(inputs);
+  }
+  return isAllowedValue(question.name, value, options, question.returnObject);
+}
+
+async function validateInputForMultipleSelectQuestion(
+  question: MultiSelectQuestion,
+  inputs: Inputs
+): Promise<string | undefined> {
+  const value = inputs[question.name] as string[] | OptionItem[];
+  let options = question.staticOptions;
+  if (question.dynamicOptions) {
+    options = await question.dynamicOptions(inputs);
+  }
+  for (const item of value) {
+    const error = isAllowedValue(question.name, item, options, question.returnObject);
+    if (error) return error;
+  }
+  return undefined;
+}
+
+function isAllowedValue(
+  key: string,
+  value: string | OptionItem,
+  options: StaticOptions,
+  returnObject?: boolean
+): string | undefined {
+  if (options.length === 0) {
+    return new EmptyOptionError(key).message;
+  }
+  const optionIsStringArray = typeof options[0] === "string";
+  if (returnObject) {
+    if (optionIsStringArray) {
+      return `Invalid question, expect return object, but allowed value: ${JSON.stringify(
+        options
+      )}`;
+    }
+    if (!value) {
+      return `Invalid input '${key}':${JSON.stringify(value)}, allowed value: ${JSON.stringify(
+        options
+      )}`;
+    }
+    if (!value || typeof value === "string") {
+      return `Invalid input '${key}':${JSON.stringify(value)}, allowed value: ${JSON.stringify(
+        options
+      )}`;
+    }
+    if (!(options as OptionItem[]).find((item) => item.id === value.id)) {
+      return `Invalid input '${key}':${JSON.stringify(value)}, allowed value: ${JSON.stringify(
+        options
+      )}`;
+    }
+  } else {
+    if (!value) {
+      return `Invalid input '${key}':${JSON.stringify(value)}, allowed value: ${JSON.stringify(
+        options
+      )}`;
+    }
+    if (!value || typeof value !== "string") {
+      return `Invalid input '${key}':${JSON.stringify(value)}, allowed value: ${JSON.stringify(
+        options
+      )}`;
+    }
+    // value is string here
+    const foundOption = optionIsStringArray
+      ? (options as string[]).find((item: string) => item === value)
+      : (options as OptionItem[]).find((item: OptionItem) => item.id === value);
+    if (!foundOption) {
+      return `Invalid input '${key}':${JSON.stringify(value)}, allowed value: ${JSON.stringify(
+        options
+      )}`;
+    }
+  }
+}
+
 /**
  * ask question when visiting the question tree
  * @param question
@@ -82,16 +178,30 @@ const questionVisitor: QuestionTreeVisitor = async function (
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
   if (inputs[question.name] !== undefined) {
-    // call validation even if the answer is manually provided in inputs
-    const validationFunc = (question as any).validation
-      ? getValidationFunction<string>((question as any).validation, inputs)
-      : undefined;
-    if (validationFunc) {
-      const res = await validationFunc(inputs[question.name]);
+    // validate existing answer in inputs object
+    if (question.type === "singleSelect") {
+      const res = await validateInputForSingleSelectQuestion(question, inputs);
       if (res) {
         return err(new InputValidationError(question.name, res));
       }
+    } else if (question.type === "multiSelect") {
+      const res = await validateInputForMultipleSelectQuestion(question, inputs);
+      if (res) {
+        return err(new InputValidationError(question.name, res));
+      }
+    } else {
+      const validationFunc = (question as any).validation
+        ? getValidationFunction<string | string[]>((question as any).validation, inputs)
+        : undefined;
+      if (validationFunc) {
+        const valueToValidate = convertOptionItemtoId(question, inputs[question.name]);
+        const res = await validationFunc(valueToValidate);
+        if (res) {
+          return err(new InputValidationError(question.name, res));
+        }
+      }
     }
+
     return ok({ type: "skip", result: inputs[question.name] });
   }
   const title = (await getCallFuncValue(inputs, question.title)) as string;

@@ -25,7 +25,7 @@ import {
   TelemetryProperty,
   IQTreeNode,
 } from "@microsoft/teamsfx-api";
-import { EmptyOptionError, UserCancelError, assembleError } from "../error";
+import { EmptyOptionError, InputValidationError, UserCancelError, assembleError } from "../error";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -82,6 +82,16 @@ const questionVisitor: QuestionTreeVisitor = async function (
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
   if (inputs[question.name] !== undefined) {
+    // call validation even if the answer is manually provided in inputs
+    const validationFunc = (question as any).validation
+      ? getValidationFunction<string>((question as any).validation, inputs)
+      : undefined;
+    if (validationFunc) {
+      const res = await validationFunc(inputs[question.name]);
+      if (res) {
+        return err(new InputValidationError(question.name, res));
+      }
+    }
     return ok({ type: "skip", result: inputs[question.name] });
   }
   const title = (await getCallFuncValue(inputs, question.title)) as string;
@@ -393,7 +403,180 @@ export async function traverse(
   }
   return ok(Void);
 }
+export async function _traverse(
+  node: IQTreeNode,
+  inputs: Inputs,
+  ui: UserInteraction,
+  visitor: QuestionTreeVisitor,
+  history: IQTreeNode[],
+  parentMap: Map<IQTreeNode, IQTreeNode>,
+  autoSkipSet: Set<IQTreeNode>,
+  telemetryReporter?: TelemetryReporter
+): Promise<Result<undefined, FxError>> {
+  // 1. check condition
+  if (node.condition) {
+    const valueInMap = findValue(node, parentMap);
+    const validRes = await validate(
+      node.condition,
+      valueInMap as string | string[] | OptionItem | OptionItem[],
+      inputs
+    );
+    if (validRes !== undefined) {
+      return ok(undefined);
+    }
+  }
 
+  // 2. visit node if not group
+  if (node.data.type !== "group") {
+    const question = node.data;
+    let res;
+    try {
+      res = await visitor(question, ui, inputs, history.length + 1, undefined);
+      sendTelemetryEvent(telemetryReporter, res, question, inputs);
+    } catch (e) {
+      return err(assembleError(e));
+    }
+    if (res.isErr()) {
+      // Cancel or Error
+      return err(res.error);
+    }
+    const inputResult = res.value;
+    if (inputResult.type === "back") {
+      const last = history.pop();
+      if (!last) {
+        return err(new UserCancelError());
+      }
+    } else {
+      //success or skip
+      history.push(node);
+      question.value = inputResult.result;
+      inputs[question.name] = question.value;
+    }
+  }
+
+  if (node.children) {
+    for (const child of node.children) {
+      await _traverse(
+        child,
+        inputs,
+        ui,
+        visitor,
+        history,
+        parentMap,
+        autoSkipSet,
+        telemetryReporter
+      );
+    }
+  }
+
+  return ok(undefined);
+}
+export async function traverseV2(
+  root: IQTreeNode,
+  inputs: Inputs,
+  ui: UserInteraction,
+  telemetryReporter?: TelemetryReporter,
+  visitor: QuestionTreeVisitor = questionVisitor
+): Promise<Result<Void, FxError>> {
+  const stack: IQTreeNode[] = [];
+  const history: IQTreeNode[] = [];
+  const parentMap = new Map<IQTreeNode, IQTreeNode>();
+  const autoSkipSet = new Set<IQTreeNode>();
+  stack.push(root);
+  let step = 1; // manual input step
+  let totalStep = 1;
+  while (stack.length > 0) {
+    const curr = stack.pop();
+    if (!curr) continue;
+    //visit
+    if (curr.data.type !== "group") {
+      const question = curr.data;
+      totalStep = step + stack.length;
+      let qvRes;
+      try {
+        qvRes = await visitor(question, ui, inputs, step, totalStep);
+        sendTelemetryEvent(telemetryReporter, qvRes, question, inputs);
+      } catch (e) {
+        return err(assembleError(e));
+      }
+      if (qvRes.isErr()) {
+        // Cancel or Error
+        return err(qvRes.error);
+      }
+      const inputResult = qvRes.value;
+      if (inputResult.type === "back") {
+        stack.push(curr);
+
+        // find the previous input that is neither group nor func nor single option select
+        let found = false;
+        while (history.length > 0) {
+          const last = history.pop();
+          if (!last) continue;
+          if (last.children) {
+            while (stack.length > 0) {
+              const tmp = stack[stack.length - 1];
+              if (last.children.includes(tmp)) {
+                stack.pop();
+              } else {
+                break;
+              }
+            }
+          }
+          stack.push(last);
+          if (last.data.type !== "group") delete inputs[last.data.name];
+
+          const lastIsAutoSkip = autoSkipSet.has(last);
+          if (last.data.type !== "group" && last.data.type !== "func" && !lastIsAutoSkip) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          return err(new UserCancelError());
+        }
+        --step;
+        continue; //ignore the following steps
+      } else {
+        //success or skip
+        question.value = inputResult.result;
+        inputs[question.name] = question.value;
+
+        if (inputResult.type === "skip" || question.type === "func") {
+          if (inputResult.type === "skip") autoSkipSet.add(curr);
+        } else {
+          ++step;
+        }
+      }
+    }
+
+    history.push(curr);
+
+    if (curr.children) {
+      const matchChildren: IQTreeNode[] = [];
+      const valueInMap = findValue(curr, parentMap); //curr.data.type !== "group" ? curr.data.value : undefined; //valueMap.get(curr);
+      for (const child of curr.children) {
+        if (!child) continue;
+        if (child.condition) {
+          const validRes = await validate(
+            child.condition,
+            valueInMap as string | string[] | OptionItem | OptionItem[],
+            inputs
+          );
+          if (validRes !== undefined) {
+            continue;
+          }
+        }
+        matchChildren.push(child);
+      }
+      for (let i = matchChildren.length - 1; i >= 0; --i) {
+        const child = matchChildren[i];
+        parentMap.set(child, curr);
+        stack.push(child);
+      }
+    }
+  }
+  return ok(Void);
+}
 function findValue(
   curr: QTreeNode | IQTreeNode,
   parentMap: Map<QTreeNode | IQTreeNode, QTreeNode | IQTreeNode>

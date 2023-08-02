@@ -146,7 +146,7 @@ class NewTemplate extends YargsCommand {
     inputs["samples"] = templateName;
     inputs["folder"] = folder;
     inputs.projectId = inputs.projectId ?? uuid.v4();
-    const result = await core.createProject(inputs);
+    const result = await core.createSampleProject(inputs);
     if (result.isErr()) {
       properties[TelemetryProperty.Success] = TelemetrySuccess.No;
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, result.error, properties);

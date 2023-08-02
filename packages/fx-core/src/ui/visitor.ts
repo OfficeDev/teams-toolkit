@@ -295,9 +295,6 @@ const questionVisitor: QuestionTreeVisitor = async function (
     )
   );
 };
-
-const enableV2 = true;
-
 // export async function traverse(
 //   root: IQTreeNode,
 //   inputs: Inputs,
@@ -305,7 +302,6 @@ const enableV2 = true;
 //   telemetryReporter?: TelemetryReporter,
 //   visitor: QuestionTreeVisitor = questionVisitor
 // ): Promise<Result<Void, FxError>> {
-//   if (enableV2) return await traverseV2(root, inputs, ui, telemetryReporter, visitor);
 //   const stack: IQTreeNode[] = [];
 //   const history: IQTreeNode[] = [];
 //   stack.push(root);

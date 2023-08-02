@@ -87,6 +87,25 @@ export enum ValidationStatus {
   Error, // If there are any errors, the file is not valid
 }
 
+export interface TextBlockElement {
+  type: string;
+  text: string;
+  wrap: boolean;
+}
+
+export interface ArrayElement {
+  type: string;
+  $data: string;
+  items: Array<TextBlockElement | ArrayElement>;
+}
+
+export interface AdaptiveCard {
+  type: string;
+  $schema: string;
+  version: string;
+  body: Array<TextBlockElement | ArrayElement>;
+}
+
 export interface PartialManifest {
   name: Name;
   description: Description;

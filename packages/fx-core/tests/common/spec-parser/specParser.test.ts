@@ -18,6 +18,8 @@ import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { OpenAPIV3 } from "openapi-types";
 import * as SpecFilter from "../../../src/common/spec-parser/specFilter";
 import * as ManifestUpdater from "../../../src/common/spec-parser/manifestUpdater";
+import * as AdaptiveCardGenerator from "../../../src/common/spec-parser/adaptiveCardGenerator";
+import jsyaml from "js-yaml";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -283,7 +285,6 @@ describe("SpecParser", () => {
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
       const result = await specParser.validate();
-      console.log(result);
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
@@ -317,9 +318,12 @@ describe("SpecParser", () => {
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
       const writeFileStub = sinon.stub(fs, "writeFile").resolves();
       const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
-      const JSONStringifySpy = sinon.spy(JSON, "stringify");
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
       const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns({} as any);
 
       const filter = ["get /hello"];
 
@@ -331,7 +335,7 @@ describe("SpecParser", () => {
         "path/to/adaptiveCardFolder"
       );
 
-      expect(JSONStringifySpy.calledOnce).to.be.false;
+      expect(JsyamlSpy.calledOnce).to.be.true;
       expect(specFilterStub.calledOnce).to.be.true;
       expect(writeFileStub.calledOnce).to.be.true;
       expect(manifestUpdaterStub.calledOnce).to.be.true;
@@ -347,8 +351,11 @@ describe("SpecParser", () => {
       const writeFileStub = sinon.stub(fs, "writeFile").resolves();
       const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
       const JSONStringifySpy = sinon.spy(JSON, "stringify");
-
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
       const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns({} as any);
 
       const filter = ["get /hello"];
 
@@ -360,7 +367,7 @@ describe("SpecParser", () => {
         "path/to/adaptiveCardFolder"
       );
 
-      expect(JSONStringifySpy.calledOnce).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.false;
       expect(specFilterStub.calledOnce).to.be.true;
       expect(writeFileStub.calledOnce).to.be.true;
       expect(manifestUpdaterStub.calledOnce).to.be.true;

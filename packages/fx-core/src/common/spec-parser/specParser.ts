@@ -7,6 +7,7 @@ import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { SpecParserError } from "./specParserError";
 import {
+  AdaptiveCard,
   ErrorResult,
   ErrorType,
   ValidateResult,
@@ -20,6 +21,8 @@ import fs from "fs-extra";
 import { specFilter } from "./specFilter";
 import { isSupportedApi } from "./utils";
 import { updateManifest } from "./manifestUpdater";
+import { generateAdaptiveCard } from "./adaptiveCardGenerator";
+import path from "path";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -192,13 +195,19 @@ export class SpecParser {
 
     await fs.writeJSON(manifestPath, updatedManifest, { spaces: 2 });
 
-    // TODO: other implementations
+    for (const url in newSpec.paths) {
+      const getOperation = newSpec.paths[url]?.get;
+      const card: AdaptiveCard = generateAdaptiveCard(getOperation!);
+      const fileName = path.join(adaptiveCardFolder, `${getOperation!.operationId!}.json`);
+      await fs.outputJSON(fileName, card, { spaces: 2 });
+    }
   }
 
   private async loadSpec(): Promise<void> {
     if (!this.spec) {
       this.unResolveSpec = (await this.parser.parse(this.specPath)) as OpenAPIV3.Document;
-      this.spec = (await this.parser.dereference(this.unResolveSpec)) as OpenAPIV3.Document;
+      const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
+      this.spec = (await this.parser.dereference(clonedUnResolveSpec)) as OpenAPIV3.Document;
     }
   }
 

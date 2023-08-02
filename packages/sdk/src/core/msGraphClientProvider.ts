@@ -9,6 +9,8 @@ import { TokenCredential } from "@azure/identity";
 
 /**
  * Get Microsoft graph client.
+ * @deprecated
+ *
  * @example
  * Get Microsoft graph client by TokenCredential
  * ```typescript
@@ -71,6 +73,8 @@ export function createMicrosoftGraphClient(
 // eslint-disable-next-line no-secrets/no-secrets
 /**
  * Get Microsoft graph client.
+ * @deprecated
+ * 
  * @example
  * Get Microsoft graph client by TokenCredential
  * ```typescript

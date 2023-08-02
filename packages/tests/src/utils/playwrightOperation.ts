@@ -1356,10 +1356,10 @@ async function executeBotSuggestionCommand(
   } catch (e: any) {
     try {
       console.log("can't find quickly select, try another way");
-      await page.click('div[role="presentation"]:has-text("Chat")');
+      await frame?.click('div.ui-flex[role="main"]');
       console.log("open quick select");
-      await page.click('div[role="presentation"]:has-text("Chat")');
-      await frame?.click('div[placeholder="Type a new message"]');
+      await frame?.click('div.ui-flex[role="main"]');
+      await frame?.click('div.ck-content[role="textbox"]');
       console.log("select: ", command);
       await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
     } catch (e: any) {

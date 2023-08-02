@@ -172,8 +172,14 @@ export const middleWareMap: Record<
     sampledebugContext: SampledebugContext,
     env: "local" | "dev",
     azSqlHelper?: AzSqlHelper,
-    step2?: boolean
-  ) => Promise<void>
+    steps?: {
+      before?: boolean;
+      after?: boolean;
+      main?: boolean;
+      afterCreate?: boolean;
+      afterdeploy?: boolean;
+    }
+  ) => Promise<void | AzSqlHelper>
 > = {
   [TemplateProject.AdaptiveCard]: () => Promise.resolve(),
   [TemplateProject.AssistDashboard]: async (
@@ -203,9 +209,17 @@ export const middleWareMap: Record<
     sampledebugContext: SampledebugContext,
     env: "local" | "dev",
     azSqlHelper?: AzSqlHelper,
-    step2?: boolean
+    steps?: {
+      before?: boolean;
+      after?: boolean;
+      afterCreate?: boolean;
+      afterdeploy?: boolean;
+    }
   ) => {
-    await shareNowMiddleWare(sampledebugContext, env, azSqlHelper, step2);
+    return await shareNowMiddleWare(sampledebugContext, env, azSqlHelper, {
+      before: steps?.before,
+      afterCreate: steps?.afterCreate,
+    });
   },
   [TemplateProject.StockUpdate]: async (
     sampledebugContext: SampledebugContext,
@@ -217,9 +231,17 @@ export const middleWareMap: Record<
     sampledebugContext: SampledebugContext,
     env: "local" | "dev",
     azSqlHelper?: AzSqlHelper,
-    step2?: boolean
+    steps?: {
+      before?: boolean;
+      after?: boolean;
+      afterCreate?: boolean;
+      afterdeploy?: boolean;
+    }
   ) => {
-    await todoListSqlMiddleWare(sampledebugContext, env, azSqlHelper, step2);
+    return await todoListSqlMiddleWare(sampledebugContext, env, azSqlHelper, {
+      before: steps?.before,
+      afterCreate: steps?.afterCreate,
+    });
   },
   [TemplateProject.TodoListM365]: async (
     sampledebugContext: SampledebugContext,
@@ -1442,6 +1464,7 @@ export async function validateNotificationBot(
 export async function validateStockUpdate(page: Page) {
   try {
     console.log("start to verify stock update");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
       "iframe.embedded-iframe"
     );
@@ -2013,11 +2036,42 @@ const shareNowMiddleWare = async (
   sampledebugContext: SampledebugContext,
   env: "local" | "dev",
   azSqlHelper?: AzSqlHelper,
-  step2?: boolean
+  steps?: {
+    before?: boolean;
+    afterCreate?: boolean;
+    afterDeploy?: boolean;
+  }
 ) => {
   const sqlUserName = "Abc123321";
   const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
-  if (!step2) {
+  if (steps?.before) {
+    // create sql db server
+    const rgName = `${sampledebugContext.appName}-dev-rg`;
+    const sqlCommands = [
+      `CREATE TABLE [TeamPostEntity](
+        [PostID] [int] PRIMARY KEY IDENTITY,
+        [ContentUrl] [nvarchar](400) NOT NULL,
+        [CreatedByName] [nvarchar](50) NOT NULL,
+        [CreatedDate] [datetime] NOT NULL,
+        [Description] [nvarchar](500) NOT NULL,
+        [IsRemoved] [bit] NOT NULL,
+        [Tags] [nvarchar](100) NULL,
+        [Title] [nvarchar](100) NOT NULL,
+        [TotalVotes] [int] NOT NULL,
+        [Type] [int] NOT NULL,
+        [UpdatedDate] [datetime] NOT NULL,
+        [UserID] [uniqueidentifier] NOT NULL
+    );`,
+      `CREATE TABLE [UserVoteEntity](
+        [VoteID] [int] PRIMARY KEY IDENTITY,
+        [PostID] [int] NOT NULL,
+        [UserID] [uniqueidentifier] NOT NULL
+    );`,
+    ];
+    azSqlHelper = new AzSqlHelper(rgName, sqlCommands);
+    return azSqlHelper;
+  }
+  if (steps?.afterCreate) {
     if (env === "dev") {
       const envFilePath = path.resolve(
         sampledebugContext.projectPath,
@@ -2051,7 +2105,8 @@ const shareNowMiddleWare = async (
         azSqlHelper?.sqlDatabaseName ?? ""
       );
     }
-  } else {
+  }
+  if (steps?.afterDeploy) {
     if (env === "local") return;
     const devEnvFilePath = path.resolve(
       sampledebugContext.projectPath,
@@ -2134,11 +2189,31 @@ const todoListSqlMiddleWare = async (
   sampledebugContext: SampledebugContext,
   env: "local" | "dev",
   azSqlHelper?: AzSqlHelper,
-  step2?: boolean
+  steps?: {
+    before?: boolean;
+    afterCreate?: boolean;
+    afterdeploy?: boolean;
+  }
 ) => {
   const sqlUserName = "Abc123321";
   const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
-  if (!step2) {
+  if (steps?.before) {
+    // create sql db server
+    const rgName = `${sampledebugContext.appName}-dev-rg`;
+    const sqlCommands = [
+      `CREATE TABLE Todo
+         (
+             id INT IDENTITY PRIMARY KEY,
+             description NVARCHAR(128) NOT NULL,
+             objectId NVARCHAR(36),
+             channelOrChatId NVARCHAR(128),
+             isCompleted TinyInt NOT NULL default 0,
+         )`,
+    ];
+    azSqlHelper = new AzSqlHelper(rgName, sqlCommands);
+    return azSqlHelper;
+  }
+  if (steps?.afterCreate) {
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
@@ -2167,7 +2242,8 @@ const todoListSqlMiddleWare = async (
         azSqlHelper?.sqlDatabaseName ?? ""
       );
     }
-  } else {
+  }
+  if (steps?.afterdeploy) {
     if (env === "local") return;
     // read database from devEnvFilePath
     const devEnvFilePath = path.resolve(

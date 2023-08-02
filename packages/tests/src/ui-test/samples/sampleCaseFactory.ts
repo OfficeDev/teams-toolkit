@@ -25,8 +25,67 @@ import { it } from "../../utils/it";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
 import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
-import { Page } from "playwright";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
+
+const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
+  [LocalDebugTaskLabel.StartFrontend]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.StartFrontend,
+      LocalDebugTaskResult.FrontendSuccess
+    );
+  },
+  [LocalDebugTaskLabel.StartBackend]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.StartBackend,
+      LocalDebugTaskResult.BotAppSuccess
+    );
+  },
+  [LocalDebugTaskLabel.WatchBackend]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.WatchBackend,
+      LocalDebugTaskResult.CompiledSuccess
+    );
+  },
+  [LocalDebugTaskLabel.StartLocalTunnel]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.StartLocalTunnel,
+      LocalDebugTaskResult.StartSuccess
+    );
+  },
+  [LocalDebugTaskLabel.Azurite]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.Azurite,
+      LocalDebugTaskResult.AzuriteSuccess
+    );
+  },
+  [LocalDebugTaskLabel.Compile]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.Compile,
+      LocalDebugTaskResult.CompiledSuccess
+    );
+  },
+  [LocalDebugTaskLabel.StartBotApp]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.StartBotApp,
+      LocalDebugTaskResult.BotAppSuccess
+    );
+  },
+  [LocalDebugTaskLabel.StartBot]: async () => Promise.resolve(),
+  [LocalDebugTaskLabel.StartWebhook]: async () => {
+    waitForTerminal(LocalDebugTaskLabel.StartWebhook);
+  },
+  [LocalDebugTaskLabel.InstallNpmPackages]: async () => Promise.resolve(),
+  [LocalDebugTaskLabel.ApiNpmInstall]: async () => Promise.resolve(),
+  [LocalDebugTaskLabel.BotNpmInstall]: async () => Promise.resolve(),
+  [LocalDebugTaskLabel.TabsNpmInstall]: async () => Promise.resolve(),
+  [LocalDebugTaskLabel.SpfxNpmInstall]: async () => Promise.resolve(),
+  [LocalDebugTaskLabel.GulpServe]: async () => {
+    waitForTerminal(
+      LocalDebugTaskLabel.GulpServe,
+      LocalDebugTaskResult.GulpServeSuccess
+    );
+  },
+};
 
 /**
  *
@@ -72,47 +131,13 @@ export default function sampleCaseFactory(
             options?.testRootFolder ?? "./resource"
           );
           await sampledebugContext.before();
-          if (sampleName === TemplateProject.ShareNow) {
-            // create sql db server
-            rgName = `${sampledebugContext.appName}-dev-rg`;
-            const sqlCommands = [
-              `CREATE TABLE [TeamPostEntity](
-                                [PostID] [int] PRIMARY KEY IDENTITY,
-                                [ContentUrl] [nvarchar](400) NOT NULL,
-                                [CreatedByName] [nvarchar](50) NOT NULL,
-                                [CreatedDate] [datetime] NOT NULL,
-                                [Description] [nvarchar](500) NOT NULL,
-                                [IsRemoved] [bit] NOT NULL,
-                                [Tags] [nvarchar](100) NULL,
-                                [Title] [nvarchar](100) NOT NULL,
-                                [TotalVotes] [int] NOT NULL,
-                                [Type] [int] NOT NULL,
-                                [UpdatedDate] [datetime] NOT NULL,
-                                [UserID] [uniqueidentifier] NOT NULL
-                            );`,
-              `CREATE TABLE [UserVoteEntity](
-                                [VoteID] [int] PRIMARY KEY IDENTITY,
-                                [PostID] [int] NOT NULL,
-                                [UserID] [uniqueidentifier] NOT NULL
-                            );`,
-            ];
-            azSqlHelper = new AzSqlHelper(rgName, sqlCommands);
-          }
-          if (sampleName === TemplateProject.TodoListBackend) {
-            // create sql db server
-            rgName = `${sampledebugContext.appName}-dev-rg`;
-            const sqlCommands = [
-              `CREATE TABLE Todo
-                            (
-                                id INT IDENTITY PRIMARY KEY,
-                                description NVARCHAR(128) NOT NULL,
-                                objectId NVARCHAR(36),
-                                channelOrChatId NVARCHAR(128),
-                                isCompleted TinyInt NOT NULL default 0,
-                            )`,
-            ];
-            azSqlHelper = new AzSqlHelper(rgName, sqlCommands);
-          }
+          // use before middleware to process typical sample
+          azSqlHelper = (await middleWareMap[sampleName](
+            sampledebugContext,
+            env,
+            azSqlHelper,
+            { before: true }
+          )) as AzSqlHelper;
         });
 
         afterEach(async function () {
@@ -154,74 +179,15 @@ export default function sampleCaseFactory(
               sampledebugContext,
               env,
               azSqlHelper,
-              false
+              { afterCreate: true }
             );
 
             if (env === "local") {
               try {
                 // local debug
                 await debugInitMap[sampleName]();
-
                 for (const label of validate) {
-                  switch (label) {
-                    case LocalDebugTaskLabel.StartLocalTunnel:
-                      console.log("Start Local Tunnel");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.StartLocalTunnel,
-                        LocalDebugTaskResult.StartSuccess
-                      );
-                      break;
-                    case LocalDebugTaskLabel.Azurite:
-                      console.log("wait for Azurite service Started");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.Azurite,
-                        LocalDebugTaskResult.AzuriteSuccess
-                      );
-                      break;
-                    case LocalDebugTaskLabel.Compile:
-                      console.log("Compile...");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.Compile,
-                        LocalDebugTaskResult.CompiledSuccess
-                      );
-                      break;
-                    case LocalDebugTaskLabel.StartBotApp:
-                      console.log("wait for application Started");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.StartBotApp,
-                        LocalDebugTaskResult.BotAppSuccess
-                      );
-                      break;
-                    case LocalDebugTaskLabel.StartFrontend:
-                      console.log("wait frontend start");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.StartFrontend,
-                        LocalDebugTaskResult.FrontendSuccess
-                      );
-                      break;
-                    case LocalDebugTaskLabel.WatchBackend:
-                      console.log("watch backend");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.WatchBackend,
-                        LocalDebugTaskResult.CompiledSuccess
-                      );
-                      break;
-                    case LocalDebugTaskLabel.StartBackend:
-                      console.log("wait backend start");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.StartBackend,
-                        LocalDebugTaskResult.BotAppSuccess
-                      );
-                      break;
-                    case LocalDebugTaskLabel.GulpServe:
-                      console.log("wait gulp serve start");
-                      await waitForTerminal(
-                        LocalDebugTaskLabel.GulpServe,
-                        LocalDebugTaskResult.GulpServeSuccess
-                      );
-                    default:
-                      break;
-                  }
+                  debugMap[label]();
                 }
               } catch (error) {
                 await VSBrowser.instance.takeScreenshot(
@@ -261,7 +227,7 @@ export default function sampleCaseFactory(
               sampledebugContext,
               env,
               azSqlHelper,
-              true
+              { afterdeploy: true }
             );
 
             // init

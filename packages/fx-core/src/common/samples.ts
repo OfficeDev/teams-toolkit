@@ -10,7 +10,7 @@ const packageJson = require("../../package.json");
 const SampleConfigOwner = "OfficeDev";
 const SampleConfigRepo = "TeamsFx-Samples";
 const SampleConfigFile = ".config/samples-config-v3.json";
-export const SampleConfigTag = "v2.4.0";
+export const SampleConfigTag = "v2.3.0";
 
 export interface SampleConfig {
   id: string;

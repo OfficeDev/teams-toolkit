@@ -36,6 +36,7 @@ import { AadCollaboration, TeamsCollaboration } from "../component/feature/colla
 import { FileNotFoundError } from "../error/common";
 import { QuestionNames } from "../question/questionNames";
 import { CoreSource, FailedToLoadManifestId } from "./error";
+import { PermissionGrantInputs } from "../question";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -520,7 +521,7 @@ export async function checkPermission(
 
 export async function grantPermission(
   ctx: Context,
-  inputs: InputsWithProjectPath,
+  inputs: InputsWithProjectPath & PermissionGrantInputs,
   tokenProvider: TokenProvider
 ): Promise<Result<PermissionsResult, FxError>> {
   const progressBar = ctx.userInteraction.createProgressBar(

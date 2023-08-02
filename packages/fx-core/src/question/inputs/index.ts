@@ -7,3 +7,4 @@ export * from "./CreateEnvInputs";
 export * from "./SelectTeamsManifestInputs";
 export * from "./ValidateTeamsAppInputs";
 export * from "./PreviewTeamsAppInputs";
+export * from "./PermissionGrantInputs";

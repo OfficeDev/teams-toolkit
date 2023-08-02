@@ -37,29 +37,21 @@ async function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
   }
   if (node.children && (!node.interactiveOnly || node.interactiveOnly !== "children")) {
     for (const child of node.children) {
-      if (child.condition) {
+      if (child.condition && typeof child.condition !== "function" && currentOptions.length > 0) {
+        // try to exclude one case: parent value has a range, child condition is not functional condition,
+        // and none of the value in the range satisfies the condition
         let someChoiceIsValid = false;
         for (const parentValue of currentOptions) {
-          const vres = await validate(child.condition, parentValue, {
-            platform: Platform.CLI_HELP,
-          });
-          // console.log("condition:", child.condition, "parentValue:", parentValue, "vres:", vres);
-          if (vres === undefined) {
+          const res = await validate(child.condition, parentValue);
+          if (res === undefined) {
             someChoiceIsValid = true;
             break;
           }
         }
-        // console.log(
-        //   child.data.name,
-        //   "parent choinces:",
-        //   currentOptions,
-        //   "someChoiceIsValid:",
-        //   someChoiceIsValid
-        // );
         if (someChoiceIsValid) {
           await collect(child, nodeList);
         }
-        // if all choinces are invalid, trim the child node
+        // if all choices are invalid, trim the child node
       } else {
         await collect(child, nodeList);
       }
@@ -130,7 +122,7 @@ export async function generate(
 
   await collect(node, nodeList);
 
-  // console.log(`node trimed: ${nodeList.map((n) => n.data.name).join(",")}`);
+  console.log(`node collected: ${nodeList.map((n) => n.data.name).join(",")}`);
 
   (node.data as any).required = true;
 
@@ -290,10 +282,11 @@ function getOptionType(question: UserInputQuestion): CLIOptionType {
   return "string";
 }
 
-generate(questionNodes.createProject(), "CreateProject");
-generate(questionNodes.createSampleProject(), "CreateSampleProject");
-generate(questionNodes.addWebpart(), "SFPxAddWebpart");
-generate(questionNodes.createNewEnv(), "CreateEnv");
-generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
-generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
-generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
+// generate(questionNodes.createProject(), "CreateProject");
+// generate(questionNodes.createSampleProject(), "CreateSampleProject");
+// generate(questionNodes.addWebpart(), "SFPxAddWebpart");
+// generate(questionNodes.createNewEnv(), "CreateEnv");
+// generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
+// generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
+// generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
+generate(questionNodes.grantPermission(), "PermissionGrant");

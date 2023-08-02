@@ -7,3 +7,4 @@ export * from "./CreateEnvOptions";
 export * from "./SelectTeamsManifestOptions";
 export * from "./ValidateTeamsAppOptions";
 export * from "./PreviewTeamsAppOptions";
+export * from "./PermissionGrantOptions";

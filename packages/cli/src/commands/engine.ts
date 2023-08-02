@@ -36,6 +36,7 @@ import { getSystemInputs } from "../utils";
 import { createFxCore } from "../activate";
 import path from "path";
 import { UnknownOptionError } from "../error";
+import * as uuid from "uuid";
 
 class CLIEngine {
   isBundledElectronApp(): boolean {
@@ -259,6 +260,10 @@ class CLIEngine {
     // process interactive
     context.globalOptionValues.interactive =
       context.globalOptionValues.interactive === false ? false : true;
+
+    // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
+    context.optionValues.interactive = context.globalOptionValues.interactive;
+    context.optionValues.correlationId = uuid.v4();
 
     // set log level
     const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;

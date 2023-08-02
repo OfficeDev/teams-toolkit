@@ -37,14 +37,6 @@ export const RequiredEnvOption: CLICommandOption = {
   required: true,
 };
 
-export const TeamsManifestPathOption: CLICommandOption = {
-  type: "string",
-  name: "manifest-file-path",
-  shortName: "m",
-  description:
-    "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
-};
-
 export const AadManifestPathOption: CLICommandOption = {
   type: "string",
   name: "manifest-file-path",

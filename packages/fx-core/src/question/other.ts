@@ -78,6 +78,7 @@ export function grantPermissionQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
         data: selectAppTypeQuestion(),
+        interactiveOnly: "self",
         children: [
           selectTeamsAppNode,
           selectAadAppNode,
@@ -435,9 +436,12 @@ export function selectTargetEnvQuestion(
     type: "singleSelect",
     name: questionName,
     title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
-    staticOptions: ["dev", "local"],
+    cliName: "env",
+    cliDescription: "Specifies the environment name for the project.",
+    staticOptions: [],
     dynamicOptions: async (inputs: Inputs) => {
-      const res = await envUtil.listEnv(inputs.projectPath!, remoteOnly);
+      if (!inputs.projectPath) return [];
+      const res = await envUtil.listEnv(inputs.projectPath, remoteOnly);
       if (res.isErr()) {
         if (throwErrorIfNoEnv) throw res.error;
         return [defaultValueIfNoEnv];
@@ -450,6 +454,7 @@ export function selectTargetEnvQuestion(
 }
 
 async function getDefaultUserEmail() {
+  if (!TOOLS?.tokenProvider.m365TokenProvider) return undefined;
   const jsonObjectRes = await TOOLS.tokenProvider.m365TokenProvider.getJsonObject({
     scopes: AppStudioScopes,
   });
@@ -470,6 +475,7 @@ export function inputUserEmailQuestion(): TextInputQuestion {
     name: QuestionNames.UserEmail,
     type: "text",
     title: getLocalizedString("core.getUserEmailQuestion.title"),
+    cliDescription: "Email address of the collaborator.",
     default: getDefaultUserEmail,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs) => {
@@ -514,7 +520,11 @@ export async function isAadMainifestContainsPlaceholder(inputs: Inputs): Promise
 export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.AadAppManifestFilePath,
-    title: getLocalizedString("core.selectAadManifestQuestion.title"),
+    cliName: "aad-manifest-file",
+    cliShortName: "am",
+    cliDescription:
+      "Specifies the Azure AD app manifest file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
+    title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
       if (!inputs.projectPath) return undefined;
@@ -550,8 +560,8 @@ function selectAppTypeQuestion(): MultiSelectQuestion {
 
 export async function envQuestionCondition(inputs: Inputs): Promise<boolean> {
   const appType = inputs[CollaborationConstants.AppType] as string[];
-  const requireAad = appType.includes(CollaborationConstants.AadAppQuestionId);
-  const requireTeams = appType.includes(CollaborationConstants.TeamsAppQuestionId);
+  const requireAad = appType?.includes(CollaborationConstants.AadAppQuestionId);
+  const requireTeams = appType?.includes(CollaborationConstants.TeamsAppQuestionId);
   const aadManifestPath = inputs[QuestionNames.AadAppManifestFilePath];
   const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
 

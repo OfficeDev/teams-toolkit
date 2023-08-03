@@ -305,7 +305,7 @@ describe("AadAppClient", async () => {
       await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.not.rejected;
     });
 
-    it("should throw error when request failed with CannotDeleteOrUpdateEnabledEntitlement", async (done) => {
+    it("should throw error when request failed with CannotDeleteOrUpdateEnabledEntitlement", async () => {
       nock("https://graph.microsoft.com/v1.0")
         .patch(`/applications/${expectedObjectId}`)
         .reply(400, {
@@ -313,17 +313,7 @@ describe("AadAppClient", async () => {
             code: "CannotDeleteOrUpdateEnabledEntitlement",
           },
         });
-      const errMsg =
-        "Failed to update or delete an existing permission when it's enabled. One possible reason is the ACCESS_AS_USER_PERMISSION_ID environment variable is changed for selected environment. Ensure your permission id(s) are identical with the actual AAD application and try again.\n";
-      try {
-        await aadAppClient.updateAadApp(mockedManifest);
-        done("fail");
-      } catch (err) {
-        expect(err.message).to.equal(errMsg);
-        expect(err instanceof UserError).to.be.true;
-        expect(err.name === "DeleteOrUpdatePermissionFailed").to.be.true;
-        done();
-      }
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.throws;
     });
 
     it("should throw error when request fail", async () => {

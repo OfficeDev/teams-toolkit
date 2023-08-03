@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
-import axios, { AxiosInstance, AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosError } from "axios";
 import { IAADDefinition } from "../interface/IAADDefinition";
 import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";

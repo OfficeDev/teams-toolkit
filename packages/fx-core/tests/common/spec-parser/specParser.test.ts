@@ -316,6 +316,110 @@ describe("SpecParser", () => {
       }
     });
 
+    it("should throw an error if the signal is aborted after loadSpec", async () => {
+      const manifestPath = "path/to/manifest";
+      const filter = ["GET /pet/{petId}"];
+      const specPath = "path/to/spec";
+      const adaptiveCardFolder = "path/to/adaptiveCardFolder";
+      try {
+        const signal = { aborted: false } as any;
+
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+
+        const parseStub = sinon.stub(specParser as any, "loadSpec").callsFake(async () => {
+          signal.aborted = true;
+          return Promise.resolve();
+        });
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        await specParser.generate(manifestPath, filter, specPath, adaptiveCardFolder, signal);
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should throw an error if the signal is aborted after specFilter", async () => {
+      try {
+        const signal = { aborted: false } as any;
+
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+        const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        const specFilterStub = sinon
+          .stub(SpecFilter, "specFilter")
+          .callsFake((filter: string[], unResolveSpec: any) => {
+            signal.aborted = true;
+            return {} as any;
+          });
+        const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+        const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+        const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+        const filter = ["get /hello"];
+
+        const outputSpecPath = "path/to/output.yaml";
+        await specParser.generate(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          "path/to/adaptiveCardFolder",
+          signal
+        );
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should throw an error if the signal is aborted after updateManifest", async () => {
+      try {
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+        const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+        const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+        const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+        const JsyamlSpy = sinon.spy(jsyaml, "dump");
+        const signal = { aborted: false } as any;
+
+        const manifestUpdaterStub = sinon
+          .stub(ManifestUpdater, "updateManifest")
+          .callsFake(
+            (
+              manifestPath: string,
+              outputSpecPath: string,
+              adaptiveCardFolder: string,
+              spec: OpenAPIV3.Document
+            ) => {
+              signal.aborted = true;
+              return {} as any;
+            }
+          );
+        const generateAdaptiveCardStub = sinon
+          .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+          .returns({} as any);
+
+        const filter = ["get /hello"];
+
+        const outputSpecPath = "path/to/output.yaml";
+        await specParser.generate(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          "path/to/adaptiveCardFolder",
+          signal
+        );
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
     it("should generate a new spec and write it to a yaml file", async () => {
       const specParser = new SpecParser("path/to/spec.yaml");
       const spec = { openapi: "3.0.0", paths: {} };

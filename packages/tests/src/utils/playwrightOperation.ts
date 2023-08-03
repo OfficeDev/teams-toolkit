@@ -1485,7 +1485,7 @@ export async function validateStockUpdate(page: Page) {
     console.log("start to verify stock update");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-iframe"
+      "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
     try {

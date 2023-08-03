@@ -26,7 +26,7 @@ import {
   JSONSyntaxError,
   MissingEnvironmentVariablesError,
 } from "../../../../src/error/common";
-import { Platform, ok, err, UserError } from "@microsoft/teamsfx-api";
+import { Platform, ok, err } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 

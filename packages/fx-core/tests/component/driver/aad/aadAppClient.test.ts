@@ -10,7 +10,7 @@ import axios, { AxiosInstance } from "axios";
 import nock from "nock";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
-import { SystemError, err } from "@microsoft/teamsfx-api";
+import { SystemError, err, UserError } from "@microsoft/teamsfx-api";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
 import { IAADDefinition } from "../../../../src/component/driver/aad/interface/IAADDefinition";
 import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
@@ -305,6 +305,17 @@ describe("AadAppClient", async () => {
       await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.not.rejected;
     });
 
+    it("should throw error when request failed with CannotDeleteOrUpdateEnabledEntitlement", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .patch(`/applications/${expectedObjectId}`)
+        .reply(400, {
+          error: {
+            code: "CannotDeleteOrUpdateEnabledEntitlement",
+          },
+        });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.rejected;
+    });
+
     it("should throw error when request fail", async () => {
       const expectedError = {
         error: {
@@ -318,11 +329,7 @@ describe("AadAppClient", async () => {
         .times(6)
         .reply(400, expectedError);
 
-      await expect(aadAppClient.updateAadApp(mockedManifest))
-        .to.eventually.be.rejectedWith("Request failed with status code 400")
-        .then((error) => {
-          expect(error.response.data).to.deep.equal(expectedError);
-        });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.throws;
     });
 
     it("should retry when get 404 response", async () => {

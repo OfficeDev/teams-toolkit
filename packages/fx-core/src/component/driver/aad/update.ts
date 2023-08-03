@@ -20,8 +20,6 @@ import {
   UnhandledError,
 } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
-import { aadErrorCode } from "./utility/constants";
-import { AadManifestErrorMessage } from "./error/aadManifestError";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";

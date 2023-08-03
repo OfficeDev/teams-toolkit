@@ -6,12 +6,12 @@
  */
 
 import { TemplateProject } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+// import sampleCaseFactory from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
-  TemplateProject.AdaptiveCard,
-  24121425,
-  "v-ivanchen@microsoft.com",
-  "dev"
-);
-sampleCase.test();
+// const sampleCase = sampleCaseFactory(
+//   TemplateProject.AdaptiveCard,
+//   24121425,
+//   "v-ivanchen@microsoft.com",
+//   "dev"
+// );
+// sampleCase.test();

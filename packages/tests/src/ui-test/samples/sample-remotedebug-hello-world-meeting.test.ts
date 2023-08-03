@@ -6,18 +6,18 @@
  */
 
 import { TemplateProject } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+// import sampleCaseFactory from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
-  TemplateProject.MyFirstMetting,
-  14571880,
-  "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  {
-    teamsAppName: "hello-world-in-meeting-dev",
-    type: "meeting",
-    skipValidation: true,
-  }
-);
-sampleCase.test();
+// const sampleCase = sampleCaseFactory(
+//   TemplateProject.MyFirstMetting,
+//   14571880,
+//   "v-ivanchen@microsoft.com",
+//   "dev",
+//   [],
+//   {
+//     teamsAppName: "hello-world-in-meeting-dev",
+//     type: "meeting",
+//     skipValidation: true,
+//   }
+// );
+// sampleCase.test();

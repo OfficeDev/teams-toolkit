@@ -5,10 +5,32 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { initTeamsPage } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
+import { SampledebugContext } from "./sampledebugContext";
 
-const sampleCase = sampleCaseFactory(
+class MyFirstMettingTestCase extends CaseFactory {
+  override async onInitPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string
+  ): Promise<Page> {
+    return await initTeamsPage(
+      sampledebugContext.context!,
+      teamsAppId,
+      Env.username,
+      Env.password,
+      {
+        teamsAppName: this.options?.teamsAppName,
+        type: this.options?.type,
+      }
+    );
+  }
+}
+
+new MyFirstMettingTestCase(
   TemplateProject.MyFirstMetting,
   9958524,
   "v-ivanchen@microsoft.com",
@@ -19,5 +41,4 @@ const sampleCase = sampleCaseFactory(
     type: "meeting",
     skipValidation: true,
   }
-);
-sampleCase.test();
+).test();

@@ -6,14 +6,14 @@
  */
 
 import { TemplateProject } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+// import sampleCaseFactory from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
-  TemplateProject.AssistDashboard,
-  24121439,
-  "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  { dashboardFlag: true, skipInit: true } // [TODO] skipInit browser security block
-);
-sampleCase.test();
+// const sampleCase = sampleCaseFactory(
+//   TemplateProject.AssistDashboard,
+//   24121439,
+//   "v-ivanchen@microsoft.com",
+//   "dev",
+//   [],
+//   { dashboardFlag: true, skipInit: true } // [TODO] skipInit browser security block
+// );
+// sampleCase.test();

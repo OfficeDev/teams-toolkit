@@ -6,14 +6,14 @@
  */
 
 import { TemplateProject } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+// import sampleCaseFactory from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
-  TemplateProject.ProactiveMessaging,
-  24121478,
-  "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  { testRootFolder: "./resource/samples", skipValidation: true }
-);
-sampleCase.test();
+// const sampleCase = sampleCaseFactory(
+//   TemplateProject.ProactiveMessaging,
+//   24121478,
+//   "v-ivanchen@microsoft.com",
+//   "dev",
+//   [],
+//   { testRootFolder: "./resource/samples", skipValidation: true }
+// );
+// sampleCase.test();

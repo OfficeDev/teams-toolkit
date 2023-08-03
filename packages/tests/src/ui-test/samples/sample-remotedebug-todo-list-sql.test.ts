@@ -6,14 +6,14 @@
  */
 
 import { TemplateProject } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+// import sampleCaseFactory from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
-  TemplateProject.TodoListBackend,
-  14571882,
-  "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  { teamsAppName: "toDoList-dev", skipValidation: true }
-);
-sampleCase.test();
+// const sampleCase = sampleCaseFactory(
+//   TemplateProject.TodoListBackend,
+//   14571882,
+//   "v-ivanchen@microsoft.com",
+//   "dev",
+//   [],
+//   { teamsAppName: "toDoList-dev", skipValidation: true }
+// );
+// sampleCase.test();

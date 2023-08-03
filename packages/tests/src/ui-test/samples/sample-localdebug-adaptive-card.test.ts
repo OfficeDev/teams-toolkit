@@ -5,10 +5,25 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { validateAdaptiveCard } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { SampledebugContext } from "./sampledebugContext";
 
-const sampleCase = sampleCaseFactory(
+class AdaptiveCardTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    args?: { context: SampledebugContext }
+  ): Promise<void> {
+    return await validateAdaptiveCard(page, {
+      context: args?.context,
+      env: this.env,
+    });
+  }
+}
+
+new AdaptiveCardTestCase(
   TemplateProject.AdaptiveCard,
   14524987,
   "v-ivanchen@microsoft.com",
@@ -19,5 +34,4 @@ const sampleCase = sampleCaseFactory(
     LocalDebugTaskLabel.Compile,
     LocalDebugTaskLabel.StartBotApp,
   ]
-);
-sampleCase.test();
+).test();

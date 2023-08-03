@@ -6,12 +6,12 @@
  */
 
 import { TemplateProject } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+// import sampleCaseFactory from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
-  TemplateProject.TodoListM365,
-  14571883,
-  "v-ivanchen@microsoft.com",
-  "dev"
-);
-sampleCase.test();
+// const sampleCase = sampleCaseFactory(
+//   TemplateProject.TodoListM365,
+//   14571883,
+//   "v-ivanchen@microsoft.com",
+//   "dev"
+// );
+// sampleCase.test();

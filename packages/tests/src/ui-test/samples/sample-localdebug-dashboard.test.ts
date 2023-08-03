@@ -5,10 +5,18 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { validateDashboardTab } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class DashboardTestCase extends CaseFactory {
+  override async onValidate(page: Page): Promise<void> {
+    return await validateDashboardTab(page);
+  }
+}
+
+new DashboardTestCase(
   TemplateProject.Dashboard,
   17290453,
   "v-ivanchen@microsoft.com",
@@ -19,5 +27,4 @@ const sampleCase = sampleCaseFactory(
     LocalDebugTaskLabel.StartBackend,
   ],
   { dashboardFlag: true }
-);
-sampleCase.test();
+).test();

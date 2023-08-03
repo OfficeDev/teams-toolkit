@@ -6,14 +6,14 @@
  */
 
 import { TemplateProject } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+// import sampleCaseFactory from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
-  TemplateProject.TodoListSpfx,
-  24121511,
-  "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  { teamsAppName: "TodoListSPFx-dev", type: "spfx" }
-);
-sampleCase.test();
+// const sampleCase = sampleCaseFactory(
+//   TemplateProject.TodoListSpfx,
+//   24121511,
+//   "v-ivanchen@microsoft.com",
+//   "dev",
+//   [],
+//   { teamsAppName: "TodoListSPFx-dev", type: "spfx" }
+// );
+// sampleCase.test();

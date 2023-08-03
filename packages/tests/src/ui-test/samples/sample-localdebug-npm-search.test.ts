@@ -5,15 +5,25 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { validateNpm } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class NpmSearchTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    option?: { npmName: string }
+  ): Promise<void> {
+    return await validateNpm(page, { npmName: this.options?.npmName });
+  }
+}
+
+new NpmSearchTestCase(
   TemplateProject.NpmSearch,
   12664761,
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
   { npmName: "axios" }
-);
-sampleCase.test();
+).test();

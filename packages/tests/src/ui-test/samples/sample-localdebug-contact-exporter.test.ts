@@ -5,14 +5,25 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { validateContact } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
 
-const sampleCase = sampleCaseFactory(
+class ContactExporterTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    args?: { displayName: string }
+  ): Promise<void> {
+    return await validateContact(page, { displayName: Env.displayName });
+  }
+}
+
+new ContactExporterTestCase(
   TemplateProject.ContactExporter,
   12599484,
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartFrontend]
-);
-sampleCase.test();
+).test();

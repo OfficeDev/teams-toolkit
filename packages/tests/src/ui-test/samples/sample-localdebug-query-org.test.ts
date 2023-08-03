@@ -5,15 +5,26 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { validateQueryOrg } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
 
-const sampleCase = sampleCaseFactory(
+class QueryOrgTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    option?: { displayName: string }
+  ): Promise<void> {
+    return await validateQueryOrg(page, { displayName: Env.displayName });
+  }
+}
+
+new QueryOrgTestCase(
   TemplateProject.QueryOrg,
   15554404,
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
   { skipValidation: true }
-);
-sampleCase.test();
+).test();

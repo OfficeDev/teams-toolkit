@@ -13,12 +13,7 @@ import {
   LocalDebugTaskResult,
 } from "../../utils/constants";
 import { waitForTerminal } from "../../utils/vscodeOperation";
-import {
-  sampleInitMap,
-  debugInitMap,
-  sampleValidationMap,
-  middleWareMap,
-} from "../../utils/playwrightOperation";
+import { debugInitMap, initPage } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";
@@ -26,6 +21,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
 import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
+import { expect } from "chai";
+import { Page } from "playwright";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -87,23 +84,13 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   },
 };
 
-/**
- *
- * @param sampleName sample name
- * @param testPlanCaseId ado test plan case id
- * @param author email
- * @param env local or dev
- * @param validate local debug terminal jobs
- * @param options teamsAppName: teams app name, dashboardFlag: is dashboard or not, type: meeting | spfx, skipInit: whether to skip init, skipValidation: whether to skip validation
- * @returns void
- */
-export default function sampleCaseFactory(
-  sampleName: TemplateProject,
-  testPlanCaseId: number,
-  author: string,
-  env: "local" | "dev",
-  validate: LocalDebugTaskLabel[] = [],
-  options?: {
+export abstract class CaseFactory {
+  public sampleName: TemplateProject;
+  public testPlanCaseId: number;
+  public author: string;
+  public env: "local" | "dev";
+  public validate: LocalDebugTaskLabel[];
+  public options?: {
     teamsAppName?: string;
     dashboardFlag?: boolean;
     type?: string;
@@ -112,77 +99,172 @@ export default function sampleCaseFactory(
     npmName?: string;
     skipInit?: boolean;
     skipValidation?: boolean;
+  };
+
+  public constructor(
+    sampleName: TemplateProject,
+    testPlanCaseId: number,
+    author: string,
+    env: "local" | "dev",
+    validate: LocalDebugTaskLabel[],
+    options?: {
+      teamsAppName?: string;
+      dashboardFlag?: boolean;
+      type?: string;
+      testRootFolder?: string;
+      includeFunction?: boolean;
+      npmName?: string;
+      skipInit?: boolean;
+      skipValidation?: boolean;
+    }
+  ) {
+    this.sampleName = sampleName;
+    this.testPlanCaseId = testPlanCaseId;
+    this.author = author;
+    this.env = env;
+    this.validate = validate;
+    this.options = options;
   }
-) {
-  return {
-    test: function () {
-      describe("Sample Tests", function () {
-        this.timeout(Timeout.testAzureCase);
-        let sampledebugContext: SampledebugContext;
-        let azSqlHelper: AzSqlHelper;
-        let rgName: string;
 
-        beforeEach(async function () {
-          // ensure workbench is ready
-          this.timeout(Timeout.prepareTestCase);
-          sampledebugContext = new SampledebugContext(
-            sampleName,
-            sampleProjectMap[sampleName],
-            options?.testRootFolder ?? "./resource"
-          );
-          await sampledebugContext.before();
-          // use before middleware to process typical sample
-          azSqlHelper = (await middleWareMap[sampleName](
-            sampledebugContext,
-            env,
-            azSqlHelper,
-            { before: true }
-          )) as AzSqlHelper;
-        });
+  public onBefore(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper
+  ): Promise<AzSqlHelper | undefined> {
+    return Promise.resolve(undefined);
+  }
 
-        afterEach(async function () {
-          this.timeout(Timeout.finishAzureTestCase);
-          if (env === "local") {
-            if (
-              sampleName === TemplateProject.ShareNow ||
-              sampleName === TemplateProject.TodoListBackend
-            )
-              await sampledebugContext.sampleAfter(rgName);
-            else await sampledebugContext.after();
-          } else {
-            if (
-              sampleName === TemplateProject.TodoListM365 ||
-              sampleName === TemplateProject.TodoListSpfx
-            )
-              await sampledebugContext.after();
-            else
-              await sampledebugContext.sampleAfter(
-                `${sampledebugContext.appName}-dev-rg`
-              );
-          }
-        });
+  public async onAfter(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ): Promise<void> {
+    const envMap: Record<
+      "local" | "dev",
+      (options?: { rgName: string }) => Promise<void>
+    > = {
+      local: async () => await sampledebugContext.after(),
+      dev: async (options?: { rgName: string }) =>
+        await sampledebugContext.sampleAfter(options?.rgName ?? ""),
+    };
+    await envMap[env]({ rgName: `${sampledebugContext.appName}-dev-rg` });
+  }
 
-        it(
-          `[auto] ${
-            env === "local" ? env : "remote"
-          } debug for Sample ${sampleName}`,
-          {
-            testPlanCaseId,
-            author,
-          },
-          async function () {
-            // create project
-            await sampledebugContext.openResourceFolder();
+  public async onAfterCreate(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper
+  ): Promise<void> {
+    return Promise.resolve();
+  }
 
-            // use 1st middleware to process typical sample
-            await middleWareMap[sampleName](
-              sampledebugContext,
-              env,
-              azSqlHelper,
-              { afterCreate: true }
+  public async onBeforeBrowerStart(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper
+  ): Promise<void> {
+    return Promise.resolve();
+  }
+
+  public async onInitPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string
+  ) {
+    return await initPage(
+      sampledebugContext.context!,
+      teamsAppId,
+      Env.username,
+      Env.password,
+      { dashboardFlag: this.options?.dashboardFlag }
+    );
+  }
+
+  public async onValidate(
+    page: Page,
+    args?: {
+      context: SampledebugContext;
+      displayName: string;
+      includeFunction: boolean;
+      npmName: string;
+    }
+  ): Promise<void> {
+    Promise.resolve();
+  }
+
+  public test() {
+    const {
+      sampleName,
+      testPlanCaseId,
+      author,
+      env,
+      validate,
+      options,
+      onBefore,
+      onAfter,
+      onAfterCreate,
+      onBeforeBrowerStart,
+      onInitPage,
+      onValidate,
+    } = this;
+    describe("Sample Tests", function () {
+      this.timeout(Timeout.testAzureCase);
+      let sampledebugContext: SampledebugContext;
+      let azSqlHelper: AzSqlHelper | undefined;
+      let rgName: string;
+
+      beforeEach(async function () {
+        // ensure workbench is ready
+        this.timeout(Timeout.prepareTestCase);
+        sampledebugContext = new SampledebugContext(
+          sampleName,
+          sampleProjectMap[sampleName],
+          options?.testRootFolder ?? "./resource"
+        );
+        await sampledebugContext.before();
+        // use before middleware to process typical sample
+
+        azSqlHelper = await onBefore(sampledebugContext, env, azSqlHelper);
+      });
+
+      afterEach(async function () {
+        this.timeout(Timeout.finishAzureTestCase);
+        await onAfter(sampledebugContext, env);
+        if (env === "local") {
+          if (
+            sampleName === TemplateProject.ShareNow ||
+            sampleName === TemplateProject.TodoListBackend
+          )
+            await sampledebugContext.sampleAfter(rgName);
+          else await sampledebugContext.after();
+        } else {
+          if (
+            sampleName === TemplateProject.TodoListM365 ||
+            sampleName === TemplateProject.TodoListSpfx
+          )
+            await sampledebugContext.after();
+          else
+            await sampledebugContext.sampleAfter(
+              `${sampledebugContext.appName}-dev-rg`
             );
+        }
+      });
 
-            if (env === "local") {
+      it(
+        `[auto] ${
+          env === "local" ? env : "remote"
+        } debug for Sample ${sampleName}`,
+        {
+          testPlanCaseId,
+          author,
+        },
+        async function () {
+          // create project
+          await sampledebugContext.openResourceFolder();
+
+          // use 1st middleware to process typical sample
+          await onAfterCreate(sampledebugContext, env, azSqlHelper);
+
+          const debugEnvMap: Record<"local" | "dev", () => Promise<void>> = {
+            local: async () => {
               try {
                 // local debug
                 await debugInitMap[sampleName]();
@@ -198,7 +280,8 @@ export default function sampleCaseFactory(
                   Timeout.playwrightDefaultTimeout
                 );
               }
-            } else {
+            },
+            dev: async () => {
               await runProvision(
                 sampledebugContext.appName,
                 env,
@@ -206,61 +289,41 @@ export default function sampleCaseFactory(
                 options?.type === "spfx"
               );
               await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
-            }
+            },
+          };
+          await debugEnvMap[env]();
 
-            if (options?.skipInit) {
-              console.log("skip ui init...");
-              console.log("debug finish!");
-              return;
-            }
-
-            const teamsAppId =
-              (await sampledebugContext.getTeamsAppId(env)) ?? "";
-            if (teamsAppId === "") {
-              throw new Error(
-                "teamsAppId is empty, please check if the app is start successfully"
-              );
-            }
-
-            // use 2nd middleware to process typical sample
-            await middleWareMap[sampleName](
-              sampledebugContext,
-              env,
-              azSqlHelper,
-              { afterdeploy: true }
-            );
-
-            // init
-            const page = await sampleInitMap[sampleName](
-              sampledebugContext.context!,
-              teamsAppId,
-              Env.username,
-              Env.password,
-              {
-                teamsAppName: options?.teamsAppName,
-                dashboardFlag: options?.dashboardFlag,
-                type: options?.type,
-              }
-            );
-
-            if (options?.skipValidation) {
-              console.log("skip ui validation...");
-              console.log("debug finish!");
-              return;
-            }
-
-            // validate
-            sampleValidationMap[sampleName] &&
-              (await sampleValidationMap[sampleName](page!, {
-                context: sampledebugContext,
-                displayName: Env.displayName,
-                includeFunction: options?.includeFunction,
-                npmName: options?.npmName,
-              }));
+          if (options?.skipInit) {
+            console.log("skip ui init...");
             console.log("debug finish!");
+            return;
           }
-        );
-      });
-    },
-  };
+
+          const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+          expect(teamsAppId).to.not.be.empty;
+
+          // use 2nd middleware to process typical sample
+          await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
+
+          // init
+          const page = await onInitPage(sampledebugContext, teamsAppId);
+
+          if (options?.skipValidation) {
+            console.log("skip ui validation...");
+            console.log("debug finish!");
+            return;
+          }
+
+          // validate
+          await onValidate(page, {
+            context: sampledebugContext,
+            displayName: Env.displayName,
+            includeFunction: options?.includeFunction ?? false,
+            npmName: options?.npmName ?? "",
+          });
+          console.log("debug finish!");
+        }
+      );
+    });
+  }
 }

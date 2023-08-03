@@ -5,10 +5,22 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { validateGraphConnector } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
 
-const sampleCase = sampleCaseFactory(
+class GraphConnectorTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    args?: { displayName: string }
+  ): Promise<void> {
+    return await validateGraphConnector(page, { displayName: Env.displayName });
+  }
+}
+
+new GraphConnectorTestCase(
   TemplateProject.GraphConnector,
   14171510,
   "v-ivanchen@microsoft.com",
@@ -18,5 +30,4 @@ const sampleCase = sampleCaseFactory(
     LocalDebugTaskLabel.WatchBackend,
     LocalDebugTaskLabel.StartBackend,
   ]
-);
-sampleCase.test();
+).test();

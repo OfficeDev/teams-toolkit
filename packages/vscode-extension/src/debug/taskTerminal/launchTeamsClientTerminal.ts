@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as cp from "child_process";
 import * as vscode from "vscode";
 import * as util from "util";
@@ -69,7 +68,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
     }
     const launchUrl = result.value;
 
-    VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
+    await VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
       launchingTeamsClientDisplayMessages.launchUrlMessage(launchUrl)
@@ -86,7 +85,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   }
 
   private openUrl(url: string): Promise<Result<Void, FxError>> {
-    return new Promise<Result<Void, FxError>>(async (resolve, reject) => {
+    return new Promise<Result<Void, FxError>>((resolve) => {
       const options: cp.SpawnOptions = {
         cwd: globalVariables.workspaceUri?.fsPath ?? "",
         shell: false,

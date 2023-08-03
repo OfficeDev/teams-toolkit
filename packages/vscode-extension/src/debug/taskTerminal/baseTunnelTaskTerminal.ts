@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
@@ -83,7 +82,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     );
   }
 
-  public static async stopAll(): Promise<void> {
+  public static stopAll(): void {
     for (const task of BaseTunnelTaskTerminal.tunnelTaskTerminals.values()) {
       task.close();
     }
@@ -92,16 +91,13 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   protected abstract generateTelemetries(): { [key: string]: string };
   protected abstract _do(): Promise<Result<Void, FxError>>;
 
-  protected async resolveArgs(args: IBaseTunnelArgs): Promise<void> {
+  protected resolveArgs(args: IBaseTunnelArgs): void {
     if (!args) {
       throw BaseTaskTerminal.taskDefinitionError("args");
     }
 
     if (args.type) {
-      if (
-        typeof args.type !== "string" ||
-        !(Object.values(TunnelType) as string[]).includes(args.type)
-      ) {
+      if (typeof args.type !== "string" || !Object.values(TunnelType).includes(args.type)) {
         throw BaseTaskTerminal.taskDefinitionError("args.type");
       }
     }
@@ -112,7 +108,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   protected async outputStartMessage(tunnelDisplayMessages: TunnelDisplayMessages): Promise<void> {
-    VsCodeLogInstance.info(tunnelDisplayMessages.title());
+    await VsCodeLogInstance.info(tunnelDisplayMessages.title());
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
       tunnelDisplayMessages.checkNumber(this.step.totalSteps)
@@ -158,7 +154,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     );
     VsCodeLogInstance.outputChannel.appendLine("");
     if (duration) {
-      VsCodeLogInstance.info(tunnelDisplayMessages.durationMessage(duration));
+      await VsCodeLogInstance.info(tunnelDisplayMessages.durationMessage(duration));
     }
 
     for (const tunnelInfo of tunnelInfoArr) {
@@ -269,21 +265,21 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
 }
 
 export const TunnelError = Object.freeze({
-  TunnelEnvError: (error: any) =>
+  TunnelEnvError: (error: Error) =>
     new UserError(
       ExtensionSource,
       ExtensionErrors.TunnelEnvError,
       `${getDefaultString("teamstoolkit.localDebug.tunnelEnvError")} ${error?.message ?? ""}`,
       `${localize("teamstoolkit.localDebug.tunnelEnvError")} ${error?.message ?? ""}`
     ),
-  StartTunnelError: (error?: any) =>
+  StartTunnelError: (error?: Error) =>
     new UserError(
       ExtensionSource,
       ExtensionErrors.StartTunnelError,
       `${getDefaultString("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`,
       `${localize("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`
     ),
-  DevTunnelOperationError: (operationName: string, error?: any) =>
+  DevTunnelOperationError: (operationName: string, error?: Error) =>
     new UserError(
       ExtensionSource,
       ExtensionErrors.DevTunnelOperationError,
@@ -295,7 +291,7 @@ export const TunnelError = Object.freeze({
         error?.message ?? ""
       }`
     ),
-  TunnelResourceLimitExceededError: (error: any) => {
+  TunnelResourceLimitExceededError: (error: Error) => {
     return new UserError(
       ExtensionSource,
       ExtensionErrors.TunnelResourceLimitExceededError,

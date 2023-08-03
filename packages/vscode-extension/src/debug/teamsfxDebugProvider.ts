@@ -39,7 +39,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
     debugConfiguration: TeamsfxDebugConfiguration,
     token?: vscode.CancellationToken
   ): Promise<vscode.DebugConfiguration | undefined> {
-    return Correlator.runWithId(
+    return await Correlator.runWithId(
       commonUtils.getLocalDebugSessionId(),
       this._resolveDebugConfiguration,
       folder,
@@ -172,12 +172,12 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       // NOTE: handle the case that msedge/chrome will be resolved twice
       if (!debugConfiguration.teamsfxResolved) {
         await VsCodeLogInstance.info(
-          sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub!)
+          sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub ?? Hub.teams)
         );
         VsCodeLogInstance.outputChannel.appendLine("");
         VsCodeLogInstance.outputChannel.appendLine(
           sideloadingDisplayMessages.sideloadingUrlMessage(
-            debugConfiguration.teamsfxHub!,
+            debugConfiguration.teamsfxHub ?? Hub.teams,
             debugConfiguration.url
           )
         );

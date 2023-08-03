@@ -81,7 +81,7 @@ function getTaskKey(task: vscode.Task): string {
 
   // "source|name|scope"
   const scope = (task.scope as vscode.WorkspaceFolder)?.uri?.toString() || task.scope?.toString();
-  return `${task.source}|${task.name}|${scope}`;
+  return `${task.source}|${task.name}|${scope ?? ""}`;
 }
 
 function isNpmInstallTask(task: vscode.Task): boolean {
@@ -95,7 +95,7 @@ function isNpmInstallTask(task: vscode.Task): boolean {
 function isTeamsFxTransparentTask(task: vscode.Task): boolean {
   if (task.definition && task.definition.type === ProductName) {
     const command = task.definition.command as string;
-    if ((Object.values(TaskCommand) as string[]).includes(command)) {
+    if (Object.values(TaskCommand).includes(command)) {
       return true;
     }
   }
@@ -129,7 +129,10 @@ function isTeamsfxTask(task: vscode.Task): boolean {
     if (task.execution && <vscode.ShellExecution>task.execution) {
       const execution = <vscode.ShellExecution>task.execution;
       commandLine =
-        execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
+        execution.commandLine ||
+        `${typeof execution.command === "string" ? execution.command : execution.command.value} ${(
+          execution.args || []
+        ).join(" ")}`;
     }
     if (commandLine !== undefined) {
       if (/(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine)) {
@@ -174,7 +177,7 @@ function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
   }
 }
 
-async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
+function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void {
   if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
@@ -215,7 +218,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
     allRunningTeamsfxTasks.delete(getTaskKey(task));
     localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugService, {
       [TelemetryProperty.DebugServiceName]: task.name,
-      [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
+      [TelemetryProperty.DebugServiceExitCode]: String(event.exitCode),
     });
   } else if (
     task.scope !== undefined &&
@@ -262,15 +265,18 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       }
       const properties: { [key: string]: string } = {
         [TelemetryProperty.DebugNpmInstallName]: task.name,
-        [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "", // "undefined" or number value
+        [TelemetryProperty.DebugNpmInstallExitCode]: String(event.exitCode), // "undefined" or number value
       };
       if (validNpmInstallLogInfo) {
-        properties[TelemetryProperty.DebugNpmInstallNodeVersion] =
-          npmInstallLogInfo?.nodeVersion + ""; // "undefined" or string value
-        properties[TelemetryProperty.DebugNpmInstallNpmVersion] =
-          npmInstallLogInfo?.npmVersion + ""; // "undefined" or string value
-        properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
-          npmInstallLogInfo?.errorMessage?.join("\n") + ""; // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallNodeVersion] = String(
+          npmInstallLogInfo?.nodeVersion
+        ); // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallNpmVersion] = String(
+          npmInstallLogInfo?.npmVersion
+        ); // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallErrorMessage] = String(
+          npmInstallLogInfo?.errorMessage?.join("\n")
+        ); // "undefined" or string value
       }
 
       const measurements: { [key: string]: number } = {};
@@ -312,7 +318,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           const issue = {
             title: localize("teamstoolkit.handlers.reportIssue"),
             run: async (): Promise<void> => {
-              vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
+              await vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
             },
           };
           vscode.window
@@ -324,9 +330,14 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
               ),
               issue
             )
-            .then(async (button) => {
-              await button?.run();
-            });
+            .then(
+              async (button) => {
+                await button?.run();
+              },
+              () => {
+                // Do nothing on reject
+              }
+            );
           await VsCodeLogInstance.error(
             util.format(
               localize("teamstoolkit.localDebug.npmInstallFailedHintMessage"),
@@ -361,11 +372,16 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           localize("teamstoolkit.localDebug.m365TenantHintMessage"),
           false,
           localize("teamstoolkit.localDebug.learnMore")
-        ).then(async (result) => {
-          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
-            await VS_CODE_UI.openUrl(m365AppsPrerequisitesHelpLink);
+        ).then(
+          async (result) => {
+            if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+              await VS_CODE_UI.openUrl(m365AppsPrerequisitesHelpLink);
+            }
+          },
+          () => {
+            // Do nothing on reject
           }
-        });
+        );
       }
 
       // and not a restart one
@@ -379,11 +395,11 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         [TelemetryProperty.DebugSessionId]: event.id,
         [TelemetryProperty.DebugType]: debugConfig.type,
         [TelemetryProperty.DebugRequest]: debugConfig.request,
-        [TelemetryProperty.DebugPort]: debugConfig.port + "",
-        [TelemetryProperty.DebugRemote]: debugConfig.teamsfxIsRemote + "",
-        [TelemetryProperty.DebugAppId]: debugConfig.teamsfxAppId + "",
+        [TelemetryProperty.DebugPort]: String(debugConfig.port),
+        [TelemetryProperty.DebugRemote]: String(debugConfig.teamsfxIsRemote),
+        [TelemetryProperty.DebugAppId]: String(debugConfig.teamsfxAppId),
         [TelemetryProperty.Env]: env,
-        [TelemetryProperty.Hub]: debugConfig.teamsfxHub + "",
+        [TelemetryProperty.Hub]: String(debugConfig.teamsfxHub),
       });
       // This is the launch browser local debug session.
       if (debugConfig.request === "launch" && !debugConfig.teamsfxIsRemote) {
@@ -407,7 +423,9 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           return;
         }
 
-        sendDebugAllEvent();
+        sendDebugAllEvent().catch(() => {
+          // Do nothing
+        });
       }
     }
   }

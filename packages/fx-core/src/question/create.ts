@@ -26,7 +26,10 @@ import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFla
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
-import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
+import {
+  getProjectTypeAndCapability,
+  isFromDevPortal,
+} from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
@@ -156,7 +159,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
       }
 
       if (isFromDevPortal(inputs)) {
-        const projectType = getTemplateId(inputs.teamsAppFromTdp)?.projectType;
+        const projectType = getProjectTypeAndCapability(inputs.teamsAppFromTdp)?.projectType;
         if (projectType) {
           return [projectType];
         }
@@ -515,7 +518,7 @@ function capabilityQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       // from dev portal
       if (isFromDevPortal(inputs)) {
-        const capability = getTemplateId(inputs.teamsAppFromTdp)?.templateId;
+        const capability = getProjectTypeAndCapability(inputs.teamsAppFromTdp)?.templateId;
         if (capability) {
           return [capability];
         }

@@ -77,6 +77,8 @@ export interface BaseQuestion {
     title?: string | LocalFunc<string | undefined>;
     totalSteps?: number;
     value?: unknown;
+    // (undocumented)
+    valueType?: "skip" | "success";
 }
 
 // @public

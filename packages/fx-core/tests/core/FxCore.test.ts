@@ -73,6 +73,8 @@ import { FeatureFlagName } from "../../src/common/constants";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
+import * as visitor from "../../src/ui/visitor";
+import { validationUtils } from "../../src/ui/validationUtils";
 
 const tools = new MockTools();
 
@@ -927,6 +929,7 @@ describe("Teams app APIs", async () => {
     };
 
     const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "run");
+    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
   });
@@ -1371,7 +1374,7 @@ describe("copilotPlugin", async () => {
     };
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves();
-
+    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
   });

@@ -61,6 +61,8 @@ export interface BaseQuestion {
    */
   value?: unknown;
 
+  valueType?: "skip" | "success";
+
   /**
    * default input value
    */

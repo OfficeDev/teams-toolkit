@@ -40,7 +40,7 @@ public class ActionApp : TeamsActivityHandler
         };
         var attachments = new MessagingExtensionAttachment() 
         { 
-            ContentType = "application/vnd.microsoft.card.adaptive",
+            ContentType = AdaptiveCard.ContentType,
             Content = adaptiveCard
         };
 

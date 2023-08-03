@@ -13,7 +13,7 @@ import {
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
 } from "./constant";
-import { SampleInfo, sampleProvider } from "../../common/samples";
+import { SampleConfig, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
@@ -216,7 +216,7 @@ export function renderTemplateFileName(
   );
 }
 
-export function getSampleInfoFromName(sampleName: string): SampleInfo {
+export function getSampleInfoFromName(sampleName: string): SampleConfig {
   const sample = sampleProvider.SampleCollection.samples.find(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
@@ -257,7 +257,7 @@ type SampleUrlInfo = {
   dir: string;
 };
 
-function parseSampleUrl(url: string): SampleUrlInfo {
+export function parseSampleUrl(url: string): SampleUrlInfo {
   const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
   const parsed = urlParserRegex.exec(url);
   if (!parsed) throw new ParseUrlError(url);

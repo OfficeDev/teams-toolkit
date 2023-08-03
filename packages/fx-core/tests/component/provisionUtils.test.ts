@@ -97,9 +97,13 @@ describe("provisionUtils", () => {
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
       mocker.stub(azureAccountProvider, "setSubscription");
-      mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(undefined);
-      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
-      assert(res.isErr());
+      mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(ok(undefined));
+      const res = await provisionUtils.ensureResourceGroup(
+        azureAccountProvider,
+        "mockSubId",
+        "testrg"
+      );
+      assert(res.isErr() && res.error instanceof ResourceGroupNotExistError);
     });
     it("fail: given invalid resource group 2", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();

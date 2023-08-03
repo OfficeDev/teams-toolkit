@@ -54,6 +54,7 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
+import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
@@ -66,7 +67,6 @@ import { pathUtils } from "../utils/pathUtils";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -236,6 +236,8 @@ class Coordinator {
           context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
+        } else {
+          return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }
       }
     }

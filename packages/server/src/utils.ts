@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { HandlerResult, ResponseError } from "vscode-jsonrpc";
-
 import {
   err,
   FxError,
@@ -22,7 +20,7 @@ import { setFunc } from "./customizedFuncAdapter";
 export async function getResponseWithErrorHandling<T>(
   promise: Promise<Result<T, FxError>>
 ): Promise<Result<T, FxError>> {
-  return new Promise(async (resolve) => {
+  return new Promise((resolve) => {
     promise
       .then((v) => {
         if ("error" in v && v.error != null) {

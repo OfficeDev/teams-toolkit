@@ -349,7 +349,7 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<string | undefined, FxError>> {
     // No components for V5
-    return ok("");
+    return Promise.resolve(ok(""));
   }
 
   public async getProjectMigrationStatusRequest(

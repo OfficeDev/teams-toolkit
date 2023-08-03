@@ -111,7 +111,7 @@ export async function deactivate() {
   await ExtTelemetry.cacheTelemetryEventAsync(TelemetryEvent.Deactivate);
   await ExtTelemetry.dispose();
   handlers.cmdHdlDisposeTreeView();
-  disableRunIcon();
+  await disableRunIcon();
 }
 
 function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
@@ -150,7 +150,9 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   // Register task and debug event handlers, as well as sending telemetries
   registerTeamsfxTaskAndDebugEvents();
 
-  registerRunIcon();
+  registerRunIcon().catch(() => {
+    // do nothing
+  });
 
   // Register teamsfx task provider
   const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();

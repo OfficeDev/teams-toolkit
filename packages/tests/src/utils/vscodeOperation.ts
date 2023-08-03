@@ -486,7 +486,6 @@ export async function createNewProject(
   if (!testRootFolder) {
     testRootFolder = path.resolve(__dirname, "../../resource/");
   }
-  await clearNotifications();
   await execCommandIfExist(
     CommandPaletteCommands.CreateProjectCommand,
     Timeout.webView

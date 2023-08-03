@@ -6,6 +6,14 @@
 
 > Warning: This API is now obsolete.
 > 
+> Use `TokenCredentialAuthenticationProvider` and `Client.initWithMiddleware` instead.
+> 
+> ```typescript
+> const authProvider = new TokenCredentialAuthenticationProvider(credential, { scopes: scope });
+> const graph = Client.initWithMiddleware({
+>   authProvider: authProvider,
+> });
+> ```
 > 
 
 Get Microsoft graph client.

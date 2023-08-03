@@ -9,7 +9,13 @@ import { TokenCredential } from "@azure/identity";
 
 /**
  * Get Microsoft graph client.
- * @deprecated
+ * @deprecated Use `TokenCredentialAuthenticationProvider` and `Client.initWithMiddleware` instead.
+ * ```typescript
+ * const authProvider = new TokenCredentialAuthenticationProvider(credential, { scopes: scope });
+ * const graph = Client.initWithMiddleware({
+ *   authProvider: authProvider,
+ * });
+ * ```
  *
  * @example
  * Get Microsoft graph client by TokenCredential
@@ -73,7 +79,13 @@ export function createMicrosoftGraphClient(
 // eslint-disable-next-line no-secrets/no-secrets
 /**
  * Get Microsoft graph client.
- * @deprecated
+ * @deprecated Use `TokenCredentialAuthenticationProvider` and `Client.initWithMiddleware` instead.
+ * ```typescript
+ * const authProvider = new TokenCredentialAuthenticationProvider(credential, { scopes: scope });
+ * const graph = Client.initWithMiddleware({
+ *   authProvider: authProvider,
+ * });
+ * ```
  * 
  * @example
  * Get Microsoft graph client by TokenCredential

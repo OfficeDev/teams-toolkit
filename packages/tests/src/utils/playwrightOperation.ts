@@ -2016,27 +2016,9 @@ const assistantDashboardMiddleWare = (
       "env",
       `.env.${env}.user`
     );
-    editDotEnvFile(envFilePath, "DEVOPS_ORGANIZATION_NAME", "msazure");
-    editDotEnvFile(
-      envFilePath,
-      "DEVOPS_PROJECT_NAME",
-      "Microsoft Teams Extensibility"
-    );
-    editDotEnvFile(envFilePath, "GITHUB_REPO_NAME", "test002");
-    editDotEnvFile(envFilePath, "GITHUB_REPO_OWNER", "hellyzh");
-    editDotEnvFile(envFilePath, "PlANNER_GROUP_ID", "YOUR_GROUP_ID");
-    editDotEnvFile(envFilePath, "PLANNER_PLAN_ID", "YOUR_PLAN_ID");
-    editDotEnvFile(envFilePath, "PLANNER_BUCKET_ID", "YOUR_BUCKET_ID");
-    editDotEnvFile(
-      envFilePath,
-      "SECRET_DEVOPS_ACCESS_TOKEN",
-      "YOUR_DEVOPS_ACCESS_TOKEN"
-    );
-    editDotEnvFile(
-      envFilePath,
-      "SECRET_GITHUB_ACCESS_TOKEN",
-      "YOUR_GITHUB_ACCESS_TOKEN"
-    );
+    const envString =
+      'PLANNER_GROUP_ID=YOUR_PLANNER_GROUP_ID\nDEVOPS_ORGANIZATION_NAME=msazure\nDEVOPS_PROJECT_NAME="Microsoft Teams Extensibility"\nGITHUB_REPO_NAME=test002\nGITHUB_REPO_OWNER=hellyzh\nPLANNER_PLAN_ID=YOUR_PLAN_ID\nPLANNER_BUCKET_ID=YOUR_BUCKET_ID\nSECRET_DEVOPS_ACCESS_TOKEN=YOUR_DEVOPS_ACCESS_TOKEN\nSECRET_GITHUB_ACCESS_TOKEN=YOUR_GITHUB_ACCESS_TOKEN';
+    fs.writeFileSync(envFilePath, envString);
   }
 };
 

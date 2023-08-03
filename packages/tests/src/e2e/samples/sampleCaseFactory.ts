@@ -64,6 +64,7 @@ export default function sampleCaseFactory(
 
         it(sampleName, { testPlanCaseId, author }, async function () {
           // Create middleWare
+          console.log("[start] Create middleWare");
           await middleWareMap[sampleName](
             sampleName,
             testFolder,
@@ -71,9 +72,11 @@ export default function sampleCaseFactory(
             projectPath,
             { create: true }
           );
+          console.log("[end] Create middleWare");
 
           expect(fs.pathExistsSync(projectPath)).to.be.true;
           // after create middleWare
+          console.log("[start] after create middleWare");
           await middleWareMap[sampleName](
             sampleName,
             testFolder,
@@ -81,11 +84,13 @@ export default function sampleCaseFactory(
             projectPath,
             { afterCreate: true }
           );
+          console.log("[end] after create middleWare");
 
           // Provision
           if (skips?.skipProvision) return;
           {
             // before provision middleWare
+            console.log("[start] before provision middleWare");
             await middleWareMap[sampleName](
               sampleName,
               testFolder,
@@ -93,6 +98,7 @@ export default function sampleCaseFactory(
               projectPath,
               { beforeProvision: true }
             );
+            console.log("[end] before provision middleWare");
 
             const { success } = await Executor.provision(projectPath);
             expect(success).to.be.true;

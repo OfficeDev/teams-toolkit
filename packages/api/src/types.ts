@@ -66,29 +66,11 @@ export interface EnvMeta {
   sideloading: boolean;
 }
 export interface Inputs extends Record<string, any> {
-  projectPath?: string;
-  targetEnvName?: string;
-  sourceEnvName?: string;
-  targetResourceGroupName?: string;
-  targetResourceLocationName?: string; // for vs to create a new resource group
-  targetSubscriptionId?: string;
   platform: Platform;
-  stage?: Stage;
-  vscodeEnv?: VsCodeEnv;
-  ignoreConfigPersist?: boolean;
-  ignoreEnvInfo?: boolean;
-  env?: string;
+  projectPath?: string;
   projectId?: string;
-  existingResources?: string[];
-  locale?: string;
-  isM365?: boolean;
-  inProductDoc?: boolean; // AB test for in product doc feature
-  teamsAppFromTdp?: any;
-  openAIPluginManifest?: OpenAIPluginManifest;
-  supportedApisFromApiSpec?: ApiOperation[];
-  globalYeomanPackageVersion?: string;
-  globalSpfxPackageVersion?: string;
-  latestSpfxPackageVersion?: string;
+  nonInteractive?: boolean;
+  correlationId?: string;
 }
 
 export type InputsWithProjectPath = Inputs & { projectPath: string };

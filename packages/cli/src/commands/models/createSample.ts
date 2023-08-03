@@ -9,7 +9,6 @@ import * as uuid from "uuid";
 import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
 import { RootFolderOption } from "../common";
 
 export const createSampleCommand: CLICommand = {
@@ -20,15 +19,12 @@ export const createSampleCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.DownloadSample,
   },
-  handler: async (cmd: CLIContext) => {
-    const sampleName = cmd.argumentValues?.[0];
-    const inputs = getSystemInputs() as CreateSampleProjectInputs;
-    assign(inputs, cmd.optionValues);
-    inputs.samples = sampleName as any;
+  handler: async (ctx: CLIContext) => {
+    const inputs = ctx.optionValues as CreateSampleProjectInputs;
     inputs.projectId = inputs.projectId ?? uuid.v4();
     const core = createFxCore();
     const res = await core.createSampleProject(inputs);
-    assign(cmd.telemetryProperties, {
+    assign(ctx.telemetryProperties, {
       [TelemetryProperty.NewProjectId]: inputs.projectId,
       [TelemetryProperty.SampleName]: inputs.samples,
     });

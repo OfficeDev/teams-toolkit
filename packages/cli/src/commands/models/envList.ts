@@ -1,28 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
 import os from "os";
-import path from "path";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { isWorkspaceSupported } from "../../utils";
-import { RootFolderOption } from "../common";
+import { ProjectFolderOption } from "../common";
 
 export const envListCommand: CLICommand = {
   name: "list",
   description: "List all environments.",
-  options: [RootFolderOption],
+  options: [ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.GrantPermission,
   },
   handler: async (ctx) => {
-    const projectDir = path.resolve((ctx.optionValues.folder as string) || process.cwd());
-    if (!isWorkspaceSupported(projectDir)) {
-      return err(WorkspaceNotSupported(projectDir));
+    const inputs = ctx.optionValues as InputsWithProjectPath;
+    if (!isWorkspaceSupported(inputs.projectPath)) {
+      return err(WorkspaceNotSupported(inputs.projectPath));
     }
-    const envListRes = await envUtil.listEnv(projectDir, true);
+    const envListRes = await envUtil.listEnv(inputs.projectPath, true);
     if (envListRes.isErr()) {
       return err(envListRes.error);
     }

@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { PermissionGrantInputs, PermissionGrantOptions } from "@microsoft/teamsfx-core";
-import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { azureMessage, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
 import { ProjectFolderOption } from "../common";
 
 export const permissionGrantCommand: CLICommand = {
@@ -18,8 +16,7 @@ export const permissionGrantCommand: CLICommand = {
     event: TelemetryEvent.GrantPermission,
   },
   handler: async (ctx) => {
-    const inputs = getSystemInputs() as PermissionGrantInputs;
-    assign(inputs, ctx.optionValues);
+    const inputs = ctx.optionValues as PermissionGrantInputs & InputsWithProjectPath;
     // print necessary messages
     logger.info(azureMessage);
     logger.info(spfxMessage);

@@ -1,34 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, CLIContext, Platform, err, ok } from "@microsoft/teamsfx-api";
-import { CreateProjectOptions, CreateProjectInputs } from "@microsoft/teamsfx-core";
+import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { CreateProjectInputs, CreateProjectOptions } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
 import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
 import { RootFolderOption } from "../common";
 import { createSampleCommand } from "./createSample";
 
-const options = CreateProjectOptions.filter((option) =>
-  [
-    "capability",
-    "bot-host-type-trigger",
-    "spfx-solution",
-    "spfx-install-latest-package",
-    "spfx-framework-type",
-    "spfx-webpart-name",
-    "spfx-folder",
-    "programming-language",
-    "app-name",
-  ].includes(option.name)
-);
 export const createCommand: CLICommand = {
   name: "new",
   description: "Create a new Teams application.",
-  options: [...options, RootFolderOption],
+  options: [...CreateProjectOptions, RootFolderOption],
   examples: [
     {
       command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp",
@@ -43,13 +29,12 @@ export const createCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.CreateProject,
   },
-  handler: async (cmd: CLIContext) => {
-    const inputs = getSystemInputs();
-    assign(inputs, cmd.optionValues);
+  handler: async (ctx: CLIContext) => {
+    const inputs = ctx.optionValues as CreateProjectInputs;
     inputs.projectId = inputs.projectId ?? uuid.v4();
     const core = createFxCore();
     const res = await core.createProject(inputs);
-    assign(cmd.telemetryProperties, {
+    assign(ctx.telemetryProperties, {
       [TelemetryProperty.NewProjectId]: inputs.projectId,
       [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
     });

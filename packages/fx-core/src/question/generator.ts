@@ -20,6 +20,7 @@ import {
   OptionalKind,
   Project,
   PropertySignatureStructure,
+  SyntaxKind,
   VariableDeclarationKind,
 } from "ts-morph";
 import { questionNodes } from ".";
@@ -228,10 +229,6 @@ export async function generate(
     .replace(/\\"/g, '"')
     .replace(/\n}$/g, ",\n}");
 
-  // const optionInitializerCode = cliOptions
-  //   .map((obj) => JSON.stringify(obj, null, 2).replace(/\n}$/g, ",\n}"))
-  //   .join(",\n");
-
   const argumentInitializerCode = JSON.stringify(cliArguments, null, 2)
     .replace(/"([^"]+)":/g, "$1:")
     .replace(/\\"/g, '"');
@@ -271,7 +268,12 @@ export async function generate(
   );
   inputsFile.formatText();
   optionFile.formatText();
-  project.saveSync();
+
+  await updateExports("./src/question/options/index.ts", `export * from "./${name}Options";`);
+
+  await updateExports("./src/question/inputs/index.ts", `export * from "./${name}Inputs";`);
+
+  await project.save();
 }
 
 function getOptionType(question: UserInputQuestion): CLIOptionType {
@@ -282,11 +284,39 @@ function getOptionType(question: UserInputQuestion): CLIOptionType {
   return "string";
 }
 
-// generate(questionNodes.createProject(), "CreateProject");
-// generate(questionNodes.createSampleProject(), "CreateSampleProject");
-// generate(questionNodes.addWebpart(), "SFPxAddWebpart");
-// generate(questionNodes.createNewEnv(), "CreateEnv");
-// generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
-// generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
-// generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
+async function updateExports(filePath: string, exportStatement: string) {
+  const project = new Project();
+  try {
+    const sourceFile = await project.addSourceFileAtPathIfExists(filePath);
+    if (!sourceFile) return;
+    const hasExport = sourceFile.getStatements().some((statement) => {
+      // console.log(`statement.getText().trim(): ${statement.getText().trim()}`);
+      return (
+        statement.getKind() === SyntaxKind.ExportDeclaration &&
+        statement.getText().trim() === exportStatement
+      );
+    });
+
+    if (!hasExport) {
+      sourceFile.addStatements([exportStatement]);
+      await sourceFile.save();
+      console.log(`Export statement '${exportStatement}' added successfully.`);
+    } else {
+      console.log(`Export statement '${exportStatement}' already exists.`);
+    }
+  } catch (err) {
+    console.error("Error occurred:", err);
+    return;
+  }
+}
+
+generate(questionNodes.createProject(), "CreateProject");
+generate(questionNodes.createSampleProject(), "CreateSampleProject");
+generate(questionNodes.addWebpart(), "SFPxAddWebpart");
+generate(questionNodes.createNewEnv(), "CreateEnv");
+generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
+generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
+generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
 generate(questionNodes.grantPermission(), "PermissionGrant");
+generate(questionNodes.listCollaborator(), "PermissionList");
+generate(questionNodes.deployAadManifest(), "DeployAadManifest");

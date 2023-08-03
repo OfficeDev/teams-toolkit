@@ -379,51 +379,15 @@ export interface InputResult<T> {
 // @public (undocumented)
 export interface Inputs extends Record<string, any> {
     // (undocumented)
-    env?: string;
+    correlationId?: string;
     // (undocumented)
-    existingResources?: string[];
-    // (undocumented)
-    globalSpfxPackageVersion?: string;
-    // (undocumented)
-    globalYeomanPackageVersion?: string;
-    // (undocumented)
-    ignoreConfigPersist?: boolean;
-    // (undocumented)
-    ignoreEnvInfo?: boolean;
-    // (undocumented)
-    inProductDoc?: boolean;
-    // (undocumented)
-    isM365?: boolean;
-    // (undocumented)
-    latestSpfxPackageVersion?: string;
-    // (undocumented)
-    locale?: string;
-    // (undocumented)
-    openAIPluginManifest?: OpenAIPluginManifest;
+    nonInteractive?: boolean;
     // (undocumented)
     platform: Platform;
     // (undocumented)
     projectId?: string;
     // (undocumented)
     projectPath?: string;
-    // (undocumented)
-    sourceEnvName?: string;
-    // (undocumented)
-    stage?: Stage;
-    // (undocumented)
-    supportedApisFromApiSpec?: ApiOperation[];
-    // (undocumented)
-    targetEnvName?: string;
-    // (undocumented)
-    targetResourceGroupName?: string;
-    // (undocumented)
-    targetResourceLocationName?: string;
-    // (undocumented)
-    targetSubscriptionId?: string;
-    // (undocumented)
-    teamsAppFromTdp?: any;
-    // (undocumented)
-    vscodeEnv?: VsCodeEnv;
 }
 
 // @public (undocumented)

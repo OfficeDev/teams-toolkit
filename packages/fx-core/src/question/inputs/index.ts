@@ -8,3 +8,5 @@ export * from "./SelectTeamsManifestInputs";
 export * from "./ValidateTeamsAppInputs";
 export * from "./PreviewTeamsAppInputs";
 export * from "./PermissionGrantInputs";
+export * from "./PermissionListInputs";
+export * from "./DeployAadManifestInputs";

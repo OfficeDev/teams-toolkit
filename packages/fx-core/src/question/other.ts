@@ -53,6 +53,7 @@ export function listCollaboratorQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
         data: selectAppTypeQuestion(),
+        interactiveOnly: "self",
         children: [selectTeamsAppNode, selectAadAppNode],
       },
     ],

@@ -1523,6 +1523,7 @@ export function createProjectQuestionNode(): IQTreeNode {
         condition: (inputs: Inputs) =>
           inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
         data: { type: "group", name: QuestionNames.RepalceTabUrl },
+        interactiveOnly: "all", //CLI non interactive mode will ignore this option
         children: [
           {
             condition: (inputs: Inputs) =>
@@ -1544,6 +1545,7 @@ export function createProjectQuestionNode(): IQTreeNode {
           return appDef && needBotCode(appDef);
         },
         data: selectBotIdsQuestion(),
+        interactiveOnly: "all", //CLI non interactive mode will ignore this option
       },
     ],
   };

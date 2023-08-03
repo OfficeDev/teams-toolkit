@@ -1,19 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, CLIContext, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  CLICommand,
+  CLIContext,
+  FxError,
+  InputsWithProjectPath,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import {
   PreviewTeamsAppInputs,
   PreviewTeamsAppOptions,
   TelemetryContext,
   environmentManager,
 } from "@microsoft/teamsfx-core";
-import { assign } from "lodash";
 import * as constants from "../../cmds/preview/constants";
-import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
-import { ProjectFolderOption } from "../common";
-import PreviewEnv from "../../cmds/preview/previewEnv";
 import { localTelemetryReporter } from "../../cmds/preview/localTelemetryReporter";
+import PreviewEnv from "../../cmds/preview/previewEnv";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
+import { ProjectFolderOption } from "../common";
 
 export const previewCommand: CLICommand = {
   name: "preview",
@@ -85,8 +91,7 @@ export const previewCommand: CLICommand = {
     event: TelemetryEvent.Preview,
   },
   handler: async (ctx: CLIContext) => {
-    const inputs = getSystemInputs() as PreviewTeamsAppInputs;
-    assign(inputs, ctx.optionValues);
+    const inputs = ctx.optionValues as PreviewTeamsAppInputs & InputsWithProjectPath;
     const workspaceFolder = inputs.projectPath as string;
     const env = inputs.env as string;
     const manifestFilePath = inputs["manifest-path"] as string;

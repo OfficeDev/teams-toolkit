@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
-import { SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
-import { assign } from "lodash";
+import { CLICommand, CLIContext, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
+import { SelectTeamsManifestInputs, SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
 import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
 import { EnvOption, ProjectFolderOption } from "../common";
 
 export const packageCommand: CLICommand = {
@@ -35,8 +33,7 @@ export const packageCommand: CLICommand = {
   },
   handler: async (ctx: CLIContext) => {
     const core = createFxCore();
-    const inputs = getSystemInputs();
-    assign(inputs, ctx.optionValues);
+    const inputs = ctx.optionValues as SelectTeamsManifestInputs & InputsWithProjectPath;
     const res = await core.createAppPackage(inputs);
     if (res.isErr()) {
       return err(res.error);

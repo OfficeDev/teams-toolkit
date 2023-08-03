@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
-import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
 import { EnvOption, ProjectFolderOption } from "../common";
 
 export const updateTeamsAppCommand: CLICommand = {
@@ -16,8 +14,7 @@ export const updateTeamsAppCommand: CLICommand = {
     event: TelemetryEvent.UpdateTeamsApp,
   },
   handler: async (ctx) => {
-    const inputs = getSystemInputs();
-    assign(inputs, ctx.optionValues);
+    const inputs = ctx.optionValues as InputsWithProjectPath;
     const core = createFxCore();
     const res = await core.deployTeamsManifest(inputs);
     if (res.isErr()) {

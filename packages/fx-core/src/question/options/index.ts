@@ -8,3 +8,5 @@ export * from "./SelectTeamsManifestOptions";
 export * from "./ValidateTeamsAppOptions";
 export * from "./PreviewTeamsAppOptions";
 export * from "./PermissionGrantOptions";
+export * from "./PermissionListOptions";
+export * from "./DeployAadManifestOptions";

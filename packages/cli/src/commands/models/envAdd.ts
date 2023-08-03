@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import path from "path";
+import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
+import { CreateEnvArguments, CreateEnvInputs, CreateEnvOptions } from "@microsoft/teamsfx-core";
 import { createFxCore } from "../../activate";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs, isWorkspaceSupported } from "../../utils";
-import { CreateEnvArguments, CreateEnvInputs, CreateEnvOptions } from "@microsoft/teamsfx-core";
+import { isWorkspaceSupported } from "../../utils";
 import { ProjectFolderOption } from "../common";
-import { assign } from "lodash";
 
 export const envAddCommand: CLICommand = {
   name: "add",
@@ -19,16 +17,10 @@ export const envAddCommand: CLICommand = {
     event: TelemetryEvent.CreateNewEnvironment,
   },
   handler: async (ctx) => {
-    const options = ctx.optionValues as CreateEnvInputs;
-    const projectDir = options.projectPath || process.cwd();
-    options.newTargetEnvName = ctx.argumentValues[0];
-    if (!isWorkspaceSupported(projectDir)) {
-      return err(WorkspaceNotSupported(projectDir));
+    const inputs = ctx.optionValues as CreateEnvInputs & InputsWithProjectPath;
+    if (!isWorkspaceSupported(inputs.projectPath)) {
+      return err(WorkspaceNotSupported(inputs.projectPath));
     }
-
-    const inputs = getSystemInputs(projectDir);
-    assign(inputs, options);
-
     const core = createFxCore();
     const result = await core.createEnv(inputs);
     if (result.isErr()) {

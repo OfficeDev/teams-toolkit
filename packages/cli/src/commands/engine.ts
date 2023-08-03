@@ -7,6 +7,7 @@ import {
   CLIContext,
   FxError,
   LogLevel,
+  Platform,
   Result,
   err,
   ok,
@@ -253,6 +254,10 @@ class CLIEngine {
           argument.value = argument.default;
           context.argumentValues[i] = argument.default as string;
         }
+        // set argument value in optionValues
+        if (argument.required || argument.value !== undefined) {
+          context.optionValues[i] = argument.value;
+        }
       }
     }
 
@@ -262,8 +267,9 @@ class CLIEngine {
       context.globalOptionValues.interactive === false ? false : true;
 
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
-    context.optionValues.interactive = context.globalOptionValues.interactive;
+    context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
     context.optionValues.correlationId = uuid.v4();
+    context.optionValues.platform = Platform.CLI;
 
     // set log level
     const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;

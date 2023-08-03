@@ -473,8 +473,8 @@ describe("Core basic APIs", () => {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    sandbox.stub(questionNodes, "grantPermission").returns(undefined);
-    sandbox.stub(questionNodes, "listCollaborator").returns(undefined);
+    sandbox.stub(questionNodes, "grantPermission").returns({ data: { type: "group" } });
+    sandbox.stub(questionNodes, "listCollaborator").returns({ data: { type: "group" } });
     sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));

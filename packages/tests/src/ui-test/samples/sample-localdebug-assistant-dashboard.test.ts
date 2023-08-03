@@ -18,6 +18,6 @@ const sampleCase = sampleCaseFactory(
     LocalDebugTaskLabel.WatchBackend,
     LocalDebugTaskLabel.StartBackend,
   ],
-  { dashboardFlag: true }
+  { dashboardFlag: true, skipInit: true } // [TODO] skipInit browser security block
 );
 sampleCase.test();

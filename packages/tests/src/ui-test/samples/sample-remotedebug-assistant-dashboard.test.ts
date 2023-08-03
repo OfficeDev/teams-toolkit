@@ -14,6 +14,6 @@ const sampleCase = sampleCaseFactory(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { dashboardFlag: true }
+  { dashboardFlag: true, skipInit: true } // [TODO] skipInit browser security block
 );
 sampleCase.test();

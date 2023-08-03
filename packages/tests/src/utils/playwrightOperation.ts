@@ -1659,7 +1659,7 @@ export async function validateSpfx(
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-iframe"
+      "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
     await frame?.waitForSelector(`text=${args?.displayName}`);

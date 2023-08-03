@@ -74,7 +74,7 @@ export default class New extends YargsCommand {
     const inputs = getSystemInputs();
     inputs.projectId = inputs.projectId ?? uuid.v4();
     {
-      const result = await core.createSampleProject(inputs);
+      const result = await core.createProject(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error, {
           [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",

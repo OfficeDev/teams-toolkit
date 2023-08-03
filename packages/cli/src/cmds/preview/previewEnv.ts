@@ -12,7 +12,7 @@ import {
   envUtil,
   FxCore,
   getSideloadingStatus,
-  Hub,
+  HubTypes,
   loadTeamsFxDevScript,
   TelemetryContext,
 } from "@microsoft/teamsfx-core";
@@ -87,8 +87,8 @@ export default class PreviewEnv extends YargsCommand {
       .options("m365-host", {
         description: "Preview the application in Teams, Outlook or the Microsoft 365 app",
         string: true,
-        choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
-        default: constants.Hub.teams,
+        choices: [HubTypes.teams, HubTypes.outlook, HubTypes.office],
+        default: HubTypes.teams,
       })
       .options("browser", {
         description: "Select browser to open Teams web client",
@@ -124,21 +124,15 @@ export default class PreviewEnv extends YargsCommand {
     const runCommand: string | undefined = args["run-command"] as string;
     const runningPattern = args["running-pattern"] as string;
     const openOnly = args["open-only"] as boolean;
-    const m365Host = args["m365-host"] as constants.Hub;
+    const m365Host = args["m365-host"] as HubTypes;
     const execPath: string = args["exec-path"] as string;
-    let hub = Hub.teams;
-    if (m365Host === constants.Hub.outlook) {
-      hub = Hub.outlook;
-    } else if (m365Host === constants.Hub.office) {
-      hub = Hub.office;
-    }
     const browser = args.browser as constants.Browser;
     const browserArguments = (args["browser-arg"] as string[]) ?? [];
 
     cliTelemetry.withRootFolder(workspaceFolder);
     this.telemetryProperties[TelemetryProperty.PreviewType] =
       env.toLowerCase() === environmentManager.getLocalEnvName() ? "local" : `remote-${env}`;
-    this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
+    this.telemetryProperties[TelemetryProperty.PreviewHub] = m365Host;
     this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
 
     return await localTelemetryReporter.runWithTelemetryGeneric(
@@ -151,7 +145,7 @@ export default class PreviewEnv extends YargsCommand {
           runCommand,
           runningPattern,
           openOnly,
-          hub,
+          m365Host,
           browser,
           browserArguments,
           execPath
@@ -173,7 +167,7 @@ export default class PreviewEnv extends YargsCommand {
     runCommand: string | undefined,
     runningPattern: string,
     openOnly: boolean,
-    hub: Hub,
+    hub: HubTypes,
     browser: constants.Browser,
     browserArguments: string[],
     execPath: string
@@ -326,7 +320,7 @@ export default class PreviewEnv extends YargsCommand {
   protected async previewWithManifest(
     projectPath: string,
     env: string,
-    hub: Hub,
+    hub: HubTypes,
     manifestFilePath: string
   ): Promise<Result<string, FxError>> {
     const coreRes = await activate(projectPath, true);
@@ -426,7 +420,7 @@ export default class PreviewEnv extends YargsCommand {
 
   protected async launchBrowser(
     env: string,
-    hub: Hub,
+    hub: HubTypes,
     url: string,
     browser: constants.Browser,
     browserArgs: string[]
@@ -437,7 +431,7 @@ export default class PreviewEnv extends YargsCommand {
       LogLevel.Warning,
       util.format(constants.manifestChangesHintMessage, `--env ${env}`)
     );
-    if (hub !== Hub.teams) {
+    if (hub !== HubTypes.teams) {
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
     }
 

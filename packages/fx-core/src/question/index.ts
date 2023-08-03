@@ -18,14 +18,14 @@ import {
   selectTeamsAppManifestQuestionNode,
   validateTeamsAppQuestionNode,
 } from "./other";
-
+export { HubTypes, HubOptions } from "./other";
 export * from "./create";
 export * from "./questionNames";
 
 export * from "./inputs";
 export * from "./options";
 
-class QuestionNodes {
+export class QuestionNodes {
   createProject(): IQTreeNode {
     return createProjectQuestionNode();
   }

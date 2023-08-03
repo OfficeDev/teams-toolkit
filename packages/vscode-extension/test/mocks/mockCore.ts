@@ -22,7 +22,9 @@ export class MockCore {
   async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     return ok({ projectPath: "" });
   }
-
+  async createSampleProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
+    return ok({ projectPath: "" });
+  }
   async provisionResources(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
   }

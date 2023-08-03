@@ -4,26 +4,27 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import * as sinon from "sinon";
+import { CreateSampleProjectInputs } from "../../../src";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator, TemplateNames } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { Generator } from "../../../src/component/generator/generator";
+import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { createContextV3 } from "../../../src/component/utils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
-import { QuestionNames } from "../../../src/question/questionNames";
 import {
   CapabilityOptions,
   ProjectTypeOptions,
   ScratchOptions,
 } from "../../../src/question/create";
+import { QuestionNames } from "../../../src/question/questionNames";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator create", () => {
@@ -44,14 +45,13 @@ describe("coordinator create", () => {
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
+    const inputs: CreateSampleProjectInputs = {
       platform: Platform.CLI,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab-with-backend",
+      samples: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.createProject(inputs);
+    const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isOk());
   });
   it("fail to create project from sample", async () => {
@@ -61,14 +61,13 @@ describe("coordinator create", () => {
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
+    const inputs: CreateSampleProjectInputs = {
       platform: Platform.CLI,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab-with-backend",
+      samples: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.createProject(inputs);
+    const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isErr());
   });
   it("create project from sample rename folder", async () => {
@@ -85,14 +84,13 @@ describe("coordinator create", () => {
       .resolves(["abc"] as any)
       .onSecondCall()
       .resolves([]);
-    const inputs: Inputs = {
+    const inputs: CreateSampleProjectInputs = {
       platform: Platform.CLI,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab-with-backend",
+      samples: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.createProject(inputs);
+    const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isOk());
     if (res.isOk()) {
       assert.isTrue(res.value.projectPath.endsWith("_1"));
@@ -109,7 +107,6 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
     };
@@ -211,7 +208,6 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.SPFxSolution]: "new",
@@ -233,7 +229,6 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
       [QuestionNames.ProgrammingLanguage]: "typescript",
       [QuestionNames.SPFxSolution]: "new",
@@ -256,7 +251,6 @@ describe("coordinator create", () => {
       platform: Platform.VS,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
       [QuestionNames.ProgrammingLanguage]: "csharp",
       [QuestionNames.SafeProjectName]: "safeprojectname",
@@ -277,7 +271,6 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.m365SsoLaunchPage().id,
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
@@ -311,7 +304,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -359,7 +351,6 @@ describe("coordinator create", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.ProjectType]: ProjectTypeOptions.bot().id,
@@ -415,7 +406,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -469,7 +459,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -506,7 +495,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -531,7 +519,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -591,7 +578,6 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: "__invalid__",
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
 
@@ -606,7 +592,6 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: undefined,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
 
@@ -628,8 +613,8 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
     const res = await coordinator.create(v3ctx, inputs);

@@ -114,20 +114,6 @@ export class ProjectTypeOptions {
   }
 }
 
-function scratchOrSampleQuestion(): SingleSelectQuestion {
-  const staticOptions: OptionItem[] = ScratchOptions.all();
-  return {
-    type: "singleSelect",
-    name: QuestionNames.Scratch,
-    title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
-    staticOptions,
-    default: ScratchOptions.yes().id,
-    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
-    skipSingleOption: true,
-    forgetLastValue: true,
-  };
-}
-
 function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     ProjectTypeOptions.bot(),
@@ -697,6 +683,7 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
+    cliDescription: "Create a new or import an existing SharePoint Framework solution.",
     cliShortName: "ss",
     staticOptions: [
       {
@@ -718,6 +705,7 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.SPFxInstallPackage,
     title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
+    cliDescription: "Install the latest version of SharePoint Framework.",
     staticOptions: [],
     placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
@@ -855,6 +843,7 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
     name: QuestionNames.SPFxFolder,
     cliShortName: "sf",
     title: getLocalizedString("core.spfxFolder.title"),
+    cliDescription: "Directory or Path that contains the existing SharePoint Framework solution.",
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
     default: hasDefaultFunc
       ? (inputs: Inputs) => {
@@ -979,6 +968,7 @@ function rootFolderQuestion(): FolderQuestion {
     name: QuestionNames.Folder,
     cliShortName: "f",
     title: getLocalizedString("core.question.workspaceFolder.title"),
+    cliDescription: "Root folder of the project.",
     placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
     default: path.join(os.homedir(), ConstantString.RootFolder),
   };
@@ -1594,8 +1584,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
     deleteNames.push(QuestionNames.CopilotPluginExistingApi);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
-  const subTree = pickSubTree(node, QuestionNames.SctatchYes);
-  return subTree!;
+  return node;
 }
 
 function trimQuestionTreeForCliHelp(node: IQTreeNode, deleteNames: string[]): void {

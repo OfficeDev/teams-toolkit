@@ -167,14 +167,21 @@ export abstract class CaseFactory {
 
   public async onInitPage(
     sampledebugContext: SampledebugContext,
-    teamsAppId: string
+    teamsAppId: string,
+    options?: {
+      context: SampledebugContext;
+      displayName: string;
+      includeFunction: boolean;
+      npmName: string;
+      dashboardFlag: boolean;
+    }
   ) {
     return await initPage(
       sampledebugContext.context!,
       teamsAppId,
       Env.username,
       Env.password,
-      { dashboardFlag: this.options?.dashboardFlag || false }
+      { dashboardFlag: options?.dashboardFlag }
     );
   }
 
@@ -299,7 +306,13 @@ export abstract class CaseFactory {
           await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
 
           // init
-          const page = await onInitPage(sampledebugContext, teamsAppId);
+          const page = await onInitPage(sampledebugContext, teamsAppId, {
+            context: sampledebugContext,
+            displayName: Env.displayName,
+            includeFunction: options?.includeFunction ?? false,
+            npmName: options?.npmName ?? "",
+            dashboardFlag: options?.dashboardFlag ?? false,
+          });
 
           if (options?.skipValidation) {
             console.log("skip ui validation...");

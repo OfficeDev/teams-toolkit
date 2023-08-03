@@ -184,9 +184,15 @@ export const middleWareMap: Record<
   [TemplateProject.AdaptiveCard]: () => Promise.resolve(),
   [TemplateProject.AssistDashboard]: async (
     sampledebugContext: SampledebugContext,
-    env: "local" | "dev"
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper,
+    steps?: {
+      afterCreate?: boolean;
+    }
   ) => {
-    assistantDashboardMiddleWare(sampledebugContext, env);
+    assistantDashboardMiddleWare(sampledebugContext, env, azSqlHelper, {
+      afterCreate: steps?.afterCreate,
+    });
   },
   [TemplateProject.ContactExporter]: () => Promise.resolve(),
   [TemplateProject.Dashboard]: () => Promise.resolve(),
@@ -197,9 +203,18 @@ export const middleWareMap: Record<
   [TemplateProject.HelloWorldBotSSO]: () => Promise.resolve(),
   [TemplateProject.IncomingWebhook]: async (
     sampledebugContext: SampledebugContext,
-    env: "local" | "dev"
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper,
+    steps?: {
+      before?: boolean;
+      after?: boolean;
+      afterCreate?: boolean;
+      afterdeploy?: boolean;
+    }
   ) => {
-    await incomingWebhookMiddleWare(sampledebugContext, env);
+    await incomingWebhookMiddleWare(sampledebugContext, env, azSqlHelper, {
+      afterCreate: steps?.afterCreate,
+    });
   },
   [TemplateProject.NpmSearch]: () => Promise.resolve(),
   [TemplateProject.OneProductivityHub]: () => Promise.resolve(),
@@ -211,9 +226,7 @@ export const middleWareMap: Record<
     azSqlHelper?: AzSqlHelper,
     steps?: {
       before?: boolean;
-      after?: boolean;
       afterCreate?: boolean;
-      afterdeploy?: boolean;
     }
   ) => {
     return await shareNowMiddleWare(sampledebugContext, env, azSqlHelper, {
@@ -223,9 +236,16 @@ export const middleWareMap: Record<
   },
   [TemplateProject.StockUpdate]: async (
     sampledebugContext: SampledebugContext,
-    env: "local" | "dev"
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper,
+    steps?: {
+      before?: boolean;
+      afterCreate?: boolean;
+    }
   ) => {
-    await stockUpdateMiddleWare(sampledebugContext, env);
+    await stockUpdateMiddleWare(sampledebugContext, env, azSqlHelper, {
+      afterCreate: steps?.afterCreate,
+    });
   },
   [TemplateProject.TodoListBackend]: async (
     sampledebugContext: SampledebugContext,
@@ -233,9 +253,7 @@ export const middleWareMap: Record<
     azSqlHelper?: AzSqlHelper,
     steps?: {
       before?: boolean;
-      after?: boolean;
       afterCreate?: boolean;
-      afterdeploy?: boolean;
     }
   ) => {
     return await todoListSqlMiddleWare(sampledebugContext, env, azSqlHelper, {
@@ -245,9 +263,16 @@ export const middleWareMap: Record<
   },
   [TemplateProject.TodoListM365]: async (
     sampledebugContext: SampledebugContext,
-    env: "local" | "dev"
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper,
+    steps?: {
+      before?: boolean;
+      afterCreate?: boolean;
+    }
   ) => {
-    await TodoListM365MiddleWare(sampledebugContext, env);
+    await TodoListM365MiddleWare(sampledebugContext, env, azSqlHelper, {
+      afterCreate: steps?.afterCreate,
+    });
   },
   [TemplateProject.TodoListSpfx]: () => Promise.resolve(),
   [TemplateProject.Deeplinking]: () => Promise.resolve(),
@@ -1985,51 +2010,63 @@ export async function delPerson(
 
 const assistantDashboardMiddleWare = (
   sampledebugContext: SampledebugContext,
-  env: "local" | "dev"
+  env: "local" | "dev",
+  azSqlHelper?: AzSqlHelper,
+  steps?: {
+    afterCreate?: boolean;
+  }
 ) => {
-  const envFilePath = path.resolve(
-    sampledebugContext.projectPath,
-    "env",
-    `.env.${env}.user`
-  );
-  editDotEnvFile(envFilePath, "DEVOPS_ORGANIZATION_NAME", "msazure");
-  editDotEnvFile(
-    envFilePath,
-    "DEVOPS_PROJECT_NAME",
-    "Microsoft Teams Extensibility"
-  );
-  editDotEnvFile(envFilePath, "GITHUB_REPO_NAME", "test002");
-  editDotEnvFile(envFilePath, "GITHUB_REPO_OWNER", "hellyzh");
-  editDotEnvFile(envFilePath, "PlANNER_GROUP_ID", "YOUR_GROUP_ID");
-  editDotEnvFile(envFilePath, "PLANNER_PLAN_ID", "YOUR_PLAN_ID");
-  editDotEnvFile(envFilePath, "PLANNER_BUCKET_ID", "YOUR_BUCKET_ID");
-  editDotEnvFile(
-    envFilePath,
-    "SECRET_DEVOPS_ACCESS_TOKEN",
-    "YOUR_DEVOPS_ACCESS_TOKEN"
-  );
-  editDotEnvFile(
-    envFilePath,
-    "SECRET_GITHUB_ACCESS_TOKEN",
-    "YOUR_GITHUB_ACCESS_TOKEN"
-  );
+  if (!steps?.afterCreate) {
+    const envFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}.user`
+    );
+    editDotEnvFile(envFilePath, "DEVOPS_ORGANIZATION_NAME", "msazure");
+    editDotEnvFile(
+      envFilePath,
+      "DEVOPS_PROJECT_NAME",
+      "Microsoft Teams Extensibility"
+    );
+    editDotEnvFile(envFilePath, "GITHUB_REPO_NAME", "test002");
+    editDotEnvFile(envFilePath, "GITHUB_REPO_OWNER", "hellyzh");
+    editDotEnvFile(envFilePath, "PlANNER_GROUP_ID", "YOUR_GROUP_ID");
+    editDotEnvFile(envFilePath, "PLANNER_PLAN_ID", "YOUR_PLAN_ID");
+    editDotEnvFile(envFilePath, "PLANNER_BUCKET_ID", "YOUR_BUCKET_ID");
+    editDotEnvFile(
+      envFilePath,
+      "SECRET_DEVOPS_ACCESS_TOKEN",
+      "YOUR_DEVOPS_ACCESS_TOKEN"
+    );
+    editDotEnvFile(
+      envFilePath,
+      "SECRET_GITHUB_ACCESS_TOKEN",
+      "YOUR_GITHUB_ACCESS_TOKEN"
+    );
+  }
 };
 
-const incomingWebhookMiddleWare = (
+const incomingWebhookMiddleWare = async (
   sampledebugContext: SampledebugContext,
-  env: "local" | "dev"
+  env: "local" | "dev",
+  azSqlHelper?: AzSqlHelper,
+  steps?: {
+    afterCreate?: boolean;
+  }
 ) => {
-  // replace "<webhook-url>" to "https://test.com"
-  console.log("replace webhook url");
-  const targetFile = path.resolve(
-    sampledebugContext.projectPath,
-    "src",
-    "index.ts"
-  );
-  let data = fs.readFileSync(targetFile, "utf-8");
-  data = data.replace(/<webhook-url>/g, "https://test.com");
-  fs.writeFileSync(targetFile, data);
-  console.log("replace webhook url finish!");
+  if (!steps?.afterCreate) {
+    // replace "<webhook-url>" to "https://test.com"
+    console.log("replace webhook url");
+    const targetFile = path.resolve(
+      sampledebugContext.projectPath,
+      "src",
+      "index.ts"
+    );
+    let data = fs.readFileSync(targetFile, "utf-8");
+    data = data.replace(/<webhook-url>/g, "https://test.com");
+    fs.writeFileSync(targetFile, data);
+    console.log("replace webhook url finish!");
+  }
 };
 
 const shareNowMiddleWare = async (
@@ -2171,18 +2208,24 @@ const shareNowMiddleWare = async (
 
 const stockUpdateMiddleWare = async (
   sampledebugContext: SampledebugContext,
-  env: "local" | "dev"
+  env: "local" | "dev",
+  azSqlHelper?: AzSqlHelper,
+  steps?: {
+    afterCreate?: boolean;
+  }
 ) => {
-  const targetFile = path.resolve(
-    sampledebugContext.projectPath,
-    "env",
-    `.env.${env}`
-  );
-  let data = fs.readFileSync(targetFile, "utf-8");
-  data +=
-    "\nTEAMSFX_API_ALPHAVANTAGE_ENDPOINT=https://www.alphavantage.co\nTEAMSFX_API_ALPHAVANTAGE_API_KEY=demo";
-  fs.writeFileSync(targetFile, data);
-  console.log(`write .env.${env} finish!`);
+  if (steps?.afterCreate) {
+    const targetFile = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}`
+    );
+    let data = fs.readFileSync(targetFile, "utf-8");
+    data +=
+      "\nTEAMSFX_API_ALPHAVANTAGE_ENDPOINT=https://www.alphavantage.co\nTEAMSFX_API_ALPHAVANTAGE_API_KEY=demo";
+    fs.writeFileSync(targetFile, data);
+    console.log(`write .env.${env} finish!`);
+  }
 };
 
 const todoListSqlMiddleWare = async (
@@ -2290,23 +2333,29 @@ const todoListSqlMiddleWare = async (
 
 const TodoListM365MiddleWare = async (
   sampledebugContext: SampledebugContext,
-  env: "local" | "dev"
-) => {
-  if (env === "dev") {
-    const envFilePath = path.resolve(
-      sampledebugContext.projectPath,
-      "env",
-      ".env.dev.user"
-    );
-    editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
-    editDotEnvFile(
-      envFilePath,
-      "SQL_PASSWORD",
-      "Cab232332" + uuid.v4().substring(0, 6)
-    );
+  env: "local" | "dev",
+  azSqlHelper?: AzSqlHelper,
+  steps?: {
+    afterCreate?: boolean;
   }
-  const targetPath = path.resolve(sampledebugContext.projectPath, "tabs");
-  const data = "src/";
-  // create .eslintignore
-  fs.writeFileSync(targetPath + "/.eslintignore", data);
+) => {
+  if (steps?.afterCreate) {
+    if (env === "dev") {
+      const envFilePath = path.resolve(
+        sampledebugContext.projectPath,
+        "env",
+        ".env.dev.user"
+      );
+      editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
+      editDotEnvFile(
+        envFilePath,
+        "SQL_PASSWORD",
+        "Cab232332" + uuid.v4().substring(0, 6)
+      );
+    }
+    const targetPath = path.resolve(sampledebugContext.projectPath, "tabs");
+    const data = "src/";
+    // create .eslintignore
+    fs.writeFileSync(targetPath + "/.eslintignore", data);
+  }
 };

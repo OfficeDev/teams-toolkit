@@ -15,7 +15,11 @@ import { Env } from "../../utils/env";
 class TodoListSpfxTestCase extends CaseFactory {
   public override async onInitPage(
     sampledebugContext: SampledebugContext,
-    teamsAppId: string
+    teamsAppId: string,
+    options?: {
+      teamsAppName: string;
+      type: string;
+    }
   ): Promise<Page> {
     return await initTeamsPage(
       sampledebugContext.context!,
@@ -23,8 +27,8 @@ class TodoListSpfxTestCase extends CaseFactory {
       Env.username,
       Env.password,
       {
-        teamsAppName: this.options?.teamsAppName,
-        type: this.options?.type,
+        teamsAppName: options?.teamsAppName,
+        type: options?.type,
       }
     );
   }

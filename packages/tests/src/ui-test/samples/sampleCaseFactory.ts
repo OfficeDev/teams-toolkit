@@ -169,11 +169,11 @@ export abstract class CaseFactory {
     sampledebugContext: SampledebugContext,
     teamsAppId: string,
     options?: {
-      context: SampledebugContext;
-      displayName: string;
+      teamsAppName: string;
       includeFunction: boolean;
       npmName: string;
       dashboardFlag: boolean;
+      type: string;
     }
   ) {
     return await initPage(
@@ -192,6 +192,7 @@ export abstract class CaseFactory {
       displayName: string;
       includeFunction: boolean;
       npmName: string;
+      env: "local" | "dev";
     }
   ): Promise<void> {
     Promise.resolve();
@@ -307,11 +308,11 @@ export abstract class CaseFactory {
 
           // init
           const page = await onInitPage(sampledebugContext, teamsAppId, {
-            context: sampledebugContext,
-            displayName: Env.displayName,
             includeFunction: options?.includeFunction ?? false,
             npmName: options?.npmName ?? "",
             dashboardFlag: options?.dashboardFlag ?? false,
+            type: options?.type ?? "",
+            teamsAppName: options?.teamsAppName ?? "",
           });
 
           if (options?.skipValidation) {
@@ -326,6 +327,7 @@ export abstract class CaseFactory {
             displayName: Env.displayName,
             includeFunction: options?.includeFunction ?? false,
             npmName: options?.npmName ?? "",
+            env: env,
           });
           console.log("debug finish!");
         }

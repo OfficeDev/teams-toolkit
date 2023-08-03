@@ -14,11 +14,11 @@ import { SampledebugContext } from "./sampledebugContext";
 class AdaptiveCardTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    args?: { context: SampledebugContext }
+    options?: { context: SampledebugContext; env: "local" | "dev" }
   ): Promise<void> {
     return await validateAdaptiveCard(page, {
-      context: args?.context,
-      env: this.env,
+      context: options?.context,
+      env: options?.env,
     });
   }
 }

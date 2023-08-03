@@ -70,7 +70,10 @@ class TodoListBackendTestCase extends CaseFactory {
   }
   public override async onInitPage(
     sampledebugContext: SampledebugContext,
-    teamsAppId: string
+    teamsAppId: string,
+    options?: {
+      teamsAppName: string;
+    }
   ): Promise<Page> {
     return await initTeamsPage(
       sampledebugContext.context!,
@@ -78,7 +81,7 @@ class TodoListBackendTestCase extends CaseFactory {
       Env.username,
       Env.password,
       {
-        teamsAppName: this.options?.teamsAppName,
+        teamsAppName: options?.teamsAppName,
       }
     );
   }

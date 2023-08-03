@@ -14,11 +14,11 @@ import { Env } from "../../utils/env";
 class HelloWorldTabBackEndTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    option?: { displayName: string; includeFunction: boolean }
+    options?: { includeFunction: boolean }
   ): Promise<void> {
     return await validateTab(page, {
       displayName: Env.displayName,
-      includeFunction: this.options?.includeFunction,
+      includeFunction: options?.includeFunction,
     });
   }
 }

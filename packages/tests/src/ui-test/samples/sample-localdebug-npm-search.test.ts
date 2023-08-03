@@ -13,9 +13,9 @@ import { CaseFactory } from "./sampleCaseFactory";
 class NpmSearchTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    option?: { npmName: string }
+    options?: { npmName: string }
   ): Promise<void> {
-    return await validateNpm(page, { npmName: this.options?.npmName });
+    return await validateNpm(page, { npmName: options?.npmName });
   }
 }
 

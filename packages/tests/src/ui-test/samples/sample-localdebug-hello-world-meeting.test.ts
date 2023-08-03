@@ -13,9 +13,13 @@ import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 
 class MyFirstMettingTestCase extends CaseFactory {
-  override async onInitPage(
+  public override async onInitPage(
     sampledebugContext: SampledebugContext,
-    teamsAppId: string
+    teamsAppId: string,
+    options?: {
+      teamsAppName: string;
+      type: string;
+    }
   ): Promise<Page> {
     return await initTeamsPage(
       sampledebugContext.context!,
@@ -23,8 +27,8 @@ class MyFirstMettingTestCase extends CaseFactory {
       Env.username,
       Env.password,
       {
-        teamsAppName: this.options?.teamsAppName,
-        type: this.options?.type,
+        teamsAppName: options?.teamsAppName,
+        type: options?.type,
       }
     );
   }

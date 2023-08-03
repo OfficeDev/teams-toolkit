@@ -125,7 +125,7 @@ describe("none scaffold questions", () => {
       ]);
     });
   });
-  describe("selectTeamsAppValidationMethod", async () => {
+  describe("validateTeamsApp", async () => {
     it("happy path", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -144,46 +144,21 @@ describe("none scaffold questions", () => {
         await callFuncs(question, inputs);
         if (question.name === QuestionNames.ValidateMethod) {
           return ok({ type: "success", result: "teamsAppManifest" });
-        }
-        return ok({ type: "success", result: undefined });
-      };
-      const res = questionNodes.selectTeamsAppValidationMethod();
-
-      await traverse(res, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, [QuestionNames.ValidateMethod]);
-    });
-  });
-  describe("selectTeamsAppPackage", async () => {
-    it("happy path", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: "./test",
-      };
-
-      const questionNames: string[] = [];
-      const visitor: QuestionTreeVisitor = async (
-        question: Question,
-        ui: UserInteraction,
-        inputs: Inputs,
-        step?: number,
-        totalSteps?: number
-      ) => {
-        questionNames.push(question.name);
-        await callFuncs(question, inputs);
-        if (QuestionNames.SPFxFolder) {
-          return ok({
-            type: "success",
-            result: ".",
-          });
-        } else if (question.name === QuestionNames.TeamsAppPackageFilePath) {
+        } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
           return ok({ type: "success", result: "teamsAppManifest" });
+        } else if (question.name === QuestionNames.ConfirmManifest) {
+          return ok({ type: "success", result: "manifest" });
         }
         return ok({ type: "success", result: undefined });
       };
-      const res = questionNodes.selectTeamsAppPackage();
+      const res = questionNodes.validateTeamsApp();
 
       await traverse(res, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, [QuestionNames.TeamsAppPackageFilePath]);
+      assert.deepEqual(questionNames, [
+        QuestionNames.ValidateMethod,
+        QuestionNames.TeamsAppManifestFilePath,
+        QuestionNames.ConfirmManifest,
+      ]);
     });
   });
   describe("previewWithTeamsAppManifest", async () => {
@@ -233,16 +208,6 @@ describe("none scaffold questions", () => {
     const res = (SPFxImportFolderQuestion(true) as any).default({ projectPath: projectDir });
 
     assert.equal(path.resolve(res), path.resolve("\\test/src"));
-  });
-
-  it("validate manifest question", async () => {
-    const res = await questionNodes.selectTeamsAppManifest();
-    assert.isDefined(res);
-  });
-
-  it("validate app package question", async () => {
-    const res = await questionNodes.selectTeamsAppValidationMethod();
-    assert.isDefined(res);
   });
 });
 

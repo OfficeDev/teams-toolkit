@@ -25,7 +25,7 @@ export * from "./questionNames";
 export * from "./inputs";
 export * from "./options";
 
-class QuestionNodes {
+export class QuestionNodes {
   createProject(): IQTreeNode {
     return createProjectQuestionNode();
   }

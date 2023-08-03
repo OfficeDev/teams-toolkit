@@ -114,20 +114,6 @@ export class ProjectTypeOptions {
   }
 }
 
-function scratchOrSampleQuestion(): SingleSelectQuestion {
-  const staticOptions: OptionItem[] = ScratchOptions.all();
-  return {
-    type: "singleSelect",
-    name: QuestionNames.Scratch,
-    title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
-    staticOptions,
-    default: ScratchOptions.yes().id,
-    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
-    skipSingleOption: true,
-    forgetLastValue: true,
-  };
-}
-
 function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     ProjectTypeOptions.bot(),
@@ -1594,8 +1580,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
     deleteNames.push(QuestionNames.CopilotPluginExistingApi);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
-  const subTree = pickSubTree(node, QuestionNames.SctatchYes);
-  return subTree!;
+  return node;
 }
 
 function trimQuestionTreeForCliHelp(node: IQTreeNode, deleteNames: string[]): void {

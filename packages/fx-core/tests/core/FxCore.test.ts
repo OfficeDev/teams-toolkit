@@ -27,8 +27,10 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
+import { FeatureFlagName } from "../../src/common/constants";
 import { Hub } from "../../src/common/m365/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
+import { SpecParser } from "../../src/common/spec-parser/specParser";
 import {
   DriverDefinition,
   DriverInstance,
@@ -48,6 +50,8 @@ import { manifestUtils } from "../../src/component/driver/teamsApp/utils/Manifes
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import "../../src/component/feature/sso";
+import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
+import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -68,13 +72,9 @@ import {
   ScratchOptions,
   questionNodes,
 } from "../../src/question";
-import { MockTools, deleteFolder, randomAppName } from "./utils";
-import { FeatureFlagName } from "../../src/common/constants";
-import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
-import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
-import { SpecParser } from "../../src/common/spec-parser/specParser";
-import * as visitor from "../../src/ui/visitor";
 import { validationUtils } from "../../src/ui/validationUtils";
+import { MockTools, deleteFolder, randomAppName } from "./utils";
+import { HubOptions } from "../../src/question/other";
 
 const tools = new MockTools();
 
@@ -1002,7 +1002,7 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(err({ foo: "bar" } as any));
     const appName = await mockV3Project();
     const inputs: Inputs = {
-      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.M365Host]: HubOptions.teams().id,
       [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
@@ -1023,7 +1023,7 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(err({ foo: "bar" } as any));
     const inputs: Inputs = {
-      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.M365Host]: HubOptions.teams().id,
       [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
@@ -1044,7 +1044,7 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(ok("test-url"));
     const inputs: Inputs = {
-      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.M365Host]: HubOptions.teams().id,
       [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,

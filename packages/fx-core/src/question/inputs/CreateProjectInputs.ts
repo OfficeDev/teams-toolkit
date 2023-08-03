@@ -24,7 +24,7 @@ export interface CreateProjectInputs extends Inputs {
     | "link-unfurling"
     | "search-app"
     | "CollectFormMessagingExtension";
-  /** @description Select the trigger for `Chat Notification Message` app template. */
+  /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
     | "http-webapi"

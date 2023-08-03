@@ -297,7 +297,6 @@ async function updateExports(filePath: string, exportStatement: string) {
     const sourceFile = await project.addSourceFileAtPathIfExists(filePath);
     if (!sourceFile) return;
     const hasExport = sourceFile.getStatements().some((statement) => {
-      // console.log(`statement.getText().trim(): ${statement.getText().trim()}`);
       return (
         statement.getKind() === SyntaxKind.ExportDeclaration &&
         statement.getText().trim() === exportStatement
@@ -308,8 +307,6 @@ async function updateExports(filePath: string, exportStatement: string) {
       sourceFile.addStatements([exportStatement]);
       await sourceFile.save();
       console.log(`Export statement '${exportStatement}' added successfully.`);
-    } else {
-      console.log(`Export statement '${exportStatement}' already exists.`);
     }
   } catch (err) {
     console.error("Error occurred:", err);

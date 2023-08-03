@@ -141,7 +141,7 @@
   "plugins.appstudio.emptyAppPackage": "Could not find any files in the package of app %s.",
   "plugins.appstudio.unprocessedFile": "%s was not processed by Teams Toolkit.",
   "plugins.appstudio.viewDeveloperPortal": "View in Developer Portal",
-  "plugins.bot.questionHostTypeTrigger.title": "Select the trigger for `Chat Notification Message` app template.",
+  "plugins.bot.questionHostTypeTrigger.title": "Choose triggers",
   "plugins.bot.questionHostTypeTrigger.placeholder": "Choose triggers",
   "plugins.bot.triggers.http-functions.cliName": "http-functions",
   "plugins.bot.triggers.http-functions.description": "Azure Functions",

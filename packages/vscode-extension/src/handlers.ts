@@ -1230,7 +1230,9 @@ export async function openReadMeHandler(args: any[]) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
-        await Correlator.run(() => createNewProjectHandler([TelemetryTriggerFrom.Notification]));
+        await Correlator.run(
+          async () => await createNewProjectHandler([TelemetryTriggerFrom.Notification])
+        );
       },
     };
 

@@ -63,6 +63,8 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { MockCore } from "../mocks/mockCore";
+import VsCodeLogInstance from "../../src/commonlib/log";
+import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -707,6 +709,45 @@ describe("handlers", () => {
 
     chai.assert.isTrue(openTextDocumentStub.calledOnce);
     chai.assert.isTrue(executeCommands.calledOnce);
+  });
+
+  it("openReadMeHandler - create project", async () => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
+    sandbox.stub(handlers, "core").value(undefined);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve({
+            title: "Yes",
+            run: (options as any).run,
+          } as vscode.MessageItem);
+        }
+      );
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(showMessageStub.calledOnce);
+  });
+
+  it("openReadMeHandler - open folder", async () => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
+    sandbox.stub(handlers, "core").value(undefined);
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve({
+            title: "Yes",
+            run: (items[0] as any).run,
+          } as vscode.MessageItem);
+        }
+      );
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
   it("openReadMeHandler - function notification bot template", async () => {
@@ -1697,5 +1738,29 @@ describe("autoOpenProjectHandler", () => {
 
     chai.assert.isTrue(sendTelemetryStub.called);
     chai.assert.isTrue(result.isOk());
+  });
+
+  it("runUserTask() - error", async () => {
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    sandbox.stub(handlers, "core").value(undefined);
+    sandbox.stub(commonUtils, "getTeamsAppTelemetryInfoByEnv");
+    sandbox.stub(VsCodeLogInstance, "error");
+
+    const result = await handlers.runUserTask({ namespace: "test", method: "test" }, "test", true);
+
+    chai.assert.isTrue(sendTelemetryStub.called);
+    chai.assert.isTrue(result.isErr());
+  });
+
+  it("validateGetStartedPrerequisitesHandler() - error", async () => {
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox
+      .stub(localPrerequisites, "checkPrerequisitesForGetStarted")
+      .resolves(err(new SystemError("test", "test", "test")));
+
+    const result = await handlers.validateGetStartedPrerequisitesHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.called);
+    chai.assert.equal(result, "1");
   });
 });

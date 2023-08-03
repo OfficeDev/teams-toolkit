@@ -308,7 +308,7 @@ describe("AadAppClient", async () => {
     it("should throw error when request failed with CannotDeleteOrUpdateEnabledEntitlement", async () => {
       nock("https://graph.microsoft.com/v1.0")
         .patch(`/applications/${expectedObjectId}`)
-        .reply(400, {
+        .replyWithError({
           error: {
             code: "CannotDeleteOrUpdateEnabledEntitlement",
           },

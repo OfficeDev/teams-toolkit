@@ -64,7 +64,7 @@ export default function sampleCaseFactory(
 
         it(sampleName, { testPlanCaseId, author }, async function () {
           // Create middleWare
-          middleWareMap[sampleName](
+          await middleWareMap[sampleName](
             sampleName,
             testFolder,
             appName,
@@ -74,7 +74,7 @@ export default function sampleCaseFactory(
 
           expect(fs.pathExistsSync(projectPath)).to.be.true;
           // after create middleWare
-          middleWareMap[sampleName](
+          await middleWareMap[sampleName](
             sampleName,
             testFolder,
             appName,
@@ -86,7 +86,7 @@ export default function sampleCaseFactory(
           if (skips?.skipProvision) return;
           {
             // before provision middleWare
-            middleWareMap[sampleName](
+            await middleWareMap[sampleName](
               sampleName,
               testFolder,
               appName,

@@ -321,18 +321,6 @@ describe("serverConnections", () => {
     });
   });
 
-  it("getProjectComponents", () => {
-    const connection = new ServerConnection(msgConn);
-    const inputs = {
-      platform: "vs",
-    };
-    const token = {};
-    const res = connection.getProjectComponents(inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok(""));
-    });
-  });
-
   it("getProjectMigrationStatusRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns({

@@ -4,7 +4,7 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface SFPxAddWebpartInputs extends Inputs {
-  /** @description Directory path that contains the existing SarePoint Framework solutions. */
+  /** @description Directory or Path that contains the existing SharePoint Framework solution. */
   "spfx-folder"?: string;
   /** @description Name for SharePoint Framework Web Part. */
   "spfx-webpart-name"?: string;

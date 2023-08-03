@@ -52,7 +52,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "spfx-install-latest-package",
     type: "boolean",
     shortName: "sp",
-    description: "Install latest SharePoint Framework version.",
+    description: "Install the latest version of SharePoint Framework.",
     default: true,
   },
   {
@@ -74,7 +74,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "spfx-folder",
     type: "string",
     shortName: "sf",
-    description: "Directory path that contains the existing SarePoint Framework solutions.",
+    description: "Directory or Path that contains the existing SharePoint Framework solution.",
   },
   {
     name: "programming-language",

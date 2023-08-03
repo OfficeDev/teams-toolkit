@@ -26,13 +26,13 @@ export interface CreateProjectInputs extends Inputs {
     | "timer-functions";
   /** @description Create a new or import an existing SharePoint Framework solution. */
   "spfx-solution"?: "new" | "import";
-  /** @description Install latest SharePoint Framework version. */
+  /** @description Install the latest version of SharePoint Framework. */
   "spfx-install-latest-package"?: boolean;
   /** @description Framework */
   "spfx-framework-type"?: "react" | "minimal" | "none";
   /** @description Name for SharePoint Framework Web Part. */
   "spfx-webpart-name"?: string;
-  /** @description Directory path that contains the existing SarePoint Framework solutions. */
+  /** @description Directory or Path that contains the existing SharePoint Framework solution. */
   "spfx-folder"?: string;
   /** @description Programming Language. */
   "programming-language"?: "javascript" | "typescript" | "csharp";

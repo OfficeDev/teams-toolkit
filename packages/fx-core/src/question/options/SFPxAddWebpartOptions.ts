@@ -8,7 +8,7 @@ export const SFPxAddWebpartOptions: CLICommandOption[] = [
     name: "spfx-folder",
     type: "string",
     shortName: "sf",
-    description: "Directory path that contains the existing SarePoint Framework solutions.",
+    description: "Directory or Path that contains the existing SharePoint Framework solution.",
     required: true,
   },
   {

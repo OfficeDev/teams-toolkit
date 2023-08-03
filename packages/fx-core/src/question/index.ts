@@ -18,7 +18,7 @@ import {
   selectTeamsAppManifestQuestionNode,
   validateTeamsAppQuestionNode,
 } from "./other";
-
+export { HubTypes, HubOptions } from "./other";
 export * from "./create";
 export * from "./questionNames";
 

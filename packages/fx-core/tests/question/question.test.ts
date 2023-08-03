@@ -20,6 +20,7 @@ import { CollaborationUtil } from "../../src/core/collaborator";
 import { setTools } from "../../src/core/globalVars";
 import { QuestionNames, SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
+  TeamsAppValidationOptions,
   createNewEnvQuestionNode,
   envQuestionCondition,
   isAadMainifestContainsPlaceholder,
@@ -143,7 +144,7 @@ describe("none scaffold questions", () => {
         questionNames.push(question.name);
         await callFuncs(question, inputs);
         if (question.name === QuestionNames.ValidateMethod) {
-          return ok({ type: "success", result: "teamsAppManifest" });
+          return ok({ type: "success", result: TeamsAppValidationOptions.schema().id });
         } else if (question.name === QuestionNames.TeamsAppManifestFilePath) {
           return ok({ type: "success", result: "teamsAppManifest" });
         } else if (question.name === QuestionNames.ConfirmManifest) {
@@ -157,7 +158,6 @@ describe("none scaffold questions", () => {
       assert.deepEqual(questionNames, [
         QuestionNames.ValidateMethod,
         QuestionNames.TeamsAppManifestFilePath,
-        QuestionNames.ConfirmManifest,
       ]);
     });
   });

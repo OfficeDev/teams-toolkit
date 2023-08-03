@@ -71,23 +71,20 @@ import {
   ScratchOptions,
   questionNodes,
 } from "../../src/question";
-import { validationUtils } from "../../src/ui/validationUtils";
-import { MockTools, deleteFolder, randomAppName } from "./utils";
 import { HubOptions } from "../../src/question/other";
+import { validationUtils } from "../../src/ui/validationUtils";
+import { MockTools, randomAppName } from "./utils";
 
 const tools = new MockTools();
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
-
   const appName = randomAppName();
-  let projectPath = path.resolve(os.tmpdir(), appName);
   beforeEach(() => {
     setTools(tools);
   });
   afterEach(async () => {
     sandbox.restore();
-    deleteFolder(projectPath);
   });
 
   it("deploy aad manifest happy path with param", async () => {
@@ -468,7 +465,7 @@ describe("Core basic APIs", () => {
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
       };
       const res = await core.createProject(inputs);
-      projectPath = inputs.projectPath!;
+      const projectPath = inputs.projectPath!;
       assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
       const implement = new FxCoreV3Implement(tools);
@@ -504,7 +501,7 @@ describe("Core basic APIs", () => {
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
       };
       const res = await core.createProject(inputs);
-      projectPath = inputs.projectPath!;
+      const projectPath = inputs.projectPath!;
       assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
       const implement = new FxCoreV3Implement(tools);

@@ -74,7 +74,7 @@ export default class New extends YargsCommand {
     const inputs = getSystemInputs();
     inputs.projectId = inputs.projectId ?? uuid.v4();
     {
-      const result = await core.createSampleProject(inputs);
+      const result = await core.createProject(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error, {
           [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
@@ -155,7 +155,7 @@ class NewTemplate extends YargsCommand {
     inputs["samples"] = templateName;
     inputs["folder"] = folder;
     inputs.projectId = inputs.projectId ?? uuid.v4();
-    const result = await core.createProject(inputs);
+    const result = await core.createSampleProject(inputs);
     if (result.isErr()) {
       properties[TelemetryProperty.Success] = TelemetrySuccess.No;
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, result.error, properties);

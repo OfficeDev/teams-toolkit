@@ -31,7 +31,7 @@ export class LaunchHelper {
       : undefined;
     let url: URL;
     switch (hub) {
-      case "teams": {
+      case HubTypes.teams: {
         const baseUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true`;
         url = new URL(baseUrl);
         const tid = await this.getTidFromToken();
@@ -40,7 +40,7 @@ export class LaunchHelper {
         }
         break;
       }
-      case "outlook": {
+      case HubTypes.outlook: {
         const result = await this.getM365AppId(teamsAppId);
         if (result.isErr()) {
           return err(result.error);
@@ -51,7 +51,7 @@ export class LaunchHelper {
         url = new URL(baseUrl);
         break;
       }
-      case "office":
+      case HubTypes.office:
         {
           const result = await this.getM365AppId(teamsAppId);
           if (result.isErr()) {

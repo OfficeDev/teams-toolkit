@@ -87,8 +87,8 @@ export default class PreviewEnv extends YargsCommand {
       .options("m365-host", {
         description: "Preview the application in Teams, Outlook or the Microsoft 365 app",
         string: true,
-        choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
-        default: constants.Hub.teams,
+        choices: [HubTypes.teams, HubTypes.outlook, HubTypes.office],
+        default: HubTypes.teams,
       })
       .options("browser", {
         description: "Select browser to open Teams web client",

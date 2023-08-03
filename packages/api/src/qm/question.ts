@@ -135,6 +135,40 @@ export interface UserInputQuestion extends BaseQuestion {
    * An optional validation message indicating or explaining the problem with the current input value.
    */
   validationHelp?: string;
+
+  /**
+   * A flag to indicate whether the question is required for CLI non-interactive mode.
+   * Default value is false.
+   * If not explicitly defined, the framework will try to fillin this field.
+   */
+  required?: boolean;
+
+  /**
+   * alternative names of the question that use to map the input properties into final Input object
+   */
+  alternativeNames?: string[];
+
+  /**
+   * CLI option/argument name, if not specified, the question name will be used as the CLI option/argument name
+   */
+  cliName?: string;
+
+  /**
+   * the question is only for CLI option abbrevation
+   */
+  cliShortName?: string;
+
+  /**
+   * whether the value is a boolean string value, if true, it will support '--option', which is equivalant to '--option true'
+   */
+  isBoolean?: boolean;
+
+  /**
+   * whether the question is mapped to CLI option or argument, default is option
+   */
+  cliType?: "option" | "argument";
+
+  cliDescription?: string;
 }
 
 /**
@@ -176,6 +210,11 @@ export interface SingleSelectQuestion extends UserInputQuestion {
    * if false: use still need to do the selection manually even there is no other choice.
    */
   skipSingleOption?: boolean;
+
+  /**
+   * the command is only for CLI option description
+   */
+  cliChoiceListCommand?: string;
 }
 
 /**
@@ -228,6 +267,11 @@ export interface MultiSelectQuestion extends UserInputQuestion {
    * validation schema for the answer values
    */
   validation?: StringArrayValidation | FuncValidation<string[]>;
+
+  /**
+   * the command is only for CLI option description
+   */
+  cliChoiceListCommand?: string;
 }
 
 /**
@@ -389,6 +433,13 @@ export class QTreeNode implements IQTreeNode {
   data: Question | Group;
   condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: QTreeNode[];
+  /**
+   * @description the question is only for interactive mode, if defined, the question will be skipped in non-interactive mode
+   * "self" - only skip the question itself
+   * "children" - skip all children
+   * "all" - skip self and all children
+   */
+  interactiveOnly?: "self" | "children" | "all";
   addChild(node: QTreeNode): QTreeNode {
     if (!this.children) {
       this.children = [];
@@ -437,4 +488,11 @@ export interface IQTreeNode {
   data: Question | Group;
   condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: IQTreeNode[];
+  /**
+   * @description the question is only for interactive mode, if defined, the question will be skipped in non-interactive mode
+   * "self" - only skip the question itself
+   * "children" - skip all children
+   * "all" - skip self and all children
+   */
+  interactiveOnly?: "self" | "children" | "all";
 }

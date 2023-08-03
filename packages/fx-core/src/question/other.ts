@@ -378,6 +378,8 @@ export function selectTeamsAppPackageQuestionNode(): IQTreeNode {
   };
 }
 
+export type HubTypes = "teams" | "outlook" | "office";
+
 export class HubOptions {
   static teams(): OptionItem {
     return {

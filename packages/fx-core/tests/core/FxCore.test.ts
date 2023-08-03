@@ -28,7 +28,6 @@ import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
-import { Hub } from "../../src/common/m365/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
 import {

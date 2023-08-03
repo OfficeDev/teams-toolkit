@@ -30,7 +30,6 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
-import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { SpecParser } from "../common/spec-parser/specParser";
@@ -77,7 +76,11 @@ import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ScratchOptions } from "../question";
 import { SPFxVersionOptionIds } from "../question/create";
-import { TeamsAppValidationOptions, isAadMainifestContainsPlaceholder } from "../question/other";
+import {
+  HubTypes,
+  TeamsAppValidationOptions,
+  isAadMainifestContainsPlaceholder,
+} from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError } from "./error";
@@ -705,7 +708,7 @@ export class FxCoreV3Implement {
   async previewWithManifest(inputs: Inputs): Promise<Result<string, FxError>> {
     inputs.stage = Stage.previewWithManifest;
 
-    const hub = inputs[QuestionNames.M365Host] as Hub;
+    const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
 
     const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);

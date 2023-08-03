@@ -85,11 +85,11 @@ export class AadAppClient {
     return response.data.secretText;
   }
 
-  public async updateAadApp(manifest: AADManifest): Promise<AxiosResponse<any>> {
+  public async updateAadApp(manifest: AADManifest): Promise<void> {
     const objectId = manifest.id!; // You need to ensure the object id exists in manifest
     const requestBody = AadManifestHelper.manifestToApplication(manifest);
     try {
-      const response = await this.axios.patch(`applications/${objectId}`, requestBody, {
+      await this.axios.patch(`applications/${objectId}`, requestBody, {
         "axios-retry": {
           retries: this.retryNumber,
           retryDelay: axiosRetry.exponentialDelay,
@@ -100,7 +100,6 @@ export class AadAppClient {
             this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
         },
       });
-      return response;
     } catch (err) {
       if (
         axios.isAxiosError(err) &&

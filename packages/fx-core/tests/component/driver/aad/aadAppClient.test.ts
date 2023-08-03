@@ -339,7 +339,11 @@ describe("AadAppClient", async () => {
         .times(6)
         .reply(400, expectedError);
 
-      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.throws;
+      await expect(aadAppClient.updateAadApp(mockedManifest))
+        .to.eventually.be.rejectedWith("Request failed with status code 400")
+        .then((error) => {
+          expect(error.response.data).to.deep.equal(expectedError);
+        });
     });
 
     it("should retry when get 404 response", async () => {

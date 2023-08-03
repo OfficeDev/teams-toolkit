@@ -29,50 +29,50 @@ import { AzSqlHelper } from "../../utils/azureCliHelper";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.StartFrontend,
       LocalDebugTaskResult.FrontendSuccess
     );
   },
   [LocalDebugTaskLabel.StartBackend]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.StartBackend,
       LocalDebugTaskResult.BotAppSuccess
     );
   },
   [LocalDebugTaskLabel.WatchBackend]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.WatchBackend,
       LocalDebugTaskResult.CompiledSuccess
     );
   },
   [LocalDebugTaskLabel.StartLocalTunnel]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.StartLocalTunnel,
       LocalDebugTaskResult.StartSuccess
     );
   },
   [LocalDebugTaskLabel.Azurite]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.Azurite,
       LocalDebugTaskResult.AzuriteSuccess
     );
   },
   [LocalDebugTaskLabel.Compile]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.Compile,
       LocalDebugTaskResult.CompiledSuccess
     );
   },
   [LocalDebugTaskLabel.StartBotApp]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.StartBotApp,
       LocalDebugTaskResult.BotAppSuccess
     );
   },
   [LocalDebugTaskLabel.StartBot]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.StartWebhook]: async () => {
-    waitForTerminal(LocalDebugTaskLabel.StartWebhook);
+    await waitForTerminal(LocalDebugTaskLabel.StartWebhook);
   },
   [LocalDebugTaskLabel.InstallNpmPackages]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.ApiNpmInstall]: async () => Promise.resolve(),
@@ -80,7 +80,7 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.TabsNpmInstall]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.SpfxNpmInstall]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.GulpServe]: async () => {
-    waitForTerminal(
+    await waitForTerminal(
       LocalDebugTaskLabel.GulpServe,
       LocalDebugTaskResult.GulpServeSuccess
     );

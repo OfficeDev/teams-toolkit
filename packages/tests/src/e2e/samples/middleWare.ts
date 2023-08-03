@@ -139,11 +139,13 @@ async function shareNowMiddleWare(
   testFolder: string,
   appName: string,
   projectPath: string,
-  steps?: { create?: boolean; beforeProvision?: boolean }
+  steps?: { create?: boolean; afterCreate?: boolean; beforeProvision?: boolean }
 ) {
   if (steps?.create) {
-    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     await Executor.openTemplateProject(appName, testFolder, sampleName);
+  }
+  if (steps?.afterCreate) {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
   }
   if (steps?.beforeProvision) {
     const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");

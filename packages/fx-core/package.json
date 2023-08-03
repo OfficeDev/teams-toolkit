@@ -68,12 +68,12 @@
     "prepublishOnly": "npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run genCliOptions && npm run deleteUnusedStrings && npm run check-sensitive && lint-staged",
+    "precommit": "npm run genCliOptions && npm run deleteUnusedStrings && git add . && npm run check-sensitive && lint-staged",
     "install:tabs": "cd tabs && npm install",
     "installAll": "npm run install:tabs",
     "checkUnusedStrings": "node ./scripts/find-unused-strings.js ./resource/package.nls.json ./src || exit 1",
     "deleteUnusedStrings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src",
-    "genCliOptions": "npx ts-node ./src/question/generator.ts && npx prettier --write \"src/question/options/*.ts\" && npx prettier --write \"src/question/inputs/*.ts\""
+    "genCliOptions": "npx ts-node ./src/question/generator.ts "
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",

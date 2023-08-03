@@ -2011,6 +2011,7 @@ const assistantDashboardMiddleWare = (
   }
 ) => {
   if (steps?.afterCreate) {
+    if (env === "dev") return;
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",

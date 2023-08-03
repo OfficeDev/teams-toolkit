@@ -52,7 +52,7 @@ async function proactiveMessagingMiddleWare(
   testFolder: string,
   appName: string,
   projectPath: string,
-  steps?: { create?: boolean; afterCreate?: boolean }
+  steps?: { create?: boolean }
 ) {
   if (steps?.create) {
     await Executor.openTemplateProject(
@@ -63,9 +63,6 @@ async function proactiveMessagingMiddleWare(
       "samples"
     );
   }
-  if (steps?.afterCreate) {
-    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
-  }
 }
 
 async function outlookSignatureMiddleWare(
@@ -73,7 +70,7 @@ async function outlookSignatureMiddleWare(
   testFolder: string,
   appName: string,
   projectPath: string,
-  steps?: { create?: boolean }
+  steps?: { create?: boolean; afterCreate?: boolean }
 ) {
   if (steps?.create) {
     await Executor.openTemplateProject(
@@ -84,6 +81,9 @@ async function outlookSignatureMiddleWare(
       "Samples"
     );
   }
+  if (steps?.afterCreate) {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+  }
 }
 
 async function commonMiddleWare(
@@ -91,10 +91,13 @@ async function commonMiddleWare(
   testFolder: string,
   appName: string,
   projectPath: string,
-  steps?: { create?: boolean }
+  steps?: { create?: boolean; afterCreate?: boolean }
 ) {
   if (steps?.create) {
     await Executor.openTemplateProject(appName, testFolder, sampleName);
+  }
+  if (steps?.afterCreate) {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
   }
 }
 
@@ -125,6 +128,7 @@ async function assistantDashboardMiddleWare(
     await Executor.openTemplateProject(appName, testFolder, sampleName);
   }
   if (steps?.afterCreate) {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     // remove teamsApp/extendToM365 in case it fails
     removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
   }
@@ -138,6 +142,7 @@ async function shareNowMiddleWare(
   steps?: { create?: boolean; beforeProvision?: boolean }
 ) {
   if (steps?.create) {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     await Executor.openTemplateProject(appName, testFolder, sampleName);
   }
   if (steps?.beforeProvision) {
@@ -156,10 +161,13 @@ async function TodoListBackendMiddleWare(
   testFolder: string,
   appName: string,
   projectPath: string,
-  steps?: { create?: boolean; beforeProvision?: boolean }
+  steps?: { create?: boolean; afterCreate?: boolean; beforeProvision?: boolean }
 ) {
   if (steps?.create) {
     await Executor.openTemplateProject(appName, testFolder, sampleName);
+  }
+  if (steps?.afterCreate) {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
   }
   if (steps?.beforeProvision) {
     const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");

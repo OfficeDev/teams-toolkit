@@ -50,7 +50,6 @@ class CLIEngine {
 
     // 0. get user args
     const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
-    // console.log(process.argv);
 
     // 1. find command
     const findRes = this.findCommand(rootCmd, args);
@@ -59,6 +58,9 @@ class CLIEngine {
 
     // 2. parse args
     const context = this.parseArgs(cmd, root, remainingArgs);
+
+    logger.debug(`parsed user argument list: ${JSON.stringify(args)}`);
+    logger.debug(`match command: '${cmd.fullName}'`);
 
     // 3. --version
     if (context.globalOptionValues.version === true) {
@@ -199,9 +201,8 @@ class CLIEngine {
                 option.value = true;
                 list.shift();
               }
-            } else {
-              option.value = true;
             }
+            option.value = true;
           } else if (option.type === "string") {
             // string
             value = list.shift();
@@ -226,6 +227,9 @@ class CLIEngine {
           const inputValues = command.options?.includes(option)
             ? context.optionValues
             : context.globalOptionValues;
+          // if (command.options?.includes(option))
+          //   console.log("is command option", "value=", option.value);
+          // else console.log("is global option", "value=", option.value);
           const inputKey = option.questionName || option.name;
           if (option.value !== undefined) inputValues[inputKey] = option.value;
         } else {
@@ -260,6 +264,9 @@ class CLIEngine {
         }
       }
     }
+    // set log level
+    const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;
+    logger.logLevel = logLevel;
 
     // special process for global options
     // process interactive
@@ -270,11 +277,6 @@ class CLIEngine {
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
     context.optionValues.correlationId = uuid.v4();
     context.optionValues.platform = Platform.CLI;
-
-    // set log level
-    const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;
-    logger.logLevel = logLevel;
-
     // set root folder
     const projectFolderOption = context.command.options?.find(
       (o) => o.questionName === "projectPath"
@@ -290,6 +292,10 @@ class CLIEngine {
     }
 
     UI.interactive = context.globalOptionValues.interactive as boolean;
+
+    logger.debug(`parsed option values: ${JSON.stringify(context.optionValues)}`);
+    logger.debug(`parsed global option values: ${JSON.stringify(context.globalOptionValues)}`);
+    logger.debug(`parsed arguments: ${JSON.stringify(context.argumentValues)}`);
 
     if (context.globalOptionValues.interactive) {
       const sameKeys = Object.keys(context.optionValues).filter(

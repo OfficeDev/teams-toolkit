@@ -18,6 +18,7 @@ import {
   upgrade,
   waitForTerminal,
   validateUpgrade,
+  upgradeByTreeView,
 } from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
@@ -56,8 +57,9 @@ describe("Migration Tests", function () {
       await validateNotification(Notification.Upgrade);
 
       // upgrade
-      await startDebugging();
-      await upgrade();
+      //await startDebugging();
+      //await upgrade();
+      await upgradeByTreeView();
       // verify upgrade
       await validateUpgrade();
       // enable cli v3

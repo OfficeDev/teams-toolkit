@@ -100,11 +100,14 @@ export class AadAppClient {
             this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
         },
       });
-      if(response.status === 400 && response.) {
+      if (
+        response.status === 400 &&
+        response.data.error.code === aadErrorCode.permissionErrorCode
+      ) {
         throw new DeleteOrUpdatePermissionFailedError(AadAppClient.name);
       }
       return response;
-    }catch(err) {
+    } catch (err) {
       throw err;
     }
   }

@@ -102,19 +102,6 @@ export class UpdateAadAppDriver implements StepDriver {
         };
       }
       if (axios.isAxiosError(error)) {
-        if (
-          error.response!.status == 400 &&
-          error.response!.data.error.code === aadErrorCode.permissionErrorCode
-        ) {
-          const message = AadManifestErrorMessage.AADPermissionIssues;
-          context.logProvider?.error(
-            getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
-          );
-          return {
-            result: err(new HttpClientError(actionName, message, helpLink)),
-            summaries: summaries,
-          };
-        }
         const message = JSON.stringify(error.response!.data);
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)

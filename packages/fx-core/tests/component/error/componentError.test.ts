@@ -8,6 +8,7 @@ import "mocha";
 import { expect } from "chai";
 import { BaseComponentInnerError } from "../../../src/component/error/componentError";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FetchZipFromUrlError } from "../../../src/component/generator/error";
 
 describe("BaseComponentInnerError", () => {
   describe("constructor", () => {
@@ -221,5 +222,27 @@ describe("BaseComponentInnerError", () => {
       expect(fxError.name).to.equal(name);
       expect(fxError.innerError).to.equal(error);
     });
+  });
+
+  it("unknown error type should throw", () => {
+    const error = BaseComponentInnerError.unknownError("test", "unknownErrorType");
+    expect(error).to.be.instanceOf(BaseComponentInnerError);
+    expect(error.source).to.equal("test");
+    expect(error.errorType).to.equal("SystemError");
+    expect(error.name).to.equal("UnhandledError");
+    expect(error.innerError).to.be.undefined;
+  });
+
+  it("fetch zip error with no inner error should throw", () => {
+    const error = new FetchZipFromUrlError("test", undefined);
+    expect(error).to.be.instanceOf(BaseComponentInnerError);
+    expect(error.source).to.equal("GEN");
+    expect(error.errorType).to.equal("SystemError");
+    expect(error.name).to.equal("FetchZipFromUrlError");
+    expect(error.innerError).to.be.undefined;
+
+    const inner = new Error("test");
+    const error2 = new FetchZipFromUrlError("test", inner);
+    expect(error2.innerError).to.equal(inner);
   });
 });

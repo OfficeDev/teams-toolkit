@@ -968,6 +968,7 @@ function rootFolderQuestion(): FolderQuestion {
     name: QuestionNames.Folder,
     cliShortName: "f",
     title: getLocalizedString("core.question.workspaceFolder.title"),
+    cliDescription: "Root folder of the project.",
     placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
     default: path.join(os.homedir(), ConstantString.RootFolder),
   };

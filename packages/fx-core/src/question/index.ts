@@ -22,8 +22,8 @@ export { HubTypes, HubOptions } from "./other";
 export * from "./create";
 export * from "./questionNames";
 
-// export * from "./inputs";
-// export * from "./options";
+export * from "./inputs";
+export * from "./options";
 
 export class QuestionNodes {
   createProject(): IQTreeNode {

@@ -314,7 +314,6 @@
   "core.ScratchOptionNo.detail": "Use an existing sample as a starting point for your new application.",
   "core.RuntimeOptionNodeJS.detail": "A fast JavaScript server runtime",
   "core.RuntimeOptionDotNet.detail": "Free. Cross-platform. Open Source.",
-  "core.getCreateNewOrFromSampleQuestion.title": "Teams Toolkit: Create a New App",
   "core.getRuntimeQuestion.title": "Teams Toolkit: select runtime for your app",
   "core.getCreateNewOrFromSampleQuestion.placeholder": "Select an option",
   "core.getRuntimeQuestion.placeholder": "Select a runtime",

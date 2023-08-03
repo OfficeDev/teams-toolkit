@@ -384,6 +384,9 @@ export class CapabilityOptions {
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       CapabilityOptions.me(),
+      CapabilityOptions.copilotPluginNewApi(),
+      CapabilityOptions.copilotPluginApiSpec(),
+      CapabilityOptions.copilotPluginOpenAIPlugin(),
     ];
   }
 

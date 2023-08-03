@@ -33,7 +33,6 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
     "lint-staged": "^13.2.1",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",

@@ -57,7 +57,7 @@
     "test:specFilter": "npx mocha \"tests/common/spec-parser/**/specFilter.test.ts\"",
     "test:specParserUtils": "npx mocha \"tests/common/spec-parser/**/utils.test.ts\"",
     "test:manifestUpdater": "npx mocha \"tests/common/spec-parser/**/manifestUpdater.test.ts\"",
-    "test:adaptiveCardGenerator":  "npx mocha \"tests/common/spec-parser/**/adaptiveCardGenerator.test.ts\"",
+    "test:adaptiveCardGenerator": "npx mocha \"tests/common/spec-parser/**/adaptiveCardGenerator.test.ts\"",
     "test:error": "nyc mocha \"tests/error/*.test.ts\"",
     "test:cutils": "nyc mocha \"tests/component/utils.test.ts\"",
     "clean": "rm -rf build",
@@ -133,14 +133,11 @@
     "uuid": "^8.3.2",
     "validator": "^13.7.0",
     "xml2js": "^0.5.0",
-    "yaml": "^2.2.2",
-    "@microsoft/dev-tunnels-contracts": "~1.0.7360",
-    "@microsoft/dev-tunnels-management": "~1.0.7360"
+    "yaml": "^2.2.2"
   },
   "devDependencies": {
     "@azure/storage-blob": "^12.5.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",

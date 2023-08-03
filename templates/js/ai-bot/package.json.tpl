@@ -4,7 +4,7 @@
     "msteams": {
         "teamsAppId": null
     },
-    "description": "A bot app that responds to user questions like an AI assistant.",
+    "description": "A chat bot app that responds to user questions like an AI assistant.",
     "engines": {
         "node": "16 || 18"
     },

@@ -22,7 +22,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "tab-spfx",
       "link-unfurling",
       "search-app",
-      "message-extension",
+      "CollectFormMessagingExtension",
     ],
     choiceListCommand: "teamsfx list capabilities",
   },

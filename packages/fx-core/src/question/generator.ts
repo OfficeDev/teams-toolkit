@@ -310,13 +310,17 @@ async function updateExports(filePath: string, exportStatement: string) {
   }
 }
 
-generate(questionNodes.createProject(), "CreateProject");
-generate(questionNodes.createSampleProject(), "CreateSampleProject");
-generate(questionNodes.addWebpart(), "SFPxAddWebpart");
-generate(questionNodes.createNewEnv(), "CreateEnv");
-generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
-generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
-generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
-generate(questionNodes.grantPermission(), "PermissionGrant");
-generate(questionNodes.listCollaborator(), "PermissionList");
-generate(questionNodes.deployAadManifest(), "DeployAadManifest");
+async function batchGenerate() {
+  await generate(questionNodes.createProject(), "CreateProject");
+  await generate(questionNodes.createSampleProject(), "CreateSampleProject");
+  await generate(questionNodes.addWebpart(), "SFPxAddWebpart");
+  await generate(questionNodes.createNewEnv(), "CreateEnv");
+  await generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
+  await generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
+  await generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
+  await generate(questionNodes.grantPermission(), "PermissionGrant");
+  await generate(questionNodes.listCollaborator(), "PermissionList");
+  await generate(questionNodes.deployAadManifest(), "DeployAadManifest");
+}
+
+batchGenerate();

@@ -2192,16 +2192,25 @@ const stockUpdateMiddleWare = async (
   }
 ) => {
   if (steps?.afterCreate) {
-    const targetFile = path.resolve(
+    const envFile = path.resolve(
       sampledebugContext.projectPath,
       "env",
       `.env.${env}`
     );
-    let data = fs.readFileSync(targetFile, "utf-8");
-    data +=
-      "\nTEAMSFX_API_ALPHAVANTAGE_ENDPOINT=https://www.alphavantage.co\nTEAMSFX_API_ALPHAVANTAGE_API_KEY=demo";
-    fs.writeFileSync(targetFile, data);
-    console.log(`write .env.${env} finish!`);
+    let ENDPOINT = fs.readFileSync(envFile, "utf-8");
+    ENDPOINT +=
+      "\nTEAMSFX_API_ALPHAVANTAGE_ENDPOINT=https://www.alphavantage.co";
+    fs.writeFileSync(envFile, ENDPOINT);
+    console.log(`add endpoint ${ENDPOINT} to .env.${env} file`);
+    const userFile = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}.user`
+    );
+    let KEY = fs.readFileSync(userFile, "utf-8");
+    KEY += "\nTEAMSFX_API_ALPHAVANTAGE_API_KEY=demo";
+    fs.writeFileSync(userFile, KEY);
+    console.log(`add key ${KEY} to .env.${env}.user file`);
   }
 };
 

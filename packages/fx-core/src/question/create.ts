@@ -683,7 +683,7 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
-    cliDescription: "",
+    cliDescription: "Create a new or import an existing SharePoint Framework solution.",
     cliShortName: "ss",
     staticOptions: [
       {
@@ -843,6 +843,7 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
     name: QuestionNames.SPFxFolder,
     cliShortName: "sf",
     title: getLocalizedString("core.spfxFolder.title"),
+    cliDescription: "Directory or Path that contains the existing SharePoint Framework solution.",
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
     default: hasDefaultFunc
       ? (inputs: Inputs) => {

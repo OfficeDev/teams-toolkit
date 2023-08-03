@@ -16,6 +16,9 @@ import {
   ok,
   TeamsAppManifest,
   ApiOperation,
+  ManifestTemplateFileName,
+  Warning,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -23,12 +26,14 @@ import {
   ErrorType as ApiSpecErrorType,
   ValidationStatus,
   WarningResult,
+  WarningType,
 } from "../../../common/spec-parser/interfaces";
 import { SpecParser } from "../../../common/spec-parser/specParser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
+import path from "path";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -161,7 +166,7 @@ export function logValidationResults(
   isApiSpec: boolean,
   shouldLogWarning: boolean,
   shouldSkipTelemetry = false
-) {
+): void {
   if (!shouldSkipTelemetry) {
     context.telemetryReporter.sendTelemetryEvent(
       isApiSpec ? telemetryEvents.validateApiSpec : telemetryEvents.validateOpenAiPluginManifest,
@@ -248,44 +253,97 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
   return errors;
 }
 
-export function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] {
+export function generateScaffoldingSummary(
+  specWarnings: Warning[],
+  teamsManifest: TeamsAppManifest
+): string {
+  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(specWarnings);
+  const manifestWarningResult = validateTeamsManifestLength(teamsManifest);
+  const manifestWarningMessage = manifestWarningResult.map((warn) => {
+    return `${SummaryConstant.NotExecuted} ${warn}`;
+  });
+
+  if (apiSpecWarningMessage || manifestWarningMessage.length) {
+    let details = "";
+    if (apiSpecWarningMessage) {
+      details += EOL + apiSpecWarningMessage;
+    }
+
+    if (manifestWarningMessage.length) {
+      details += EOL + manifestWarningMessage.join(EOL);
+    }
+
+    return getLocalizedString("core.copilotPlugin.scaffold.summary", details);
+  } else {
+    return "";
+  }
+}
+
+function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string {
+  const apiSpecWarning =
+    specWarnings.length > 0 && specWarnings[0].type === WarningType.OperationIdMissing
+      ? `${SummaryConstant.NotExecuted} ${specWarnings[0].content}`
+      : "";
+
+  return apiSpecWarning
+    ? getLocalizedString(
+        "core.copilotPlugin.scaffold.summary.warning.operationId",
+        apiSpecWarning,
+        ManifestTemplateFileName
+      )
+    : "";
+}
+
+function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] {
   const nameShortLimit = 30;
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
   const descriptionFullLimit = 4000;
   const warnings = [];
 
-  // message below are copied from the validation result of Teams manifest.
   // validate name
-  if (teamsManifest.name.short.length === 0) {
-    warnings.push("Short name of the app cannot be empty");
-  }
-
   if (teamsManifest.name.short.length > nameShortLimit) {
-    warnings.push("/name/short must NOT have more than 30 characters");
+    warnings.push(formatLengthExceedingErrorMessage("/name/short", nameShortLimit));
   }
 
-  if (!teamsManifest.name.full?.length) {
-    warnings.push("Full name cannot be empty");
-  }
-
-  if (teamsManifest.name.full!.length > nameFullLimit) {
-    warnings.push("/name/full must NOT have more than 100 characters");
+  if (!!teamsManifest.name.full && teamsManifest.name.full?.length > nameFullLimit) {
+    warnings.push(formatLengthExceedingErrorMessage("/name/full", nameFullLimit));
   }
 
   // validate description
-  if (teamsManifest.description.short.length === 0) {
-    warnings.push("Short Description can not be empty");
-  }
   if (teamsManifest.description.short.length > descriptionShortLimit) {
-    warnings.push("/description/short must NOT have more than 80 characters");
+    warnings.push(formatLengthExceedingErrorMessage("/description/short", descriptionShortLimit));
   }
-  if (teamsManifest.description.full?.length === 0) {
-    warnings.push("Full Description can not be empty");
+  if (!teamsManifest.description.full?.length) {
+    warnings.push(
+      getLocalizedString(
+        "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingFullDescription"
+      ) +
+        getLocalizedString(
+          "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation",
+          "full/description",
+          path.join(AppPackageFolderName, ManifestTemplateFileName)
+        )
+    );
   }
   if (teamsManifest.description.full!.length > descriptionFullLimit) {
-    warnings.push("/description/full must NOT have more than 4000 characters");
+    warnings.push(formatLengthExceedingErrorMessage("/description/full", descriptionFullLimit));
   }
 
   return warnings;
+}
+
+function formatLengthExceedingErrorMessage(field: string, limit: number): string {
+  return (
+    getLocalizedString(
+      "core.copilotPlugin.scaffold.summary.warning.teamsManifest.lengthExceeding",
+      field,
+      limit.toString()
+    ) +
+    getLocalizedString(
+      "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation",
+      field,
+      path.join(AppPackageFolderName, ManifestTemplateFileName)
+    )
+  );
 }

@@ -25,7 +25,7 @@ describe("CLI commands", () => {
   describe("createCommand", async () => {
     it("happy path", async () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok("..."));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
         command: createCommand,
         optionValues: {},
@@ -54,7 +54,7 @@ describe("CLI commands", () => {
   describe("createSampleCommand", async () => {
     it("happy path", async () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok("..."));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
         command: createSampleCommand,
         optionValues: {},

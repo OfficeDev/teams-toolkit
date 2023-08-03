@@ -683,6 +683,7 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
+    cliDescription: "",
     cliShortName: "ss",
     staticOptions: [
       {
@@ -704,6 +705,7 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.SPFxInstallPackage,
     title: getLocalizedString("plugins.spfx.questions.packageSelect.title"),
+    cliDescription: "Install the latest version of SharePoint Framework.",
     staticOptions: [],
     placeholder: getLocalizedString("plugins.spfx.questions.packageSelect.placeholder"),
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {

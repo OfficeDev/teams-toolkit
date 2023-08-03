@@ -68,7 +68,7 @@
   "plugins.spfx.questions.framework.title": "Framework",
   "plugins.spfx.questions.webpartName.error.duplicate": "The folder %s already exists. Choose a different name for your component.",
   "plugins.spfx.questions.webpartName.error.notMatch": "%s doesn't match pattern: %s",
-  "plugins.spfx.questions.packageSelect.title": "Install the latest version of SharePoint Framework.",
+  "plugins.spfx.questions.packageSelect.title": "SharePoint Framework",
   "plugins.spfx.questions.packageSelect.placeholder": "Select an option for scaffolding",
   "plugins.spfx.questions.packageSelect.useGlobalPackage.withVersion.label": "Use globally installed SPFx (%s)",
   "plugins.spfx.questions.packageSelect.useGlobalPackage.noVersion.label": "Use globally installed SPFx",

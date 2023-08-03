@@ -8,23 +8,15 @@
  * Please don't manually change its contents, as any modifications will be overwritten! *
  ***************************************************************************************/
 
-import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
+import { Inputs } from "@microsoft/teamsfx-api";
 
-export const CreateEnvOptions: CLICommandOption[] = [
-  {
-    name: "env",
-    questionName: "sourceEnvName",
-    type: "string",
-    description: "Specifies an existing environment name to copy from.",
-    required: true,
-  },
-];
-export const CreateEnvArguments: CLICommandArgument[] = [
-  {
-    name: "name",
-    questionName: "newTargetEnvName",
-    type: "string",
-    description: "Specifies the new environment name.",
-    required: true,
-  },
-];
+export interface SPFxAddWebpartInputs extends Inputs {
+  /** @description Directory or Path that contains the existing SharePoint Framework solution. */
+  "spfx-folder"?: string;
+  /** @description Name for SharePoint Framework Web Part. */
+  "spfx-webpart-name"?: string;
+  /** @description Select Teams manifest.json file */
+  "manifest-path"?: string;
+  /** @description Select local Teams manifest.json file */
+  "local-manifest-path"?: string;
+}

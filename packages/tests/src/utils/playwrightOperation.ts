@@ -16,45 +16,6 @@ import { AzSqlHelper } from "./azureCliHelper";
 import { expect } from "chai";
 import * as uuid from "uuid";
 
-export const sampleInitMap: Record<
-  TemplateProject,
-  (
-    context: BrowserContext,
-    teamsAppId: string,
-    username: string,
-    password: string,
-    options?: {
-      teamsAppName?: string;
-      dashboardFlag?: boolean;
-      type?: string;
-    }
-  ) => Promise<Page | void>
-> = {
-  [TemplateProject.AdaptiveCard]: initPage,
-  [TemplateProject.AssistDashboard]: initPage,
-  [TemplateProject.ContactExporter]: initPage,
-  [TemplateProject.Dashboard]: initPage,
-  [TemplateProject.GraphConnector]: initPage,
-  [TemplateProject.OutlookTab]: initPage,
-  [TemplateProject.HelloWorldTabBackEnd]: initPage,
-  [TemplateProject.MyFirstMetting]: initTeamsPage,
-  [TemplateProject.HelloWorldBotSSO]: initPage,
-  [TemplateProject.IncomingWebhook]: () => Promise.resolve(),
-  [TemplateProject.NpmSearch]: initPage,
-  [TemplateProject.OneProductivityHub]: initPage,
-  [TemplateProject.ProactiveMessaging]: initPage,
-  [TemplateProject.QueryOrg]: initPage,
-  [TemplateProject.ShareNow]: initPage,
-  [TemplateProject.StockUpdate]: initPage,
-  [TemplateProject.TodoListBackend]: initTeamsPage,
-  [TemplateProject.TodoListM365]: initPage,
-  [TemplateProject.TodoListSpfx]: initTeamsPage,
-  [TemplateProject.Deeplinking]: initPage,
-  [TemplateProject.DiceRoller]: initPage,
-  [TemplateProject.OutlookSignature]: () => Promise.resolve(),
-  [TemplateProject.ChefBot]: initPage,
-};
-
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
     await startDebugging();
@@ -125,45 +86,6 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.ChefBot]: async () => {
     await startDebugging();
   },
-};
-
-export const sampleValidationMap: Record<
-  TemplateProject,
-  (
-    page: Page,
-    options?: {
-      displayName?: string;
-      context?: SampledebugContext;
-      includeFunction?: boolean;
-      botCommand?: string;
-      expected?: ValidationContent;
-      npmName?: string;
-    }
-  ) => Promise<void>
-> = {
-  [TemplateProject.HelloWorldTabBackEnd]: validateTab,
-  [TemplateProject.ContactExporter]: validateContact,
-  [TemplateProject.OneProductivityHub]: validateOneProducitvity,
-  [TemplateProject.HelloWorldBotSSO]: validateBot,
-  [TemplateProject.TodoListBackend]: validateTodoList,
-  [TemplateProject.TodoListSpfx]: validateSpfx,
-  [TemplateProject.ShareNow]: validateShareNow,
-  [TemplateProject.MyFirstMetting]: () => Promise.resolve(),
-  [TemplateProject.TodoListM365]: validateTodoList,
-  [TemplateProject.NpmSearch]: validateNpm,
-  [TemplateProject.ProactiveMessaging]: validateProactiveMessaging,
-  [TemplateProject.AdaptiveCard]: validateAdaptiveCard,
-  [TemplateProject.IncomingWebhook]: () => Promise.resolve(),
-  [TemplateProject.GraphConnector]: validateGraphConnector,
-  [TemplateProject.StockUpdate]: validateStockUpdate,
-  [TemplateProject.QueryOrg]: validateQueryOrg,
-  [TemplateProject.Deeplinking]: () => Promise.resolve(),
-  [TemplateProject.Dashboard]: validateDashboardTab,
-  [TemplateProject.AssistDashboard]: validateDashboardTab,
-  [TemplateProject.DiceRoller]: () => Promise.resolve(),
-  [TemplateProject.OutlookTab]: validatePersonalTab,
-  [TemplateProject.OutlookSignature]: () => Promise.resolve(),
-  [TemplateProject.ChefBot]: () => Promise.resolve(),
 };
 
 export const middleWareMap: Record<

@@ -123,7 +123,7 @@ export abstract class CaseFactory {
     this.author = author;
     this.env = env;
     this.validate = validate;
-    this.options = options;
+    this.options = options || {};
   }
 
   public onBefore(
@@ -180,7 +180,7 @@ export abstract class CaseFactory {
 
   public async onValidate(
     page: Page,
-    args?: {
+    options?: {
       context: SampledebugContext;
       displayName: string;
       includeFunction: boolean;

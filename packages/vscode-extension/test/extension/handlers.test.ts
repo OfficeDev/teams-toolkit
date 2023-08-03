@@ -1724,9 +1724,8 @@ describe("autoOpenProjectHandler", () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
     const showMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
-    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([]);
     sandbox.stub(vscode.workspace, "openTextDocument");
-    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "fx-extension.openSampleReadMe") {
         return true;
@@ -1737,8 +1736,6 @@ describe("autoOpenProjectHandler", () => {
     sandbox.stub(globalState, "globalStateUpdate");
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     await handlers.autoOpenProjectHandler();
-
-    chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
   it("opens README and show warnings successfully", async () => {

@@ -22,8 +22,8 @@ import {
 export * from "./create";
 export * from "./questionNames";
 
-// export * from "./inputs";
-// export * from "./options";
+export * from "./inputs";
+export * from "./options";
 
 class QuestionNodes {
   createProject(): IQTreeNode {

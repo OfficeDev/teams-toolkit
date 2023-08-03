@@ -362,6 +362,7 @@ export class CapabilityOptions {
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
       CapabilityOptions.workflowBot(inputs),
+      CapabilityOptions.aiBot(),
     ];
   }
 
@@ -484,6 +485,14 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginAIPluginOption.detail"
       ),
+    };
+  }
+
+  static aiBot(): OptionItem {
+    return {
+      id: "ai-bot",
+      label: getLocalizedString("core.aiBotOption.label"),
+      detail: getLocalizedString("core.aiBotOption.detail"),
     };
   }
 }

@@ -88,6 +88,7 @@ export enum TemplateNames {
   SsoTabObo = "sso-tab-with-obo-flow",
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
+  AIBot = "ai-bot",
 }
 
 const Feature2TemplateName: any = {
@@ -118,6 +119,7 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
     TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
 };
 
 const M365Actions = [

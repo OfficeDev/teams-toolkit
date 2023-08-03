@@ -62,13 +62,11 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
     return Promise.resolve(this.teamsFxTokenCredential);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async signout(): Promise<boolean> {
+  signout(): Promise<boolean> {
     throw new NotImplementedError("FxServer", `azure/signout`);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async setStatusChangeMap(
+  setStatusChangeMap(
     name: string,
     statusChange: (
       status: string,
@@ -80,8 +78,7 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
     throw new NotImplementedError("FxServer", `azure/setStatusChangeMap`);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async removeStatusChangeMap(name: string): Promise<boolean> {
+  removeStatusChangeMap(name: string): Promise<boolean> {
     throw new NotImplementedError("FxServer", `azure/removeStatusChangeMap`);
   }
 

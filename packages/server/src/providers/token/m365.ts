@@ -53,13 +53,11 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     return ok(result.value);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async signout(): Promise<boolean> {
+  signout(): Promise<boolean> {
     throw new NotImplementedError("FxServer", `m365/signout`);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async setStatusChangeMap(
+  setStatusChangeMap(
     name: string,
     tokenRequest: TokenRequest,
     statusChange: (
@@ -72,8 +70,7 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     throw new NotImplementedError("FxServer", `m365/setStatusChangeMap`);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new NotImplementedError("FxServer", `m365/removeStatusChangeMap`);
   }
 }

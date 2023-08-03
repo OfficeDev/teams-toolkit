@@ -11,6 +11,8 @@ import sampleCaseFactory from "./sampleCaseFactory";
 const sampleCase = sampleCaseFactory(
   TemplateProjectFolder.ChefBot,
   24703984,
-  "v-ivanchen@microsoft.com"
+  "v-ivanchen@microsoft.com",
+  [],
+  { skipValidate: true }
 );
 sampleCase.test();

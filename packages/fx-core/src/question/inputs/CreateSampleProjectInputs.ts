@@ -26,5 +26,6 @@ export interface CreateSampleProjectInputs extends Inputs {
     | "hello-world-teams-tab-and-outlook-add-in"
     | "outlook-add-in-set-signature"
     | "developer-assist-dashboard"
-    | "live-share-dice-roller";
+    | "live-share-dice-roller"
+    | "teams-chef-bot";
 }

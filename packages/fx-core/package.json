@@ -64,6 +64,7 @@
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prebuild": "npm run gen",
     "postbuild": "node ./scripts/download-templates-zip.js $(git tag -l templates*)",
     "prepublishOnly": "npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",

@@ -333,7 +333,7 @@ export class CapabilityOptions {
 
   static collectFormMe(): OptionItem {
     return {
-      id: "message-extension",
+      id: "CollectFormMessagingExtension",
       label: `${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };
@@ -371,6 +371,9 @@ export class CapabilityOptions {
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       CapabilityOptions.me(),
+      CapabilityOptions.copilotPluginNewApi(),
+      CapabilityOptions.copilotPluginApiSpec(),
+      CapabilityOptions.copilotPluginOpenAIPlugin(),
     ];
   }
 

@@ -33,6 +33,7 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
       "outlook-add-in-set-signature",
       "developer-assist-dashboard",
       "live-share-dice-roller",
+      "teams-chef-bot",
     ],
     choiceListCommand: "teamsfx list samples",
   },

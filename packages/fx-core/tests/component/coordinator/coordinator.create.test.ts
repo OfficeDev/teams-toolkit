@@ -613,6 +613,7 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };

@@ -8,6 +8,7 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   Context,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,

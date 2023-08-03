@@ -253,6 +253,14 @@ export enum CoreCallbackEvent {
     unlock = "unlock"
 }
 
+// @public (undocumented)
+export interface CreateProjectResult {
+    // (undocumented)
+    projectPath: string;
+    // (undocumented)
+    warnings?: Warning[];
+}
+
 // @public
 export interface CryptoProvider {
     decrypt(ciphertext: string): Result<string, FxError>;
@@ -496,6 +504,9 @@ export type ManifestCapability = {
     snippet?: IWebApplicationInfo;
     existingApp?: boolean;
 };
+
+// @public (undocumented)
+export const ManifestTemplateFileName = "manifest.json";
 
 // @public (undocumented)
 export type MaybePromise<T> = T | Promise<T>;
@@ -1131,6 +1142,14 @@ export enum VsCodeEnv {
     local = "local",
     // (undocumented)
     remote = "remote"
+}
+
+// @public (undocumented)
+export interface Warning {
+    // (undocumented)
+    content: string;
+    // (undocumented)
+    type: string;
 }
 
 

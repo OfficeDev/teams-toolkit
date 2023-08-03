@@ -3,9 +3,9 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
+  AdaptiveFolderName,
   ApiOperation,
   AppPackageFolderName,
-  AdaptiveFolderName,
   BuildFolderName,
   Context,
   Func,
@@ -32,6 +32,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
+import { SpecParser } from "../common/spec-parser/specParser";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
@@ -59,6 +60,12 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { SSO } from "../component/feature/sso";
+import {
+  ErrorResult,
+  OpenAIPluginManifestHelper,
+  listOperations,
+} from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { createContextV3, createDriverContext } from "../component/utils";
@@ -85,13 +92,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import {
-  ErrorResult,
-  OpenAIPluginManifestHelper,
-  listOperations,
-} from "../component/generator/copilotPlugin/helper";
-import { SpecParser } from "../common/spec-parser/specParser";
-import { SSO } from "../component/feature/sso";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -157,7 +157,7 @@ export class FxCoreV3Implement {
     const res = await coordinator.create(context, inputs);
     if (res.isErr()) return err(res.error);
     inputs.projectPath = context.projectPath;
-    return ok(inputs.projectPath!);
+    return ok(res.value);
   }
 
   @hooks([

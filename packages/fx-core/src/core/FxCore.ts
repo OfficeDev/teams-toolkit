@@ -5,6 +5,7 @@ import { hooks } from "@feathersjs/hooks";
 import {
   ApiOperation,
   CoreCallbackEvent,
+  CreateProjectResult,
   CryptoProvider,
   err,
   Func,
@@ -70,7 +71,7 @@ export class FxCore {
   /**
    * lifecycle command: create new project
    */
-  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     return this.v3Implement.dispatch(this.createProject, inputs);
   }
 

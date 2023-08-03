@@ -95,7 +95,7 @@ describe("coordinator create", () => {
     const res = await fxCore.createProject(inputs);
     assert.isTrue(res.isOk());
     if (res.isOk()) {
-      assert.isTrue(res.value.endsWith("_1"));
+      assert.isTrue(res.value.projectPath.endsWith("_1"));
     }
   });
   it("create project from scratch", async () => {

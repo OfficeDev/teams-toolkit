@@ -18,10 +18,13 @@ import {
   ConfigFolderName,
   Context,
   CoreCallbackEvent,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,
   M365TokenProvider,
+  ManifestTemplateFileName,
+  ManifestUtil,
   OptionItem,
   Platform,
   Result,
@@ -37,6 +40,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  Warning,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -57,6 +61,7 @@ import {
   askSubscription,
   assembleError,
   environmentManager,
+  generateScaffoldingSummary,
   getFixedCommonProjectSettings,
   getHashedEnv,
   globalStateGet,
@@ -66,6 +71,7 @@ import {
   isValidProject,
   pathUtils,
   setRegion,
+  manifestUtils,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -356,9 +362,10 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
     return err(result.error);
   }
 
-  const projectPathUri = result.value as Uri;
+  const res = result.value as CreateProjectResult;
+  const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
-  await openFolder(projectPathUri, true, false, args);
+  await openFolder(projectPathUri, true, false, res.warnings, args);
   return result;
 }
 
@@ -366,9 +373,16 @@ export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
   showLocalPreviewMessage: boolean,
+  warnings?: Warning[] | undefined,
   args?: any[]
 ) {
-  await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, folderPath, args);
+  await updateAutoOpenGlobalKey(
+    showLocalDebugMessage,
+    showLocalPreviewMessage,
+    folderPath,
+    warnings,
+    args
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
     [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
   });
@@ -379,6 +393,7 @@ export async function updateAutoOpenGlobalKey(
   showLocalDebugMessage: boolean,
   showLocalPreviewMessage: boolean,
   projectUri: Uri,
+  warnings: Warning[] | undefined,
   args?: any[]
 ): Promise<void> {
   if (isTriggerFromWalkThrough(args)) {
@@ -396,11 +411,15 @@ export async function updateAutoOpenGlobalKey(
   if (showLocalPreviewMessage) {
     await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, true);
   }
+
+  if (warnings?.length) {
+    await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
+  }
 }
 
 export async function createProjectFromWalkthroughHandler(
   args?: any[]
-): Promise<Result<any, FxError>> {
+): Promise<Result<CreateProjectResult, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;
@@ -693,8 +712,7 @@ export async function runCommand(
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {
-          const uri = Uri.file(tmpResult.value);
-          result = ok(uri);
+          result = ok(tmpResult.value);
         }
         break;
       }
@@ -784,7 +802,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
     if (tmpResult.isErr()) {
       result = err(tmpResult.error);
     } else {
-      const uri = Uri.file(tmpResult.value);
+      const uri = Uri.file((tmpResult.value as CreateProjectResult).projectPath);
       result = ok(uri);
     }
   } catch (e) {
@@ -1202,17 +1220,26 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const isOpenWalkThrough = (await globalStateGet(GlobalKey.OpenWalkThrough, false)) as boolean;
   const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
   const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
+  const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, [])) as string;
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
     void showLocalPreviewMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+
+    if (globalVariables.workspaceUri?.fsPath) {
+      await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+      await globalStateUpdate(GlobalKey.CreateWarnings, "");
+    }
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
     void showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
+
+    await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    await globalStateUpdate(GlobalKey.CreateWarnings, "");
   }
   if (isOpenSampleReadMe) {
     await showLocalDebugMessage();
@@ -1389,6 +1416,48 @@ async function showLocalPreviewMessage() {
   if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
     await selection.run();
+  }
+}
+
+async function ShowScaffoldingWarningSummary(
+  workspacePath: string,
+  warning: string
+): Promise<void> {
+  try {
+    let createWarnings: Warning[] = [];
+
+    if (warning) {
+      try {
+        createWarnings = JSON.parse(warning) as Warning[];
+      } catch (e) {
+        const error = assembleError(e);
+        ExtTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.ShowScaffoldingWarningSummaryError,
+          error
+        );
+      }
+    }
+    const manifestRes = await manifestUtils._readAppManifest(
+      path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
+    );
+    if (manifestRes.isOk()) {
+      if (ManifestUtil.parseCommonProperties(manifestRes.value).isCopilotPlugin) {
+        const message = generateScaffoldingSummary(createWarnings, manifestRes.value);
+        if (message) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
+          VsCodeLogInstance.outputChannel.show();
+          void VsCodeLogInstance.info(message);
+        }
+      }
+    } else {
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.ShowScaffoldingWarningSummaryError,
+        manifestRes.error
+      );
+    }
+  } catch (e) {
+    const error = assembleError(e);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ShowScaffoldingWarningSummaryError, error);
   }
 }
 

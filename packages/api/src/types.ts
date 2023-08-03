@@ -146,3 +146,13 @@ export interface ApiOperation {
   label: string;
   groupName: string;
 }
+
+export interface Warning {
+  type: string;
+  content: string;
+}
+
+export interface CreateProjectResult {
+  projectPath: string;
+  warnings?: Warning[];
+}

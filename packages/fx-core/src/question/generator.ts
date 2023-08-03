@@ -123,7 +123,7 @@ export async function generate(
 
   await collect(node, nodeList);
 
-  console.log(`node collected: ${nodeList.map((n) => n.data.name).join(",")}`);
+  // console.log(`node collected: ${nodeList.map((n) => n.data.name).join(",")}`);
 
   (node.data as any).required = true;
 
@@ -301,8 +301,6 @@ async function updateExports(filePath: string, exportStatement: string) {
       sourceFile.addStatements([exportStatement]);
       await sourceFile.save();
       console.log(`Export statement '${exportStatement}' added successfully.`);
-    } else {
-      console.log(`Export statement '${exportStatement}' already exists.`);
     }
   } catch (err) {
     console.error("Error occurred:", err);

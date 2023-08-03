@@ -1321,14 +1321,15 @@ async function openSampleReadmeHandler(args?: any) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
-    await workspace.openTextDocument(uri);
-    if (isTriggerFromWalkThrough(args)) {
-      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-      commands.executeCommand(PreviewMarkdownCommand, uri);
-    } else {
-      const PreviewMarkdownCommand = "markdown.showPreview";
-      await commands.executeCommand(PreviewMarkdownCommand, uri);
-    }
+    workspace.openTextDocument(uri).then(() => {
+      if (isTriggerFromWalkThrough(args)) {
+        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      } else {
+        const PreviewMarkdownCommand = "markdown.showPreview";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      }
+    });
   }
 }
 

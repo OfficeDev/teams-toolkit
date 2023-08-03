@@ -1025,7 +1025,7 @@ describe("handlers", () => {
       platform: Platform.VSCode,
     };
     sandbox.stub(handlers, "core").value(new MockCore());
-    const createProject = sandbox.spy(handlers.core, "createProject");
+    const createProject = sandbox.spy(handlers.core, "createSampleProject");
 
     await handlers.downloadSample(inputs);
 
@@ -1041,7 +1041,7 @@ describe("handlers", () => {
     sandbox.stub(handlers, "core").value(new MockCore());
     const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
     const createProject = sandbox
-      .stub(handlers.core, "createProject")
+      .stub(handlers.core, "createSampleProject")
       .rejects(err(new Error("Cannot get user login information")));
 
     await handlers.downloadSample(inputs);

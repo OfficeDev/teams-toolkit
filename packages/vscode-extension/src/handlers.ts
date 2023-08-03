@@ -919,7 +919,7 @@ async function processResult(
       return;
     }
     if (isLoginFailureError(error)) {
-      void window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
+      window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
       return;
     }
     void showError(error);
@@ -1322,9 +1322,9 @@ async function openSampleReadmeHandler(args?: any) {
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
     await workspace.openTextDocument(uri);
-    if (isTriggerFromWalkThrough(args as unknown[])) {
+    if (isTriggerFromWalkThrough(args)) {
       const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-      await commands.executeCommand(PreviewMarkdownCommand, uri);
+      commands.executeCommand(PreviewMarkdownCommand, uri);
     } else {
       const PreviewMarkdownCommand = "markdown.showPreview";
       await commands.executeCommand(PreviewMarkdownCommand, uri);
@@ -1347,7 +1347,7 @@ async function showLocalDebugMessage() {
   const localDebug = {
     title: localize("teamstoolkit.handlers.localDebugTitle"),
     run: async (): Promise<void> => {
-      await selectAndDebug();
+      selectAndDebug();
     },
   };
 
@@ -1368,11 +1368,12 @@ async function showLocalDebugMessage() {
       openFolderCommand
     );
   }
-  const selection = await vscode.window.showInformationMessage(message, localDebug);
-  if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-    await selection.run();
-  }
+  vscode.window.showInformationMessage(message, localDebug).then((selection) => {
+    if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+      selection.run();
+    }
+  });
 }
 
 async function showLocalPreviewMessage() {
@@ -1390,7 +1391,7 @@ async function showLocalPreviewMessage() {
   const localPreview = {
     title: localize("teamstoolkit.handlers.localPreviewTitle"),
     run: async (): Promise<void> => {
-      await treeViewPreviewHandler(environmentManager.getLocalEnvName());
+      treeViewPreviewHandler(environmentManager.getLocalEnvName());
     },
   };
 

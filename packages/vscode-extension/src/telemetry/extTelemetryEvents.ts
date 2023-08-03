@@ -238,6 +238,9 @@ export enum TelemetryEvent {
 
   // Copilot plugin
   CopilotPluginAddAPI = "copilot-plugin-add-api",
+
+  ShowScaffoldingWarningSummary = "show-scaffolding-warning-summary",
+  ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
 }
 
 export enum TelemetryProperty {

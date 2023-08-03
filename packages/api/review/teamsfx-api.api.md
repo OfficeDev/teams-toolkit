@@ -77,6 +77,8 @@ export interface BaseQuestion {
     title?: string | LocalFunc<string | undefined>;
     totalSteps?: number;
     value?: unknown;
+    // (undocumented)
+    valueType?: "skip" | "success";
 }
 
 // @public
@@ -142,6 +144,14 @@ export enum CoreCallbackEvent {
     lock = "lock",
     // (undocumented)
     unlock = "unlock"
+}
+
+// @public (undocumented)
+export interface CreateProjectResult {
+    // (undocumented)
+    projectPath: string;
+    // (undocumented)
+    warnings?: Warning[];
 }
 
 // @public
@@ -422,6 +432,9 @@ export type ManifestCapability = {
     snippet?: IWebApplicationInfo;
     existingApp?: boolean;
 };
+
+// @public (undocumented)
+export const ManifestTemplateFileName = "manifest.json";
 
 // @public (undocumented)
 export type MaybePromise<T> = T | Promise<T>;
@@ -1043,6 +1056,14 @@ export enum VsCodeEnv {
     local = "local",
     // (undocumented)
     remote = "remote"
+}
+
+// @public (undocumented)
+export interface Warning {
+    // (undocumented)
+    content: string;
+    // (undocumented)
+    type: string;
 }
 
 

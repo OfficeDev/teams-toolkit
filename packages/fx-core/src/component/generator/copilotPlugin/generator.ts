@@ -11,12 +11,14 @@ import {
   err,
   FxError,
   Inputs,
+  ManifestTemplateFileName,
   ok,
   Platform,
   Result,
   UserError,
   AdaptiveFolderName,
   AppPackageFolderName,
+  Warning,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -25,26 +27,30 @@ import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
 import { SpecParser } from "../../../common/spec-parser/specParser";
 import { QuestionNames } from "../../../question/questionNames";
 import {
+  generateScaffoldingSummary,
   logValidationResults,
   OpenAIPluginManifestHelper,
-  validateTeamsManifestLength,
 } from "./helper";
 import { ValidationStatus } from "../../../common/spec-parser/interfaces";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { ProgrammingLanguage } from "../../../question";
+import { ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import { isYamlSpecFile } from "../../../common/spec-parser/utils";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
-const manifestFileName = "manifest.json";
+const manifestFileName = ManifestTemplateFileName;
 const apiSpecFolderName = "apiSpecFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 
 const invalidApiSpecErrorName = "invalid-api-spec";
+
+export interface CopilotPluginGeneratorResult {
+  warnings?: Warning[];
+}
 
 export class CopilotPluginGenerator {
   @hooks([
@@ -59,7 +65,7 @@ export class CopilotPluginGenerator {
     context: Context,
     inputs: Inputs,
     destinationPath: string
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
       const language = inputs[QuestionNames.ProgrammingLanguage];
@@ -80,9 +86,9 @@ export class CopilotPluginGenerator {
       // validate API spec
       const specParser = new SpecParser(url);
       const validationRes = await specParser.validate();
-      const warnings = validationRes.warnings;
+      const specWarnings = validationRes.warnings;
       if (validationRes.status === ValidationStatus.Error) {
-        logValidationResults(validationRes.errors, warnings, context, true, false, true);
+        logValidationResults(validationRes.errors, specWarnings, context, true, false, true);
         const errorMessage =
           inputs.platform === Platform.VSCode
             ? getLocalizedString(
@@ -138,17 +144,20 @@ export class CopilotPluginGenerator {
         if (updateManifestRes.isErr()) return err(updateManifestRes.error);
       }
 
-      // check Teams manifest
-      const manifestWarnings = validateTeamsManifestLength(teamsManifest);
+      // log warnings
+      if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
+        const warnSummary = generateScaffoldingSummary(specWarnings, teamsManifest);
 
-      // TODO: format log warnings
-      for (const warn of warnings) {
-        void context.logProvider.warning(warn.content);
+        if (warnSummary) {
+          void context.logProvider.info(warnSummary);
+        }
       }
-      for (const warn of manifestWarnings) {
-        void context.logProvider.warning(warn);
+
+      if (inputs.platform === Platform.VSCode) {
+        return ok({ warnings: specWarnings });
+      } else {
+        return ok({ warnings: undefined });
       }
-      return ok(undefined);
     } catch (e) {
       const error = assembleError(e);
       return err(error);

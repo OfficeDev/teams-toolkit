@@ -4,6 +4,7 @@
 import {
   ApiOperation,
   Colors,
+  CreateProjectResult,
   FxError,
   Inputs,
   InputTextConfig,
@@ -71,7 +72,7 @@ export interface IServerConnection {
   createProjectRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<string, FxError>>;
+  ) => Promise<Result<CreateProjectResult, FxError>>;
   localDebugRequest: (inputs: Inputs, token: CancellationToken) => Promise<Result<Void, FxError>>;
   provisionResourcesRequest: (
     inputs: Inputs,

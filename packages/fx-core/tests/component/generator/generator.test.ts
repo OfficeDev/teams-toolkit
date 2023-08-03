@@ -33,21 +33,24 @@ import {
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { SampleInfo } from "../../../src/common/samples";
+import { SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import Mustache from "mustache";
 
-const mockedSampleInfo: SampleInfo = {
+const mockedSampleInfo: SampleConfig = {
   id: "test-id",
+  onboardDate: new Date(),
   title: "test-title",
   shortDescription: "test-sd",
   fullDescription: "test-fd",
+  types: [],
   tags: [],
   time: "",
   configuration: "test-configuration",
   suggested: false,
-  url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
+  gifUrl: "",
+  downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
 };
 
 describe("Generator utils", () => {

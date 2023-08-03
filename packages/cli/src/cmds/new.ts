@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, LogLevel, Question, Result, Stage, err, ok } from "@microsoft/teamsfx-api";
+import {
+  CreateProjectResult,
+  FxError,
+  LogLevel,
+  Question,
+  Result,
+  Stage,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
@@ -154,7 +163,7 @@ class NewTemplate extends YargsCommand {
     }
 
     properties[TelemetryProperty.NewProjectId] = inputs.projectId;
-    const sampleAppFolder = result.value;
+    const sampleAppFolder = (result.value as CreateProjectResult).projectPath;
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Downloaded the '${CLILogProvider.white(templateName)}' sample to '${CLILogProvider.white(

@@ -175,7 +175,6 @@ export const middleWareMap: Record<
     steps?: {
       before?: boolean;
       after?: boolean;
-      main?: boolean;
       afterCreate?: boolean;
       afterdeploy?: boolean;
     }
@@ -206,10 +205,7 @@ export const middleWareMap: Record<
     env: "local" | "dev",
     azSqlHelper?: AzSqlHelper,
     steps?: {
-      before?: boolean;
-      after?: boolean;
       afterCreate?: boolean;
-      afterdeploy?: boolean;
     }
   ) => {
     await incomingWebhookMiddleWare(sampledebugContext, env, azSqlHelper, {
@@ -239,7 +235,6 @@ export const middleWareMap: Record<
     env: "local" | "dev",
     azSqlHelper?: AzSqlHelper,
     steps?: {
-      before?: boolean;
       afterCreate?: boolean;
     }
   ) => {
@@ -266,7 +261,6 @@ export const middleWareMap: Record<
     env: "local" | "dev",
     azSqlHelper?: AzSqlHelper,
     steps?: {
-      before?: boolean;
       afterCreate?: boolean;
     }
   ) => {
@@ -2016,7 +2010,7 @@ const assistantDashboardMiddleWare = (
     afterCreate?: boolean;
   }
 ) => {
-  if (!steps?.afterCreate) {
+  if (steps?.afterCreate) {
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
@@ -2054,7 +2048,7 @@ const incomingWebhookMiddleWare = async (
     afterCreate?: boolean;
   }
 ) => {
-  if (!steps?.afterCreate) {
+  if (steps?.afterCreate) {
     // replace "<webhook-url>" to "https://test.com"
     console.log("replace webhook url");
     const targetFile = path.resolve(

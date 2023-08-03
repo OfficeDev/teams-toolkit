@@ -20,8 +20,9 @@ export async function updateManifest(
   const commands = generateCommands(spec, adaptiveCardFolder, manifestPath);
   const ComposeExtension: ComposeExtension = {
     type: "apiBased",
-    apiSpecFile: path.basename(outputSpecPath),
+    apiSpecFile: getRelativePath(manifestPath, outputSpecPath),
     commands: commands,
+    supportsConversationalAI: true,
   };
 
   const updatedPart: PartialManifest = {

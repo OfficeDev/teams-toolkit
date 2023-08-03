@@ -56,7 +56,11 @@ describe("SpecParser", () => {
         status: ValidationStatus.Error,
         warnings: [],
         errors: [
-          { type: ErrorType.VersionNotSupported, content: ConstantString.SpecVersionNotSupported },
+          {
+            type: ErrorType.VersionNotSupported,
+            content: ConstantString.SpecVersionNotSupported,
+            data: "2.0.0",
+          },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -100,6 +104,7 @@ describe("SpecParser", () => {
           {
             type: ErrorType.MultipleServerInformation,
             content: ConstantString.MultipleServerInformation,
+            data: ["server1", "server2"],
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
         ],
@@ -232,6 +237,7 @@ describe("SpecParser", () => {
           {
             type: WarningType.OperationIdMissing,
             content: util.format(ConstantString.MissingOperationId, "GET /pet"),
+            data: ["GET /pet"],
           },
         ],
         errors: [],

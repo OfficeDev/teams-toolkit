@@ -25,7 +25,13 @@ import {
   validate,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
-import { EmptyOptionError, InputValidationError, UserCancelError, assembleError } from "../error";
+import {
+  EmptyOptionError,
+  InputValidationError,
+  MissingRequiredInputError,
+  UserCancelError,
+  assembleError,
+} from "../error";
 import { validationUtils } from "./validationUtils";
 
 export function isAutoSkipSelect(q: Question): boolean {
@@ -82,6 +88,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
   step?: number,
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
+  // 1. check and validate preset answer
   if (inputs[question.name] !== undefined) {
     // validate existing answer in inputs object
     const res = await validationUtils.validateManualInputs(question, inputs);
@@ -89,6 +96,8 @@ const questionVisitor: QuestionTreeVisitor = async function (
     return ok({ type: "skip", result: inputs[question.name] });
   }
   const title = (await getCallFuncValue(inputs, question.title)) as string;
+
+  // 2. run auto function question
   if (question.type === "func") {
     try {
       let res: any;
@@ -114,172 +123,179 @@ const questionVisitor: QuestionTreeVisitor = async function (
     } catch (e) {
       return err(assembleError(e));
     }
-  } else {
-    let defaultValue:
-      | string
-      | string[]
-      | (() => Promise<string>)
-      | (() => Promise<string[]>)
-      | undefined = undefined;
-    if (question.forgetLastValue !== true && question.value)
-      defaultValue = question.value as string | string[];
-    else {
-      if (question.default) {
-        if (typeof question.default === "function") {
-          defaultValue = async () => {
-            return (question as any).default(inputs);
-          };
-        } else {
-          defaultValue = question.default;
-        }
+  }
+
+  // 3. for non-interactive mode, skip question asking and return error
+  if (inputs.nonInteractive) {
+    return err(new MissingRequiredInputError(question.name, "core-ui"));
+  }
+
+  // 4. need manual input from user
+  let defaultValue:
+    | string
+    | string[]
+    | (() => Promise<string>)
+    | (() => Promise<string[]>)
+    | undefined = undefined;
+  if (question.forgetLastValue !== true && question.value)
+    defaultValue = question.value as string | string[];
+  else {
+    if (question.default) {
+      if (typeof question.default === "function") {
+        defaultValue = async () => {
+          return (question as any).default(inputs);
+        };
+      } else {
+        defaultValue = question.default;
       }
     }
-    const placeholder = (await getCallFuncValue(inputs, question.placeholder)) as string;
-    const prompt = (await getCallFuncValue(inputs, question.prompt)) as string;
-    if (question.type === "text") {
+  }
+  const placeholder = (await getCallFuncValue(inputs, question.placeholder)) as string;
+  const prompt = (await getCallFuncValue(inputs, question.prompt)) as string;
+  if (question.type === "text") {
+    const validationFunc = question.validation
+      ? getValidationFunction<string>(question.validation, inputs)
+      : undefined;
+    const additionalValidationOnAcceptFunc = question.additionalValidationOnAccept
+      ? getValidationFunction<string>(question.additionalValidationOnAccept, inputs)
+      : undefined;
+    const inputQuestion = question;
+    return await ui.inputText({
+      name: question.name,
+      title: title,
+      password: inputQuestion.password,
+      default: defaultValue as string | (() => Promise<string>),
+      placeholder: placeholder,
+      prompt: prompt,
+      validation: validationFunc,
+      step: step,
+      totalSteps: totalSteps,
+      additionalValidationOnAccept: additionalValidationOnAcceptFunc,
+    });
+  } else if (question.type === "singleSelect" || question.type === "multiSelect") {
+    const selectQuestion = question;
+    let options: StaticOptions | (() => Promise<StaticOptions>) | undefined = undefined;
+    if (selectQuestion.dynamicOptions) {
+      options = async () => {
+        return selectQuestion.dynamicOptions!(inputs);
+      };
+    } else {
+      if (!selectQuestion.staticOptions || selectQuestion.staticOptions.length === 0) {
+        return err(new EmptyOptionError());
+      }
+      if (selectQuestion.skipSingleOption && selectQuestion.staticOptions.length === 1) {
+        const returnResult = getSingleOption(selectQuestion, selectQuestion.staticOptions);
+        return ok({ type: "skip", result: returnResult });
+      }
+      options = selectQuestion.staticOptions;
+    }
+    if (question.type === "singleSelect") {
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
-      const additionalValidationOnAcceptFunc = question.additionalValidationOnAccept
-        ? getValidationFunction<string>(question.additionalValidationOnAccept, inputs)
-        : undefined;
-      const inputQuestion = question;
-      return await ui.inputText({
+      return await ui.selectOption({
         name: question.name,
         title: title,
-        password: inputQuestion.password,
+        options: options,
+        returnObject: selectQuestion.returnObject,
         default: defaultValue as string | (() => Promise<string>),
         placeholder: placeholder,
         prompt: prompt,
-        validation: validationFunc,
         step: step,
         totalSteps: totalSteps,
-        additionalValidationOnAccept: additionalValidationOnAcceptFunc,
+        buttons: question.buttons,
+        validation: validationFunc,
+        skipSingleOption: selectQuestion.skipSingleOption,
       });
-    } else if (question.type === "singleSelect" || question.type === "multiSelect") {
-      const selectQuestion = question;
-      let options: StaticOptions | (() => Promise<StaticOptions>) | undefined = undefined;
-      if (selectQuestion.dynamicOptions) {
-        options = async () => {
-          return selectQuestion.dynamicOptions!(inputs);
-        };
-      } else {
-        if (!selectQuestion.staticOptions || selectQuestion.staticOptions.length === 0) {
-          return err(new EmptyOptionError());
-        }
-        if (selectQuestion.skipSingleOption && selectQuestion.staticOptions.length === 1) {
-          const returnResult = getSingleOption(selectQuestion, selectQuestion.staticOptions);
-          return ok({ type: "skip", result: returnResult });
-        }
-        options = selectQuestion.staticOptions;
-      }
-      if (question.type === "singleSelect") {
-        const validationFunc = question.validation
-          ? getValidationFunction<string>(question.validation, inputs)
-          : undefined;
-        return await ui.selectOption({
-          name: question.name,
-          title: title,
-          options: options,
-          returnObject: selectQuestion.returnObject,
-          default: defaultValue as string | (() => Promise<string>),
-          placeholder: placeholder,
-          prompt: prompt,
-          step: step,
-          totalSteps: totalSteps,
-          buttons: question.buttons,
-          validation: validationFunc,
-          skipSingleOption: selectQuestion.skipSingleOption,
-        });
-      } else {
-        const mq = selectQuestion as MultiSelectQuestion;
-        const validationFunc = question.validation
-          ? getValidationFunction<string[]>(question.validation, inputs)
-          : undefined;
-        return await ui.selectOptions({
-          name: question.name,
-          title: title,
-          options: options,
-          returnObject: selectQuestion.returnObject,
-          default: defaultValue as string[] | (() => Promise<string[]>),
-          placeholder: placeholder,
-          prompt: prompt,
-          onDidChangeSelection: mq.onDidChangeSelection,
-          step: step,
-          totalSteps: totalSteps,
-          validation: validationFunc,
-          skipSingleOption: selectQuestion.skipSingleOption,
-        });
-      }
-    } else if (question.type === "multiFile") {
+    } else {
+      const mq = selectQuestion as MultiSelectQuestion;
       const validationFunc = question.validation
         ? getValidationFunction<string[]>(question.validation, inputs)
         : undefined;
-      return await ui.selectFiles({
+      return await ui.selectOptions({
         name: question.name,
         title: title,
-        placeholder: placeholder,
-        prompt: prompt,
+        options: options,
+        returnObject: selectQuestion.returnObject,
         default: defaultValue as string[] | (() => Promise<string[]>),
-        step: step,
-        totalSteps: totalSteps,
-        validation: validationFunc,
-      });
-    } else if (question.type === "singleFile") {
-      const validationFunc = question.validation
-        ? getValidationFunction<string>(question.validation, inputs)
-        : undefined;
-      return await ui.selectFile({
-        name: question.name,
-        title: title,
         placeholder: placeholder,
         prompt: prompt,
-        default: defaultValue as string | (() => Promise<string>),
+        onDidChangeSelection: mq.onDidChangeSelection,
         step: step,
         totalSteps: totalSteps,
         validation: validationFunc,
-        filters: question.filters,
+        skipSingleOption: selectQuestion.skipSingleOption,
       });
-    } else if (question.type === "folder") {
-      const validationFunc = question.validation
-        ? getValidationFunction<string>(question.validation, inputs)
-        : undefined;
-      return await ui.selectFolder({
-        name: question.name,
-        title: title,
-        placeholder: placeholder,
-        prompt: prompt,
-        default: defaultValue as string | (() => Promise<string>),
-        step: step,
-        totalSteps: totalSteps,
-        validation: validationFunc,
-      });
-    } else if (question.type === "singleFileOrText" && !!ui.selectFileOrInput) {
-      const validationFunc = question.validation
-        ? getValidationFunction<string>(question.validation, inputs)
-        : undefined;
-      const additionalValidationOnAcceptFunc = question.inputBoxConfig.additionalValidationOnAccept
-        ? getValidationFunction<string>(
-            { validFunc: question.inputBoxConfig.additionalValidationOnAccept },
-            inputs
-          )
-        : undefined;
-      question.inputBoxConfig.additionalValidationOnAccept = additionalValidationOnAcceptFunc;
-      const res = await ui.selectFileOrInput({
-        name: question.name,
-        title: title,
-        placeholder: placeholder,
-        prompt: prompt,
-        inputOptionItem: question.inputOptionItem,
-        inputBoxConfig: question.inputBoxConfig,
-        filters: question.filters,
-        step: step,
-        totalSteps: totalSteps,
-        validation: validationFunc,
-      });
-      return res;
     }
+  } else if (question.type === "multiFile") {
+    const validationFunc = question.validation
+      ? getValidationFunction<string[]>(question.validation, inputs)
+      : undefined;
+    return await ui.selectFiles({
+      name: question.name,
+      title: title,
+      placeholder: placeholder,
+      prompt: prompt,
+      default: defaultValue as string[] | (() => Promise<string[]>),
+      step: step,
+      totalSteps: totalSteps,
+      validation: validationFunc,
+    });
+  } else if (question.type === "singleFile") {
+    const validationFunc = question.validation
+      ? getValidationFunction<string>(question.validation, inputs)
+      : undefined;
+    return await ui.selectFile({
+      name: question.name,
+      title: title,
+      placeholder: placeholder,
+      prompt: prompt,
+      default: defaultValue as string | (() => Promise<string>),
+      step: step,
+      totalSteps: totalSteps,
+      validation: validationFunc,
+      filters: question.filters,
+    });
+  } else if (question.type === "folder") {
+    const validationFunc = question.validation
+      ? getValidationFunction<string>(question.validation, inputs)
+      : undefined;
+    return await ui.selectFolder({
+      name: question.name,
+      title: title,
+      placeholder: placeholder,
+      prompt: prompt,
+      default: defaultValue as string | (() => Promise<string>),
+      step: step,
+      totalSteps: totalSteps,
+      validation: validationFunc,
+    });
+  } else if (question.type === "singleFileOrText" && !!ui.selectFileOrInput) {
+    const validationFunc = question.validation
+      ? getValidationFunction<string>(question.validation, inputs)
+      : undefined;
+    const additionalValidationOnAcceptFunc = question.inputBoxConfig.additionalValidationOnAccept
+      ? getValidationFunction<string>(
+          { validFunc: question.inputBoxConfig.additionalValidationOnAccept },
+          inputs
+        )
+      : undefined;
+    question.inputBoxConfig.additionalValidationOnAccept = additionalValidationOnAcceptFunc;
+    const res = await ui.selectFileOrInput({
+      name: question.name,
+      title: title,
+      placeholder: placeholder,
+      prompt: prompt,
+      inputOptionItem: question.inputOptionItem,
+      inputBoxConfig: question.inputBoxConfig,
+      filters: question.filters,
+      step: step,
+      totalSteps: totalSteps,
+      validation: validationFunc,
+    });
+    return res;
   }
+
   return err(
     new UserError(
       "API",

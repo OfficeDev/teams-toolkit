@@ -6,29 +6,8 @@
     "src/**/*.js"
   ],
   "exclude": [
-    "src/core/pvm/type.ts",
     "src/common/deps-checker/**/*",
-    "src/common/armInterface.ts",
-    "src/plugins/resource/localdebug/legacyPlugin.ts",
-    "src/plugins/resource/aad/interfaces/**/*",
-    "src/plugins/resource/bot/interface.ts",
-    "src/plugins/resource/bot/appStudio/interfaces/**/*",
-    "src/plugins/resource/frontend/interface.ts",
-    "src/plugins/solution/fx-solution/appstudio/interface.ts",
-    "src/plugins/solution/fx-solution/v3/error.ts",
-    "src/plugins/solution/fx-solution/v3/util.ts",
-    "src/plugins/solution/spfx-solution/questions.ts",
-    "src/plugins/solution/spfx-solution/constants.ts",
-    "src/plugins/solution/spfx-solution/error.ts",
-    "src/plugins/resource/simpleauth/errors.ts",
-    "src/plugins/solution/fx-solution/debug/error.ts",
-    "src/plugins/resource/localdebug/util/error.ts",
-    "src/plugins/resource/appstudio/interfaces/**/*",
-    "src/plugins/resource/function/v3/error.ts",
-    "src/component/resource/azureSql/types.ts",
-    "src/component/feature/apiconnector/config.ts",
-    "src/component/middleware/types.ts",
-    "src/plugins/resource/bot/v2/interface/codeTemplateInfo.ts"
+    "src/question/generator.ts"
   ],
   "reporter": [
     "text",

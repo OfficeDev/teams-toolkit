@@ -18,7 +18,7 @@ import sinon from "sinon";
 import { CollaborationConstants, QuestionTreeVisitor, envUtil, traverse } from "../../src";
 import { CollaborationUtil } from "../../src/core/collaborator";
 import { setTools } from "../../src/core/globalVars";
-import { QuestionNames, SPFxImportFolderQuestion, questions } from "../../src/question";
+import { QuestionNames, SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
   createNewEnvQuestionNode,
   envQuestionCondition,
@@ -79,20 +79,17 @@ describe("none scaffold questions", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      const res = questions.addWebpart();
+      const node = questionNodes.addWebpart();
 
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        await traverse(res.value!, inputs, ui, undefined, visitor);
-        assert.deepEqual(questionNames, [
-          QuestionNames.SPFxFolder,
-          QuestionNames.SPFxWebpartName,
-          QuestionNames.TeamsAppManifestFilePath,
-          QuestionNames.ConfirmManifest,
-          QuestionNames.LocalTeamsAppManifestFilePath,
-          QuestionNames.ConfirmLocalManifest,
-        ]);
-      }
+      await traverse(node, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [
+        QuestionNames.SPFxFolder,
+        QuestionNames.SPFxWebpartName,
+        QuestionNames.TeamsAppManifestFilePath,
+        QuestionNames.ConfirmManifest,
+        QuestionNames.LocalTeamsAppManifestFilePath,
+        QuestionNames.ConfirmLocalManifest,
+      ]);
     });
   });
 
@@ -120,16 +117,12 @@ describe("none scaffold questions", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      const res = questions.selectTeamsAppManifest();
-
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        await traverse(res.value!, inputs, ui, undefined, visitor);
-        assert.deepEqual(questionNames, [
-          QuestionNames.TeamsAppManifestFilePath,
-          QuestionNames.ConfirmManifest,
-        ]);
-      }
+      const node = questionNodes.selectTeamsAppManifest();
+      await traverse(node, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [
+        QuestionNames.TeamsAppManifestFilePath,
+        QuestionNames.ConfirmManifest,
+      ]);
     });
   });
   describe("selectTeamsAppValidationMethod", async () => {
@@ -154,13 +147,10 @@ describe("none scaffold questions", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      const res = questions.selectTeamsAppValidationMethod();
+      const res = questionNodes.selectTeamsAppValidationMethod();
 
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        await traverse(res.value!, inputs, ui, undefined, visitor);
-        assert.deepEqual(questionNames, [QuestionNames.ValidateMethod]);
-      }
+      await traverse(res, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [QuestionNames.ValidateMethod]);
     });
   });
   describe("selectTeamsAppPackage", async () => {
@@ -190,13 +180,10 @@ describe("none scaffold questions", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      const res = questions.selectTeamsAppPackage();
+      const res = questionNodes.selectTeamsAppPackage();
 
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        await traverse(res.value!, inputs, ui, undefined, visitor);
-        assert.deepEqual(questionNames, [QuestionNames.TeamsAppPackageFilePath]);
-      }
+      await traverse(res, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [QuestionNames.TeamsAppPackageFilePath]);
     });
   });
   describe("previewWithTeamsAppManifest", async () => {
@@ -230,17 +217,14 @@ describe("none scaffold questions", () => {
         }
         return ok({ type: "success", result: undefined });
       };
-      const res = questions.previewWithTeamsAppManifest();
+      const res = questionNodes.previewWithTeamsAppManifest();
 
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        await traverse(res.value!, inputs, ui, undefined, visitor);
-        assert.deepEqual(questionNames, [
-          QuestionNames.M365Host,
-          QuestionNames.TeamsAppManifestFilePath,
-          QuestionNames.ConfirmManifest,
-        ]);
-      }
+      await traverse(res, inputs, ui, undefined, visitor);
+      assert.deepEqual(questionNames, [
+        QuestionNames.M365Host,
+        QuestionNames.TeamsAppManifestFilePath,
+        QuestionNames.ConfirmManifest,
+      ]);
     });
   });
   it("SPFxImportFolderQuestion", () => {
@@ -252,18 +236,13 @@ describe("none scaffold questions", () => {
   });
 
   it("validate manifest question", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      validateMethod: "validateAgainstSchema",
-    };
-    const nodeRes = await questions.selectTeamsAppManifest();
-    assert.isTrue(nodeRes.isOk());
+    const res = await questionNodes.selectTeamsAppManifest();
+    assert.isDefined(res);
   });
 
   it("validate app package question", async () => {
-    const nodeRes = await questions.selectTeamsAppValidationMethod();
-    assert.isTrue(nodeRes.isOk());
+    const res = await questionNodes.selectTeamsAppValidationMethod();
+    assert.isDefined(res);
   });
 });
 
@@ -288,12 +267,9 @@ describe("listCollaborator", async () => {
       questionNames.push(question.name);
       return ok({ type: "success", result: undefined });
     };
-    const res = questions.listCollaborator();
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      await traverse(res.value!, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, []);
-    }
+    const res = questionNodes.listCollaborator();
+    await traverse(res, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, []);
   });
   it("happy path: both are selected", async () => {
     const inputs: Inputs = {
@@ -338,19 +314,16 @@ describe("listCollaborator", async () => {
       }
       return ok({ type: "success", result: undefined });
     };
-    const res = questions.listCollaborator();
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      await traverse(res.value!, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, [
-        QuestionNames.collaborationAppType,
-        QuestionNames.TeamsAppManifestFilePath,
-        QuestionNames.ConfirmManifest,
-        QuestionNames.AadAppManifestFilePath,
-        QuestionNames.ConfirmAadManifest,
-        QuestionNames.Env,
-      ]);
-    }
+    const res = questionNodes.listCollaborator();
+    await traverse(res, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [
+      QuestionNames.collaborationAppType,
+      QuestionNames.TeamsAppManifestFilePath,
+      QuestionNames.ConfirmManifest,
+      QuestionNames.AadAppManifestFilePath,
+      QuestionNames.ConfirmAadManifest,
+      QuestionNames.Env,
+    ]);
   });
   it("happy path: teams app only", async () => {
     const inputs: Inputs = {
@@ -388,17 +361,14 @@ describe("listCollaborator", async () => {
       }
       return ok({ type: "success", result: undefined });
     };
-    const res = questions.listCollaborator();
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      await traverse(res.value!, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, [
-        QuestionNames.collaborationAppType,
-        QuestionNames.TeamsAppManifestFilePath,
-        QuestionNames.ConfirmManifest,
-        QuestionNames.Env,
-      ]);
-    }
+    const res = questionNodes.listCollaborator();
+    await traverse(res, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [
+      QuestionNames.collaborationAppType,
+      QuestionNames.TeamsAppManifestFilePath,
+      QuestionNames.ConfirmManifest,
+      QuestionNames.Env,
+    ]);
   });
 });
 describe("grantPermission", async () => {
@@ -422,12 +392,9 @@ describe("grantPermission", async () => {
       questionNames.push(question.name);
       return ok({ type: "success", result: undefined });
     };
-    const res = questions.grantPermission();
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      await traverse(res.value!, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, []);
-    }
+    const res = questionNodes.grantPermission();
+    await traverse(res, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, []);
   });
 
   it("happy path", async () => {
@@ -485,20 +452,17 @@ describe("grantPermission", async () => {
       }
       return ok({ type: "success", result: undefined });
     };
-    const res = questions.grantPermission();
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      await traverse(res.value!, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, [
-        QuestionNames.collaborationAppType,
-        QuestionNames.TeamsAppManifestFilePath,
-        QuestionNames.ConfirmManifest,
-        QuestionNames.AadAppManifestFilePath,
-        QuestionNames.ConfirmAadManifest,
-        QuestionNames.Env,
-        QuestionNames.UserEmail,
-      ]);
-    }
+    const res = questionNodes.grantPermission();
+    await traverse(res, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [
+      QuestionNames.collaborationAppType,
+      QuestionNames.TeamsAppManifestFilePath,
+      QuestionNames.ConfirmManifest,
+      QuestionNames.AadAppManifestFilePath,
+      QuestionNames.ConfirmAadManifest,
+      QuestionNames.Env,
+      QuestionNames.UserEmail,
+    ]);
   });
 });
 describe("deployAadManifest", async () => {
@@ -522,12 +486,9 @@ describe("deployAadManifest", async () => {
       questionNames.push(question.name);
       return ok({ type: "success", result: undefined });
     };
-    const res = questions.deployAadManifest();
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      await traverse(res.value!, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, []);
-    }
+    const res = questionNodes.deployAadManifest();
+    await traverse(res, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, []);
   });
   it("traverse without projectPath", async () => {
     const inputs: Inputs = {
@@ -853,7 +814,7 @@ describe("createNewEnvQuestionNode", async () => {
     sandbox.restore();
   });
   it("createNewEnv", () => {
-    const res = questions.createNewEnv();
+    const res = questionNodes.createNewEnv();
     assert.isTrue(res !== undefined);
   });
   it("newEnvNameValidation invalid pattern", () => {
@@ -941,10 +902,8 @@ describe("copilotPluginQuestions", async () => {
       }
       return ok({ type: "success", result: undefined });
     };
-    const res = questions.copilotPluginAddAPI();
-    if (res.isOk()) {
-      await traverse(res.value!, inputs, ui, undefined, visitor);
-      assert.deepEqual(questionNames, [QuestionNames.ApiSpecLocation, QuestionNames.ApiOperation]);
-    }
+    const res = questionNodes.copilotPluginAddAPI();
+    await traverse(res, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [QuestionNames.ApiSpecLocation, QuestionNames.ApiOperation]);
   });
 });

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { FxError, Result, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
@@ -22,19 +24,19 @@ export async function selectAndDebug(): Promise<Result<null, FxError>> {
   }
 }
 
-export function registerRunIcon(): void {
+export async function registerRunIcon(): Promise<void> {
   globalVariables.context.subscriptions.push(
     vscode.workspace.onDidChangeWorkspaceFolders(enableRunIcon)
   );
-  enableRunIcon();
+  await enableRunIcon();
 }
 
-function enableRunIcon(): void {
+async function enableRunIcon(): Promise<void> {
   const validProject =
     globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath);
-  vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
+  await vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
 }
 
-export function disableRunIcon(): void {
-  vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", false);
+export async function disableRunIcon(): Promise<void> {
+  await vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", false);
 }

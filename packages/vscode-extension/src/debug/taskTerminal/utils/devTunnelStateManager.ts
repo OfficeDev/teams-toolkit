@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
@@ -90,8 +89,10 @@ interface IStateService {
 }
 
 class VSCodeStateService implements IStateService {
-  async get<T>(key: string): Promise<T | undefined> {
-    return globalVariables.context.workspaceState.get<T>(key);
+  get<T>(key: string): Promise<T | undefined> {
+    return new Promise((resolve) => {
+      resolve(globalVariables.context.workspaceState.get<T>(key));
+    });
   }
 
   async update(key: string, value: any): Promise<void> {

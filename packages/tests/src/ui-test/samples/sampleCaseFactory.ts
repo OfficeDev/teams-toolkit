@@ -174,7 +174,7 @@ export abstract class CaseFactory {
       teamsAppId,
       Env.username,
       Env.password,
-      { dashboardFlag: this.options?.dashboardFlag }
+      { dashboardFlag: this.options?.dashboardFlag || false }
     );
   }
 
@@ -221,7 +221,6 @@ export abstract class CaseFactory {
         );
         await sampledebugContext.before();
         // use before middleware to process typical sample
-
         azSqlHelper = await onBefore(sampledebugContext, env, azSqlHelper);
       });
 
@@ -229,12 +228,6 @@ export abstract class CaseFactory {
         this.timeout(Timeout.finishAzureTestCase);
         await onAfter(sampledebugContext, env);
         if (env === "local") {
-          if (
-            sampleName === TemplateProject.ShareNow ||
-            sampleName === TemplateProject.TodoListBackend
-          )
-            await sampledebugContext.sampleAfter(rgName);
-          else await sampledebugContext.after();
         } else {
           if (
             sampleName === TemplateProject.TodoListM365 ||

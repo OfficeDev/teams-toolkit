@@ -23,7 +23,7 @@ export const sampleInitMap: Record<
     teamsAppId: string,
     username: string,
     password: string,
-    args?: {
+    options?: {
       teamsAppName?: string;
       dashboardFlag?: boolean;
       type?: string;
@@ -131,7 +131,7 @@ export const sampleValidationMap: Record<
   TemplateProject,
   (
     page: Page,
-    args?: {
+    options?: {
       displayName?: string;
       context?: SampledebugContext;
       includeFunction?: boolean;
@@ -280,7 +280,7 @@ export async function initPage(
   teamsAppId: string,
   username: string,
   password: string,
-  args?: {
+  options?: {
     teamsAppName?: string;
     dashboardFlag?: boolean;
   }
@@ -351,7 +351,7 @@ export async function initPage(
     const addBtn = await frame?.waitForSelector("button span:has-text('Add')");
 
     // dashboard template will have a popup
-    if (args?.dashboardFlag) {
+    if (options?.dashboardFlag) {
       console.log("Before popup");
       const [popup] = await Promise.all([
         page
@@ -417,7 +417,7 @@ export async function initTeamsPage(
   teamsAppId: string,
   username: string,
   password: string,
-  args?: {
+  options?: {
     teamsAppName?: string;
     dashboardFlag?: boolean;
     type?: string;
@@ -499,14 +499,14 @@ export async function initTeamsPage(
       await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
-      if (args?.type === "meeting") {
+      if (options?.type === "meeting") {
         // verify add page is closed
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-page-content"
         );
         const frame = await frameElementHandle?.contentFrame();
         await frame?.waitForSelector(
-          `h1:has-text('Add ${args?.teamsAppName} to a team')`
+          `h1:has-text('Add ${options?.teamsAppName} to a team')`
         );
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");
@@ -515,7 +515,7 @@ export async function initTeamsPage(
 
       // verify add page is closed
       await frame?.waitForSelector(
-        `h1:has-text('Add ${args?.teamsAppName} to a team')`
+        `h1:has-text('Add ${options?.teamsAppName} to a team')`
       );
 
       try {
@@ -554,7 +554,7 @@ export async function initTeamsPage(
           "iframe.embedded-iframe"
         );
         const frame = await frameElementHandle?.contentFrame();
-        if (args?.type === "spfx") {
+        if (options?.type === "spfx") {
           try {
             console.log("Load debug scripts");
             await frame?.click('button:has-text("Load debug scripts")');
@@ -589,7 +589,7 @@ export async function initTeamsPage(
 
 export async function validateOneProducitvity(
   page: Page,
-  args?: { displayName?: string }
+  options?: { displayName?: string }
 ) {
   try {
     console.log("start to verify One Productivity Hub");
@@ -637,7 +637,7 @@ export async function validateOneProducitvity(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-        await frame?.waitForSelector(`div:has-text("${args?.displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
         // TODO: need to add more logic
       });
     } catch (e: any) {
@@ -661,7 +661,7 @@ export async function validateOneProducitvity(
 
 export async function validateTab(
   page: Page,
-  args?: { displayName?: string; includeFunction?: boolean }
+  options?: { displayName?: string; includeFunction?: boolean }
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
@@ -701,10 +701,10 @@ export async function validateTab(
         await popup.click("input.button[type='submit'][value='Accept']");
       }
 
-      await frame?.waitForSelector(`b:has-text("${args?.displayName}")`);
+      await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
     });
 
-    if (args?.includeFunction) {
+    if (options?.includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("verify function info");
         const authorizeButton = await frame?.waitForSelector(
@@ -1006,7 +1006,7 @@ export async function validateOutlookTab(
 
 export async function validateBot(
   page: Page,
-  args?: { botCommand?: string; expected?: ValidationContent }
+  options?: { botCommand?: string; expected?: ValidationContent }
 ) {
   try {
     console.log("start to verify bot");
@@ -1027,19 +1027,19 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
     try {
-      console.log("sending message ", args?.botCommand);
+      console.log("sending message ", options?.botCommand);
       await executeBotSuggestionCommand(
         page,
         frame,
-        args?.botCommand || "hello world"
+        options?.botCommand || "hello world"
       );
       await frame?.click('button[name="send"]');
     } catch (e: any) {
       console.log(
-        `[Command "${args?.botCommand}" not executed successfully] ${e.message}`
+        `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
       );
     }
-    if (args?.botCommand === "show") {
+    if (options?.botCommand === "show") {
       await RetryHandler.retry(async () => {
         // wait for alert message to show
         const btn = await frame?.waitForSelector(
@@ -1066,18 +1066,18 @@ export async function validateBot(
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         await RetryHandler.retry(async () => {
-          await frame?.waitForSelector(`p:has-text("${args?.expected}")`);
+          await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
           console.log("verify bot successfully!!!");
         }, 2);
-        console.log(`${args?.expected}`);
+        console.log(`${options?.expected}`);
       }, 2);
-      console.log(`${args?.expected}`);
+      console.log(`${options?.expected}`);
     } else {
       await RetryHandler.retry(async () => {
-        await frame?.waitForSelector(`p:has-text("${args?.expected}")`);
+        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
         console.log("verify bot successfully!!!");
       }, 2);
-      console.log(`${args?.expected}`);
+      console.log(`${options?.expected}`);
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
@@ -1089,7 +1089,7 @@ export async function validateBot(
   }
 }
 
-export async function validateNpm(page: Page, args?: { npmName?: string }) {
+export async function validateNpm(page: Page, options?: { npmName?: string }) {
   try {
     console.log("start to verify npm search");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1108,15 +1108,15 @@ export async function validateNpm(page: Page, args?: { npmName?: string }) {
     } catch (error) {
       console.log("no message to dismiss");
     }
-    console.log("search npm ", args?.npmName);
+    console.log("search npm ", options?.npmName);
     const input = await frame?.waitForSelector("div.ui-box input.ui-box");
-    await input?.type(args?.npmName || "axios");
+    await input?.type(options?.npmName || "axios");
     try {
       const targetItem = await frame?.waitForSelector(
-        `span:has-text("${args?.npmName}")`
+        `span:has-text("${options?.npmName}")`
       );
       await targetItem?.click();
-      await frame?.waitForSelector(`card span:has-text("${args?.npmName}")`);
+      await frame?.waitForSelector(`card span:has-text("${options?.npmName}")`);
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
@@ -1271,7 +1271,7 @@ export async function validateDeeplinking(page: Page, displayName: string) {
 
 export async function validateQueryOrg(
   page: Page,
-  args?: { displayName?: string }
+  options?: { displayName?: string }
 ) {
   try {
     console.log("start to verify query org");
@@ -1294,7 +1294,7 @@ export async function validateQueryOrg(
     const inputBar = await frame?.waitForSelector(
       "div.ui-popup__content input.ui-box"
     );
-    await inputBar?.fill(args?.displayName || "");
+    await inputBar?.fill(options?.displayName || "");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const loginBtn = await frame?.waitForSelector(
       'div.ui-popup__content a:has-text("sign in")'
@@ -1512,7 +1512,7 @@ export async function validateStockUpdate(page: Page) {
 
 export async function validateTodoList(
   page: Page,
-  args?: { displayName?: string }
+  options?: { displayName?: string }
 ) {
   try {
     console.log("start to verify todo list");
@@ -1655,14 +1655,14 @@ export async function validateTeamsWorkbench(page: Page, displayName: string) {
 
 export async function validateSpfx(
   page: Page,
-  args?: { displayName?: string }
+  options?: { displayName?: string }
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    await frame?.waitForSelector(`text=${args?.displayName}`);
+    await frame?.waitForSelector(`text=${options?.displayName}`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1686,7 +1686,7 @@ export async function switchToTab(page: Page) {
 
 export async function validateContact(
   page: Page,
-  args?: { displayName?: string }
+  options?: { displayName?: string }
 ) {
   try {
     console.log("start to verify contact");
@@ -1733,14 +1733,14 @@ export async function validateContact(
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
-        await frame?.waitForSelector(`div:has-text("${args?.displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
       page.waitForTimeout(1000);
 
       // verify add person
-      await addPerson(frame, args?.displayName || "");
+      await addPerson(frame, options?.displayName || "");
       // verify delete person
-      await delPerson(frame, args?.displayName || "");
+      await delPerson(frame, options?.displayName || "");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({
@@ -1764,7 +1764,7 @@ export async function validateContact(
 
 export async function validateGraphConnector(
   page: Page,
-  args?: { displayName?: string }
+  options?: { displayName?: string }
 ) {
   try {
     console.log("start to verify contact");
@@ -1801,7 +1801,7 @@ export async function validateGraphConnector(
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
-        await frame?.waitForSelector(`div:has-text("${args?.displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
       page.waitForTimeout(1000);
     } catch (e: any) {
@@ -1916,7 +1916,7 @@ export async function validateNotificationTimeBot(page: Page) {
 
 export async function validateAdaptiveCard(
   page: Page,
-  args?: { context?: SampledebugContext; env?: "local" | "dev" }
+  options?: { context?: SampledebugContext; env?: "local" | "dev" }
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
@@ -1934,9 +1934,9 @@ export async function validateAdaptiveCard(
         // send post request to bot
         console.log("Post request sent to bot");
         let url: string;
-        if (args?.env === "dev") {
+        if (options?.env === "dev") {
           const endpointFilePath = path.join(
-            args?.context?.projectPath ?? "",
+            options?.context?.projectPath ?? "",
             "env",
             ".env.dev"
           );

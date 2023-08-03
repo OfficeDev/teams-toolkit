@@ -9,6 +9,7 @@ import sinon from "sinon";
 import { createMessageConnection } from "vscode-jsonrpc";
 import ServerM365TokenProvider from "../../../src/providers/token/m365";
 import { err, ok } from "@microsoft/teamsfx-api";
+import { NotImplementedError } from "@microsoft/teamsfx-core";
 
 chai.use(chaiAsPromised);
 
@@ -104,23 +105,25 @@ describe("m365", () => {
     });
 
     it("signout", async () => {
-      await chai.expect(appStudio.signout()).to.be.rejected;
+      chai.expect(() => appStudio.signout()).to.throw(NotImplementedError);
     });
 
     it("setStatusChangeMap", async () => {
-      await chai.expect(
-        appStudio.setStatusChangeMap(
-          "test",
-          { scopes: ["test"] },
-          (p1, p2?, p3?): Promise<void> => {
-            return new Promise<void>((resolve) => {});
-          }
+      chai
+        .expect(() =>
+          appStudio.setStatusChangeMap(
+            "test",
+            { scopes: ["test"] },
+            (p1, p2?, p3?): Promise<void> => {
+              return new Promise<void>((resolve) => {});
+            }
+          )
         )
-      ).to.be.rejected;
+        .to.throw(NotImplementedError);
     });
 
     it("removeStatusChangeMap", async () => {
-      await chai.expect(appStudio.removeStatusChangeMap("test")).to.be.rejected;
+      chai.expect(() => appStudio.removeStatusChangeMap("test")).to.throw(NotImplementedError);
     });
   });
 });

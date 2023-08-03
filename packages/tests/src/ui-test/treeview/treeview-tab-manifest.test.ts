@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -38,7 +41,6 @@ describe("Execute Build Teams Package", function () {
       author: "v-helzha@microsoft.com",
     },
     async function () {
-      await clearNotifications();
       await createNewProject("tab", treeViewTestContext.appName);
       await zipAppPackage("dev");
       await getNotification(

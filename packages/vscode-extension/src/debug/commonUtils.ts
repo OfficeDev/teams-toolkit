@@ -80,10 +80,10 @@ export function getLocalDebugSessionId(): string {
   return localDebugCorrelationIds[current].id;
 }
 
-export function checkAndSkipDebugging(): boolean {
+export async function checkAndSkipDebugging(): Promise<boolean> {
   // skip debugging if there is already a debug session
   if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("Skip debugging because there is already a debug session.");
+    await VsCodeLogInstance.warning("Skip debugging because there is already a debug session.");
     endLocalDebugSession();
     return true;
   }

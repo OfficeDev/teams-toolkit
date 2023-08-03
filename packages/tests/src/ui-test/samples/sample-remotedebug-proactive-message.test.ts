@@ -12,6 +12,8 @@ const sampleCase = sampleCaseFactory(
   TemplateProject.ProactiveMessaging,
   24121478,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  { testRootFolder: "./resource/samples", skipValidation: true }
 );
 sampleCase.test();

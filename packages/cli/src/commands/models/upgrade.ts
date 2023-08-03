@@ -1,26 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import path from "path";
+import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { createFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import UI from "../../userInteraction";
-import { getSystemInputs } from "../../utils";
 
 export const upgradeCommand: CLICommand = {
   name: "upgrade",
   description: strings.command.upgrade.description,
+  options: [
+    {
+      name: "force",
+      shortName: "f",
+      description: strings.command.upgrade.options.force,
+      type: "boolean",
+      default: false,
+      required: true,
+    },
+  ],
   telemetry: {
     event: TelemetryEvent.Upgrade,
   },
   handler: async (ctx) => {
-    const rootFolder = path.resolve((ctx.optionValues.folder as string) || "./");
-    const inputs = getSystemInputs(rootFolder);
-    // TODO to confirm
-    inputs["skipUserConfirm"] = false;
+    const inputs = ctx.optionValues as InputsWithProjectPath;
+    // if skipUserConfirm is set, no confirm dialog will be shown
+    inputs["skipUserConfirm"] = inputs.force || false;
     if (ctx.optionValues.force) {
-      // as upgrade will block nonInteractive command, remove it to run upgrade when args.force is setting.
+      // upgrade is not permitted in nonInteractive mode
+      // remove this flag to enable nonInteractive upgrade in e2e case
       delete inputs["nonInteractive"];
     }
     const core = createFxCore();

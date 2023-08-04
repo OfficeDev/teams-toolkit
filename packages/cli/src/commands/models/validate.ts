@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import {
   CoreQuestionNames,
   MissingRequiredInputError,
@@ -49,6 +49,9 @@ export const validateCommand: CLICommand = {
     }
     const core = createFxCore();
     const res = await core.validateApplication(inputs);
-    return res;
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return ok(undefined);
   },
 };

@@ -1,22 +1,25 @@
+import { CLICommandOption, CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import { FxCore, InputValidationError, UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
+import * as activate from "../../src/activate";
 import { engine } from "../../src/commands/engine";
+import { start } from "../../src/commands/index";
+import { createCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
-import { CLICommandOption, CLIContext } from "../../src/commands/types";
 import { logger } from "../../src/commonlib/logger";
-import { getVersion } from "../../src/utils";
-import CliTelemetry from "../../src/telemetry/cliTelemetry";
-import { createCommand } from "../../src/commands/models/create";
-import { err, ok } from "@microsoft/teamsfx-api";
 import * as main from "../../src/index";
-import { start } from "../../src/commands/index";
-import * as activate from "../../src/activate";
-
+import CliTelemetry from "../../src/telemetry/cliTelemetry";
+import { getVersion } from "../../src/utils";
+import { InvalidChoiceError } from "../../src/error";
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+    sandbox.stub(process, "exit");
+  });
 
   afterEach(() => {
     sandbox.restore();
@@ -24,33 +27,37 @@ describe("CLI Engine", () => {
 
   describe("findCommand", async () => {
     it("should find new template command", async () => {
-      const result = engine.findCommand(rootCommand, ["new", "template"]);
+      const result = engine.findCommand(rootCommand, ["new", "sample"]);
       assert.equal(result.cmd.name, createSampleCommand.name);
       assert.deepEqual(result.remainingArgs, []);
     });
   });
 
   describe("validateOption", async () => {
-    it("should find new template command", async () => {
+    it("InvalidChoiceError", async () => {
       const option: CLICommandOption = {
-        type: "multiSelect",
+        type: "array",
         description: "test",
         name: "test",
         choices: ["a", "b", "c"],
         value: ["d"],
       };
-      const result = engine.validateOption(option);
-      assert.isTrue(result.isErr() && result.error instanceof InputValidationError);
+      const result = engine.validateOption(
+        { name: "test", fullName: "test", description: "" },
+        option,
+        "option"
+      );
+      assert.isTrue(result.isErr() && result.error instanceof InvalidChoiceError);
     });
   });
   describe("processResult", async () => {
-    it("should find new template command", async () => {
+    it("sendTelemetryErrorEvent", async () => {
       const sendTelemetryErrorEventStub = sandbox
         .stub(CliTelemetry, "sendTelemetryErrorEvent")
         .returns();
       sandbox.stub(logger, "outputError").returns();
       const ctx: CLIContext = {
-        command: createCommand,
+        command: { ...createCommand, fullName: "abc" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -82,18 +89,14 @@ describe("CLI Engine", () => {
         error = fxError;
       });
       await engine.start(rootCommand);
-      assert.isTrue(error && error instanceof InputValidationError);
-    });
-    it("should run handler success", async () => {
-      sandbox.stub(process, "argv").value(["node", "cli", "-i", "true"]);
-      const loggerStub = sandbox.stub(logger, "info");
-      await engine.start(rootCommand);
-      assert.isTrue(loggerStub.calledOnce);
+      assert.isTrue(error && error instanceof InvalidChoiceError);
     });
     it("should run command with argument success", async () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-      sandbox.stub(process, "argv").value(["node", "cli", "new", "template", "samleName"]);
+      sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
+      sandbox
+        .stub(process, "argv")
+        .value(["node", "cli", "new", "sample", "hello-world-tab-with-backend", "-i", "false"]);
       const loggerStub = sandbox.stub(logger, "info");
       await engine.start(rootCommand);
       assert.isTrue(loggerStub.calledOnce);
@@ -101,13 +104,13 @@ describe("CLI Engine", () => {
     it("should validate argument failed", async () => {
       sandbox.stub(createSampleCommand, "arguments").value([
         {
-          type: "singleSelect",
-          name: "template",
+          type: "string",
+          name: "sample",
           description: "Select a sample app to create",
           choices: ["a", "b", "c"],
         },
       ]);
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
+      sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
       sandbox.stub(process, "argv").value(["node", "cli", "d"]);
       let error: any = {};
       sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
@@ -115,7 +118,7 @@ describe("CLI Engine", () => {
       });
       sandbox.stub(logger, "info");
       await engine.start(createSampleCommand);
-      assert.isTrue(error instanceof InputValidationError);
+      assert.isTrue(error instanceof InvalidChoiceError);
     });
     it("should run handler return error", async () => {
       sandbox.stub(process, "argv").value(["node", "cli"]);

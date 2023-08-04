@@ -1,5 +1,13 @@
 import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
-import { CapabilityOptions, FxCore, UserCancelError, envUtil } from "@microsoft/teamsfx-core";
+import {
+  CapabilityOptions,
+  CollaborationStateResult,
+  FxCore,
+  ListCollaboratorResult,
+  PermissionsResult,
+  UserCancelError,
+  envUtil,
+} from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
@@ -308,7 +316,7 @@ describe("CLI commands", () => {
   });
   describe("packageCommand", async () => {
     it("success", async () => {
-      sandbox.stub(FxCore.prototype, "createAppPackage").resolves(ok(undefined));
+      sandbox.stub(FxCore.prototype, "createAppPackage").resolves(ok({ state: "OK" }));
       const ctx: CLIContext = {
         command: { ...packageCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -322,7 +330,9 @@ describe("CLI commands", () => {
   });
   describe("permissionGrantCommand", async () => {
     it("success", async () => {
-      sandbox.stub(FxCore.prototype, "grantPermission").resolves(ok(undefined));
+      sandbox
+        .stub(FxCore.prototype, "grantPermission")
+        .resolves(ok({ state: "OK" } as PermissionsResult));
       const ctx: CLIContext = {
         command: { ...permissionGrantCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -336,7 +346,9 @@ describe("CLI commands", () => {
   });
   describe("permissionStatusCommand", async () => {
     it("listCollaborator", async () => {
-      sandbox.stub(FxCore.prototype, "listCollaborator").resolves(ok(undefined));
+      sandbox
+        .stub(FxCore.prototype, "listCollaborator")
+        .resolves(ok({ state: "OK" } as ListCollaboratorResult));
       const ctx: CLIContext = {
         command: { ...permissionStatusCommand, fullName: "teamsfx" },
         optionValues: { all: true },
@@ -348,7 +360,9 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("checkPermission", async () => {
-      sandbox.stub(FxCore.prototype, "checkPermission").resolves(ok(undefined));
+      sandbox
+        .stub(FxCore.prototype, "checkPermission")
+        .resolves(ok({ state: "OK" } as CollaborationStateResult));
       const ctx: CLIContext = {
         command: { ...permissionStatusCommand, fullName: "teamsfx" },
         optionValues: { all: false },

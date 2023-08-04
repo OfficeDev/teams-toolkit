@@ -146,25 +146,25 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
-  async validateApplication(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async validateApplication(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.validateApplication, inputs);
   }
   /**
    * v3 only none lifecycle command
    */
-  async validateManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async validateManifest(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.validateManifest, inputs);
   }
   /**
    * v3 only none lifecycle command
    */
-  async validateAppPackage(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async validateAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.validateAppPackage, inputs);
   }
   /**
    * v3 only none lifecycle command
    */
-  async createAppPackage(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async createAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.createAppPackage, inputs);
   }
 

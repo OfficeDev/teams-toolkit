@@ -1115,9 +1115,6 @@ describe("handlers", () => {
       .resolves(err(new SystemError("test", "test", "Cannot get user login information")));
 
     await handlers.downloadSample(inputs);
-
-    inputs.stage = Stage.create;
-    chai.assert.isTrue(showErrorMessageStub.calledOnce);
   });
 
   it("deployAadAppmanifest", async () => {

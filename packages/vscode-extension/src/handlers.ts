@@ -2992,9 +2992,9 @@ export async function scaffoldFromDeveloperPortalHandler(
     );
     if (tokenRes.isErr()) {
       if ((tokenRes.error as any).displayMessage) {
-        window.showErrorMessage((tokenRes.error as any).displayMessage);
+        void window.showErrorMessage((tokenRes.error as any).displayMessage);
       } else {
-        vscode.window.showErrorMessage(
+        void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
@@ -3016,7 +3016,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
     await progressBar.end(true);
   } catch (e) {
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.generalError.message")
     );
     await progressBar.end(false);
@@ -3039,7 +3039,7 @@ export async function scaffoldFromDeveloperPortalHandler(
       error,
       properties
     );
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message")
     );
     return err(error);

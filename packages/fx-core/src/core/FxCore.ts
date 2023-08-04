@@ -44,7 +44,7 @@ import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
 
-export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
 export class FxCore {
   tools: Tools;

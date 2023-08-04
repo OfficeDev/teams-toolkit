@@ -20,6 +20,7 @@ import { localTelemetryReporter } from "../../cmds/preview/localTelemetryReporte
 import PreviewEnv from "../../cmds/preview/previewEnv";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
+import { HubTypes } from "@microsoft/teamsfx-core";
 
 export const previewCommand: CLICommand = {
   name: "preview",
@@ -98,7 +99,7 @@ export const previewCommand: CLICommand = {
     const command = inputs["run-command"] as string;
     const runningPattern = inputs["running-pattern"] as string;
     const openOnly = inputs["open-only"] as boolean;
-    const m365Host = inputs["m365-host"] as constants.Hub;
+    const m365Host = inputs["m365-host"] as HubTypes;
     const execPath: string = inputs["exec-path"] as string;
     const browser = inputs.browser as constants.Browser;
     const browserArguments = (inputs["browser-arg"] as string[]) ?? [];

@@ -70,6 +70,7 @@ export class SpecParser {
       errors.push({
         type: ErrorType.VersionNotSupported,
         content: ConstantString.SpecVersionNotSupported,
+        data: this.spec!.openapi,
       });
       return {
         status: ValidationStatus.Error,
@@ -88,6 +89,7 @@ export class SpecParser {
       errors.push({
         type: ErrorType.MultipleServerInformation,
         content: ConstantString.MultipleServerInformation,
+        data: this.spec!.servers,
       });
     }
 
@@ -99,6 +101,7 @@ export class SpecParser {
       errors.push({
         type: ErrorType.RemoteRefNotSupported,
         content: util.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+        data: refPaths,
       });
     }
 
@@ -124,6 +127,7 @@ export class SpecParser {
       warnings.push({
         type: WarningType.OperationIdMissing,
         content: util.format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
+        data: apisMissingOperationId,
       });
     }
 
@@ -175,6 +179,10 @@ export class SpecParser {
     }
 
     await this.loadSpec();
+    if (signal?.aborted) {
+      throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+    }
+
     const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!);
     let resultStr;
     if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
@@ -183,6 +191,10 @@ export class SpecParser {
       resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
     }
     await fs.writeFile(outputSpecPath, resultStr);
+
+    if (signal?.aborted) {
+      throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+    }
 
     const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
 
@@ -194,6 +206,10 @@ export class SpecParser {
     );
 
     await fs.writeJSON(manifestPath, updatedManifest, { spaces: 2 });
+
+    if (signal?.aborted) {
+      throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+    }
 
     for (const url in newSpec.paths) {
       const getOperation = newSpec.paths[url]?.get;

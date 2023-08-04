@@ -7,11 +7,12 @@
 import "isomorphic-fetch";
 import { Context, HttpRequest } from "@azure/functions";
 import {
-  createMicrosoftGraphClientWithCredential,
   OnBehalfOfCredentialAuthConfig,
   OnBehalfOfUserCredential,
   UserInfo,
 } from "@microsoft/teamsfx";
+import { Client } from "@microsoft/microsoft-graph-client";
+import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
 import config from "../config";
 
 interface Response {
@@ -29,7 +30,6 @@ type TeamsfxContext = { [key: string]: any };
  * This function initializes the teamsfx SDK with the configuration and calls these APIs:
  * - new OnBehalfOfUserCredential(accessToken, oboAuthConfig) - Construct OnBehalfOfUserCredential instance with the received SSO token and initialized configuration.
  * - getUserInfo() - Get the user's information from the received SSO token.
- * - createMicrosoftGraphClientWithCredential() - Get a graph client to access user's Microsoft 365 data.
  *
  * The response contains multiple message blocks constructed into a JSON object, including:
  * - An echo of the request body.
@@ -109,7 +109,15 @@ export default async function run(
 
   // Create a graph client with default scope to access user's Microsoft 365 data after user has consented.
   try {
-    const graphClient = createMicrosoftGraphClientWithCredential(oboCredential, [".default"]);
+    // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+    const authProvider = new TokenCredentialAuthenticationProvider(oboCredential, {
+      scopes: ["https://graph.microsoft.com/.default"],
+    });
+
+    // Initialize Graph client instance with authProvider
+    const graphClient = Client.initWithMiddleware({
+      authProvider: authProvider,
+    });
 
     const profile: any = await graphClient.api("/me").get();
     res.body.graphClientMessage = profile;
@@ -176,7 +184,15 @@ export default async function run(
 
   // Create a graph client with default scope to access user's Microsoft 365 data after user has consented.
   try {
-    const graphClient: Client = createMicrosoftGraphClientWithCredential(appCredential, [".default"]);
+    // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+    const authProvider = new TokenCredentialAuthenticationProvider(appCredential, {
+      scopes: ["https://graph.microsoft.com/.default"],
+    });
+
+    // Initialize the Graph client
+    const graphClient = Client.initWithMiddleware({
+      authProvider: authProvider,
+    });
 
     const profile: any = await graphClient.api("/users/"+userName).get();
     res.body.graphClientMessage = profile;

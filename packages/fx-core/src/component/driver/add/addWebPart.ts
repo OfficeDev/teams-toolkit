@@ -32,7 +32,7 @@ export class AddWebPartDriver implements StepDriver {
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     const wrapContext = new WrapDriverContext(context, Constants.ActionName, Constants.ActionName);
-    return wrapRun(() => this.add(args, wrapContext));
+    return wrapRun(() => this.add(args, wrapContext), Constants.ActionName);
   }
 
   public async execute(args: AddWebPartArgs, context: DriverContext): Promise<ExecutionResult> {

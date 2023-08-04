@@ -4,6 +4,11 @@
 
 ## MsGraphAuthProvider class
 
+> Warning: This API is now obsolete.
+> 
+> Use `TokenCredentialAuthenticationProvider` from `@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials` instead.
+> 
+
 Microsoft Graph auth provider for Teams Framework
 
 <b>Signature:</b>

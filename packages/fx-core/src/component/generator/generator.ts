@@ -186,7 +186,7 @@ export async function sampleDefaultOnActionError(
         throw new DownloadSampleNetworkError(context.url!).toFxError();
       }
     case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.url!).toFxError();
+      throw new FetchZipFromUrlError(context.url!, error).toFxError();
     case GeneratorActionName.Unzip:
       throw new UnzipError().toFxError();
     default:

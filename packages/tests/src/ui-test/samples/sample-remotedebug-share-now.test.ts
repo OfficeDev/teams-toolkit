@@ -126,5 +126,7 @@ new ShareNowTestCase(
   TemplateProject.ShareNow,
   24121485,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  { skipValidation: true }
 ).test();

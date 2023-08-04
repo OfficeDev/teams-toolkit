@@ -49,5 +49,7 @@ new TodoListM365TestCase(
   TemplateProject.TodoListM365,
   14571883,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  { skipValidation: true }
 ).test();

@@ -315,10 +315,10 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //
-// @public
+// @public @deprecated
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
-// @public
+// @public @deprecated
 export function createMicrosoftGraphClientWithCredential(credential: TokenCredential, scopes?: string | string[]): Client;
 
 // @public
@@ -458,7 +458,7 @@ export interface MessageExtensionTokenResponse extends TokenResponse {
     ssoTokenExpiration: string;
 }
 
-// @public
+// @public @deprecated
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     constructor(credential: TokenCredential, scopes?: string | string[]);

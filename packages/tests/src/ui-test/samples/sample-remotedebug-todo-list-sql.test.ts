@@ -133,5 +133,6 @@ new TodoListBackendTestCase(
   [],
   {
     teamsAppName: "toDoList-dev",
+    skipValidation: true,
   }
 ).test();

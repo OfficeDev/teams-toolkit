@@ -37,7 +37,10 @@ export const configSetCommand: CLICommand = {
   },
 };
 
-async function setGlobalConfig(name: string, value: string): Promise<Result<undefined, FxError>> {
+export async function setGlobalConfig(
+  name: string,
+  value: string
+): Promise<Result<undefined, FxError>> {
   const opt = { [name]: value };
   const result = UserSettings.setConfigSync(opt);
   if (result.isErr()) {

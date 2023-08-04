@@ -61,7 +61,7 @@ export class UserSettings {
     return res;
   }
 
-  public static setConfigSync(option: { [key: string]: string }): Result<null, FxError> {
+  public static setConfigSync(option: { [key: string]: string }): Result<undefined, FxError> {
     const result = this.getConfigSync();
     if (result.isErr()) {
       return err(result.error);
@@ -72,7 +72,7 @@ export class UserSettings {
 
     try {
       fs.writeJSONSync(this.getUserSettingsFile(), obj);
-      return ok(null);
+      return ok(undefined);
     } catch (e) {
       return err(new WriteFileError(e as Error, cliSource));
     }

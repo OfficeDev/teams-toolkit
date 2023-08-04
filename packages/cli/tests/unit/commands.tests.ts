@@ -1,26 +1,33 @@
+import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
-import { createCommand } from "../../src/commands/models/create";
 import * as activate from "../../src/activate";
-import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
-import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
-import { createSampleCommand } from "../../src/commands/models/createSample";
-import { listSamplesCommand } from "../../src/commands/models/listSamples";
-import { listCapabilitiesCommand } from "../../src/commands/models/listCapabilities";
-import { accountShowCommand } from "../../src/commands/models/accountShow";
-import { accountLoginAzureCommand } from "../../src/commands/models/accountLoginAzure";
-import { accountLoginM365Command } from "../../src/commands/models/accountLoginM365";
-import { accountLogoutCommand } from "../../src/commands/models/accountLogout";
-import { logger } from "../../src/commonlib/logger";
-import AzureTokenProvider from "../../src/commonlib/azureLogin";
-import { signedIn, signedOut } from "../../src/commonlib/common/constant";
-import M365TokenProvider from "../../src/commonlib/m365Login";
-import * as utils from "../../src/utils";
-import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
 import * as accountUtils from "../../src/cmds/account";
+import {
+  accountLoginAzureCommand,
+  accountLoginM365Command,
+  accountLogoutCommand,
+  accountShowCommand,
+  addSPFxWebpartCommand,
+  configGetCommand,
+  configSetCommand,
+  createCommand,
+  createSampleCommand,
+  listCapabilitiesCommand,
+  listSamplesCommand,
+  printGlobalConfig,
+} from "../../src/commands/models";
+import AzureTokenProvider from "../../src/commonlib/azureLogin";
+import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
+import { signedIn, signedOut } from "../../src/commonlib/common/constant";
+import { logger } from "../../src/commonlib/logger";
+import M365TokenProvider from "../../src/commonlib/m365Login";
+import { UserSettings } from "../../src/userSetttings";
+import * as utils from "../../src/utils";
 
-describe("CLI new commands", () => {
+describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -37,7 +44,7 @@ describe("CLI new commands", () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
-        command: createCommand,
+        command: { ...createCommand, fullName: "teamsfx new" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -50,7 +57,7 @@ describe("CLI new commands", () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
-        command: createCommand,
+        command: { ...createCommand, fullName: "teamsfx new" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -64,9 +71,9 @@ describe("CLI new commands", () => {
   describe("createSampleCommand", async () => {
     it("happy path", async () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
+      sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
-        command: createSampleCommand,
+        command: { ...createSampleCommand, fullName: "teamsfx new sample" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -79,7 +86,7 @@ describe("CLI new commands", () => {
       sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
-        command: createSampleCommand,
+        command: { ...createSampleCommand, fullName: "teamsfx new sample" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -93,7 +100,7 @@ describe("CLI new commands", () => {
     it("happy path", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
-        command: listSamplesCommand,
+        command: { ...listSamplesCommand, fullName: "teamsfx list samples" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -106,7 +113,7 @@ describe("CLI new commands", () => {
   describe("listCapabilitiesCommand", async () => {
     it("happy path", async () => {
       const ctx: CLIContext = {
-        command: listCapabilitiesCommand,
+        command: { ...listCapabilitiesCommand, fullName: "teamsfx list capabilities" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -121,7 +128,7 @@ describe("CLI new commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: accountLoginAzureCommand,
+        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -134,7 +141,7 @@ describe("CLI new commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: accountLoginAzureCommand,
+        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
         optionValues: { "service-principal": true },
         globalOptionValues: {},
         argumentValues: [],
@@ -147,7 +154,7 @@ describe("CLI new commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: accountLoginAzureCommand,
+        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
         optionValues: { "service-principal": false, username: "abc" },
         globalOptionValues: {},
         argumentValues: [],
@@ -162,7 +169,7 @@ describe("CLI new commands", () => {
       sandbox.stub(M365TokenProvider, "signout");
       sandbox.stub(accountUtils, "outputM365Info").resolves();
       const ctx: CLIContext = {
-        command: accountLoginM365Command,
+        command: { ...accountLoginM365Command, fullName: "teamsfx account login m365" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -170,6 +177,33 @@ describe("CLI new commands", () => {
       };
       const res = await accountLoginM365Command.handler!(ctx);
       assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("addSPFxWebpartCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok({}));
+      const ctx: CLIContext = {
+        command: { ...addSPFxWebpartCommand, fullName: "teamsfx add spfx-web-part" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await addSPFxWebpartCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("error", async () => {
+      sandbox.stub(FxCore.prototype, "addWebpart").resolves(err(new UserCancelError()));
+      const ctx: CLIContext = {
+        command: { ...addSPFxWebpartCommand, fullName: "teamsfx add spfx-web-part" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await addSPFxWebpartCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
     });
   });
 });
@@ -200,7 +234,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedOut });
       messages = [];
       const ctx: CLIContext = {
-        command: accountShowCommand,
+        command: { ...accountShowCommand, fullName: "teamsfx account show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -222,7 +256,7 @@ describe("CLI read-only commands", () => {
       const outputAzureInfo = sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       messages = [];
       const ctx: CLIContext = {
-        command: accountShowCommand,
+        command: { ...accountShowCommand, fullName: "teamsfx account show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -246,7 +280,7 @@ describe("CLI read-only commands", () => {
         .resolves();
       messages = [];
       const ctx: CLIContext = {
-        command: accountShowCommand,
+        command: { ...accountShowCommand, fullName: "teamsfx account show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -260,7 +294,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
       messages = [];
       const ctx: CLIContext = {
-        command: accountShowCommand,
+        command: { ...accountShowCommand, fullName: "teamsfx account show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -275,7 +309,7 @@ describe("CLI read-only commands", () => {
     it("azure success", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: accountLogoutCommand,
+        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -288,7 +322,7 @@ describe("CLI read-only commands", () => {
     it("azure fail", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: accountLogoutCommand,
+        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -301,7 +335,7 @@ describe("CLI read-only commands", () => {
     it("m365 success", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: accountLogoutCommand,
+        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],
@@ -313,7 +347,7 @@ describe("CLI read-only commands", () => {
     it("m365 fail", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: accountLogoutCommand,
+        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],
@@ -322,6 +356,81 @@ describe("CLI read-only commands", () => {
       messages = [];
       const res = await accountLogoutCommand.handler!(ctx);
       assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("configGetCommand", async () => {
+    it("printGlobalConfig all", async () => {
+      sandbox.stub(UserSettings, "getConfigSync").returns(ok({ a: 1, b: 2 }));
+      const res = await printGlobalConfig();
+      assert.isTrue(res.isOk());
+      assert.isTrue(messages.includes(JSON.stringify({ a: 1, b: 2 }, null, 2)));
+    });
+    it("printGlobalConfig some key", async () => {
+      sandbox.stub(UserSettings, "getConfigSync").returns(ok({ a: { c: 3 }, b: 2 }));
+      const res = await printGlobalConfig("a");
+      assert.isTrue(res.isOk());
+      assert.isTrue(messages.includes(JSON.stringify({ c: 3 }, null, 2)));
+    });
+    it("printGlobalConfig error", async () => {
+      sandbox.stub(UserSettings, "getConfigSync").returns(err(new UserCancelError()));
+      const res = await printGlobalConfig();
+      assert.isTrue(res.isErr());
+    });
+    it("configGetCommand key=a success", async () => {
+      sandbox.stub(UserSettings, "getConfigSync").returns(ok({ a: 1, b: 2 }));
+      const ctx: CLIContext = {
+        command: { ...configGetCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: ["a"],
+        telemetryProperties: {},
+      };
+      messages = [];
+      const res = await configGetCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("configGetCommand key=a error", async () => {
+      sandbox.stub(UserSettings, "getConfigSync").returns(err(new UserCancelError()));
+      const ctx: CLIContext = {
+        command: { ...configGetCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: ["a"],
+        telemetryProperties: {},
+      };
+      messages = [];
+      const res = await configGetCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("configSetCommand", async () => {
+    it("setGlobalConfig success", async () => {
+      sandbox.stub(UserSettings, "setConfigSync").returns(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...configGetCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await configSetCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+      assert.isTrue(messages.includes(`Successfully set user configuration key.`));
+    });
+    it("setGlobalConfig error", async () => {
+      sandbox.stub(UserSettings, "setConfigSync").returns(err(new UserCancelError()));
+      const ctx: CLIContext = {
+        command: { ...configGetCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await configSetCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+      assert.isTrue(messages.includes("Set user configuration failed."));
     });
   });
 });

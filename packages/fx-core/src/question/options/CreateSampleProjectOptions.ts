@@ -43,6 +43,5 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
       "teams-chef-bot",
     ],
     choiceListCommand: "teamsfx list samples",
-    skipValidation: true,
   },
 ];

@@ -1270,12 +1270,15 @@ export async function openReadMeHandler(args: any[]) {
       },
     };
 
-    const selection = await vscode.window.showInformationMessage(
-      localize("teamstoolkit.handlers.createProjectNotification"),
-      createProject,
-      openFolder
-    );
-    await selection?.run();
+    void vscode.window
+      .showInformationMessage(
+        localize("teamstoolkit.handlers.createProjectNotification"),
+        createProject,
+        openFolder
+      )
+      .then((selection) => {
+        selection?.run();
+      });
   } else if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -1368,11 +1371,12 @@ export async function showLocalDebugMessage() {
       openFolderCommand
     );
   }
-  const selection = await vscode.window.showInformationMessage(message, localDebug);
-  if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-    await selection.run();
-  }
+  void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
+    if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+      selection.run();
+    }
+  });
 }
 
 async function showLocalPreviewMessage() {
@@ -1777,7 +1781,7 @@ export function registerAccountMenuCommands(context: ExtensionContext) {
           }
         }
       } catch (e) {
-        await showError(e as FxError);
+        void showError(e as FxError);
       }
     })
   );

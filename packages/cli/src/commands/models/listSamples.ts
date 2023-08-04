@@ -11,7 +11,7 @@ export const listSamplesCommand: CLICommand = {
   handler: async (cmd) => {
     logger.info("The following are sample apps:");
     const samples = await getTemplates();
-    logger.info(JSON.stringify(samples, undefined, 4));
+    logger.info(JSON.stringify(samples, undefined, 2));
     return ok(undefined);
   },
   telemetry: {

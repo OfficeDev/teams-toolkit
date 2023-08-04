@@ -10,6 +10,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import {
+  HubTypes,
   PreviewTeamsAppInputs,
   PreviewTeamsAppOptions,
   TelemetryContext,
@@ -20,7 +21,6 @@ import { localTelemetryReporter } from "../../cmds/preview/localTelemetryReporte
 import PreviewEnv from "../../cmds/preview/previewEnv";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
-import { HubTypes } from "@microsoft/teamsfx-core";
 
 export const previewCommand: CLICommand = {
   name: "preview",
@@ -93,7 +93,6 @@ export const previewCommand: CLICommand = {
   },
   handler: async (ctx: CLIContext) => {
     const inputs = ctx.optionValues as PreviewTeamsAppInputs & InputsWithProjectPath;
-    console.log("ctx.optionValues:", inputs);
     const workspaceFolder = inputs.projectPath as string;
     const env = inputs.env as string;
     const manifestFilePath = inputs["manifest-path"] as string;

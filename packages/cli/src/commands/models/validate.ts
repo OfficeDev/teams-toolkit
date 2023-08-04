@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err } from "@microsoft/teamsfx-api";
 import {
   CoreQuestionNames,
   MissingRequiredInputError,
+  ValidateTeamsAppInputs,
   ValidateTeamsAppOptions,
   validateAppPackageOption,
   validateSchemaOption,
@@ -11,16 +12,15 @@ import {
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { cliSource } from "../../constants";
-import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
+import { ArgumentConflictError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
-import { EnvOption, ProjectFolderOption } from "../common";
-import { ValidateTeamsAppInputs } from "@microsoft/teamsfx-core";
+import { ProjectFolderOption } from "../common";
 
 export const validateCommand: CLICommand = {
   name: "validate",
   description: "Validate the Teams app using manifest schema or validation rules.",
-  options: [...ValidateTeamsAppOptions, EnvOption, ProjectFolderOption],
+  options: [...ValidateTeamsAppOptions, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.ValidateManifest,
   },
@@ -41,12 +41,6 @@ export const validateCommand: CLICommand = {
           new MissingRequiredInputError("manifest-path or app-package-file-path", cliSource)
         );
       }
-
-      if (inputs["manifest-path"] && !inputs.env) {
-        const error = new MissingRequiredOptionError("teamsfx validate", "env");
-        return err(error);
-      }
-
       if (inputs["app-package-file-path"]) {
         inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
       } else {

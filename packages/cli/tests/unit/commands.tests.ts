@@ -20,9 +20,17 @@ import {
   envListCommand,
   listCapabilitiesCommand,
   listSamplesCommand,
+  packageCommand,
+  permissionGrantCommand,
+  permissionStatusCommand,
+  previewCommand,
   printGlobalConfig,
   provisionCommand,
   publishCommand,
+  updateAadAppCommand,
+  updateTeamsAppCommand,
+  upgradeCommand,
+  validateCommand,
 } from "../../src/commands/models";
 import AzureTokenProvider from "../../src/commonlib/azureLogin";
 import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
@@ -31,6 +39,8 @@ import { logger } from "../../src/commonlib/logger";
 import M365TokenProvider from "../../src/commonlib/m365Login";
 import { UserSettings } from "../../src/userSetttings";
 import * as utils from "../../src/utils";
+import PreviewEnv from "../../src/cmds/preview/previewEnv";
+import { localTelemetryReporter } from "../../src/cmds/preview/localTelemetryReporter";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -216,9 +226,10 @@ describe("CLI commands", () => {
   describe("envAddCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
+      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
       const ctx: CLIContext = {
         command: { ...envAddCommand, fullName: "teamsfx" },
-        optionValues: {},
+        optionValues: { projectPath: "." },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -226,13 +237,27 @@ describe("CLI commands", () => {
       const res = await envAddCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
+    it("isWorkspaceSupported: false", async () => {
+      sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
+      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+      const ctx: CLIContext = {
+        command: { ...envAddCommand, fullName: "teamsfx" },
+        optionValues: { projectPath: "." },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envAddCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
   });
   describe("envListCommand", async () => {
     it("success", async () => {
+      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
-        optionValues: {},
+        optionValues: { projectPath: "." },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -240,17 +265,31 @@ describe("CLI commands", () => {
       const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("error", async () => {
+    it("isWorkspaceSupported: false", async () => {
+      sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
+      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+      const ctx: CLIContext = {
+        command: { ...envAddCommand, fullName: "teamsfx" },
+        optionValues: { projectPath: "." },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envAddCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+    it("listEnv error", async () => {
+      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
-        optionValues: {},
+        optionValues: { projectPath: "." },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
       const res = await envListCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
+      assert.isTrue(res.isErr());
     });
   });
   describe("provisionCommand", async () => {
@@ -267,17 +306,191 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
   });
-  describe("publishCommand", async () => {
+  describe("packageCommand", async () => {
     it("success", async () => {
-      sandbox.stub(FxCore.prototype, "publishApplication").resolves(ok(undefined));
+      sandbox.stub(FxCore.prototype, "createAppPackage").resolves(ok(undefined));
       const ctx: CLIContext = {
-        command: { ...publishCommand, fullName: "teamsfx" },
+        command: { ...packageCommand, fullName: "teamsfx" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
+      const res = await packageCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("permissionGrantCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "grantPermission").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...permissionGrantCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await permissionGrantCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("permissionStatusCommand", async () => {
+    it("listCollaborator", async () => {
+      sandbox.stub(FxCore.prototype, "listCollaborator").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...permissionStatusCommand, fullName: "teamsfx" },
+        optionValues: { all: true },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await permissionStatusCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("checkPermission", async () => {
+      sandbox.stub(FxCore.prototype, "checkPermission").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...permissionStatusCommand, fullName: "teamsfx" },
+        optionValues: { all: false },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await permissionStatusCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("publishCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "publishApplication").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...publishCommand, fullName: "teamsfx" },
+        optionValues: { env: "local" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
       const res = await publishCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("previewCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(localTelemetryReporter, "runWithTelemetryGeneric").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...previewCommand, fullName: "teamsfx" },
+        optionValues: { env: "local" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await previewCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("error", async () => {
+      sandbox
+        .stub(localTelemetryReporter, "runWithTelemetryGeneric")
+        .resolves(err(new UserCancelError()));
+      const ctx: CLIContext = {
+        command: { ...previewCommand, fullName: "teamsfx" },
+        optionValues: { env: "local" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await previewCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+  });
+  describe("updateAadAppCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...updateAadAppCommand, fullName: "teamsfx" },
+        optionValues: { env: "local" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await updateAadAppCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("updateTeamsAppCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
+        optionValues: { env: "local" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await updateTeamsAppCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("upgradeCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...upgradeCommand, fullName: "teamsfx" },
+        optionValues: { force: true },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await upgradeCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("validateCommand", async () => {
+    it("conflict", async () => {
+      sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...validateCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-path": "aaa", "app-package-file-path": "bbb" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await validateCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+    it("none", async () => {
+      sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...validateCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await validateCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+    it("manifest", async () => {
+      sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...validateCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-path": "aaa" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await validateCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("package", async () => {
+      sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...validateCommand, fullName: "teamsfx" },
+        optionValues: { "app-package-file-path": "bbb" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await validateCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });
@@ -498,7 +711,6 @@ describe("CLI read-only commands", () => {
 
   describe("listCapabilitiesCommand", async () => {
     it("success", async () => {
-      sandbox.stub(UserSettings, "setConfigSync").returns(ok(undefined));
       const ctx: CLIContext = {
         command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
         optionValues: {},
@@ -509,6 +721,21 @@ describe("CLI read-only commands", () => {
       const res = await listCapabilitiesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
       assert.isTrue(messages.includes(JSON.stringify(CapabilityOptions.all(), undefined, 2)));
+    });
+  });
+  describe("listSamplesCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(utils, "getTemplates").resolves([]);
+      const ctx: CLIContext = {
+        command: { ...listSamplesCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await listSamplesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+      assert.isTrue(messages.includes(JSON.stringify([], undefined, 2)));
     });
   });
 });

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
 import { createFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";

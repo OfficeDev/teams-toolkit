@@ -76,3 +76,9 @@ export class MissKeyError extends BaseComponentInnerError {
     super(errorSource, "SystemError", "MissKeyError", "error.generator.MissKeyError", [keyName]);
   }
 }
+
+export class InvalidInputError extends BaseComponentInnerError {
+  constructor(name: string) {
+    super(errorSource, "UserError", "InvalidInputError", "error.InvalidInputError", [name]);
+  }
+}

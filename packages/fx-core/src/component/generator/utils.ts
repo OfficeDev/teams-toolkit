@@ -17,9 +17,8 @@ import { SampleConfig, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
-import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
-import { CancelDownloading, ParseUrlError } from "./error";
+import { CancelDownloading, InvalidInputError, ParseUrlError } from "./error";
 import { deepCopy } from "../../common/tools";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
@@ -221,7 +220,7 @@ export function getSampleInfoFromName(sampleName: string): SampleConfig {
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {
-    throw Error(`invalid sample name: '${sampleName}'`);
+    throw new InvalidInputError(sampleName);
   }
   return sample;
 }

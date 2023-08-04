@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   clearNotifications,
   createNewProject,
@@ -34,7 +34,6 @@ describe("Execute Build Teams Package", function () {
       author: "v-helzha@microsoft.com",
     },
     async function () {
-      await clearNotifications();
       await createNewProject("spfxreact", treeViewTestContext.appName);
       await zipAppPackage("dev");
       await getNotification(

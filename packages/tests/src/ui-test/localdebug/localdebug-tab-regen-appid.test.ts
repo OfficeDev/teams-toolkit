@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
@@ -17,8 +20,9 @@ import {
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
-import { validateFileExist } from "../../utils/commonUtils";
+import { killPort, validateFileExist } from "../../utils/commonUtils";
 import { cleanAppStudio } from "../../utils/cleanHelper";
+import { ModalDialog, VSBrowser } from "vscode-extension-tester";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -33,7 +37,7 @@ describe("Local Debug Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await localDebugTestContext.after();
+    await localDebugTestContext.after(false);
   });
 
   it(
@@ -48,6 +52,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.appName
       );
       validateFileExist(projectPath, "src/app.js");
+      const driver = VSBrowser.instance.driver;
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
@@ -57,15 +62,69 @@ describe("Local Debug Tests", function () {
       );
 
       await stopDebugging();
+      await driver.sleep(Timeout.stopdebugging);
+      try {
+        await killPort(53000);
+        console.log(`close port 53000 successfully`);
+      } catch (error) {
+        console.log(`close port 53000 failed`);
+      }
 
       await cleanAppStudio(localDebugTestContext.appName);
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartApplication,
-        "restify listening to"
-      );
+      try {
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartApplication,
+          "restify listening to"
+        );
+        // check if there is error "Could not attach to main target"
+        await driver.sleep(Timeout.startdebugging);
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartApplication,
+          "restify listening to"
+        );
+      } catch {
+        const dialog = new ModalDialog();
+        console.log(`click "Cancel" button for error dialog`);
+        await dialog.pushButton("Cancel");
+        await driver.sleep(Timeout.shortTimeLoading);
+        console.log(
+          `Clicked button "Cancel" for failing to attach to main target`
+        );
+        await stopDebugging();
+        await driver.sleep(Timeout.stopdebugging);
+        try {
+          await killPort(53000);
+          console.log(`close port 53000 successfully`);
+        } catch (error) {
+          console.log(`close port 53000 failed`);
+        }
+        await startDebugging();
+        try {
+          await waitForTerminal(
+            LocalDebugTaskLabel.StartApplication,
+            "restify listening to"
+          );
+          // check if there is error "Debug Anyway"
+          await driver.sleep(Timeout.startdebugging);
+          await waitForTerminal(
+            LocalDebugTaskLabel.StartApplication,
+            "restify listening to"
+          );
+        } catch {
+          const dialog = new ModalDialog();
+          console.log(`click "Debug Anyway" button for error dialog`);
+          await dialog.pushButton("Debug Anyway");
+          console.log(`Clicked button "Debug Anyway"`);
+          await driver.sleep(Timeout.shortTimeLoading);
+          await waitForTerminal(
+            LocalDebugTaskLabel.StartApplication,
+            "restify listening to"
+          );
+        }
+      }
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(

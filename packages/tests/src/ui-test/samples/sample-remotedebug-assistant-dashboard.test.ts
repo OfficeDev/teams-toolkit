@@ -9,8 +9,24 @@ import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
 import { validateDashboardTab } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
+import { SampledebugContext } from "./sampledebugContext";
+import * as path from "path";
+import * as fs from "fs";
 
 class AssistDashboardTestCase extends CaseFactory {
+  override async onAfterCreate(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ): Promise<void> {
+    const envFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}.user`
+    );
+    const envString =
+      'PLANNER_GROUP_ID=YOUR_PLANNER_GROUP_ID\nDEVOPS_ORGANIZATION_NAME=msazure\nDEVOPS_PROJECT_NAME="Microsoft Teams Extensibility"\nGITHUB_REPO_NAME=test002\nGITHUB_REPO_OWNER=hellyzh\nPLANNER_PLAN_ID=YOUR_PLAN_ID\nPLANNER_BUCKET_ID=YOUR_BUCKET_ID\nSECRET_DEVOPS_ACCESS_TOKEN=YOUR_DEVOPS_ACCESS_TOKEN\nSECRET_GITHUB_ACCESS_TOKEN=YOUR_GITHUB_ACCESS_TOKEN';
+    fs.writeFileSync(envFilePath, envString);
+  }
   override async onValidate(page: Page): Promise<void> {
     return await validateDashboardTab(page);
   }

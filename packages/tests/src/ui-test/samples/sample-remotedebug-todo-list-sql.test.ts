@@ -38,32 +38,30 @@ class TodoListBackendTestCase extends CaseFactory {
       npmName?: string;
       skipInit?: boolean;
       skipValidation?: boolean;
-      sqlUserName?: string;
-      sqlPassword?: string;
     } = {}
   ) {
     super(sampleName, testPlanCaseId, author, env, validate, options);
-    this.sqlUserName = options?.sqlUserName || "Abc123321";
-    this.sqlPassword =
-      options?.sqlPassword || "Cab232332" + uuid.v4().substring(0, 6);
+    this.sqlUserName = "Abc123321";
+    this.sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
   }
-  public override async onAfterCreate(
-    sampledebugContext: SampledebugContext,
-    env: "local" | "dev",
-    azSqlHelper?: AzSqlHelper | undefined
-  ): Promise<void> {
+  public override onAfterCreate = async (
+    sampledebugContext: SampledebugContext
+  ): Promise<void> => {
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      `.env.dev.user`
+      ".env.dev.user"
     );
-
-    editDotEnvFile(envFilePath, "SQL_USER_NAME", this.sqlUserName);
-    editDotEnvFile(envFilePath, "SQL_PASSWORD", this.sqlPassword);
-  }
+    const user = this.sqlUserName;
+    const password = this.sqlPassword;
+    editDotEnvFile(envFilePath, "SQL_USER_NAME", user);
+    editDotEnvFile(envFilePath, "SQL_PASSWORD", password);
+  };
   public override async onBeforeBrowerStart(
     sampledebugContext: SampledebugContext
   ): Promise<void> {
+    const user = this.sqlUserName;
+    const password = this.sqlPassword;
     // read database from devEnvFilePath
     const devEnvFilePath = path.resolve(
       sampledebugContext.projectPath,
@@ -100,8 +98,8 @@ class TodoListBackendTestCase extends CaseFactory {
       sqlCommands,
       sqlDatabaseName,
       sqlDatabaseName,
-      this.sqlUserName,
-      this.sqlPassword
+      user,
+      password
     );
     await sqlHelper.createTable(sqlEndpoint ?? "");
   }
@@ -136,7 +134,5 @@ new TodoListBackendTestCase(
   {
     teamsAppName: "toDoList-dev",
     skipValidation: true,
-    sqlUserName: "Abc123321",
-    sqlPassword: "Cab232332" + uuid.v4().substring(0, 6),
   }
 ).test();

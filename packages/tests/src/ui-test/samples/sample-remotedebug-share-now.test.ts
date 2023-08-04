@@ -34,29 +34,30 @@ class ShareNowTestCase extends CaseFactory {
       npmName?: string;
       skipInit?: boolean;
       skipValidation?: boolean;
-      sqlUserName?: string;
-      sqlPassword?: string;
     } = {}
   ) {
     super(sampleName, testPlanCaseId, author, env, validate, options);
-    this.sqlUserName = options?.sqlUserName || "Abc123321";
-    this.sqlPassword =
-      options?.sqlPassword || "Cab232332" + uuid.v4().substring(0, 6);
+    this.sqlUserName = "Abc123321";
+    this.sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
   }
-  public override async onAfterCreate(
+  public override onAfterCreate = async (
     sampledebugContext: SampledebugContext
-  ): Promise<void> {
+  ): Promise<void> => {
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
       ".env.dev.user"
     );
-    editDotEnvFile(envFilePath, "SQL_USER_NAME", this.sqlUserName);
-    editDotEnvFile(envFilePath, "SQL_PASSWORD", this.sqlPassword);
-  }
-  public override async onBeforeBrowerStart(
+    const user = this.sqlUserName;
+    const password = this.sqlPassword;
+    editDotEnvFile(envFilePath, "SQL_USER_NAME", user);
+    editDotEnvFile(envFilePath, "SQL_PASSWORD", password);
+  };
+  public override onBeforeBrowerStart = async (
     sampledebugContext: SampledebugContext
-  ): Promise<void> {
+  ): Promise<void> => {
+    const user = this.sqlUserName;
+    const password = this.sqlPassword;
     const devEnvFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
@@ -111,11 +112,11 @@ class ShareNowTestCase extends CaseFactory {
       sqlCommands,
       sqlDatabaseName,
       sqlDatabaseName,
-      this.sqlUserName,
-      this.sqlPassword
+      user,
+      password
     );
     await sqlHelper.createTable(sqlEndpoint ?? "");
-  }
+  };
   override async onValidate(page: Page): Promise<void> {
     return await validateShareNow(page);
   }
@@ -125,10 +126,5 @@ new ShareNowTestCase(
   TemplateProject.ShareNow,
   24121485,
   "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  {
-    sqlUserName: "Abc123321",
-    sqlPassword: "Cab232332" + uuid.v4().substring(0, 6),
-  }
+  "dev"
 ).test();

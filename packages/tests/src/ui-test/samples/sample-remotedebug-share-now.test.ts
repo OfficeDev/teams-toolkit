@@ -101,8 +101,7 @@ class ShareNowTestCase extends CaseFactory {
 
 new ShareNowTestCase(
   TemplateProject.ShareNow,
-  9958523,
+  24121485,
   "v-ivanchen@microsoft.com",
-  "local",
-  [LocalDebugTaskLabel.StartFrontend, LocalDebugTaskLabel.StartBackend]
+  "dev"
 ).test();

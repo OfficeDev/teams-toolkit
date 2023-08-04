@@ -1979,33 +1979,6 @@ const shareNowMiddleWare = async (
 ) => {
   const sqlUserName = "Abc123321";
   const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
-  if (steps?.before) {
-    // create sql db server
-    const rgName = `${sampledebugContext.appName}-dev-rg`;
-    const sqlCommands = [
-      `CREATE TABLE [TeamPostEntity](
-        [PostID] [int] PRIMARY KEY IDENTITY,
-        [ContentUrl] [nvarchar](400) NOT NULL,
-        [CreatedByName] [nvarchar](50) NOT NULL,
-        [CreatedDate] [datetime] NOT NULL,
-        [Description] [nvarchar](500) NOT NULL,
-        [IsRemoved] [bit] NOT NULL,
-        [Tags] [nvarchar](100) NULL,
-        [Title] [nvarchar](100) NOT NULL,
-        [TotalVotes] [int] NOT NULL,
-        [Type] [int] NOT NULL,
-        [UpdatedDate] [datetime] NOT NULL,
-        [UserID] [uniqueidentifier] NOT NULL
-    );`,
-      `CREATE TABLE [UserVoteEntity](
-        [VoteID] [int] PRIMARY KEY IDENTITY,
-        [PostID] [int] NOT NULL,
-        [UserID] [uniqueidentifier] NOT NULL
-    );`,
-    ];
-    azSqlHelper = new AzSqlHelper(rgName, sqlCommands);
-    return azSqlHelper;
-  }
   if (steps?.afterCreate) {
     if (env === "dev") {
       const envFilePath = path.resolve(

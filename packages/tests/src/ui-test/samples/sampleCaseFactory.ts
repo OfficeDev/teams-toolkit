@@ -106,8 +106,8 @@ export abstract class CaseFactory {
     testPlanCaseId: number,
     author: string,
     env: "local" | "dev",
-    validate: LocalDebugTaskLabel[],
-    options?: {
+    validate: LocalDebugTaskLabel[] = [],
+    options: {
       teamsAppName?: string;
       dashboardFlag?: boolean;
       type?: string;
@@ -116,14 +116,14 @@ export abstract class CaseFactory {
       npmName?: string;
       skipInit?: boolean;
       skipValidation?: boolean;
-    }
+    } = {}
   ) {
     this.sampleName = sampleName;
     this.testPlanCaseId = testPlanCaseId;
     this.author = author;
     this.env = env;
     this.validate = validate;
-    this.options = options || {};
+    this.options = options;
   }
 
   public onBefore(
@@ -235,18 +235,6 @@ export abstract class CaseFactory {
       afterEach(async function () {
         this.timeout(Timeout.finishAzureTestCase);
         await onAfter(sampledebugContext, env);
-        if (env === "local") {
-        } else {
-          if (
-            sampleName === TemplateProject.TodoListM365 ||
-            sampleName === TemplateProject.TodoListSpfx
-          )
-            await sampledebugContext.after();
-          else
-            await sampledebugContext.sampleAfter(
-              `${sampledebugContext.appName}-dev-rg`
-            );
-        }
       });
 
       it(

@@ -5,15 +5,25 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProject } from "../../utils/constants";
-// import sampleCaseFactory from "./sampleCaseFactory";
+import { Page } from "playwright";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { validateNpm } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 
-// const sampleCase = sampleCaseFactory(
-//   TemplateProject.NpmSearch,
-//   14571879,
-//   "v-ivanchen@microsoft.com",
-//   "dev",
-//   [],
-//   { npmName: "axios" }
-// );
-// sampleCase.test();
+class NpmSearchTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    options?: { npmName: string }
+  ): Promise<void> {
+    return await validateNpm(page, { npmName: options?.npmName });
+  }
+}
+
+new NpmSearchTestCase(
+  TemplateProject.NpmSearch,
+  14571879,
+  "v-ivanchen@microsoft.com",
+  "dev",
+  [],
+  { npmName: "axios" }
+).test();

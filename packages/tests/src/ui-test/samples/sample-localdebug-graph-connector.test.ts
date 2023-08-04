@@ -14,7 +14,7 @@ import { Env } from "../../utils/env";
 class GraphConnectorTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    args?: { displayName: string }
+    options?: { displayName: string }
   ): Promise<void> {
     return await validateGraphConnector(page, { displayName: Env.displayName });
   }

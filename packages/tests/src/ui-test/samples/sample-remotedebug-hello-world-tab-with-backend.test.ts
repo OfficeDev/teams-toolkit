@@ -5,13 +5,27 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProject } from "../../utils/constants";
-// import sampleCaseFactory from "./sampleCaseFactory";
+import { Page } from "playwright";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { validateTab } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
 
-// const sampleCase = sampleCaseFactory(
-//   TemplateProject.HelloWorldTabBackEnd,
-//   13523920,
-//   "v-ivanchen@microsoft.com",
-//   "dev"
-// );
-// sampleCase.test();
+class HelloWorldTabBackEndTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    options?: { includeFunction: boolean }
+  ): Promise<void> {
+    return await validateTab(page, {
+      displayName: Env.displayName,
+      includeFunction: options?.includeFunction,
+    });
+  }
+}
+
+new HelloWorldTabBackEndTestCase(
+  TemplateProject.HelloWorldTabBackEnd,
+  13523920,
+  "v-ivanchen@microsoft.com",
+  "dev"
+).test();

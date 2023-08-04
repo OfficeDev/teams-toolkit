@@ -5,13 +5,27 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
-// import sampleCaseFactory from "./sampleCaseFactory";
+import { validateAdaptiveCard } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { SampledebugContext } from "./sampledebugContext";
 
-// const sampleCase = sampleCaseFactory(
-//   TemplateProject.AdaptiveCard,
-//   24121425,
-//   "v-ivanchen@microsoft.com",
-//   "dev"
-// );
-// sampleCase.test();
+class AdaptiveCardTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    options?: { context: SampledebugContext; env: "local" | "dev" }
+  ): Promise<void> {
+    return await validateAdaptiveCard(page, {
+      context: options?.context,
+      env: options?.env,
+    });
+  }
+}
+
+new AdaptiveCardTestCase(
+  TemplateProject.AdaptiveCard,
+  24121425,
+  "v-ivanchen@microsoft.com",
+  "dev"
+).test();

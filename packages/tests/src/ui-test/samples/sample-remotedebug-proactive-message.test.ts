@@ -5,15 +5,22 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProject } from "../../utils/constants";
-// import sampleCaseFactory from "./sampleCaseFactory";
+import { Page } from "playwright";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { validateProactiveMessaging } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 
-// const sampleCase = sampleCaseFactory(
-//   TemplateProject.ProactiveMessaging,
-//   24121478,
-//   "v-ivanchen@microsoft.com",
-//   "dev",
-//   [],
-//   { testRootFolder: "./resource/samples", skipValidation: true }
-// );
-// sampleCase.test();
+class ProactiveMessagingTestCase extends CaseFactory {
+  override async onValidate(page: Page): Promise<void> {
+    return await validateProactiveMessaging(page);
+  }
+}
+
+new ProactiveMessagingTestCase(
+  TemplateProject.ProactiveMessaging,
+  24121478,
+  "v-ivanchen@microsoft.com",
+  "dev",
+  [],
+  { testRootFolder: "./resource/samples", skipValidation: true }
+).test();

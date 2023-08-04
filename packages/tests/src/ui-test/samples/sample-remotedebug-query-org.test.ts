@@ -5,13 +5,24 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
-// import sampleCaseFactory from "./sampleCaseFactory";
+import { validateQueryOrg } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
 
-// const sampleCase = sampleCaseFactory(
-//   TemplateProject.QueryOrg,
-//   24121481,
-//   "v-ivanchen@microsoft.com",
-//   "dev"
-// );
-// sampleCase.test();
+class QueryOrgTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    option?: { displayName: string }
+  ): Promise<void> {
+    return await validateQueryOrg(page, { displayName: Env.displayName });
+  }
+}
+
+new QueryOrgTestCase(
+  TemplateProject.QueryOrg,
+  24121481,
+  "v-ivanchen@microsoft.com",
+  "dev"
+).test();

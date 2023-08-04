@@ -5,13 +5,20 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
-// import sampleCaseFactory from "./sampleCaseFactory";
+import { validatePersonalTab } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 
-// const sampleCase = sampleCaseFactory(
-//   TemplateProject.OutlookTab,
-//   24121457,
-//   "v-ivanchen@microsoft.com",
-//   "dev"
-// );
-// sampleCase.test();
+class OutlookTabTestCase extends CaseFactory {
+  override async onValidate(page: Page): Promise<void> {
+    return await validatePersonalTab(page);
+  }
+}
+
+new OutlookTabTestCase(
+  TemplateProject.OutlookTab,
+  24121457,
+  "v-ivanchen@microsoft.com",
+  "dev"
+).test();

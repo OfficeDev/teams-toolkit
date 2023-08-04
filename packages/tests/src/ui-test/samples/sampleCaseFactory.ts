@@ -282,12 +282,11 @@ export abstract class CaseFactory {
           };
           await debugEnvMap[env]();
 
-          options?.skipInit &&
-            (() => {
-              console.log("skip ui init...");
-              console.log("debug finish!");
-              return;
-            })();
+          if (options?.skipValidation) {
+            console.log("skip ui validation...");
+            console.log("debug finish!");
+            return;
+          }
 
           const teamsAppId = await sampledebugContext.getTeamsAppId(env);
           expect(teamsAppId).to.not.be.empty;
@@ -304,12 +303,11 @@ export abstract class CaseFactory {
             teamsAppName: options?.teamsAppName ?? "",
           });
 
-          options?.skipValidation &&
-            (() => {
-              console.log("skip ui validation...");
-              console.log("debug finish!");
-              return;
-            })();
+          if (options?.skipInit) {
+            console.log("skip ui init...");
+            console.log("debug finish!");
+            return;
+          }
 
           // validate
           await onValidate(page, {

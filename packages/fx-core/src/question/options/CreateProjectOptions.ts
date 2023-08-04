@@ -114,7 +114,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     shortName: "l",
     description: "Programming Language.",
-    required: true,
     default: "javascript",
     choices: ["javascript", "typescript", "csharp"],
   },

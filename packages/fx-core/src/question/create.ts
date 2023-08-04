@@ -1536,7 +1536,12 @@ export function capabilitySubTree(): IQTreeNode {
         // programming language
         data: programmingLanguageQuestion(),
         condition: (inputs: Inputs) => {
-          return !copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
+          const copilotFeature = getCopilotPluginFeatureId(inputs);
+          if (copilotFeature) {
+            return !copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
+          } else {
+            return !!inputs[QuestionNames.Capabilities];
+          }
         },
       },
       {

@@ -57,7 +57,7 @@ describe("serverConnections", () => {
 
   it("createProjectRequest", () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns("test");
+    const fake = sandbox.fake.returns({ projectPath: "test" });
     sandbox.replace(connection["core"], "createProject", fake);
     const inputs = {
       platform: "vs",
@@ -65,7 +65,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.createProjectRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok({ projectPath: "test" }));
     });
   });
 
@@ -318,18 +318,6 @@ describe("serverConnections", () => {
     const res = connection.addSsoRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
       assert.equal(data, ok("test"));
-    });
-  });
-
-  it("getProjectComponents", () => {
-    const connection = new ServerConnection(msgConn);
-    const inputs = {
-      platform: "vs",
-    };
-    const token = {};
-    const res = connection.getProjectComponents(inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok(""));
     });
   });
 

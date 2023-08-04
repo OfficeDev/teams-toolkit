@@ -69,3 +69,24 @@ export function getRelativePath(from: string, to: string): string {
   const relativePath = path.relative(path.dirname(from), to);
   return path.normalize(relativePath).replace(/\\/g, "/");
 }
+
+export function getResponseJson(
+  operationObject: OpenAPIV3.OperationObject | undefined
+): OpenAPIV3.MediaTypeObject {
+  let json =
+    (operationObject?.responses?.["200"] as OpenAPIV3.ResponseObject)?.content?.[
+      "application/json"
+    ] ??
+    (operationObject?.responses?.["201"] as OpenAPIV3.ResponseObject)?.content?.[
+      "application/json"
+    ] ??
+    (operationObject?.responses?.default as OpenAPIV3.ResponseObject)?.content?.[
+      "application/json"
+    ];
+
+  if (!json) {
+    json = {};
+  }
+
+  return json;
+}

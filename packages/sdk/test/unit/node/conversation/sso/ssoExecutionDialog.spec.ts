@@ -28,6 +28,7 @@ import {
   BotSsoExecutionDialog,
   TeamsBotSsoPromptTokenResponse,
   CommandMessage,
+  TriggerPatterns,
 } from "../../../../../src";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
@@ -257,6 +258,63 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
       });
   });
 
+  it("sso execution dialog should be able to sign user in and get exchange tokens when consent with regex trigger pattern", async function () {
+    this.timeout(500);
+    const adapter: TestAdapter = await initializeTestEnv(
+      undefined,
+      undefined,
+      undefined,
+      /TestCommand/i
+    );
+
+    await adapter
+      .send("TestCommand")
+      .assertReply((activity) => {
+        // Assert bot send out OAuthCard
+        assertTeamsSsoOauthCardActivity(activity);
+
+        // Mock Teams sends signin/tokenExchange message with SSO token back to the bot
+        mockTeamsSendsTokenExchangeInvokeActivityWithSsoToken(adapter, activity);
+      })
+      .assertReply((activity) => {
+        // User has not consent. Assert bot send out 412
+        assert.strictEqual(activity.type, invokeResponseActivityType);
+        assert.strictEqual(activity.value.status, StatusCodes.PRECONDITION_FAILED);
+        assert.strictEqual(
+          activity.value.body.failureDetail,
+          "The bot is unable to exchange token. Ask for user consent."
+        );
+
+        // Mock Teams sends signin/verifyState message after user consent back to the bot
+        const invokeActivity: Partial<Activity> = createReply(ActivityTypes.Invoke, activity);
+        invokeActivity.name = verifyStateOperationName;
+        adapter.send(invokeActivity);
+      })
+      .assertReply((activity) => {
+        // Assert bot send out OAuthCard gain to get SSO token
+        assertTeamsSsoOauthCardActivity(activity);
+
+        // Mock Teams sends signin/tokenExchange message with SSO token back to the bot
+        mockTeamsSendsTokenExchangeInvokeActivityWithSsoToken(adapter, activity);
+      })
+      .assertReply((activity) => {
+        // Assert bot send out invoke response status 200 to Teams to signal token response request invoke has been received
+        assert.strictEqual(activity.type, invokeResponseActivityType);
+        assert.strictEqual(activity.value.status, StatusCodes.OK);
+      })
+      .assertReply((activity) => {
+        // Assert bot send out invoke response status 200 to Teams to signal token response request invoke has been received
+        assert.strictEqual(activity.type, invokeResponseActivityType);
+        assert.strictEqual(activity.value.status, StatusCodes.OK);
+        assert.strictEqual(activity.value.body.id, id);
+      })
+      .assertReply((activity) => {
+        console.log(activity.text);
+        assert.strictEqual(activity.type, ActivityTypes.Message);
+        assert.strictEqual(activity.text, testSsoHandlerResponseMessage);
+      });
+  });
+
   function createReply(type: ActivityTypes, activity: Partial<Activity>): Partial<Activity> {
     return {
       type: type,
@@ -314,7 +372,8 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
   async function initializeTestEnv(
     timeout_value?: number,
     endOnInvalidMessage?: boolean,
-    channelId?: Channels
+    channelId?: Channels,
+    triggerPatterns: TriggerPatterns = "TestCommand"
   ): Promise<TestAdapter> {
     const storage = new MemoryStorage();
 
@@ -333,7 +392,7 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
       endOnInvalidMessage: endOnInvalidMessage,
     };
     const ssoExecutionDialog = new BotSsoExecutionDialog(storage, ssoPromptSettings, teamsfx);
-    const testHandler = new TestSsoCommandHandler("TestCommand", testSsoHandlerResponseMessage);
+    const testHandler = new TestSsoCommandHandler(triggerPatterns, testSsoHandlerResponseMessage);
     ssoExecutionDialog.addCommand(
       async (
         context: TurnContext,

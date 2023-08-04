@@ -432,16 +432,3 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
-
-      - name: Send E-mail to the whole team
-        uses: satak/webrequest-action@master
-        with:
-          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
-          method: POST
-          payload: |
-            {
-              "to": "${{ steps.list-jobs.outputs.to }}",
-              "body": "${{ steps.list-jobs.outputs.body }}",
-              "subject": "${{ steps.list-jobs.outputs.subject }}",
-              "apiKey": "${{ secrets.MAIL_API_KEY }}"
-            }

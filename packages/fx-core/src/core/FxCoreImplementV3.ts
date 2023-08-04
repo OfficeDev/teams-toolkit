@@ -8,6 +8,7 @@ import {
   AdaptiveFolderName,
   BuildFolderName,
   Context,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,
@@ -128,7 +129,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, QuestionMW(questions.createProject)])
-  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     const context = createContextV3();
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
@@ -146,7 +147,7 @@ export class FxCoreV3Implement {
     const res = await coordinator.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     inputs.projectPath = context.projectPath;
-    return ok(inputs.projectPath!);
+    return ok(res.value);
   }
 
   @hooks([

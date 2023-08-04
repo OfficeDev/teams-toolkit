@@ -38,9 +38,9 @@ export class GeneratorChecker implements DependencyChecker {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart);
 
     try {
-      this._logger.info(`${displayName} not found, installing...`);
+      void this._logger.info(`${displayName} not found, installing...`);
       await this.install();
-      this._logger.info(`Successfully installed ${displayName}`);
+      void this._logger.info(`Successfully installed ${displayName}`);
 
       telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator);
     } catch (error) {
@@ -73,13 +73,13 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   public async install(): Promise<void> {
-    this._logger.info("Start installing...");
+    void this._logger.info("Start installing...");
     await this.cleanup();
     await this.installGenerator();
 
-    this._logger.info("Validating package...");
+    void this._logger.info("Validating package...");
     if (!(await this.validate())) {
-      this._logger.debug(`Failed to validate ${name}, cleaning up...`);
+      void this._logger.debug(`Failed to validate ${name}, cleaning up...`);
       await this.cleanup();
       throw DependencyValidateError(name);
     }
@@ -171,7 +171,7 @@ export class GeneratorChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      this._logger.error(`Failed to execute npm install ${displayName}`);
+      void this._logger.error(`Failed to execute npm install ${displayName}`);
       throw NpmInstallError(error as Error);
     }
   }

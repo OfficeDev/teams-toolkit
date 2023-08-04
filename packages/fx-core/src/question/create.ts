@@ -26,7 +26,10 @@ import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFla
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
-import { getTemplateId, isFromDevPortal } from "../component/developerPortalScaffoldUtils";
+import {
+  getProjectTypeAndCapability,
+  isFromDevPortal,
+} from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
@@ -156,7 +159,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
       }
 
       if (isFromDevPortal(inputs)) {
-        const projectType = getTemplateId(inputs.teamsAppFromTdp)?.projectType;
+        const projectType = getProjectTypeAndCapability(inputs.teamsAppFromTdp)?.projectType;
         if (projectType) {
           return [projectType];
         }
@@ -341,7 +344,7 @@ export class CapabilityOptions {
 
   static collectFormMe(): OptionItem {
     return {
-      id: "MessagingExtension",
+      id: "CollectFormMessagingExtension",
       label: `${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
       cliName: "message-extension",
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
@@ -381,6 +384,9 @@ export class CapabilityOptions {
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       CapabilityOptions.me(),
+      CapabilityOptions.copilotPluginNewApi(),
+      CapabilityOptions.copilotPluginApiSpec(),
+      CapabilityOptions.copilotPluginOpenAIPlugin(),
     ];
   }
 
@@ -515,7 +521,7 @@ function capabilityQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       // from dev portal
       if (isFromDevPortal(inputs)) {
-        const capability = getTemplateId(inputs.teamsAppFromTdp)?.templateId;
+        const capability = getProjectTypeAndCapability(inputs.teamsAppFromTdp)?.templateId;
         if (capability) {
           return [capability];
         }
@@ -1224,6 +1230,8 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
   };
 }
 
+const maximumLengthOfDetailsErrorMessageInInputBox = 90;
+
 export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   const validationOnAccept = async (
     input: string,
@@ -1236,7 +1244,10 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
         const errors = res.error;
-        if (errors.length === 1) {
+        if (
+          errors.length === 1 &&
+          errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
+        ) {
           return errors[0].content;
         } else {
           return inputs!.platform === Platform.VSCode
@@ -1331,7 +1342,10 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             inputs!.supportedApisFromApiSpec = res.value;
           } else {
             const errors = res.error;
-            if (errors.length === 1) {
+            if (
+              errors.length === 1 &&
+              errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
+            ) {
               return errors[0].content;
             } else {
               return inputs!.platform === Platform.VSCode

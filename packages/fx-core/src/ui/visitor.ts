@@ -2,30 +2,31 @@
 // Licensed under the MIT license.
 
 import {
-  TextInputQuestion,
+  FxError,
+  IQTreeNode,
+  InputResult,
+  Inputs,
+  MultiSelectQuestion,
+  OptionItem,
   QTreeNode,
   Question,
+  Result,
   SingleSelectQuestion,
   StaticOptions,
-  MultiSelectQuestion,
-  Inputs,
-  FxError,
-  err,
-  ok,
-  OptionItem,
-  UserInteraction,
-  Result,
-  InputResult,
-  getValidationFunction,
-  UserError,
-  TelemetryReporter,
-  Void,
-  validate,
   TelemetryEvent,
   TelemetryProperty,
-  IQTreeNode,
+  TelemetryReporter,
+  UserError,
+  UserInteraction,
+  Void,
+  err,
+  getValidationFunction,
+  ok,
+  validate,
 } from "@microsoft/teamsfx-api";
-import { EmptyOptionError, UserCancelError, assembleError } from "../error";
+import { assign, cloneDeep } from "lodash";
+import { EmptyOptionError, InputValidationError, UserCancelError, assembleError } from "../error";
+import { validationUtils } from "./validationUtils";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -82,6 +83,9 @@ const questionVisitor: QuestionTreeVisitor = async function (
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
   if (inputs[question.name] !== undefined) {
+    // validate existing answer in inputs object
+    const res = await validationUtils.validateManualInputs(question, inputs);
+    if (res) return err(new InputValidationError(question.name, res));
     return ok({ type: "skip", result: inputs[question.name] });
   }
   const title = (await getCallFuncValue(inputs, question.title)) as string;
@@ -101,12 +105,12 @@ const questionVisitor: QuestionTreeVisitor = async function (
       if (typeof res === "object" && "isOk" in res) {
         const fxresult = res as Result<any, FxError>;
         if (fxresult.isOk()) {
-          return ok({ type: "success", result: fxresult.value });
+          return ok({ type: "skip", result: fxresult.value });
         } else {
           return err(fxresult.error);
         }
       }
-      return ok({ type: "success", result: res });
+      return ok({ type: "skip", result: res });
     } catch (e) {
       return err(assembleError(e));
     }
@@ -285,6 +289,132 @@ const questionVisitor: QuestionTreeVisitor = async function (
     )
   );
 };
+// export async function traverse(
+//   root: IQTreeNode,
+//   inputs: Inputs,
+//   ui: UserInteraction,
+//   telemetryReporter?: TelemetryReporter,
+//   visitor: QuestionTreeVisitor = questionVisitor
+// ): Promise<Result<Void, FxError>> {
+//   const stack: IQTreeNode[] = [];
+//   const history: IQTreeNode[] = [];
+//   stack.push(root);
+//   let step = 1; // manual input step
+//   let totalStep = 1;
+//   const parentMap = new Map<IQTreeNode, IQTreeNode>();
+//   // const valueMap = new Map<QTreeNode, unknown>();
+//   const autoSkipSet = new Set<IQTreeNode>();
+//   while (stack.length > 0) {
+//     const curr = stack.pop();
+//     if (!curr) continue;
+//     //visit
+//     if (curr.data.type !== "group") {
+//       const question = curr.data;
+//       totalStep = step + stack.length;
+//       let qvRes;
+//       try {
+//         qvRes = await visitor(question, ui, inputs, step, totalStep);
+//         sendTelemetryEvent(telemetryReporter, qvRes, question, inputs);
+//       } catch (e) {
+//         return err(assembleError(e));
+//       }
+//       if (qvRes.isErr()) {
+//         // Cancel or Error
+//         return err(qvRes.error);
+//       }
+//       const inputResult = qvRes.value;
+//       if (inputResult.type === "back") {
+//         stack.push(curr);
+
+//         // find the previous input that is neither group nor func nor single option select
+//         let found = false;
+//         while (history.length > 0) {
+//           const last = history.pop();
+//           if (!last) continue;
+//           if (last.children) {
+//             while (stack.length > 0) {
+//               const tmp = stack[stack.length - 1];
+//               if (last.children.includes(tmp)) {
+//                 stack.pop();
+//               } else {
+//                 break;
+//               }
+//             }
+//           }
+//           stack.push(last);
+//           if (last.data.type !== "group") delete inputs[last.data.name];
+
+//           const lastIsAutoSkip = autoSkipSet.has(last);
+//           if (last.data.type !== "group" && last.data.type !== "func" && !lastIsAutoSkip) {
+//             found = true;
+//             break;
+//           }
+//         }
+//         if (!found) {
+//           return err(new UserCancelError());
+//         }
+//         --step;
+//         continue; //ignore the following steps
+//       } else {
+//         //success or skip
+//         question.value = inputResult.result;
+//         inputs[question.name] = question.value;
+
+//         if (inputResult.type === "skip" || question.type === "func") {
+//           if (inputResult.type === "skip") autoSkipSet.add(curr);
+//         } else {
+//           ++step;
+//         }
+//       }
+//     }
+
+//     history.push(curr);
+
+//     if (curr.children) {
+//       const matchChildren: IQTreeNode[] = [];
+//       const valueInMap = findValue(curr, parentMap); //curr.data.type !== "group" ? curr.data.value : undefined; //valueMap.get(curr);
+//       for (const child of curr.children) {
+//         if (!child) continue;
+//         if (child.condition) {
+//           const validRes = await validate(
+//             child.condition,
+//             valueInMap as string | string[] | OptionItem | OptionItem[],
+//             inputs
+//           );
+//           if (validRes !== undefined) {
+//             continue;
+//           }
+//         }
+//         matchChildren.push(child);
+//       }
+//       for (let i = matchChildren.length - 1; i >= 0; --i) {
+//         const child = matchChildren[i];
+//         parentMap.set(child, curr);
+//         stack.push(child);
+//       }
+//     }
+//   }
+//   return ok(Void);
+// }
+
+/**
+ * serialize the tree node into array in DFS order
+ */
+export function collect(
+  node: IQTreeNode,
+  list: IQTreeNode[],
+  parentMap: Map<IQTreeNode, IQTreeNode>
+): void {
+  list.push(node);
+  if (node.children) {
+    for (const child of node.children) {
+      if (child) {
+        parentMap.set(child, node);
+        collect(child, list, parentMap);
+      }
+    }
+  }
+}
 
 export async function traverse(
   root: IQTreeNode,
@@ -293,104 +423,103 @@ export async function traverse(
   telemetryReporter?: TelemetryReporter,
   visitor: QuestionTreeVisitor = questionVisitor
 ): Promise<Result<Void, FxError>> {
-  const stack: IQTreeNode[] = [];
-  const history: IQTreeNode[] = [];
-  stack.push(root);
-  let step = 1; // manual input step
-  let totalStep = 1;
+  // The reason to clone is that we don't want to change the original inputs if user cancel the process
+  const clonedInputs = cloneDeep(inputs);
+
+  // 1. collect all nodes into array
   const parentMap = new Map<IQTreeNode, IQTreeNode>();
-  // const valueMap = new Map<QTreeNode, unknown>();
-  const autoSkipSet = new Set<IQTreeNode>();
-  while (stack.length > 0) {
-    const curr = stack.pop();
-    if (!curr) continue;
-    //visit
-    if (curr.data.type !== "group") {
-      const question = curr.data;
-      totalStep = step + stack.length;
-      let qvRes;
+  const nodeList: IQTreeNode[] = [];
+  collect(root, nodeList, parentMap);
+
+  const visitedNodeSet = new Set<IQTreeNode>();
+
+  const visitedInputNodeArray: IQTreeNode[] = [];
+
+  let i = 0;
+  for (; i < nodeList.length; ++i) {
+    const node = nodeList[i];
+
+    // if parent node is not visited, current node should not be visited
+    const parent = parentMap.get(node);
+    if (parent) {
+      if (!visitedNodeSet.has(parent)) {
+        continue;
+      }
+    }
+
+    // 1. check condition
+    if (node.condition) {
+      let parentValue: any = undefined;
+      // const parent = parentMap.get(node);
+      if (parent) {
+        parentValue = findValue(parent, parentMap);
+      }
+      const validRes = await validate(
+        node.condition,
+        parentValue as string | string[] | OptionItem | OptionItem[],
+        clonedInputs
+      );
+      if (validRes !== undefined) {
+        continue;
+      }
+    }
+
+    // 2. visit node if not group
+    if (node.data.type !== "group") {
+      const question = node.data;
+      let res;
       try {
-        qvRes = await visitor(question, ui, inputs, step, totalStep);
-        sendTelemetryEvent(telemetryReporter, qvRes, question, inputs);
+        res = await visitor(
+          question,
+          ui,
+          clonedInputs,
+          visitedInputNodeArray.length + 1,
+          undefined
+        );
+        sendTelemetryEvent(telemetryReporter, res, question, clonedInputs);
       } catch (e) {
         return err(assembleError(e));
       }
-      if (qvRes.isErr()) {
+      if (res.isErr()) {
         // Cancel or Error
-        return err(qvRes.error);
+        return err(res.error);
       }
-      const inputResult = qvRes.value;
+      const inputResult = res.value;
       if (inputResult.type === "back") {
-        stack.push(curr);
-
-        // find the previous input that is neither group nor func nor single option select
-        let found = false;
-        while (history.length > 0) {
-          const last = history.pop();
-          if (!last) continue;
-          if (last.children) {
-            while (stack.length > 0) {
-              const tmp = stack[stack.length - 1];
-              if (last.children.includes(tmp)) {
-                stack.pop();
-              } else {
-                break;
-              }
-            }
+        const prevNode = visitedInputNodeArray.pop();
+        if (!prevNode) {
+          return err(new UserCancelError());
+        }
+        for (--i; i >= 0; --i) {
+          const tmpNode = nodeList[i];
+          visitedNodeSet.delete(tmpNode);
+          // clear prevNode data
+          if (tmpNode.data.type !== "group") {
+            delete tmpNode.data.value;
+            delete tmpNode.data.valueType;
+            delete clonedInputs[tmpNode.data.name];
           }
-          stack.push(last);
-          if (last.data.type !== "group") delete inputs[last.data.name];
-
-          const lastIsAutoSkip = autoSkipSet.has(last);
-          if (last.data.type !== "group" && last.data.type !== "func" && !lastIsAutoSkip) {
-            found = true;
+          if (tmpNode === prevNode) {
             break;
           }
         }
-        if (!found) {
-          return err(new UserCancelError());
-        }
-        --step;
-        continue; //ignore the following steps
+        --i;
+        continue;
       } else {
-        //success or skip
+        //success or skip: set value
         question.value = inputResult.result;
-        inputs[question.name] = question.value;
-
-        if (inputResult.type === "skip" || question.type === "func") {
-          if (inputResult.type === "skip") autoSkipSet.add(curr);
-        } else {
-          ++step;
+        question.valueType = inputResult.type;
+        clonedInputs[question.name] = question.value;
+        visitedNodeSet.add(node);
+        if (question.valueType === "success") {
+          visitedInputNodeArray.push(node);
         }
       }
-    }
-
-    history.push(curr);
-
-    if (curr.children) {
-      const matchChildren: IQTreeNode[] = [];
-      const valueInMap = findValue(curr, parentMap); //curr.data.type !== "group" ? curr.data.value : undefined; //valueMap.get(curr);
-      for (const child of curr.children) {
-        if (!child) continue;
-        if (child.condition) {
-          const validRes = await validate(
-            child.condition,
-            valueInMap as string | string[] | OptionItem | OptionItem[],
-            inputs
-          );
-          if (validRes !== undefined) {
-            continue;
-          }
-        }
-        matchChildren.push(child);
-      }
-      for (let i = matchChildren.length - 1; i >= 0; --i) {
-        const child = matchChildren[i];
-        parentMap.set(child, curr);
-        stack.push(child);
-      }
+    } else {
+      visitedNodeSet.add(node);
     }
   }
+  assign(inputs, clonedInputs);
   return ok(Void);
 }
 

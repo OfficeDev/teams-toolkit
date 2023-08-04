@@ -14,6 +14,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   Colors,
   Context,
+  CreateProjectResult,
   err,
   FxError,
   Inputs,
@@ -54,6 +55,7 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
+import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
@@ -66,7 +68,6 @@ import { pathUtils } from "../utils/pathUtils";
 import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -82,6 +83,7 @@ export enum TemplateNames {
   Workflow = "workflow",
   DefaultBot = "default-bot",
   MessageExtension = "message-extension",
+  MessageExtensionAction = "message-extension-action",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
@@ -107,6 +109,7 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
+  [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
   [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
   [`${CapabilityOptions.m365SearchMe().id}:undefined`]: TemplateNames.M365MessageExtension,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
@@ -150,13 +153,14 @@ class Coordinator {
     context: Context,
     inputs: Inputs,
     actionContext?: ActionContext
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<CreateProjectResult, FxError>> {
     const folder = inputs["folder"] as string;
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));
     }
     const scratch = inputs[QuestionNames.Scratch] as string;
     let projectPath = "";
+    let warnings = undefined;
     if (scratch === ScratchOptions.no().id) {
       // create from sample
       const sampleId = inputs[QuestionNames.Samples] as string;
@@ -219,6 +223,8 @@ class Coordinator {
         const res = await CopilotPluginGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
+        } else {
+          warnings = res.value.warnings;
         }
       } else {
         if (
@@ -236,6 +242,8 @@ class Coordinator {
           context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
+        } else {
+          return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }
       }
     }
@@ -260,7 +268,7 @@ class Coordinator {
         return err(res.error);
       }
     }
-    return ok(projectPath);
+    return ok({ projectPath: projectPath, warnings });
   }
 
   async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/* eslint-disable @typescript-eslint/require-await */
 import { SigninStateVerificationQuery, TurnContext } from "botbuilder";
 
 import { BotSsoConfig, BotSsoExecutionDialogHandler, TriggerPatterns } from "../interface";

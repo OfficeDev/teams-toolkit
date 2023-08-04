@@ -1,0 +1,10 @@
+*.js.map
+.git*
+.localConfigs
+.vscode
+local.settings.json
+test
+.DS_Store
+.deployment
+node_modules/.bin
+node_modules/azure-functions-core-tools

@@ -456,7 +456,7 @@ describe("SPFxGenerator", function () {
         return ["helloworld", "second"] as any;
       }
     });
-    sinon.stub(fs, "stat").resolves({
+    sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
       },
@@ -486,7 +486,7 @@ describe("SPFxGenerator", function () {
 
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readdir").resolves(["helloworld", "second"] as any);
-    sinon.stub(fs, "stat").resolves({
+    sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
       },
@@ -519,7 +519,7 @@ describe("SPFxGenerator", function () {
         return ["helloworld", "second"] as any;
       }
     });
-    sinon.stub(fs, "stat").resolves({
+    sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
       },

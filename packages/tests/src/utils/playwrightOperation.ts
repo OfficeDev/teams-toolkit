@@ -948,20 +948,17 @@ export async function validateBot(
     } catch (error) {
       console.log("no message to dismiss");
     }
-    try {
-      console.log("sending message ", options?.botCommand);
-      await executeBotSuggestionCommand(
-        page,
-        frame,
-        options?.botCommand || "hello world"
-      );
-      await frame?.click('button[name="send"]');
-    } catch (e: any) {
-      console.log(
-        `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
-      );
-    }
-    if (options?.botCommand === "show") {
+
+    if (command === "show") {
+      try {
+        console.log("sending message ", command);
+        await executeBotSuggestionCommand(page, frame, command);
+        await frame?.click('button[name="send"]');
+      } catch (e: any) {
+        console.log(
+          `[Command "${command}" not executed successfully] ${e.message}`
+        );
+      }
       await RetryHandler.retry(async () => {
         // wait for alert message to show
         const btn = await frame?.waitForSelector(
@@ -996,7 +993,10 @@ export async function validateBot(
       console.log(`${options?.expected}`);
     } else {
       await RetryHandler.retry(async () => {
-        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+        console.log("sending message ", command);
+        await executeBotSuggestionCommand(page, frame, command);
+        await frame?.click('button[name="send"]');
+        await frame?.waitForSelector(`p:has-text("${expected}")`);
         console.log("verify bot successfully!!!");
       }, 2);
       console.log(`${options?.expected}`);
@@ -1545,15 +1545,21 @@ async function executeBotSuggestionCommand(
   command: string
 ) {
   try {
-    await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
+    await frame?.click(`div.autocompleteItem__header:has-text("${command}")`);
   } catch (e: any) {
-    console.log("can't find quickly select, try another way");
-    await page.click('div[role="presentation"]:has-text("Chat")');
-    console.log("open quick select");
-    await page.click('div[role="presentation"]:has-text("Chat")');
-    await frame?.click('div.cke_textarea_inline[role="textbox"]');
-    console.log("select: ", command);
-    await frame?.click(`div.ui-list__itemheader:has-text("${command}")`);
+    try {
+      console.log("can't find quickly select, try another way");
+      await frame?.click('div.ui-flex[role="main"]');
+      console.log("open quick select");
+      await frame?.click('div.ui-flex[role="main"]');
+      await frame?.click('div.ck-content[role="textbox"]');
+      console.log("select: ", command);
+      await frame?.click(`div.autocompleteItem__header:has-text("${command}")`);
+    } catch (e: any) {
+      console.log(
+        `[Command ${command} not executed successfully] ${e.message}`
+      );
+    }
   }
 }
 

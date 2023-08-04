@@ -48,7 +48,7 @@ describe("coordinator create", () => {
       platform: Platform.CLI,
       folder: ".",
       [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab",
+      [QuestionNames.Samples]: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.createProject(inputs);
@@ -65,7 +65,7 @@ describe("coordinator create", () => {
       platform: Platform.CLI,
       folder: ".",
       [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab",
+      [QuestionNames.Samples]: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.createProject(inputs);
@@ -89,13 +89,13 @@ describe("coordinator create", () => {
       platform: Platform.CLI,
       folder: ".",
       [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab",
+      [QuestionNames.Samples]: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.createProject(inputs);
     assert.isTrue(res.isOk());
     if (res.isOk()) {
-      assert.isTrue(res.value.endsWith("_1"));
+      assert.isTrue(res.value.projectPath.endsWith("_1"));
     }
   });
   it("create project from scratch", async () => {
@@ -110,7 +110,7 @@ describe("coordinator create", () => {
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab(),
+      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
     };
     const fxCore = new FxCore(tools);
@@ -201,7 +201,7 @@ describe("coordinator create", () => {
       assert.isTrue(res.error instanceof MissingRequiredInputError);
     }
   });
-  it("create SPFx project", async () => {
+  it("fail to create SPFx project", async () => {
     sandbox.stub(SPFxGenerator, "generate").resolves(err(new UserError({})));
     sandbox
       .stub(settingsUtil, "readSettings")
@@ -223,7 +223,7 @@ describe("coordinator create", () => {
     assert.isTrue(res2.isErr());
   });
 
-  it("fail to create SPFx project", async () => {
+  it("create SPFx project", async () => {
     sandbox.stub(SPFxGenerator, "generate").resolves(ok(undefined));
     sandbox
       .stub(settingsUtil, "readSettings")
@@ -235,7 +235,7 @@ describe("coordinator create", () => {
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
-      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
       [QuestionNames.SPFxSolution]: "new",
       [QuestionNames.SPFxFramework]: "none",
       [QuestionNames.SPFxWebpartName]: "test",
@@ -478,7 +478,7 @@ describe("coordinator create", () => {
       [QuestionNames.Capabilities]: "TabNonSsoAndBot",
       [QuestionNames.ReplaceWebsiteUrl]: ["tab1"],
       [QuestionNames.ReplaceContentUrl]: [],
-      [QuestionNames.ReplaceBotIds]: ["bot"],
+      [QuestionNames.ReplaceBotIds]: ["messageExtension"],
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -514,7 +514,6 @@ describe("coordinator create", () => {
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
-
     assert.isTrue(res2.isErr());
   });
 

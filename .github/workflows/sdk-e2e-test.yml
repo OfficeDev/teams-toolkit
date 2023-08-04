@@ -146,17 +146,3 @@ jobs:
            -H "X-GitHub-Api-Version: 2022-11-28" \
            https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
            -d '{"ref":"${{ github.ref_name }}","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
-
-      - name: Report result
-        uses: satak/webrequest-action@master
-        if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5)) }}
-        with:
-          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
-          method: POST
-          payload: |
-            {
-              "to": "${{ steps.list-jobs.outputs.to }}",
-              "body": "${{ steps.list-jobs.outputs.body }}",
-              "subject": "${{ steps.list-jobs.outputs.subject }}",
-              "apiKey": "${{ secrets.MAIL_API_KEY }}"
-            }

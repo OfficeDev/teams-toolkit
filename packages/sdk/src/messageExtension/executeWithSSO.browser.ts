@@ -14,7 +14,7 @@ import { formatString } from "../util/utils";
  * @remarks
  * Only works in in server side.
  */
-export async function handleMessageExtensionQueryWithToken(
+export function handleMessageExtensionQueryWithToken(
   context: TurnContext,
   config: AuthenticationConfiguration,
   scopes: string | string[],
@@ -31,7 +31,7 @@ export async function handleMessageExtensionQueryWithToken(
  * @remarks
  * Only works in in server side.
  */
-export async function handleMessageExtensionQueryWithSSO(
+export function handleMessageExtensionQueryWithSSO(
   context: TurnContext,
   config: OnBehalfOfCredentialAuthConfig,
   initiateLoginEndpoint: string,

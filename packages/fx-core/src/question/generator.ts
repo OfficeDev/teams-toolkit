@@ -190,9 +190,7 @@ export async function generate(
         type = "boolean";
       } else if (options.length > 0) {
         const optionStrings = options.map((o) => (typeof o === "string" ? o : o.id));
-        type = !selection.skipValidation
-          ? "string"
-          : optionStrings.map((i) => `"${i}"`).join(" | ");
+        type = selection.skipValidation ? "string" : optionStrings.map((i) => `"${i}"`).join(" | ");
         (option as CLIStringOption | CLIArrayOption).choices = optionStrings;
       } else {
         type = "string";

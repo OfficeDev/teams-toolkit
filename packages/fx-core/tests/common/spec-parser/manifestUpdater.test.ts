@@ -9,9 +9,6 @@ import "mocha";
 import { updateManifest, generateCommands } from "../../../src/common/spec-parser/manifestUpdater";
 
 describe("manifestUpdater", () => {
-  const manifestPath = "/path/to/your/manifest.json";
-  const outputSpecPath = "/path/to/your/outputSpec.yaml";
-  const adaptiveCardFolder = "/path/to/your/adaptiveCards";
   const spec: any = {
     openapi: "3.0.2",
     info: {
@@ -34,7 +31,15 @@ describe("manifestUpdater", () => {
     },
   };
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("should update the manifest with the correct compose extension", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+
     const originalManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "Original Short Description", full: "Original Full Description" },
@@ -46,7 +51,8 @@ describe("manifestUpdater", () => {
       composeExtensions: [
         {
           type: "apiBased",
-          apiSpecFile: path.basename(outputSpecPath),
+          supportsConversationalAI: true,
+          apiSpecFile: "spec/outputSpec.yaml",
           commands: [
             {
               context: ["compose"],

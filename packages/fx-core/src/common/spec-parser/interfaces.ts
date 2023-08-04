@@ -35,6 +35,11 @@ export interface WarningResult {
    * The content of the warning.
    */
   content: string;
+
+  /**
+   * data of the warning.
+   */
+  data?: any;
 }
 
 /**
@@ -50,6 +55,11 @@ export interface ErrorResult {
    * The content of the error.
    */
   content: string;
+
+  /**
+   * data of the error.
+   */
+  data?: any;
 }
 
 /**
@@ -125,6 +135,7 @@ export interface Description {
 export interface ComposeExtension {
   type: string;
   apiSpecFile: string;
+  supportsConversationalAI: boolean;
   commands: Command[];
 }
 

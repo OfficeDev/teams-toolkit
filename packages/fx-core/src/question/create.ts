@@ -697,6 +697,7 @@ function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
     title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
     type: "singleSelect",
     staticOptions: CapabilityOptions.copilotPlugins(),
+    cliShortName: "cp",
   };
 }
 
@@ -1490,21 +1491,37 @@ export function capabilitySubTree(): IQTreeNode {
         data: officeAddinHostingQuestion(),
       },
       {
+        // Copilot plugin sub-tree (will show in CLI only)
+        condition: (inputs: Inputs) => {
+          return (
+            CLIPlatforms.includes(inputs.platform) &&
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
+          );
+        },
+        data: copilotPluginDevelopmentQuestion(),
+      },
+      {
         // Copilot plugin from API spec or AI Plugin
-        condition: {
-          enum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        condition: (inputs: Inputs) => {
+          return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
+            condition: (inputs: Inputs) => {
+              return (
+                getCopilotPluginFeatureId(inputs) === CapabilityOptions.copilotPluginApiSpec().id
+              );
+            },
             data: apiSpecLocationQuestion(),
           },
           {
-            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
+            condition: (inputs: Inputs) => {
+              return (
+                getCopilotPluginFeatureId(inputs) ===
+                CapabilityOptions.copilotPluginOpenAIPlugin().id
+              );
+            },
             data: openAIPluginManifestLocationQuestion(),
           },
           {

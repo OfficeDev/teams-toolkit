@@ -43,6 +43,7 @@ import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
+import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -312,21 +313,21 @@ export class FxCore {
     return ok(res);
   }
 
-  async grantPermission(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async grantPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     return this.v3Implement.dispatch(this.grantPermission, inputs);
   }
 
   /**
    * none lifecycle command
    */
-  async checkPermission(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async checkPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     return this.v3Implement.dispatch(this.checkPermission, inputs);
   }
 
   /**
    * none lifecycle command
    */
-  async listCollaborator(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async listCollaborator(inputs: Inputs): Promise<Result<ListCollaboratorResult, FxError>> {
     return this.v3Implement.dispatch(this.listCollaborator, inputs);
   }
 

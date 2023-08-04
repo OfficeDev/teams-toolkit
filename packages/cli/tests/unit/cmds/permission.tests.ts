@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 
 import { err, Inputs, ok } from "@microsoft/teamsfx-api";
-import { FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
+import {
+  CollaborationStateResult,
+  FxCore,
+  InvalidProjectError,
+  ListCollaboratorResult,
+  PermissionsResult,
+} from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 import "mocha";
 import sinon from "sinon";
@@ -25,11 +31,16 @@ describe("Permission Command Tests", function () {
     mockLogProvider(sandbox);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "checkPermission").callsFake(async (inputs: Inputs) => {
-      if (inputs.projectPath?.includes("real")) return ok("");
+      if (inputs.projectPath?.includes("real"))
+        return ok({ state: "OK" } as CollaborationStateResult);
       else return err(new InvalidProjectError());
     });
-    sandbox.stub(FxCore.prototype, "grantPermission").resolves(ok(""));
-    sandbox.stub(FxCore.prototype, "listCollaborator").resolves(ok([]));
+    sandbox
+      .stub(FxCore.prototype, "grantPermission")
+      .resolves(ok({ state: "OK" } as PermissionsResult));
+    sandbox
+      .stub(FxCore.prototype, "listCollaborator")
+      .resolves(ok({ state: "OK" } as ListCollaboratorResult));
   });
 
   afterEach(() => {

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, InputsWithProjectPath } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { PermissionListInputs, PermissionListOptions } from "@microsoft/teamsfx-core";
 import { createFxCore } from "../../activate";
 import { azureMessage, spfxMessage } from "../../cmds/permission";
@@ -35,6 +35,9 @@ export const permissionStatusCommand: CLICommand = {
     const result = listAll
       ? await core.listCollaborator(inputs)
       : await core.checkPermission(inputs);
-    return result;
+    if (result.isErr()) {
+      return err(result.error);
+    }
+    return ok(undefined);
   },
 };

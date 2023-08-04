@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, InputsWithProjectPath } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { PermissionGrantInputs, PermissionGrantOptions } from "@microsoft/teamsfx-core";
 import { createFxCore } from "../../activate";
 import { azureMessage, spfxMessage } from "../../cmds/permission";
@@ -23,6 +23,9 @@ export const permissionGrantCommand: CLICommand = {
     // setAppTypeInputs(inputs);// app type input is unused in FxCore
     const core = createFxCore();
     const result = await core.grantPermission(inputs);
-    return result;
+    if (result.isErr()) {
+      return err(result.error);
+    }
+    return ok(undefined);
   },
 };

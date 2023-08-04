@@ -96,6 +96,7 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -368,7 +369,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     EnvWriterMW,
   ])
-  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+  async grantPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     inputs.stage = Stage.grantPermission;
     const context = createContextV3();
     const res = await grantPermission(
@@ -386,7 +387,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     EnvWriterMW,
   ])
-  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
+  async checkPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     inputs.stage = Stage.checkPermission;
     const context = createContextV3();
     const res = await checkPermission(
@@ -405,7 +406,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     EnvWriterMW,
   ])
-  async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
+  async listCollaborator(inputs: Inputs): Promise<Result<ListCollaboratorResult, FxError>> {
     inputs.stage = Stage.listCollaborator;
     const context = createContextV3();
     const res = await listCollaborator(

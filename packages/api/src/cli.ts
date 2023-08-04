@@ -27,8 +27,12 @@ export interface CLICommand {
   hidden?: boolean;
 }
 
+export interface CLIFoundCommand extends CLICommand {
+  fullName: string;
+}
+
 export interface CLIContext {
-  command: CLICommand;
+  command: CLIFoundCommand;
   optionValues: Record<string, OptionValue>;
   globalOptionValues: Record<string, OptionValue>;
   argumentValues: string[];

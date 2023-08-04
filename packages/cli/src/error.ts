@@ -1,20 +1,37 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { UserError } from "@microsoft/teamsfx-api";
+import { CLICommandOption, UserError } from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
 import { strings } from "./resource";
 import * as util from "util";
+import { helper } from "./commands/helper";
 
-export class MissingRequiredArgumentError extends UserError {
-  constructor(command: string, name: string) {
+export class MissingRequiredOptionError extends UserError {
+  constructor(command: string, option: string | CLICommandOption) {
     super({
       source: constants.cliSource,
-      message: util.format(strings["error.MissingRequiredArgumentError"], command, name),
+      message: util.format(
+        strings["error.MissingRequiredArgumentError"],
+        command,
+        typeof option === "string" ? option : option.name,
+        typeof option === "string" ? option : helper.formatOptionName(option, false)
+      ),
     });
   }
 }
-
+export class MissingRequiredArgumentError extends UserError {
+  constructor(command: string, argument: string | CLICommandOption) {
+    super({
+      source: constants.cliSource,
+      message: util.format(
+        strings["error.MissingRequiredArgumentError"],
+        command,
+        typeof argument === "string" ? argument : argument.name
+      ),
+    });
+  }
+}
 export class ArgumentConflictError extends UserError {
   constructor(command: string, name1: string, name2: string) {
     super({

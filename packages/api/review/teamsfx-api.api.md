@@ -171,7 +171,7 @@ export interface CLIContext {
     // (undocumented)
     argumentValues: string[];
     // (undocumented)
-    command: CLICommand;
+    command: CLIFoundCommand;
     // (undocumented)
     globalOptionValues: Record<string, OptionValue>;
     // (undocumented)
@@ -186,6 +186,12 @@ export interface CLIExample {
     command: string;
     // (undocumented)
     description: string;
+}
+
+// @public (undocumented)
+export interface CLIFoundCommand extends CLICommand {
+    // (undocumented)
+    fullName: string;
 }
 
 // @public (undocumented)

@@ -93,6 +93,7 @@ export const previewCommand: CLICommand = {
   },
   handler: async (ctx: CLIContext) => {
     const inputs = ctx.optionValues as PreviewTeamsAppInputs & InputsWithProjectPath;
+    console.log("ctx.optionValues:", inputs);
     const workspaceFolder = inputs.projectPath as string;
     const env = inputs.env as string;
     const manifestFilePath = inputs["manifest-path"] as string;

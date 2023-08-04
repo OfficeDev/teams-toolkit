@@ -14,7 +14,7 @@ import {
   RootFolderOptions,
   ValidateApplicationOptions,
 } from "../constants";
-import { ArgumentConflictError, MissingRequiredArgumentError } from "../error";
+import { ArgumentConflictError, MissingRequiredOptionError } from "../error";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -99,7 +99,7 @@ export class ManifestValidate extends YargsCommand {
 
     // Throw error if --env not specified
     if (args[ManifestFilePathParamName] && !args.env && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("teamsfx validate", "env");
+      const error = new MissingRequiredOptionError("teamsfx validate", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
       return err(error);
     }

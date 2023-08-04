@@ -11,7 +11,7 @@ import {
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { cliSource } from "../../constants";
-import { ArgumentConflictError, MissingRequiredArgumentError } from "../../error";
+import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { EnvOption, ProjectFolderOption } from "../common";
@@ -43,7 +43,7 @@ export const validateCommand: CLICommand = {
       }
 
       if (inputs["manifest-path"] && !inputs.env) {
-        const error = new MissingRequiredArgumentError("teamsfx validate", "env");
+        const error = new MissingRequiredOptionError("teamsfx validate", "env");
         return err(error);
       }
 

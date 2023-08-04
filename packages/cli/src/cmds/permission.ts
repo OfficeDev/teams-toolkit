@@ -17,7 +17,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { MissingRequiredArgumentError } from "../error";
+import { MissingRequiredOptionError } from "../error";
 import { globals } from "../globals";
 
 export const azureMessage =
@@ -96,7 +96,7 @@ export class PermissionStatus extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("teamsfx status", "env");
+      const error = new MissingRequiredOptionError("teamsfx status", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
       return err(error);
     }
@@ -173,7 +173,7 @@ export class PermissionGrant extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("teamsfx grant", "env");
+      const error = new MissingRequiredOptionError("teamsfx grant", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, error);
       return err(error);
     }

@@ -5,6 +5,7 @@ import {
   CLICommand,
   CLICommandOption,
   CLIContext,
+  CLIFoundCommand,
   FxError,
   LogLevel,
   Platform,
@@ -36,7 +37,11 @@ import Progress from "../console/progress";
 import { getSystemInputs } from "../utils";
 import { createFxCore } from "../activate";
 import path from "path";
-import { UnknownOptionError } from "../error";
+import {
+  MissingRequiredArgumentError,
+  MissingRequiredOptionError,
+  UnknownOptionError,
+} from "../error";
 import * as uuid from "uuid";
 
 class CLIEngine {
@@ -46,21 +51,40 @@ class CLIEngine {
       : false;
   }
   async start(rootCmd: CLICommand): Promise<void> {
+    const debugLogs: string[] = [];
+
     const root = cloneDeep(rootCmd);
 
     // 0. get user args
     const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
+    debugLogs.push(`user argument list: ${JSON.stringify(args)}`);
 
     // 1. find command
     const findRes = this.findCommand(rootCmd, args);
-    const cmd = findRes.cmd;
+    const foundCommand = findRes.cmd;
     const remainingArgs = findRes.remainingArgs;
+    debugLogs.push(`find matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
+
+    const context: CLIContext = {
+      command: foundCommand,
+      optionValues: {},
+      globalOptionValues: {},
+      argumentValues: [],
+      telemetryProperties: {},
+    };
 
     // 2. parse args
-    const context = this.parseArgs(cmd, root, remainingArgs);
+    const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
 
-    logger.debug(`parsed user argument list: ${JSON.stringify(args)}`);
-    logger.debug(`match command: '${cmd.fullName}'`);
+    if (debugLogs.length) {
+      for (const log of debugLogs) {
+        logger.debug(log);
+      }
+    }
+    if (parseRes.isErr()) {
+      this.processResult(context, parseRes.error);
+      return;
+    }
 
     // 3. --version
     if (context.globalOptionValues.version === true) {
@@ -90,14 +114,19 @@ class CLIEngine {
     } else {
       // discard other options and args for interactive mode
       context.optionValues = pick(context.optionValues, ["projectPath"]);
+      logger.info(
+        `Some arguments/options are useless because the interactive mode is opened.` +
+          ` If you want to run the command non-interactively, add '--interactive false' after your command` +
+          ` or set the global setting by 'teamsfx config set interactive false'.`
+      );
     }
 
     try {
       // 6. version check
       const inputs = getSystemInputs(context.optionValues.projectPath as string);
       inputs.ignoreEnvInfo = true;
-      const skipCommands = ["new", "sample", "upgrade"];
-      if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
+      const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
+      if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
         const core = createFxCore();
         const res = await core.projectVersionCheck(inputs);
         if (res.isErr()) {
@@ -141,7 +170,10 @@ class CLIEngine {
     }
   }
 
-  findCommand(model: CLICommand, args: string[]): { cmd: CLICommand; remainingArgs: string[] } {
+  findCommand(
+    model: CLICommand,
+    args: string[]
+  ): { cmd: CLIFoundCommand; remainingArgs: string[] } {
     let i = 0;
     let cmd = model;
     for (; i < args.length; i++) {
@@ -153,41 +185,40 @@ class CLIEngine {
         break;
       }
     }
-    cmd.fullName = [model.name, ...args.slice(0, i)].join(" ");
-    const command = cloneDeep(cmd);
+    const command: CLIFoundCommand = {
+      fullName: [model.name, ...args.slice(0, i)].join(" "),
+      ...cloneDeep(cmd),
+    };
     return { cmd: command, remainingArgs: args.slice(i) };
   }
 
-  parseArgs(command: CLICommand, rootCommand: CLICommand, args: string[]): CLIContext {
+  parseArgs(
+    context: CLIContext,
+    rootCommand: CLICommand,
+    args: string[],
+    debugLogs: string[]
+  ): Result<undefined, UnknownOptionError | MissingRequiredOptionError> {
     const i = 0;
     let argumentIndex = 0;
-    const context: CLIContext = {
-      command: command,
-      optionValues: {},
-      globalOptionValues: {},
-      argumentValues: [],
-      telemetryProperties: {},
-    };
+    const command = context.command;
     const options = (rootCommand.options || []).concat(command.options || []);
 
     const list = cloneDeep(args);
     while (list.length) {
-      const arg = list.shift();
-      if (!arg) continue;
-      if (arg.startsWith("-") || arg.startsWith("--")) {
-        const trimed = arg.startsWith("--") ? arg.substring(2) : arg.substring(1);
+      const token = list.shift();
+      if (!token) continue;
+      if (token.startsWith("-") || token.startsWith("--")) {
+        const trimmedToken = token.startsWith("--") ? token.substring(2) : token.substring(1);
         let key: string;
         let value: string | undefined;
-        if (trimed.includes("=")) {
-          [key, value] = trimed.split("=");
-          // console.log("found key=value expression", key, value);
+        if (trimmedToken.includes("=")) {
+          [key, value] = trimmedToken.split("=");
           //process key, value
           list.unshift(value);
         } else {
-          key = trimed;
+          key = trimmedToken;
         }
         const option = options.find((o) => o.name === key || o.shortName === key);
-        // console.log("key: ", key, "option: ", option);
         if (option) {
           if (option.type === "boolean") {
             // boolean
@@ -200,9 +231,12 @@ class CLIEngine {
               } else if (value.toLowerCase() === "true") {
                 option.value = true;
                 list.shift();
+              } else {
+                option.value = true;
               }
+            } else {
+              option.value = true;
             }
-            option.value = true;
           } else if (option.type === "string") {
             // string
             value = list.shift();
@@ -212,28 +246,29 @@ class CLIEngine {
           } else {
             // array
             value = list.shift();
-            // console.log("found array key, value: ", value);
             if (value) {
               if (option.value === undefined) {
                 option.value = [];
               }
               const values = value.split(",");
-              // console.log("found multiple values: ", values);
               for (const v of values) {
                 option.value.push(v);
               }
             }
           }
-          const inputValues = command.options?.includes(option)
-            ? context.optionValues
-            : context.globalOptionValues;
-          // if (command.options?.includes(option))
-          //   console.log("is command option", "value=", option.value);
-          // else console.log("is global option", "value=", option.value);
+          const isCommandOption = command.options?.includes(option);
+          const inputValues = isCommandOption ? context.optionValues : context.globalOptionValues;
           const inputKey = option.questionName || option.name;
+          const logObject = {
+            token: token,
+            option: option.name,
+            value: option.value,
+            isGlobal: !isCommandOption,
+          };
           if (option.value !== undefined) inputValues[inputKey] = option.value;
+          debugLogs.push(`find option: ${JSON.stringify(logObject)}`);
         } else {
-          throw new UnknownOptionError(command.fullName!, key);
+          return err(new UnknownOptionError(command.fullName, key));
         }
       } else {
         if (command.arguments && command.arguments[argumentIndex]) {
@@ -245,31 +280,58 @@ class CLIEngine {
     // for required options or arguments, set default value if not set
     if (command.options) {
       for (const option of command.options) {
-        if (option.required && option.default !== undefined && option.value === undefined) {
-          option.value = option.default;
-          context.optionValues[option.name] = option.default;
+        if (option.required && option.value === undefined) {
+          if (option.default !== undefined) {
+            option.value = option.default;
+            context.optionValues[option.name] = option.default;
+            debugLogs.push(
+              `set required option with default value, ${option.name}=${JSON.stringify(
+                option.default
+              )}`
+            );
+          } else if (
+            !context.globalOptionValues.help &&
+            !context.globalOptionValues.version &&
+            context.globalOptionValues.interactive === false
+          ) {
+            return err(new MissingRequiredOptionError(command.fullName, option));
+          }
         }
       }
     }
     if (command.arguments) {
       for (let i = 0; i < command.arguments.length; ++i) {
         const argument = command.arguments[i];
-        if (argument.required && argument.default !== undefined && argument.value === undefined) {
-          argument.value = argument.default;
-          context.argumentValues[i] = argument.default as string;
+        if (argument.required && argument.value === undefined) {
+          if (argument.default !== undefined) {
+            argument.value = argument.default;
+            context.argumentValues[i] = argument.default as string;
+            debugLogs.push(
+              `set required argument with default value, ${argument.name}=${JSON.stringify(
+                argument.default
+              )}`
+            );
+          } else if (
+            !context.globalOptionValues.help &&
+            !context.globalOptionValues.version &&
+            context.globalOptionValues.interactive === false
+          ) {
+            return err(new MissingRequiredArgumentError(command.fullName, argument));
+          }
         }
         // set argument value in optionValues
-        if (argument.required || argument.value !== undefined) {
+        if (argument.value !== undefined) {
           context.optionValues[i] = argument.value;
         }
       }
     }
+
     // set log level
     const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;
     logger.logLevel = logLevel;
 
     // special process for global options
-    // process interactive
+    // interactive
     context.globalOptionValues.interactive =
       context.globalOptionValues.interactive === false ? false : true;
 
@@ -277,12 +339,12 @@ class CLIEngine {
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
     context.optionValues.correlationId = uuid.v4();
     context.optionValues.platform = Platform.CLI;
-    // set root folder
+    // set projectPath
     const projectFolderOption = context.command.options?.find(
       (o) => o.questionName === "projectPath"
     );
     if (projectFolderOption) {
-      // resolve project path
+      // resolve projectPath
       const projectPath = path.resolve(projectFolderOption.value as string);
       projectFolderOption.value = projectPath;
       context.optionValues.projectPath = projectPath;
@@ -293,26 +355,14 @@ class CLIEngine {
 
     UI.interactive = context.globalOptionValues.interactive as boolean;
 
-    logger.debug(`parsed option values: ${JSON.stringify(context.optionValues)}`);
-    logger.debug(`parsed global option values: ${JSON.stringify(context.globalOptionValues)}`);
-    logger.debug(`parsed arguments: ${JSON.stringify(context.argumentValues)}`);
-
-    if (context.globalOptionValues.interactive) {
-      const sameKeys = Object.keys(context.optionValues).filter(
-        (k) => k !== "folder" && k in args && context.optionValues[k] !== undefined
-      );
-      if (sameKeys.length > 0) {
-        /// only if there are intersects between parameters and arguments, show the log,
-        /// because it means some parameters will be used by fx-core.
-        logger.info(
-          `Some arguments/options are useless because the interactive mode is opened.` +
-            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-            ` or set the global setting by 'teamsfx config set interactive false'.`
-        );
-      }
-    }
-
-    return context;
+    debugLogs.push(
+      `parsed context: ${JSON.stringify(
+        pick(context, ["optionValues", "globalOptionValues", "argumentValues"]),
+        null,
+        2
+      )}`
+    );
+    return ok(undefined);
   }
 
   validateOptionsAndArguments(

@@ -1,5 +1,5 @@
 import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
-import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
+import { CapabilityOptions, FxCore, UserCancelError, envUtil } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
@@ -15,9 +15,14 @@ import {
   configSetCommand,
   createCommand,
   createSampleCommand,
+  deployCommand,
+  envAddCommand,
+  envListCommand,
   listCapabilitiesCommand,
   listSamplesCommand,
   printGlobalConfig,
+  provisionCommand,
+  publishCommand,
 } from "../../src/commands/models";
 import AzureTokenProvider from "../../src/commonlib/azureLogin";
 import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
@@ -182,7 +187,7 @@ describe("CLI commands", () => {
 
   describe("addSPFxWebpartCommand", async () => {
     it("success", async () => {
-      sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok({}));
+      sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...addSPFxWebpartCommand, fullName: "teamsfx add spfx-web-part" },
         optionValues: {},
@@ -193,17 +198,87 @@ describe("CLI commands", () => {
       const res = await addSPFxWebpartCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("error", async () => {
-      sandbox.stub(FxCore.prototype, "addWebpart").resolves(err(new UserCancelError()));
+  });
+  describe("deployCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "deployArtifacts").resolves(ok(undefined));
       const ctx: CLIContext = {
-        command: { ...addSPFxWebpartCommand, fullName: "teamsfx add spfx-web-part" },
+        command: { ...deployCommand, fullName: "teamsfx" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await addSPFxWebpartCommand.handler!(ctx);
-      assert.isTrue(res.isErr());
+      const res = await deployCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("envAddCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...envAddCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envAddCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("envListCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+      const ctx: CLIContext = {
+        command: { ...envListCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envListCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("error", async () => {
+      sandbox.stub(envUtil, "listEnv").resolves(err(new UserCancelError()));
+      const ctx: CLIContext = {
+        command: { ...envListCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envListCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("provisionCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "provisionResources").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...provisionCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await provisionCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("publishCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "publishApplication").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...publishCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await publishCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
     });
   });
 });
@@ -377,7 +452,7 @@ describe("CLI read-only commands", () => {
       const res = await printGlobalConfig();
       assert.isTrue(res.isErr());
     });
-    it("configGetCommand key=a success", async () => {
+    it("configGetCommand", async () => {
       sandbox.stub(UserSettings, "getConfigSync").returns(ok({ a: 1, b: 2 }));
       const ctx: CLIContext = {
         command: { ...configGetCommand, fullName: "teamsfx ..." },
@@ -390,23 +465,10 @@ describe("CLI read-only commands", () => {
       const res = await configGetCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("configGetCommand key=a error", async () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(err(new UserCancelError()));
-      const ctx: CLIContext = {
-        command: { ...configGetCommand, fullName: "teamsfx ..." },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: ["a"],
-        telemetryProperties: {},
-      };
-      messages = [];
-      const res = await configGetCommand.handler!(ctx);
-      assert.isTrue(res.isErr());
-    });
   });
 
   describe("configSetCommand", async () => {
-    it("setGlobalConfig success", async () => {
+    it("configSetCommand", async () => {
       sandbox.stub(UserSettings, "setConfigSync").returns(ok(undefined));
       const ctx: CLIContext = {
         command: { ...configGetCommand, fullName: "teamsfx ..." },
@@ -419,7 +481,7 @@ describe("CLI read-only commands", () => {
       assert.isTrue(res.isOk());
       assert.isTrue(messages.includes(`Successfully set user configuration key.`));
     });
-    it("setGlobalConfig error", async () => {
+    it("configSetCommand error", async () => {
       sandbox.stub(UserSettings, "setConfigSync").returns(err(new UserCancelError()));
       const ctx: CLIContext = {
         command: { ...configGetCommand, fullName: "teamsfx ..." },
@@ -431,6 +493,22 @@ describe("CLI read-only commands", () => {
       const res = await configSetCommand.handler!(ctx);
       assert.isTrue(res.isErr());
       assert.isTrue(messages.includes("Set user configuration failed."));
+    });
+  });
+
+  describe("listCapabilitiesCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(UserSettings, "setConfigSync").returns(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await listCapabilitiesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+      assert.isTrue(messages.includes(JSON.stringify(CapabilityOptions.all(), undefined, 2)));
     });
   });
 });

@@ -45,6 +45,7 @@ interface CLICommandOptionBase {
   /** @description question name used in FxCore */
   questionName?: string;
   description: string;
+  /** @description option/argument abbreviation */
   shortName?: string;
   type: CLIOptionType;
   required?: boolean;
@@ -62,6 +63,8 @@ export interface CLIStringOption extends CLICommandOptionBase {
   default?: string;
   value?: string;
   choices?: string[];
+  /** @description whether to skip validation against allowed values defined in choices */
+  skipValidation?: boolean;
   choiceListCommand?: string;
 }
 
@@ -69,6 +72,8 @@ export interface CLIArrayOption extends CLICommandOptionBase {
   type: "array";
   default?: string[];
   choices?: string[];
+  /** @description whether to skip validation against allowed values defined in choices */
+  skipValidation?: boolean;
   choiceListCommand?: string;
   value?: string[];
 }

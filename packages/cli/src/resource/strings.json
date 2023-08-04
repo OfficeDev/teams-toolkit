@@ -10,6 +10,7 @@
   "error.ArgumentConflictError": "The command '%s' is designed to accept either argument '%s' or argument '%s', but not both simultaneously. Keep either of the two arguments and try again.",
   "error.UnknownOptionError": "The command '%s' can not be executed for unknown option '%s'.",
   "error.InvalidOptionErrorReason": "'%s' is not in the valid option list: %s.",
+  "error.InvalidChoiceError": "The command '%s' can not be executed for invalid choice '%s' for option/argument '%s', allowed values: %s.",
   "success.prefix": "(✓) Success: ",
   "warning.prefix": "(!) Warning: ",
   "command": {

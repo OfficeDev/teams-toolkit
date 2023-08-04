@@ -22,10 +22,7 @@ export const configGetCommand: CLICommand = {
   handler: async (ctx) => {
     const configName = ctx.argumentValues[0] as string | undefined;
     const globalResult = await printGlobalConfig(configName);
-    if (globalResult.isErr()) {
-      return globalResult;
-    }
-    return ok(undefined);
+    return globalResult;
   },
 };
 

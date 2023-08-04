@@ -55,9 +55,6 @@ export const validateCommand: CLICommand = {
     }
     const core = createFxCore();
     const res = await core.validateApplication(inputs);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };

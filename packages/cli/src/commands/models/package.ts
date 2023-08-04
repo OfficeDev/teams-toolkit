@@ -35,9 +35,6 @@ export const packageCommand: CLICommand = {
     const core = createFxCore();
     const inputs = ctx.optionValues as SelectTeamsManifestInputs & InputsWithProjectPath;
     const res = await core.createAppPackage(inputs);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };

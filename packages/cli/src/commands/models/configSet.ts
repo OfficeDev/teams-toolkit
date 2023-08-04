@@ -30,10 +30,7 @@ export const configSetCommand: CLICommand = {
     const configName = ctx.argumentValues[0] as string;
     const configValue = ctx.argumentValues[1] as string;
     const res = await setGlobalConfig(configName, configValue);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };
 

@@ -17,9 +17,6 @@ export const updateTeamsAppCommand: CLICommand = {
     const inputs = ctx.optionValues as InputsWithProjectPath;
     const core = createFxCore();
     const res = await core.deployTeamsManifest(inputs);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };

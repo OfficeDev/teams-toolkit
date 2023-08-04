@@ -17,9 +17,6 @@ export const deployCommand: CLICommand = {
     const core = createFxCore();
     const inputs = ctx.optionValues as InputsWithProjectPath;
     const res = await core.deployArtifacts(inputs);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };

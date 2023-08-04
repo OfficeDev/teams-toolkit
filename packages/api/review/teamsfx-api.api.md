@@ -108,6 +108,7 @@ export interface CLIArrayOption extends CLICommandOptionBase {
     choices?: string[];
     // (undocumented)
     default?: string[];
+    skipValidation?: boolean;
     // (undocumented)
     type: "array";
     // (undocumented)
@@ -208,6 +209,7 @@ export interface CLIStringOption extends CLICommandOptionBase {
     choices?: string[];
     // (undocumented)
     default?: string;
+    skipValidation?: boolean;
     // (undocumented)
     type: "string";
     // (undocumented)
@@ -544,6 +546,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
     onDidChangeSelection?: OnSelectionChangeFunc;
     returnObject?: boolean;
     skipSingleOption?: boolean;
+    skipValidation?: boolean;
     staticOptions: StaticOptions;
     // (undocumented)
     type: "multiSelect";
@@ -752,6 +755,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
     dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
     skipSingleOption?: boolean;
+    skipValidation?: boolean;
     staticOptions: StaticOptions;
     // (undocumented)
     type: "singleSelect";

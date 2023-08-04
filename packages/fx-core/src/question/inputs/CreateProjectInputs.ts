@@ -12,37 +12,21 @@ import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface CreateProjectInputs extends Inputs {
   /** @description Capabilities */
-  capabilities?:
-    | "bot"
-    | "notification"
-    | "command-bot"
-    | "workflow-bot"
-    | "tab-non-sso"
-    | "sso-launch-page"
-    | "dashboard-tab"
-    | "tab-spfx"
-    | "link-unfurling"
-    | "search-app"
-    | "CollectFormMessagingExtension";
+  capabilities?: string;
   /** @description Choose triggers */
-  "bot-host-type-trigger"?:
-    | "http-restify"
-    | "http-webapi"
-    | "http-and-timer-functions"
-    | "http-functions"
-    | "timer-functions";
+  "bot-host-type-trigger"?: string;
   /** @description SharePoint Solution */
-  "spfx-solution"?: "new" | "import";
+  "spfx-solution"?: string;
   /** @description SharePoint Framework */
   "spfx-install-latest-package"?: boolean;
   /** @description Framework */
-  "spfx-framework-type"?: "react" | "minimal" | "none";
+  "spfx-framework-type"?: string;
   /** @description Name for SharePoint Framework Web Part. */
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
   /** @description Programming Language. */
-  "programming-language"?: "javascript" | "typescript" | "csharp";
+  "programming-language"?: string;
   /** @description Application name */
   "app-name"?: string;
 }

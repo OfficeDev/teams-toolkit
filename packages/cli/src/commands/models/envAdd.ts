@@ -23,9 +23,6 @@ export const envAddCommand: CLICommand = {
     }
     const core = createFxCore();
     const result = await core.createEnv(inputs);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-    return ok(undefined);
+    return result;
   },
 };

@@ -21,9 +21,6 @@ export const publishCommand: CLICommand = {
       assign(inputs, ctx.optionValues);
     }
     const res = await core.publishApplication(inputs);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };

@@ -215,6 +215,11 @@ export interface SingleSelectQuestion extends UserInputQuestion {
    * the command is only for CLI option description
    */
   cliChoiceListCommand?: string;
+
+  /**
+   * whether to skip validation against allowed list in non-interactive mode, default false
+   */
+  skipValidation?: boolean;
 }
 
 /**
@@ -272,6 +277,11 @@ export interface MultiSelectQuestion extends UserInputQuestion {
    * the command is only for CLI option description
    */
   cliChoiceListCommand?: string;
+
+  /**
+   * whether to skip validation against allowed list in non-interactive mode, default false
+   */
+  skipValidation?: boolean;
 }
 
 /**

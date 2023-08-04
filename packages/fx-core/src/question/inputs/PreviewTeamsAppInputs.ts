@@ -12,7 +12,7 @@ import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface PreviewTeamsAppInputs extends Inputs {
   /** @description Platform */
-  "m365-host"?: "teams" | "outlook" | "office";
+  "m365-host"?: string;
   /** @description Select Teams manifest.json file */
   "manifest-path"?: string;
 }

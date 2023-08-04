@@ -35,9 +35,6 @@ export const permissionStatusCommand: CLICommand = {
     const result = listAll
       ? await core.listCollaborator(inputs)
       : await core.checkPermission(inputs);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-    return ok(undefined);
+    return result;
   },
 };

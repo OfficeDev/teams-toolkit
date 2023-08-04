@@ -170,14 +170,17 @@ export class FxCoreV3Implement {
     ContextInjectorMW,
     EnvWriterMW,
   ])
-  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async provisionResources(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<undefined, FxError>> {
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
     try {
       const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
       if (res.isOk()) {
         ctx!.envVars = res.value;
-        return ok(Void);
+        return ok(undefined);
       } else {
         // for partial success scenario, output is set in inputs object
         ctx!.envVars = inputs.envVars;
@@ -199,13 +202,16 @@ export class FxCoreV3Implement {
     ContextInjectorMW,
     EnvWriterMW,
   ])
-  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployArtifacts(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<undefined, FxError>> {
     inputs.stage = Stage.deploy;
     const context = createDriverContext(inputs);
     const res = await coordinator.deploy(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
       ctx!.envVars = res.value;
-      return ok(Void);
+      return ok(undefined);
     } else {
       // for partial success scenario, output is set in inputs object
       ctx!.envVars = inputs.envVars;
@@ -221,7 +227,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async deployAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async deployAadManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
@@ -264,7 +270,7 @@ export class FxCoreV3Implement {
         }
       });
     }
-    return ok(Void);
+    return ok(undefined);
   }
 
   @hooks([
@@ -275,13 +281,16 @@ export class FxCoreV3Implement {
     ContextInjectorMW,
     EnvWriterMW,
   ])
-  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async publishApplication(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<undefined, FxError>> {
     inputs.stage = Stage.publish;
     const context = createDriverContext(inputs);
     const res = await coordinator.publish(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
       ctx!.envVars = res.value;
-      return ok(Void);
+      return ok(undefined);
     } else {
       // for partial success scenario, output is set in inputs object
       ctx!.envVars = inputs.envVars;
@@ -298,14 +307,18 @@ export class FxCoreV3Implement {
     ContextInjectorMW,
     EnvWriterMW,
   ])
-  async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployTeamsManifest(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<undefined, FxError>> {
     inputs.manifestTemplatePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
     const context = createContextV3();
     const res = await updateManifestV3(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
       ctx!.envVars = envUtil.map2object(res.value);
+      return ok(undefined);
     }
-    return res;
+    return err(res.error);
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
@@ -323,7 +336,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, QuestionMW("addWebpart"), ProjectMigratorMWV3, ConcurrentLockerMW])
-  async addWebpart(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async addWebpart(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
     const args: AddWebPartArgs = {
       manifestPath: inputs[SPFxQuestionNames.ManifestPath],
@@ -333,11 +346,15 @@ export class FxCoreV3Implement {
       spfxPackage: SPFxVersionOptionIds.installLocally,
     };
     const Context: DriverContext = createDriverContext(inputs);
-    return await driver.run(args, Context);
+    const res = await driver.run(args, Context);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return ok(undefined);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
-  async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async publishInDeveloperPortal(inputs: Inputs): Promise<Result<undefined, FxError>> {
     inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
@@ -421,7 +438,7 @@ export class FxCoreV3Implement {
     return ok(res);
   }
 
-  async phantomMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async phantomMigrationV3(inputs: Inputs): Promise<Result<undefined, FxError>> {
     // If the project is invalid or upgraded, the ProjectMigratorMWV3 will not take action.
     // Check invaliad/upgraded project here before call ProjectMigratorMWV3
     const projectPath = (inputs.projectPath as string) || "";
@@ -442,8 +459,8 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
-  async innerMigrationV3(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return ok(Void);
+  async innerMigrationV3(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
   }
 
   @hooks([ErrorHandlerMW])
@@ -492,7 +509,7 @@ export class FxCoreV3Implement {
     ConcurrentLockerMW,
     ContextInjectorMW,
   ])
-  async preCheckYmlAndEnvForVS(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async preCheckYmlAndEnvForVS(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const context = createDriverContext(inputs);
     const result = await coordinator.preCheckYmlAndEnvForVS(
       context,
@@ -502,7 +519,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, QuestionMW("createNewEnv"), ConcurrentLockerMW])
-  async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async createEnv(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.createEnvCopyV3(
       inputs[QuestionNames.NewTargetEnvName]!,
       inputs[QuestionNames.SourceEnvName]!,
@@ -514,7 +531,7 @@ export class FxCoreV3Implement {
     targetEnvName: string,
     sourceEnvName: string,
     projectPath: string
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     let res = await pathUtils.getEnvFilePath(projectPath, sourceEnvName);
     if (res.isErr()) return err(res.error);
     const sourceDotEnvFile = res.value;
@@ -546,11 +563,11 @@ export class FxCoreV3Implement {
       });
 
     writeStream.end();
-    return ok(Void);
+    return ok(undefined);
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ConcurrentLockerMW])
-  async buildAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async buildAadManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
       ? inputs.AAD_MANIFEST_FILE
       : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
@@ -565,10 +582,10 @@ export class FxCoreV3Implement {
     );
     const Context: DriverContext = createDriverContext(inputs);
     await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
-    return ok(Void);
+    return ok(undefined);
   }
   @hooks([QuestionMW("validateTeamsApp")])
-  async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+  async validateApplication(inputs: Inputs): Promise<Result<undefined, FxError>> {
     if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.schema().id) {
       return await this.validateManifest(inputs);
     } else {

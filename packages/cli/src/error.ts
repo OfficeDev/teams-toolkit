@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CLICommandOption, UserError } from "@microsoft/teamsfx-api";
+import {
+  CLIArrayOption,
+  CLICommandArgument,
+  CLICommandOption,
+  CLIStringOption,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
 import { strings } from "./resource";
 import * as util from "util";
@@ -21,7 +27,7 @@ export class MissingRequiredOptionError extends UserError {
   }
 }
 export class MissingRequiredArgumentError extends UserError {
-  constructor(command: string, argument: string | CLICommandOption) {
+  constructor(command: string, argument: string | CLICommandArgument) {
     super({
       source: constants.cliSource,
       message: util.format(
@@ -32,6 +38,22 @@ export class MissingRequiredArgumentError extends UserError {
     });
   }
 }
+
+export class InvalidChoiceError extends UserError {
+  constructor(command: string, value: string, option: CLIStringOption | CLIArrayOption) {
+    super({
+      source: constants.cliSource,
+      message: util.format(
+        strings["error.InvalidChoiceError"],
+        command,
+        value,
+        helper.formatOptionName(option, false),
+        option.choices!.join(", ")
+      ),
+    });
+  }
+}
+
 export class ArgumentConflictError extends UserError {
   constructor(command: string, name1: string, name2: string) {
     super({

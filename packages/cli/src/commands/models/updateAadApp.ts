@@ -18,9 +18,6 @@ export const updateAadAppCommand: CLICommand = {
     inputs.ignoreEnvInfo = false;
     const core = createFxCore();
     const res = await core.deployAadManifest(inputs);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };

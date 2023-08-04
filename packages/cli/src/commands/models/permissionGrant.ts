@@ -23,9 +23,6 @@ export const permissionGrantCommand: CLICommand = {
     // setAppTypeInputs(inputs);// app type input is unused in FxCore
     const core = createFxCore();
     const result = await core.grantPermission(inputs);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-    return ok(undefined);
+    return result;
   },
 };

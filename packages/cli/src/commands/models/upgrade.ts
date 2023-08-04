@@ -32,11 +32,8 @@ export const upgradeCommand: CLICommand = {
       delete inputs["nonInteractive"];
     }
     const core = createFxCore();
-    const upgradeResult = await core.phantomMigrationV3(inputs);
-    if (upgradeResult.isErr()) {
-      return err(upgradeResult.error);
-    }
-    await UI.showMessage("info", strings.command.upgrade.success, false);
-    return ok(undefined);
+    const res = await core.phantomMigrationV3(inputs);
+    if (res.isOk()) await UI.showMessage("info", strings.command.upgrade.success, false);
+    return res;
   },
 };

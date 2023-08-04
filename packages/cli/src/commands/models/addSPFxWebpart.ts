@@ -17,9 +17,6 @@ export const addSPFxWebpartCommand: CLICommand = {
     const inputs = ctx.optionValues as SPFxAddWebpartInputs;
     const core = createFxCore();
     const res = await core.addWebpart(inputs);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    return ok(undefined);
+    return res;
   },
 };

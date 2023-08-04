@@ -3,6 +3,7 @@
 
 import {
   CLICommand,
+  CLICommandArgument,
   CLICommandOption,
   CLIContext,
   CLIFoundCommand,
@@ -38,6 +39,7 @@ import { getSystemInputs } from "../utils";
 import { createFxCore } from "../activate";
 import path from "path";
 import {
+  InvalidChoiceError,
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
   UnknownOptionError,
@@ -192,12 +194,16 @@ class CLIEngine {
     return { cmd: command, remainingArgs: args.slice(i) };
   }
 
+  optionInputKey(option: CLICommandOption | CLICommandArgument) {
+    return option.questionName || option.name;
+  }
+
   parseArgs(
     context: CLIContext,
     rootCommand: CLICommand,
     args: string[],
     debugLogs: string[]
-  ): Result<undefined, UnknownOptionError | MissingRequiredOptionError> {
+  ): Result<undefined, UnknownOptionError> {
     const i = 0;
     let argumentIndex = 0;
     const command = context.command;
@@ -258,7 +264,7 @@ class CLIEngine {
           }
           const isCommandOption = command.options?.includes(option);
           const inputValues = isCommandOption ? context.optionValues : context.globalOptionValues;
-          const inputKey = option.questionName || option.name;
+          const inputKey = this.optionInputKey(option);
           const logObject = {
             token: token,
             option: option.name,
@@ -283,18 +289,12 @@ class CLIEngine {
         if (option.required && option.value === undefined) {
           if (option.default !== undefined) {
             option.value = option.default;
-            context.optionValues[option.name] = option.default;
+            context.optionValues[this.optionInputKey(option)] = option.default;
             debugLogs.push(
               `set required option with default value, ${option.name}=${JSON.stringify(
                 option.default
               )}`
             );
-          } else if (
-            !context.globalOptionValues.help &&
-            !context.globalOptionValues.version &&
-            context.globalOptionValues.interactive === false
-          ) {
-            return err(new MissingRequiredOptionError(command.fullName, option));
           }
         }
       }
@@ -311,17 +311,11 @@ class CLIEngine {
                 argument.default
               )}`
             );
-          } else if (
-            !context.globalOptionValues.help &&
-            !context.globalOptionValues.version &&
-            context.globalOptionValues.interactive === false
-          ) {
-            return err(new MissingRequiredArgumentError(command.fullName, argument));
           }
         }
         // set argument value in optionValues
         if (argument.value !== undefined) {
-          context.optionValues[i] = argument.value;
+          context.optionValues[this.optionInputKey(argument)] = argument.value;
         }
       }
     }
@@ -366,11 +360,14 @@ class CLIEngine {
   }
 
   validateOptionsAndArguments(
-    command: CLICommand
-  ): Result<undefined, InputValidationError | MissingRequiredInputError> {
+    command: CLIFoundCommand
+  ): Result<
+    undefined,
+    MissingRequiredOptionError | MissingRequiredArgumentError | InvalidChoiceError
+  > {
     if (command.options) {
       for (const option of command.options) {
-        const res = this.validateOption(option);
+        const res = this.validateOption(command, option, "option");
         if (res.isErr()) {
           return err(res.error);
         }
@@ -378,7 +375,7 @@ class CLIEngine {
     }
     if (command.arguments) {
       for (const argument of command.arguments) {
-        const res = this.validateOption(argument);
+        const res = this.validateOption(command, argument, "argument");
         if (res.isErr()) {
           return err(res.error);
         }
@@ -391,43 +388,32 @@ class CLIEngine {
    * validate option value
    */
   validateOption(
-    option: CLICommandOption
-  ): Result<undefined, InputValidationError | MissingRequiredInputError> {
+    command: CLIFoundCommand,
+    option: CLICommandOption | CLICommandArgument,
+    type: "option" | "argument"
+  ): Result<undefined, MissingRequiredOptionError | MissingRequiredArgumentError> {
     if (option.required && option.default === undefined && option.value === undefined) {
-      return err(new MissingRequiredInputError(helper.formatOptionName(option, false), cliSource));
+      const error =
+        type === "option"
+          ? new MissingRequiredOptionError(command.fullName, option)
+          : new MissingRequiredArgumentError(command.fullName, option);
+      return err(error);
     }
     if (
       (option.type === "string" || option.type === "array") &&
       option.choices &&
-      option.value !== undefined
+      option.value !== undefined &&
+      !option.skipValidation
     ) {
       if (option.type === "string") {
         if (!(option.choices as string[]).includes(option.value as string)) {
-          return err(
-            new InputValidationError(
-              helper.formatOptionName(option, false),
-              format(
-                strings["error.InvalidOptionErrorReason"],
-                option.value,
-                option.choices.map((i) => JSON.stringify(i)).join(", ")
-              )
-            )
-          );
+          return err(new InvalidChoiceError(command.fullName, option.value, option));
         }
       } else {
         const values = option.value as string[];
         for (const v of values) {
           if (!(option.choices as string[]).includes(v)) {
-            return err(
-              new InputValidationError(
-                helper.formatOptionName(option, false),
-                format(
-                  strings["error.InvalidOptionErrorReason"],
-                  option.value,
-                  option.choices.join(",")
-                )
-              )
-            );
+            return err(new InvalidChoiceError(command.fullName, v, option));
           }
         }
       }

@@ -4,8 +4,9 @@ import {
   handleMessageExtensionQueryWithSSO,
   OnBehalfOfCredentialAuthConfig,
   OnBehalfOfUserCredential,
-  createMicrosoftGraphClientWithCredential,
 } from "@microsoft/teamsfx";
+import { Client } from "@microsoft/microsoft-graph-client";
+import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
 import "isomorphic-fetch";
 
 const oboAuthConfig: OnBehalfOfCredentialAuthConfig = {
@@ -40,8 +41,15 @@ export class TeamsBot extends TeamsActivityHandler {
         // Init OnBehalfOfUserCredential instance with SSO token
         const credential = new OnBehalfOfUserCredential(token.ssoToken, oboAuthConfig);
 
-        // Add scope for your Azure AD app. For example: Mail.Read, etc.
-        const graphClient = createMicrosoftGraphClientWithCredential(credential, "User.Read");
+        // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+        const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+          scopes: ["User.Read"],
+        });
+
+        // Initialize Graph client instance with authProvider
+        const graphClient = Client.initWithMiddleware({
+          authProvider: authProvider,
+        });
 
         // Call graph api use `graph` instance to get user profile information.
         const profile = await graphClient.api("/me").get();

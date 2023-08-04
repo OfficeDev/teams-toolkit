@@ -58,7 +58,7 @@ export class ProgressHandler implements IProgressHandler {
     );
   }
 
-  public async start(detail?: string) {
+  public start(detail?: string): Promise<void> {
     this.resolve = undefined;
     this.currentStep = 0;
     this.ended = false;
@@ -79,6 +79,7 @@ export class ProgressHandler implements IProgressHandler {
         return ok(null);
       }
     );
+    return Promise.resolve(undefined);
   }
 
   public end(success: boolean) {

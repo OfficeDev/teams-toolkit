@@ -30,6 +30,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 !== undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 !== undefined);
     });
 
     it("notEquals", async () => {
@@ -43,6 +46,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 === undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 === undefined);
     });
 
     it("minLength,maxLength", async () => {
@@ -59,6 +65,9 @@ describe("Question Model - Validation Test", () => {
       const value4 = "aaaaaa";
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 !== undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("enum", async () => {
@@ -72,6 +81,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "4";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 !== undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 !== undefined);
     });
 
     it("pattern", async () => {
@@ -85,6 +97,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "as--123";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 !== undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 !== undefined);
     });
 
     it("startsWith", async () => {
@@ -98,6 +113,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "1234";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 === undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 !== undefined);
     });
 
     it("endsWith", async () => {
@@ -111,6 +129,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "345sdf123";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 === undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 !== undefined);
     });
 
     it("startsWith,endsWith", async () => {
@@ -124,6 +145,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "sadfws789";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 !== undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 !== undefined);
     });
 
     it("includes", async () => {
@@ -137,6 +161,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "sadfws789";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isTrue(res3 !== undefined);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isTrue(res4 !== undefined);
     });
 
     it("includes,startsWith,endsWith", async () => {
@@ -153,6 +180,9 @@ describe("Question Model - Validation Test", () => {
       const value4 = "abc789";
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 !== undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("includes,startsWith,endsWith,maxLength", async () => {
@@ -187,6 +217,9 @@ describe("Question Model - Validation Test", () => {
       const value3 = "4";
       const res3 = await validate(validation, value3, inputs);
       chai.assert.isUndefined(res3);
+      const value4 = undefined;
+      const res4 = await validate(validation, value4, inputs);
+      chai.assert.isUndefined(res4);
     });
   });
 
@@ -205,6 +238,9 @@ describe("Question Model - Validation Test", () => {
       const value4: string[] = [];
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 !== undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("uniqueItems", async () => {
@@ -221,6 +257,9 @@ describe("Question Model - Validation Test", () => {
       const value4: string[] = [];
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 === undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("equals", async () => {
@@ -237,6 +276,9 @@ describe("Question Model - Validation Test", () => {
       const value4: string[] = [];
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 !== undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("enum", async () => {
@@ -253,6 +295,9 @@ describe("Question Model - Validation Test", () => {
       const value4: string[] = [];
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 === undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("contains", async () => {
@@ -269,6 +314,9 @@ describe("Question Model - Validation Test", () => {
       const value4: string[] = [];
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 !== undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("containsAll", async () => {
@@ -285,6 +333,9 @@ describe("Question Model - Validation Test", () => {
       const value4: string[] = [];
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 !== undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
 
     it("containsAny", async () => {
@@ -301,6 +352,9 @@ describe("Question Model - Validation Test", () => {
       const value4: string[] = [];
       const res4 = await validate(validation, value4, inputs);
       chai.assert.isTrue(res4 !== undefined);
+      const value5 = undefined;
+      const res5 = await validate(validation, value5, inputs);
+      chai.assert.isTrue(res5 !== undefined);
     });
   });
 

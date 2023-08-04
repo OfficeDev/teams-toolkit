@@ -8,10 +8,11 @@ import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import { AadManifestHelper } from "./aadManifestHelper";
 import { GraphScopes } from "../../../../common/tools";
-import { constants } from "./constants";
+import { constants, aadErrorCode } from "./constants";
 import axiosRetry from "axios-retry";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadOwner } from "../../../../common/permissionInterface";
+import { DeleteOrUpdatePermissionFailedError } from "../error/aadManifestError";
 
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
@@ -87,17 +88,29 @@ export class AadAppClient {
   public async updateAadApp(manifest: AADManifest): Promise<void> {
     const objectId = manifest.id!; // You need to ensure the object id exists in manifest
     const requestBody = AadManifestHelper.manifestToApplication(manifest);
-    await this.axios.patch(`applications/${objectId}`, requestBody, {
-      "axios-retry": {
-        retries: this.retryNumber,
-        retryDelay: axiosRetry.exponentialDelay,
-        retryCondition: (error) =>
-          axiosRetry.isNetworkError(error) ||
-          axiosRetry.isRetryableError(error) ||
-          this.is404Error(error) || // also retry 404 error since AAD need sometime to sync created AAD app data
-          this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
-      },
-    });
+    try {
+      await this.axios.patch(`applications/${objectId}`, requestBody, {
+        "axios-retry": {
+          retries: this.retryNumber,
+          retryDelay: axiosRetry.exponentialDelay,
+          retryCondition: (error) =>
+            axiosRetry.isNetworkError(error) ||
+            axiosRetry.isRetryableError(error) ||
+            this.is404Error(error) || // also retry 404 error since AAD need sometime to sync created AAD app data
+            this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
+        },
+      });
+    } catch (err) {
+      if (
+        axios.isAxiosError(err) &&
+        err.response &&
+        err.response.status === 400 &&
+        err.response.data.error.code === aadErrorCode.permissionErrorCode
+      ) {
+        throw new DeleteOrUpdatePermissionFailedError(AadAppClient.name);
+      }
+      throw err;
+    }
   }
 
   public async getOwners(objectId: string): Promise<AadOwner[] | undefined> {

@@ -35,6 +35,11 @@ export interface WarningResult {
    * The content of the warning.
    */
   content: string;
+
+  /**
+   * data of the warning.
+   */
+  data?: any;
 }
 
 /**
@@ -50,32 +55,37 @@ export interface ErrorResult {
    * The content of the error.
    */
   content: string;
+
+  /**
+   * data of the error.
+   */
+  data?: any;
 }
 
 /**
  * An enum that represents the types of errors that can occur during validation.
  */
 export enum ErrorType {
-  SpecNotValid,
-  VersionNotSupported,
-  RemoteRefNotSupported,
-  NoServerInformation,
-  MultipleServerInformation,
-  NoSupportedApi,
+  SpecNotValid = "spec-not-valid",
+  VersionNotSupported = "version-not-supported",
+  RemoteRefNotSupported = "remote-ref-not-supported",
+  NoServerInformation = "no-server-information",
+  MultipleServerInformation = "multiple-server-information",
+  NoSupportedApi = "no-supported-api",
 
-  ListFailed,
-  Cancelled,
-  Unknown,
+  ListFailed = "list-failed",
+  Cancelled = "cancelled",
+  Unknown = "unknown",
 }
 
 /**
  * An enum that represents the types of warnings that can occur during validation.
  */
 export enum WarningType {
-  AuthNotSupported,
-  MethodNotSupported,
-  OperationIdMissing,
-  Unknown,
+  AuthNotSupported = "auth-not-supported",
+  MethodNotSupported = "method-not-supported",
+  OperationIdMissing = "operationid-missing",
+  Unknown = "unknown",
 }
 
 /**
@@ -125,6 +135,7 @@ export interface Description {
 export interface ComposeExtension {
   type: string;
   apiSpecFile: string;
+  supportsConversationalAI: boolean;
   commands: Command[];
 }
 

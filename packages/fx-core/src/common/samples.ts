@@ -2,44 +2,48 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
-import { sendRequestWithTimeout } from "../component/generator/utils";
+import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
 import sampleConfigV3 from "./samples-config-v3.json";
 import { isVideoFilterEnabled } from "./featureFlags";
 const packageJson = require("../../package.json");
 
-class configInfo {
-  static readonly owner = "OfficeDev";
-  static readonly repo = "TeamsFx-Samples";
-  static readonly tree = "v2.3.0";
-  static readonly file = ".config/samples-config-v3.json";
-}
+const SampleConfigOwner = "OfficeDev";
+const SampleConfigRepo = "TeamsFx-Samples";
+const SampleConfigFile = ".config/samples-config-v3.json";
+export const SampleConfigTag = "v2.3.0";
 
-export interface SampleInfo {
+export interface SampleConfig {
   id: string;
+  onboardDate: Date;
   title: string;
   shortDescription: string;
   fullDescription: string;
+  // matches the Teams app type when creating a new project
+  types: string[];
   tags: string[];
   time: string;
   configuration: string;
   suggested: boolean;
-  url?: string;
+  gifUrl: string;
+  // maximum TTK version to run sample
+  maximumToolkitVersion?: string;
+  downloadUrl?: string;
 }
 
 interface SampleCollection {
-  samples: SampleInfo[];
+  samples: SampleConfig[];
 }
 
 class SampleProvider {
   private sampleCollection: SampleCollection | undefined;
-  private samplesConfig: SampleCollection | undefined;
+  private samplesConfig: { samples: Array<Record<string, unknown>> } | undefined;
 
   public async fetchSampleConfig() {
     try {
       const fileResponse = await sendRequestWithTimeout(
         async () => {
           return await axios.get(
-            `https://raw.githubusercontent.com/${configInfo.owner}/${configInfo.repo}/${configInfo.tree}/${configInfo.file}`,
+            `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${SampleConfigFile}`,
             { responseType: "json" }
           );
         },
@@ -48,19 +52,31 @@ class SampleProvider {
       );
 
       if (fileResponse && fileResponse.data) {
-        this.samplesConfig = fileResponse.data as SampleCollection;
+        this.samplesConfig = fileResponse.data as { samples: Array<Record<string, unknown>> };
       }
     } catch (e) {
       this.samplesConfig = undefined;
     }
   }
   public get SampleCollection(): SampleCollection {
-    const samples = (this.samplesConfig ?? sampleConfigV3).samples.map((sample: SampleInfo) => {
-      return {
-        ...sample,
-        url: sample.url ? sample.url : `${this.getBaseSampleUrl()}${sample.id}`,
-      } as SampleInfo;
-    });
+    const samples = (this.samplesConfig ? this.samplesConfig.samples : sampleConfigV3.samples).map(
+      (sample) => {
+        const isExternal = sample["downloadUrl"] ? true : false;
+        let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${sample["id"]}/${sample["gifPath"]}`;
+        if (isExternal) {
+          const info = parseSampleUrl(sample["downloadUrl"] as string);
+          gifUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${info.dir}/${sample["gifPath"]}`;
+        }
+        return {
+          ...sample,
+          onboardDate: new Date(sample["onboardDate"] as string),
+          downloadUrl: isExternal
+            ? sample["downloadUrl"]
+            : `${this.getBaseSampleUrl()}${sample["id"]}`,
+          gifUrl: gifUrl,
+        } as SampleConfig;
+      }
+    );
 
     // remove video filter sample app if feature flag is disabled.
     if (!isVideoFilterEnabled()) {
@@ -86,9 +102,7 @@ class SampleProvider {
     if (version.includes("rc")) {
       return "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/";
     }
-    return this.samplesConfig
-      ? `https://github.com/${configInfo.owner}/${configInfo.repo}/tree/${configInfo.tree}/`
-      : sampleConfigV3.baseUrl;
+    return `https://github.com/${SampleConfigOwner}/${SampleConfigRepo}/tree/${SampleConfigTag}/`;
   }
 }
 

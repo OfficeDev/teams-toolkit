@@ -59,14 +59,14 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
   }
 
   async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    return this.teamsFxTokenCredential;
+    return Promise.resolve(this.teamsFxTokenCredential);
   }
 
-  async signout(): Promise<boolean> {
+  signout(): Promise<boolean> {
     throw new NotImplementedError("FxServer", `azure/signout`);
   }
 
-  async setStatusChangeMap(
+  setStatusChangeMap(
     name: string,
     statusChange: (
       status: string,
@@ -78,7 +78,7 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
     throw new NotImplementedError("FxServer", `azure/setStatusChangeMap`);
   }
 
-  async removeStatusChangeMap(name: string): Promise<boolean> {
+  removeStatusChangeMap(name: string): Promise<boolean> {
     throw new NotImplementedError("FxServer", `azure/removeStatusChangeMap`);
   }
 

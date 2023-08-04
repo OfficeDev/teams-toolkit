@@ -8,9 +8,9 @@ import {
   ErrorWithCode,
   TeamsUserCredential,
   TeamsUserCredentialAuthConfig,
-  createMicrosoftGraphClientWithCredential,
 } from "@microsoft/teamsfx";
 import { Client, GraphError } from "@microsoft/microsoft-graph-client";
+import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
 import { useState } from "react";
 
 type GraphOption = {
@@ -25,6 +25,7 @@ type GraphOptionWithCredential = {
 
 /**
  * Helper function to call Microsoft Graph API with authentication.
+ * @deprecated Please use {@link useGraphWithCredential} instead.
  *
  * @param fetchGraphDataAsync - async function of how to call Graph API and fetch data.
  * @param options - teamsfx instance and OAuth resource scope.
@@ -125,7 +126,11 @@ export function useGraphWithCredential<T>(
       }
     }
     try {
-      const graph = createMicrosoftGraphClientWithCredential(credential, scope);
+      // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+      const authProvider = new TokenCredentialAuthenticationProvider(credential, { scopes: scope });
+      const graph = Client.initWithMiddleware({
+        authProvider: authProvider,
+      });
       const graphData = await fetchGraphDataAsync(graph, credential, scope);
       return graphData;
     } catch (err: unknown) {

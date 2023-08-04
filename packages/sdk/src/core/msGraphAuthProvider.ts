@@ -10,8 +10,10 @@ import { AccessToken, TokenCredential } from "@azure/identity";
 
 const defaultScope = "https://graph.microsoft.com/.default";
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Microsoft Graph auth provider for Teams Framework
+ * @deprecated Use `TokenCredentialAuthenticationProvider` from `@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials` instead.
  */
 export class MsGraphAuthProvider implements AuthenticationProvider {
   private credentialOrTeamsFx: TokenCredential | TeamsFxConfiguration;

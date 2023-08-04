@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
-import { FxCore, envUtil, VersionCheckRes, VersionState } from "@microsoft/teamsfx-core";
+import { FxCore, envUtil, VersionCheckRes, VersionState, HubTypes } from "@microsoft/teamsfx-core";
 import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
 import fs from "fs-extra";
@@ -313,7 +313,7 @@ describe("PreviewEnv Steps", () => {
     public previewWithManifest(
       projectPath: string,
       env: string,
-      hub: Hub,
+      hub: HubTypes,
       manifestFilePath: string
     ): Promise<Result<string, FxError>> {
       return super.previewWithManifest(projectPath, env, hub, manifestFilePath);
@@ -330,7 +330,7 @@ describe("PreviewEnv Steps", () => {
 
     public launchBrowser(
       env: string,
-      hub: Hub,
+      hub: HubTypes,
       url: string,
       browser: constants.Browser,
       browserArgs: string[]
@@ -524,7 +524,7 @@ describe("PreviewEnv Steps", () => {
     const result = await previewEnv.previewWithManifest(
       "./",
       "local",
-      Hub.teams,
+      HubTypes.teams,
       "test-manifest-path"
     );
     expect(result.isErr()).to.be.true;
@@ -538,7 +538,7 @@ describe("PreviewEnv Steps", () => {
     const result = await previewEnv.previewWithManifest(
       "./",
       "local",
-      Hub.teams,
+      HubTypes.teams,
       "test-manifest-path"
     );
     expect(result.isOk()).to.be.true;
@@ -603,7 +603,7 @@ describe("PreviewEnv Steps", () => {
     const previewEnv = new PreviewEnvTest();
     const openRes = await previewEnv.launchBrowser(
       "local",
-      Hub.teams,
+      HubTypes.teams,
       "test-url",
       constants.Browser.default,
       []
@@ -618,7 +618,7 @@ describe("PreviewEnv Steps", () => {
     const previewEnv = new PreviewEnvTest();
     const openRes = await previewEnv.launchBrowser(
       "local",
-      Hub.outlook,
+      HubTypes.outlook,
       "test-url",
       constants.Browser.default,
       []

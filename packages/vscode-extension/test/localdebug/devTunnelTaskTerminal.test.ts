@@ -42,7 +42,7 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
     return !!this.cancel;
   }
 
-  public resolveArgs(args: IDevTunnelArgs): Promise<void> {
+  public resolveArgs(args: IDevTunnelArgs): void {
     return super.resolveArgs(args);
   }
 
@@ -486,14 +486,13 @@ describe("devTunnelTaskTerminal", () => {
     testDataList.forEach((testData) => {
       it(testData.message, async () => {
         if (testData.errorPropertyName) {
-          await chai
-            .expect(tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs))
-            .rejectedWith(
+          chai
+            .expect(() => tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs))
+            .throw(
               `The value of '${testData.errorPropertyName}' is invalid for the task of type 'teamsfx'`
             );
         } else {
-          await chai.expect(tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs))
-            .fulfilled;
+          tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs);
         }
       });
     });

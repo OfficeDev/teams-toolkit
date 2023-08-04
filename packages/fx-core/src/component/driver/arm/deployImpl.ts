@@ -11,8 +11,12 @@ import { ConstantString } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { CompileBicepError, DeployArmError } from "../../../error/arm";
 import { InvalidAzureCredentialError } from "../../../error/azure";
-import { InvalidActionInputError } from "../../../error/common";
-import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
+import { InvalidActionInputError, MissingEnvironmentVariablesError } from "../../../error/common";
+import {
+  expandEnvironmentVariable,
+  getAbsolutePath,
+  getEnvironmentVariables,
+} from "../../utils/common";
 import { cpUtils } from "../../utils/depsChecker/cpUtils";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { Constants, TelemetryProperties, TemplateType } from "./constant";
@@ -157,10 +161,18 @@ export class ArmDeployImpl {
     const filePath = getAbsolutePath(parameters, this.context.projectPath);
     const template = await fs.readFile(filePath, ConstantString.UTF8Encoding);
     const parameterJsonString = expandEnvironmentVariable(template);
+    this.checkPlaceholderInTemplate(parameterJsonString, filePath);
     return JSON.parse(parameterJsonString);
   }
 
-  private async getDeployTemplate(templatePath: string): Promise<string> {
+  checkPlaceholderInTemplate(parameterJsonString: string, filePath: string): void {
+    const tokens = getEnvironmentVariables(parameterJsonString);
+    if (tokens.length > 0) {
+      throw new MissingEnvironmentVariablesError("arm", tokens.join(","), filePath);
+    }
+  }
+
+  async getDeployTemplate(templatePath: string): Promise<string> {
     const templateType = getFileExtension(templatePath);
     const filePath = getAbsolutePath(templatePath, this.context.projectPath);
     let templateJsonString;

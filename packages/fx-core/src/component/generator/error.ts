@@ -56,14 +56,17 @@ export class ParseUrlError extends BaseComponentInnerError {
 }
 
 export class FetchZipFromUrlError extends BaseComponentInnerError {
-  constructor(url: string) {
+  constructor(url: string, error?: Error) {
     super(
       errorSource,
       "SystemError",
       "FetchZipFromUrlError",
       "error.generator.FetchZipFromUrlError",
       [url],
-      ["plugins.frontend.checkNetworkTip"]
+      ["plugins.frontend.checkNetworkTip"],
+      undefined,
+      undefined,
+      error
     );
   }
 }

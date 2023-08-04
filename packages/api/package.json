@@ -25,13 +25,12 @@
     "test:unit": "nyc --no-clean mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\" ",
     "prepublishOnly": "npm run test:unit && npm run build",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run check-sensitive && lint-staged"
+    "precommit": "npm run build && npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@microsoft/api-documenter": "^7.15.3",
     "@microsoft/api-extractor": "^7.18.4",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",

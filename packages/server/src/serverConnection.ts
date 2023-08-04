@@ -5,6 +5,7 @@ import {
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,
@@ -74,7 +75,6 @@ export default class ServerConnection implements IServerConnection {
       this.customizeValidateFuncRequest.bind(this),
       this.customizeOnSelectionChangeFuncRequest.bind(this),
       this.addSsoRequest.bind(this),
-      this.getProjectComponents.bind(this),
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
       this.publishInDeveloperPortalRequest.bind(this),
@@ -109,7 +109,7 @@ export default class ServerConnection implements IServerConnection {
   public async createProjectRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<CreateProjectResult, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -342,14 +342,6 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
-  }
-
-  public async getProjectComponents(
-    inputs: Inputs,
-    token: CancellationToken
-  ): Promise<Result<string | undefined, FxError>> {
-    // No components for V5
-    return ok("");
   }
 
   public async getProjectMigrationStatusRequest(

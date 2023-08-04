@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, FxError, ok, Result, Stage } from "@microsoft/teamsfx-api";
-import { questions } from "@microsoft/teamsfx-core";
+import { questionNodes } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -24,11 +24,7 @@ export class AddWebpart extends YargsCommand {
 
   public override async builder(yargs: Argv): Promise<Argv<any>> {
     {
-      const result = await questions.addWebpart();
-      if (result.isErr()) {
-        throw result.error;
-      }
-      const node = result.value ?? EmptyQTreeNode;
+      const node = questionNodes.addWebpart();
       const filteredNode = node;
       const nodes = flattenNodes(filteredNode).concat([RootFolderNode]);
       this.params = await toYargsOptionsGroup(nodes);

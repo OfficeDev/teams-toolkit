@@ -6,7 +6,7 @@
  */
 
 import { Page } from "playwright";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { validateShareNow } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
@@ -17,6 +17,25 @@ import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";
 
 class ShareNowTestCase extends CaseFactory {
+  constructor(
+    sampleName: TemplateProject,
+    testPlanCaseId: number,
+    author: string,
+    env: "local" | "dev",
+    validate: LocalDebugTaskLabel[] = [],
+    options: {
+      teamsAppName?: string;
+      dashboardFlag?: boolean;
+      type?: string;
+      testRootFolder?: string;
+      includeFunction?: boolean;
+      npmName?: string;
+      skipInit?: boolean;
+      skipValidation?: boolean;
+    } = {}
+  ) {
+    super(sampleName, testPlanCaseId, author, env, validate, options);
+  }
   public override async onAfterCreate(
     sampledebugContext: SampledebugContext
   ): Promise<void> {

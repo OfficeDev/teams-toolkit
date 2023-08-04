@@ -6,7 +6,7 @@
  */
 
 import { Page } from "playwright";
-import { TemplateProject } from "../../utils/constants";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import {
   initTeamsPage,
   validateTodoList,
@@ -21,6 +21,25 @@ import { editDotEnvFile } from "../../utils/commonUtils";
 import { Env } from "../../utils/env";
 
 class TodoListBackendTestCase extends CaseFactory {
+  constructor(
+    sampleName: TemplateProject,
+    testPlanCaseId: number,
+    author: string,
+    env: "local" | "dev",
+    validate: LocalDebugTaskLabel[] = [],
+    options: {
+      teamsAppName?: string;
+      dashboardFlag?: boolean;
+      type?: string;
+      testRootFolder?: string;
+      includeFunction?: boolean;
+      npmName?: string;
+      skipInit?: boolean;
+      skipValidation?: boolean;
+    } = {}
+  ) {
+    super(sampleName, testPlanCaseId, author, env, validate, options);
+  }
   public override async onAfterCreate(
     sampledebugContext: SampledebugContext,
     env: "local" | "dev",

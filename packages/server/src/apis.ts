@@ -73,10 +73,6 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<CreateProjectResult, FxError>>;
-  createSampleProjectRequest: (
-    inputs: Inputs,
-    token: CancellationToken
-  ) => Promise<Result<CreateProjectResult, FxError>>;
   localDebugRequest: (
     inputs: Inputs,
     token: CancellationToken

@@ -120,19 +120,6 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
-  public async createSampleProjectRequest(
-    inputs: Inputs,
-    token: CancellationToken
-  ): Promise<Result<CreateProjectResult, FxError>> {
-    const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const res = await Correlator.runWithId(
-      corrId,
-      (params) => this.core.createSampleProject(params),
-      inputs
-    );
-    return standardizeResult(res);
-  }
-
   public async localDebugRequest(
     inputs: Inputs,
     token: CancellationToken

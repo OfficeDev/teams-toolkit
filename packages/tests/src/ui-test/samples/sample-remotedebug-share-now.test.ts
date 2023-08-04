@@ -6,7 +6,7 @@
  */
 
 import { Page } from "playwright";
-import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { TemplateProject } from "../../utils/constants";
 import { validateShareNow } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
@@ -29,6 +29,8 @@ class ShareNowTestCase extends CaseFactory {
     );
     editDotEnvFile(envFilePath, "SQL_USER_NAME", sqlUserName);
     editDotEnvFile(envFilePath, "SQL_PASSWORD", sqlPassword);
+    this.sqlUserName = sqlUserName;
+    this.sqlPassword = sqlPassword;
   }
   public override async onBeforeBrowerStart(
     sampledebugContext: SampledebugContext
@@ -38,8 +40,6 @@ class ShareNowTestCase extends CaseFactory {
       "env",
       ".env.dev"
     );
-    const sqlUserName = "Abc123321";
-    const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
     // read database from devEnvFilePath
     const sqlDatabaseNameLine = fs
       .readFileSync(devEnvFilePath, "utf-8")
@@ -89,8 +89,8 @@ class ShareNowTestCase extends CaseFactory {
       sqlCommands,
       sqlDatabaseName,
       sqlDatabaseName,
-      sqlUserName,
-      sqlPassword
+      this.sqlUserName,
+      this.sqlPassword
     );
     await sqlHelper.createTable(sqlEndpoint ?? "");
   }

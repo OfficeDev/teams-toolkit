@@ -6,7 +6,7 @@
  */
 
 import { Page } from "playwright";
-import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { TemplateProject } from "../../utils/constants";
 import { validateNpm } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 

@@ -7,14 +7,14 @@
 
 import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
-import { validatePersonalTab } from "../../utils/playwrightOperation";
+import { validateTodoList } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
 import { editDotEnvFile } from "../../utils/commonUtils";
 import * as path from "path";
 import * as uuid from "uuid";
 
-class OutlookTabTestCase extends CaseFactory {
+class TodoListM365TestCase extends CaseFactory {
   public override async onAfter(
     sampledebugContext: SampledebugContext
   ): Promise<void> {
@@ -37,12 +37,15 @@ class OutlookTabTestCase extends CaseFactory {
       "Cab232332" + uuid.v4().substring(0, 6)
     );
   }
-  override async onValidate(page: Page): Promise<void> {
-    return await validatePersonalTab(page);
+  override async onValidate(
+    page: Page,
+    options?: { displayName: string }
+  ): Promise<void> {
+    return await validateTodoList(page, { displayName: options?.displayName });
   }
 }
 
-new OutlookTabTestCase(
+new TodoListM365TestCase(
   TemplateProject.TodoListM365,
   14571883,
   "v-ivanchen@microsoft.com",

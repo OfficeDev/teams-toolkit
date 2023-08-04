@@ -111,27 +111,31 @@ describe("CLI Engine", () => {
         },
       ]);
       sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
-      sandbox.stub(process, "argv").value(["node", "cli", "d"]);
+      sandbox.stub(process, "argv").value(["node", "cli", "new", "sample", "d", "-i", "false"]);
       let error: any = {};
       sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
         error = fxError;
       });
       sandbox.stub(logger, "info");
-      await engine.start(createSampleCommand);
+      await engine.start(rootCommand);
       assert.isTrue(error instanceof InvalidChoiceError);
     });
     it("should run handler return error", async () => {
       sandbox.stub(process, "argv").value(["node", "cli"]);
-      sandbox.stub(rootCommand, "handler").resolves(err(new UserCancelError()));
+      rootCommand.handler = async () => err(new UserCancelError());
       let error: any = {};
       sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);
       assert.isTrue(error instanceof UserCancelError);
+      rootCommand.handler = undefined;
     });
     it("should run handler throw error", async () => {
       sandbox.stub(process, "argv").value(["node", "cli"]);
+      rootCommand.handler = async () => {
+        throw new UserCancelError();
+      };
       sandbox.stub(rootCommand, "handler").rejects(new UserCancelError());
       let error: any = {};
       sandbox.stub(engine, "processResult").callsFake((context, fxError) => {

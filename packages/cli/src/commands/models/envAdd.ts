@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath, err } from "@microsoft/teamsfx-api";
 import { CreateEnvArguments, CreateEnvInputs, CreateEnvOptions } from "@microsoft/teamsfx-core";
 import { createFxCore } from "../../activate";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";

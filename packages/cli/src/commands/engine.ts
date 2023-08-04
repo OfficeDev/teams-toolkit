@@ -17,34 +17,29 @@ import {
 import {
   Correlator,
   IncompatibleProjectError,
-  InputValidationError,
-  MissingRequiredInputError,
   VersionState,
   assembleError,
   getHashedEnv,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
 import { cloneDeep, pick } from "lodash";
-import { format } from "util";
+import path from "path";
+import * as uuid from "uuid";
+import { createFxCore } from "../activate";
 import { TextType, colorize } from "../colorize";
 import { logger } from "../commonlib/logger";
-import { strings } from "../resource";
-import CliTelemetry from "../telemetry/cliTelemetry";
-import { helper } from "./helper";
-import UI from "../userInteraction";
-import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
-import { cliSource } from "../constants";
 import Progress from "../console/progress";
-import { getSystemInputs } from "../utils";
-import { createFxCore } from "../activate";
-import path from "path";
 import {
   InvalidChoiceError,
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
   UnknownOptionError,
 } from "../error";
-import * as uuid from "uuid";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+import UI from "../userInteraction";
+import { getSystemInputs } from "../utils";
+import { helper } from "./helper";
 
 class CLIEngine {
   isBundledElectronApp(): boolean {

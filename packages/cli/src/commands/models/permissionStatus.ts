@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { PermissionListInputs, PermissionListOptions } from "@microsoft/teamsfx-core";
-import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { ProjectFolderOption } from "../common";
+import { createFxCore } from "../../activate";
 import { azureMessage, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
-import { createFxCore } from "../../activate";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { ProjectFolderOption } from "../common";
 
 export const permissionStatusCommand: CLICommand = {
   name: "status",

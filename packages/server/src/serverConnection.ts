@@ -59,7 +59,6 @@ export default class ServerConnection implements IServerConnection {
     [
       this.getQuestionsRequest.bind(this),
       this.createProjectRequest.bind(this),
-      this.createSampleProjectRequest.bind(this),
       this.localDebugRequest.bind(this),
       this.preProvisionResourcesRequest.bind(this),
       this.preCheckYmlAndEnvForVSRequest.bind(this),

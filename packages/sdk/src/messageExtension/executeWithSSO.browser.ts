@@ -9,8 +9,10 @@ import { MessageExtensionTokenResponse } from "./teamsMsgExtTokenResponse";
 import { ErrorWithCode, ErrorMessage, ErrorCode } from "../core/errors";
 import { formatString } from "../util/utils";
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Users execute query with SSO or Access Token.
+ * @deprecated
  * @remarks
  * Only works in in server side.
  */

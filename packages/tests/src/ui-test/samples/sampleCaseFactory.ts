@@ -100,8 +100,6 @@ export abstract class CaseFactory {
     skipInit?: boolean;
     skipValidation?: boolean;
   };
-  public sqlUserName?: string;
-  public sqlPassword?: string;
 
   public constructor(
     sampleName: TemplateProject,

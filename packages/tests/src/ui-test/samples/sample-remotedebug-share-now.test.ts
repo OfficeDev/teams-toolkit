@@ -17,6 +17,8 @@ import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";
 
 class ShareNowTestCase extends CaseFactory {
+  public sqlUserName: string;
+  public sqlPassword: string;
   constructor(
     sampleName: TemplateProject,
     testPlanCaseId: number,
@@ -32,24 +34,25 @@ class ShareNowTestCase extends CaseFactory {
       npmName?: string;
       skipInit?: boolean;
       skipValidation?: boolean;
+      sqlUserName?: string;
+      sqlPassword?: string;
     } = {}
   ) {
     super(sampleName, testPlanCaseId, author, env, validate, options);
+    this.sqlUserName = options?.sqlUserName || "Abc123321";
+    this.sqlPassword =
+      options?.sqlPassword || "Cab232332" + uuid.v4().substring(0, 6);
   }
   public override async onAfterCreate(
     sampledebugContext: SampledebugContext
   ): Promise<void> {
-    const sqlUserName = "Abc123321";
-    const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
       ".env.dev.user"
     );
-    editDotEnvFile(envFilePath, "SQL_USER_NAME", sqlUserName);
-    editDotEnvFile(envFilePath, "SQL_PASSWORD", sqlPassword);
-    this.sqlUserName = sqlUserName;
-    this.sqlPassword = sqlPassword;
+    editDotEnvFile(envFilePath, "SQL_USER_NAME", this.sqlUserName);
+    editDotEnvFile(envFilePath, "SQL_PASSWORD", this.sqlPassword);
   }
   public override async onBeforeBrowerStart(
     sampledebugContext: SampledebugContext
@@ -122,5 +125,10 @@ new ShareNowTestCase(
   TemplateProject.ShareNow,
   24121485,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  {
+    sqlUserName: "Abc123321",
+    sqlPassword: "Cab232332" + uuid.v4().substring(0, 6),
+  }
 ).test();

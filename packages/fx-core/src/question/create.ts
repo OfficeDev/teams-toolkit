@@ -1287,6 +1287,7 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
+    cliShortName: "oapi",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
@@ -1325,6 +1326,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginManifestLocation,
+    cliShortName: "oai",
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
     forgetLastValue: true,
@@ -1392,6 +1394,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    cliShortName: "api",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
       : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),

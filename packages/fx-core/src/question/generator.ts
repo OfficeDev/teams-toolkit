@@ -202,7 +202,8 @@ export async function generate(
 
       (option as CLIStringOption | CLIArrayOption).choiceListCommand =
         selection.cliChoiceListCommand;
-      (option as CLIStringOption | CLIArrayOption).skipValidation = selection.skipValidation;
+      if ((option as CLIStringOption | CLIArrayOption).skipValidation)
+        (option as CLIStringOption | CLIArrayOption).skipValidation = selection.skipValidation;
     }
     const inputPropName = questionName.includes("-") ? `"${questionName}"` : questionName;
     properties.push({

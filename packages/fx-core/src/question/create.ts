@@ -1535,11 +1535,8 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // programming language
         data: programmingLanguageQuestion(),
-        condition: {
-          excludesEnum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        condition: (inputs: Inputs) => {
+          return !copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
         },
       },
       {

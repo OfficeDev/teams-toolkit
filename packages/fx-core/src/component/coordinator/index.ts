@@ -200,7 +200,13 @@ class Coordinator {
       // set isVS global var when creating project
       const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
-      const capability = inputs.capabilities as string;
+      let capability = inputs.capabilities as string;
+      if (
+        inputs.platform === Platform.CLI &&
+        capability === CapabilityOptions.copilotPluginCli().id
+      ) {
+        capability = inputs[QuestionNames.CopilotPluginDevelopment] as string;
+      }
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -217,8 +223,8 @@ class Coordinator {
           return err(res.error);
         }
       } else if (
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginOpenAIPlugin().id
+        capability === CapabilityOptions.copilotPluginApiSpec().id ||
+        capability === CapabilityOptions.copilotPluginOpenAIPlugin().id
       ) {
         const res = await CopilotPluginGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {

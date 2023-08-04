@@ -47,6 +47,11 @@ import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, assembleError } from "../error";
 import { QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
+import {
+  copilotPluginApiSpecOptionId,
+  copilotPluginExistingApiOptionIds,
+  copilotPluginOpenAIPluginOptionId,
+} from "./constants";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -379,6 +384,14 @@ export class CapabilityOptions {
     ];
   }
 
+  static copilotPluginCli(): OptionItem {
+    return {
+      id: "copilot-plugin-capability",
+      label: `${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
+    };
+  }
+
   static all(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
@@ -387,7 +400,7 @@ export class CapabilityOptions {
     ];
 
     if (isCopilotPluginEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+      capabilityOptions.push(CapabilityOptions.copilotPluginCli());
     }
     return capabilityOptions;
   }
@@ -444,7 +457,7 @@ export class CapabilityOptions {
 
   static copilotPluginApiSpec(): OptionItem {
     return {
-      id: "copilot-api-spec",
+      id: copilotPluginApiSpecOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
@@ -456,7 +469,7 @@ export class CapabilityOptions {
 
   static copilotPluginOpenAIPlugin(): OptionItem {
     return {
-      id: "copilot-ai-plugin",
+      id: copilotPluginOpenAIPluginOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginAIPluginOption.label"
       ),
@@ -527,7 +540,7 @@ function capabilityQuestion(): SingleSelectQuestion {
         ];
 
         if (isCopilotPluginEnabled()) {
-          capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+          capabilityOptions.push(CapabilityOptions.copilotPluginCli());
         }
         return capabilityOptions;
       }
@@ -675,6 +688,16 @@ function botTriggerQuestion(): SingleSelectQuestion {
         : NotificationTriggerOptions.appService().id;
     },
     placeholder: getLocalizedString("plugins.bot.questionHostTypeTrigger.placeholder"),
+  };
+}
+
+function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.CopilotPluginDevelopment,
+    title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
+    type: "singleSelect",
+    staticOptions: CapabilityOptions.copilotPlugins(),
+    cliShortName: "cp",
   };
 }
 
@@ -1264,6 +1287,7 @@ export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
+    cliShortName: "oapi",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
@@ -1302,6 +1326,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginManifestLocation,
+    cliShortName: "oai",
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
     forgetLastValue: true,
@@ -1369,6 +1394,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    cliShortName: "api",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
       : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
@@ -1400,6 +1426,14 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
       return operations;
     },
   };
+}
+
+function getCopilotPluginFeatureId(inputs: Inputs): string {
+  if (CLIPlatforms.includes(inputs.platform)) {
+    return inputs[QuestionNames.CopilotPluginDevelopment];
+  } else {
+    return inputs[QuestionNames.Capabilities];
+  }
 }
 
 export function capabilitySubTree(): IQTreeNode {
@@ -1460,21 +1494,37 @@ export function capabilitySubTree(): IQTreeNode {
         data: officeAddinHostingQuestion(),
       },
       {
+        // Copilot plugin sub-tree (will show in CLI only)
+        condition: (inputs: Inputs) => {
+          return (
+            CLIPlatforms.includes(inputs.platform) &&
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
+          );
+        },
+        data: copilotPluginDevelopmentQuestion(),
+      },
+      {
         // Copilot plugin from API spec or AI Plugin
-        condition: {
-          enum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        condition: (inputs: Inputs) => {
+          return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
+            condition: (inputs: Inputs) => {
+              return (
+                getCopilotPluginFeatureId(inputs) === CapabilityOptions.copilotPluginApiSpec().id
+              );
+            },
             data: apiSpecLocationQuestion(),
           },
           {
-            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
+            condition: (inputs: Inputs) => {
+              return (
+                getCopilotPluginFeatureId(inputs) ===
+                CapabilityOptions.copilotPluginOpenAIPlugin().id
+              );
+            },
             data: openAIPluginManifestLocationQuestion(),
           },
           {
@@ -1485,11 +1535,13 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // programming language
         data: programmingLanguageQuestion(),
-        condition: {
-          excludesEnum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        condition: (inputs: Inputs) => {
+          const copilotFeature = getCopilotPluginFeatureId(inputs);
+          if (copilotFeature) {
+            return !copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
+          } else {
+            return !!inputs[QuestionNames.Capabilities];
+          }
         },
       },
       {
@@ -1582,6 +1634,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
   }
   if (!isCopilotPluginEnabled()) {
     deleteNames.push(QuestionNames.CopilotPluginExistingApi);
+    deleteNames.push(QuestionNames.CopilotPluginDevelopment);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;

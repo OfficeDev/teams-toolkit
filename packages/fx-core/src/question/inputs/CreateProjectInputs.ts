@@ -23,7 +23,8 @@ export interface CreateProjectInputs extends Inputs {
     | "tab-spfx"
     | "link-unfurling"
     | "search-app"
-    | "CollectFormMessagingExtension";
+    | "CollectFormMessagingExtension"
+    | "copilot-plugin-capability";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -41,6 +42,14 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
+  /** @description Plugin for Copilot */
+  "copilot-plugin-option"?: "copilot-new-api" | "copilot-api-spec" | "copilot-ai-plugin";
+  /** @description OpenAPI Spec */
+  "api-spec-location"?: string;
+  /** @description OpenAI Plugin Manifest */
+  "openai-plugin-manifest-location"?: string;
+  /** @description Select an Operation */
+  "api-operation"?: string[];
   /** @description Programming Language. */
   "programming-language"?: "javascript" | "typescript" | "csharp";
   /** @description Application name */

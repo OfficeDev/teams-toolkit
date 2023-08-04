@@ -28,6 +28,7 @@ describe("New Command Tests", function () {
     mockLogProvider(sandbox, logs);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "" }));
+    sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "" }));
     sandbox.stub(questionUtils, "filterQTreeNode").resolves(RootFolderNode);
     sandbox.stub(utils, "flattenNodes").returns([RootFolderNode]);
     sandbox.stub(fs, "pathExistsSync").callsFake((filePath: string) => !filePath.includes("fake"));

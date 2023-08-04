@@ -6,6 +6,7 @@ export enum QuestionNames {
   SctatchYes = "scratch-yes",
   AppName = "app-name",
   Folder = "folder",
+  ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   ProjectType = "project-type",
   Capabilities = "capabilities",

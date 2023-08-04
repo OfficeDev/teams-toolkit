@@ -50,7 +50,7 @@ describe("launch", () => {
       sandbox.stub(commonUtils, "openBrowser").callsFake(async (browser, url, browserArguments) => {
         sideloadingUrl = url;
       });
-      await openHubWebClientNew(constants.Hub.teams, "test-url", Browser.default);
+      await openHubWebClientNew(constants.HubTypes.teams, "test-url", Browser.default);
       expect(telemetries.length).to.deep.equals(0);
       expect(sideloadingUrl).to.deep.equals("test-url");
     });
@@ -60,7 +60,7 @@ describe("launch", () => {
         sideloadingUrl = url;
       });
       await openHubWebClientNew(
-        constants.Hub.teams,
+        constants.HubTypes.teams,
         "test-url",
         Browser.default,
         [],
@@ -83,7 +83,7 @@ describe("launch", () => {
 
     it("openBrowser error", async () => {
       sandbox.stub(commonUtils, "openBrowser").throws();
-      await openHubWebClientNew(constants.Hub.teams, "test-url", Browser.default);
+      await openHubWebClientNew(constants.HubTypes.teams, "test-url", Browser.default);
       expect(telemetries.length).to.deep.equals(0);
     });
   });

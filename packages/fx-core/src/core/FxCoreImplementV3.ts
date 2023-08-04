@@ -3,9 +3,9 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
+  AdaptiveFolderName,
   ApiOperation,
   AppPackageFolderName,
-  AdaptiveFolderName,
   BuildFolderName,
   Context,
   CreateProjectResult,
@@ -30,9 +30,9 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
-import { Hub } from "../common/m365/constants";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
+import { SpecParser } from "../common/spec-parser/specParser";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
@@ -60,6 +60,12 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { SSO } from "../component/feature/sso";
+import {
+  ErrorResult,
+  OpenAIPluginManifestHelper,
+  listOperations,
+} from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { createContextV3, createDriverContext } from "../component/utils";
@@ -68,9 +74,13 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, assembleError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { questions } from "../question";
+import { ScratchOptions } from "../question";
 import { SPFxVersionOptionIds } from "../question/create";
-import { isAadMainifestContainsPlaceholder } from "../question/other";
+import {
+  HubTypes,
+  TeamsAppValidationOptions,
+  isAadMainifestContainsPlaceholder,
+} from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError } from "./error";
@@ -86,13 +96,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import {
-  ErrorResult,
-  OpenAIPluginManifestHelper,
-  listOperations,
-} from "../component/generator/copilotPlugin/helper";
-import { SpecParser } from "../common/spec-parser/specParser";
-import { SSO } from "../component/feature/sso";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -128,9 +131,10 @@ export class FxCoreV3Implement {
     return await method.call(this, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(questions.createProject)])
+  @hooks([ErrorHandlerMW, QuestionMW("createProject")])
   async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     const context = createContextV3();
+    inputs[QuestionNames.Scratch] = ScratchOptions.yes().id;
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
@@ -144,10 +148,18 @@ export class FxCoreV3Implement {
         });
       }
     }
-    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
+    const res = await coordinator.create(context, inputs);
     inputs.projectPath = context.projectPath;
-    return ok(res.value);
+    return res;
+  }
+
+  @hooks([ErrorHandlerMW, QuestionMW("createSampleProject")])
+  async createSampleProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
+    const context = createContextV3();
+    inputs[QuestionNames.Scratch] = ScratchOptions.no().id;
+    const res = await coordinator.create(context, inputs);
+    inputs.projectPath = context.projectPath;
+    return res;
   }
 
   @hooks([
@@ -204,7 +216,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.deployAadManifest),
+    QuestionMW("deployAadManifest"),
     EnvLoaderMW(true, true),
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -280,7 +292,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.selectTeamsAppManifest),
+    QuestionMW("selectTeamsAppManifest"),
     EnvLoaderMW(true),
     ConcurrentLockerMW,
     ContextInjectorMW,
@@ -310,12 +322,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW(questions.addWebpart),
-    ProjectMigratorMWV3,
-    ConcurrentLockerMW,
-  ])
+  @hooks([ErrorHandlerMW, QuestionMW("addWebpart"), ProjectMigratorMWV3, ConcurrentLockerMW])
   async addWebpart(inputs: Inputs): Promise<Result<Void, FxError>> {
     const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
     const args: AddWebPartArgs = {
@@ -339,7 +346,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.grantPermission),
+    QuestionMW("grantPermission"),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,
@@ -376,7 +383,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    QuestionMW(questions.listCollaborator),
+    QuestionMW("listCollaborator"),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,
@@ -494,7 +501,7 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(questions.createNewEnv), ConcurrentLockerMW])
+  @hooks([ErrorHandlerMW, QuestionMW("createNewEnv"), ConcurrentLockerMW])
   async createEnv(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.createEnvCopyV3(
       inputs[QuestionNames.NewTargetEnvName]!,
@@ -560,19 +567,19 @@ export class FxCoreV3Implement {
     await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }
-
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW(questions.selectTeamsAppManifest),
-    ConcurrentLockerMW,
-    EnvLoaderMW(true),
-  ])
+  @hooks([QuestionMW("validateTeamsApp")])
+  async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.schema().id) {
+      return await this.validateManifest(inputs);
+    } else {
+      return await this.validateAppPackage(inputs);
+    }
+  }
+  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ConcurrentLockerMW])
   async validateManifest(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
-
     const context: DriverContext = createDriverContext(inputs);
-
-    const teamsAppManifestFilePath = inputs?.[QuestionNames.TeamsAppManifestFilePath] as string;
+    const teamsAppManifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
       showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
@@ -581,13 +588,11 @@ export class FxCoreV3Implement {
     const result = await driver.run(args, context);
     return result;
   }
-
-  @hooks([ErrorHandlerMW, QuestionMW(questions.selectTeamsAppPackage), ConcurrentLockerMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW])
   async validateAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
-
     const context: DriverContext = createDriverContext(inputs);
-    const teamsAppPackageFilePath = inputs?.[QuestionNames.TeamsAppPackageFilePath] as string;
+    const teamsAppPackageFilePath = inputs[QuestionNames.TeamsAppPackageFilePath] as string;
     const args: ValidateAppPackageArgs = {
       appPackagePath: teamsAppPackageFilePath,
       showMessage: true,
@@ -598,7 +603,7 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    QuestionMW(questions.selectTeamsAppManifest),
+    QuestionMW("selectTeamsAppManifest"),
     EnvLoaderMW(true),
     ConcurrentLockerMW,
   ])
@@ -642,7 +647,7 @@ export class FxCoreV3Implement {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionMW(questions.copilotPluginAddAPI), ConcurrentLockerMW])
+  @hooks([ErrorHandlerMW, QuestionMW("copilotPluginAddAPI"), ConcurrentLockerMW])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
     const operations = inputs[QuestionNames.ApiOperation] as string[];
     const openapiSpecPath =
@@ -696,14 +701,14 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    QuestionMW(questions.previewWithTeamsAppManifest),
+    QuestionMW("previewWithTeamsAppManifest"),
     EnvLoaderMW(false),
     ConcurrentLockerMW,
   ])
   async previewWithManifest(inputs: Inputs): Promise<Result<string, FxError>> {
     inputs.stage = Stage.previewWithManifest;
 
-    const hub = inputs[QuestionNames.M365Host] as Hub;
+    const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
 
     const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);

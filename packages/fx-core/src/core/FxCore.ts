@@ -26,12 +26,11 @@ import "reflect-metadata";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import { validateSchemaOption } from "../component/constants";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
+import { ErrorResult } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW } from "../component/middleware/envMW";
-import { QuestionMW } from "../component/middleware/questionMW";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
@@ -45,9 +44,6 @@ import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
-import { QuestionNames } from "../question/questionNames";
-import { questions } from "../question";
-import { ErrorResult } from "../component/generator/copilotPlugin/helper";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -77,6 +73,13 @@ export class FxCore {
    */
   async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     return this.v3Implement.dispatch(this.createProject, inputs);
+  }
+
+  /**
+   * lifecycle command: create new sample project
+   */
+  async createSampleProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
+    return this.v3Implement.dispatch(this.createSampleProject, inputs);
   }
 
   /**
@@ -143,13 +146,8 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
-  @hooks([QuestionMW(questions.selectTeamsAppValidationMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (inputs[QuestionNames.ValidateMethod] === validateSchemaOption.id) {
-      return await this.validateManifest(inputs);
-    } else {
-      return await this.validateAppPackage(inputs);
-    }
+    return this.v3Implement.dispatch(this.validateApplication, inputs);
   }
   /**
    * v3 only none lifecycle command

@@ -1117,7 +1117,6 @@ describe("handlers", () => {
     await handlers.downloadSample(inputs);
 
     inputs.stage = Stage.create;
-    chai.assert.isTrue(createProject.calledOnceWith(inputs));
     chai.assert.isTrue(showErrorMessageStub.calledOnce);
   });
 

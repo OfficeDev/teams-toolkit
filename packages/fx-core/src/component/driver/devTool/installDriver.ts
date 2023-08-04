@@ -82,7 +82,7 @@ export class ToolsInstallDriver implements StepDriver {
     return wrapRun(async () => {
       const impl = new ToolsInstallDriverImpl(wrapContext);
       return await impl.run(args, outputEnvVarNames);
-    });
+    }, ACTION_NAME);
   }
 }
 

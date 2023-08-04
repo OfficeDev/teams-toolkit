@@ -21,7 +21,7 @@ module.exports = {
     "@typescript-eslint/no-implied-eval": "error",
     "@typescript-eslint/restrict-plus-operands": "error",
     "@typescript-eslint/restrict-template-expressions": "error",
-    "@typescript-eslint/prefer-regexp-exec": "error",
+    // "@typescript-eslint/prefer-regexp-exec": "error",
     // "@typescript-eslint/unbound-method": "error",
   },
 };

@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { MissingRequiredInputError, PackageService } from "@microsoft/teamsfx-core";
+import { PackageService } from "@microsoft/teamsfx-core";
 import { getTokenAndUpn } from "../../cmds/m365/m365";
 import { logger } from "../../commonlib/logger";
-import { cliSource } from "../../constants";
+import { MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { sideloadingServiceEndpoint } from "./m365Sideloading";
-import { MissingRequiredOptionError } from "../../error";
 
 export const m365UnacquireCommand: CLICommand = {
   name: "unacquire",

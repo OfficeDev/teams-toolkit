@@ -190,7 +190,7 @@ export async function generate(
         type = "boolean";
       } else if (options.length > 0) {
         const optionStrings = options.map((o) => (typeof o === "string" ? o : o.id));
-        type = optionStrings.map((i) => `"${i}"`).join(" | ");
+        type = selection.skipValidation ? "string" : optionStrings.map((i) => `"${i}"`).join(" | ");
         (option as CLIStringOption | CLIArrayOption).choices = optionStrings;
       } else {
         type = "string";
@@ -202,6 +202,8 @@ export async function generate(
 
       (option as CLIStringOption | CLIArrayOption).choiceListCommand =
         selection.cliChoiceListCommand;
+      if ((option as CLIStringOption | CLIArrayOption).skipValidation)
+        (option as CLIStringOption | CLIArrayOption).skipValidation = selection.skipValidation;
     }
     const inputPropName = questionName.includes("-") ? `"${questionName}"` : questionName;
     properties.push({

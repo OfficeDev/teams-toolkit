@@ -83,7 +83,7 @@ describe("Yargs Command Tests", function () {
         trackingId: "",
       })
     );
-    sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(ok(Void));
+    sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(ok(undefined));
     const cmd = new TestCommand();
     await cmd.handler({ folder: "test" });
   });

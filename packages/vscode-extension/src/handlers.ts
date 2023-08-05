@@ -1497,7 +1497,7 @@ export async function openExternalHandler(args?: any[]) {
   }
 }
 
-export async function createNewEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
+export async function createNewEnvironment(args?: any[]): Promise<Result<undefined, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CreateNewEnvironmentStart,
     getTriggerFromProperty(args)

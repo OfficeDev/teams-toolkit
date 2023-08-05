@@ -1,13 +1,12 @@
+import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import { cloneDeep } from "lodash";
 import "mocha";
 import * as sinon from "sinon";
 import { helper } from "../../src/commands/helper";
-import { ok } from "@microsoft/teamsfx-api";
-import { CLICommand } from "../../src/commands/types";
 import { createCommand } from "../../src/commands/models/create";
-import { rootCommand } from "../../src/commands/models/root";
 import { createSampleCommand } from "../../src/commands/models/createSample";
-import { cloneDeep } from "lodash";
+import { rootCommand } from "../../src/commands/models/root";
 
 describe("CLI helper", () => {
   const sandbox = sinon.createSandbox();
@@ -20,7 +19,7 @@ describe("CLI helper", () => {
     it("should display required when require is true, displayRequired is true, withRequired is true", async () => {
       helper.displayRequired = true;
       const result = helper.formatOptionName({
-        type: "text",
+        type: "string",
         description: "test",
         shortName: "a",
         required: true,
@@ -31,7 +30,7 @@ describe("CLI helper", () => {
     it("should not display required when require is false, displayRequired is true, withRequired is true", async () => {
       helper.displayRequired = true;
       const result = helper.formatOptionName({
-        type: "text",
+        type: "string",
         description: "test",
         shortName: "a",
         required: false,
@@ -43,7 +42,7 @@ describe("CLI helper", () => {
       helper.displayRequired = true;
       const result = helper.formatOptionName(
         {
-          type: "text",
+          type: "string",
           description: "test",
           shortName: "a",
           required: true,
@@ -57,7 +56,7 @@ describe("CLI helper", () => {
       helper.displayRequired = false;
       const result = helper.formatOptionName(
         {
-          type: "text",
+          type: "string",
           description: "test",
           shortName: "a",
           required: true,
@@ -72,7 +71,7 @@ describe("CLI helper", () => {
       helper.termWidth = 40;
       const result = helper.formatOptionName(
         {
-          type: "text",
+          type: "string",
           description: "test",
           shortName: "a",
           required: true,
@@ -88,7 +87,7 @@ describe("CLI helper", () => {
   describe("formatArgumentName", async () => {
     it("should display required argument", async () => {
       const result = helper.formatArgumentName({
-        type: "text",
+        type: "string",
         description: "test",
         required: true,
         name: "test-argument-name",
@@ -97,7 +96,7 @@ describe("CLI helper", () => {
     });
     it("should display none-required argument", async () => {
       const result = helper.formatArgumentName({
-        type: "text",
+        type: "string",
         description: "test",
         required: false,
         name: "test-argument-name",
@@ -113,11 +112,11 @@ describe("CLI helper", () => {
         fullName: "test",
         description: "test",
         options: [
-          { type: "text", name: "test-option-name", description: "test option", required: true },
+          { type: "string", name: "test-option-name", description: "test option", required: true },
         ],
         arguments: [
           {
-            type: "text",
+            type: "string",
             name: "test-argument-name",
             description: "test argument",
             required: true,
@@ -135,11 +134,11 @@ describe("CLI helper", () => {
         fullName: "test",
         description: "test",
         options: [
-          { type: "text", name: "test-option-name", description: "test option", required: true },
+          { type: "string", name: "test-option-name", description: "test option", required: true },
         ],
         arguments: [
           {
-            type: "text",
+            type: "string",
             name: "test-argument-name",
             description: "test argument",
             required: true,
@@ -157,11 +156,11 @@ describe("CLI helper", () => {
         fullName: "test",
         description: "test",
         options: [
-          { type: "text", name: "test-option-name", description: "test option", required: true },
+          { type: "string", name: "test-option-name", description: "test option", required: true },
         ],
         arguments: [
           {
-            type: "text",
+            type: "string",
             name: "test-argument-name",
             description: "test argument",
             required: true,
@@ -229,7 +228,7 @@ describe("CLI helper", () => {
   describe("formatArgumentDescription", async () => {
     it("happy path", async () => {
       const res = helper.formatArgumentDescription({
-        type: "singleSelect",
+        type: "string",
         name: "test",
         description: "Description.",
         default: "a",
@@ -245,7 +244,7 @@ describe("CLI helper", () => {
   describe("formatOptionDescription", async () => {
     it("happy path", async () => {
       const res = helper.formatOptionDescription({
-        type: "singleSelect",
+        type: "string",
         name: "test",
         description: "Description.",
         default: "a",

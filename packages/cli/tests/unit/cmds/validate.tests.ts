@@ -13,7 +13,7 @@ import * as constants from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../../src/userInteraction";
 import { expect, mockTelemetry, mockYargs } from "../utils";
-import { MissingRequiredArgumentError } from "../../../src/error";
+import { MissingRequiredArgumentError, MissingRequiredOptionError } from "../../../src/error";
 
 describe("teamsfx validate", () => {
   const sandbox = sinon.createSandbox();
@@ -88,7 +88,7 @@ describe("teamsfx validate", () => {
     const res = await cmd.runCommand(args);
     expect(res.isErr()).to.be.true;
     if (res.isErr()) {
-      expect(res.error instanceof MissingRequiredArgumentError).to.be.true;
+      expect(res.error instanceof MissingRequiredOptionError).to.be.true;
     }
   });
 });

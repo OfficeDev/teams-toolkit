@@ -23,8 +23,7 @@ export interface CreateProjectInputs extends Inputs {
     | "tab-spfx"
     | "link-unfurling"
     | "search-app"
-    | "CollectFormMessagingExtension"
-    | "copilot-plugin-capability";
+    | "CollectFormMessagingExtension";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"

@@ -4,6 +4,7 @@ import {
   CollaborationStateResult,
   FxCore,
   ListCollaboratorResult,
+  PackageService,
   PermissionsResult,
   UserCancelError,
   envUtil,
@@ -13,6 +14,8 @@ import "mocha";
 import * as sinon from "sinon";
 import * as activate from "../../src/activate";
 import * as accountUtils from "../../src/cmds/account";
+import * as m365 from "../../src/cmds/m365/m365";
+import { localTelemetryReporter } from "../../src/cmds/preview/localTelemetryReporter";
 import {
   accountLoginAzureCommand,
   accountLoginM365Command,
@@ -28,6 +31,9 @@ import {
   envListCommand,
   listCapabilitiesCommand,
   listSamplesCommand,
+  m365LaunchInfoCommand,
+  m365SideloadingCommand,
+  m365UnacquireCommand,
   packageCommand,
   permissionGrantCommand,
   permissionStatusCommand,
@@ -47,8 +53,6 @@ import { logger } from "../../src/commonlib/logger";
 import M365TokenProvider from "../../src/commonlib/m365Login";
 import { UserSettings } from "../../src/userSetttings";
 import * as utils from "../../src/utils";
-import PreviewEnv from "../../src/cmds/preview/previewEnv";
-import { localTelemetryReporter } from "../../src/cmds/preview/localTelemetryReporter";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -505,6 +509,115 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
       const res = await validateCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("m365LaunchInfoCommand", async () => {
+    beforeEach(() => {
+      sandbox.stub(logger, "warning");
+    });
+    it("success retrieveTitleId", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
+      sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves("id");
+      const ctx: CLIContext = {
+        command: { ...m365LaunchInfoCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-id": "aaa" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365LaunchInfoCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("success", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves("id");
+      const ctx: CLIContext = {
+        command: { ...m365LaunchInfoCommand, fullName: "teamsfx" },
+        optionValues: { "title-id": "aaa" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365LaunchInfoCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("MissingRequiredOptionError", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      const ctx: CLIContext = {
+        command: { ...m365LaunchInfoCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365LaunchInfoCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("m365SideloadingCommand", async () => {
+    beforeEach(() => {
+      sandbox.stub(logger, "warning");
+    });
+    it("success", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(PackageService.prototype, "sideLoading").resolves();
+      const ctx: CLIContext = {
+        command: { ...m365SideloadingCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-id": "aaa" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365SideloadingCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("m365UnacquireCommand", async () => {
+    beforeEach(() => {
+      sandbox.stub(logger, "warning");
+    });
+    it("MissingRequiredOptionError", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      const ctx: CLIContext = {
+        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365UnacquireCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+    it("success retrieveTitleId", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
+      sandbox.stub(PackageService.prototype, "unacquire").resolves();
+      const ctx: CLIContext = {
+        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-id": "aaa" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365UnacquireCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("success", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(PackageService.prototype, "unacquire").resolves();
+      const ctx: CLIContext = {
+        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
+        optionValues: { "title-id": "aaa" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365UnacquireCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

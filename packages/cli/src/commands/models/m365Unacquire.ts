@@ -7,6 +7,7 @@ import { logger } from "../../commonlib/logger";
 import { cliSource } from "../../constants";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { sideloadingServiceEndpoint } from "./m365Sideloading";
+import { MissingRequiredOptionError } from "../../error";
 
 export const m365UnacquireCommand: CLICommand = {
   name: "unacquire",
@@ -42,7 +43,9 @@ export const m365UnacquireCommand: CLICommand = {
     let titleId = ctx.optionValues["title-id"] as string;
     const manifestId = ctx.optionValues["manifest-id"] as string;
     if (titleId === undefined && manifestId === undefined) {
-      return err(new MissingRequiredInputError(`--title-id or --manifest-id`, cliSource));
+      return err(
+        new MissingRequiredOptionError("teamsfx m365 unacquire", `--title-id or --manifest-id`)
+      );
     }
     const tokenAndUpn = await getTokenAndUpn();
     if (titleId === undefined) {

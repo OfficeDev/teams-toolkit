@@ -139,6 +139,7 @@ export async function executionWithTokenAndConfig(
 
 /**
  * execution in message extension with SSO token.
+ * @deprecated Use {@link executionWithTokenAndConfig} instead.
  *
  * @param {TurnContext} context - The context object for the current turn.
  * @param {AuthenticationConfiguration} config - User custom the message extension authentication configuration.
@@ -194,7 +195,7 @@ export async function executionWithToken(
 // eslint-disable-next-line no-secrets/no-secrets
 /**
  * Users execute query in message extension with SSO or access token.
- *
+ * @deprecated Use {@link handleMessageExtensionQueryWithSSO} instead.
  *
  * @param {TurnContext} context - The context object for the current turn.
  * @param {AuthenticationConfiguration} config - User custom the message extension authentication configuration.

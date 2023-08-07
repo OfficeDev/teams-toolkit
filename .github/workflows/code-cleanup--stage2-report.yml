@@ -144,4 +144,4 @@ jobs:
     - name: Detect type-checking normal issues
       run: |
         npx eslint src --ext ts --format unix
-        working-directory: packages/${{matrix.package}}
+      working-directory: packages/${{matrix.package}}

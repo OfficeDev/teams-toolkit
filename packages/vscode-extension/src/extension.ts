@@ -75,7 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   VS_CODE_UI = new VsCodeUI(context);
-  await initializeGlobalVariables(context);
+  initializeGlobalVariables(context);
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();

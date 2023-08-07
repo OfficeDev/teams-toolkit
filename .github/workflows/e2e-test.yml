@@ -12,6 +12,11 @@ on:
         required: false
         type: string
 
+      target-version:
+        description: "target TTK version. Sample: 5.0.2-alpha.2fdf2b99b.0, 5.0.2-rc.0"
+        required: false
+        type: string
+
   schedule:
     - cron: "0 22 * * *"
 
@@ -96,7 +101,7 @@ jobs:
         working-directory: ./packages/tests
         run: |
           npm install
-          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
   
       - name: Upload testplan to artifact

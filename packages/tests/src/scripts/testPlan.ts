@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 "use strict";
 
 /**
@@ -124,7 +126,7 @@ const CLITestPlanTemplate: TestPlan = {
 };
 
 const VSCodeTestPlanTemplate: TestPlan = {
-  id: 10445806,
+  id: 24569079,
   name: "VSCode Test Plan Template",
 };
 

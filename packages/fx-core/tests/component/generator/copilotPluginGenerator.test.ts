@@ -148,7 +148,6 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      console.log(result.value);
       assert.isTrue(result.value.warnings!.length === 1);
       assert.isFalse(result.value.warnings![0].content.includes("operation2"));
     }
@@ -181,7 +180,6 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      console.log(result.value);
       assert.isTrue(result.value.warnings!.length === 0);
     }
   });

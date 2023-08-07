@@ -42,7 +42,7 @@ on:
         type: string
 
       target-testplan-id:
-        description: "target testplan id"
+        description: "target testplan id: 24569079. If not set, will not archive ado testplan"
         required: false
         type: string
 
@@ -135,16 +135,16 @@ jobs:
             ./${{ steps.ttk.outputs.package }}
 
       - name: Archive Test Plan
-        if: ${{ steps.ttk.outputs.target-testplan-id }} != ''
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
         working-directory: ./packages/tests
         run: |
-          echo "AUTO_TEST_PLAN_ID=${{ steps.ttk.outputs.target-testplan-id }}" >> $GITHUB_ENV
+          echo "AUTO_TEST_PLAN_ID=${{ github.event.inputs.target-testplan-id }}" >> $GITHUB_ENV
           npm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
-        if: ${{ steps.ttk.outputs.target-testplan-id }} != ''
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
         uses: actions/upload-artifact@v3
         with:
           name: testplan

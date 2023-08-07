@@ -1,133 +1,132 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
-import {
-  Timeout,
-  TemplateProject,
-  TemplateProjectFolder,
-} from "../../utils/constants";
-import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
-import { initPage, validateShareNow } from "../../utils/playwrightOperation";
-import { Env } from "../../utils/env";
-import { SampledebugContext } from "./sampledebugContext";
-import { it } from "../../utils/it";
-import { editDotEnvFile } from "../../utils/commonUtils";
+
+import { Page } from "playwright";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { validateShareNow } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
-import path from "path";
+import { SampledebugContext } from "./sampledebugContext";
 import * as uuid from "uuid";
-import fs from "fs-extra";
+import * as fs from "fs";
+import * as path from "path";
+import { editDotEnvFile } from "../../utils/commonUtils";
 
-describe("Sample Tests", function () {
-  this.timeout(Timeout.testAzureCase);
-  let sampledebugContext: SampledebugContext;
-  let azSqlHelper: AzSqlHelper;
-  let rgName: string;
-
-  beforeEach(async function () {
-    // ensure workbench is ready
-    this.timeout(Timeout.prepareTestCase);
-    sampledebugContext = new SampledebugContext(
-      TemplateProject.ShareNow,
-      TemplateProjectFolder.ShareNow
+class ShareNowTestCase extends CaseFactory {
+  public sqlUserName: string;
+  public sqlPassword: string;
+  constructor(
+    sampleName: TemplateProject,
+    testPlanCaseId: number,
+    author: string,
+    env: "local" | "dev",
+    validate: LocalDebugTaskLabel[] = [],
+    options: {
+      teamsAppName?: string;
+      dashboardFlag?: boolean;
+      type?: string;
+      testRootFolder?: string;
+      includeFunction?: boolean;
+      npmName?: string;
+      skipInit?: boolean;
+      skipValidation?: boolean;
+    } = {}
+  ) {
+    super(sampleName, testPlanCaseId, author, env, validate, options);
+    this.sqlUserName = "Abc123321";
+    this.sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
+  }
+  public override onAfterCreate = async (
+    sampledebugContext: SampledebugContext
+  ): Promise<void> => {
+    const envFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      ".env.dev.user"
     );
-    await sampledebugContext.before();
-  });
-
-  afterEach(async function () {
-    this.timeout(Timeout.finishAzureTestCase);
-    await sampledebugContext.sampleAfter(
-      `${sampledebugContext.appName}-dev-rg`
+    const user = this.sqlUserName;
+    const password = this.sqlPassword;
+    editDotEnvFile(envFilePath, "SQL_USER_NAME", user);
+    editDotEnvFile(envFilePath, "SQL_PASSWORD", password);
+  };
+  public override onBeforeBrowerStart = async (
+    sampledebugContext: SampledebugContext
+  ): Promise<void> => {
+    const user = this.sqlUserName;
+    const password = this.sqlPassword;
+    const devEnvFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      ".env.dev"
     );
-  });
-
-  it(
-    "[auto] local debug for Sample Share Now",
-    {
-      testPlanCaseId: 24121485,
-      author: "v-ivanchen@microsoft.com",
-    },
-    async function () {
-      // create project
-      await sampledebugContext.openResourceFolder();
-      // await sampledebugContext.createTemplate();
-
-      // Provision
-      const envFilePath = path.resolve(
-        sampledebugContext.projectPath,
-        "env",
-        ".env.dev.user"
+    // read database from devEnvFilePath
+    const sqlDatabaseNameLine = fs
+      .readFileSync(devEnvFilePath, "utf-8")
+      .split("\n")
+      .find((line: string) =>
+        line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__DATABASENAME")
       );
-      const sqlUserName = "Abc123321";
-      const sqlPassword = "Cab232332" + uuid.v4().substring(0, 6);
-      editDotEnvFile(envFilePath, "SQL_USER_NAME", sqlUserName);
-      editDotEnvFile(envFilePath, "SQL_PASSWORD", sqlPassword);
-      await runProvision(sampledebugContext.appName);
 
-      // Deploy
-      await runDeploy();
+    const sqlDatabaseName = sqlDatabaseNameLine
+      ? sqlDatabaseNameLine.split("=")[1]
+      : undefined;
 
-      const devEnvFilePath = path.resolve(
-        sampledebugContext.projectPath,
-        "env",
-        ".env.dev"
+    const sqlEndpointLine = fs
+      .readFileSync(devEnvFilePath, "utf-8")
+      .split("\n")
+      .find((line: string) =>
+        line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__SQLENDPOINT")
       );
-      // read database from devEnvFilePath
-      const sqlDatabaseName = fs
-        .readFileSync(devEnvFilePath, "utf-8")
-        .split("\n")
-        .find((line) =>
-          line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__DATABASENAME")
-        )
-        ?.split("=")[1];
-      const sqlEndpoint = fs
-        .readFileSync(devEnvFilePath, "utf-8")
-        .split("\n")
-        .find((line) =>
-          line.startsWith("PROVISIONOUTPUT__AZURESQLOUTPUT__SQLENDPOINT")
-        )
-        ?.split("=")[1];
 
-      const sqlCommands = [
-        `CREATE TABLE [TeamPostEntity](
-            [PostID] [int] PRIMARY KEY IDENTITY,
-            [ContentUrl] [nvarchar](400) NOT NULL,
-            [CreatedByName] [nvarchar](50) NOT NULL,
-            [CreatedDate] [datetime] NOT NULL,
-            [Description] [nvarchar](500) NOT NULL,
-            [IsRemoved] [bit] NOT NULL,
-            [Tags] [nvarchar](100) NULL,
-            [Title] [nvarchar](100) NOT NULL,
-            [TotalVotes] [int] NOT NULL,
-            [Type] [int] NOT NULL,
-            [UpdatedDate] [datetime] NOT NULL,
-            [UserID] [uniqueidentifier] NOT NULL
-         );`,
-        `CREATE TABLE [UserVoteEntity](
-          [VoteID] [int] PRIMARY KEY IDENTITY,
-          [PostID] [int] NOT NULL,
+    const sqlEndpoint = sqlEndpointLine
+      ? sqlEndpointLine.split("=")[1]
+      : undefined;
+
+    const sqlCommands = [
+      `CREATE TABLE [TeamPostEntity](
+          [PostID] [int] PRIMARY KEY IDENTITY,
+          [ContentUrl] [nvarchar](400) NOT NULL,
+          [CreatedByName] [nvarchar](50) NOT NULL,
+          [CreatedDate] [datetime] NOT NULL,
+          [Description] [nvarchar](500) NOT NULL,
+          [IsRemoved] [bit] NOT NULL,
+          [Tags] [nvarchar](100) NULL,
+          [Title] [nvarchar](100) NOT NULL,
+          [TotalVotes] [int] NOT NULL,
+          [Type] [int] NOT NULL,
+          [UpdatedDate] [datetime] NOT NULL,
           [UserID] [uniqueidentifier] NOT NULL
-        );`,
-      ];
-      const sqlHelper = new AzSqlHelper(
-        `${sampledebugContext.appName}-dev-rg`,
-        sqlCommands,
-        sqlDatabaseName,
-        sqlDatabaseName,
-        sqlUserName,
-        sqlPassword
-      );
-      await sqlHelper.createTable(sqlEndpoint as string);
+       );`,
+      `CREATE TABLE [UserVoteEntity](
+        [VoteID] [int] PRIMARY KEY IDENTITY,
+        [PostID] [int] NOT NULL,
+        [UserID] [uniqueidentifier] NOT NULL
+      );`,
+    ];
+    const sqlHelper = new AzSqlHelper(
+      `${sampledebugContext.appName}-dev-rg`,
+      sqlCommands,
+      sqlDatabaseName,
+      sqlDatabaseName,
+      user,
+      password
+    );
+    await sqlHelper.createTable(sqlEndpoint ?? "");
+  };
+  override async onValidate(page: Page): Promise<void> {
+    return await validateShareNow(page);
+  }
+}
 
-      const teamsAppId = await sampledebugContext.getTeamsAppId("dev");
-      console.log(teamsAppId);
-      const page = await initPage(
-        sampledebugContext.context!,
-        teamsAppId,
-        Env.username,
-        Env.password
-      );
-      await validateShareNow(page);
-      console.log("debug finish!");
-    }
-  );
-});
+new ShareNowTestCase(
+  TemplateProject.ShareNow,
+  24121485,
+  "v-ivanchen@microsoft.com",
+  "dev",
+  [],
+  { skipValidation: true }
+).test();

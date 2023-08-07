@@ -1,66 +1,26 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
-import {
-  Timeout,
-  TemplateProject,
-  TemplateProjectFolder,
-} from "../../utils/constants";
-import {
-  initPage,
-  validateProactiveMessaging,
-} from "../../utils/playwrightOperation";
-import { Env } from "../../utils/env";
-import { SampledebugContext } from "./sampledebugContext";
-import { it } from "../../utils/it";
-import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
-describe("Sample Tests", function () {
-  this.timeout(Timeout.testAzureCase);
-  let sampledebugContext: SampledebugContext;
+import { Page } from "playwright";
+import { TemplateProject } from "../../utils/constants";
+import { validateProactiveMessaging } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 
-  beforeEach(async function () {
-    // ensure workbench is ready
-    this.timeout(Timeout.prepareTestCase);
-    sampledebugContext = new SampledebugContext(
-      TemplateProject.ProactiveMessaging,
-      TemplateProjectFolder.ProactiveMessaging,
-      "./resource/samples"
-    );
-    await sampledebugContext.before();
-  });
+class ProactiveMessagingTestCase extends CaseFactory {
+  override async onValidate(page: Page): Promise<void> {
+    return await validateProactiveMessaging(page);
+  }
+}
 
-  afterEach(async function () {
-    this.timeout(Timeout.finishAzureTestCase);
-    await sampledebugContext.sampleAfter(
-      `${sampledebugContext.appName}-dev-rg`
-    );
-  });
-
-  it(
-    "[auto] remote debug for Sample Proactive Messaging",
-    {
-      testPlanCaseId: 24121478,
-      author: "v-ivanchen@microsoft.com",
-    },
-    async function () {
-      // create project
-      await sampledebugContext.openResourceFolder();
-      // await sampledebugContext.createTemplate();
-
-      await runProvision(sampledebugContext.appName);
-      await runDeploy();
-
-      const teamsAppId = await sampledebugContext.getTeamsAppId("dev");
-      console.log(teamsAppId);
-      const page = await initPage(
-        sampledebugContext.context!,
-        teamsAppId,
-        Env.username,
-        Env.password
-      );
-      await validateProactiveMessaging(page);
-      console.log("debug finish!");
-    }
-  );
-});
+new ProactiveMessagingTestCase(
+  TemplateProject.ProactiveMessaging,
+  24121478,
+  "v-ivanchen@microsoft.com",
+  "dev",
+  [],
+  { testRootFolder: "./resource/samples", skipValidation: true }
+).test();

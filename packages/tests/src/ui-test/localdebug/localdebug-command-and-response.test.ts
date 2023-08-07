@@ -4,6 +4,7 @@
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
  */
+
 import * as path from "path";
 import {
   startDebugging,
@@ -105,7 +106,10 @@ describe("Command And Response Bot Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, "helloWorld", "Your Hello World App is Running");
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World App is Running",
+      });
     }
   );
 });

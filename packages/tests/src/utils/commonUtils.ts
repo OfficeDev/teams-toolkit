@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { FeatureFlagName } from "./constants";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -182,7 +184,7 @@ export function editDotEnvFile(
       .join("\n");
     fs.writeFileSync(filePath, newEnvFileContent);
   } catch (error) {
-    console.log('Failed to edit ".env" file.');
+    console.log('Failed to edit ".env" file. FilePath: ' + filePath);
   }
 }
 

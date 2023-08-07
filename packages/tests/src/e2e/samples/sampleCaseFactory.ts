@@ -13,8 +13,6 @@ import {
   getTestFolder,
   getUniqueAppName,
   readContextMultiEnvV3,
-  removeTeamsAppExtendToM365,
-  editDotEnvFile,
   validateTabAndBotProjectProvision,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
@@ -28,7 +26,7 @@ import {
   FunctionValidator,
 } from "../../commonlib";
 import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
-import { getUuid } from "../../commonlib/utilities";
+import { middleWareMap } from "./middleWare";
 
 export default function sampleCaseFactory(
   sampleName: TemplateProjectFolder,
@@ -43,7 +41,13 @@ export default function sampleCaseFactory(
     | "function"
     | "spfx"
     | "tab & bot"
-  )[] = []
+  )[] = [],
+  skips?: {
+    skipProvision?: boolean;
+    skipDeploy?: boolean;
+    skipValidate?: boolean;
+    skipPackage?: boolean;
+  }
 ) {
   let samplePath = "";
   return {
@@ -59,53 +63,43 @@ export default function sampleCaseFactory(
         before(async () => {});
 
         it(sampleName, { testPlanCaseId, author }, async function () {
-          if (sampleName === TemplateProjectFolder.ProactiveMessaging) {
-            await Executor.openTemplateProject(
-              appName,
-              testFolder,
-              sampleName,
-              undefined,
-              "samples"
-            );
-          } else if (sampleName === TemplateProjectFolder.OutlookSignature) {
-            await Executor.openTemplateProject(
-              appName,
-              testFolder,
-              sampleName,
-              undefined,
-              "Samples"
-            );
-          } else {
-            await Executor.openTemplateProject(appName, testFolder, sampleName);
-          }
+          // Create middleWare
+          console.log("[start] Create middleWare");
+          await middleWareMap[sampleName](
+            sampleName,
+            testFolder,
+            appName,
+            projectPath,
+            { create: true }
+          );
+          console.log("[end] Create middleWare");
+
           expect(fs.pathExistsSync(projectPath)).to.be.true;
-          if (validate.includes("spfx")) {
-            expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src")))
-              .to.be.true;
-          } else if (sampleName !== TemplateProjectFolder.ProactiveMessaging) {
-            expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be
-              .true;
-          }
-          if (validate.includes("dashboard")) {
-            // remove teamsApp/extendToM365 in case it fails
-            removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
-          }
+          // after create middleWare
+          console.log("[start] after create middleWare");
+          await middleWareMap[sampleName](
+            sampleName,
+            testFolder,
+            appName,
+            projectPath,
+            { afterCreate: true }
+          );
+          console.log("[end] after create middleWare");
 
           // Provision
+          if (skips?.skipProvision) return;
           {
-            if (validate.includes("sql")) {
-              const envFilePath = path.resolve(
-                projectPath,
-                "env",
-                ".env.dev.user"
-              );
-              editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
-              editDotEnvFile(
-                envFilePath,
-                "SQL_PASSWORD",
-                "Cab232332" + getUuid().substring(0, 6)
-              );
-            }
+            // before provision middleWare
+            console.log("[start] before provision middleWare");
+            await middleWareMap[sampleName](
+              sampleName,
+              testFolder,
+              appName,
+              projectPath,
+              { beforeProvision: true }
+            );
+            console.log("[end] before provision middleWare");
+
             const { success } = await Executor.provision(projectPath);
             expect(success).to.be.true;
 
@@ -141,12 +135,8 @@ export default function sampleCaseFactory(
             }
           }
 
-          // [BUG] https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/24689200
-          // workaround: wait for partner to fix issue
-          if (sampleName === TemplateProjectFolder.OutlookSignature) {
-            return;
-          }
           // deploy
+          if (skips?.skipDeploy) return;
           {
             const { success } = await Executor.deploy(projectPath);
             expect(success).to.be.true;
@@ -160,17 +150,15 @@ export default function sampleCaseFactory(
             }
           }
 
-          // [BUG] https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/24704915
-          if (sampleName === TemplateProjectFolder.ChefBot) {
-            return;
-          }
           // validate
+          if (skips?.skipValidate) return;
           {
             const { success } = await Executor.validate(projectPath);
             expect(success).to.be.true;
           }
 
           // package
+          if (skips?.skipPackage) return;
           {
             const { success } = await Executor.package(projectPath);
             expect(success).to.be.true;

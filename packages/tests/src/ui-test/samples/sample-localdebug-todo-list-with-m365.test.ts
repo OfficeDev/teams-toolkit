@@ -1,91 +1,44 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
-import {
-  Timeout,
-  TemplateProject,
-  TemplateProjectFolder,
-  LocalDebugTaskLabel,
-  LocalDebugTaskResult,
-} from "../../utils/constants";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
-import { initPage, validateTodoList } from "../../utils/playwrightOperation";
-import { Env } from "../../utils/env";
+
+import { Page } from "playwright";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { validateTodoList } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
-import { it } from "../../utils/it";
-import { VSBrowser } from "vscode-extension-tester";
-import { getScreenshotName } from "../../utils/nameUtil";
 import * as path from "path";
-import fs from "fs";
+import * as fs from "fs";
 
-describe("Sample Tests", function () {
-  this.timeout(Timeout.testAzureCase);
-  let sampledebugContext: SampledebugContext;
+class TodoListM365TestCase extends CaseFactory {
+  public override async onAfterCreate(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ): Promise<void> {
+    const targetPath = path.resolve(sampledebugContext.projectPath, "tabs");
+    const data = "src/";
+    // create .eslintignore
+    fs.writeFileSync(targetPath + "/.eslintignore", data);
+  }
+  override async onValidate(
+    page: Page,
+    options?: { displayName: string }
+  ): Promise<void> {
+    return await validateTodoList(page, { displayName: options?.displayName });
+  }
+}
 
-  beforeEach(async function () {
-    // ensure workbench is ready
-    this.timeout(Timeout.prepareTestCase);
-    sampledebugContext = new SampledebugContext(
-      TemplateProject.TodoListM365,
-      TemplateProjectFolder.TodoListM365
-    );
-    await sampledebugContext.before();
-  });
-
-  afterEach(async function () {
-    this.timeout(Timeout.finishAzureTestCase);
-    await sampledebugContext.after();
-  });
-
-  it(
-    "[auto] local debug for Sample todo list m365",
-    {
-      testPlanCaseId: 12664741,
-      author: "v-ivanchen@microsoft.com",
-    },
-    async function () {
-      // create project
-      await sampledebugContext.openResourceFolder();
-      // await sampledebugContext.createTemplate();
-
-      const targetPath = path.resolve(sampledebugContext.projectPath, "tabs");
-
-      const data = "src/";
-      // create .eslintignore
-      fs.writeFileSync(targetPath + "/.eslintignore", data);
-
-      try {
-        // local debug
-        await startDebugging("Debug in Teams (Chrome)");
-
-        console.log("wait frontend start");
-        await waitForTerminal(
-          LocalDebugTaskLabel.StartFrontend,
-          LocalDebugTaskResult.FrontendSuccess
-        );
-
-        console.log("wait backend start");
-        await waitForTerminal(
-          LocalDebugTaskLabel.StartBackend,
-          LocalDebugTaskResult.BotAppSuccess
-        );
-      } catch (error) {
-        await VSBrowser.instance.takeScreenshot(getScreenshotName("debug"));
-        console.log("[Skip Error]: ", error);
-        await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
-      }
-
-      const teamsAppId = await sampledebugContext.getTeamsAppId("local");
-      console.log(teamsAppId);
-      const page = await initPage(
-        sampledebugContext.context!,
-        teamsAppId,
-        Env.username,
-        Env.password
-      );
-
-      await validateTodoList(page, Env.displayName);
-      console.log("debug finish!");
-    }
-  );
-});
+new TodoListM365TestCase(
+  TemplateProject.TodoListM365,
+  12664741,
+  "v-ivanchen@microsoft.com",
+  "local",
+  [LocalDebugTaskLabel.StartFrontend, LocalDebugTaskLabel.StartBackend],
+  {
+    teamsAppName: "toDoList-local",
+    skipValidation: true,
+  }
+).test();

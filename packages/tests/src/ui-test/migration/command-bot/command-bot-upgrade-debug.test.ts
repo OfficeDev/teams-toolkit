@@ -1,6 +1,5 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -87,7 +86,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, "helloWorld");
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World App is Running",
+      });
     }
   );
 });

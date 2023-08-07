@@ -393,7 +393,7 @@ class ADOTestPlanClient {
     let id = 0;
     let sourceID = 0;
     if (name.indexOf(AutoTeamsfxPlanPrefix) >= 0) {
-      sourceID = TestPlanTemplate.id;
+      sourceID = process.env["AUTO_TEST_PLAN_ID"] as unknown as number;
     }
 
     try {

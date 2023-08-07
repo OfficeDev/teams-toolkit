@@ -1,4 +1,4 @@
-import { CLICommandOption, CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommandOption, CLIContext, CLIFoundCommand, err, ok } from "@microsoft/teamsfx-api";
 import { FxCore, InputValidationError, UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
@@ -32,7 +32,85 @@ describe("CLI Engine", () => {
       assert.deepEqual(result.remainingArgs, []);
     });
   });
-
+  describe("parseArgs", async () => {
+    it("array type options", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        options: [
+          {
+            type: "array",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "a,b,c"], []);
+      assert.isTrue(result.isOk());
+      assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
+    });
+    it("array type options 2", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        options: [
+          {
+            type: "array",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(
+        ctx,
+        rootCommand,
+        ["--option1", "a", "--option1", "b", "--option1", "c"],
+        []
+      );
+      assert.isTrue(result.isOk());
+      assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
+    });
+    it("array type options 3", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        options: [
+          {
+            type: "array",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1=a,b,c"], []);
+      assert.isTrue(result.isOk());
+      assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
+    });
+  });
   describe("validateOption", async () => {
     it("InvalidChoiceError", async () => {
       const option: CLICommandOption = {

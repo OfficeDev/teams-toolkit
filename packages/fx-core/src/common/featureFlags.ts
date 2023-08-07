@@ -41,6 +41,7 @@ export function isImportSPFxEnabled(): boolean {
 }
 
 export function isCopilotPluginEnabled(): boolean {
+  return true;
   return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
 }
 

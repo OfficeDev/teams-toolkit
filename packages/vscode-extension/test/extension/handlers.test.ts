@@ -1624,13 +1624,13 @@ describe("handlers", () => {
     });
   });
 
-  it("refreshSPFxTreeOnFileChanged", async () => {
+  it("refreshSPFxTreeOnFileChanged", () => {
     const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
     const updateTreeViewsOnSPFxChanged = sandbox
       .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
       .resolves();
 
-    await handlers.refreshSPFxTreeOnFileChanged();
+    handlers.refreshSPFxTreeOnFileChanged();
 
     chai.expect(initGlobalVariables.calledOnce).to.be.true;
     chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;

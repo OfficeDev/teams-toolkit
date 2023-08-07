@@ -666,7 +666,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, QuestionMW("copilotPluginAddAPI"), ConcurrentLockerMW])
-  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const operations = inputs[QuestionNames.ApiOperation] as string[];
     const openapiSpecPath =
       inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
@@ -691,7 +691,7 @@ export class FxCoreV3Implement {
       inputs.projectPath
     );
     await this.tools.ui.showMessage("info", message, false);
-    return ok("");
+    return ok(undefined);
   }
 
   @hooks([ErrorHandlerMW])

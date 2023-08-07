@@ -410,7 +410,7 @@ export default class ServerConnection implements IServerConnection {
   public async copilotPluginAddAPIRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,

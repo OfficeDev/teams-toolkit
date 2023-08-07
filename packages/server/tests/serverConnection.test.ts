@@ -447,7 +447,7 @@ describe("serverConnections", () => {
 
   it("copilotPluginAddAPIRequest", async () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(ok({}));
+    const fake = sandbox.fake.resolves(ok(undefined));
     sandbox.replace(connection["core"], "copilotPluginAddAPI", fake);
     const res = await connection.copilotPluginAddAPIRequest({} as Inputs, {} as CancellationToken);
     assert.isTrue(res.isOk());

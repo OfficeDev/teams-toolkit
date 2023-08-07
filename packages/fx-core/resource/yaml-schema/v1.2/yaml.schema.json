@@ -14,12 +14,18 @@
     "version": {
       "type": "string",
       "description": "The version of the yaml file schema",
-      "const": "1.1.1"
+      "const": "v1.2"
     },
-    "sampleTag": {
-      "type": "string",
-      "pattern": "^[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$",
-      "description": "The tag of sample repo and sample name, used for telemetry purpose only. E.g. <sample-repo>:<sample-name>"
+    "additionalMetadata": {
+      "type": "object",
+      "description": "Additional metadata for the project, used for telemetry purpose only.",
+      "additionalProperties": true,
+      "properties": {
+        "sampleTag": {
+          "type": ["number","string","boolean","object","array", "null", "integer"],
+          "description": "The string tag of sample repo and sample name following pattern <sample-repo>:<sample-name>, used for telemetry purpose only."
+        }
+      }
     },
     "provision": {
       "$ref": "#/definitions/lifeCycleArray",

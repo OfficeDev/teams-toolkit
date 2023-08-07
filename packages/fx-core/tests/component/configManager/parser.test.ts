@@ -142,19 +142,20 @@ describe("v3 yaml parser", () => {
       assert(result.isOk());
       if (result.isOk()) {
         const model = result.value;
-        chai.expect(model["sampleTag"]).is.equal("testRepo:testSample");
+        chai.expect(model.additionalMetadata).is.not.undefined;
+        chai.expect(model.additionalMetadata!["sampleTag"]).is.equal("testRepo:testSample");
       }
     });
   });
 
   describe(`when parsing bad_sample_tag.yml`, () => {
-    it("should return error", async () => {
+    it("should not return error", async () => {
       const parser = new YamlParser();
       const result = await parser.parse(
         path.resolve(__dirname, "testing_data", "bad_sample_tag.yml"),
         false
       );
-      assert(result.isErr() && result.error.name === "YamlFieldTypeError");
+      assert(result.isOk());
     });
   });
 

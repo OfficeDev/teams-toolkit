@@ -20,6 +20,6 @@ describe("yaml validator", () => {
       .expect(validator.supportedVersions())
       .contains("1.0.0")
       .and.contains("1.1.0")
-      .and.contains("1.1.1");
+      .and.contains("v1.2");
   });
 });

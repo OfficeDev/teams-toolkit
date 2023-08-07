@@ -7,7 +7,7 @@ import path from "path";
 import { getResourceFolder } from "../../folder";
 
 type Version = string;
-const supportedVersions = ["1.0.0", "1.1.0", "1.1.1"];
+const supportedVersions = ["1.0.0", "1.1.0", "v1.2"];
 
 export class Validator {
   impl: Map<Version, { validator: ValidateFunction }>;
@@ -24,7 +24,6 @@ export class Validator {
     ajv.addKeyword("deprecationMessage");
     const schemaPath = path.join(getResourceFolder(), "yaml-schema", version, "yaml.schema.json");
     const schema = fs.readJSONSync(schemaPath);
-    const schemaString = fs.readFileSync(schemaPath, "utf8");
 
     this.impl.set(version, {
       validator: ajv.compile(schema),

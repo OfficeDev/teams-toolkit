@@ -28,12 +28,28 @@ class MetadataUtil {
         props[name + ".actions"] = str ?? "";
       }
       props[TelemetryProperty.YmlSchemaVersion] = res.value.version;
-      props[TelemetryProperty.SampleAppName] = res.value.sampleTag ?? "";
+      props[TelemetryProperty.SampleAppName] = MetadataUtil.parseSampleTag(
+        res.value.additionalMetadata
+      );
 
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
     }
 
     return res;
+  }
+
+  static parseSampleTag(additionalMetadata: { [key: string]: unknown } | undefined): string {
+    if (additionalMetadata === undefined) {
+      return "";
+    }
+
+    const sampleTag = additionalMetadata["sampleTag"];
+    if (typeof sampleTag === "string") {
+      // replace characters that could make the tag be mistaken as a file path or an email address
+      return sampleTag.replace(/[@\/\\\.]/g, "_");
+    } else {
+      return "";
+    }
   }
 
   parseManifest(manifest: TeamsAppManifest | devPreview.DevPreviewSchema): void {

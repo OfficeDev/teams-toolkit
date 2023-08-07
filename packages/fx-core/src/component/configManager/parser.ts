@@ -10,7 +10,13 @@ import fs from "fs-extra";
 import { load } from "js-yaml";
 import { globalVars } from "../../core/globalVars";
 import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
-import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
+import {
+  IYamlParser,
+  ProjectModel,
+  RawProjectModel,
+  LifecycleNames,
+  AdditionalMetadata,
+} from "./interface";
 import { Lifecycle } from "./lifecycle";
 import { Validator } from "./validator";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -39,11 +45,10 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
     return err(new YamlFieldMissingError("version"));
   }
 
-  if ("sampleTag" in obj) {
-    if (typeof obj["sampleTag"] !== "string") {
-      return err(new YamlFieldTypeError("sampleTag", "string"));
-    }
-    result.sampleTag = obj["sampleTag"];
+  if ("additionalMetadata" in obj) {
+    // No validation for additionalMetadata by design. This property is for telemetry related purpose only
+    // and should not affect user-observable behavior of TTK.
+    result.additionalMetadata = obj["additionalMetadata"] as unknown as AdditionalMetadata;
   }
 
   for (const name of LifecycleNames) {
@@ -118,8 +123,8 @@ export class YamlParser implements IYamlParser {
       result.environmentFolderPath = raw.value.environmentFolderPath;
     }
 
-    if (raw.value.sampleTag) {
-      result.sampleTag = raw.value.sampleTag;
+    if (raw.value.additionalMetadata) {
+      result.additionalMetadata = raw.value.additionalMetadata;
     }
 
     return ok(result);

@@ -241,7 +241,7 @@ describe("Generator utils", () => {
     try {
       getSampleInfoFromName(sampleName);
     } catch (e) {
-      assert.equal(e.message, "invalid sample name: 'test'");
+      assert.equal(e.message, "Invalid inputs: test");
     }
   });
 

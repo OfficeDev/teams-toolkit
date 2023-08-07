@@ -90,19 +90,13 @@ enum TestPlanType {
   vscode = "vscode",
 }
 
-const AutoCLITestPlanPrefix = "[auto] cli@";
-const AutoVSCodeTestPlanPrefix = "[auto] vscode@";
+const AutoTeamsfxPlanPrefix = "[auto] teamsfx@";
 
 function TestPlanName(tpt: TestPlanType, version: string): string {
   const tag = `${semver.major(version)}.${semver.minor(version)}.${semver.patch(
     version
   )}`;
-  switch (tpt) {
-    case TestPlanType.cli:
-      return AutoCLITestPlanPrefix + tag;
-    case TestPlanType.vscode:
-      return AutoVSCodeTestPlanPrefix + tag;
-  }
+  return AutoTeamsfxPlanPrefix + tag;
 }
 
 /**
@@ -120,14 +114,9 @@ interface Pagenation<T> {
   continuationToken?: string;
 }
 
-const CLITestPlanTemplate: TestPlan = {
-  id: 15232204,
-  name: "CLI Test Plan Template",
-};
-
-const VSCodeTestPlanTemplate: TestPlan = {
+const TestPlanTemplate: TestPlan = {
   id: 24569079,
-  name: "VSCode Test Plan Template",
+  name: "TestPlan Test Plan Template",
 };
 
 const BaseURL =
@@ -403,13 +392,10 @@ class ADOTestPlanClient {
   public static async CloneTestPlan(name: string): Promise<TestPlan> {
     let id = 0;
     let sourceID = 0;
-    if (name.indexOf(AutoCLITestPlanPrefix) >= 0) {
-      sourceID = CLITestPlanTemplate.id;
+    if (name.indexOf(AutoTeamsfxPlanPrefix) >= 0) {
+      sourceID = TestPlanTemplate.id;
     }
 
-    if (name.indexOf(AutoVSCodeTestPlanPrefix) >= 0) {
-      sourceID = VSCodeTestPlanTemplate.id;
-    }
     try {
       const response = await ADOTestPlanClient.client.post(
         "/Plans/CloneOperation",

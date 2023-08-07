@@ -273,7 +273,7 @@ jobs:
         if: ${{ github.event.inputs.target-testplan-id }} != ''
         working-directory: packages/tests
         run: |
-          npx ts-node src/scripts/testPlan.ts report ./testplan.json ./packages/tests/src/e2e/mochawesome-report/mochawesome.json
+          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}

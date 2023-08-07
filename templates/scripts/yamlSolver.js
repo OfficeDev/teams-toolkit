@@ -1,10 +1,9 @@
-const { readFileSync, writeFileSync, lstatSync, existsSync } = require("node:fs");
+const { readFileSync, lstatSync, existsSync } = require("node:fs");
 const path = require("path");
 const utils = require("./utils");
 const { Ext, Path, RegExp } = require("./constants");
 const yaml = require("js-yaml");
 const os = require("os");
-const { ensureFileSync } = require("fs-extra");
 
 // The solver is called by the following command:
 // > node yamlSolver.js <command> <constraintFilePath>
@@ -197,7 +196,7 @@ class YamlSolver {
 
   apply() {
     for (const { solution, solutionPath } of solveMustache(this.mustachePaths)) {
-      writeFileSync(solutionPath, solution);
+      utils.writeFileSafe(solutionPath, solution);
     }
   }
 
@@ -231,8 +230,7 @@ class YamlSolver {
       const constraint = generateConstraintFromSolution(readFileSync(file, "utf8"), {
         isLocal: path.basename(file).includes("local"),
       });
-      ensureFileSync(mustachePath);
-      writeFileSync(mustachePath, constraint);
+      utils.writeFileSafe(mustachePath, constraint);
     });
   }
 }

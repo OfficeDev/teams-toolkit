@@ -1,5 +1,5 @@
 const path = require("path");
-const { readdirSync, lstatSync, existsSync } = require("node:fs");
+const { readdirSync, mkdirSync, writeFileSync, lstatSync, existsSync } = require("node:fs");
 const Mustache = require("mustache");
 const { Ext } = require("./constants");
 
@@ -57,9 +57,15 @@ function renderMustache(template, view) {
   return writer.renderTokens(token, new Mustache.Context(view), undefined, template);
 }
 
+function writeFileSafe(filePath, content) {
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, content);
+}
+
 module.exports = {
   filterYmlFiles,
   filterYmlTplFiles,
   filterMustacheFiles,
   renderMustache,
+  writeFileSafe,
 };

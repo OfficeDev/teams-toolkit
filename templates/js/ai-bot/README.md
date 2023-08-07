@@ -16,10 +16,11 @@ The app template is built using the Teams AI library, which provides the capabil
 > - An account with [OpenAI](https://platform.openai.com/) or [Azure OpenAI](https://aka.ms/oai/access) resource.
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
-2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
-3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
-4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-5. You will receive a welcome message from the bot, or send any message to get a response.
+1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+1. In file *.localConfigs*, fill in your Open AI key `OPENAI_API_KEY=<your-key>`.
+1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
+1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 

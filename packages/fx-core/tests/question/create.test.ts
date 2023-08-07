@@ -901,26 +901,6 @@ describe("scaffold question", () => {
           assert.isTrue(options[1].id === "operation2");
         });
 
-        it(" list operations without existing APIs", async () => {
-          const question = apiOperationQuestion(false);
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-            [QuestionNames.ApiSpecLocation]: "apispec",
-            supportedApisFromApiSpec: [
-              { id: "operation1", label: "operation1", groupName: "1" },
-              { id: "operation2", label: "operation2", groupName: "2" },
-            ],
-          };
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
-          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
-          sandbox.stub(manifestUtils, "getOperationIds").returns(["operation1"]);
-
-          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
-
-          assert.isTrue(options.length === 1);
-          assert.isTrue(options[0].id === "operation2");
-        });
-
         it(" list operations error", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1106,6 +1086,28 @@ describe("scaffold question", () => {
           }
 
           assert.isTrue(fxError!.message.includes("error1"));
+        });
+
+        it("list operations without existing APIs", async () => {
+          const question = apiSpecLocationQuestion(false);
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            teamsManifestPath: "fakePath",
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+          sandbox.stub(manifestUtils, "getOperationIds").returns(["get operation1"]);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+          assert.deepEqual(inputs.supportedApisFromApiSpec, [
+            { id: "get operation2", label: "get operation2", groupName: "GET" },
+          ]);
+          assert.isUndefined(res);
         });
       });
 

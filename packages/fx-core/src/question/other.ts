@@ -316,7 +316,7 @@ function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
 
 export function copilotPluginAddAPIQuestionNode(): IQTreeNode {
   return {
-    data: apiSpecLocationQuestion(),
+    data: apiSpecLocationQuestion(false),
     children: [
       {
         data: apiOperationQuestion(false),

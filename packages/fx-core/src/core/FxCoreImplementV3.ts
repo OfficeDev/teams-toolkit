@@ -695,6 +695,8 @@ export class FxCoreV3Implement {
       createContextV3(),
       inputs.manifest,
       inputs.apiSpecUrl,
+      inputs.teamsManifestPath,
+      inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );
   }

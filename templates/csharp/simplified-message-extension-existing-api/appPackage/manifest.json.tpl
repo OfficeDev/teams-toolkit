@@ -19,8 +19,8 @@
         "full": "full name for {{appName}}"
     },
     "description": {
-        "short": "short description for {{appName}}",
-        "full": ""
+        "short": "Short description for {{appName}}",
+        "full": "Full description for {{appName}}"
     },
     "accentColor": "#FFFFFF",
     "composeExtensions": [],

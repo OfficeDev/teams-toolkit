@@ -43,3 +43,7 @@ export function isImportSPFxEnabled(): boolean {
 export function isCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
 }
+
+export function isCliNewUxEnabled(): boolean {
+  return isFeatureFlagEnabled("TEAMSFX_CLI_NEW_UX", false);
+}

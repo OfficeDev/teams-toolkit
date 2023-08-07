@@ -31,13 +31,15 @@ import {
   logValidationResults,
   OpenAIPluginManifestHelper,
 } from "./helper";
-import { ValidationStatus } from "../../../common/spec-parser/interfaces";
+import { ValidationStatus, WarningType } from "../../../common/spec-parser/interfaces";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import { isYamlSpecFile } from "../../../common/spec-parser/utils";
+import { ConstantString } from "../../../common/spec-parser/constants";
+import * as util from "util";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
@@ -72,6 +74,7 @@ export class CopilotPluginGenerator {
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
       context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
+      const filters = inputs[QuestionNames.ApiOperation] as string[];
       // download template
       const templateRes = await Generator.generateTemplate(
         context,
@@ -87,6 +90,23 @@ export class CopilotPluginGenerator {
       const specParser = new SpecParser(url);
       const validationRes = await specParser.validate();
       const specWarnings = validationRes.warnings;
+      const operationIdWarning = specWarnings.find(
+        (w) => w.type === WarningType.OperationIdMissing
+      );
+      if (operationIdWarning && operationIdWarning.data) {
+        const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+          filters.includes(api)
+        );
+        if (apisMissingOperationId.length > 0) {
+          operationIdWarning.content = util.format(
+            ConstantString.MissingOperationId,
+            apisMissingOperationId.join(", ")
+          );
+        } else {
+          specWarnings.splice(specWarnings.indexOf(operationIdWarning), 1);
+        }
+      }
+
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, specWarnings, context, true, false, true);
         const errorMessage =
@@ -104,7 +124,6 @@ export class CopilotPluginGenerator {
 
       // generate files
       const manifestPath = path.join(destinationPath, AppPackageFolderName, manifestFileName);
-      const filters = inputs[QuestionNames.ApiOperation] as string[];
 
       const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);
@@ -154,7 +173,14 @@ export class CopilotPluginGenerator {
       }
 
       if (inputs.platform === Platform.VSCode) {
-        return ok({ warnings: specWarnings });
+        return ok({
+          warnings: specWarnings.map((specWarning) => {
+            return {
+              type: specWarning.type,
+              content: specWarning.content,
+            };
+          }),
+        });
       } else {
         return ok({ warnings: undefined });
       }

@@ -63,6 +63,7 @@ import {
   FileNotFoundError,
   InvalidProjectError,
   MissingEnvironmentVariablesError,
+  MissingRequiredInputError,
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
 import {
@@ -74,6 +75,7 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
+import { ValidationStatus } from "../../src/common/spec-parser/interfaces";
 
 const tools = new MockTools();
 
@@ -1357,5 +1359,49 @@ describe("copilotPlugin", async () => {
     sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(err([])));
     const result = await core.copilotPluginListOperations(inputs as any);
     assert.isTrue(result.isErr());
+  });
+
+  it("load operations - no manifest in inputs", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+      includeExistingAPIs: false,
+    };
+
+    sinon
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
+    sinon.stub(SpecParser.prototype, "list").resolves([]);
+
+    try {
+      await core.copilotPluginListOperations(inputs as any);
+    } catch (e: any) {
+      assert.equal(e.name, MissingRequiredInputError.name);
+    }
+  });
+
+  it("load operations - invalid manifest", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+      includeExistingAPIs: false,
+      teamsManifestPath: "fakePath",
+    };
+
+    sinon
+      .stub(manifestUtils, "_readAppManifest")
+      .returns(Promise.resolve(err(new FileNotFoundError("file", "fakePath"))));
+    sinon
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
+    sinon.stub(SpecParser.prototype, "list").resolves([]);
+
+    try {
+      await core.copilotPluginListOperations(inputs as any);
+    } catch (e: any) {
+      assert.equal(e.name, FileNotFoundError.name);
+    }
   });
 });

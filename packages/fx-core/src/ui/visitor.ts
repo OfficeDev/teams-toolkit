@@ -33,6 +33,7 @@ import {
   assembleError,
 } from "../error";
 import { validationUtils } from "./validationUtils";
+import { isCliNewUxEnabled } from "../common/featureFlags";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -81,7 +82,7 @@ export type QuestionTreeVisitor = (
  * @param core
  * @param inputs
  */
-const questionVisitor: QuestionTreeVisitor = async function (
+export const questionVisitor: QuestionTreeVisitor = async function (
   question: Question,
   ui: UserInteraction,
   inputs: Inputs,
@@ -126,7 +127,7 @@ const questionVisitor: QuestionTreeVisitor = async function (
   }
 
   // 3. for non-interactive mode, skip question asking and return error
-  if (inputs.nonInteractive) {
+  if (inputs.nonInteractive && isCliNewUxEnabled()) {
     return err(new MissingRequiredInputError(question.name, "core-ui"));
   }
 

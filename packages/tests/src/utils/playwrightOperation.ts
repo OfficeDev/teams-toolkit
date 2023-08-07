@@ -815,7 +815,10 @@ export async function validateOutlookTab(
 
 export async function validateBot(
   page: Page,
-  options?: { botCommand?: string; expected?: ValidationContent }
+  options: { botCommand?: string; expected?: ValidationContent } = {
+    botCommand: "helloWorld",
+    expected: ValidationContent.Bot,
+  }
 ) {
   try {
     console.log("start to verify bot");
@@ -884,7 +887,7 @@ export async function validateBot(
         await executeBotSuggestionCommand(
           page,
           frame,
-          options?.botCommand || "HelloWorld"
+          options?.botCommand || "helloWorld"
         );
         await frame?.click('button[name="send"]');
         await frame?.waitForSelector(`p:has-text("${options?.expected}")`);

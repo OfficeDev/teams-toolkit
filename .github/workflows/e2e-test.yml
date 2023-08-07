@@ -6,6 +6,11 @@ on:
       cases:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
+      
+      target-testplan-id:
+        description: "target testplan id: 24569079. If not set, will not archive ado testplan"
+        required: false
+        type: string
 
   schedule:
     - cron: "0 22 * * *"
@@ -30,6 +35,7 @@ jobs:
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -84,6 +90,22 @@ jobs:
             -not '(' -path '*/*.dotnet.tests.ts' -or -path '*/Blazor*' ')' \
             | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
           echo "cases=$cases" >> $GITHUB_OUTPUT
+
+      - name: Archive Test Plan
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
+        working-directory: ./packages/tests
+        run: |
+          npm install
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
+          npx ts-node src/scripts/testPlan.ts archive $testplanid
+  
+      - name: Upload testplan to artifact
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: testplan
+          path: |
+            ./packages/tests/testplan.json
 
       - name: E2E Test clean
         working-directory: packages/tests
@@ -231,6 +253,19 @@ jobs:
           name: test-result-${{ steps.get-report-name.outputs.name }}
           path: |
             ./packages/tests/src/e2e/mochawesome-report/mochawesome.json
+      
+      - name: Download TestPlan
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
+        uses: actions/download-artifact@v3
+        with:
+          name: testplan
+          path: ./packages/tests
+
+      - name: Sync to Azure DevOps Test Plan
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
+        working-directory: packages/tests
+        run: |
+          npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json
 
   tear-down:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}

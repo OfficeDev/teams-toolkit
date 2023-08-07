@@ -4,7 +4,7 @@
     "msteams": {
         "teamsAppId": null
     },
-    "description": "A chat bot app that responds to user questions like an AI assistant.",
+    "description": "Microsoft Teams Toolkit AI Chat Bot Sample",
     "engines": {
         "node": "16 || 18"
     },

@@ -70,6 +70,10 @@ class CLIEngine {
       telemetryProperties: {},
     };
 
+    if (context.command.telemetry) {
+      CliTelemetry.sendTelemetryEvent(context.command.telemetry.event);
+    }
+
     // 2. parse args
     const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
 

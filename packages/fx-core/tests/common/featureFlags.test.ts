@@ -14,9 +14,11 @@ chai.use(chaiAsPromised);
 
 describe("featureFlags", () => {
   describe("initializePreviewFeatureFlags()", () => {
-    let mockedEnvRestore: RestoreFn;
+    let mockedEnvRestore: RestoreFn = () => {};
 
-    beforeEach(() => {});
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({}, { clear: true });
+    });
 
     afterEach(() => {
       mockedEnvRestore();
@@ -29,18 +31,18 @@ describe("featureFlags", () => {
   });
 
   describe("isCliNewUxEnabled()", () => {
-    let mockedEnvRestore: RestoreFn;
+    let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
       mockedEnvRestore();
     });
 
     it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" }, { clear: true });
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const res = isCliNewUxEnabled();
       chai.assert.isTrue(res);
     });
     it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "false" }, { clear: true });
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "false" });
       const res = isCliNewUxEnabled();
       chai.assert.isFalse(res);
     });

@@ -15,6 +15,14 @@ export const permissionGrantCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.GrantPermission,
   },
+  examples: [
+    {
+      command:
+        "teamsfx permission grant --teams-manifest-file ./appPackage/manifest.json --env dev --email other@email.com",
+      description:
+        "Grant permission for another Microsoft 365 account to collaborate on the Teams app.",
+    },
+  ],
   handler: async (ctx) => {
     const inputs = ctx.optionValues as PermissionGrantInputs & InputsWithProjectPath;
     // print necessary messages

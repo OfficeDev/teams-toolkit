@@ -24,6 +24,12 @@ export const validateCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.ValidateManifest,
   },
+  examples: [
+    {
+      command: "teamsfx validate --app-package-file ./appPackage/build/appPackage.zip",
+      description: "Validate the Teams application package.",
+    },
+  ],
   handler: async (ctx) => {
     const inputs = getSystemInputs() as ValidateTeamsAppInputs;
     assign(inputs, ctx.optionValues);

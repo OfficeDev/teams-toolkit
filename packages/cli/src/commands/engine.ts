@@ -203,11 +203,15 @@ class CLIEngine {
     let argumentIndex = 0;
     const command = context.command;
     const options = (rootCommand.options || []).concat(command.options || []);
-
-    const list = cloneDeep(args);
-    while (list.length) {
-      const token = list.shift();
-      if (!token) continue;
+    const optionName2OptionMap = new Map<string, CLICommandOption>();
+    options.forEach((option) => {
+      optionName2OptionMap.set(option.name, option);
+      if (option.shortName) {
+        optionName2OptionMap.set(option.shortName, option);
+      }
+    });
+    const remainingArgs = cloneDeep(args);
+    const findOption = (token: string) => {
       if (token.startsWith("-") || token.startsWith("--")) {
         const trimmedToken = token.startsWith("--") ? token.substring(2) : token.substring(1);
         let key: string;
@@ -215,24 +219,38 @@ class CLIEngine {
         if (trimmedToken.includes("=")) {
           [key, value] = trimmedToken.split("=");
           //process key, value
-          list.unshift(value);
+          remainingArgs.unshift(value);
         } else {
           key = trimmedToken;
         }
-        const option = options.find((o) => o.name === key || o.shortName === key);
-        if (option) {
+        const option = optionName2OptionMap.get(key);
+        return {
+          key: key,
+          value: value,
+          option: option,
+        };
+      }
+      return undefined;
+    };
+    while (remainingArgs.length) {
+      const token = remainingArgs.shift();
+      if (!token) continue;
+      if (token.startsWith("-") || token.startsWith("--")) {
+        const findOptionRes = findOption(token);
+        if (findOptionRes?.option) {
+          const option = findOptionRes.option;
           if (option.type === "boolean") {
-            // boolean
-            // try next token
-            value = list[0];
-            if (value) {
-              if (value.toLowerCase() === "false") {
+            // boolean: try next token
+            const nextToken = remainingArgs[0];
+            if (nextToken) {
+              if (nextToken.toLowerCase() === "false") {
                 option.value = false;
-                list.shift();
-              } else if (value.toLowerCase() === "true") {
+                remainingArgs.shift();
+              } else if (nextToken.toLowerCase() === "true") {
                 option.value = true;
-                list.shift();
+                remainingArgs.shift();
               } else {
+                // not a boolean value, no matter what next token is, current option value is true
                 option.value = true;
               }
             } else {
@@ -240,20 +258,30 @@ class CLIEngine {
             }
           } else if (option.type === "string") {
             // string
-            value = list.shift();
-            if (value) {
-              option.value = value;
+            const nextToken = remainingArgs[0];
+            if (nextToken) {
+              const findNextOptionRes = findOption(nextToken);
+              if (findNextOptionRes?.option) {
+                // next token is an option, current option value is undefined
+              } else {
+                option.value = nextToken;
+              }
             }
           } else {
             // array
-            value = list.shift();
-            if (value) {
-              if (option.value === undefined) {
-                option.value = [];
-              }
-              const values = value.split(",");
-              for (const v of values) {
-                option.value.push(v);
+            const nextToken = remainingArgs.shift();
+            if (nextToken) {
+              const findNextOptionRes = findOption(nextToken);
+              if (findNextOptionRes?.option) {
+                // next token is an option, current option value is undefined
+              } else {
+                if (option.value === undefined) {
+                  option.value = [];
+                }
+                const values = nextToken.split(",");
+                for (const v of values) {
+                  option.value.push(v);
+                }
               }
             }
           }
@@ -269,7 +297,7 @@ class CLIEngine {
           if (option.value !== undefined) inputValues[inputKey] = option.value;
           debugLogs.push(`find option: ${JSON.stringify(logObject)}`);
         } else {
-          return err(new UnknownOptionError(command.fullName, key));
+          return err(new UnknownOptionError(command.fullName, token));
         }
       } else {
         if (command.arguments && command.arguments[argumentIndex]) {

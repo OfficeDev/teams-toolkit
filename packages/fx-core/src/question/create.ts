@@ -1258,7 +1258,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         context,
         undefined,
         input,
-        inputs?.teamsManifestPath,
+        inputs![QuestionNames.ManifestPath],
         includeExistingAPIs,
         false
       );

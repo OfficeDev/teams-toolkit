@@ -256,7 +256,7 @@ describe("handlers", () => {
     sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
     const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
-    await handlers.updateAutoOpenGlobalKey(false, false, vscode.Uri.file("test"), [
+    await handlers.updateAutoOpenGlobalKey(false, vscode.Uri.file("test"), [
       { type: "type", content: "content" },
     ]);
 

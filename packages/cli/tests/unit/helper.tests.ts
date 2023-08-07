@@ -203,10 +203,15 @@ describe("CLI helper", () => {
 
   describe("formatItem", async () => {
     it("happy path", async () => {
+      sandbox.stub(helper, "termWidth").value(40);
       const res = helper.formatItem(
         "--capability -c        [Required]",
         `Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`
       );
+      // console.log(res);
+      // console.log(
+      //   `--capability -c        [Required]         Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`
+      // );
       assert.equal(
         res,
         `--capability -c        [Required]         Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`

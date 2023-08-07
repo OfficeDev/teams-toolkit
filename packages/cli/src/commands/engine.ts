@@ -88,14 +88,14 @@ class CLIEngine {
     }
 
     // 3. --version
-    if (context.globalOptionValues.version === true) {
+    if (context.optionValues.version === true || context.globalOptionValues.version === true) {
       logger.info(rootCmd.version ?? "1.0.0");
       this.processResult(context);
       return;
     }
 
     // 4. --help
-    if (context.globalOptionValues.help === true) {
+    if (context.optionValues.help === true || context.globalOptionValues.help === true) {
       const helpText = helper.formatHelp(
         context.command,
         context.command.fullName !== root.fullName ? root : undefined

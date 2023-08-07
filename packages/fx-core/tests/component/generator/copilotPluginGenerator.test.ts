@@ -117,6 +117,75 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 
+  it("success with api spec warning", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: ["operation1"],
+    };
+    const context = createContextV3();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Warning,
+      errors: [],
+      warnings: [
+        {
+          type: WarningType.OperationIdMissing,
+          content: "warning",
+          data: ["operation1", " operation2"],
+        },
+      ],
+    });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      console.log(result.value);
+      assert.isTrue(result.value.warnings!.length === 1);
+      assert.isFalse(result.value.warnings![0].content.includes("operation2"));
+    }
+  });
+
+  it("success without api spec warning after filtering", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: ["operation1"],
+    };
+    const context = createContextV3();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Warning,
+      errors: [],
+      warnings: [
+        { type: WarningType.OperationIdMissing, content: "warning", data: ["operation2"] },
+      ],
+    });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      console.log(result.value);
+      assert.isTrue(result.value.warnings!.length === 0);
+    }
+  });
+
   it("success with warnings when CSharp", async function () {
     const inputs: Inputs = {
       platform: Platform.VS,

@@ -54,6 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ADO_TOKEN: ${{ secrets.ADO_PAT }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
+
     steps:
       - name: Init GitHub CLI
         run: |
@@ -138,7 +140,6 @@ jobs:
         if: ${{ github.event.inputs.target-testplan-id }} != ''
         working-directory: ./packages/tests
         run: |
-          echo "AUTO_TEST_PLAN_ID=${{ github.event.inputs.target-testplan-id }}" >> $GITHUB_ENV
           npm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
@@ -396,14 +397,14 @@ jobs:
             ~/.fx/telemetryTest.log
 
       - name: Download TestPlan
-        if: always() && contains(needs.setup.outputs.ttk-version, 'alpha') == false
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
         uses: actions/download-artifact@v3
         with:
           name: testplan
           path: ./packages/tests
 
       - name: Sync to Azure DevOps Test Plan
-        if: always() && contains(needs.setup.outputs.ttk-version, 'alpha') == false
+        if: ${{ github.event.inputs.target-testplan-id }} != ''
         working-directory: packages/tests
         run: |
           npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json

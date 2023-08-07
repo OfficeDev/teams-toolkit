@@ -350,16 +350,13 @@ export class CapabilityOptions {
     ];
   }
 
-  static dotnetCaps(): OptionItem[] {
+  static dotnetCaps(inputs?: Inputs): OptionItem[] {
     return [
-      CapabilityOptions.notificationBot(),
-      CapabilityOptions.commandBot(),
+      ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
-      CapabilityOptions.me(),
-      CapabilityOptions.copilotPluginNewApi(),
-      CapabilityOptions.copilotPluginApiSpec(),
-      CapabilityOptions.copilotPluginOpenAIPlugin(),
+      ...CapabilityOptions.mes(),
     ];
   }
 
@@ -505,7 +502,7 @@ function capabilityQuestion(): SingleSelectQuestion {
       }
       // dotnet capabilities
       if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
-        return CapabilityOptions.dotnetCaps();
+        return CapabilityOptions.dotnetCaps(inputs);
       }
       // nodejs capabilities
       const projectType = inputs[QuestionNames.ProjectType];

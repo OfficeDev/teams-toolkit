@@ -282,8 +282,8 @@ export abstract class CaseFactory {
           };
           await debugEnvMap[env]();
 
-          if (options?.skipValidation) {
-            console.log("skip ui validation...");
+          if (options?.skipInit) {
+            console.log("skip ui skipInit...");
             console.log("debug finish!");
             return;
           }
@@ -303,8 +303,8 @@ export abstract class CaseFactory {
             teamsAppName: options?.teamsAppName ?? "",
           });
 
-          if (options?.skipInit) {
-            console.log("skip ui init...");
+          if (options?.skipValidation) {
+            console.log("skip ui skipValidation...");
             console.log("debug finish!");
             return;
           }

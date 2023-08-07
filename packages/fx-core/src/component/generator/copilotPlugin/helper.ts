@@ -31,6 +31,7 @@ import {
 import { SpecParser } from "../../../common/spec-parser/specParser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { MissingRequiredInputError } from "../../../error";
 import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -112,8 +113,8 @@ export async function listOperations(
   context: Context,
   manifest: OpenAIPluginManifest | undefined,
   apiSpecUrl: string | undefined,
-  includeExistingAPIs: boolean,
   teamsManifestPath: string | undefined,
+  includeExistingAPIs = true,
   shouldLogWarning = true
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
   if (manifest) {
@@ -144,7 +145,7 @@ export async function listOperations(
   // Filter out exsiting APIs
   if (!includeExistingAPIs) {
     if (!teamsManifestPath) {
-      throw new Error();
+      throw new MissingRequiredInputError("teamsManifestPath", "inputs");
     }
     const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
     if (manifest.isOk()) {

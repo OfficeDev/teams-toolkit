@@ -1238,8 +1238,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         context,
         undefined,
         input,
-        includeExistingAPIs,
         inputs?.teamsManifestPath,
+        includeExistingAPIs,
         false
       );
       if (res.isOk()) {
@@ -1338,8 +1338,8 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             context,
             manifest,
             inputs![QuestionNames.ApiSpecLocation],
-            true,
             undefined,
+            true,
             true
           );
           if (res.isOk()) {

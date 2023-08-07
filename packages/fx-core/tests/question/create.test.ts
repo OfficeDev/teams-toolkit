@@ -1092,7 +1092,7 @@ describe("scaffold question", () => {
           const question = apiSpecLocationQuestion(false);
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            teamsManifestPath: "fakePath",
+            "manifest-path": "fakePath",
           };
 
           sandbox

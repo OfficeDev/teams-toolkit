@@ -365,24 +365,17 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
-  await openFolder(projectPathUri, true, false, res.warnings, args);
+  await openFolder(projectPathUri, true, res.warnings, args);
   return result;
 }
 
 export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
-  showLocalPreviewMessage: boolean,
   warnings?: Warning[] | undefined,
   args?: any[]
 ) {
-  await updateAutoOpenGlobalKey(
-    showLocalDebugMessage,
-    showLocalPreviewMessage,
-    folderPath,
-    warnings,
-    args
-  );
+  await updateAutoOpenGlobalKey(showLocalDebugMessage, folderPath, warnings, args);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
     [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
   });
@@ -391,7 +384,6 @@ export async function openFolder(
 
 export async function updateAutoOpenGlobalKey(
   showLocalDebugMessage: boolean,
-  showLocalPreviewMessage: boolean,
   projectUri: Uri,
   warnings: Warning[] | undefined,
   args?: any[]
@@ -406,10 +398,6 @@ export async function updateAutoOpenGlobalKey(
 
   if (showLocalDebugMessage) {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
-  }
-
-  if (showLocalPreviewMessage) {
-    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, true);
   }
 
   if (warnings?.length) {
@@ -1223,7 +1211,6 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, [])) as string;
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
-    void showLocalPreviewMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
 
@@ -1234,7 +1221,6 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
-    void showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
@@ -1243,7 +1229,6 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenSampleReadMe) {
     await showLocalDebugMessage();
-    void showLocalPreviewMessage();
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
@@ -1375,49 +1360,6 @@ export async function showLocalDebugMessage() {
       selection.run();
     }
   });
-}
-
-async function showLocalPreviewMessage() {
-  const isShowLocalPreviewMessage = (await globalStateGet(
-    GlobalKey.ShowLocalPreviewMessage,
-    false
-  )) as boolean;
-
-  if (!isShowLocalPreviewMessage) {
-    return;
-  } else {
-    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, false);
-  }
-
-  const localPreview = {
-    title: localize("teamstoolkit.handlers.localPreviewTitle"),
-    run: async (): Promise<void> => {
-      treeViewPreviewHandler(environmentManager.getLocalEnvName());
-    },
-  };
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
-  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
-  const isWindows = process.platform === "win32";
-  let message = util.format(
-    localize("teamstoolkit.handlers.localPreviewDescription.fallback"),
-    appName,
-    globalVariables.workspaceUri?.fsPath
-  );
-  if (isWindows) {
-    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
-    const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-    message = util.format(
-      localize("teamstoolkit.handlers.localPreviewDescription"),
-      appName,
-      openFolderCommand
-    );
-  }
-  const selection = await vscode.window.showInformationMessage(message, localPreview);
-  if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
-    await selection.run();
-  }
 }
 
 async function ShowScaffoldingWarningSummary(

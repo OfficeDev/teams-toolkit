@@ -104,40 +104,44 @@ jobs:
         npx eslint src --ext ts --format unix
       working-directory: packages/${{matrix.package}}
 
-      normal-eslint-check:
-        runs-on: ubuntu-latest
-        strategy:
-          fail-fast: false
-          matrix:
-            package:
-            - fx-core
-            - vscode-extension
-            - api
-            - cli
-            - sdk
-            - sdk-react
-            - tests
+  normal-eslint-check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+        - fx-core
+        - server
+        - vscode-extension
+        - manifest
+        - api
+        - cli
+        - sdk
+        - sdk-react
+        - tests
+        - adaptivecards-tools-sdk
     
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v2
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
     
-        - name: Setup node
-          uses: actions/setup-node@v3
-          with:
-            node-version: 16
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
     
-        - name: Setup legacy-peer-deps
-          run: |
-            npm config set legacy-peer-deps true
-        - name: Setup project
-          uses: nick-fields/retry@v2
-          with:
-            timeout_minutes: 10
-            max_attempts: 5
-            command: |
-              npm run setup
-        - name: Detect type-checking else issues
-          run: |
-            npx eslint src --ext ts --format unix
-          working-directory: packages/${{matrix.package}}
+    - name: Setup legacy-peer-deps
+      run: |
+        npm config set legacy-peer-deps true
+
+    - name: Setup project
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 5
+        command: |
+          npm run setup
+    - name: Detect type-checking normal issues
+      run: |
+        npx eslint src --ext ts --format unix
+        working-directory: packages/${{matrix.package}}

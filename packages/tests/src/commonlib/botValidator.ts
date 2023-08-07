@@ -91,11 +91,11 @@ export class BotValidator {
     return resourceId;
   }
 
-  public static async validateScaffold(
+  public static validateScaffold(
     projectPath: string,
     programmingLanguage: string,
     srcPath = ""
-  ): Promise<void> {
+  ): void {
     const indexFile: { [key: string]: string } = {
       typescript: "index.ts",
       javascript: "index.js",

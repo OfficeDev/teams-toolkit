@@ -31,7 +31,7 @@ describe("Start a new project", function () {
   let testFolder: string;
   let projectPath: string;
   let teamsAppId: string | undefined;
-  beforeEach(async () => {
+  beforeEach(() => {
     testFolder = getTestFolder();
     appName = getUniqueAppName();
     projectPath = path.resolve(testFolder, appName);
@@ -143,7 +143,7 @@ describe("Start a new project", function () {
 
         // Check if package exsist in App Catalog
         SharepointValidator.init();
-        SharepointValidator.validateDeploy(appId);
+        await SharepointValidator.validateDeploy(appId);
       }
     }
   );

@@ -13,8 +13,8 @@ describe("Provision CommandBot Dotnet", () => {
   it(
     "Provision Resource: CommandBot Node",
     { testPlanCaseId: 15685858, author: "fanhu@microsoft.com" },
-    async function () {
-      await happyPathTest(Runtime.Node);
+    function () {
+      happyPathTest(Runtime.Node);
     }
   );
 });

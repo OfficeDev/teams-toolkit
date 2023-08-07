@@ -57,7 +57,7 @@ export class Cleaner {
   }
 }
 
-(async () => {
+void (async () => {
   const projectPath = process.argv[2];
   if (!projectPath) {
     return;

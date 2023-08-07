@@ -13,8 +13,8 @@ describe("Provision for Node", () => {
   it(
     "Provision Resource: func hosted notification",
     { testPlanCaseId: 24137416, author: "fanhu@microsoft.com" },
-    async function () {
-      await happyPathTest(Runtime.Node);
+    function () {
+      happyPathTest(Runtime.Node);
     }
   );
 });

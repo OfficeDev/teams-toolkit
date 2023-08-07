@@ -18,7 +18,7 @@ describe("Start a new project", function () {
   let appName: string;
   let testFolder: string;
   let projectPath: string;
-  beforeEach(async () => {
+  beforeEach(() => {
     testFolder = getTestFolder();
     appName = "spfx tab";
     projectPath = path.resolve(testFolder, appName);

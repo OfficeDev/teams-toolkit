@@ -69,18 +69,17 @@ export class AzureHelper {
     if (!name || !(await this.hasResourceGroup(name))) {
       return strings.deleteResourceGroup.skipped.replace("%s", name);
     }
-    return new Promise(async (resolve) => {
-      for (let i = 0; i < retryTimes; ++i) {
-        try {
-          await this.client.resourceGroups.beginDeleteAndWait(name);
-          return resolve(
-            strings.deleteResourceGroup.success.replace("%s", name)
-          );
-        } catch (e) {
-          await delay(2000);
-        }
+    let result = "";
+    for (let i = 0; i < retryTimes; ++i) {
+      try {
+        await this.client.resourceGroups.beginDeleteAndWait(name);
+        result = strings.deleteResourceGroup.success.replace("%s", name);
+        return Promise.resolve(result);
+      } catch (e) {
+        await delay(2000);
       }
-      return resolve(strings.deleteResourceGroup.failed.replace("%s", name));
-    });
+    }
+    result = strings.deleteResourceGroup.failed.replace("%s", name);
+    return Promise.resolve(result);
   }
 }

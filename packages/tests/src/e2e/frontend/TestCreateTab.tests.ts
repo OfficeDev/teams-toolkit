@@ -36,7 +36,7 @@ describe("Create single tab", function () {
     // clean up
     await Cleaner.clean(projectPath);
   });
-  describe("feature flags for API v3", async function () {
+  describe("feature flags for API v3", function () {
     it(
       `Create react app without Azure Function`,
       { testPlanCaseId: 24137586, author: "zhijie.huang@microsoft.com" },

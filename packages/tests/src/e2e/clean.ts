@@ -40,7 +40,7 @@ export async function cleanUpResourceGroup(
   );
 }
 
-(async () => {
+void (async () => {
   const promise1 = cleanUpAad(getAppNamePrefix());
   const promise2 = cleanUpResourceGroup(getAppNamePrefix());
   const promise3 = cleanUpResourceGroup("fx_e_2_e_");

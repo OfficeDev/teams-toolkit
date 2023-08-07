@@ -25,7 +25,7 @@ export class ResourceGroupManager {
     ResourceGroupManager.client = undefined;
   }
 
-  private static async init() {
+  private static init(): Promise<void> {
     if (!ResourceGroupManager.client) {
       const credential = new UsernamePasswordCredential(
         tenantId,
@@ -38,6 +38,7 @@ export class ResourceGroupManager {
         subscriptionId
       );
     }
+    return Promise.resolve();
   }
 
   public static async getResourceGroup(name: string) {
@@ -78,24 +79,22 @@ export class ResourceGroupManager {
     retryTimes = 5
   ): Promise<boolean> {
     await ResourceGroupManager.init();
-    return new Promise<boolean>(async (resolve) => {
-      for (let i = 0; i < retryTimes; ++i) {
-        try {
-          await ResourceGroupManager.client!.resourceGroups.beginDeleteAndWait(
-            name
+    for (let i = 0; i < retryTimes; ++i) {
+      try {
+        await ResourceGroupManager.client!.resourceGroups.beginDeleteAndWait(
+          name
+        );
+        return Promise.resolve(true);
+      } catch (e) {
+        await delay(2000);
+        if (i < retryTimes - 1) {
+          console.warn(
+            `[Retry] clean up the Azure resoure group failed with name: ${name}`
           );
-          return resolve(true);
-        } catch (e) {
-          await delay(2000);
-          if (i < retryTimes - 1) {
-            console.warn(
-              `[Retry] clean up the Azure resoure group failed with name: ${name}`
-            );
-          }
         }
       }
-      return resolve(false);
-    });
+    }
+    return Promise.resolve(false);
   }
 
   public static async createOrUpdateResourceGroup(
@@ -103,23 +102,21 @@ export class ResourceGroupManager {
     location: string
   ): Promise<boolean> {
     await ResourceGroupManager.init();
-    return new Promise<boolean>(async (resolve) => {
-      try {
-        const resourceGroup = {
-          location: location,
-          name: name,
-        };
-        await ResourceGroupManager.client!.resourceGroups.createOrUpdate(
-          name,
-          resourceGroup
-        );
-        return resolve(true);
-      } catch (e) {
-        console.error(
-          `Failed to create or update resource group ${name}. Error message: ${e.message}`
-        );
-        return resolve(false);
-      }
-    });
+    try {
+      const resourceGroup = {
+        location: location,
+        name: name,
+      };
+      await ResourceGroupManager.client!.resourceGroups.createOrUpdate(
+        name,
+        resourceGroup
+      );
+      return Promise.resolve(true);
+    } catch (e) {
+      console.error(
+        `Failed to create or update resource group ${name}. Error message: ${e.message}`
+      );
+      return Promise.resolve(false);
+    }
   }
 }

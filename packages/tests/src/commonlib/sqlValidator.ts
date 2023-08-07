@@ -59,14 +59,6 @@ export class SqlValidator {
     }
   }
 
-  public static async validateDatabaseCount(count: number) {
-    chai.expect(this.databases.length).to.equal(count);
-  }
-
-  public static async validateResourceGroup(rg: string) {
-    chai.expect(this.rg).to.equal(rg);
-  }
-
   private static getConfig(ctx: any) {
     const sqlResourceId = ctx[sqlPluginName][sqlResourceIdKey];
     this.subscriptionId = getSubscriptionIdFromResourceId(sqlResourceId);

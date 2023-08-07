@@ -13,8 +13,8 @@ describe("Provision Notification Dotnet", () => {
   it(
     "Provision Resource: Notification Dotnet",
     { testPlanCaseId: 15685831, author: "fanhu@microsoft.com" },
-    async function () {
-      await happyPathTest(Runtime.Dotnet);
+    function () {
+      happyPathTest(Runtime.Dotnet);
     }
   );
 });

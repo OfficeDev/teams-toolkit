@@ -307,20 +307,18 @@ export async function cleanUpAadApp(
   const promises: Promise<boolean>[] = [];
 
   const clean = async (objectId?: string) => {
-    return new Promise<boolean>(async (resolve) => {
-      if (objectId) {
-        const result = await manager.deleteAadAppById(objectId);
-        if (result) {
-          console.log(
-            `[Successfully] clean up the Aad app with id: ${objectId}.`
-          );
-        } else {
-          console.error(`[Failed] clean up the Aad app with id: ${objectId}.`);
-        }
-        return resolve(result);
+    if (objectId) {
+      const result = await manager.deleteAadAppById(objectId);
+      if (result) {
+        console.log(
+          `[Successfully] clean up the Aad app with id: ${objectId}.`
+        );
+      } else {
+        console.error(`[Failed] clean up the Aad app with id: ${objectId}.`);
       }
-      return resolve(false);
-    });
+      return Promise.resolve(result);
+    }
+    return Promise.resolve(false);
   };
 
   if (hasAadPlugin) {
@@ -378,19 +376,17 @@ export async function cleanUpLocalProject(
   projectPath: string,
   necessary?: Promise<any>
 ) {
-  return new Promise<boolean>(async (resolve) => {
-    try {
-      await necessary;
-      await fs.remove(projectPath);
-      console.log(`[Successfully] clean up the local folder: ${projectPath}.`);
-      return resolve(true);
-    } catch (e) {
-      console.log(
-        `[Failed] clean up the local folder: ${projectPath}. error = '${e}'`
-      );
-      return resolve(false);
-    }
-  });
+  try {
+    await necessary;
+    await fs.remove(projectPath);
+    console.log(`[Successfully] clean up the local folder: ${projectPath}.`);
+    return Promise.resolve(true);
+  } catch (e) {
+    console.log(
+      `[Failed] clean up the local folder: ${projectPath}. error = '${e}'`
+    );
+    return Promise.resolve(false);
+  }
 }
 
 export async function cleanUp(

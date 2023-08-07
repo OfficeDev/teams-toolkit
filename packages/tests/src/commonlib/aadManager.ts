@@ -92,11 +92,11 @@ export class AadManager {
     contain: string,
     offsetHour = 0
   ): Promise<IAadAppInfo[]> {
-    return new Promise<IAadAppInfo[]>(async (resolve) => {
-      const [aliveAadApps, deletedAadApps] = await Promise.all([
-        this.searchAliveAadApps(contain, offsetHour),
-        this.searchDeletedAadApps(contain, offsetHour),
-      ]);
+    const [aliveAadApps, deletedAadApps] = await Promise.all([
+      this.searchAliveAadApps(contain, offsetHour),
+      this.searchDeletedAadApps(contain, offsetHour),
+    ]);
+    return new Promise<IAadAppInfo[]>((resolve) => {
       return resolve(aliveAadApps.concat(deletedAadApps));
     });
   }
@@ -104,36 +104,32 @@ export class AadManager {
   public async searchAadAppsByClientId(
     clientId: string
   ): Promise<IAadAppInfo[]> {
-    return new Promise<IAadAppInfo[]>(async (resolve) => {
-      const result = await this.axios!.get(
-        `applications?$filter=appId eq '${clientId}'`
-      );
+    const result = await this.axios.get(
+      `applications?$filter=appId eq '${clientId}'`
+    );
+    return new Promise<IAadAppInfo[]>((resolve) => {
       const apps = result.data.value as IAadAppInfo[];
       return resolve(apps);
     });
   }
 
-  public async deleteAadAppById(id: string, retryTimes = 5) {
-    return new Promise<boolean>(async (resolve) => {
-      try {
-        await this.axios!.delete(`applications/${id}`);
-      } finally {
-        for (let i = 0; i < retryTimes; ++i) {
-          try {
-            await this.axios!.delete(`directory/deletedItems/${id}`);
-            return resolve(true);
-          } catch {
-            await delay(2000);
-            if (i < retryTimes - 1) {
-              console.warn(
-                `[Retry] failed to delete the Aad app with id: ${id}`
-              );
-            }
+  public async deleteAadAppById(id: string, retryTimes = 5): Promise<boolean> {
+    try {
+      await this.axios.delete(`applications/${id}`);
+    } finally {
+      for (let i = 0; i < retryTimes; ++i) {
+        try {
+          await this.axios.delete(`directory/deletedItems/${id}`);
+          return Promise.resolve(true);
+        } catch {
+          await delay(2000);
+          if (i < retryTimes - 1) {
+            console.warn(`[Retry] failed to delete the Aad app with id: ${id}`);
           }
         }
-        return resolve(false);
       }
-    });
+      return Promise.resolve(false);
+    }
   }
 
   public async deleteAadAppsByClientId(clientId: string, retryTimes = 5) {

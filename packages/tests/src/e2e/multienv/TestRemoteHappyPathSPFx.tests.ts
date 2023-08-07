@@ -139,7 +139,7 @@ describe("Multi Env Happy Path for SPFx", function () {
 
         // Check if package exsist in App Catalog
         SharepointValidator.init();
-        SharepointValidator.validateDeploy(appId);
+        await SharepointValidator.validateDeploy(appId);
       }
 
       // validate manifest

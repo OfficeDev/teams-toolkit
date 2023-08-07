@@ -42,72 +42,72 @@ export class TeamsAppHelper {
     return this.instance;
   }
 
-  public async deleteTeamsAppById(id: string, retryTimes = 5) {
+  public async deleteTeamsAppById(
+    id: string,
+    retryTimes = 5
+  ): Promise<boolean> {
     if (!id) {
       return Promise.resolve(true);
     }
-    return new Promise<boolean>(async (resolve) => {
-      for (let i = 0; i < retryTimes; ++i) {
-        try {
-          await this.axios.delete(`appdefinitions/${id}`);
-          console.info(`[Success] delete the Teams app with id: ${id}`);
-          return resolve(true);
-        } catch {
-          await delay(2000);
-        }
+    for (let i = 0; i < retryTimes; ++i) {
+      try {
+        await this.axios.delete(`appdefinitions/${id}`);
+        console.info(`[Success] delete the Teams app with id: ${id}`);
+        return Promise.resolve(true);
+      } catch {
+        await delay(2000);
       }
-      console.error(`[Failed] delete the Teams app with id: ${id}`);
-      return resolve(false);
-    });
+    }
+    console.error(`[Failed] delete the Teams app with id: ${id}`);
+    return Promise.resolve(false);
   }
 
-  public async cancelStagedTeamsAppById(id: string, retryTimes = 5) {
+  public async cancelStagedTeamsAppById(
+    id: string,
+    retryTimes = 5
+  ): Promise<boolean> {
     if (!id) {
       return Promise.resolve(true);
     }
-    return new Promise<boolean>(async (resolve) => {
-      for (let i = 0; i < retryTimes; ++i) {
-        try {
-          const response = await this.axios.get(`/publishing/${id}`);
-          const results = response?.data?.value as any[];
-          if (results && results.length > 0) {
-            const publishedAppId = results[0].id;
-            const appDefinitionId = results[0].appDefinitions[0]?.id;
-            if (publishedAppId && appDefinitionId) {
-              await this.axios.delete(
-                `/publishing/${publishedAppId}/appdefinitions/${appDefinitionId}`
-              );
-              console.info(`[Success] stagged app ${id} has been cacelled.`);
-              return resolve(true);
-            }
+    for (let i = 0; i < retryTimes; ++i) {
+      try {
+        const response = await this.axios.get(`/publishing/${id}`);
+        const results = response?.data?.value as any[];
+        if (results && results.length > 0) {
+          const publishedAppId = results[0].id;
+          const appDefinitionId = results[0].appDefinitions[0]?.id;
+          if (publishedAppId && appDefinitionId) {
+            await this.axios.delete(
+              `/publishing/${publishedAppId}/appdefinitions/${appDefinitionId}`
+            );
+            console.info(`[Success] stagged app ${id} has been cacelled.`);
+            return Promise.resolve(true);
           }
-        } catch (e) {
-          await delay(2000);
         }
-        console.error(`[Failed] cancel the stagged Teams app with id: ${id}`);
-        return resolve(false);
+      } catch (e) {
+        await delay(2000);
       }
-    });
+      console.error(`[Failed] cancel the stagged Teams app with id: ${id}`);
+    }
+    return Promise.resolve(false);
   }
 
-  public async deleteBotById(id: string, retryTimes = 5) {
+  public async deleteBotById(id: string, retryTimes = 5): Promise<boolean> {
     if (!id) {
       return Promise.resolve(true);
     }
-    return new Promise<boolean>(async (resolve) => {
-      for (let i = 0; i < retryTimes; ++i) {
-        try {
-          await this.axios.delete(`botframework/${id}`);
-          console.info(
-            `[Success] delete the Bot on bot framework with id: ${id}`
-          );
-          return resolve(true);
-        } catch {
-          await delay(2000);
-        }
+    for (let i = 0; i < retryTimes; ++i) {
+      try {
+        await this.axios.delete(`botframework/${id}`);
+        console.info(
+          `[Success] delete the Bot on bot framework with id: ${id}`
+        );
+        return Promise.resolve(true);
+      } catch {
+        await delay(2000);
       }
-      console.error(`[Failed] delete the Bot on bot framework with id: ${id}`);
-      return resolve(false);
-    });
+    }
+    console.error(`[Failed] delete the Bot on bot framework with id: ${id}`);
+    return Promise.resolve(false);
   }
 }

@@ -62,22 +62,20 @@ export class M365TitleHelper {
     return this.instance;
   }
 
-  public async unacquire(id: string, retryTimes = 5) {
+  public async unacquire(id: string, retryTimes = 5): Promise<boolean> {
     if (!id) {
       return Promise.resolve(true);
     }
-    return new Promise<boolean>(async (resolve) => {
-      for (let i = 0; i < retryTimes; ++i) {
-        try {
-          await this.axios!.delete(`/catalog/v1/users/acquisitions/${id}`);
-          console.info(`[Success] delete the M365 Title id: ${id}`);
-          return resolve(true);
-        } catch {
-          await delay(2000);
-        }
+    for (let i = 0; i < retryTimes; ++i) {
+      try {
+        await this.axios!.delete(`/catalog/v1/users/acquisitions/${id}`);
+        console.info(`[Success] delete the M365 Title id: ${id}`);
+        return Promise.resolve(true);
+      } catch {
+        await delay(2000);
       }
-      console.error(`[Failed] delete the M365 Title with id: ${id}`);
-      return resolve(false);
-    });
+    }
+    console.error(`[Failed] delete the M365 Title with id: ${id}`);
+    return Promise.resolve(false);
   }
 }

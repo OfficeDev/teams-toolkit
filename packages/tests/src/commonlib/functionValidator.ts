@@ -80,10 +80,10 @@ export class FunctionValidator {
     console.log("Successfully init validator for function.");
   }
 
-  public static async validateScaffold(
+  public static validateScaffold(
     projectPath: string,
     programmingLanguage: string
-  ): Promise<void> {
+  ): void {
     const indexFile: { [key: string]: string } = {
       typescript: "index.ts",
       javascript: "index.js",

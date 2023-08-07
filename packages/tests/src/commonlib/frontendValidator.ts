@@ -90,10 +90,10 @@ export class FrontendValidator {
     return frontendObject;
   }
 
-  public static async validateScaffold(
+  public static validateScaffold(
     projectPath: string,
     programmingLanguage: string
-  ): Promise<void> {
+  ): void {
     const indexFile: { [key: string]: string } = {
       typescript: "index.tsx",
       javascript: "index.jsx",
@@ -111,7 +111,7 @@ export class FrontendValidator {
     });
   }
 
-  public static async validateScaffoldV3(
+  public static validateScaffoldV3(
     projectPath: string,
     programmingLanguage: string
   ): Promise<void> {
@@ -127,6 +127,7 @@ export class FrontendValidator {
     fs.access(indexPath, fs.constants.F_OK, (err) => {
       chai.assert.isNull(err);
     });
+    return Promise.resolve();
   }
 
   public static async validateProvision(

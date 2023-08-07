@@ -456,7 +456,7 @@ async function main() {
       const tpt = process.argv[3] as TestPlanType;
       const version = process.argv[4];
 
-      const tpn = TestPlanName(tpt, version);
+      const tpn = TestPlanName(tpt, version); // [AUTO] teamsfx@X.X.X
 
       const allTestPlans = await ADOTestPlanClient.AllTestPlans();
 

@@ -949,11 +949,11 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
     try {
-      console.log("sending message ", options?.botCommand);
+      console.log("sending message ", options?.botCommand || "helloWorld");
       await executeBotSuggestionCommand(
         page,
         frame,
-        options?.botCommand || "hello world"
+        options?.botCommand || "helloWorld"
       );
       await frame?.click('button[name="send"]');
     } catch (e: any) {
@@ -996,7 +996,9 @@ export async function validateBot(
       console.log(`${options?.expected}`);
     } else {
       await RetryHandler.retry(async () => {
-        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+        await frame?.waitForSelector(
+          `p:has-text("${options?.expected || ValidationContent.Bot}")`
+        );
         console.log("verify bot successfully!!!");
       }, 2);
       console.log(`${options?.expected}`);

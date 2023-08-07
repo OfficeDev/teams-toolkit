@@ -167,7 +167,7 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      await openFolder(res.value, true, false);
+      await openFolder(res.value, true);
     } else {
       props[TelemetryProperty.Success] = TelemetrySuccess.No;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);

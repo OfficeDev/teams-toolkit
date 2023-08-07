@@ -80,6 +80,7 @@ export default class ServerConnection implements IServerConnection {
       this.publishInDeveloperPortalRequest.bind(this),
       this.setRegionRequest.bind(this),
       this.listDevTunnelsRequest.bind(this),
+      this.copilotPluginAddAPIRequest.bind(this),
       this.loadOpenAIPluginManifestRequest.bind(this),
       this.listOpenAPISpecOperationsRequest.bind(this),
     ].forEach((fn) => {
@@ -401,6 +402,19 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (params) => listDevTunnels(inputs.devTunnelToken),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async copilotPluginAddAPIRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginAddAPI(inputs),
       inputs
     );
     return standardizeResult(res);

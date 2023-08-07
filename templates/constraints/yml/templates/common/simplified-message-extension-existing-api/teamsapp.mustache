@@ -1,0 +1,21 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsfx provision' is executed
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+# Triggered when 'teamsfx publish' is executed
+publish:
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

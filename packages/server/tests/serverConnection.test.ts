@@ -444,4 +444,12 @@ describe("serverConnections", () => {
       assert.equal(res.error.message, "error1\nerror2");
     }
   });
+
+  it("copilotPluginAddAPIRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok({}));
+    sandbox.replace(connection["core"], "copilotPluginAddAPI", fake);
+    const res = await connection.copilotPluginAddAPIRequest({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
+  });
 });

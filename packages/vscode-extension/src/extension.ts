@@ -199,7 +199,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
       if (res.isOk()) {
         const fileUri = vscode.Uri.file(res.value.projectPath);
         const warnings = res.value.warnings;
-        await handlers.updateAutoOpenGlobalKey(true, false, fileUri, warnings, args);
+        await handlers.updateAutoOpenGlobalKey(true, fileUri, warnings, args);
         await ExtTelemetry.dispose();
         await delay(2000);
         return { openFolder: fileUri };

@@ -9,6 +9,7 @@
     "teamsfx"
   ],
   "author": "Microsoft Corporation",
+  "private": true,
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint .",

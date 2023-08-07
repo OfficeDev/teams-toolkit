@@ -44,6 +44,7 @@ export const rootCommand: CLICommand = {
     m365Command,
     listCommand,
   ],
+  sortCommands: true,
   options: [
     {
       type: "boolean",

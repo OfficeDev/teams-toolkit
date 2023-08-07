@@ -24,7 +24,7 @@ The app template is built using the Teams AI library, which provides the capabil
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![ai bot](https://github.com/OfficeDev/TeamsFx/assets/7642967/fd0a0a18-dae7-4efe-b691-866f1a0b86fb)
+![ai bot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
 
 ## What's included in the template
 

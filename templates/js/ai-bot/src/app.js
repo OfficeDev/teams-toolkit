@@ -43,7 +43,7 @@ const app = new Application({
 });
 
 app.conversationUpdate("membersAdded", async (context) => {
-  await context.sendActivity("I am an AI assistant that helps people find information.");
+  await context.sendActivity("How can I help you today?");
 });
 
 module.exports = app;

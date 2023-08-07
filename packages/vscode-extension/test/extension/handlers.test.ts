@@ -447,7 +447,7 @@ describe("handlers", () => {
 
   it("openAccountHelpHandler()", async () => {
     const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
-    await handlers.openAccountHelpHandler();
+    handlers.openAccountHelpHandler();
     sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
   });
 
@@ -1504,12 +1504,12 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: async () => {
           showMessageCalledCount += 1;
-          return ok(undefined);
+          return Promise.resolve(ok("Learn More"));
         },
       });
       const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
 
-      await handlers.checkSideloadingCallback();
+      handlers.checkSideloadingCallback();
 
       chai.expect(showMessageCalledCount).to.be.equal(1);
       sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);

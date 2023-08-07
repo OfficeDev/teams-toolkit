@@ -1,6 +1,5 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as path from "path";
 import * as fs from "fs-extra";
 import { expect } from "chai";
@@ -88,7 +87,7 @@ describe("Remote debug Tests", function () {
       await driver.sleep(Timeout.longTimeWait);
 
       // Validate app name is in the page
-      await validateSpfx(page, appName);
+      await validateSpfx(page, { displayName: appName });
     }
   );
 });

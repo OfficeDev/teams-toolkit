@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BrowserContext, Page, chromium, Frame } from "playwright";
+import { BrowserContext, Page, Frame } from "playwright";
 import { assert } from "chai";
-import { Timeout, ValidationContent } from "./constants";
+import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
 import { getPlaywrightScreenshotPath } from "./nameUtil";
 import axios from "axios";
@@ -10,13 +10,89 @@ import { SampledebugContext } from "../ui-test/samples/sampledebugContext";
 import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./envUtil";
+import { startDebugging } from "./vscodeOperation";
+
+export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
+  [TemplateProject.AdaptiveCard]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.AssistDashboard]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
+  [TemplateProject.ContactExporter]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.Dashboard]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.GraphConnector]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.OutlookTab]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
+  [TemplateProject.HelloWorldTabBackEnd]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.MyFirstMetting]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.HelloWorldBotSSO]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.IncomingWebhook]: async () => {
+    await startDebugging("Attach to Incoming Webhook");
+  },
+  [TemplateProject.NpmSearch]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
+  [TemplateProject.OneProductivityHub]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.ProactiveMessaging]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.QueryOrg]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.ShareNow]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.StockUpdate]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.TodoListBackend]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.TodoListM365]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
+  [TemplateProject.TodoListSpfx]: async () => {
+    await startDebugging("Teams workbench (Chrome)");
+  },
+  [TemplateProject.Deeplinking]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.DiceRoller]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.OutlookSignature]: async () => {
+    await startDebugging();
+  },
+  [TemplateProject.ChefBot]: async () => {
+    await startDebugging();
+  },
+};
 
 export async function initPage(
   context: BrowserContext,
   teamsAppId: string,
   username: string,
   password: string,
-  dashboardFlag = false
+  options?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+  }
 ): Promise<Page> {
   let page = await context.newPage();
   page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
@@ -84,7 +160,7 @@ export async function initPage(
     const addBtn = await frame?.waitForSelector("button span:has-text('Add')");
 
     // dashboard template will have a popup
-    if (dashboardFlag) {
+    if (options?.dashboardFlag) {
       console.log("Before popup");
       const [popup] = await Promise.all([
         page
@@ -150,8 +226,11 @@ export async function initTeamsPage(
   teamsAppId: string,
   username: string,
   password: string,
-  teamsAppName: string,
-  type = ""
+  options?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+    type?: string;
+  }
 ): Promise<Page> {
   let page = await context.newPage();
   try {
@@ -229,14 +308,14 @@ export async function initTeamsPage(
       await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
-      if (type === "meeting") {
+      if (options?.type === "meeting") {
         // verify add page is closed
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-page-content"
         );
         const frame = await frameElementHandle?.contentFrame();
         await frame?.waitForSelector(
-          `h1:has-text('Add ${teamsAppName} to a team')`
+          `h1:has-text('Add ${options?.teamsAppName} to a team')`
         );
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");
@@ -245,7 +324,7 @@ export async function initTeamsPage(
 
       // verify add page is closed
       await frame?.waitForSelector(
-        `h1:has-text('Add ${teamsAppName} to a team')`
+        `h1:has-text('Add ${options?.teamsAppName} to a team')`
       );
 
       try {
@@ -284,7 +363,7 @@ export async function initTeamsPage(
           "iframe.embedded-iframe"
         );
         const frame = await frameElementHandle?.contentFrame();
-        if (type === "spfx") {
+        if (options?.type === "spfx") {
           try {
             console.log("Load debug scripts");
             await frame?.click('button:has-text("Load debug scripts")');
@@ -317,7 +396,10 @@ export async function initTeamsPage(
   }
 }
 
-export async function validateOneProducitvity(page: Page, displayName: string) {
+export async function validateOneProducitvity(
+  page: Page,
+  options?: { displayName?: string }
+) {
   try {
     console.log("start to verify One Productivity Hub");
     const frameElementHandle = await page.waitForSelector(
@@ -364,7 +446,7 @@ export async function validateOneProducitvity(page: Page, displayName: string) {
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-        await frame?.waitForSelector(`div:has-text("${displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
         // TODO: need to add more logic
       });
     } catch (e: any) {
@@ -388,8 +470,7 @@ export async function validateOneProducitvity(page: Page, displayName: string) {
 
 export async function validateTab(
   page: Page,
-  displayName: string,
-  includeFunction?: boolean
+  options?: { displayName?: string; includeFunction?: boolean }
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
@@ -429,10 +510,10 @@ export async function validateTab(
         await popup.click("input.button[type='submit'][value='Accept']");
       }
 
-      await frame?.waitForSelector(`b:has-text("${displayName}")`);
+      await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
     });
 
-    if (includeFunction) {
+    if (options?.includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("verify function info");
         const authorizeButton = await frame?.waitForSelector(
@@ -734,8 +815,7 @@ export async function validateOutlookTab(
 
 export async function validateBot(
   page: Page,
-  command = "welcome",
-  expected = ValidationContent.Bot
+  options?: { botCommand?: string; expected?: ValidationContent }
 ) {
   try {
     console.log("start to verify bot");
@@ -756,14 +836,14 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
 
-    if (command === "show") {
+    if (options?.botCommand === "show") {
       try {
-        console.log("sending message ", command);
-        await executeBotSuggestionCommand(page, frame, command);
+        console.log("sending message ", options?.botCommand);
+        await executeBotSuggestionCommand(page, frame, options?.botCommand);
         await frame?.click('button[name="send"]');
       } catch (e: any) {
         console.log(
-          `[Command "${command}" not executed successfully] ${e.message}`
+          `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
         );
       }
       await RetryHandler.retry(async () => {
@@ -792,21 +872,25 @@ export async function validateBot(
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         await RetryHandler.retry(async () => {
-          await frame?.waitForSelector(`p:has-text("${expected}")`);
+          await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
           console.log("verify bot successfully!!!");
         }, 2);
-        console.log(`${expected}`);
+        console.log(`${options?.expected}`);
       }, 2);
-      console.log(`${expected}`);
+      console.log(`${options?.expected}`);
     } else {
       await RetryHandler.retry(async () => {
-        console.log("sending message ", command);
-        await executeBotSuggestionCommand(page, frame, command);
+        console.log("sending message ", options?.botCommand);
+        await executeBotSuggestionCommand(
+          page,
+          frame,
+          options?.botCommand || "HelloWorld"
+        );
         await frame?.click('button[name="send"]');
-        await frame?.waitForSelector(`p:has-text("${expected}")`);
+        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
         console.log("verify bot successfully!!!");
       }, 2);
-      console.log(`${expected}`);
+      console.log(`${options?.expected}`);
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
@@ -818,7 +902,7 @@ export async function validateBot(
   }
 }
 
-export async function validateNpm(page: Page, npmName: string) {
+export async function validateNpm(page: Page, options?: { npmName?: string }) {
   try {
     console.log("start to verify npm search");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -837,15 +921,15 @@ export async function validateNpm(page: Page, npmName: string) {
     } catch (error) {
       console.log("no message to dismiss");
     }
-    console.log("search npm ", npmName);
+    console.log("search npm ", options?.npmName);
     const input = await frame?.waitForSelector("div.ui-box input.ui-box");
-    await input?.type(npmName);
+    await input?.type(options?.npmName || "axios");
     try {
       const targetItem = await frame?.waitForSelector(
-        `span:has-text("${npmName}")`
+        `span:has-text("${options?.npmName}")`
       );
       await targetItem?.click();
-      await frame?.waitForSelector(`card span:has-text("${npmName}")`);
+      await frame?.waitForSelector(`card span:has-text("${options?.npmName}")`);
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
@@ -998,7 +1082,10 @@ export async function validateDeeplinking(page: Page, displayName: string) {
   }
 }
 
-export async function validateQueryOrg(page: Page, displayName: string) {
+export async function validateQueryOrg(
+  page: Page,
+  options?: { displayName?: string }
+) {
   try {
     console.log("start to verify query org");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1020,7 +1107,7 @@ export async function validateQueryOrg(page: Page, displayName: string) {
     const inputBar = await frame?.waitForSelector(
       "div.ui-popup__content input.ui-box"
     );
-    await inputBar?.fill(displayName);
+    await inputBar?.fill(options?.displayName || "");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const loginBtn = await frame?.waitForSelector(
       'div.ui-popup__content a:has-text("sign in")'
@@ -1209,20 +1296,11 @@ export async function validateNotificationBot(
 export async function validateStockUpdate(page: Page) {
   try {
     console.log("start to verify stock update");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-iframe"
+      "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    try {
-      console.log("dismiss message");
-      await page
-        .click('button:has-text("Dismiss")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no message to dismiss");
-    }
     try {
       console.log("click stock update");
       await frame?.waitForSelector('p:has-text("Microsoft Corporation")');
@@ -1245,7 +1323,10 @@ export async function validateStockUpdate(page: Page) {
   }
 }
 
-export async function validateTodoList(page: Page, displayName: string) {
+export async function validateTodoList(
+  page: Page,
+  options?: { displayName?: string }
+) {
   try {
     console.log("start to verify todo list");
     try {
@@ -1391,13 +1472,16 @@ export async function validateTeamsWorkbench(page: Page, displayName: string) {
   }
 }
 
-export async function validateSpfx(page: Page, displayName: string) {
+export async function validateSpfx(
+  page: Page,
+  options?: { displayName?: string }
+) {
   try {
     const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-iframe"
+      "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    await frame?.waitForSelector(`text=${displayName}`);
+    await frame?.waitForSelector(`text=${options?.displayName}`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1419,7 +1503,10 @@ export async function switchToTab(page: Page) {
   }
 }
 
-export async function validateContact(page: Page, displayName: string) {
+export async function validateContact(
+  page: Page,
+  options?: { displayName?: string }
+) {
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1465,14 +1552,14 @@ export async function validateContact(page: Page, displayName: string) {
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
-        await frame?.waitForSelector(`div:has-text("${displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
       page.waitForTimeout(1000);
 
       // verify add person
-      await addPerson(frame, displayName);
+      await addPerson(frame, options?.displayName || "");
       // verify delete person
-      await delPerson(frame, displayName);
+      await delPerson(frame, options?.displayName || "");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({
@@ -1494,7 +1581,10 @@ export async function validateContact(page: Page, displayName: string) {
   }
 }
 
-export async function validateGraphConnector(page: Page, displayName: string) {
+export async function validateGraphConnector(
+  page: Page,
+  options?: { displayName?: string }
+) {
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1530,7 +1620,7 @@ export async function validateGraphConnector(page: Page, displayName: string) {
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
-        await frame?.waitForSelector(`div:has-text("${displayName}")`);
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
       page.waitForTimeout(1000);
     } catch (e: any) {
@@ -1644,9 +1734,8 @@ export async function validateNotificationTimeBot(page: Page) {
 }
 
 export async function validateAdaptiveCard(
-  context: SampledebugContext,
   page: Page,
-  env: "local" | "dev" = "local"
+  options?: { context?: SampledebugContext; env?: "local" | "dev" }
 ) {
   try {
     const frameElementHandle = await page.waitForSelector(
@@ -1664,9 +1753,9 @@ export async function validateAdaptiveCard(
         // send post request to bot
         console.log("Post request sent to bot");
         let url: string;
-        if (env === "dev") {
+        if (options?.env === "dev") {
           const endpointFilePath = path.join(
-            context.projectPath,
+            options?.context?.projectPath ?? "",
             "env",
             ".env.dev"
           );

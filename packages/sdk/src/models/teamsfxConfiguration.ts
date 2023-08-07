@@ -6,6 +6,8 @@ import { IdentityType, UserInfo } from "..";
 
 /**
  * TeamsFx interface that provides credential and configuration.
+ * @deprecated Please use {@link TeamsUserCredential}
+ * in browser environment and {@link OnBehalfOfUserCredential} or {@link AppCredential} in NodeJS.
  */
 export interface TeamsFxConfiguration {
   /**

@@ -1,6 +1,5 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
@@ -77,8 +76,10 @@ describe("Migration Tests", function () {
         teamsAppId,
         Env.username,
         Env.password,
-        "hello-world-in-meeting-dev",
-        "meeting"
+        {
+          teamsAppName: "hello-world-in-meeting-dev",
+          type: "meeting",
+        }
       );
       console.log("debug finish!");
     }

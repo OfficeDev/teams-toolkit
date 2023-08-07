@@ -4,6 +4,7 @@
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
+
 import * as path from "path";
 import {
   startDebugging,
@@ -107,7 +108,10 @@ describe("Workflow Bot Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, "helloWorld");
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World App is Running",
+      });
       await validateWorkFlowBot(page);
     }
   );

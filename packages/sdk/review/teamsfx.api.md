@@ -77,7 +77,7 @@ export class AppCredential implements TokenCredential {
 // @public
 export type AppCredentialAuthConfig = OnBehalfOfCredentialAuthConfig;
 
-// @public
+// @public @deprecated
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
@@ -377,7 +377,7 @@ export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: stri
 // @public
 export function handleMessageExtensionQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
 
-// @public
+// @public @deprecated
 export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 
 // @public
@@ -645,7 +645,7 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
     ssoTokenExpiration: string;
 }
 
-// @public
+// @public @deprecated
 export class TeamsFx implements TeamsFxConfiguration {
     constructor(identityType?: IdentityType, customConfig?: Record<string, string> | AuthenticationConfiguration);
     getConfig(key: string): string;

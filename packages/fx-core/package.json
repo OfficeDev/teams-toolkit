@@ -68,7 +68,7 @@
     "prepublishOnly": "npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run gen:cli && npm run clean:strings && npm run check-sensitive && lint-staged",
+    "precommit": "npm run check-sensitive && lint-staged",
     "install:tabs": "cd tabs && npm install",
     "installAll": "npm run install:tabs",
     "checkUnusedStrings": "node ./scripts/find-unused-strings.js ./resource/package.nls.json ./src || exit 1",

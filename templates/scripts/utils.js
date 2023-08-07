@@ -1,10 +1,11 @@
 const path = require("path");
-const { readdirSync, lstatSync, existsSync } = require("node:fs");
+const { readdirSync, mkdirSync, writeFileSync, lstatSync, existsSync } = require("node:fs");
 const Mustache = require("mustache");
 const { Ext } = require("./constants");
 
 function filterFiles(dir, fileList = [], filter = () => true) {
   if (!existsSync(dir)) {
+    console.log(`Directory ${dir} does not exist.`);
     return fileList;
   }
   const files = readdirSync(dir);
@@ -21,6 +22,10 @@ function filterFiles(dir, fileList = [], filter = () => true) {
 
 function filterYmlFiles(dir, fileList = []) {
   return filterFiles(dir, fileList, (file) => file.endsWith(Ext.Yml));
+}
+
+function filterYmlTplFiles(dir, fileList = []) {
+  return filterFiles(dir, fileList, (file) => file.endsWith(".yml.tpl"));
 }
 
 function filterMustacheFiles(dir, fileList = []) {
@@ -52,8 +57,15 @@ function renderMustache(template, view) {
   return writer.renderTokens(token, new Mustache.Context(view), undefined, template);
 }
 
+function writeFileSafe(filePath, content) {
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, content);
+}
+
 module.exports = {
   filterYmlFiles,
+  filterYmlTplFiles,
   filterMustacheFiles,
   renderMustache,
+  writeFileSafe,
 };

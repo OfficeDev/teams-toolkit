@@ -287,7 +287,7 @@
   "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message": "Invalid OpenAI plugin manifest. Check output panel for details.",
   "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message": "Invalid OpenAI plugin manifest. Check [output panel](command:fx-extension.showOutputChannel) for details.",
   "core.aiBotOption.label": "AI Chat Bot",
-  "core.aiBotOption.detail": "A chat bot that responds to user questions like an AI assistant.",
+  "core.aiBotOption.detail": "A chat bot using Teams AI library",
   "core.spfxFolder.title": "SPFx solution folder",
   "core.spfxFolder.placeholder": "Select the folder that contains your SPFx solution",
   "core.QuestionSelectTargetEnvironment.title": "Select an environment",

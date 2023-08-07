@@ -359,10 +359,10 @@ export class CapabilityOptions {
   static bots(inputs?: Inputs): OptionItem[] {
     return [
       CapabilityOptions.basicBot(),
+      CapabilityOptions.aiBot(),
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
       CapabilityOptions.workflowBot(inputs),
-      CapabilityOptions.aiBot(),
     ];
   }
 

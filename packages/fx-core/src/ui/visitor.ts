@@ -82,7 +82,7 @@ export type QuestionTreeVisitor = (
  * @param core
  * @param inputs
  */
-const questionVisitor: QuestionTreeVisitor = async function (
+export const questionVisitor: QuestionTreeVisitor = async function (
   question: Question,
   ui: UserInteraction,
   inputs: Inputs,

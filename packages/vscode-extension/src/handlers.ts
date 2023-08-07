@@ -293,13 +293,13 @@ export function addFileSystemWatcher(workspacePath: string) {
     });
 
     const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate(async (event) => {
+    yorcFileWatcher.onDidCreate((event) => {
       refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidChange(async (event) => {
+    yorcFileWatcher.onDidChange((event) => {
       refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidDelete(async (event) => {
+    yorcFileWatcher.onDidDelete((event) => {
       refreshSPFxTreeOnFileChanged();
     });
   }

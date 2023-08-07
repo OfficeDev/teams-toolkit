@@ -64,7 +64,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 5
           command: |
-          npm run setup
+            npm run setup
 
       - name: List cases for schedule
         id: schedule-cases

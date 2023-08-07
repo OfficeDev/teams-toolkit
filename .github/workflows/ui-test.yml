@@ -135,7 +135,6 @@ jobs:
             ./${{ steps.ttk.outputs.package }}
 
       - name: Archive Test Plan
-        if: contains(steps.ttk.outputs.version, 'alpha') == false
         working-directory: ./packages/tests
         run: |
           npm install
@@ -146,7 +145,6 @@ jobs:
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
-        if: contains(steps.ttk.outputs.version, 'alpha') == false
         uses: actions/upload-artifact@v3
         with:
           name: testplan

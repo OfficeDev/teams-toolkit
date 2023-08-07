@@ -25,8 +25,8 @@ import { assert } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
 import { ProgrammingLanguage, QuestionNames } from "../../../src/question";
 import {
+  generateScaffoldingSummary,
   OpenAIPluginManifestHelper,
-  validateTeamsManifestLength,
 } from "../../../src/component/generator/copilotPlugin/helper";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
@@ -37,6 +37,7 @@ import {
   WarningType,
 } from "../../../src/common/spec-parser/interfaces";
 import * as specParserUtils from "../../../src/common/spec-parser/utils";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -329,19 +330,26 @@ describe("OpenAIManifestHelper", async () => {
   });
 });
 
-describe("validateTeamsManifestLength", () => {
+describe("generateScaffoldingSummary", () => {
   it("no warnings", () => {
-    const res = validateTeamsManifestLength(teamsManifest);
+    const res = generateScaffoldingSummary([], teamsManifest);
     assert.equal(res.length, 0);
   });
 
   it("warnings about missing property", () => {
-    const res = validateTeamsManifestLength({
+    const res = generateScaffoldingSummary([], {
       ...teamsManifest,
       name: { short: "", full: "" },
       description: { short: "", full: "" },
     });
-    assert.equal(res.length, 4);
+
+    assert.isTrue(
+      res.includes(
+        getLocalizedString(
+          "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingFullDescription"
+        )
+      )
+    );
   });
 
   it("warnings if exceeding length", () => {
@@ -349,11 +357,21 @@ describe("validateTeamsManifestLength", () => {
     const invalidFullName = "a".repeat(101);
     const invalidShortDescription = "a".repeat(101);
     const invalidFullDescription = "a".repeat(4001);
-    const res = validateTeamsManifestLength({
+    const res = generateScaffoldingSummary([], {
       ...teamsManifest,
       name: { short: invalidShortName, full: invalidFullName },
       description: { short: invalidShortDescription, full: invalidFullDescription },
     });
-    assert.equal(res.length, 4);
+    assert.isTrue(res.includes("name/short"));
+  });
+
+  it("warnings about API spec", () => {
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationIdMissing, content: "content" }],
+      teamsManifest
+    );
+
+    console.log(res);
+    assert.isTrue(res.includes("content"));
   });
 });

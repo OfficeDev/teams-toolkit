@@ -14,7 +14,7 @@ import { SystemError, err } from "@microsoft/teamsfx-api";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
 import { IAADDefinition } from "../../../../src/component/driver/aad/interface/IAADDefinition";
 import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
-
+import { DeleteOrUpdatePermissionFailedError } from "../../../../src/component/driver/aad/error/aadManifestError";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -303,6 +303,32 @@ describe("AadAppClient", async () => {
         .reply(204);
 
       await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.not.rejected;
+    });
+
+    it("should throw error when request failed with CannotDeleteOrUpdateEnabledEntitlement", async () => {
+      const expectedError = {
+        error: {
+          code: "CannotDeleteOrUpdateEnabledEntitlement",
+        },
+      };
+
+      sinon.stub(axiosInstance, "patch").rejects({
+        isAxiosError: true,
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.rejected.then(
+        (err) => {
+          expect(err instanceof DeleteOrUpdatePermissionFailedError).to.be.true;
+          expect(err.source).equals("AadAppClient");
+          expect(err.name).equals("DeleteOrUpdatePermissionFailed");
+          expect(err.message).equals(
+            "Unable to update or delete an existing permission when it's enabled. One possible reason is that the ACCESS_AS_USER_PERMISSION_ID environment variable is changed for selected environment. Ensure your permission id(s) are identical with the actual AAD application and try again.\n"
+          );
+        }
+      );
     });
 
     it("should throw error when request fail", async () => {

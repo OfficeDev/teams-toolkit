@@ -67,7 +67,6 @@
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@microsoft/api-documenter": "^7.14.1",
     "@microsoft/api-extractor": "^7.19.4",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
     "@microsoft/teams-js": "^2.13.0",
     "@rollup/plugin-json": "^4.1.0",
     "@types/chai": "^4.2.22",

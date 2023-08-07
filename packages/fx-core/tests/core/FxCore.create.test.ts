@@ -22,12 +22,12 @@ describe("FxCore.createProject", () => {
     sandbox.restore();
   });
   it("happy path", async () => {
-    sandbox.stub(coordinator, "create").resolves(ok(""));
+    sandbox.stub(coordinator, "create").resolves(ok({ projectPath: "" }));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.AppName]: randomAppName(),

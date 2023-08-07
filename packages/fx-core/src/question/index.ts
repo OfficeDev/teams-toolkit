@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, IQTreeNode, Result, ok } from "@microsoft/teamsfx-api";
-import { createProjectCliHelpNode, createProjectQuestionNode } from "./create";
+import { IQTreeNode } from "@microsoft/teamsfx-api";
+import {
+  createProjectCliHelpNode,
+  createProjectQuestionNode,
+  createSampleProjectQuestionNode,
+} from "./create";
 import {
   addWebPartQuestionNode,
   copilotPluginAddAPIQuestionNode,
@@ -12,102 +16,52 @@ import {
   listCollaboratorQuestionNode,
   previewWithTeamsAppManifestQuestionNode,
   selectTeamsAppManifestQuestionNode,
-  selectTeamsAppPackageQuestionNode,
-  selectTeamsAppValidationMethodQuestionNode,
+  validateTeamsAppQuestionNode,
 } from "./other";
-
-export * from "./questionNames";
+export { HubTypes, HubOptions } from "./other";
 export * from "./create";
+export * from "./questionNames";
 
-class QuestionNodes {
-  createProject(): IQTreeNode | undefined {
+export * from "./inputs";
+export * from "./options";
+
+export class QuestionNodes {
+  createProject(): IQTreeNode {
     return createProjectQuestionNode();
   }
-  createProjectCliHelp(): IQTreeNode | undefined {
+  createSampleProject(): IQTreeNode {
+    return createSampleProjectQuestionNode();
+  }
+  createProjectCliHelp(): IQTreeNode {
     return createProjectCliHelpNode();
   }
-  addWebpart(): IQTreeNode | undefined {
+  addWebpart(): IQTreeNode {
     return addWebPartQuestionNode();
   }
-  selectTeamsAppManifest(): IQTreeNode | undefined {
+  selectTeamsAppManifest(): IQTreeNode {
     return selectTeamsAppManifestQuestionNode();
   }
-  selectTeamsAppValidationMethod(): IQTreeNode | undefined {
-    return selectTeamsAppValidationMethodQuestionNode();
+  validateTeamsApp(): IQTreeNode {
+    return validateTeamsAppQuestionNode();
   }
-  selectTeamsAppPackage(): IQTreeNode | undefined {
-    return selectTeamsAppPackageQuestionNode();
-  }
-  previewWithTeamsAppManifest(): IQTreeNode | undefined {
+  previewWithTeamsAppManifest(): IQTreeNode {
     return previewWithTeamsAppManifestQuestionNode();
   }
-  listCollaborator(): IQTreeNode | undefined {
+  listCollaborator(): IQTreeNode {
     return listCollaboratorQuestionNode();
   }
-  grantPermission(): IQTreeNode | undefined {
+  grantPermission(): IQTreeNode {
     return grantPermissionQuestionNode();
   }
-  deployAadManifest(): IQTreeNode | undefined {
+  deployAadManifest(): IQTreeNode {
     return deployAadManifestQuestionNode();
   }
-  createNewEnv(): IQTreeNode | undefined {
+  createNewEnv(): IQTreeNode {
     return createNewEnvQuestionNode();
   }
-  copilotPluginAddAPI(): IQTreeNode | undefined {
+  copilotPluginAddAPI(): IQTreeNode {
     return copilotPluginAddAPIQuestionNode();
   }
 }
 
 export const questionNodes = new QuestionNodes();
-
-class Questions {
-  createProject(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.createProject());
-  }
-
-  createProjectCliHelp(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.createProjectCliHelp());
-  }
-
-  addWebpart(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.addWebpart());
-  }
-
-  selectTeamsAppManifest(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.selectTeamsAppManifest());
-  }
-
-  selectTeamsAppValidationMethod(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.selectTeamsAppValidationMethod());
-  }
-
-  selectTeamsAppPackage(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.selectTeamsAppPackage());
-  }
-
-  previewWithTeamsAppManifest(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.previewWithTeamsAppManifest());
-  }
-
-  copilotPluginAddAPI(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.copilotPluginAddAPI());
-  }
-
-  listCollaborator(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.listCollaborator());
-  }
-
-  grantPermission(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.grantPermission());
-  }
-
-  deployAadManifest(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.deployAadManifest());
-  }
-
-  createNewEnv(): Result<IQTreeNode | undefined, FxError> {
-    return ok(questionNodes.createNewEnv());
-  }
-}
-
-export const questions = new Questions();

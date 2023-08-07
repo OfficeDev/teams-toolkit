@@ -9,3 +9,4 @@ export * from "./error";
 export * from "./types";
 export * from "neverthrow";
 export * from "@microsoft/teams-manifest";
+export * from "./cli";

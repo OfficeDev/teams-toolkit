@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
@@ -144,17 +143,17 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       if (this.cancel) {
         this.cancel();
       }
-      super.stop(error);
+      await super.stop(error);
     }
   }
 
   protected async _do(): Promise<Result<Void, FxError>> {
-    await this.devTunnelManager.setTelemetryProperties({
+    this.devTunnelManager.setTelemetryProperties({
       [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
     });
     await this.outputStartMessage(devTunnelDisplayMessages);
     await this.outputStartDevTunnelStepMessage();
-    await this.resolveArgs(this.args);
+    this.resolveArgs(this.args);
     await this.deleteExistingTunnel();
     const res = await this.start(this.args);
     if (res.isOk()) {
@@ -194,73 +193,69 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
   }
 
   private async deleteAllTunnelsMessage(): Promise<void> {
-    try {
-      const tunnels = await this.devTunnelManager.listTunnels();
-      const teamsToolkitTunnels = tunnels.filter((t) => t?.tags?.includes(DevTunnelTag));
+    const tunnels = await this.devTunnelManager.listTunnels();
+    const teamsToolkitTunnels = tunnels.filter((t) => t?.tags?.includes(DevTunnelTag));
 
-      if (teamsToolkitTunnels.length === 0) {
-        return;
-      }
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotificationStart, {
-        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-        [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
-      });
-      VsCodeLogInstance.outputChannel.show();
-      VsCodeLogInstance.info(devTunnelDisplayMessages.devTunnelListMessage());
-      const tableHeader =
-        "Tunnel ID".padEnd(20, " ") +
-        "Hosts Connections".padEnd(20, " ") +
-        "Tags".padEnd(30, " ") +
-        "Created".padEnd(30, " ");
-
-      VsCodeLogInstance.outputChannel.appendLine(tableHeader);
-      for (const tunnel of teamsToolkitTunnels) {
-        const line =
-          `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`.padEnd(20, " ") +
-          `${tunnel.endpoints?.length ?? "0"}`.padEnd(20, " ") +
-          `${tunnel?.tags?.join(",") ?? ""}`.padEnd(30, " ") +
-          `${tunnel.created?.toISOString() ?? ""}`.padEnd(30, " ");
-        VsCodeLogInstance.outputChannel.appendLine(line);
-      }
-      VS_CODE_UI.showMessage(
-        "info",
-        devTunnelDisplayMessages.devTunnelLimitExceededMessage(),
-        false,
-        devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete(),
-        devTunnelDisplayMessages.devTunnelLimitExceededAnswerCancel()
-      ).then(async (result) => {
-        if (
-          result.isOk() &&
-          result.value === devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete()
-        ) {
-          try {
-            for (const tunnel of teamsToolkitTunnels) {
-              await this.devTunnelManager.deleteTunnel(tunnel);
-              VsCodeLogInstance.info(
-                devTunnelDisplayMessages.deleteDevTunnelMessage(
-                  `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`
-                )
-              );
-            }
-            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
-              [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-              [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
-              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-            });
-          } catch {
-            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
-              [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-              [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
-              [TelemetryProperty.Success]: TelemetrySuccess.No,
-            });
-          }
-        } else {
-          return undefined;
-        }
-      });
-    } catch {
-      // Do nothing if delete existing tunnel failed.
+    if (teamsToolkitTunnels.length === 0) {
+      return;
     }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotificationStart, {
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+    });
+    VsCodeLogInstance.outputChannel.show();
+    await VsCodeLogInstance.info(devTunnelDisplayMessages.devTunnelListMessage());
+    const tableHeader =
+      "Tunnel ID".padEnd(20, " ") +
+      "Hosts Connections".padEnd(20, " ") +
+      "Tags".padEnd(30, " ") +
+      "Created".padEnd(30, " ");
+
+    VsCodeLogInstance.outputChannel.appendLine(tableHeader);
+    for (const tunnel of teamsToolkitTunnels) {
+      const line =
+        `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`.padEnd(20, " ") +
+        `${tunnel.endpoints?.length ?? "0"}`.padEnd(20, " ") +
+        `${tunnel?.tags?.join(",") ?? ""}`.padEnd(30, " ") +
+        `${tunnel.created?.toISOString() ?? ""}`.padEnd(30, " ");
+      VsCodeLogInstance.outputChannel.appendLine(line);
+    }
+    await VS_CODE_UI.showMessage(
+      "info",
+      devTunnelDisplayMessages.devTunnelLimitExceededMessage(),
+      false,
+      devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete(),
+      devTunnelDisplayMessages.devTunnelLimitExceededAnswerCancel()
+    ).then(async (result) => {
+      if (
+        result.isOk() &&
+        result.value === devTunnelDisplayMessages.devTunnelLimitExceededAnswerDelete()
+      ) {
+        try {
+          for (const tunnel of teamsToolkitTunnels) {
+            await this.devTunnelManager.deleteTunnel(tunnel);
+            await VsCodeLogInstance.info(
+              devTunnelDisplayMessages.deleteDevTunnelMessage(
+                `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`
+              )
+            );
+          }
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
+            [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+            [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+            [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+          });
+        } catch {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugDevTunnelCleanNotification, {
+            [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+            [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
+            [TelemetryProperty.Success]: TelemetrySuccess.No,
+          });
+        }
+      } else {
+        return undefined;
+      }
+    });
   }
 
   private async createTunnelWithCleanMessage(
@@ -274,7 +269,9 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         error instanceof UserError &&
         error.name === ExtensionErrors.TunnelResourceLimitExceededError
       ) {
-        this.deleteAllTunnelsMessage();
+        this.deleteAllTunnelsMessage().catch(() => {
+          // Do nothing if delete existing tunnel failed.
+        });
       }
       throw error;
     }
@@ -322,7 +319,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             this.writeEmitter.fire(`${msg}\r\n`);
           }
           if (err) {
-            this.writeEmitter.fire(`${err}\r\n`);
+            this.writeEmitter.fire(`${err.message}\r\n`);
           }
         }
       );
@@ -363,8 +360,8 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
     }
   }
 
-  protected async resolveArgs(args: IDevTunnelArgs): Promise<void> {
-    await super.resolveArgs(args);
+  protected resolveArgs(args: IDevTunnelArgs): void {
+    super.resolveArgs(args);
     if (args.type !== TunnelType.devTunnel) {
       throw BaseTaskTerminal.taskDefinitionError("args.type");
     }
@@ -387,7 +384,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
       if (
         typeof port.protocol !== "string" ||
-        !(Object.values(Protocol) as string[]).includes(port.protocol)
+        !Object.values(Protocol).includes(port.protocol as any)
       ) {
         throw BaseTaskTerminal.taskDefinitionError(`args.ports[${i}].protocol`);
       }
@@ -395,7 +392,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       if (port.access) {
         if (
           typeof port.access !== "string" ||
-          !(Object.values(Access) as string[]).includes(port.access)
+          !Object.values(Access).includes(port.access as any)
         ) {
           throw BaseTaskTerminal.taskDefinitionError(`args.ports[${i}].access`);
         }
@@ -436,7 +433,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           return {
             portNumber: maskValue(
               port.portNumber.toString(),
-              Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
+              Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => String(p))
             ),
             protocol: maskValue(port.protocol, Object.values(Protocol)),
             access: maskValue(port.access, Object.values(Access)),

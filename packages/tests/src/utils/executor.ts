@@ -258,6 +258,7 @@ export class Executor {
     const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
     editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
     editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+    console.log(`successfully open project: ${newPath}`);
   }
 
   static async setSubscription(

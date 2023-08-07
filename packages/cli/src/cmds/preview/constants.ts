@@ -11,12 +11,6 @@ export enum Browser {
   default = "default",
 }
 
-export enum Hub {
-  teams = "teams",
-  outlook = "outlook",
-  office = "office",
-}
-
 export class LaunchUrl {
   public static readonly teams: string =
     "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}";

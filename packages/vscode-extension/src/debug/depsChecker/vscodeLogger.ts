@@ -56,7 +56,7 @@ export class VSCodeLogger implements DepsLogger {
   }
 
   private addToDetailCache(level: LogLevel, message: string): void {
-    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
+    const line = `${String(LogLevel[level])} ${new Date().toISOString()}: ${message}`;
     this.detailLogLines.push(line);
   }
 }

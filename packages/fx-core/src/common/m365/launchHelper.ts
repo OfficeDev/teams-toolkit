@@ -5,11 +5,11 @@ import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@micro
 
 import { CoreSource } from "../../core/error";
 import { AppStudioScopes } from "../tools";
-import { Hub } from "./constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
 import { assembleError } from "../../error/common";
+import { HubTypes } from "../../question/other";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -21,7 +21,7 @@ export class LaunchHelper {
   }
 
   public async getLaunchUrl(
-    hub: Hub,
+    hub: HubTypes,
     teamsAppId: string,
     capabilities: string[],
     withLoginHint = true
@@ -31,7 +31,7 @@ export class LaunchHelper {
       : undefined;
     let url: URL;
     switch (hub) {
-      case Hub.teams: {
+      case HubTypes.teams: {
         const baseUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true`;
         url = new URL(baseUrl);
         const tid = await this.getTidFromToken();
@@ -40,7 +40,7 @@ export class LaunchHelper {
         }
         break;
       }
-      case Hub.outlook: {
+      case HubTypes.outlook: {
         const result = await this.getM365AppId(teamsAppId);
         if (result.isErr()) {
           return err(result.error);
@@ -51,7 +51,7 @@ export class LaunchHelper {
         url = new URL(baseUrl);
         break;
       }
-      case Hub.office:
+      case HubTypes.office:
         {
           const result = await this.getM365AppId(teamsAppId);
           if (result.isErr()) {

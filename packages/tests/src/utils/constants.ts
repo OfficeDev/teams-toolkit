@@ -79,6 +79,36 @@ export enum TemplateProjectFolder {
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
 
+export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
+  {
+    [TemplateProject.HelloWorldTabBackEnd]:
+      TemplateProjectFolder.HelloWorldTabBackEnd,
+    [TemplateProject.ContactExporter]: TemplateProjectFolder.ContactExporter,
+    [TemplateProject.OneProductivityHub]:
+      TemplateProjectFolder.OneProductivityHub,
+    [TemplateProject.HelloWorldBotSSO]: TemplateProjectFolder.HelloWorldBotSSO,
+    [TemplateProject.TodoListBackend]: TemplateProjectFolder.TodoListBackend,
+    [TemplateProject.TodoListSpfx]: TemplateProjectFolder.TodoListSpfx,
+    [TemplateProject.ShareNow]: TemplateProjectFolder.ShareNow,
+    [TemplateProject.MyFirstMetting]: TemplateProjectFolder.MyFirstMetting,
+    [TemplateProject.TodoListM365]: TemplateProjectFolder.TodoListM365,
+    [TemplateProject.NpmSearch]: TemplateProjectFolder.NpmSearch,
+    [TemplateProject.ProactiveMessaging]:
+      TemplateProjectFolder.ProactiveMessaging,
+    [TemplateProject.AdaptiveCard]: TemplateProjectFolder.AdaptiveCard,
+    [TemplateProject.IncomingWebhook]: TemplateProjectFolder.IncomingWebhook,
+    [TemplateProject.GraphConnector]: TemplateProjectFolder.GraphConnector,
+    [TemplateProject.StockUpdate]: TemplateProjectFolder.StockUpdate,
+    [TemplateProject.QueryOrg]: TemplateProjectFolder.QueryOrg,
+    [TemplateProject.Deeplinking]: TemplateProjectFolder.Deeplinking,
+    [TemplateProject.Dashboard]: TemplateProjectFolder.Dashboard,
+    [TemplateProject.OutlookSignature]: TemplateProjectFolder.OutlookSignature,
+    [TemplateProject.OutlookTab]: TemplateProjectFolder.OutlookTab,
+    [TemplateProject.AssistDashboard]: TemplateProjectFolder.AssistDashboard,
+    [TemplateProject.DiceRoller]: TemplateProjectFolder.DiceRoller,
+    [TemplateProject.ChefBot]: TemplateProjectFolder.ChefBot,
+  };
+
 export enum Resource {
   AzureKeyVault = "azure-keyvault",
   AzureFunction = "azure-function",
@@ -260,23 +290,23 @@ export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
 }
 
-export class LocalDebugTaskLabel {
-  static readonly StartLocalTunnel = "Start local tunnel";
-  static readonly StartBot = "Start bot";
-  static readonly StartBotApp = "Start application";
-  static readonly StartFrontend = "Start frontend";
-  static readonly StartApplication = "Start application";
-  static readonly StartBackend = "Start backend";
-  static readonly StartWebhook = "Start Incoming Webhook";
-  static readonly WatchBackend = "Watch backend";
-  static readonly InstallNpmPackages = "Install npm packages";
-  static readonly ApiNpmInstall = "api npm install";
-  static readonly BotNpmInstall = "bot npm install";
-  static readonly TabsNpmInstall = "tabs npm install";
-  static readonly SpfxNpmInstall = "SPFx npm install";
-  static readonly GulpServe = "gulp serve";
-  static readonly Azurite = "Start Azurite emulator";
-  static readonly Compile = "Compile typescript";
+export enum LocalDebugTaskLabel {
+  StartLocalTunnel = "Start local tunnel",
+  StartBot = "Start bot",
+  StartBotApp = "Start application",
+  StartFrontend = "Start frontend",
+  StartApplication = "Start application",
+  StartBackend = "Start backend",
+  StartWebhook = "Start Incoming Webhook",
+  WatchBackend = "Watch backend",
+  InstallNpmPackages = "Install npm packages",
+  ApiNpmInstall = "api npm install",
+  BotNpmInstall = "bot npm install",
+  TabsNpmInstall = "tabs npm install",
+  SpfxNpmInstall = "SPFx npm install",
+  GulpServe = "gulp serve",
+  Azurite = "Start Azurite emulator",
+  Compile = "Compile typescript",
 }
 
 export class LocalDebugTaskResult {

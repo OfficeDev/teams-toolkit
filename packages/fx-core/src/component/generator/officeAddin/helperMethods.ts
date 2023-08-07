@@ -46,7 +46,7 @@ export class HelperMethods {
   }
 
   static async unzipProjectTemplate(projectFolder: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       // TODO: Verify file exists
       const readStream = fs.createReadStream(`${projectFolder}/${zipFile}`);
       readStream
@@ -54,7 +54,7 @@ export class HelperMethods {
         .on("error", function (err: unknown) {
           reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
         })
-        .on("close", async () => {
+        .on("close", () => {
           HelperMethods.moveUnzippedFiles(projectFolder);
           resolve();
         });

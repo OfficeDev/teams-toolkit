@@ -14,7 +14,7 @@ import ServerConnection from "./serverConnection";
 const port = Number(process.argv.slice(2)[0]) || 7920;
 const wss = new WebSocket.Server({ port: port });
 
-wss.on("connection", async function cb(ws) {
+wss.on("connection", function cb(ws) {
   const wsStream = WebSocket.createWebSocketStream(ws, { encoding: "utf8" });
   const connection = new ServerConnection(createMessageConnection(wsStream, wsStream));
   ws.on("message", (ms) => {

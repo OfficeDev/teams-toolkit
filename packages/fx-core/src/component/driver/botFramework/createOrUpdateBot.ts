@@ -47,7 +47,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     return wrapRun(async () => {
       const result = await this.handler(args, context);
       return result.output;
-    });
+    }, actionName);
   }
 
   @hooks([
@@ -63,7 +63,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       const result = await this.handler(args, ctx);
       summaries = result.summaries;
       return result.output;
-    });
+    }, actionName);
     return {
       result: outputResult,
       summaries,

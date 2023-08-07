@@ -1,58 +1,24 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
-import {
-  Timeout,
-  TemplateProject,
-  TemplateProjectFolder,
-} from "../../utils/constants";
-import { initPage, validatePersonalTab } from "../../utils/playwrightOperation";
-import { Env } from "../../utils/env";
-import { SampledebugContext } from "./sampledebugContext";
-import { it } from "../../utils/it";
-import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
-describe("Sample Tests", function () {
-  this.timeout(Timeout.testAzureCase);
-  let sampledebugContext: SampledebugContext;
-  beforeEach(async function () {
-    // ensure workbench is ready
-    this.timeout(Timeout.prepareTestCase);
-    sampledebugContext = new SampledebugContext(
-      TemplateProject.OutlookTab,
-      TemplateProjectFolder.OutlookTab
-    );
-    await sampledebugContext.before();
-  });
+import { Page } from "playwright";
+import { TemplateProject } from "../../utils/constants";
+import { validatePersonalTab } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 
-  afterEach(async function () {
-    this.timeout(Timeout.finishAzureTestCase);
-    await sampledebugContext.after();
-  });
+class OutlookTabTestCase extends CaseFactory {
+  override async onValidate(page: Page): Promise<void> {
+    return await validatePersonalTab(page);
+  }
+}
 
-  it(
-    "[auto] remote debug for Sample Hello World Tab and office addin",
-    {
-      testPlanCaseId: 24121457,
-      author: "v-ivanchen@microsoft.com",
-    },
-    async function () {
-      // create project
-      await sampledebugContext.openResourceFolder();
-      // await sampledebugContext.createTemplate();
-
-      await runProvision(sampledebugContext.appName);
-      await runDeploy();
-
-      const teamsAppId = await sampledebugContext.getTeamsAppId("local");
-      console.log(teamsAppId);
-      const page = await initPage(
-        sampledebugContext.context!,
-        teamsAppId,
-        Env.username,
-        Env.password
-      );
-      await validatePersonalTab(page);
-    }
-  );
-});
+new OutlookTabTestCase(
+  TemplateProject.OutlookTab,
+  24121457,
+  "v-ivanchen@microsoft.com",
+  "dev"
+).test();

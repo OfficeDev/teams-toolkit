@@ -1,62 +1,28 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
-import {
-  Timeout,
-  TemplateProject,
-  TemplateProjectFolder,
-} from "../../utils/constants";
-import { initPage, validateContact } from "../../utils/playwrightOperation";
+
+import { Page } from "playwright";
+import { TemplateProject } from "../../utils/constants";
+import { validateContact } from "../../utils/playwrightOperation";
+import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
-import { SampledebugContext } from "./sampledebugContext";
-import { it } from "../../utils/it";
-import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
-describe("Sample Tests", function () {
-  this.timeout(Timeout.testAzureCase);
-  let sampledebugContext: SampledebugContext;
+class ContactExporterTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    options?: { displayName: string }
+  ): Promise<void> {
+    return await validateContact(page, { displayName: Env.displayName });
+  }
+}
 
-  beforeEach(async function () {
-    // ensure workbench is ready
-    this.timeout(Timeout.prepareTestCase);
-    sampledebugContext = new SampledebugContext(
-      TemplateProject.ContactExporter,
-      TemplateProjectFolder.ContactExporter
-    );
-    await sampledebugContext.before();
-  });
-
-  afterEach(async function () {
-    this.timeout(Timeout.finishAzureTestCase);
-    await sampledebugContext.sampleAfter(
-      `${sampledebugContext.appName}-dev-rg`
-    );
-  });
-
-  it(
-    "[auto] remote debug for Sample Copntact Exporter",
-    {
-      testPlanCaseId: 14571878,
-      author: "v-ivanchen@microsoft.com",
-    },
-    async function () {
-      // create project
-      await sampledebugContext.openResourceFolder();
-      // await sampledebugContext.createTemplate();
-
-      await runProvision(sampledebugContext.appName);
-      await runDeploy();
-
-      const teamsAppId = await sampledebugContext.getTeamsAppId("dev");
-      console.log(teamsAppId);
-      const page = await initPage(
-        sampledebugContext.context!,
-        teamsAppId,
-        Env.username,
-        Env.password
-      );
-      await validateContact(page, Env.displayName);
-      console.log("debug finish!");
-    }
-  );
-});
+new ContactExporterTestCase(
+  TemplateProject.ContactExporter,
+  14571878,
+  "v-ivanchen@microsoft.com",
+  "dev"
+).test();

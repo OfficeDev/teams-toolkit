@@ -1,6 +1,5 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
@@ -79,7 +78,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, Env.displayName, false);
+      await validateTab(page, {
+        displayName: Env.displayName,
+        includeFunction: false,
+      });
     }
   );
 });

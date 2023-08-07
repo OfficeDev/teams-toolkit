@@ -13,6 +13,8 @@ import { AuthenticationConfiguration } from "../models/configuration";
 
 /**
  * A class providing credential and configuration.
+ * @deprecated Please use {@link TeamsUserCredential}
+ * in browser environment and {@link OnBehalfOfUserCredential} or {@link AppCredential} in NodeJS.
  */
 export class TeamsFx implements TeamsFxConfiguration {
   private configuration: Map<string, string | undefined>;

@@ -155,6 +155,30 @@ describe("metadata util", () => {
     assert(result.isOk());
   });
 
+  it("should send empty sample-app-name if additionalMetadata is undefined", async () => {
+    sandbox.stub(yamlParser, "parse").resolves(
+      ok({
+        ...mockProjectModel,
+        additionalMetadata: undefined,
+      })
+    );
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const result = await metadataUtil.parse(".", "dev");
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
+        "configureApp.actions": "",
+        "deploy.actions": "",
+        "provision.actions": "",
+        "publish.actions": "",
+        "registerApp.actions": "armdeploy,teamsAppcreate",
+        [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "",
+      })
+    );
+    assert(result.isOk());
+  });
+
   it("no sample tag", async () => {
     sandbox.stub(yamlParser, "parse").resolves(ok({ ...mockProjectModel, additionalMetadata: {} }));
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");

@@ -928,7 +928,10 @@ export async function validateOutlookTab(
 
 export async function validateBot(
   page: Page,
-  options?: { botCommand?: string; expected?: ValidationContent }
+  options: { botCommand?: string; expected?: ValidationContent } = {
+    botCommand: "helloWorld",
+    expected: ValidationContent.Bot,
+  }
 ) {
   try {
     console.log("start to verify bot");
@@ -949,11 +952,11 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
     try {
-      console.log("sending message ", options?.botCommand || "helloWorld");
+      console.log("sending message ", options?.botCommand);
       await executeBotSuggestionCommand(
         page,
         frame,
-        options?.botCommand || "helloWorld"
+        options?.botCommand ?? "helloWorld"
       );
       await frame?.click('button[name="send"]');
     } catch (e: any) {
@@ -996,9 +999,7 @@ export async function validateBot(
       console.log(`${options?.expected}`);
     } else {
       await RetryHandler.retry(async () => {
-        await frame?.waitForSelector(
-          `p:has-text("${options?.expected || ValidationContent.Bot}")`
-        );
+        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
         console.log("verify bot successfully!!!");
       }, 2);
       console.log(`${options?.expected}`);

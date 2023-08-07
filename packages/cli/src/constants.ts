@@ -154,7 +154,3 @@ export const SUPPORTED_SPFX_VERSION = "1.16.1";
 export const FooterText = `For more information about the Teams Toolkit: ${chalk.cyanBright(
   "https://aka.ms/teamsfx-cli"
 )}.`;
-
-export function isNewUXEnabled(): boolean {
-  return process.env.TEAMSFX_CLI_NEW_UX === "true";
-}

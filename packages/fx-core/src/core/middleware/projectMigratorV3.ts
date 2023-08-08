@@ -235,10 +235,9 @@ export async function wrapRunMigration(context: MigrationContext, exec: Migratio
       if (!(error instanceof Error)) {
         error = new Error(error.toString());
       }
-      let errorMessage = error.message;
-      if (context.currentStep) {
-        errorMessage = `MigrationStep: ${context.currentStep}\n${errorMessage}`;
-      }
+      const errorMessage = context.currentStep
+        ? `MigrationStep: ${context.currentStep}\n${error.message}`
+        : error.message;
       fxError = new SystemError({
         error,
         source: Component.core,

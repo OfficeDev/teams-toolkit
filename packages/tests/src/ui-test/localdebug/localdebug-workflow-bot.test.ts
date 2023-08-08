@@ -116,7 +116,10 @@ describe("Workflow Bot Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, { botCommand: "helloWorld" });
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World Bot is Running",
+      });
       await validateWorkFlowBot(page);
     }
   );

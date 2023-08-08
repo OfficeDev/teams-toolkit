@@ -577,6 +577,7 @@ export interface OptionItem {
         tooltip: string;
         command: string;
     }[];
+    // @deprecated (undocumented)
     cliName?: string;
     data?: unknown;
     description?: string;

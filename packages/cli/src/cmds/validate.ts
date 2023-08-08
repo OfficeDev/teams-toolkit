@@ -17,7 +17,7 @@ import {
   RootFolderOptions,
   ValidateApplicationOptions,
 } from "../constants";
-import { ArgumentConflictError, MissingRequiredOptionError } from "../error";
+import { ArgumentConflictError, MissingRequiredArgumentError } from "../error";
 import { globals } from "../globals";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -69,16 +69,7 @@ export class ManifestValidate extends YargsCommand {
           inputs[CoreQuestionNames.TeamsAppPackageFilePath] = args[AppPackageFilePathParamName];
         } else {
           inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
-          if (args[ManifestFilePathParamName]) {
-            inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[ManifestFilePathParamName];
-          } else {
-            return err(
-              new MissingRequiredOptionError(
-                "teamsfx validate",
-                `${AppPackageFilePathParamName} or ${ManifestFilePathParamName}`
-              )
-            );
-          }
+          inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[ManifestFilePathParamName];
         }
         if (args["folder"]) {
           inputs.projectPath = args["folder"];
@@ -119,7 +110,7 @@ export class ManifestValidate extends YargsCommand {
 
     // Throw error if --env not specified
     if (args[ManifestFilePathParamName] && !args.env && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredOptionError("teamsfx validate", "env");
+      const error = new MissingRequiredArgumentError("teamsfx validate", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
       return err(error);
     }

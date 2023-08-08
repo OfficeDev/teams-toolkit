@@ -410,6 +410,7 @@ describe("generateScaffoldingSummary", () => {
       type: "apiBased",
       commands: [
         { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+        { id: "command1", type: "action", title: "" },
       ],
     };
     const res = generateScaffoldingSummary([], {

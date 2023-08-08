@@ -1769,6 +1769,7 @@ describe("autoOpenProjectHandler", () => {
       ok({
         name: { short: "short", full: "full" },
         description: { short: "short", full: "" },
+        composeExtensions: [{ commands: [{ id: "command1" }] }],
       } as any)
     );
     const parseRes = {

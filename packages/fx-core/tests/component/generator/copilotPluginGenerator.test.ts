@@ -7,6 +7,7 @@
 
 import {
   err,
+  IComposeExtension,
   Inputs,
   ok,
   OpenAIManifestAuthType,
@@ -398,6 +399,11 @@ describe("OpenAIManifestHelper", async () => {
 });
 
 describe("generateScaffoldingSummary", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
   it("no warnings", () => {
     const res = generateScaffoldingSummary([], teamsManifest);
     assert.equal(res.length, 0);
@@ -438,7 +444,36 @@ describe("generateScaffoldingSummary", () => {
       teamsManifest
     );
 
-    console.log(res);
     assert.isTrue(res.includes("content"));
+  });
+
+  it("warnings about adaptive card template in manifest", () => {
+    const composeExtension: IComposeExtension = {
+      type: "apiBased",
+      commands: [{ id: "command1", type: "query", title: "" }],
+    };
+    const res = generateScaffoldingSummary([], {
+      ...teamsManifest,
+      composeExtensions: [composeExtension],
+    });
+
+    assert.isTrue(res.includes("apiResponseRenderingTemplate"));
+  });
+
+  it("warnings about missing adaptive card template", () => {
+    const composeExtension: IComposeExtension = {
+      type: "apiBased",
+      commands: [
+        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+      ],
+    };
+    sandbox.stub(fs, "existsSync").returns(false);
+    const res = generateScaffoldingSummary([], {
+      ...teamsManifest,
+      composeExtensions: [composeExtension],
+    });
+
+    assert.isTrue(!res.includes("apiResponseRenderingTemplate"));
+    assert.isTrue(res.includes("test"));
   });
 });

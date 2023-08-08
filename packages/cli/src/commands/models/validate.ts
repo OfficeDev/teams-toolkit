@@ -30,7 +30,7 @@ export const validateCommand: CLICommand = {
       if (inputs["manifest-path"] && inputs["app-package-file-path"]) {
         const error = new ArgumentConflictError(
           "teamsfx validate",
-          "manifest-path",
+          "teams-manifest-file",
           "app-package-file-path"
         );
         return err(error);
@@ -38,7 +38,7 @@ export const validateCommand: CLICommand = {
         return err(
           new MissingRequiredOptionError(
             "teamsfx validate",
-            "--manifest-path or --app-package-file-path"
+            "--teams-manifest-file or --app-package-file-path"
           )
         );
       }

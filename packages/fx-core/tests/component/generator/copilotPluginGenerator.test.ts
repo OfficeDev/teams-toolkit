@@ -384,7 +384,7 @@ describe("OpenAIManifestHelper", async () => {
     );
     assert.equal(
       updatedTeamsManifest!.description.full,
-      openAIPluginManifest.description_for_model
+      openAIPluginManifest.description_for_human
     );
     assert.equal(updatedTeamsManifest!.developer.privacyUrl, openAIPluginManifest.legal_info_url);
     assert.equal(updatedTeamsManifest!.developer.websiteUrl, openAIPluginManifest.legal_info_url);

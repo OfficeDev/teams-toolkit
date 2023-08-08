@@ -378,8 +378,6 @@ describe("OpenAIManifestHelper", async () => {
     assert.isFalse(updateColor);
 
     const updatedTeamsManifest = JSON.parse(updatedManifestData!) as TeamsAppManifest;
-    assert.equal(updatedTeamsManifest!.name.short, "TODO List");
-    assert.equal(updatedTeamsManifest!.name.full, openAIPluginManifest.name_for_model);
     assert.equal(
       updatedTeamsManifest!.description.short,
       openAIPluginManifest.description_for_human

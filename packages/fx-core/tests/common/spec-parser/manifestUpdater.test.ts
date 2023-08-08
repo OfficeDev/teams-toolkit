@@ -46,8 +46,8 @@ describe("manifestUpdater", () => {
       composeExtensions: [],
     };
     const expectedManifest = {
-      name: { short: spec.info.title, full: spec.info.title },
-      description: { short: spec.info.title, full: spec.info.description ?? "" },
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
       composeExtensions: [
         {
           type: "apiBased",

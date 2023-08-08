@@ -71,12 +71,6 @@ export class ManifestValidate extends YargsCommand {
           inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
           inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[ManifestFilePathParamName];
         }
-        if (args["folder"]) {
-          inputs.projectPath = args["folder"];
-        }
-        if (args["env"]) {
-          inputs.env = args["env"];
-        }
       }
       const result = await core.validateApplication(inputs);
       if (result.isErr()) {

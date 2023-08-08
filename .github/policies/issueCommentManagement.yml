@@ -3,7 +3,7 @@ name: GitOps.issueCommentManagement
 description: Handlers for when an issue comment is first opened
 owner:
 resource: repository
-disabled: true
+disabled: false
 where:
 configuration:
   resourceManagementConfiguration:

@@ -96,9 +96,7 @@ export class OpenAIPluginManifestHelper {
     teamsAppManifest: TeamsAppManifest,
     manifestPath: string
   ): Promise<Result<undefined, FxError>> {
-    teamsAppManifest.name.full = openAiPluginManifest.name_for_model;
-    teamsAppManifest.name.short = openAiPluginManifest.name_for_human;
-    teamsAppManifest.description.full = openAiPluginManifest.description_for_model;
+    teamsAppManifest.description.full = openAiPluginManifest.description_for_human;
     teamsAppManifest.description.short = openAiPluginManifest.description_for_human;
     teamsAppManifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
     teamsAppManifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;

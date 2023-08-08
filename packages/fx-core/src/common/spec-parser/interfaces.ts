@@ -117,7 +117,6 @@ export interface AdaptiveCard {
 }
 
 export interface PartialManifest {
-  name: Name;
   description: Description;
   composeExtensions: ComposeExtension[];
 }

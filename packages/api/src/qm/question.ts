@@ -449,7 +449,7 @@ export class QTreeNode implements IQTreeNode {
    * "children" - skip all children
    * "all" - skip self and all children
    */
-  interactiveOnly?: "self" | "children" | "all";
+  cliOptionDisabled?: "self" | "children" | "all";
   addChild(node: QTreeNode): QTreeNode {
     if (!this.children) {
       this.children = [];
@@ -499,10 +499,17 @@ export interface IQTreeNode {
   condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: IQTreeNode[];
   /**
-   * @description the question is only for interactive mode, if defined, the question will be skipped in non-interactive mode
-   * "self" - only skip the question itself
-   * "children" - skip all children
-   * "all" - skip self and all children
+   * @description the question node will be ignored as CLI option in non-interactive mode
+   * "self" - only ignore the question itself
+   * "children" - ignore all nodes in sub-tree
+   * "all" - ignore self and all nodes in sub-tree
    */
-  interactiveOnly?: "self" | "children" | "all";
+  cliOptionDisabled?: "self" | "children" | "all";
+  /**
+   * @description the question node will be ignored as an Inputs property
+   * "self" - only ignore the question itself
+   * "children" - ignore all nodes in sub-tree
+   * "all" - ignore self and all nodes in sub-tree
+   */
+  inputsDisabled?: "self" | "children" | "all";
 }

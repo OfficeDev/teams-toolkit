@@ -25,9 +25,12 @@ import {
 } from "ts-morph";
 import { questionNodes } from ".";
 
-async function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
-  if (node.interactiveOnly === "all") return;
-  if (node.data.type !== "group" && (!node.interactiveOnly || node.interactiveOnly !== "self")) {
+async function collectNodesForCliOptions(node: IQTreeNode, nodeList: IQTreeNode[]) {
+  if (node.cliOptionDisabled === "all") return;
+  if (
+    node.data.type !== "group" &&
+    (!node.cliOptionDisabled || node.cliOptionDisabled !== "self")
+  ) {
     nodeList.push(node);
   }
   let currentOptions: string[] = [];
@@ -36,7 +39,7 @@ async function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
       (option) => (typeof option === "string" ? option : option.id)
     );
   }
-  if (node.children && (!node.interactiveOnly || node.interactiveOnly !== "children")) {
+  if (node.children && (!node.cliOptionDisabled || node.cliOptionDisabled !== "children")) {
     for (const child of node.children) {
       if (child.condition && typeof child.condition !== "function" && currentOptions.length > 0) {
         // try to exclude one case: parent value has a range, child condition is not functional condition,
@@ -50,11 +53,46 @@ async function collect(node: IQTreeNode, nodeList: IQTreeNode[]) {
           }
         }
         if (someChoiceIsValid) {
-          await collect(child, nodeList);
+          await collectNodesForCliOptions(child, nodeList);
         }
         // if all choices are invalid, trim the child node
       } else {
-        await collect(child, nodeList);
+        await collectNodesForCliOptions(child, nodeList);
+      }
+    }
+  }
+}
+
+async function collectNodesForInputs(node: IQTreeNode, nodeList: IQTreeNode[]) {
+  if (node.inputsDisabled === "all") return;
+  if (node.data.type !== "group" && (!node.inputsDisabled || node.inputsDisabled !== "self")) {
+    nodeList.push(node);
+  }
+  let currentOptions: string[] = [];
+  if (node.data.type === "singleSelect" || node.data.type === "multiSelect") {
+    currentOptions = (node.data as SingleSelectQuestion | MultiSelectQuestion).staticOptions.map(
+      (option) => (typeof option === "string" ? option : option.id)
+    );
+  }
+  if (node.children && (!node.inputsDisabled || node.inputsDisabled !== "children")) {
+    for (const child of node.children) {
+      if (child.condition && typeof child.condition !== "function" && currentOptions.length > 0) {
+        // try to exclude one case: parent value has a range, child condition is not functional condition,
+        // and none of the value in the range satisfies the condition
+        let someChoiceIsValid = false;
+        for (const parentValue of currentOptions) {
+          const res = await validate(child.condition, parentValue);
+          if (res === undefined) {
+            someChoiceIsValid = true;
+            break;
+          }
+        }
+        if (someChoiceIsValid) {
+          await collectNodesForInputs(child, nodeList);
+        }
+        // if all choices are invalid, trim the child node
+      } else {
+        await collectNodesForInputs(child, nodeList);
       }
     }
   }
@@ -105,13 +143,12 @@ const notice =
   " * Please don't manually change its contents, as any modifications will be overwritten! *\n" +
   " ***************************************************************************************/\n\n\n";
 
-export async function generate(
+export async function generateCliOptions(
   node: IQTreeNode,
   name: string,
-  inputsFolder = "./src/question/inputs",
   optionFolder = "./src/question/options",
   excludes = ["folder"]
-) {
+): Promise<void> {
   // initialize
   const project = new Project({
     manipulationSettings: {
@@ -119,17 +156,13 @@ export async function generate(
     },
   });
 
-  const inputsFile = project.createSourceFile(path.join(inputsFolder, `${name}Inputs.ts`), "", {
-    overwrite: true,
-  });
-
   const optionFile = project.createSourceFile(path.join(optionFolder, `${name}Options.ts`), "", {
     overwrite: true,
   });
 
-  const nodeList: IQTreeNode[] = [];
+  const cliNodeList: IQTreeNode[] = [];
 
-  await collect(node, nodeList);
+  await collectNodesForCliOptions(node, cliNodeList);
 
   // console.log(`node collected: ${nodeList.map((n) => n.data.name).join(",")}`);
 
@@ -138,13 +171,10 @@ export async function generate(
   await computeRequired(node);
 
   const questionNames = new Set<string>();
-
-  const properties: OptionalKind<PropertySignatureStructure>[] = [];
-
   const cliOptions: CLICommandOption[] = [];
   const cliArguments: CLICommandArgument[] = [];
 
-  for (const node of nodeList) {
+  for (const node of cliNodeList) {
     const data = node.data as UserInputQuestion;
 
     const questionName = data.name as string;
@@ -205,13 +235,6 @@ export async function generate(
       if ((option as CLIStringOption | CLIArrayOption).skipValidation)
         (option as CLIStringOption | CLIArrayOption).skipValidation = selection.skipValidation;
     }
-    const inputPropName = questionName.includes("-") ? `"${questionName}"` : questionName;
-    properties.push({
-      name: inputPropName,
-      type: type,
-      hasQuestionToken: true,
-      docs: [`@description ${propDocDescription}`],
-    });
 
     questionNames.add(questionName);
 
@@ -221,18 +244,6 @@ export async function generate(
       cliArguments.push(option);
     }
   }
-
-  inputsFile.addInterface({
-    name: name + "Inputs",
-    isExported: true,
-    properties: properties,
-    extends: ["Inputs"],
-  });
-
-  inputsFile.addImportDeclaration({
-    namedImports: ["Inputs"],
-    moduleSpecifier: "@microsoft/teamsfx-api",
-  });
 
   const optionInitializerCode = JSON.stringify(cliOptions, null, 2)
     .replace(/"([^"]+)":/g, "$1:")
@@ -268,18 +279,117 @@ export async function generate(
     namedImports: ["CLICommandOption", "CLICommandArgument"],
     moduleSpecifier: "@microsoft/teamsfx-api",
   });
-  inputsFile.insertText(
-    0,
-    "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n\n" + notice
-  );
   optionFile.insertText(
     0,
     "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n\n" + notice
   );
-  inputsFile.formatText();
   optionFile.formatText();
 
   await updateExports("./src/question/options/index.ts", `export * from "./${name}Options";`);
+
+  await project.save();
+}
+
+export async function generateInputs(
+  node: IQTreeNode,
+  name: string,
+  inputsFolder = "./src/question/inputs",
+  excludes = ["folder"]
+): Promise<void> {
+  // initialize
+  const project = new Project({
+    manipulationSettings: {
+      indentationText: IndentationText.TwoSpaces, // Set the indentation to 2 spaces
+    },
+  });
+
+  const inputsFile = project.createSourceFile(path.join(inputsFolder, `${name}Inputs.ts`), "", {
+    overwrite: true,
+  });
+
+  const inputsNodeList: IQTreeNode[] = [];
+
+  await collectNodesForInputs(node, inputsNodeList);
+
+  // console.log(`node collected: ${nodeList.map((n) => n.data.name).join(",")}`);
+
+  (node.data as any).required = true;
+
+  await computeRequired(node);
+
+  const questionNames = new Set<string>();
+
+  const properties: OptionalKind<PropertySignatureStructure>[] = [];
+
+  for (const node of inputsNodeList) {
+    const data = node.data as UserInputQuestion;
+
+    const questionName = data.name as string;
+
+    const cliName = data.cliName || questionName;
+
+    if (excludes.includes(cliName)) continue;
+
+    if (questionNames.has(questionName)) {
+      continue;
+    }
+
+    let type = "string";
+
+    const title = data.title
+      ? typeof data.title !== "function"
+        ? data.title
+        : await data.title({ platform: Platform.CLI_HELP })
+      : undefined;
+
+    const propDocDescription = title || data.name;
+
+    if (data.type === "singleSelect" || data.type === "multiSelect") {
+      const selection = data as SingleSelectQuestion | MultiSelectQuestion;
+
+      const options = selection.staticOptions;
+      if (data.isBoolean) {
+        type = "boolean";
+      } else if (options.length > 0) {
+        const optionStrings = options.map((o) => (typeof o === "string" ? o : o.id));
+        type = selection.skipValidation ? "string" : optionStrings.map((i) => `"${i}"`).join(" | ");
+      } else {
+        type = "string";
+      }
+
+      if (data.type === "multiSelect") {
+        type += "[]";
+      }
+    }
+    const inputPropName = questionName.includes("-") ? `"${questionName}"` : questionName;
+    properties.push({
+      name: inputPropName,
+      type: type,
+      hasQuestionToken: true,
+      docs: [`@description ${propDocDescription}`],
+    });
+
+    questionNames.add(questionName);
+  }
+
+  inputsFile.addInterface({
+    name: name + "Inputs",
+    isExported: true,
+    properties: properties,
+    extends: ["Inputs"],
+  });
+
+  inputsFile.addImportDeclaration({
+    namedImports: ["Inputs"],
+    moduleSpecifier: "@microsoft/teamsfx-api",
+  });
+
+  inputsFile.insertText(
+    0,
+    "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n\n" + notice
+  );
+
+  inputsFile.formatText();
 
   await updateExports("./src/question/inputs/index.ts", `export * from "./${name}Inputs";`);
 
@@ -318,16 +428,35 @@ async function updateExports(filePath: string, exportStatement: string) {
 }
 
 async function batchGenerate() {
-  await generate(questionNodes.createProject(), "CreateProject");
-  await generate(questionNodes.createSampleProject(), "CreateSampleProject");
-  await generate(questionNodes.addWebpart(), "SPFxAddWebpart");
-  await generate(questionNodes.createNewEnv(), "CreateEnv");
-  await generate(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
-  await generate(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
-  await generate(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
-  await generate(questionNodes.grantPermission(), "PermissionGrant");
-  await generate(questionNodes.listCollaborator(), "PermissionList");
-  await generate(questionNodes.deployAadManifest(), "DeployAadManifest");
+  await generateCliOptions(questionNodes.createProject(), "CreateProject");
+  await generateInputs(questionNodes.createProject(), "CreateProject");
+
+  await generateCliOptions(questionNodes.createSampleProject(), "CreateSampleProject");
+  await generateInputs(questionNodes.createSampleProject(), "CreateSampleProject");
+
+  await generateCliOptions(questionNodes.addWebpart(), "SPFxAddWebpart");
+  await generateInputs(questionNodes.addWebpart(), "SPFxAddWebpart");
+
+  await generateCliOptions(questionNodes.createNewEnv(), "CreateEnv");
+  await generateInputs(questionNodes.createNewEnv(), "CreateEnv");
+
+  await generateCliOptions(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
+  await generateInputs(questionNodes.selectTeamsAppManifest(), "SelectTeamsManifest");
+
+  await generateCliOptions(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
+  await generateInputs(questionNodes.validateTeamsApp(), "ValidateTeamsApp");
+
+  await generateCliOptions(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
+  await generateInputs(questionNodes.previewWithTeamsAppManifest(), "PreviewTeamsApp");
+
+  await generateCliOptions(questionNodes.grantPermission(), "PermissionGrant");
+  await generateInputs(questionNodes.grantPermission(), "PermissionGrant");
+
+  await generateCliOptions(questionNodes.listCollaborator(), "PermissionList");
+  await generateInputs(questionNodes.listCollaborator(), "PermissionList");
+
+  await generateCliOptions(questionNodes.deployAadManifest(), "DeployAadManifest");
+  await generateInputs(questionNodes.deployAadManifest(), "DeployAadManifest");
 }
 
 batchGenerate();

@@ -403,11 +403,12 @@ export interface IProgressHandler {
 export interface IQTreeNode {
     // (undocumented)
     children?: IQTreeNode[];
+    cliOptionDisabled?: "self" | "children" | "all";
     // (undocumented)
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
-    interactiveOnly?: "self" | "children" | "all";
+    inputsDisabled?: "self" | "children" | "all";
 }
 
 // @public (undocumented)
@@ -616,11 +617,11 @@ export class QTreeNode implements IQTreeNode {
     addChild(node: QTreeNode): QTreeNode;
     // (undocumented)
     children?: QTreeNode[];
+    cliOptionDisabled?: "self" | "children" | "all";
     // (undocumented)
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
-    interactiveOnly?: "self" | "children" | "all";
     trim(): QTreeNode | undefined;
     // (undocumented)
     validate(): boolean;

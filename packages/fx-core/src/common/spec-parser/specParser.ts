@@ -50,99 +50,106 @@ export class SpecParser {
    * @returns A validation result object that contains information about any errors or warnings in the specification file.
    */
   async validate(): Promise<ValidateResult> {
-    const errors: ErrorResult[] = [];
-    const warnings: WarningResult[] = [];
     try {
-      await this.loadSpec();
-      await this.parser.validate(this.spec!);
-    } catch (e) {
-      // Spec not valid
-      errors.push({ type: ErrorType.SpecNotValid, content: (e as Error).toString() });
-      return {
-        status: ValidationStatus.Error,
-        warnings,
-        errors,
-      };
-    }
-
-    // Spec version not supported
-    if (!this.spec!.openapi || this.spec!.openapi < "3.0.0") {
-      errors.push({
-        type: ErrorType.VersionNotSupported,
-        content: ConstantString.SpecVersionNotSupported,
-        data: this.spec!.openapi,
-      });
-      return {
-        status: ValidationStatus.Error,
-        warnings,
-        errors,
-      };
-    }
-
-    // Server information invalid
-    if (!this.spec!.servers || this.spec!.servers.length === 0) {
-      errors.push({
-        type: ErrorType.NoServerInformation,
-        content: ConstantString.NoServerInformation,
-      });
-    } else if (this.spec!.servers.length > 1) {
-      errors.push({
-        type: ErrorType.MultipleServerInformation,
-        content: ConstantString.MultipleServerInformation,
-        data: this.spec!.servers,
-      });
-    }
-
-    // Remote reference not supported
-    const refPaths = this.parser.$refs.paths();
-
-    // refPaths [0] is the current spec file path
-    if (refPaths.length > 1) {
-      errors.push({
-        type: ErrorType.RemoteRefNotSupported,
-        content: util.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
-        data: refPaths,
-      });
-    }
-
-    // No supported API
-    const apiMap = this.getAllSupportedApi(this.spec!);
-    if (Object.keys(apiMap).length === 0) {
-      errors.push({
-        type: ErrorType.NoSupportedApi,
-        content: ConstantString.NoSupportedApi,
-      });
-    }
-
-    // OperationId missing
-    const apisMissingOperationId: string[] = [];
-    for (const key in apiMap) {
-      const pathObjectItem = apiMap[key];
-      if (!pathObjectItem.operationId) {
-        apisMissingOperationId.push(key);
+      const errors: ErrorResult[] = [];
+      const warnings: WarningResult[] = [];
+      try {
+        await this.loadSpec();
+        await this.parser.validate(this.spec!);
+      } catch (e) {
+        // Spec not valid
+        errors.push({ type: ErrorType.SpecNotValid, content: (e as Error).toString() });
+        return {
+          status: ValidationStatus.Error,
+          warnings,
+          errors,
+        };
       }
-    }
 
-    if (apisMissingOperationId.length > 0) {
-      warnings.push({
-        type: WarningType.OperationIdMissing,
-        content: util.format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
-        data: apisMissingOperationId,
-      });
-    }
+      // Spec version not supported
+      if (!this.spec!.openapi || this.spec!.openapi < "3.0.0") {
+        errors.push({
+          type: ErrorType.VersionNotSupported,
+          content: ConstantString.SpecVersionNotSupported,
+          data: this.spec!.openapi,
+        });
+        return {
+          status: ValidationStatus.Error,
+          warnings,
+          errors,
+        };
+      }
 
-    let status = ValidationStatus.Valid;
-    if (warnings.length > 0 && errors.length === 0) {
-      status = ValidationStatus.Warning;
-    } else if (errors.length > 0) {
-      status = ValidationStatus.Error;
-    }
+      // Server information invalid
+      if (!this.spec!.servers || this.spec!.servers.length === 0) {
+        errors.push({
+          type: ErrorType.NoServerInformation,
+          content: ConstantString.NoServerInformation,
+        });
+      } else if (this.spec!.servers.length > 1) {
+        errors.push({
+          type: ErrorType.MultipleServerInformation,
+          content: ConstantString.MultipleServerInformation,
+          data: this.spec!.servers,
+        });
+      }
 
-    return {
-      status,
-      warnings,
-      errors,
-    };
+      // Remote reference not supported
+      const refPaths = this.parser.$refs.paths();
+
+      // refPaths [0] is the current spec file path
+      if (refPaths.length > 1) {
+        errors.push({
+          type: ErrorType.RemoteRefNotSupported,
+          content: util.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+          data: refPaths,
+        });
+      }
+
+      // No supported API
+      const apiMap = this.getAllSupportedApi(this.spec!);
+      if (Object.keys(apiMap).length === 0) {
+        errors.push({
+          type: ErrorType.NoSupportedApi,
+          content: ConstantString.NoSupportedApi,
+        });
+      }
+
+      // OperationId missing
+      const apisMissingOperationId: string[] = [];
+      for (const key in apiMap) {
+        const pathObjectItem = apiMap[key];
+        if (!pathObjectItem.operationId) {
+          apisMissingOperationId.push(key);
+        }
+      }
+
+      if (apisMissingOperationId.length > 0) {
+        warnings.push({
+          type: WarningType.OperationIdMissing,
+          content: util.format(
+            ConstantString.MissingOperationId,
+            apisMissingOperationId.join(", ")
+          ),
+          data: apisMissingOperationId,
+        });
+      }
+
+      let status = ValidationStatus.Valid;
+      if (warnings.length > 0 && errors.length === 0) {
+        status = ValidationStatus.Warning;
+      } else if (errors.length > 0) {
+        status = ValidationStatus.Error;
+      }
+
+      return {
+        status,
+        warnings,
+        errors,
+      };
+    } catch (err) {
+      throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
+    }
   }
 
   /**
@@ -174,48 +181,55 @@ export class SpecParser {
     adaptiveCardFolder: string,
     signal?: AbortSignal
   ): Promise<void> {
-    if (signal?.aborted) {
-      throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
-    }
+    try {
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
 
-    await this.loadSpec();
-    if (signal?.aborted) {
-      throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
-    }
+      await this.loadSpec();
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
 
-    const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!);
-    let resultStr;
-    if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
-      resultStr = jsyaml.dump(newUnResolvedSpec);
-    } else {
-      resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
-    }
-    await fs.writeFile(outputSpecPath, resultStr);
+      const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!);
+      let resultStr;
+      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
+        resultStr = jsyaml.dump(newUnResolvedSpec);
+      } else {
+        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
+      }
+      await fs.outputFile(outputSpecPath, resultStr);
 
-    if (signal?.aborted) {
-      throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
-    }
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
 
-    const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+      const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
 
-    const updatedManifest = await updateManifest(
-      manifestPath,
-      outputSpecPath,
-      adaptiveCardFolder,
-      newSpec
-    );
+      const updatedManifest = await updateManifest(
+        manifestPath,
+        outputSpecPath,
+        adaptiveCardFolder,
+        newSpec
+      );
 
-    await fs.writeJSON(manifestPath, updatedManifest, { spaces: 2 });
+      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
 
-    if (signal?.aborted) {
-      throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
-    }
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
 
-    for (const url in newSpec.paths) {
-      const getOperation = newSpec.paths[url]?.get;
-      const card: AdaptiveCard = generateAdaptiveCard(getOperation!);
-      const fileName = path.join(adaptiveCardFolder, `${getOperation!.operationId!}.json`);
-      await fs.outputJSON(fileName, card, { spaces: 2 });
+      for (const url in newSpec.paths) {
+        const getOperation = newSpec.paths[url]?.get;
+        const card: AdaptiveCard = generateAdaptiveCard(getOperation!);
+        const fileName = path.join(adaptiveCardFolder, `${getOperation!.operationId!}.json`);
+        await fs.outputJSON(fileName, card, { spaces: 2 });
+      }
+    } catch (err) {
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
+      throw new SpecParserError((err as Error).toString(), ErrorType.GenerateFailed);
     }
   }
 

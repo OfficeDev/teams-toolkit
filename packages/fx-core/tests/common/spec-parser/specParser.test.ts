@@ -296,6 +296,65 @@ describe("SpecParser", () => {
       expect(result.errors).to.be.an("array").that.is.empty;
       sinon.assert.calledOnce(dereferenceStub);
     });
+
+    it("should throw a SpecParserError when an error occurs", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "/v3",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/xml": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      try {
+        const specParser = new SpecParser(specPath);
+        const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+        sinon
+          .stub(specParser as any, "getAllSupportedApi")
+          .throws(new Error("getAllSupportedApi error"));
+
+        const result = await specParser.validate();
+        expect.fail("Expected SpecParserError to be thrown");
+      } catch (err) {
+        expect(err).to.be.instanceOf(SpecParserError);
+        expect(err.errorType).to.equal(ErrorType.ValidateFailed);
+        expect(err.message).to.equal("Error: getAllSupportedApi error");
+      }
+    });
   });
 
   describe("generate", () => {
@@ -354,8 +413,8 @@ describe("SpecParser", () => {
             signal.aborted = true;
             return {} as any;
           });
-        const writeFileStub = sinon.stub(fs, "writeFile").resolves();
-        const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+        const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+        const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
         const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
         const filter = ["get /hello"];
@@ -382,8 +441,8 @@ describe("SpecParser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
-        const writeFileStub = sinon.stub(fs, "writeFile").resolves();
-        const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+        const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+        const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
         const JsyamlSpy = sinon.spy(jsyaml, "dump");
         const signal = { aborted: false } as any;
 
@@ -426,8 +485,8 @@ describe("SpecParser", () => {
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
-      const writeFileStub = sinon.stub(fs, "writeFile").resolves();
-      const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
       const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
@@ -447,19 +506,19 @@ describe("SpecParser", () => {
 
       expect(JsyamlSpy.calledOnce).to.be.true;
       expect(specFilterStub.calledOnce).to.be.true;
-      expect(writeFileStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
       expect(manifestUpdaterStub.calledOnce).to.be.true;
-      expect(writeFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
     });
 
-    it("should generate a new spec and write it to a json file", async () => {
+    it("should throw a SpecParserError if outputFile throws an error", async () => {
       const specParser = new SpecParser("path/to/spec.yaml");
       const spec = { openapi: "3.0.0", paths: {} };
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
-      const writeFileStub = sinon.stub(fs, "writeFile").resolves();
-      const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+      const outputFileStub = sinon.stub(fs, "outputFile").throws(new Error("outputFile error"));
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JSONStringifySpy = sinon.spy(JSON, "stringify");
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
       const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
@@ -470,18 +529,56 @@ describe("SpecParser", () => {
       const filter = ["get /hello"];
 
       const outputSpecPath = "path/to/output.json";
-      await specParser.generate(
-        "path/to/manifest.json",
-        filter,
-        outputSpecPath,
-        "path/to/adaptiveCardFolder"
-      );
 
-      expect(JsyamlSpy.calledOnce).to.be.false;
-      expect(specFilterStub.calledOnce).to.be.true;
-      expect(writeFileStub.calledOnce).to.be.true;
-      expect(manifestUpdaterStub.calledOnce).to.be.true;
-      expect(writeFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      try {
+        await specParser.generate(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          "path/to/adaptiveCardFolder"
+        );
+        expect.fail("Expected generate to throw a SpecParserError");
+      } catch (err) {
+        expect(err).to.be.instanceOf(SpecParserError);
+        expect(err.errorType).to.equal(ErrorType.GenerateFailed);
+        expect(err.message).to.equal("Error: outputFile error");
+      }
+    });
+
+    it("should throw a SpecParserError if specFilter throws a SpecParserError", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = { openapi: "3.0.0", paths: {} };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon
+        .stub(SpecFilter, "specFilter")
+        .throws(new SpecParserError("specFilter error", ErrorType.FilterSpecFailed));
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JSONStringifySpy = sinon.spy(JSON, "stringify");
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns({} as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.json";
+
+      try {
+        await specParser.generate(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          "path/to/adaptiveCardFolder"
+        );
+        expect.fail("Expected generate to throw a SpecParserError");
+      } catch (err) {
+        expect(err).to.be.instanceOf(SpecParserError);
+        expect(err.errorType).to.equal(ErrorType.FilterSpecFailed);
+        expect(err.message).to.equal("specFilter error");
+      }
     });
   });
 

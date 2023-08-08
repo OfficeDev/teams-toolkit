@@ -5,8 +5,15 @@ import { expect } from "chai";
 import "mocha";
 import { specFilter } from "../../../src/common/spec-parser/specFilter";
 import { OpenAPIV3 } from "openapi-types";
+import sinon from "sinon";
+import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
+import { ErrorType } from "../../../src/common/spec-parser/interfaces";
+import * as utils from "../../../src/common/spec-parser/utils";
 
 describe("specFilter", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
   const unResolveSpec: OpenAPIV3.Document = {
     openapi: "3.0.0",
     info: {
@@ -211,5 +218,22 @@ describe("specFilter", () => {
     const clonedSpec = { ...unResolveSpec };
     specFilter(filter, unResolveSpec);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
+  });
+
+  it("should throw a SpecParserError if isSupportedApi throws an error", () => {
+    const filter = ["GET /path"];
+    const unResolveSpec = {} as any;
+    const isSupportedApiStub = sinon
+      .stub(utils, "isSupportedApi")
+      .throws(new Error("isSupportedApi error"));
+
+    try {
+      specFilter(filter, unResolveSpec);
+      expect.fail("Expected specFilter to throw a SpecParserError");
+    } catch (err) {
+      expect(err).to.be.instanceOf(SpecParserError);
+      expect(err.errorType).to.equal(ErrorType.FilterSpecFailed);
+      expect(err.message).to.equal("Error: isSupportedApi error");
+    }
   });
 });

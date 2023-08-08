@@ -91,4 +91,17 @@ describe("teamsfx validate", () => {
       expect(res.error instanceof MissingRequiredOptionError).to.be.true;
     }
   });
+
+  it("Validate Command Running Check - manifest with all inputs", async () => {
+    sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(new Map()));
+    const cmd = new ManifestValidate();
+    const args = {
+      [constants.ManifestFilePathParamName]: "./manifest.json",
+      env: "dev",
+      folder: "./",
+    };
+    CLIUIInstance.interactive = false;
+    const res = await cmd.runCommand(args);
+    expect(res.isOk()).equals(true);
+  });
 });

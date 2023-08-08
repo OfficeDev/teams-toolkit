@@ -1739,16 +1739,35 @@ describe("editAadManifestTemplate", () => {
 
   it("happy path", async () => {
     const workspacePath = "/test/workspace/path";
-    sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
-
-    const manifestPath = `/path/to/aad.template.json`;
     const workspaceUri = vscode.Uri.file(workspacePath);
+    sinon.stub(globalVariables, "workspaceUri").value(workspaceUri);
+
     const openTextDocumentStub = sandbox
       .stub(vscode.workspace, "openTextDocument")
       .resolves({} as any);
     const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
 
     await handlers.editAadManifestTemplate([null, "testTrigger"]);
+
+    sandbox.assert.calledOnceWithExactly(
+      openTextDocumentStub as any,
+      `${workspaceUri.fsPath}/templates/appPackage/aad.template.json`
+    );
+  });
+
+  it("happy path: no parameter", async () => {
+    const workspacePath = "/test/workspace/path";
+    const workspaceUri = vscode.Uri.file(workspacePath);
+    sinon.stub(globalVariables, "workspaceUri").value(workspaceUri);
+
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any);
+    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
+
+    await handlers.editAadManifestTemplate([]);
+
+    chai.assert.isTrue(showTextDocumentStub.callCount === 0);
   });
 });
 

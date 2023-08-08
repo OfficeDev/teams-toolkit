@@ -336,12 +336,21 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    return [
-      CapabilityOptions.basicBot(),
-      CapabilityOptions.notificationBot(),
-      CapabilityOptions.commandBot(),
-      CapabilityOptions.workflowBot(inputs),
-    ];
+    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
+      ? // currently no ai bot for dotnet
+        [
+          CapabilityOptions.basicBot(),
+          CapabilityOptions.notificationBot(),
+          CapabilityOptions.commandBot(),
+          CapabilityOptions.workflowBot(inputs),
+        ]
+      : [
+          CapabilityOptions.basicBot(),
+          CapabilityOptions.aiBot(),
+          CapabilityOptions.notificationBot(),
+          CapabilityOptions.commandBot(),
+          CapabilityOptions.workflowBot(inputs),
+        ];
   }
 
   static tabs(): OptionItem[] {
@@ -471,6 +480,14 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginAIPluginOption.detail"
       ),
+    };
+  }
+
+  static aiBot(): OptionItem {
+    return {
+      id: "ai-bot",
+      label: getLocalizedString("core.aiBotOption.label"),
+      detail: getLocalizedString("core.aiBotOption.detail"),
     };
   }
 }

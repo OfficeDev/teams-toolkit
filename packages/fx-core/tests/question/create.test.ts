@@ -140,7 +140,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
@@ -590,7 +590,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 11);
+          assert.isTrue(options.length === 12);
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
           return ok({ type: "success", result: NotificationTriggerOptions.appService().id });
@@ -857,7 +857,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 12);
+            assert.isTrue(options.length === 13);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginCli().id });
           } else if (question.name === QuestionNames.CopilotPluginDevelopment) {
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });

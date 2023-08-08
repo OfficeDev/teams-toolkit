@@ -818,7 +818,7 @@ function selectResourceGroupLocationQuestion(
       }
       return getLocationsRes.value;
     },
-    default: "East US",
+    default: "Central US",
   };
 }
 

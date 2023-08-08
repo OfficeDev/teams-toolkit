@@ -19,6 +19,8 @@ import {
   ManifestTemplateFileName,
   Warning,
   AppPackageFolderName,
+  ManifestUtil,
+  IComposeExtension,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -349,6 +351,50 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
   }
   if (teamsManifest.description.full!.length > descriptionFullLimit) {
     warnings.push(formatLengthExceedingErrorMessage("/description/full", descriptionFullLimit));
+  }
+
+  // validate card
+  if (ManifestUtil.parseCommonProperties(teamsManifest).isCopilotPlugin) {
+    const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
+    for (const command of commands) {
+      if (command.type === "query") {
+        if (!command.apiResponseRenderingTemplate) {
+          warnings.push(
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate",
+              "apiResponseRenderingTemplateFile",
+              command.id
+            ) +
+              getLocalizedString(
+                "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate.mitigation",
+                AppPackageFolderName,
+                `composeExtensions/commands/${command.id}/apiResponseRenderingTemplateFile`,
+                path.join(AppPackageFolderName, ManifestTemplateFileName)
+              )
+          );
+        } else {
+          const cardPath = path.join(
+            AppPackageFolderName,
+            ManifestTemplateFileName,
+            command.apiResponseRenderingTemplate
+          );
+          if (!fs.existsSync(cardPath)) {
+            warnings.push(
+              getLocalizedString(
+                "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard",
+                command.apiResponseRenderingTemplate,
+                AppPackageFolderName
+              ) +
+                getLocalizedString(
+                  "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard.mitigation",
+                  command.apiResponseRenderingTemplate,
+                  AppPackageFolderName
+                )
+            );
+          }
+        }
+      }
+    }
   }
 
   return warnings;

@@ -18,12 +18,12 @@
     },
     "additionalMetadata": {
       "type": "object",
-      "description": "Additional metadata for the project, used for telemetry purpose only.",
+      "description": "Metadata property, used by Teams Toolkit only.",
       "additionalProperties": true,
       "properties": {
         "sampleTag": {
           "type": ["number","string","boolean","object","array", "null", "integer"],
-          "description": "The string tag of sample repo and sample name following pattern <sample-repo>:<sample-name>, used for telemetry purpose only."
+          "description": "A tag for the sample app used to track telemetry events sent by Teams Toolkit associated with that sample. Pattern: <sample-repo>:<sample-name>"
         }
       }
     },

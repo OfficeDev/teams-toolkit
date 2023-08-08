@@ -224,7 +224,7 @@ export async function updateFunctionAuthorizationPolicy(
     version == "3.2.0" ? locationValue1_320 : policySnippets.locationValue1;
   const functionBicepPath = path.join(
     projectPath,
-    "tempplates",
+    "templates",
     "azure",
     "teamsFx",
     fileName

@@ -1769,6 +1769,23 @@ describe("editAadManifestTemplate", () => {
 
     chai.assert.isTrue(showTextDocumentStub.callCount === 0);
   });
+
+  it("happy path: workspaceUri is undefined", async () => {
+    const workspaceUri = undefined;
+    sinon.stub(globalVariables, "workspaceUri").value(undefined);
+
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any);
+    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
+
+    await handlers.editAadManifestTemplate([null, "testTrigger"]);
+
+    sandbox.assert.calledOnceWithExactly(
+      openTextDocumentStub as any,
+      `${workspaceUri}/templates/appPackage/aad.template.json`
+    );
+  });
 });
 
 describe("autoOpenProjectHandler", () => {

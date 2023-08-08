@@ -991,7 +991,7 @@ describe("handlers", () => {
       sandbox.stub(extension, "VS_CODE_UI").value({
         selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
       });
-      const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
+      const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
       sandbox
         .stub(MockCore.prototype, "listCollaborator")
         .throws(new Error("Cannot get user login information"));
@@ -1091,7 +1091,7 @@ describe("handlers", () => {
         .stub(mockCore, "phantomMigrationV3")
         .resolves(err(error));
       sandbox.stub(localizeUtils, "localize").returns("");
-      const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
+      const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
       sandbox.stub(vscode.commands, "executeCommand");
 
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);

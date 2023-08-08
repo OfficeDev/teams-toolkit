@@ -12,7 +12,7 @@ import {
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { cliSource } from "../../constants";
-import { ArgumentConflictError } from "../../error";
+import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";
 import { ProjectFolderOption } from "../common";
@@ -44,13 +44,19 @@ export const validateCommand: CLICommand = {
         return err(error);
       } else if (!inputs["manifest-path"] && !inputs["app-package-file-path"]) {
         return err(
-          new MissingRequiredInputError("manifest-path or app-package-file-path", cliSource)
+          new MissingRequiredOptionError(
+            "teamsfx validate",
+            "--manifest-path or --app-package-file-path"
+          )
         );
       }
       if (inputs["app-package-file-path"]) {
         inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
       } else {
         inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
+        if (!inputs.env) {
+          new MissingRequiredOptionError("teamsfx validate", "--env");
+        }
       }
     }
     const core = createFxCore();

@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import {
-  CoreQuestionNames,
-  ValidateTeamsAppInputs,
-  ValidateTeamsAppOptions,
-  validateAppPackageOption,
-  validateSchemaOption,
-} from "@microsoft/teamsfx-core";
+import { ValidateTeamsAppInputs, ValidateTeamsAppOptions } from "@microsoft/teamsfx-core";
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
@@ -48,13 +42,8 @@ export const validateCommand: CLICommand = {
           )
         );
       }
-      if (inputs["app-package-file-path"]) {
-        inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
-      } else {
-        inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
-        if (!inputs.env) {
-          new MissingRequiredOptionError("teamsfx validate", "--env");
-        }
+      if (!inputs["app-package-file-path"] && !inputs.env) {
+        return err(new MissingRequiredOptionError("teamsfx validate", "--env"));
       }
     }
     const core = createFxCore();

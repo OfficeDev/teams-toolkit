@@ -47,14 +47,17 @@ export class ExtensionUpgrade {
         },
       };
 
-      const selection = await vscode.window.showInformationMessage(
-        util.format(localize("teamstoolkit.upgrade.banner"), teamsToolkitVersion),
-        changelog
-      );
-      if (selection?.title === localize("teamstoolkit.upgrade.changelog")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewContext);
-        await selection.run();
-      }
+      void vscode.window
+        .showInformationMessage(
+          util.format(localize("teamstoolkit.upgrade.banner"), teamsToolkitVersion),
+          changelog
+        )
+        .then(async (selection) => {
+          if (selection?.title === localize("teamstoolkit.upgrade.changelog")) {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewContext);
+            await selection.run();
+          }
+        });
     }
   }
 }

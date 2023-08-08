@@ -228,8 +228,7 @@ async function chefBotMiddleWare(
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
     const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
-    let KEY = fs.readFileSync(userFile, "utf-8");
-    KEY += "\nSECRET_OPENAI_API_KEY=MY_OPENAI_API_KEY";
+    const KEY = "SECRET_OPENAI_API_KEY=MY_OPENAI_API_KEY";
     fs.writeFileSync(userFile, KEY);
     console.log(`add key ${KEY} to .env.dev.user file`);
   }

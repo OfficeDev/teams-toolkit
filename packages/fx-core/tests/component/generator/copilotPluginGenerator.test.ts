@@ -398,7 +398,7 @@ describe("OpenAIManifestHelper", async () => {
   });
 });
 
-describe.only("generateScaffoldingSummary", () => {
+describe("generateScaffoldingSummary", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {

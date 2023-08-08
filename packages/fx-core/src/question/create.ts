@@ -1351,8 +1351,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
-        const pattern =
-          /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?(\/[^\s]*)?(\/[^\s]*)*$/i;
+        const pattern = /(https?:\/\/)?([a-z0-9-]+\.)+[a-z0-9-]+(:[0-9]{1,5})?(\/\s*)?$/i;
         const match = pattern.test(input);
 
         return match

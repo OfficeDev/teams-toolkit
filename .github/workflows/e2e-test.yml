@@ -103,7 +103,7 @@ jobs:
           npm run test:e2e:clean
 
       - name: Archive Test Plan
-        if: ${{ github.event.inputs.target-testplan-id }} != ''
+        if: ${{ github.event.inputs.target-testplan-id != '' }}
         working-directory: ./packages/tests
         run: |
           npm install
@@ -111,7 +111,7 @@ jobs:
           npx ts-node src/scripts/testPlan.ts archive $testplanid
   
       - name: Upload testplan to artifact
-        if: ${{ github.event.inputs.target-testplan-id }} != ''
+        if: ${{ github.event.inputs.target-testplan-id != '' }}
         uses: actions/upload-artifact@v3
         with:
           name: testplan

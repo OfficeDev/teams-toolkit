@@ -14,7 +14,7 @@ import {
   createNewProject,
 } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
-import { initPage, validateMsg } from "../../utils/playwrightOperation";
+import { initPage, validateCreatedCard, validateMsg } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
@@ -57,7 +57,7 @@ describe("Remote debug Tests", function () {
   it(
     "[auto] Remote debug for Message Extension project Tests",
     {
-      testPlanCaseId: 14907799,
+      testPlanCaseId: 24739650,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -74,7 +74,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateMsg(page);
+      await validateCreatedCard(page);
     }
   );
 });

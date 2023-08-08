@@ -6,7 +6,8 @@ import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {
   initPage,
   validateBot,
-  validateMsg,
+  validateContact,
+  validateCreatedCard,
 } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
@@ -33,7 +34,7 @@ describe("Local Debug Tests", function () {
   it(
     "[Typescript] Local Debug for Message Extension project",
     {
-      testPlanCaseId: 9729546,
+      testPlanCaseId: 24739646,
       author: "v-annefu@microsoft.com",
     },
     async function () {
@@ -41,7 +42,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "index.ts");
+      validateFileExist(projectPath, "src/index.ts");
 
       await startDebugging();
 
@@ -56,7 +57,7 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateMsg(page);
+      await validateCreatedCard(page);
     }
   );
 });

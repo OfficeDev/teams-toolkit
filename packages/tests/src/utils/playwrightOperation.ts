@@ -830,9 +830,9 @@ export async function validateNpm(page: Page, npmName: string) {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
       await page
-        .click('button:has-text("Dismiss")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
+      .click('button:has-text("Dismiss")', {
+        timeout: Timeout.playwrightDefaultTimeout,
+      })
         .catch(() => {});
     } catch (error) {
       console.log("no message to dismiss");
@@ -1730,4 +1730,40 @@ export async function delPerson(
     `div.table-area div.line1:has-text("${displayName}")`,
     { state: "detached" }
   );
+}
+
+export async function validateCreatedCard(page: Page) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    console.log("start to created card");
+    try {
+      await frame?.waitForSelector('div.ui-box button:has-text("Submit")', {
+        timeout: Timeout.playwrightDefaultTimeout,
+      })
+        .catch(() => { });
+    } catch (error) {
+      console.log("no created card window");
+    }
+    const submitBtn = await frame?.waitForSelector('div.ui-box button:has-text("Submit")');
+    await submitBtn?.click();
+    try {
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      await frame?.waitForSelector('card div.card__react-wrapper');
+      console.log("verify created card successfully!!!");
+    } catch (error) {
+      await frame?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      assert.fail("Unable to reach app. Please try again.");
+    }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
 }

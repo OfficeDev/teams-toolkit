@@ -37,7 +37,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "index.ts");
+      validateFileExist(projectPath, "src/index.ts");
 
       await startDebugging("Debug in Teams (Chrome)");
 

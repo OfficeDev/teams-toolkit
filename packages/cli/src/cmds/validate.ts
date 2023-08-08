@@ -2,8 +2,11 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import { validateAppPackageOption, validateSchemaOption } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
+import {
+  CoreQuestionNames,
+  validateAppPackageOption,
+  validateSchemaOption,
+} from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -14,7 +17,8 @@ import {
   RootFolderOptions,
   ValidateApplicationOptions,
 } from "../constants";
-import { ArgumentConflictError, MissingRequiredArgumentError } from "../error";
+import { ArgumentConflictError, MissingRequiredOptionError } from "../error";
+import { globals } from "../globals";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -24,7 +28,6 @@ import {
 import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { globals } from "../globals";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -63,8 +66,25 @@ export class ManifestValidate extends YargsCommand {
       if (!CLIUIInstance.interactive) {
         if (args[AppPackageFilePathParamName]) {
           inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
+          inputs[CoreQuestionNames.TeamsAppPackageFilePath] = args[AppPackageFilePathParamName];
         } else {
           inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
+          if (args[ManifestFilePathParamName]) {
+            inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[ManifestFilePathParamName];
+          } else {
+            return err(
+              new MissingRequiredOptionError(
+                "teamsfx validate",
+                `${AppPackageFilePathParamName} or ${ManifestFilePathParamName}`
+              )
+            );
+          }
+        }
+        if (args["folder"]) {
+          inputs.projectPath = args["folder"];
+        }
+        if (args["env"]) {
+          inputs.env = args["env"];
         }
       }
       const result = await core.validateApplication(inputs);
@@ -99,7 +119,7 @@ export class ManifestValidate extends YargsCommand {
 
     // Throw error if --env not specified
     if (args[ManifestFilePathParamName] && !args.env && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("teamsfx validate", "env");
+      const error = new MissingRequiredOptionError("teamsfx validate", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
       return err(error);
     }

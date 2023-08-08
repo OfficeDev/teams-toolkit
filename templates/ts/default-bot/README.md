@@ -41,8 +41,6 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`adaptiveCards/learn.json`| Defines the adaptive card returned from bot when `learn` command is triggered. |
-|`adaptiveCards/welcome.json`| Defines the adaptive card returned from bot for welcome message and `welcome` command.|
 |`teamsBot.ts`| Handles business logics for the Basic Bot.|
 |`index.ts`|`index.ts` is used to setup and configure the Basic Bot.|
 

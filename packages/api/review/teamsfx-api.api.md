@@ -623,6 +623,7 @@ export class QTreeNode implements IQTreeNode {
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
+    inputsDisabled?: "self" | "children" | "all";
     trim(): QTreeNode | undefined;
     // (undocumented)
     validate(): boolean;

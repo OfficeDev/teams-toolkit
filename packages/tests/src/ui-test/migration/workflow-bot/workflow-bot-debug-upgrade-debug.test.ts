@@ -91,7 +91,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page);
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World Bot is Running",
+      });
       await validateWorkFlowBot(page);
     }
   );

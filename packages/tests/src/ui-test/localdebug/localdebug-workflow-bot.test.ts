@@ -62,7 +62,7 @@ describe("Workflow Bot Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, { botCommand: "helloWorld" });
+      await validateBot(page);
       await validateWorkFlowBot(page);
     }
   );

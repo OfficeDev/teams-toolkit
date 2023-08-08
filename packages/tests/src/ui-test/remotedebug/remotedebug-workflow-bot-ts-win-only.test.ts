@@ -82,10 +82,7 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateBot(page, {
-        botCommand: "helloWorld",
-        expected: "Your Hello World App is Running",
-      });
+      await validateBot(page);
       await validateWorkFlowBot(page);
     }
   );

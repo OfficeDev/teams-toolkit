@@ -1,14 +1,13 @@
 import {
-  Inputs,
-  Result,
-  FxError,
-  ok,
-  QTreeNode,
-  Stage,
-  Func,
-  Void,
   CoreCallbackEvent,
   CreateProjectResult,
+  Func,
+  FxError,
+  Inputs,
+  QTreeNode,
+  Result,
+  Stage,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { CoreCallbackFunc } from "@microsoft/teamsfx-core";
 
@@ -51,6 +50,10 @@ export class MockCore {
 
   async createEnv(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return ok(undefined);
+  }
+
+  async getSelectedEnv(inputs: Inputs): Promise<Result<string, FxError>> {
+    return ok("dev");
   }
 
   async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {

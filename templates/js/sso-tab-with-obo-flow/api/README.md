@@ -18,15 +18,19 @@ You can add your logic to the single Azure Function created by this template, as
 
 ### Call the Function
 
-To call your Azure Function, the client sends an HTTP request with an SSO token in the `Authorization` header. The token can be retrieved using the TeamsFx SDK from your app's client (custom tab). Here is an example:
+To call your Azure Function, the client sends an HTTP request with an SSO token in the `Authorization` header. Here is an example:
 
-```ts
-import { TeamsFx } from "@microsoft/teamsfx";
+```js
+import { TeamsUserCredentialAuthConfig, TeamsUserCredential } from "@microsoft/teamsfx";
 
-const teamsfx = new TeamsFx();
-const accessToken = await teamsfx.getCredential().getToken("");
-// note: empty string argument on the previous line is required for now, this will be fixed in a later release
-const response = await fetch(`${functionEndpoint}/api/${functionName}`, {
+const authConfig = {
+  clientId: process.env.REACT_APP_CLIENT_ID,
+  initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+};
+const teamsUserCredential = new TeamsUserCredential(authConfig);
+const accessToken = await teamsUserCredential.getToken(""); // Get SSO token
+const endpoint = "https://YOUR_API_ENDPOINT";
+const response = await axios.default.get(endpoint + "/api/" + functionName, {
   headers: {
     Authorization: `Bearer ${accessToken.token}`,
   },
@@ -58,7 +62,8 @@ Then following requests sent to the Azure function app will be handled by new no
 ## Edit the manifest
 
 You can find the Teams app manifest in `./appPackage` folder. The folder contains one manifest file:
-* `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
+
+- `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
 This file contains template arguments with `${{...}}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
@@ -66,8 +71,8 @@ This file contains template arguments with `${{...}}` statements which will be r
 
 Deploy your project to Azure by following these steps:
 
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | From TeamsFx CLI                                                                                                                                                                                                                   |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                        | From TeamsFx CLI                                                                                                                                                                                                                   |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision`.</li><li>Open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription <your-subscription-id>`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command `teamsfx deploy`. </li></ul> |
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.

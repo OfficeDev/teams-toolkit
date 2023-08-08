@@ -38,6 +38,7 @@ import {
   UserCancelError,
   environmentManager,
   manifestUtils,
+  pathUtils,
 } from "@microsoft/teamsfx-core";
 import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
@@ -495,6 +496,186 @@ describe("handlers", () => {
       if (res) {
         chai.assert.isTrue(res.isErr());
         chai.assert.equal(res.error.name, ExtensionErrors.InvalidArgs);
+      }
+    });
+
+    it("openConfigStateFile() - noOpenWorkspace", async () => {
+      const env = "local";
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value({ fsPath: undefined });
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+
+      const res = await handlers.openConfigStateFile([]);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.NoWorkspaceError);
+      }
+    });
+
+    it("openConfigStateFile() - invalidProject", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(projectSettingsHelper, "isValidProject").returns(false);
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+
+      const res = await handlers.openConfigStateFile([]);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.InvalidProject);
+      }
+    });
+
+    it("openConfigStateFile() - invalid target environment", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: any = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, "projectSettings.json");
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(err({ error: "invalid target env" })),
+      });
+      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok([]));
+      sinon.stub(fs, "pathExists").resolves(false);
+      sinon.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
+
+      const res = await handlers.openConfigStateFile([{ env: undefined, type: "env" }]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+      }
+    });
+
+    it("openConfigStateFile() - valid args", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: any = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, "projectSettings.json");
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+      sinon.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
+      sinon.stub(fs, "pathExists").resolves(false);
+      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(ok([]));
+
+      const res = await handlers.openConfigStateFile([{ env: undefined, type: "env" }]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.EnvFileNotFoundError);
+      }
+    });
+
+    it("openConfigStateFile() - invalid env folder", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: any = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, "projectSettings.json");
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+      sinon.stub(pathUtils, "getEnvFolderPath").resolves(err({ error: "unknown" } as any));
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(vscode.workspace, "openTextDocument").resolves("" as any);
+
+      const res = await handlers.openConfigStateFile([{ env: env, type: "env" }]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+      }
+    });
+
+    it("openConfigStateFile() - success", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: any = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, "projectSettings.json");
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+      sinon.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(vscode.workspace, "openTextDocument").returns(Promise.resolve("" as any));
+
+      const res = await handlers.openConfigStateFile([{ env: env, type: "env" }]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isOk());
       }
     });
 
@@ -1651,6 +1832,63 @@ describe("handlers", () => {
     it("happy path", async () => {
       const actualPath = await handlers.getPathDelimiterHandler();
       chai.assert.equal(actualPath, path.delimiter);
+    });
+  });
+
+  describe("others", function () {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("cmpAccountsHandler", async () => {
+      const AzureSignOutStub = sandbox.stub(AzureAccountManager.prototype, "signout");
+      const M365SignOutStub = sandbox.stub(M365TokenInstance, "signout");
+      sandbox
+        .stub(M365TokenInstance, "getStatus")
+        .resolves(ok({ status: "SignedIn", accountInfo: { upn: "test.email.com" } }));
+      sandbox
+        .stub(AzureAccountManager.prototype, "getStatus")
+        .resolves({ status: "SignedIn", accountInfo: { upn: "test.email.com" } });
+      const stubQuickPick = {
+        items: [],
+        onDidChangeSelection: () => {
+          return {
+            dispose: () => {},
+          };
+        },
+        onDidHide: () => {
+          return {
+            dispose: () => {},
+          };
+        },
+        show: () => {},
+        onDidAccept: () => {},
+      };
+      sandbox.stub(vscode.window, "createQuickPick").returns(stubQuickPick as any);
+      sandbox.stub(extension.VS_CODE_UI, "selectOption").resolves(ok({ result: "unknown" } as any));
+
+      await handlers.cmpAccountsHandler([]);
+
+      for (const i of stubQuickPick.items) {
+        await (i as any).function();
+      }
+
+      chai.assert.isTrue(AzureSignOutStub.calledOnce);
+      chai.assert.isTrue(M365SignOutStub.calledOnce);
+    });
+
+    it("updatePreviewManifest", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const openTextDocumentStub = sandbox
+        .stub(vscode.workspace, "openTextDocument")
+        .returns(Promise.resolve("" as any));
+
+      await handlers.updatePreviewManifest([]);
+
+      chai.assert.isTrue(openTextDocumentStub.calledOnce);
     });
   });
 });

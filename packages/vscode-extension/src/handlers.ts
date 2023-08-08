@@ -1790,8 +1790,8 @@ export async function cmpAccountsHandler(args: any[]) {
     id: "signOutAzure",
     label: localize("teamstoolkit.handlers.signOutOfAzure"),
     function: async () =>
-      Correlator.run(() => {
-        signOutAzure(false);
+      await Correlator.run(async () => {
+        await signOutAzure(false);
       }),
   };
 
@@ -1805,8 +1805,8 @@ export async function cmpAccountsHandler(args: any[]) {
     id: "signOutM365",
     label: localize("teamstoolkit.handlers.signOutOfM365"),
     function: async () =>
-      Correlator.run(() => {
-        signOutM365(false);
+      await Correlator.run(async () => {
+        await signOutM365(false);
       }),
   };
 
@@ -1814,7 +1814,7 @@ export async function cmpAccountsHandler(args: any[]) {
     id: "createAccounts",
     label: `$(add) ${localize("teamstoolkit.commands.createAccount.title")}`,
     function: async () => {
-      Correlator.run(() => createAccountHandler([]));
+      await Correlator.run(() => createAccountHandler([]));
     },
   };
 
@@ -2005,7 +2005,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtensionErrors.NoWorkspaceError,
       localize("teamstoolkit.handlers.noOpenWorkspace")
     );
-    showError(noOpenWorkspaceError);
+    void showError(noOpenWorkspaceError);
     ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noOpenWorkspaceError);
     return err(noOpenWorkspaceError);
   }
@@ -2016,13 +2016,13 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtensionErrors.InvalidProject,
       localize("teamstoolkit.handlers.invalidProject")
     );
-    showError(invalidProjectError);
+    void showError(invalidProjectError);
     ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidProjectError);
     return err(invalidProjectError);
   }
 
-  let sourcePath: string;
-  let env;
+  let sourcePath: string | undefined = undefined;
+  let env: string | undefined = undefined;
   if (args && args.length > 0) {
     env = args[0].env;
     if (!env) {
@@ -2034,24 +2034,12 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       env = envRes.value;
     }
 
-    if (args[0].type === "config") {
-      sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/configs/`,
-        `config.${env}.json`
-      );
-    } else if (args[0].type === "state") {
-      sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/states/`,
-        `state.${env}.json`
-      );
-    } else {
-      // Load env folder from yml
-      const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
-      if (envFolder.isOk()) {
-        sourcePath = path.resolve(`${envFolder.value}/.env.${env}`);
-      } else {
-        return err(envFolder.error);
-      }
+    // Load env folder from yml
+    const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
+    if (envFolder.isOk() && envFolder.value) {
+      sourcePath = path.resolve(`${envFolder.value}/.env.${env as string}`);
+    } else if (envFolder.isErr()) {
+      return err(envFolder.error);
     }
   } else {
     const invalidArgsError = new SystemError(
@@ -2059,75 +2047,24 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtensionErrors.InvalidArgs,
       util.format(localize("teamstoolkit.handlers.invalidArgs"), args ? JSON.stringify(args) : args)
     );
-    showError(invalidArgsError);
+    void showError(invalidArgsError);
     ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidArgsError);
     return err(invalidArgsError);
   }
 
-  if (!(await fs.pathExists(sourcePath))) {
-    if (args[0].type === "config") {
-      const noEnvError = new UserError(
-        ExtensionSource,
-        ExtensionErrors.EnvConfigNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
-      );
-      showError(noEnvError);
-      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
-      return err(noEnvError);
-    } else if (args[0].type === "env") {
-      const noEnvError = new UserError(
-        ExtensionSource,
-        ExtensionErrors.EnvFileNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
-      );
-      showError(noEnvError);
-      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
-      return err(noEnvError);
-    } else {
-      const isLocalEnv = env === environmentManager.getLocalEnvName();
-      const message = isLocalEnv
-        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
-        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env);
-      const noEnvError = new UserError(
-        ExtensionSource,
-        ExtensionErrors.EnvStateNotFoundError,
-        message
-      );
-      const provision = {
-        title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitle"),
-        run: async (): Promise<void> => {
-          Correlator.run(provisionHandler, [TelemetryTriggerFrom.Other]);
-        },
-      };
-      const localdebug = {
-        title: localize("teamstoolkit.handlers.localDebugTitle"),
-        run: async (): Promise<void> => {
-          Correlator.run(selectAndDebugHandler, [TelemetryTriggerFrom.Other]);
-        },
-      };
-
-      const errorCode = `${noEnvError.source}.${noEnvError.name}`;
-      const notificationMessage = noEnvError.displayMessage ?? noEnvError.message;
-      window
-        .showErrorMessage(
-          `[${errorCode}]: ${notificationMessage}`,
-          isLocalEnv ? localdebug : provision
-        )
-        .then((selection) => {
-          if (
-            selection?.title === localize("teamstoolkit.commandsTreeViewProvider.provisionTitle") ||
-            selection?.title === localize("teamstoolkit.handlers.localDebugTitle")
-          ) {
-            selection.run();
-          }
-        });
-      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
-      return err(noEnvError);
-    }
+  if (sourcePath && !(await fs.pathExists(sourcePath))) {
+    const noEnvError = new UserError(
+      ExtensionSource,
+      ExtensionErrors.EnvFileNotFoundError,
+      util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
+    );
+    void showError(noEnvError);
+    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
+    return err(noEnvError);
   }
 
-  workspace.openTextDocument(sourcePath).then((document) => {
-    window.showTextDocument(document);
+  void workspace.openTextDocument(sourcePath as string).then((document) => {
+    void window.showTextDocument(document);
   });
   ExtTelemetry.sendTelemetryEvent(telemetryName, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -2163,9 +2100,11 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
       return err(env.error);
     }
-    const manifestPath = `${workspacePath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value}.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
+    const manifestPath = `${
+      workspacePath as string
+    }/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value as string}.json`;
+    void workspace.openTextDocument(manifestPath).then((document) => {
+      void window.showTextDocument(document);
     });
   }
   return result;
@@ -2176,7 +2115,7 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   const inputs = getSystemInputs();
   if (args && args.length > 0) {
     const filePath = args[0].fsPath as string;
-    inputs.teamsManifestPath = filePath;
+    inputs[CoreQuestionNames.ManifestPath] = filePath;
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;

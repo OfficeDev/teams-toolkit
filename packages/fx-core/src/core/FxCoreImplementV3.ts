@@ -670,7 +670,7 @@ export class FxCoreV3Implement {
     const operations = inputs[QuestionNames.ApiOperation] as string[];
     const openapiSpecPath =
       inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
-    const manifestPath = inputs.teamsManifestPath;
+    const manifestPath = inputs[QuestionNames.ManifestPath];
     const specParser = new SpecParser(openapiSpecPath);
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
@@ -713,7 +713,7 @@ export class FxCoreV3Implement {
       createContextV3(),
       inputs.manifest,
       inputs.apiSpecUrl,
-      inputs.teamsManifestPath,
+      inputs[QuestionNames.ManifestPath],
       inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );

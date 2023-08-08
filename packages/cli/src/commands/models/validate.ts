@@ -3,7 +3,6 @@
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import {
   CoreQuestionNames,
-  MissingRequiredInputError,
   ValidateTeamsAppInputs,
   ValidateTeamsAppOptions,
   validateAppPackageOption,
@@ -11,7 +10,6 @@ import {
 } from "@microsoft/teamsfx-core";
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
-import { cliSource } from "../../constants";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../../utils";

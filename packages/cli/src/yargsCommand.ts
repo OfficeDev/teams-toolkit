@@ -142,7 +142,9 @@ export abstract class YargsCommand {
       }
       const FxError: UserError | SystemError =
         "source" in e ? e : new UnhandledError(e, constants.cliSource);
-      CLILogProvider.outputError(`${FxError.source}.${FxError.name}: ${FxError.message}`);
+      CLILogProvider.outputError(
+        `${FxError.source}.${FxError.name}: ${FxError.message || FxError.innerError?.message}`
+      );
       if ("helpLink" in FxError && FxError.helpLink) {
         CLILogProvider.outputError(
           `Get help from `,
@@ -156,7 +158,9 @@ export abstract class YargsCommand {
         );
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        CLILogProvider.outputError(`Call stack: ${FxError.stack || "undefined"}`);
+        CLILogProvider.outputError(
+          `Call stack: ${FxError.stack || FxError.innerError?.stack || "undefined"}`
+        );
       }
 
       exit(-1, FxError);

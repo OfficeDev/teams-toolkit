@@ -986,6 +986,32 @@ describe("handlers", () => {
       chai.expect(result.isErr()).equals(true);
     });
 
+    it("happy path: list collaborator throws login error", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
+      });
+      const showErrorMessageStub = sinon.stub(vscode.window, "showErrorMessage");
+      sandbox
+        .stub(MockCore.prototype, "listCollaborator")
+        .throws(new Error("Cannot get user login information"));
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+
+      const result = await handlers.manageCollaboratorHandler("env");
+      chai.expect(result.isErr()).equals(true);
+      chai.assert.isTrue(showErrorMessageStub.called);
+    });
+
     it("User Cancel", async () => {
       sandbox.stub(handlers, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({
@@ -1660,7 +1686,7 @@ describe("openPreviewAadFile", () => {
   afterEach(() => {
     sandbox.restore();
   });
-  it("happy path", async () => {
+  it("manifest file not exists", async () => {
     const core = new MockCore();
     sandbox.stub(handlers, "core").value(core);
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
@@ -1678,6 +1704,51 @@ describe("openPreviewAadFile", () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     const res = await handlers.openPreviewAadFile([]);
     chai.assert.isTrue(res.isErr());
+  });
+
+  it("happy path", async () => {
+    const core = new MockCore();
+    sandbox.stub(handlers, "core").value(core);
+    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(extension.VS_CODE_UI, "selectOption").resolves(
+      ok({
+        type: "success",
+        result: "dev",
+      })
+    );
+    sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
+    sandbox.stub(handlers, "showError").callsFake(async () => {});
+    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(Void));
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+    sandbox.stub(vscode.workspace, "openTextDocument").resolves();
+    sandbox.stub(vscode.window, "showTextDocument").resolves();
+
+    const res = await handlers.openPreviewAadFile([]);
+    chai.assert.isTrue(res.isOk());
+  });
+});
+
+describe("editAadManifestTemplate", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("happy path", async () => {
+    const workspacePath = "/test/workspace/path";
+    sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+
+    const manifestPath = `/path/to/aad.template.json`;
+    const workspaceUri = vscode.Uri.file(workspacePath);
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any);
+    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
+
+    await handlers.editAadManifestTemplate([null, "testTrigger"]);
   });
 });
 

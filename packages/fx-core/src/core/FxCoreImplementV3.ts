@@ -74,8 +74,7 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, assembleError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ScratchOptions } from "../question";
-import { SPFxVersionOptionIds } from "../question/create";
+import { ScratchOptions, SPFxVersionOptionIds } from "../question/create";
 import {
   HubTypes,
   TeamsAppValidationOptions,

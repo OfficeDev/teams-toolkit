@@ -10,7 +10,7 @@ describe("Provision message extension Node", () => {
     "Provision Resource: message extension node",
     { testPlanCaseId: 15685647, author: "fanhu@microsoft.com" },
     async function () {
-      await happyPathTest(Runtime.Node, "message-extension");
+      await happyPathTest(Runtime.Node, "collect-form-message-extension");
     }
   );
 });

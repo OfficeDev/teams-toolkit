@@ -322,7 +322,7 @@ export class CapabilityOptions {
 
   static collectFormMe(): OptionItem {
     return {
-      id: "CollectFormMessagingExtension",
+      id: "collect-form-message-extension",
       label: `${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };

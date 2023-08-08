@@ -905,7 +905,7 @@ async function processResult(
       return;
     }
     if (isLoginFailureError(error)) {
-      window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
+      void window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
       return;
     }
     void showError(error);
@@ -1966,11 +1966,11 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     return err(res.error);
   }
 
-  const manifestFile = `${workspacePath}/${BuildFolderName}/aad.${envName}.json`;
+  const manifestFile = `${workspacePath as string}/${BuildFolderName}/aad.${envName}.json`;
 
   if (fs.existsSync(manifestFile)) {
-    workspace.openTextDocument(manifestFile).then((document) => {
-      window.showTextDocument(document);
+    void workspace.openTextDocument(manifestFile).then((document) => {
+      void window.showTextDocument(document);
     });
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAadManifestFile, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -1982,7 +1982,7 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
       "FileNotFound",
       util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
     );
-    showError(error);
+    void showError(error);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, error);
     return err(error);
   }
@@ -2182,16 +2182,18 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   return result;
 }
 
-export async function editAadManifestTemplate(args: any[]) {
+export function editAadManifestTemplate(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.EditAadManifestTemplate,
     getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
   );
   if (args && args.length > 1) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
+    const manifestPath = `${
+      workspacePath as string
+    }/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
+    void workspace.openTextDocument(manifestPath).then((document) => {
+      void window.showTextDocument(document);
     });
   }
 }

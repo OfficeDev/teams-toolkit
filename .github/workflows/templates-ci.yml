@@ -6,6 +6,8 @@ on:
       - main
       - dev
       - hotfix/**/*
+    paths:
+      - templates/**
   push:
     branches:
       - main

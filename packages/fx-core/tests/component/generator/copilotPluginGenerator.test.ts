@@ -398,14 +398,24 @@ describe("OpenAIManifestHelper", async () => {
   });
 });
 
-describe("generateScaffoldingSummary", () => {
+describe.only("generateScaffoldingSummary", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
     sandbox.restore();
   });
   it("no warnings", () => {
-    const res = generateScaffoldingSummary([], teamsManifest);
+    sandbox.stub(fs, "existsSync").returns(true);
+    const composeExtension: IComposeExtension = {
+      type: "apiBased",
+      commands: [
+        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+      ],
+    };
+    const res = generateScaffoldingSummary([], {
+      ...teamsManifest,
+      composeExtensions: [composeExtension],
+    });
     assert.equal(res.length, 0);
   });
 

@@ -53,6 +53,7 @@ import { logger } from "../../src/commonlib/logger";
 import M365TokenProvider from "../../src/commonlib/m365Login";
 import { UserSettings } from "../../src/userSetttings";
 import * as utils from "../../src/utils";
+import { MissingRequiredOptionError } from "../../src/error";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -491,13 +492,25 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...validateCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-path": "aaa" },
+        optionValues: { "manifest-path": "aaa", env: "dev" },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
       const res = await validateCommand.handler!(ctx);
       assert.isTrue(res.isOk());
+    });
+    it("manifest missing env", async () => {
+      sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...validateCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-path": "aaa" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await validateCommand.handler!(ctx);
+      assert.isTrue(res.isErr() && res.error instanceof MissingRequiredOptionError);
     });
     it("package", async () => {
       sandbox.stub(FxCore.prototype, "validateApplication").resolves(ok(undefined));

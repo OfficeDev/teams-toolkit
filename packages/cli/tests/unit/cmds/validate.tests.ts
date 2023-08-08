@@ -88,7 +88,7 @@ describe("teamsfx validate", () => {
     const res = await cmd.runCommand(args);
     expect(res.isErr()).to.be.true;
     if (res.isErr()) {
-      expect(res.error instanceof MissingRequiredOptionError).to.be.true;
+      expect(res.error instanceof MissingRequiredArgumentError).to.be.true;
     }
   });
 

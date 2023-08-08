@@ -1338,6 +1338,18 @@ describe("scaffold question", () => {
 
             assert.isFalse(validationRes === undefined);
           });
+
+          it("valid input - path", async () => {
+            const input = "HTTP://www.test.com/";
+            const question = openAIPluginManifestLocationQuestion();
+            const inputs: Inputs = {
+              platform: Platform.VSCode,
+              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            };
+            const validationRes = await (question.validation as any).validFunc!(input, inputs);
+
+            assert.isUndefined(validationRes);
+          });
         });
       });
     });

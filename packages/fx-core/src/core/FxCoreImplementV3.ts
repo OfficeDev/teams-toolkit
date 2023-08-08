@@ -587,7 +587,7 @@ export class FxCoreV3Implement {
   }
   @hooks([QuestionMW("validateTeamsApp")])
   async validateApplication(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
-    if (inputs["manifest-path"] === TeamsAppValidationOptions.schema().id) {
+    if (inputs["manifest-path"]) {
       return await this.validateManifest(inputs);
     } else {
       return await this.validateAppPackage(inputs);

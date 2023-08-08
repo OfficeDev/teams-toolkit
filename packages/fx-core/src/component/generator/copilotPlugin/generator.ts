@@ -19,7 +19,6 @@ import {
   AdaptiveFolderName,
   AppPackageFolderName,
   Warning,
-  SystemError,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";

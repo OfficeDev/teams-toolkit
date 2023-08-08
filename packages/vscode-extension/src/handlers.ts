@@ -1769,8 +1769,22 @@ export async function showError(e: UserError | SystemError) {
         commands.executeCommand("vscode.open", issueLink);
       },
     };
+    const similarIssueLink = Uri.parse(
+      `https://github.com/OfficeDev/TeamsFx/issues?q=is:issue+in:title+${errorCode}`
+    );
+    const similarIssues = {
+      title: localize("teamstoolkit.handlers.similarIssues"),
+      run: async (): Promise<void> => {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.FindSimilarIssues);
+        await commands.executeCommand("vscode.open", similarIssueLink);
+      },
+    };
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
-    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
+    const button = await window.showErrorMessage(
+      `[${errorCode}]: ${notificationMessage}`,
+      issue,
+      similarIssues
+    );
     if (button) await button.run();
   } else {
     if (!(e instanceof ConcurrentError))

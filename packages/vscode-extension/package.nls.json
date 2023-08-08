@@ -198,6 +198,7 @@
     "teamstoolkit.handlers.promptSPFx.upgradeToolkit.description": "You are using a newer version of SPFx in your project while the current version of Teams Toolkit supports SPFx v%s. Please note that some of the newer SPFx features might not be supported. If you are not using the latest version of Teams Toolkit, consider to upgrade.",
     "teamstoolkit.handlers.referLinkForMoreDetails": "Please refer to this link for more details: ",
     "teamstoolkit.handlers.reportIssue": "Report Issue",
+    "teamstoolkit.handlers.similarIssues": "Similar Issues",
     "teamstoolkit.handlers.resourceInfoNotFound": "Can not load %s info for environment %s.",
     "teamstoolkit.handlers.signIn365": "Sign in to Microsoft 365",
     "teamstoolkit.handlers.signInAzure": "Sign in to Azure",

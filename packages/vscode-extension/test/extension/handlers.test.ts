@@ -1161,6 +1161,22 @@ describe("handlers", () => {
     );
   });
 
+  it("showError - similar issues", async () => {
+    sandbox
+      .stub(vscode.window, "showErrorMessage")
+      .callsFake((title: string, button: unknown, ...items: vscode.MessageItem[]) => {
+        return Promise.resolve(items[0]);
+      });
+    const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+    const error = new SystemError("Core", "DecryptionError", "test");
+
+    await handlers.showError(error);
+
+    chai.assert.isTrue(sendTelemetryEventStub.called);
+    chai.assert.isTrue(executeCommandStub.called);
+  });
+
   describe("getDotnetPathHandler", async () => {
     afterEach(() => {
       sinon.restore();

@@ -74,7 +74,7 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, assembleError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ScratchOptions } from "../question";
+import { ScratchOptions, ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds } from "../question/create";
 import {
   HubTypes,
@@ -586,18 +586,18 @@ export class FxCoreV3Implement {
     return ok(undefined);
   }
   @hooks([QuestionMW("validateTeamsApp")])
-  async validateApplication(inputs: Inputs): Promise<Result<any, FxError>> {
-    if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.schema().id) {
+  async validateApplication(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
+    if (inputs["manifest-path"] === TeamsAppValidationOptions.schema().id) {
       return await this.validateManifest(inputs);
     } else {
       return await this.validateAppPackage(inputs);
     }
   }
   @hooks([ErrorHandlerMW, EnvLoaderMW(true), ConcurrentLockerMW])
-  async validateManifest(inputs: Inputs): Promise<Result<any, FxError>> {
+  async validateManifest(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
     const context: DriverContext = createDriverContext(inputs);
-    const teamsAppManifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
+    const teamsAppManifestFilePath = inputs["manifest-path"] as string;
     const args: ValidateManifestArgs = {
       manifestPath: teamsAppManifestFilePath,
       showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
@@ -607,10 +607,10 @@ export class FxCoreV3Implement {
     return result;
   }
   @hooks([ErrorHandlerMW, ConcurrentLockerMW])
-  async validateAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
+  async validateAppPackage(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
     inputs.stage = Stage.validateApplication;
     const context: DriverContext = createDriverContext(inputs);
-    const teamsAppPackageFilePath = inputs[QuestionNames.TeamsAppPackageFilePath] as string;
+    const teamsAppPackageFilePath = inputs["app-package-file-path"] as string;
     const args: ValidateAppPackageArgs = {
       appPackagePath: teamsAppPackageFilePath,
       showMessage: true,

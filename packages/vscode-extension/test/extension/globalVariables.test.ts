@@ -1,7 +1,7 @@
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, Uri } from "vscode";
 
 import * as globalVariables from "../../src/globalVariables";
 import { UriHandler } from "../../src/uriHandler";
@@ -13,6 +13,7 @@ describe("Global Variables", () => {
       sinon.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return false;
       });
+      sinon.stub(fs, "pathExistsSync").returns(true);
       sinon.stub(projectSettingHelper, "isValidProject").returns(true);
       sinon.stub(globalVariables, "workspaceUri").returns({ fsPath: "/test" });
       sinon.stub(fs, "readdirSync").returns(["package.json"] as any);
@@ -21,6 +22,7 @@ describe("Global Variables", () => {
         globalState: {
           get: () => undefined,
         },
+        logUri: Uri.file("test"),
       } as unknown as ExtensionContext);
 
       chai.expect(globalVariables.isSPFxProject).equals(false);
@@ -28,11 +30,11 @@ describe("Global Variables", () => {
       sinon.restore();
     });
 
-    it("return true for spfx project", async () => {
+    it("return true for spfx project", () => {
       sinon.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return false;
       });
-      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "pathExistsSync").resolves(true);
       sinon.stub(projectSettingHelper, "isValidProject").returns(true);
       sinon.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
       sinon.stub(fs, "readdirSync").returns([".yo-rc.json"] as any);
@@ -40,7 +42,7 @@ describe("Global Variables", () => {
         .stub(fs, "readJsonSync")
         .returns({ "@microsoft/generator-sharepoint": { version: " 1.16.0" } });
 
-      await globalVariables.initializeGlobalVariables({
+      globalVariables.initializeGlobalVariables({
         globalState: {
           get: () => undefined,
         },
@@ -61,10 +63,10 @@ describe("Global Variables", () => {
       sinon.restore();
     });
 
-    it("set log folder", async () => {
+    it("set log folder", () => {
       sinon.stub(fs, "pathExists").resolves(false);
       sinon.stub(fs, "mkdir").callsFake(async () => {});
-      await globalVariables.initializeGlobalVariables({
+      globalVariables.initializeGlobalVariables({
         globalState: {
           get: () => undefined,
         },

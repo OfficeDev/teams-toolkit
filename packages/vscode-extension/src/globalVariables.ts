@@ -26,15 +26,15 @@ if (vscode.workspace && vscode.workspace.workspaceFolders) {
   }
 }
 
-export async function initializeGlobalVariables(ctx: vscode.ExtensionContext): Promise<void> {
+export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   context = ctx;
   isExistingUser = context.globalState.get<string>(UserState.IsExisting) || "no";
   isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
   // Default Extension log path
   // e.g. C:/Users/xx/AppData/Roaming/Code/logs/20230221T095340/window7/exthost/TeamsDevApp.ms-teams-vscode-extension
   defaultExtensionLogPath = ctx.logUri.fsPath;
-  if (!(await fs.pathExists(defaultExtensionLogPath))) {
-    await fs.mkdir(defaultExtensionLogPath);
+  if (!fs.pathExistsSync(defaultExtensionLogPath)) {
+    fs.mkdirSync(defaultExtensionLogPath);
   }
   if (isTeamsFxProject && workspaceUri?.fsPath) {
     isSPFxProject = checkIsSPFx(workspaceUri?.fsPath);

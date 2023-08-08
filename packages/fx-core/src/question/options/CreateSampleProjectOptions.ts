@@ -41,7 +41,9 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
       "developer-assist-dashboard",
       "live-share-dice-roller",
       "teams-chef-bot",
+      "spfx-productivity-dashboard",
     ],
     choiceListCommand: "teamsfx list samples",
+    skipValidation: true,
   },
 ];

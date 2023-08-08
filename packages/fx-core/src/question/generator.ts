@@ -232,7 +232,7 @@ export async function generateCliOptions(
 
       (option as CLIStringOption | CLIArrayOption).choiceListCommand =
         selection.cliChoiceListCommand;
-      if ((option as CLIStringOption | CLIArrayOption).skipValidation)
+      if (selection.skipValidation)
         (option as CLIStringOption | CLIArrayOption).skipValidation = selection.skipValidation;
     }
 

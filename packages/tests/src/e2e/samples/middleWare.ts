@@ -43,7 +43,7 @@ export const middleWareMap: Record<
   [TemplateProjectFolder.OutlookTab]: commonMiddleWare,
   [TemplateProjectFolder.AssistDashboard]: assistDashboardMiddleWare,
   [TemplateProjectFolder.DiceRoller]: commonMiddleWare,
-  [TemplateProjectFolder.ChefBot]: commonMiddleWare,
+  [TemplateProjectFolder.ChefBot]: chefBotMiddleWare,
   [TemplateProjectFolder.Deeplinking]: commonMiddleWare,
 };
 

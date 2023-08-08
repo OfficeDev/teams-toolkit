@@ -263,14 +263,14 @@ jobs:
             ./packages/tests/src/e2e/mochawesome-report/mochawesome.json
       
       - name: Download TestPlan
-        if: always() && ${{ github.event.inputs.target-testplan-id }} != ''
+        if: always() && ${{ github.event.inputs.target-testplan-id != '' }}
         uses: actions/download-artifact@v3
         with:
           name: testplan
           path: ./packages/tests
 
       - name: Sync to Azure DevOps Test Plan
-        if: always() && ${{ github.event.inputs.target-testplan-id }} != ''
+        if: always() && ${{ github.event.inputs.target-testplan-id != '' }}
         working-directory: packages/tests
         run: |
           npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json

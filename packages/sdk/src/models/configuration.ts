@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Authentication related configuration.
+ * @deprecated Please use {@link TeamsUserCredentialAuthConfig}
+ * or {@link OnBehalfOfCredentialAuthConfig} or {@link AppCredentialAuthConfig} instead.
  */
 export interface AuthenticationConfiguration {
   /**

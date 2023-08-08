@@ -4,6 +4,11 @@
 
 ## AuthenticationConfiguration interface
 
+> Warning: This API is now obsolete.
+> 
+> Please use [TeamsUserCredentialAuthConfig](./teamsfx.teamsusercredentialauthconfig.md) or [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) or [AppCredentialAuthConfig](./teamsfx.appcredentialauthconfig.md) instead.
+> 
+
 Authentication related configuration.
 
 <b>Signature:</b>

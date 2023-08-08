@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";
@@ -35,7 +37,7 @@ export type CliCapabilities =
   | "notification"
   | "command-bot"
   | "tab"
-  | "message-extension";
+  | "collect-form-message-extension";
 export type CliTriggerType =
   | "http-restify"
   | "http-functions"

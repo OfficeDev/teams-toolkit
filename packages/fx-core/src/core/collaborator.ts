@@ -262,14 +262,14 @@ export class CollaborationUtil {
   }
 
   static requireEnvQuestion(appId: string): boolean {
-    return !!CollaborationConstants.placeholderRegex.exec(appId);
+    return !!appId.match(CollaborationConstants.placeholderRegex);
   }
 
   static parseManifestId(appId: string): string | undefined {
     // Hardcoded id in manifest
     if (uuidValidate(appId)) {
       return appId;
-    } else if (CollaborationConstants.placeholderRegex.exec(appId)) {
+    } else if (appId.match(CollaborationConstants.placeholderRegex)) {
       // Reference value in .env file
       const envName = appId
         .replace(/\$*\{+/g, "")

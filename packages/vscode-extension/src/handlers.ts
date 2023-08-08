@@ -293,20 +293,20 @@ export function addFileSystemWatcher(workspacePath: string) {
     });
 
     const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidCreate((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidChange(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidChange((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidDelete(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidDelete((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
   }
 }
 
-export async function refreshSPFxTreeOnFileChanged() {
-  await globalVariables.initializeGlobalVariables(globalVariables.context);
+export function refreshSPFxTreeOnFileChanged() {
+  globalVariables.initializeGlobalVariables(globalVariables.context);
 
   TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
@@ -365,24 +365,17 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
-  await openFolder(projectPathUri, true, false, res.warnings, args);
+  await openFolder(projectPathUri, true, res.warnings, args);
   return result;
 }
 
 export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
-  showLocalPreviewMessage: boolean,
   warnings?: Warning[] | undefined,
   args?: any[]
 ) {
-  await updateAutoOpenGlobalKey(
-    showLocalDebugMessage,
-    showLocalPreviewMessage,
-    folderPath,
-    warnings,
-    args
-  );
+  await updateAutoOpenGlobalKey(showLocalDebugMessage, folderPath, warnings, args);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
     [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
   });
@@ -391,7 +384,6 @@ export async function openFolder(
 
 export async function updateAutoOpenGlobalKey(
   showLocalDebugMessage: boolean,
-  showLocalPreviewMessage: boolean,
   projectUri: Uri,
   warnings: Warning[] | undefined,
   args?: any[]
@@ -406,10 +398,6 @@ export async function updateAutoOpenGlobalKey(
 
   if (showLocalDebugMessage) {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
-  }
-
-  if (showLocalPreviewMessage) {
-    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, true);
   }
 
   if (warnings?.length) {
@@ -1223,7 +1211,6 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, [])) as string;
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
-    void showLocalPreviewMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
 
@@ -1234,7 +1221,6 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
-    void showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
@@ -1243,7 +1229,6 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenSampleReadMe) {
     await showLocalDebugMessage();
-    void showLocalPreviewMessage();
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
@@ -1375,49 +1360,6 @@ export async function showLocalDebugMessage() {
       selection.run();
     }
   });
-}
-
-async function showLocalPreviewMessage() {
-  const isShowLocalPreviewMessage = (await globalStateGet(
-    GlobalKey.ShowLocalPreviewMessage,
-    false
-  )) as boolean;
-
-  if (!isShowLocalPreviewMessage) {
-    return;
-  } else {
-    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, false);
-  }
-
-  const localPreview = {
-    title: localize("teamstoolkit.handlers.localPreviewTitle"),
-    run: async (): Promise<void> => {
-      treeViewPreviewHandler(environmentManager.getLocalEnvName());
-    },
-  };
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
-  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
-  const isWindows = process.platform === "win32";
-  let message = util.format(
-    localize("teamstoolkit.handlers.localPreviewDescription.fallback"),
-    appName,
-    globalVariables.workspaceUri?.fsPath
-  );
-  if (isWindows) {
-    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
-    const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-    message = util.format(
-      localize("teamstoolkit.handlers.localPreviewDescription"),
-      appName,
-      openFolderCommand
-    );
-  }
-  const selection = await vscode.window.showInformationMessage(message, localPreview);
-  if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
-    await selection.run();
-  }
 }
 
 async function ShowScaffoldingWarningSummary(
@@ -2856,7 +2798,7 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   return Promise.resolve(ok(false));
 }
 
-export async function openAccountHelpHandler(args?: any[]) {
+export function openAccountHelpHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.AccountHelp);
 }
 
@@ -2897,19 +2839,19 @@ export async function refreshSideloadingCallback(args?: any[]): Promise<Result<n
   return ok(null);
 }
 
-export async function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
+export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
   VS_CODE_UI.showMessage(
     "error",
     localize("teamstoolkit.accountTree.sideloadingMessage"),
     false,
     localize("teamstoolkit.accountTree.sideloadingLearnMore")
   )
-    .then(async (result) => {
+    .then((result) => {
       if (
         result.isOk() &&
         result.value === localize("teamstoolkit.accountTree.sideloadingLearnMore")
       ) {
-        await openAccountHelpHandler();
+        openAccountHelpHandler();
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingLearnMore);
       }
     })
@@ -2918,7 +2860,7 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideloadingDisabled,
   });
-  return ok(null);
+  return Promise.resolve(ok(null));
 }
 
 export async function signinAzureCallback(args?: any[]): Promise<Result<null, FxError>> {
@@ -2990,9 +2932,9 @@ export async function scaffoldFromDeveloperPortalHandler(
     );
     if (tokenRes.isErr()) {
       if ((tokenRes.error as any).displayMessage) {
-        window.showErrorMessage((tokenRes.error as any).displayMessage);
+        void window.showErrorMessage((tokenRes.error as any).displayMessage);
       } else {
-        vscode.window.showErrorMessage(
+        void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
@@ -3014,7 +2956,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
     await progressBar.end(true);
   } catch (e) {
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.generalError.message")
     );
     await progressBar.end(false);
@@ -3037,7 +2979,7 @@ export async function scaffoldFromDeveloperPortalHandler(
       error,
       properties
     );
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message")
     );
     return err(error);

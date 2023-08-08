@@ -39,9 +39,13 @@ import {
   SingleFileOrInputConfig,
   IQTreeNode,
 } from "@microsoft/teamsfx-api";
-import { EmptyOptionError, UserCancelError } from "../../src/error/common";
-import { traverse } from "../../src/ui/visitor";
-import { title } from "process";
+import {
+  EmptyOptionError,
+  MissingRequiredInputError,
+  UserCancelError,
+} from "../../src/error/common";
+import { questionVisitor, traverse } from "../../src/ui/visitor";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 function createInputs(): Inputs {
   return {
@@ -811,6 +815,27 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk());
 
       assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
+  });
+
+  describe("questionVisitor", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("should return error for non-interactive mode", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
+      const question: TextInputQuestion = {
+        type: "text",
+        name: "test",
+        title: "test",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        nonInteractive: true,
+      };
+      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
     });
   });
 });

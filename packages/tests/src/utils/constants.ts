@@ -175,6 +175,8 @@ export class Timeout {
   public static readonly shortTimeWait: number = 5 * 1000;
   public static readonly shortTimeLoading: number = 30 * 1000;
   public static readonly longTimeWait: number = 60 * 1000;
+  public static readonly stopdebugging: number = 30 * 1000;
+  public static readonly startdebugging: number = 30 * 1000;
 
   /**
    * Wait until extension is activated
@@ -325,6 +327,7 @@ export class LocalDebugTaskResult {
 export class LocalDebugTaskInfo {
   static readonly StartBotAppInfo = "App Started";
   static readonly StartBotInfo = "Bot Started";
+  static readonly StartBotInfo2 = "Bot started";
 }
 
 export class DebugItemSelect {

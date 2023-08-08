@@ -197,6 +197,11 @@ describe("handlers", () => {
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
+    const updateTreeViewsOnSPFxChanged = sandbox.stub(
+      TreeViewManagerInstance,
+      "updateTreeViewsOnSPFxChanged"
+    );
 
     const watcher = {
       onDidCreate: () => ({ dispose: () => undefined }),
@@ -206,9 +211,15 @@ describe("handlers", () => {
     const createWatcher = sandbox
       .stub(vscode.workspace, "createFileSystemWatcher")
       .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
-    const deleteListener = sandbox.stub(watcher, "onDidDelete").resolves();
+    const createListener = sandbox.stub(watcher, "onDidCreate").callsFake((...args: unknown[]) => {
+      (args as any)[0]();
+    });
+    const changeListener = sandbox.stub(watcher, "onDidChange").callsFake((...args: unknown[]) => {
+      (args as any)[0]();
+    });
+    const deleteListener = sandbox.stub(watcher, "onDidDelete").callsFake((...args: unknown[]) => {
+      (args as any)[0]();
+    });
     const sendTelemetryEventFunc = sandbox
       .stub(ExtTelemetry, "sendTelemetryEvent")
       .callsFake(() => {});
@@ -256,7 +267,7 @@ describe("handlers", () => {
     sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
     const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
-    await handlers.updateAutoOpenGlobalKey(false, false, vscode.Uri.file("test"), [
+    await handlers.updateAutoOpenGlobalKey(false, vscode.Uri.file("test"), [
       { type: "type", content: "content" },
     ]);
 
@@ -447,7 +458,7 @@ describe("handlers", () => {
 
   it("openAccountHelpHandler()", async () => {
     const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
-    await handlers.openAccountHelpHandler();
+    handlers.openAccountHelpHandler();
     sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
   });
 
@@ -1504,12 +1515,12 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: async () => {
           showMessageCalledCount += 1;
-          return ok(undefined);
+          return Promise.resolve(ok("Learn More"));
         },
       });
       const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
 
-      await handlers.checkSideloadingCallback();
+      handlers.checkSideloadingCallback();
 
       chai.expect(showMessageCalledCount).to.be.equal(1);
       sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
@@ -1624,13 +1635,13 @@ describe("handlers", () => {
     });
   });
 
-  it("refreshSPFxTreeOnFileChanged", async () => {
+  it("refreshSPFxTreeOnFileChanged", () => {
     const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
     const updateTreeViewsOnSPFxChanged = sandbox
       .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
       .resolves();
 
-    await handlers.refreshSPFxTreeOnFileChanged();
+    handlers.refreshSPFxTreeOnFileChanged();
 
     chai.expect(initGlobalVariables.calledOnce).to.be.true;
     chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;

@@ -162,6 +162,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Tunnel[], FxError>>;
+  copilotPluginAddAPIRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
   loadOpenAIPluginManifestRequest: (
     inputs: Inputs,
     token: CancellationToken

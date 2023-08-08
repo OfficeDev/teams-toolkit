@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  ApiOperation,
   CLIPlatforms,
   FolderQuestion,
   IQTreeNode,
@@ -32,7 +31,6 @@ import {
 } from "../component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
-import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { isPersonalApp, needBotCode } from "../component/driver/teamsApp/utils/utils";
 import {
   OpenAIPluginManifestHelper,
@@ -324,7 +322,7 @@ export class CapabilityOptions {
 
   static collectFormMe(): OptionItem {
     return {
-      id: "CollectFormMessagingExtension",
+      id: "collect-form-message-extension",
       label: `${getLocalizedString("core.MessageExtensionOption.labelNew")}`,
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };
@@ -338,12 +336,21 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    return [
-      CapabilityOptions.basicBot(),
-      CapabilityOptions.notificationBot(),
-      CapabilityOptions.commandBot(),
-      CapabilityOptions.workflowBot(inputs),
-    ];
+    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
+      ? // currently no ai bot for dotnet
+        [
+          CapabilityOptions.basicBot(),
+          CapabilityOptions.notificationBot(),
+          CapabilityOptions.commandBot(),
+          CapabilityOptions.workflowBot(inputs),
+        ]
+      : [
+          CapabilityOptions.basicBot(),
+          CapabilityOptions.aiBot(),
+          CapabilityOptions.notificationBot(),
+          CapabilityOptions.commandBot(),
+          CapabilityOptions.workflowBot(inputs),
+        ];
   }
 
   static tabs(): OptionItem[] {
@@ -355,16 +362,13 @@ export class CapabilityOptions {
     ];
   }
 
-  static dotnetCaps(): OptionItem[] {
+  static dotnetCaps(inputs?: Inputs): OptionItem[] {
     return [
-      CapabilityOptions.notificationBot(),
-      CapabilityOptions.commandBot(),
+      ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
-      CapabilityOptions.me(),
-      CapabilityOptions.copilotPluginNewApi(),
-      CapabilityOptions.copilotPluginApiSpec(),
-      CapabilityOptions.copilotPluginOpenAIPlugin(),
+      ...CapabilityOptions.mes(),
     ];
   }
 
@@ -478,6 +482,14 @@ export class CapabilityOptions {
       ),
     };
   }
+
+  static aiBot(): OptionItem {
+    return {
+      id: "ai-bot",
+      label: getLocalizedString("core.aiBotOption.label"),
+      detail: getLocalizedString("core.aiBotOption.detail"),
+    };
+  }
 }
 
 function capabilityQuestion(): SingleSelectQuestion {
@@ -518,7 +530,7 @@ function capabilityQuestion(): SingleSelectQuestion {
       }
       // dotnet capabilities
       if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
-        return CapabilityOptions.dotnetCaps();
+        return CapabilityOptions.dotnetCaps(inputs);
       }
       // nodejs capabilities
       const projectType = inputs[QuestionNames.ProjectType];
@@ -1252,14 +1264,21 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
-export function apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs
   ): Promise<string | undefined> => {
     try {
       const context = createContextV3();
-      const res = await listOperations(context, undefined, input, false);
+      const res = await listOperations(
+        context,
+        undefined,
+        input,
+        inputs?.teamsManifestPath,
+        includeExistingAPIs,
+        false
+      );
       if (res.isOk()) {
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
@@ -1358,6 +1377,8 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             context,
             manifest,
             inputs![QuestionNames.ApiSpecLocation],
+            undefined,
+            true,
             true
           );
           if (res.isOk()) {
@@ -1408,20 +1429,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         throw new EmptyOptionError();
       }
 
-      let operations = inputs.supportedApisFromApiSpec;
-
-      if (!includeExistingAPIs) {
-        const teamsManifestPath = inputs.teamsManifestPath;
-        const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
-        if (manifest.isOk()) {
-          const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-          operations = inputs.supportedApisFromApiSpec.filter(
-            (operation: ApiOperation) => !existingOperationIds.includes(operation.id)
-          );
-        } else {
-          throw manifest.error;
-        }
-      }
+      const operations = inputs.supportedApisFromApiSpec;
 
       return operations;
     },

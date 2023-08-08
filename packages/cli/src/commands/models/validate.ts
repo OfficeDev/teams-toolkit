@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, Result, err, ok } from "@microsoft/teamsfx-api";
 import { ValidateTeamsAppInputs, ValidateTeamsAppOptions } from "@microsoft/teamsfx-core";
 import { assign } from "lodash";
 import { createFxCore } from "../../activate";
@@ -25,25 +25,10 @@ export const validateCommand: CLICommand = {
   handler: async (ctx) => {
     const inputs = getSystemInputs() as ValidateTeamsAppInputs;
     assign(inputs, ctx.optionValues);
-
     if (!ctx.globalOptionValues.interactive) {
-      if (inputs["manifest-path"] && inputs["app-package-file-path"]) {
-        const error = new ArgumentConflictError(
-          "teamsfx validate",
-          "teams-manifest-file",
-          "app-package-file-path"
-        );
-        return err(error);
-      } else if (!inputs["manifest-path"] && !inputs["app-package-file-path"]) {
-        return err(
-          new MissingRequiredOptionError(
-            "teamsfx validate",
-            "--teams-manifest-file or --app-package-file-path"
-          )
-        );
-      }
-      if (!inputs["app-package-file-path"] && !inputs.env) {
-        return err(new MissingRequiredOptionError("teamsfx validate", "--env"));
+      const res = validateInputs(inputs);
+      if (res.isErr()) {
+        return err(res.error);
       }
     }
     const core = createFxCore();
@@ -54,3 +39,30 @@ export const validateCommand: CLICommand = {
     return ok(undefined);
   },
 };
+
+function validateInputs(
+  inputs: ValidateTeamsAppInputs
+): Result<
+  undefined,
+  ArgumentConflictError | MissingRequiredOptionError | MissingRequiredOptionError
+> {
+  if (inputs["manifest-path"] && inputs["app-package-file-path"]) {
+    const error = new ArgumentConflictError(
+      "teamsfx validate",
+      "teams-manifest-file",
+      "app-package-file-path"
+    );
+    return err(error);
+  } else if (!inputs["manifest-path"] && !inputs["app-package-file-path"]) {
+    return err(
+      new MissingRequiredOptionError(
+        "teamsfx validate",
+        "--teams-manifest-file or --app-package-file-path"
+      )
+    );
+  }
+  if (!inputs["app-package-file-path"] && !inputs.env) {
+    return err(new MissingRequiredOptionError("teamsfx validate", "--env"));
+  }
+  return ok(undefined);
+}

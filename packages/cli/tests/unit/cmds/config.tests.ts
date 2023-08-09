@@ -29,7 +29,7 @@ describe("Config Command Tests", function () {
     sandbox.stub(UserSettings, "getConfigSync").returns(ok(config));
     sandbox.stub(UserSettings, "setConfigSync").callsFake((opt: { [key: string]: string }) => {
       config.telemetry = opt.telemetry;
-      return ok(null);
+      return ok(undefined);
     });
   });
 

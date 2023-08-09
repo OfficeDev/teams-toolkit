@@ -44,7 +44,7 @@ describe("Add SPFx Web Part Command Tests", function () {
   });
 
   it("Running Check", async () => {
-    const addWebpartStub = sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(Void));
+    const addWebpartStub = sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(undefined));
     const cmd = new AddWebpart();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",

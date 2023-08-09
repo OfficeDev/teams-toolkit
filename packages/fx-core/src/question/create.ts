@@ -411,9 +411,8 @@ export class CapabilityOptions {
 
   static officeAddinImport(): OptionItem {
     return {
-      id: "import-addin-project",
+      id: "import",
       label: getLocalizedString("core.importAddin.label"),
-      cliName: "import",
       detail: getLocalizedString("core.importAddin.detail"),
       description: getLocalizedString(
         "core.createProjectQuestion.option.description.previewOnWindow"
@@ -593,7 +592,6 @@ export class NotificationTriggerOptions {
       id: "http-restify",
       hostType: HostType.AppService,
       label: getLocalizedString("plugins.bot.triggers.http-restify.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-restify.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-restify.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-restify.detail"),
     };
@@ -603,7 +601,6 @@ export class NotificationTriggerOptions {
       id: "http-webapi",
       hostType: HostType.AppService,
       label: getLocalizedString("plugins.bot.triggers.http-webapi.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-webapi.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-webapi.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-webapi.detail"),
     };
@@ -615,7 +612,6 @@ export class NotificationTriggerOptions {
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.TIMER],
       label: getLocalizedString("plugins.bot.triggers.timer-functions.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.timer-functions.cliName"),
       description: getLocalizedString("plugins.bot.triggers.timer-functions.description"),
       detail: getLocalizedString("plugins.bot.triggers.timer-functions.detail"),
     };
@@ -627,7 +623,6 @@ export class NotificationTriggerOptions {
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
       label: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.detail"),
     };
@@ -639,7 +634,6 @@ export class NotificationTriggerOptions {
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.HTTP],
       label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-functions.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-functions.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-functions.detail"),
     };
@@ -1070,6 +1064,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     cliName: "sample-name",
     cliDescription: "Specifies the Teams App sample name.",
     cliChoiceListCommand: "teamsfx list samples",
+    skipValidation: true,
     cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),
     staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
@@ -1580,14 +1575,15 @@ export function createProjectQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
         data: projectTypeQuestion(),
-        interactiveOnly: "self",
+        cliOptionDisabled: "self",
       },
       capabilitySubTree(),
       {
         condition: (inputs: Inputs) =>
           inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
         data: { type: "group", name: QuestionNames.RepalceTabUrl },
-        interactiveOnly: "all", //CLI non interactive mode will ignore this option
+        cliOptionDisabled: "all", //CLI non interactive mode will ignore this option
+        inputsDisabled: "all",
         children: [
           {
             condition: (inputs: Inputs) =>
@@ -1609,7 +1605,8 @@ export function createProjectQuestionNode(): IQTreeNode {
           return appDef && needBotCode(appDef);
         },
         data: selectBotIdsQuestion(),
-        interactiveOnly: "all", //CLI non interactive mode will ignore this option
+        cliOptionDisabled: "all", //CLI non interactive mode will ignore this option
+        inputsDisabled: "all",
       },
     ],
   };

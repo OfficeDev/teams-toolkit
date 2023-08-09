@@ -816,7 +816,7 @@ describe("publishInDeveloperPortal", () => {
       ignoreLockByUT: true,
     };
     sandbox.stub(fs, "pathExists").resolves(false);
-    sandbox.stub(coordinator, "publishInDeveloperPortal").resolves(ok(Void));
+    sandbox.stub(coordinator, "publishInDeveloperPortal").resolves(ok(undefined));
     const res = await core.publishInDeveloperPortal(inputs);
 
     if (res.isErr()) {

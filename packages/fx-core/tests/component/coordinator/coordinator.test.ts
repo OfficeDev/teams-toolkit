@@ -291,7 +291,7 @@ describe("component coordinator test", () => {
   });
 
   it("buildAadManifest", async () => {
-    sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(Void));
+    sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(undefined));
     const inputs: Inputs = {
       platform: Platform.VSCode,
     };

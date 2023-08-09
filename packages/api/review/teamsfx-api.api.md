@@ -1054,6 +1054,7 @@ export interface UserInputQuestion extends BaseQuestion {
     alternativeNames?: string[];
     // (undocumented)
     cliDescription?: string;
+    cliHidden?: boolean;
     cliName?: string;
     cliShortName?: string;
     cliType?: "option" | "argument";

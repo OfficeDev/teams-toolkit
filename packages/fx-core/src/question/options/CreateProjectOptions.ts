@@ -12,6 +12,14 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
 export const CreateProjectOptions: CLICommandOption[] = [
   {
+    name: "runtime",
+    type: "string",
+    description: "Teams Toolkit: select runtime for your app",
+    default: "node",
+    hidden: true,
+    choices: ["node", "dotnet"],
+  },
+  {
     name: "capability",
     questionName: "capabilities",
     type: "string",

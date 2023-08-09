@@ -212,6 +212,10 @@ export async function generateCliOptions(
       default: data.isBoolean ? Boolean(defaultValue as any) : (defaultValue as any),
     };
 
+    if (data.cliHidden) {
+      option.hidden = data.cliHidden;
+    }
+
     if (data.type === "singleSelect" || data.type === "multiSelect") {
       const selection = data as SingleSelectQuestion | MultiSelectQuestion;
 

@@ -169,6 +169,11 @@ export interface UserInputQuestion extends BaseQuestion {
   cliType?: "option" | "argument";
 
   cliDescription?: string;
+
+  /**
+   * @description the question will converted to a hidden option in CLI
+   */
+  cliHidden?: boolean;
 }
 
 /**

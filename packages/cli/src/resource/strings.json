@@ -30,18 +30,5 @@
       },
       "success": "Upgrade project successfully."
     }
-  },
-  "option" : {
-    "env": {
-      "description": "Specifies the environment name for the project."
-    },
-    "folder": {
-      "description": "Root folder of the project.",
-      "name": "folder",
-      "shortName": "f",
-      "type": "text",
-      "required": true,
-      "default": "./"
-    }
   }
 }

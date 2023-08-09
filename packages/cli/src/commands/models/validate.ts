@@ -5,12 +5,12 @@ import { ValidateTeamsAppInputs, ValidateTeamsAppOptions } from "@microsoft/team
 import { createFxCore } from "../../activate";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { ProjectFolderOption } from "../common";
+import { EnvOption, ProjectFolderOption } from "../common";
 
 export const validateCommand: CLICommand = {
   name: "validate",
   description: "Validate the Teams app using manifest schema or validation rules.",
-  options: [...ValidateTeamsAppOptions, ProjectFolderOption],
+  options: [...ValidateTeamsAppOptions, EnvOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.ValidateManifest,
   },

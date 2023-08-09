@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Frank Qian <frankqian@microsoft.com>
+ */
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -22,6 +25,7 @@ import {
 } from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
+import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -51,13 +55,17 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await mirgationDebugTestContext.createProjectCLI(false);
+      const projectPath = await mirgationDebugTestContext.createProjectCLI(
+        false
+      );
       // verify popup
       await validateNotification(Notification.Upgrade);
 
       // add feature
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Bot);
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
+
+      await updateFunctionAuthorizationPolicy("3.2.0", projectPath);
 
       // local debug
       await mirgationDebugTestContext.debugWithCLI("local");

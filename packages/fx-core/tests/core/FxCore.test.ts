@@ -1387,7 +1387,7 @@ describe("copilotPlugin", async () => {
       apiSpecUrl: "https://example.com/api-spec",
       shouldLogWarning: true,
       includeExistingAPIs: false,
-      teamsManifestPath: "fakePath",
+      "manifest-path": "fakePath",
     };
 
     sinon

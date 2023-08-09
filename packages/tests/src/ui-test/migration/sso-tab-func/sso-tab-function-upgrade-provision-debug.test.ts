@@ -16,7 +16,10 @@ import {
   upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+import {
+  CLIVersionCheck,
+  updateFunctionAuthorizationPolicy,
+} from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -46,13 +49,16 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await mirgationDebugTestContext.createProjectCLI(false);
+      const projectPath = await mirgationDebugTestContext.createProjectCLI(
+        false
+      );
       // verify popup
       await validateNotification(Notification.Upgrade);
 
       // add feature
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
 
+      await updateFunctionAuthorizationPolicy("4.2.5", projectPath);
       // upgrade
       await upgradeByTreeView();
       //verify upgrade

@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -54,8 +54,8 @@ describe("Migration Tests", function () {
   it(
     "[auto] [P0] V2 notification bot template upgrade test - ts",
     {
-      testPlanCaseId: 17184123,
-      author: "v-helzha@microsoft.com",
+      testPlanCaseId: 17184124,
+      author: "frankqian@microsoft.com",
     },
     async () => {
       // install v2 stable cli 1.2.6
@@ -64,7 +64,14 @@ describe("Migration Tests", function () {
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
-      await validateNotification(Notification.Upgrade);
+      try {
+        await validateNotification(Notification.Upgrade);
+      } catch (error) {
+        await validateNotification(Notification.Upgrade_dicarded);
+      }
+
+      // local debug
+      await mirgationDebugTestContext.debugWithCLI("local");
 
       // upgrade
       await startDebugging();

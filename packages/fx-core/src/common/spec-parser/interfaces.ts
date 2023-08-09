@@ -123,14 +123,8 @@ export interface AdaptiveCard {
 }
 
 export interface PartialManifest {
-  name: Name;
   description: Description;
   composeExtensions: ComposeExtension[];
-}
-
-export interface Name {
-  short: string;
-  full: string;
 }
 
 export interface Description {

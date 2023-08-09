@@ -204,3 +204,50 @@ export async function CLIVersionCheck(
   console.log(`CLI Version: ${cliVersion}`);
   return { success: true, cliVersion };
 }
+
+const policySnippets = {
+  locationKey1: "var authorizedClientApplicationIds",
+  locationValue1: `var allowedClientApplications = '["\${m365ClientId}","\${teamsMobileOrDesktopAppClientId}","\${teamsWebAppClientId}","\${officeWebAppClientId1}","\${officeWebAppClientId2}","\${outlookDesktopAppClientId}","\${outlookWebAppClientId1};\${outlookWebAppClientId2}"]'\n`,
+  locationKey2: "ALLOWED_APP_IDS",
+  locationValue2: `    WEBSITE_AUTH_AAD_ACL: '{"allowed_client_applications": \${allowedClientApplications}}}'\n`,
+};
+
+const locationValue1_320 = `var allowedClientApplications = '["\${m365ClientId}","\${teamsMobileOrDesktopAppClientId}","\${teamsWebAppClientId}","\${officeWebAppClientId1}","\${officeWebAppClientId2}","\${outlookDesktopAppClientId}","\${outlookWebAppClientId}"]'\n`;
+
+export async function updateFunctionAuthorizationPolicy(
+  version: "4.2.5" | "4.0.0" | "3.2.0",
+  projectPath: string
+): Promise<void> {
+  const fileName =
+    version == "4.2.5" ? "azureFunctionApiConfig.bicep" : "function.bicep";
+  const locationValue1 =
+    version == "3.2.0" ? locationValue1_320 : policySnippets.locationValue1;
+  const functionBicepPath = path.join(
+    projectPath,
+    "templates",
+    "azure",
+    "teamsFx",
+    fileName
+  );
+  let content = await fs.readFile(functionBicepPath, "utf-8");
+  content = updateContent(content, policySnippets.locationKey1, locationValue1);
+  content = updateContent(
+    content,
+    policySnippets.locationKey2,
+    policySnippets.locationValue2
+  );
+  await fs.writeFileSync(functionBicepPath, content);
+}
+
+function updateContent(content: string, key: string, value: string): string {
+  const index = findNextEndLineIndexOfWord(content, key);
+  const head = content.substring(0, index);
+  const tail = content.substring(index + 1);
+  return head + `\n${value}\n` + tail;
+}
+
+function findNextEndLineIndexOfWord(content: string, key: string): number {
+  const index = content.indexOf(key);
+  const result = content.indexOf("\n", index);
+  return result;
+}

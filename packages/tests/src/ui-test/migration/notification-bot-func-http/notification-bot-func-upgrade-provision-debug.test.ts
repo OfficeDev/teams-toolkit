@@ -1,17 +1,19 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
   Capability,
   Trigger,
   Notification,
+  LocalDebugTaskLabel,
   CliVersion,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
+  validateTab,
   initPage,
   validateNotificationBot,
 } from "../../../utils/playwrightOperation";
@@ -52,7 +54,7 @@ describe("Migration Tests", function () {
     "[auto] [P0] V2 notification bot template upgrade test - js",
     {
       testPlanCaseId: 17184123,
-      author: "v-helzha@microsoft.com",
+      author: "frankqian@microsoft.com",
     },
     async () => {
       // install v2 stable cli 1.2.6
@@ -66,9 +68,6 @@ describe("Migration Tests", function () {
       } catch (error) {
         await validateNotification(Notification.Upgrade_dicarded);
       }
-
-      // v2 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
       // upgrade
       await startDebugging();

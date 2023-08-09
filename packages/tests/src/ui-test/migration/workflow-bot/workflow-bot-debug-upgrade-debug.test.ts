@@ -93,7 +93,7 @@ describe("Migration Tests", function () {
       );
       await validateBot(page, {
         botCommand: "helloWorld",
-        expected: "Your Hello World App is Running",
+        expected: "Your Hello World Bot is Running",
       });
       await validateWorkFlowBot(page);
     }

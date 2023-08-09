@@ -29,6 +29,7 @@ import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
 import { getTemplate } from "../../../question/create";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -83,6 +84,10 @@ export class OfficeAddinGenerator {
     const language = inputs[QuestionNames.ProgrammingLanguage];
     const host = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
+    const importProgress = context.userInteraction.createProgressBar(
+      getLocalizedString("core.generator.officeAddin.importProject.title"),
+      3
+    );
 
     process.chdir(addinRoot);
     try {
@@ -113,22 +118,34 @@ export class OfficeAddinGenerator {
           await HelperMethods.moveManifestLocation(addinRoot, manifestPath);
         }
       } else {
+        await importProgress.start();
         // from existing project
+        await importProgress.next(
+          getLocalizedString("core.generator.officeAddin.importProject.copyFiles")
+        );
         HelperMethods.copyAddinFiles(fromFolder, addinRoot);
         const sourceManifestFile: string = inputs[QuestionNames.OfficeAddinManifest];
         let manifestFile: string = sourceManifestFile.replace(fromFolder, addinRoot);
+        await importProgress.next(
+          getLocalizedString("core.generator.officeAddin.importProject.convertProject")
+        );
         if (manifestFile.endsWith(".xml")) {
           // Need to convert to json project first
           await convertProject(manifestFile);
           manifestFile = manifestFile.replace(/\.xml$/, ".json");
         }
         inputs[QuestionNames.OfficeAddinHost] = await getHost(manifestFile);
+        await importProgress.next(
+          getLocalizedString("core.generator.officeAddin.importProject.updateManifest")
+        );
         HelperMethods.updateManifest(destinationPath, manifestFile);
       }
       process.chdir(workingDir);
+      importProgress.end(true, true);
       return ok(undefined);
     } catch (e) {
       process.chdir(workingDir);
+      importProgress.end(false, true);
       return err(CopyFileError(e as Error));
     }
   }

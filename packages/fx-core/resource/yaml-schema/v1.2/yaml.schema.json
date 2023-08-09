@@ -14,12 +14,18 @@
     "version": {
       "type": "string",
       "description": "The version of the yaml file schema",
-      "const": "1.1.1"
+      "const": "v1.2"
     },
-    "sampleTag": {
-      "type": "string",
-      "pattern": "^[a-zA-Z0-9-_]+:[a-zA-Z0-9-_]+$",
-      "description": "The tag of sample repo and sample name, used for telemetry purpose only. E.g. <sample-repo>:<sample-name>"
+    "additionalMetadata": {
+      "type": "object",
+      "description": "Metadata property, used by Teams Toolkit only.",
+      "additionalProperties": true,
+      "properties": {
+        "sampleTag": {
+          "type": ["number","string","boolean","object","array", "null", "integer"],
+          "description": "A tag for the sample app used to track telemetry events sent by Teams Toolkit associated with that sample. Pattern: <sample-repo>:<sample-name>"
+        }
+      }
     },
     "provision": {
       "$ref": "#/definitions/lifeCycleArray",

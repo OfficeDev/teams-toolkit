@@ -1242,6 +1242,20 @@ describe("Migration utils", () => {
     );
     assert.equal(
       getVersionState({
+        version: "v1.2",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
+        version: "1.2",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
         version: "",
         source: VersionSource.unknown,
       }),

@@ -573,7 +573,7 @@
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
   "driver.botFramework.error.InvalidBotId": "Bot ID %s is invalid. It must be a GUID.",
   "error.yaml.InvalidYamlSchemaError": "Unable to parse yaml file: %s. Please open the yaml file for detailed errors.",
-  "error.yaml.InvalidYamlSchemaErrorWithReason": "Unable to parse yaml file: %s. Reason: %s Please review the yaml file.",
+  "error.yaml.InvalidYamlSchemaErrorWithReason": "Unable to parse yaml file: %s. Reason: %s Please review the yaml file or upgrade to latest Teams Toolkit.",
   "error.yaml.VersionNotSupported": "version %s is not supported. Supported versions: %s.",
   "error.yaml.YamlFieldTypeError": "Field '%s' should have %s type, yaml file: %s",
   "error.yaml.YamlFieldMissingError": "Field '%s' is missing, yaml file: %s",

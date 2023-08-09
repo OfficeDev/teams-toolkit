@@ -173,7 +173,11 @@ describe("ProjectMigratorMW", () => {
   it("wrap run unhandled error ", async () => {
     const tools = new MockTools();
     setTools(tools);
-    sandbox.stub(MigratorV3, "preMigration").rejects(new Error("mocker error"));
+    sandbox.stub(MigratorV3, "preMigration").rejects({
+      code: "ENOENT",
+      path: "project/mocked_file",
+      message: "mocked missing file error",
+    });
     MigratorV3.subMigrations[0] = MigratorV3.preMigration;
     sandbox.stub(MigratorV3, "rollbackMigration").resolves();
     await copyTestProject(Constants.happyPathTestProject, projectPath);
@@ -186,7 +190,7 @@ describe("ProjectMigratorMW", () => {
     try {
       await wrapRunMigration(context, migrate);
     } catch (error) {
-      assert.isTrue(error.message.includes("mocker error"));
+      assert.isTrue(error.message.includes("mocked missing file error"));
       assert.isTrue(context.currentStep === "preMigration");
       return;
     }

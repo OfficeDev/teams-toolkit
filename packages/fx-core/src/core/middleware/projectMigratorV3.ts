@@ -229,10 +229,9 @@ export async function wrapRunMigration(context: MigrationContext, exec: Migratio
       context.telemetryProperties
     );
   } catch (error: any) {
+    const errorMessage = buildErrorMessage(error, context.currentStep);
     const fxError = assembleError(error, Component.core);
-    fxError.message = context.currentStep
-      ? `MigrationStep: ${context.currentStep}\n${fxError.message}`
-      : fxError.message;
+    fxError.message = errorMessage;
     sendTelemetryErrorEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorError,
@@ -243,6 +242,18 @@ export async function wrapRunMigration(context: MigrationContext, exec: Migratio
     throw error;
   }
   await context.removeFxV2();
+}
+
+export function buildErrorMessage(error: any, step?: string): string {
+  let message = error.message;
+  if (error.code === "ENOENT" && error.path) {
+    const fileName = path.basename(error.path);
+    message = `Missing file: ${fileName}\n${message}`;
+  }
+  if (step) {
+    message = `MigrationStep: ${step}\n${message}`;
+  }
+  return message;
 }
 
 export async function rollbackMigration(context: MigrationContext): Promise<void> {

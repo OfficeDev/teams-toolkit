@@ -12,7 +12,7 @@ export const loggingIn = "LoggingIn";
 export const switching = "Switching";
 export const initializing = "Initializing";
 
-export const m365CacheName = "appStudio";
+export const m365CacheName = "m365";
 
 export const extensionID = "TeamsDevApp.ms-teams-vscode-extension";
 export const codeSpacesAuthComplete = "auth-complete";

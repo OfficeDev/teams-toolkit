@@ -1,18 +1,20 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
   TemplateProject,
   Notification,
   TemplateProjectFolder,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   validateUpgrade,
   upgradeByTreeView,
-} from "../../../vscodeOperation";
-import { initPage, validateQueryOrg } from "../../../playwrightOperation";
+} from "../../../utils/vscodeOperation";
+import { initPage, validateQueryOrg } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
@@ -79,7 +81,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateQueryOrg(page, Env.displayName);
+      await validateQueryOrg(page, { displayName: Env.displayName });
       console.log("debug finish!");
     }
   );

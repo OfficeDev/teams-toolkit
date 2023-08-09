@@ -6,7 +6,8 @@ import {
   execAsyncWithRetry,
   editDotEnvFile,
 } from "../e2e/commonUtils";
-import { TemplateProject, Resource, ResourceToDeploy } from "./constants";
+import { Resource, ResourceToDeploy } from "./constants";
+import { TemplateProjectFolder } from "../utils/constants";
 import { Capability } from "../utils/constants";
 import path from "path";
 
@@ -272,9 +273,11 @@ export class CliHelper {
     testFolder: string,
     capability: Capability,
     processEnv?: NodeJS.ProcessEnv,
-    options = ""
+    options = "",
+    npx = false
   ) {
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
+    const npxCommand = npx ? "npx" : "";
+    const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -303,7 +306,7 @@ export class CliHelper {
   static async openTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
+    template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
     const timeout = 100000;
@@ -327,10 +330,12 @@ export class CliHelper {
   static async createTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
-    processEnv?: NodeJS.ProcessEnv
+    template: TemplateProjectFolder,
+    processEnv?: NodeJS.ProcessEnv,
+    npx = false
   ) {
-    const command = `teamsfx new template ${template} --interactive false `;
+    const npxCommand = npx ? "npx" : "";
+    const command = `${npxCommand} teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

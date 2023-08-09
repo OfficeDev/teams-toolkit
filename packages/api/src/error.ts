@@ -16,6 +16,8 @@ export interface FxError extends Error {
   timestamp: Date;
 
   userData?: any;
+
+  categories?: string[];
 }
 export interface ErrorOptionBase {
   source?: string;
@@ -24,6 +26,7 @@ export interface ErrorOptionBase {
   error?: Error;
   userData?: any;
   displayMessage?: string;
+  categories?: string[];
 }
 
 export interface UserErrorOptions extends ErrorOptionBase {
@@ -62,6 +65,8 @@ export class UserError extends Error implements FxError {
    */
   displayMessage?: string;
 
+  categories?: string[];
+
   constructor(opt: UserErrorOptions);
   constructor(source: string, name: string, message: string, displayMessage?: string);
   constructor(
@@ -87,7 +92,7 @@ export class UserError extends Error implements FxError {
     super(message);
 
     //name
-    this.name = option.name || option.error?.name || new.target.name;
+    this.name = option.name || new.target.name;
 
     //source
     this.source = option.source || "unknown";
@@ -106,6 +111,7 @@ export class UserError extends Error implements FxError {
     this.userData = option.userData;
     this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
+    this.categories = option.categories;
   }
 }
 
@@ -139,6 +145,8 @@ export class SystemError extends Error implements FxError {
    */
   displayMessage?: string;
 
+  categories?: string[];
+
   constructor(opt: SystemErrorOptions);
   constructor(source: string, name: string, message: string, displayMessage?: string);
   constructor(
@@ -164,7 +172,7 @@ export class SystemError extends Error implements FxError {
     super(message);
 
     //name
-    this.name = option.name || option.error?.name || new.target.name;
+    this.name = option.name || new.target.name;
 
     //source
     this.source = option.source || "unknown";
@@ -183,5 +191,6 @@ export class SystemError extends Error implements FxError {
     this.userData = option.userData;
     this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
+    this.categories = option.categories;
   }
 }

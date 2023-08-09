@@ -12,8 +12,8 @@ import fs from "fs-extra";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { TemplateProject } from "../../commonlib/constants";
-import { Cleaner } from "../../utils/cleaner";
+import { TemplateProjectFolder } from "../../utils/constants";
+import { Cleaner } from "../../commonlib/cleaner";
 import { Executor } from "../../utils/executor";
 import { getTestFolder, getUniqueAppName } from "../commonUtils";
 
@@ -31,19 +31,18 @@ describe("upgrade", () => {
     { testPlanCaseId: 19314244, author: "zhaofengxu@microsoft.com" },
     async function () {
       {
-        await Executor.installCLI(testFolder, "1.2.5", true);
+        await Executor.installCLI(testFolder, "1.2.5", false);
         const env = Object.assign({}, process.env);
-        env["TEAMSFX_V3"] = "false";
         // new projiect
         await CliHelper.createTemplateProject(
           appName,
           testFolder,
-          TemplateProject.HelloWorldBotSSO,
-          env
+          TemplateProjectFolder.HelloWorldBotSSO,
+          env,
+          true
         );
       }
 
-      await Executor.installCLI(testFolder, "alpha", true);
       {
         // upgrade
         const result = await Executor.upgrade(projectPath);

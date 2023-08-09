@@ -3,7 +3,6 @@
   "scripts": {
     "setup": "npm install && npm run build",
     "setup-failpoint": "npm run setup && npx lerna run build-failpoint",
-    "setup-metrics": "npm run setup && npx lerna run build-metrics",
     "bootstrap": "lerna bootstrap",
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream",

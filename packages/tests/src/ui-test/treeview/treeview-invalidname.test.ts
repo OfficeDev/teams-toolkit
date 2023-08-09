@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -7,9 +10,9 @@ import {
   CommandPaletteCommands,
   Timeout,
   CreateProjectQuestion,
-} from "../../constants";
+} from "../../utils/constants";
 import { TreeViewTestContext } from "./treeviewContext";
-import { execCommandIfExist } from "../../vscodeOperation";
+import { execCommandIfExist } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
 import { getNodeVersion } from "../../utils/getNodeVersion";
 
@@ -96,6 +99,8 @@ describe("New project Tests", function () {
       await driver.sleep(Timeout.input);
       // Choose Tab(SPFx)
       await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
       await driver.sleep(Timeout.longTimeWait);
       await input.selectQuickPick(

@@ -1,0 +1,25 @@
+{{#header}} version: 1.1.0 {{/header}}
+
+provision:
+{{#aadAppCreate}} {{/aadAppCreate}}
+
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#script}} TAB, DOTNET {{/script}}
+
+{{#fileCreateOrUpdateJsonFile}} appsettings, Authentication {{/fileCreateOrUpdateJsonFile}}
+
+{{#aadAppUpdate}} {{/aadAppUpdate}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#fileCreateOrUpdateJsonFile}}
+{
+  "launchSettings": true,
+  "applicationUrl": "\"https://localhost:44302;http://localhost:2544\"",
+  "hotReload": true
+}
+{{/fileCreateOrUpdateJsonFile}}

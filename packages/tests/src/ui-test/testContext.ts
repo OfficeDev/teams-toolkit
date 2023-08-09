@@ -1,9 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as path from "path";
 import * as fs from "fs-extra";
 import { VSBrowser } from "vscode-extension-tester";
 import { Browser, BrowserContext, chromium } from "playwright";
-import { Timeout } from "../constants";
-import { ensureExtensionActivated } from "../vscodeOperation";
+import { Timeout } from "../utils/constants";
+import { ensureExtensionActivated } from "../utils/vscodeOperation";
 import {
   cleanAppStudio,
   cleanTeamsApp,
@@ -12,7 +14,7 @@ import {
 } from "../utils/cleanHelper";
 import { getAppName, getScreenshotName } from "../utils/nameUtil";
 import { dotenvUtil } from "../utils/envUtil";
-import { TestFilePath } from "../constants";
+import { TestFilePath } from "../utils/constants";
 import { Env } from "../utils/env";
 
 export class TestContext {

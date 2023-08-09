@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { CloudAdapter } from "botbuilder";
 import { CardActionMiddleware } from "../conversation/middlewares/cardActionMiddleware";
 import { CardActionOptions, TeamsFxAdaptiveCardActionHandler } from "../conversation/interface";
@@ -36,9 +38,11 @@ export class CardActionBot {
    * Only work on server side.
    */
   registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler) {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CardActionBot"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "CardActionBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 
@@ -51,9 +55,11 @@ export class CardActionBot {
    * Only work on server side.
    */
   registerHandlers(actionHandlers: TeamsFxAdaptiveCardActionHandler[]) {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CardActionBot"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "CardActionBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

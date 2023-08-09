@@ -74,14 +74,14 @@ describe("utils", () => {
 
     it("case 4: ok with value", () => {
       const e = "test value";
-      const res = getResponseWithErrorHandling(Promise.resolve(ok(e)));
+      const res = getResponseWithErrorHandling(Promise.resolve(ok<string, FxError>(e)));
       return res.then(function (data) {
         expect((data as any).value).to.equal(e);
       });
     });
 
     it("case 5: ok with undefined", () => {
-      const res = getResponseWithErrorHandling(Promise.resolve(ok(undefined)));
+      const res = getResponseWithErrorHandling(Promise.resolve(ok<undefined, FxError>(undefined)));
       return res.then(function (data) {
         expect((data as any).value).to.equal(undefined);
       });

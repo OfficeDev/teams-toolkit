@@ -1,6 +1,5 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
@@ -9,7 +8,7 @@ import {
   TemplateProjectFolder,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import {
   validateNotification,
@@ -17,8 +16,8 @@ import {
   upgradeByTreeView,
   startDebugging,
   waitForTerminal,
-} from "../../../vscodeOperation";
-import { initTeamsPage } from "../../../playwrightOperation";
+} from "../../../utils/vscodeOperation";
+import { initTeamsPage } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
@@ -89,8 +88,10 @@ describe("Migration Tests", function () {
         teamsAppId,
         Env.username,
         Env.password,
-        "hello-world-in-meeting-local",
-        "meeting"
+        {
+          teamsAppName: "hello-world-in-meeting-local",
+          type: "meeting",
+        }
       );
       console.log("debug finish!");
     }

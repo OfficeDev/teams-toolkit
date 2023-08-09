@@ -43,22 +43,43 @@ TeamsFx SDK is built to be used in browser and NodeJS environment. Common scenar
 
 ### Create and authenticate a service using `createMicrosoftGraphClientWithCredential` or `createMicrosoftGraphClient`
 
-> [!NOTE] `createMicrosoftGraphClient` function has been deprecated. It is recommended that you to use `createMicrosoftGraphClientWithCredential` instead, for better coding experience.
+> [!NOTE] `createMicrosoftGraphClient` and `createMicrosoftGraphClientWithCredential` function has been deprecated. It is recommended that you to use `Client` and `TokenCredentialAuthenticationProvider` from `@microsoft/microsoft-graph-client` instead, for better coding experience.
 
 To create a graph client object to access the Microsoft Graph API, you will need the credential to do authentication. The SDK provides APIs to configure for developers. Please choose the proper identity type and follow below steps:
 
 #### Invoke Graph API on behalf of Teams User (User Identity)
 
 Use the snippet below (Recommended):
-```ts
-  const authConfig: TeamsUserCredentialAuthConfig = {
-    clientId: process.env.REACT_APP_CLIENT_ID,
-    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-  };
 
-  const teamsUserCredential = new TeamsUserCredential(authConfig);
-  const graphClient = createMicrosoftGraphClientWithCredential(teamsUserCredential, ["User. Read"]);
-  const profile = await graphClient.api("/me").get();
+```ts
+import { TeamsUserCredentialAuthConfig, TeamsUserCredential } from "@microsoft/teamsfx";
+import { Client } from "@microsoft/microsoft-graph-client";
+import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
+
+const authConfig: TeamsUserCredentialAuthConfig = {
+  clientId: process.env.REACT_APP_CLIENT_ID,
+  initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+};
+
+const teamsUserCredential = new TeamsUserCredential(authConfig);
+const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+  scopes: ["User.Read"],
+});
+const graphClient = Client.initWithMiddleware({ authProvider: authProvider });
+const profile = await graphClient.api("/me").get();
+```
+
+or use `createMicrosoftGraphClientWithCredential` as below (Deprecated):
+
+```ts
+const authConfig: TeamsUserCredentialAuthConfig = {
+  clientId: process.env.REACT_APP_CLIENT_ID,
+  initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+};
+
+const teamsUserCredential = new TeamsUserCredential(authConfig);
+const graphClient = createMicrosoftGraphClientWithCredential(teamsUserCredential, ["User.Read"]);
+const profile = await graphClient.api("/me").get();
 ```
 
 or use `createMicrosoftGraphClient` as below (Deprecated):
@@ -79,12 +100,35 @@ const profile = await graphClient.api("/me").get(); // Get the profile of curren
 It doesn't require the interaction with Teams user. You can call Microsoft Graph as application identity.
 
 Use the snippet below (Recommended):
+
+```ts
+import { AppCredentialAuthConfig, AppCredential } from "@microsoft/teamsfx";
+import { Client } from "@microsoft/microsoft-graph-client";
+import { TokenCredentialAuthenticationProvider } from "@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials";
+
+const appAuthConfig: AppCredentialAuthConfig = {
+  authorityHost: process.env.M365_AUTHORITY_HOST,
+  clientId: process.env.M365_CLIENT_ID,
+  tenantId: process.env.M365_TENANT_ID,
+  clientSecret: process.env.M365_CLIENT_SECRET,
+};
+
+const appCredential = new AppCredential(appAuthConfig);
+const authProvider = new TokenCredentialAuthenticationProvider(appCredential, {
+  scopes: ["https://graph.microsoft.com/.default"],
+});
+const graphClient = Client.initWithMiddleware({ authProvider: authProvider });
+const profile = await graphClient.api("/users/{object_id_of_another_people}").get();
+```
+
+or use `createMicrosoftGraphClientWithCredential` as below (Deprecated):
+
 ```ts
 const appAuthConfig: AppCredentialAuthConfig = {
- authorityHost: process.env.M365_AUTHORITY_HOST,
- clientId: process.env.M365_CLIENT_ID,
- tenantId: process.env.M365_TENANT_ID,
- clientSecret: process.env.M365_CLIENT_SECRET,
+  authorityHost: process.env.M365_AUTHORITY_HOST,
+  clientId: process.env.M365_CLIENT_ID,
+  tenantId: process.env.M365_TENANT_ID,
+  clientSecret: process.env.M365_CLIENT_SECRET,
 };
 
 const appCredential = new AppCredential(appAuthConfig);
@@ -109,7 +153,7 @@ const profile = await graphClient.api("/users/{object_id_of_another_people}").ge
 
 ### TeamsFx class
 
-> [!NOTE] `TeamsFx` class has been deprecated. It is recommended that you to use different credentials (`TeamsUserCredential`, `AppCredential`,  `OnBehalfOfUserCredential`) instead, for better coding experience.
+> [!NOTE] `TeamsFx` class has been deprecated. It is recommended that you to use different credentials (`TeamsUserCredential`, `AppCredential`, `OnBehalfOfUserCredential`) instead, for better coding experience.
 
 `TeamsFx` class instance reads all TeamsFx settings from environment variables by default. You can also set customized configuration values to override the default values. Please check [Override configuration](#override-configuration) for details.
 
@@ -146,6 +190,7 @@ Here's the corresponding scenarios that each credential class targets.
 `TeamsUserCredential` represents Teams current user's identity. Using this credential will request user consent at the first time. It leverages the Teams SSO and On-Behalf-Of flow to do token exchange. SDK uses this credential when developer choose "User" identity in browser environment.
 
 The following code is an an example to create TeamsUserCredential:
+
 ```ts
 const authConfig: TeamsUserCredentialAuthConfig = {
   clientId: process.env.REACT_APP_CLIENT_ID,
@@ -162,6 +207,7 @@ Required configurations are initiateLoginEndpoint and clientId which can be foun
 `OnBehalfOfUserCredential` uses On-Behalf-Of flow and need Teams ssoToken. It's designed to be used in Azure Function or Bot scenarios. SDK uses this credential when developer choose "User" identity in NodeJS environment.
 
 The following code is an example to create OnBehalfOfUserCredential:
+
 ```ts
 const oboAuthConfig: OnBehalfOfCredentialAuthConfig = {
   authorityHost: process.env.M365_AUTHORITY_HOST,
@@ -178,7 +224,6 @@ Required configurations are authorityHost, tenantId, clientId, clientSecret, or 
 #### Application Identity in NodeJS environment
 
 `AppCredential` represents the application identity. It is usually used when user is not involved like time-triggered automation job. SDK uses this credential when developer choose "App" identity in NodeJS environment.
-
 
 The following code is an example to create `AppCredential`:
 
@@ -227,7 +272,7 @@ TeamsFx SDK provides several helper functions to ease the configuration for thir
 
 #### Microsoft Graph Service
 
-`createMicrosoftGraphClientWithCredential`, `createMicrosoftGraphClient`(deprecated) and `MsGraphAuthProvider` help to create authenticated Graph instance.
+`createMicrosoftGraphClientWithCredential`, `createMicrosoftGraphClient` and `MsGraphAuthProvider` help to create authenticated Graph instance. These are now deprecated, we recommend you to use Microsoft Graph SDKs instead.
 
 #### SQL
 
@@ -251,7 +296,7 @@ try {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
   };
 
-  const credential = new TeamsUserCredential(authConfig);  
+  const credential = new TeamsUserCredential(authConfig);
   await credential.login("User.Read");
 } catch (err: unknown) {
   if (err instanceof ErrorWithCode && err.code !== ErrorCode.ConsentFailed) {
@@ -272,8 +317,11 @@ try {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
   };
 
-  const credential = new TeamsUserCredential(authConfig);  
-  const graphClient = createMicrosoftGraphClientWithCredential(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
+  const credential = new TeamsUserCredential(authConfig);
+  const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+    scopes: ["User.Read"],
+  });
+  const graphClient = Client.initWithMiddleware({ authProvider: authProvider });
   const profile = await graphClient.api("/me").get();
 } catch (err: unknown) {
   // ErrorWithCode is handled by Graph client
@@ -297,7 +345,7 @@ The following sections provide several code snippets covering some of the most c
 
 ### Use Graph API in tab app
 
-Use `createMicrosoftGraphClientWithCredential`.
+Use `createMicrosoftGraphClientWithCredential`. Thie API is now deprecated, we recommend you to use `Client` and `TokenCredentialAuthenticationProvider` from Microsoft Graph SDKs (`@microsoft/microsoft-graph-client`) instead.
 
 ```ts
 const authConfig: TeamsUserCredentialAuthConfig = {
@@ -311,15 +359,14 @@ const teamsUserCredential = new TeamsUserCredential(authConfig);
 await teamsUserCredential.login(["User.Read"]); // Login with scope
 
 try {
- const graphClient = createMicrosoftGraphClientWithCredential(teamsUserCredential, ["User. Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
- const profile = await graphClient.api("/me").get();
+  const graphClient = createMicrosoftGraphClientWithCredential(teamsUserCredential, ["User. Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
+  const profile = await graphClient.api("/me").get();
 } catch (err: unknown) {
- // ErrorWithCode is handled by Graph client
- if (err instanceof GraphError && err.code?.includes(ErrorCode.UiRequiredError)) {
-   // Need to show login button to ask for user consent.
- }
+  // ErrorWithCode is handled by Graph client
+  if (err instanceof GraphError && err.code?.includes(ErrorCode.UiRequiredError)) {
+    // Need to show login button to ask for user consent.
+  }
 }
-
 ```
 
 ### Call Azure Function in tab app
@@ -333,7 +380,7 @@ async function callFunction() {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
   };
   const teamsUserCredential = new TeamsUserCredential(authConfig);
-  const accessToken = await teamsUserCredential.getToken(""); // Get SSO token 
+  const accessToken = await teamsUserCredential.getToken(""); // Get SSO token
   const endpoint = "https://YOUR_API_ENDPOINT";
   const response = await axios.default.get(endpoint + "/api/" + functionName, {
     headers: {
@@ -341,7 +388,7 @@ async function callFunction() {
     },
   });
   return response.data;
-}   
+}
 ```
 
 ### Access SQL database in Azure Function
@@ -378,10 +425,10 @@ const appAuthConfig: AppCredentialAuthConfig = {
   authorityHost: process.env.M365_AUTHORITY_HOST,
   clientId: process.env.M365_CLIENT_ID,
   tenantId: process.env.M365_TENANT_ID,
-  certificateContent: 'PEM-encoded key certificate',
+  certificateContent: "PEM-encoded key certificate",
 };
 const appCredential = new AppCredential(appAuthConfig);
-const token = appCredential.getToken();    
+const token = appCredential.getToken();
 ```
 
 ### Use Graph API in Bot application
@@ -391,7 +438,11 @@ Add `TeamsBotSsoPrompt` to dialog set.
 ```ts
 const { ConversationState, MemoryStorage } = require("botbuilder");
 const { DialogSet, WaterfallDialog } = require("botbuilder-dialogs");
-const { TeamsBotSsoPrompt, OnBehalfOfCredentialAuthConfig, TeamsBotSsoPromptSettings } = require("@microsoft/teamsfx");
+const {
+  TeamsBotSsoPrompt,
+  OnBehalfOfCredentialAuthConfig,
+  TeamsBotSsoPromptSettings,
+} = require("@microsoft/teamsfx");
 
 const convoState = new ConversationState(new MemoryStorage());
 const dialogState = convoState.createProperty("dialogState");
@@ -400,16 +451,16 @@ const dialogs = new DialogSet(dialogState);
 const TeamsBotSsoPromptId = "TEAMS_BOT_SSO_PROMPT";
 
 const settings: TeamsBotSsoPromptSettings = {
-scopes: ["User.Read"],
-timeout: 900000,
-endOnInvalidMessage: true,
+  scopes: ["User.Read"],
+  timeout: 900000,
+  endOnInvalidMessage: true,
 };
 
 const authConfig: OnBehalfOfCredentialAuthConfig = {
- authorityHost: process.env.M365_AUTHORITY_HOST,
- clientId: process.env.M365_CLIENT_ID,
- tenantId: process.env.M365_TENANT_ID,
- clientSecret: process.env.M365_CLIENT_SECRET,
+  authorityHost: process.env.M365_AUTHORITY_HOST,
+  clientId: process.env.M365_CLIENT_ID,
+  tenantId: process.env.M365_TENANT_ID,
+  clientSecret: process.env.M365_CLIENT_SECRET,
 };
 const loginUrl = process.env.INITIATE_LOGIN_ENDPOINT;
 const ssoPrompt = new TeamsBotSsoPrompt(authConfig, loginUrl, TeamsBotSsoPromptId, settings);
@@ -535,13 +586,12 @@ You can pass custom config when creating `TeamsFx` instance to override default 
 
 If you are using the version of SDK that has `loadConfiguration()`, you can follow these steps to upgrade to the latest SDK version.
 
-1. Remove `loadConfiguration()` and pass customized settings using `new TeamsFx(IdentityType.User, { ...customConfig })`.
-2. Replace `new TeamsUserCredential()` with `new TeamsFx()`.
-3. Replace `new M365TenantCredential()` with `new TeamsFx(IdentityType.App)`.
-4. Replace `new OnBehalfOfUserCredential(ssoToken)` with `new TeamsFx().setSsoToken(ssoToken)`.
-5. Pass the instance of `TeamsFx` to helper functions to replace credential instance.
+1. Instead of calling `loadConfiguration()`, use the specific auth config classes to customize the settings for each credential type. For example, use `AppCredentialAuthConfig` for `AppCredential`, `OnBehalfOfUserCredentialAuthConfig` for `OnBehalfOfUserCredential`, and `TeamsUserCredentialAuthConfig` for `TeamsUserCredential`.
+2. Replace `new TeamsUserCredential()` with `new TeamsUserCredential(authConfig)`.
+3. Replace `new M365TenantCredential()` with `new AppCredential(authConfig)`.
+4. Replace `new OnBehalfOfUserCredential(ssoToken)` with `new OnBehalfOfUserCredential(authConfig)`.
 
-Also see [TeamsFx class](#teamsfx-class) for furthur description.
+Also see [Credential](#Credential) for furthur description.
 
 ## How to use SDK implemented with `CloudAdapter`
 
@@ -549,92 +599,90 @@ From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter
 
 1. Install `@microsoft/teamsfx @^2.2.0`, `botbuilder @^4.18.0`, (and `@types/node @^14.0.0` for TS projects) via `npm install` as follows.
 
-    ```sh
-    npm install @microsoft/teamsfx
-    npm install botbuilder
-    
-    // For TS projects only
-    npm install --save-dev @types/node
-    ```
+   ```sh
+   npm install @microsoft/teamsfx
+   npm install botbuilder
+
+   // For TS projects only
+   npm install --save-dev @types/node
+   ```
 
 2. Update the import of `ConversationBot` and create a new `ConversationBot` as follows.
 
-    ```ts
-    import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
-    import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
-    import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
-    import config from "./config";
+   ```ts
+   import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
+   import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+   import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+   import config from "./config";
 
-    export const commandBot = new ConversationBot({
-      // The bot id and password to create CloudAdapter.
-      // See https://aka.ms/about-bot-adapter to learn more about adapters.
-      adapterConfig: {
-        MicrosoftAppId: config.botId,
-        MicrosoftAppPassword: config.botPassword,
-        MicrosoftAppType: "MultiTenant",
-      },
-      command: {
-        enabled: true,
-        commands: [new HelloWorldCommandHandler()],
-      },
-    });
-    ```
+   export const commandBot = new ConversationBot({
+     // The bot id and password to create CloudAdapter.
+     // See https://aka.ms/about-bot-adapter to learn more about adapters.
+     adapterConfig: {
+       MicrosoftAppId: config.botId,
+       MicrosoftAppPassword: config.botPassword,
+       MicrosoftAppType: "MultiTenant",
+     },
+     command: {
+       enabled: true,
+       commands: [new HelloWorldCommandHandler()],
+     },
+   });
+   ```
 
 3. If the project is using `restify` to create a server, please add the following line after `restify.createServer()`.
 
-    ```ts
-    server.use(restify.plugins.bodyParser());
-    ```
+   ```ts
+   server.use(restify.plugins.bodyParser());
+   ```
 
-    The complete code will be like
+   The complete code will be like
 
-     ```ts
-     // Create HTTP server.
-     const server = restify.createServer();
-        server.use(restify.plugins.bodyParser());
-        server.listen(process.env.port || process.env.PORT || 3978, () => {
-          console.log(`\nApp Started, ${server.name} listening to ${server.url}`);
-     });
-     ```
+   ```ts
+   // Create HTTP server.
+   const server = restify.createServer();
+   server.use(restify.plugins.bodyParser());
+   server.listen(process.env.port || process.env.PORT || 3978, () => {
+     console.log(`\nApp Started, ${server.name} listening to ${server.url}`);
+   });
+   ```
 
 4. If the project has `responseWrapper.ts`, please update the class `responseWrapper` to the class below.
 
-    ```ts
-    import { Response } from "botbuilder";
-    
-    // A wrapper to convert Azure Functions Response to Bot Builder's Response.
-    export class ResponseWrapper implements Response {
-      socket: any;
-      originalResponse?: any;
-      headers?: any;
-      body?: any;
-    
-      constructor(functionResponse?: { [key: string]: any }) {
-        this.socket = undefined;
-        this.originalResponse = functionResponse;
-      }
-      
-      end(...args: any[]) {
-        // do nothing since res.end() is deprecated in Azure Functions.
-      }
-    
-      header(name: string, value: any) {
-        this.headers[name] = value;
-      }
-    
-      send(body: any) {
-        // record the body to be returned later.
-        this.body = body;
-        this.originalResponse.body = body;
-      }
-      status(status: number) {
-        // call Azure Functions' res.status().
-        return this.originalResponse?.status(status);
-      }
-    }
-    ```
+   ```ts
+   import { Response } from "botbuilder";
 
+   // A wrapper to convert Azure Functions Response to Bot Builder's Response.
+   export class ResponseWrapper implements Response {
+     socket: any;
+     originalResponse?: any;
+     headers?: any;
+     body?: any;
 
+     constructor(functionResponse?: { [key: string]: any }) {
+       this.socket = undefined;
+       this.originalResponse = functionResponse;
+     }
+
+     end(...args: any[]) {
+       // do nothing since res.end() is deprecated in Azure Functions.
+     }
+
+     header(name: string, value: any) {
+       this.headers[name] = value;
+     }
+
+     send(body: any) {
+       // record the body to be returned later.
+       this.body = body;
+       this.originalResponse.body = body;
+     }
+     status(status: number) {
+       // call Azure Functions' res.status().
+       return this.originalResponse?.status(status);
+     }
+   }
+   ```
 
 ## Next steps
 

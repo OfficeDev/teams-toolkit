@@ -54,7 +54,7 @@ export class SPFxDeployDriver implements StepDriver {
       Constants.TelemetryDeployEventName,
       Constants.TelemetryComponentName
     );
-    return wrapRun(() => this.deploy(args, wrapContext));
+    return wrapRun(() => this.deploy(args, wrapContext), Constants.DeployDriverName);
   }
 
   public async execute(args: DeploySPFxArgs, ctx: DriverContext): Promise<ExecutionResult> {
@@ -102,7 +102,7 @@ export class SPFxDeployDriver implements StepDriver {
       let retry = 0;
       appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
       while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
-        context.logProvider.warning(
+        void context.logProvider.warning(
           getLocalizedString("driver.spfx.warn.noTenantAppCatalogFound", retry)
         );
         await sleep(Constants.APP_CATALOG_REFRESH_TIME);
@@ -111,7 +111,7 @@ export class SPFxDeployDriver implements StepDriver {
       }
       if (appCatalogSite) {
         SPOClient.setBaseUrl(appCatalogSite);
-        context.logProvider.info(
+        void context.logProvider.info(
           getLocalizedString("driver.spfx.info.tenantAppCatalogCreated", appCatalogSite)
         );
         await sleep(Constants.APP_CATALOG_ACTIVE_TIME);
@@ -137,7 +137,7 @@ export class SPFxDeployDriver implements StepDriver {
       context.addSummary(DeployProgressMessage.Upload());
     } catch (e: any) {
       if (e.response?.status === 403) {
-        throw new InsufficientPermissionError(appCatalogSite!);
+        throw new InsufficientPermissionError(appCatalogSite);
       } else {
         throw new UploadAppPackageFailedError(e);
       }

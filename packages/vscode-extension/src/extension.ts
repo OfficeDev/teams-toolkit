@@ -9,18 +9,27 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
+  CreateProjectResult,
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
+import {
+  AuthSvcScopes,
+  Correlator,
+  VersionState,
+  setRegion,
+  isCopilotPluginEnabled,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
+  CopilotPluginCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
+  TeamsAppYamlCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -66,7 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   VS_CODE_UI = new VsCodeUI(context);
-  await initializeGlobalVariables(context);
+  initializeGlobalVariables(context);
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
@@ -90,10 +99,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  VsCodeLogInstance.info("Teams Toolkit extension is now active!");
+  void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
-  runBackgroundAsyncTasks(context, isTeamsFxProject);
+  void runBackgroundAsyncTasks(context, isTeamsFxProject);
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 }
 
@@ -102,7 +111,7 @@ export async function deactivate() {
   await ExtTelemetry.cacheTelemetryEventAsync(TelemetryEvent.Deactivate);
   await ExtTelemetry.dispose();
   handlers.cmdHdlDisposeTreeView();
-  disableRunIcon();
+  await disableRunIcon();
 }
 
 function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
@@ -119,14 +128,14 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
     m365TokenProvider: M365TokenInstance,
   });
   // Set region for M365 account every
-  M365TokenInstance.setStatusChangeMap(
+  void M365TokenInstance.setStatusChangeMap(
     "set-region",
     { scopes: AuthSvcScopes },
     async (status, token, accountInfo) => {
       if (status === "SignedIn") {
         const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
         if (tokenRes.isOk()) {
-          setRegion(tokenRes.value);
+          await setRegion(tokenRes.value);
         }
       }
     }
@@ -141,7 +150,9 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   // Register task and debug event handlers, as well as sending telemetries
   registerTeamsfxTaskAndDebugEvents();
 
-  registerRunIcon();
+  registerRunIcon().catch(() => {
+    // do nothing
+  });
 
   // Register teamsfx task provider
   const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
@@ -181,12 +192,17 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
-      const targetUri = await Correlator.run(handlers.createProjectFromWalkthroughHandler, args);
-      if (targetUri.isOk()) {
-        await handlers.updateAutoOpenGlobalKey(true, false, targetUri.value, args);
+      const res: Result<CreateProjectResult, FxError> = await Correlator.run(
+        handlers.createProjectFromWalkthroughHandler,
+        args
+      );
+      if (res.isOk()) {
+        const fileUri = vscode.Uri.file(res.value.projectPath);
+        const warnings = res.value.warnings;
+        await handlers.updateAutoOpenGlobalKey(true, fileUri, warnings, args);
         await ExtTelemetry.dispose();
         await delay(2000);
-        return { openFolder: targetUri.value };
+        return { openFolder: fileUri };
       }
     })
   );
@@ -295,7 +311,10 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openSurveyCmd);
 
   const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
-    Correlator.run(handlers.openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...args])
+    Correlator.run(handlers.openTutorialHandler, [
+      TelemetryTriggerFrom.QuickPick,
+      ...(args as unknown[]),
+    ])
   );
   context.subscriptions.push(openTutorial);
 
@@ -318,13 +337,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     handlers.validateLocalPrerequisitesHandler
   );
   context.subscriptions.push(validatePrerequisitesCmd);
-
-  // localdebug session starts from environment checker
-  const validateSpfxDependenciesCmd = vscode.commands.registerCommand(
-    "fx-extension.validate-spfx-dependencies",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateSpfxDependenciesHandler)
-  );
-  context.subscriptions.push(validateSpfxDependenciesCmd);
 
   const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
     Correlator.run(handlers.signinAzureCallback, args)
@@ -429,7 +441,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const decryptCmd = vscode.commands.registerCommand(
     "fx-extension.decryptSecret",
-    (cipher, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
+    (cipher: string, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
   );
   context.subscriptions.push(decryptCmd);
 
@@ -439,21 +451,18 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openConfigStateCmd);
 
-  const editManifestTemplateCmd = vscode.commands.registerCommand(
-    "fx-extension.editManifestTemplate",
-    (...args) => Correlator.run(handlers.editManifestTemplate, args)
-  );
-  context.subscriptions.push(editManifestTemplateCmd);
-
   const editAadManifestTemplateCmd = vscode.commands.registerCommand(
     "fx-extension.editAadManifestTemplate",
     (...args) => Correlator.run(handlers.editAadManifestTemplate, args)
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand("fx-extension.preview", async (node) => {
-    await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-  });
+  const preview = vscode.commands.registerCommand(
+    "fx-extension.preview",
+    async (node: Record<string, string>) => {
+      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+    }
+  );
   context.subscriptions.push(preview);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
@@ -491,23 +500,21 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const manageCollaborator = vscode.commands.registerCommand(
     "fx-extension.manageCollaborator",
-    (node) => {
+    async (node: Record<string, string>) => {
       const envName = node.identifier;
-      Correlator.run(handlers.manageCollaboratorHandler, envName);
+      await Correlator.run(handlers.manageCollaboratorHandler, envName);
     }
   );
   context.subscriptions.push(manageCollaborator);
 
-  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
-    Correlator.run(handlers.treeViewLocalDebugHandler);
-  });
+  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", () =>
+    Correlator.run(handlers.treeViewLocalDebugHandler)
+  );
   context.subscriptions.push(localDebug);
 
   const localDebugWithIcon = vscode.commands.registerCommand(
     "fx-extension.localdebugWithIcon",
-    (node) => {
-      Correlator.run(handlers.treeViewLocalDebugHandler);
-    }
+    () => Correlator.run(handlers.treeViewLocalDebugHandler)
   );
   context.subscriptions.push(localDebugWithIcon);
 
@@ -568,33 +575,43 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const openResourceGroupInPortal = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
-    (node) => {
+    async (node: Record<string, string>) => {
       const envName = node.identifier;
-      Correlator.run(handlers.openResourceGroupInPortal, envName);
+      await Correlator.run(handlers.openResourceGroupInPortal, envName);
     }
   );
   context.subscriptions.push(openResourceGroupInPortal);
 
   const openManifestSchemaCmd = vscode.commands.registerCommand(
     "fx-extension.openSchema",
-    (...args) => {
-      Correlator.run(handlers.openExternalHandler, args);
+    async (...args) => {
+      await Correlator.run(handlers.openExternalHandler, args);
     }
   );
   context.subscriptions.push(openManifestSchemaCmd);
 
+  if (isCopilotPluginEnabled()) {
+    const addAPICmd = vscode.commands.registerCommand(
+      "fx-extension.copilotPluginAddAPI",
+      async (...args) => {
+        await Correlator.run(handlers.copilotPluginAddAPIHandler, args);
+      }
+    );
+    context.subscriptions.push(addAPICmd);
+  }
+
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
-    (node) => {
+    async (node: Record<string, string>) => {
       const envName = node.identifier;
-      Correlator.run(handlers.openSubscriptionInPortal, envName);
+      await Correlator.run(handlers.openSubscriptionInPortal, envName);
     }
   );
   context.subscriptions.push(openSubscriptionInPortal);
 
   const previewWithIcon = vscode.commands.registerCommand(
     "fx-extension.previewWithIcon",
-    async (node) => {
+    async (node: Record<string, string>) => {
       await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
     }
   );
@@ -658,7 +675,7 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
 }
 
 async function setAadManifestEnabledContext() {
-  vscode.commands.executeCommand("setContext", "fx-extension.isAadManifestEnabled", true);
+  await vscode.commands.executeCommand("setContext", "fx-extension.isAadManifestEnabled", true);
 }
 
 async function setTDPIntegrationEnabledContext() {
@@ -746,6 +763,15 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       manifestTemplateCodeLensProvider
     )
   );
+  if (isCopilotPluginEnabled()) {
+    const copilotPluginCodeLensProvider = new CopilotPluginCodeLensProvider();
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        manifestTemplateSelector,
+        copilotPluginCodeLensProvider
+      )
+    );
+  }
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       localManifestTemplateSelector,
@@ -800,6 +826,16 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       aadAppTemplateCodeLensProvider
     )
   );
+
+  const yamlCodelensProvider = new TeamsAppYamlCodeLensProvider();
+  const yamlFileSelector = {
+    language: "yaml",
+    scheme: "file",
+    pattern: `**/teamsapp.yml`,
+  };
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(yamlFileSelector, yamlCodelensProvider)
+  );
 }
 
 function registerDebugConfigProviders(context: vscode.ExtensionContext) {
@@ -831,22 +867,21 @@ async function runBackgroundAsyncTasks(
     "fx-extension.isNewUser",
     isExistingUser === "no"
   );
-  TreatmentVariableValue.inProductDoc = (await exp
+  TreatmentVariableValue.inProductDoc = await exp
     .getExpService()
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.InProductDoc,
       true
-    )) as boolean | undefined;
+    );
 
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
-  await handlers.postUpgrade();
   const upgrade = new ExtensionUpgrade(context);
-  upgrade.showChangeLog();
+  await upgrade.showChangeLog();
   const prereleasePage = new PrereleasePage(context);
-  prereleasePage.checkAndShow();
+  await prereleasePage.checkAndShow();
 
   await openWelcomePageAfterExtensionInstallation();
 
@@ -880,7 +915,7 @@ function registerInCommandController(
 }
 
 function runCommand(commandName: string, args: unknown[]) {
-  commandController.runCommand(commandName, args);
+  void commandController.runCommand(commandName, args);
 }
 
 async function checkProjectUpgradable(): Promise<boolean> {
@@ -901,7 +936,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 
-    vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+    await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
     const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
 
@@ -909,7 +944,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
       await setAadManifestEnabledContext();
     });
 
-    runTeamsFxBackgroundTasks();
+    void runTeamsFxBackgroundTasks();
   }
 
   const upgradeable = await checkProjectUpgradable();

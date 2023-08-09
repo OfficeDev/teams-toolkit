@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author yefuwang@microsoft.com
  */
@@ -5,6 +8,10 @@
 import { FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
+
+export type AdditionalMetadata = {
+  [key: string]: unknown;
+};
 
 export type RawProjectModel = {
   registerApp?: DriverDefinition[];
@@ -14,6 +21,7 @@ export type RawProjectModel = {
   publish?: DriverDefinition[];
   environmentFolderPath?: string;
   version: string;
+  additionalMetadata?: AdditionalMetadata;
 };
 
 export type ProjectModel = {
@@ -24,6 +32,7 @@ export type ProjectModel = {
   publish?: ILifecycle;
   environmentFolderPath?: string;
   version: string;
+  additionalMetadata?: AdditionalMetadata;
 };
 
 export type DriverDefinition = {

@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 import * as extensionPackage from "./../../package.json";
 
 declare type VersionComparisonResult = -1 | 0 | 1;
-const PrereleaseVersionMajor = 4;
-const PrereleaseVersionMinor = 99;
+
 export interface Version {
   major: number;
   minor: number;

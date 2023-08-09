@@ -13,11 +13,15 @@ import {
   WebView,
 } from "vscode-extension-tester";
 import { TestContext } from "../testContext";
-import { CommandPaletteCommands, Extension, Timeout } from "../../constants";
+import {
+  CommandPaletteCommands,
+  Extension,
+  Timeout,
+} from "../../utils/constants";
 import {
   execCommandIfExist,
   ensureExtensionActivated,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { getScreenshotName } from "../../utils/nameUtil";
 
 export class TreeViewTestContext extends TestContext {

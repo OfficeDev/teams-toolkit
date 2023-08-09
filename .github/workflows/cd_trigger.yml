@@ -27,6 +27,7 @@ jobs:
       zipLink: ${{ steps.downloadUrl.outputs.result }}
       pre_id: ${{ steps.preid.outputs.result }}
       server_version: ${{ steps.version.outputs.result }}
+      stage: ${{ steps.series.outputs.result }}
     steps:
       - name: Download artifact
         id: downloadUrl
@@ -64,6 +65,17 @@ jobs:
             let server = pkgs.find(item => item.name === "@microsoft/teamsfx-server")
             console.log("==================", server.version)
             return server.version
+
+      - name: Get stage input
+        id: series
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let rawData = require('fs').readFileSync('./series.txt', {encoding:'utf8', flag:'r'});
+            if (rawData.trim() === "") rawData = "undefined"
+            console.log('-----------------', rawData)
+            return rawData;
+
       - run: npm install semver
       - name: Get teamsfx-server preid
         id: preid
@@ -93,7 +105,7 @@ jobs:
           azure-devops-project-url: https://devdiv.visualstudio.com/DevDiv
           azure-pipeline-name: TeamsFx-Dev17-CD
           azure-devops-token: ${{ secrets.VS_ADO_PAT }}
-          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}, "zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}}'
+          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}, "zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}, "series": ${{needs.downloadAndOutput.outputs.stage}}}'
 
   CheckSetupSuccess:
     runs-on: ubuntu-latest

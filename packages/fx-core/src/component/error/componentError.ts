@@ -30,6 +30,7 @@ export class BaseComponentInnerError extends Error {
   displayMessage?: string;
   suggestionKey?: string[];
   detail?: string;
+  innerError?: Error;
 
   constructor(
     source: string,
@@ -39,7 +40,8 @@ export class BaseComponentInnerError extends Error {
     messageParams?: string[],
     suggestionKey?: string[],
     detail?: string,
-    helpLink?: string
+    helpLink?: string,
+    innerError?: Error
   ) {
     super(
       messageKey
@@ -59,13 +61,15 @@ export class BaseComponentInnerError extends Error {
         : getLocalizedString(messageKey)
       : "";
     this.detail = detail;
+    this.innerError = innerError;
   }
 
   toFxError(): FxError {
     if (this.errorType === "UserError") {
       return new UserError({
         source: this.source,
-        error: this,
+        // if innerError is set, send innerError to telemetry
+        error: this.innerError ?? this,
         helpLink: this.helpLink,
         name: this.name,
         message: this.message,
@@ -76,7 +80,8 @@ export class BaseComponentInnerError extends Error {
         source: this.source,
         name: this.name,
         message: this.message,
-        error: this,
+        // if innerError is set, send innerError to telemetry
+        error: this.innerError ?? this,
         helpLink: this.helpLink,
         displayMessage: this.toDisplayMessage(),
       } as SystemErrorOptions);
@@ -103,9 +108,13 @@ export class BaseComponentInnerError extends Error {
     return new BaseComponentInnerError(
       source,
       "SystemError",
-      "UnknownError",
+      "UnhandledError",
       "error.common.UnhandledError",
-      [JSON.stringify(error)]
+      [source, JSON.stringify(error)],
+      undefined,
+      undefined,
+      undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }

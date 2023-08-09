@@ -1,11 +1,11 @@
-/**
- * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateBot } from "../../playwrightOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import { initPage, validateBot } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../constants";
+import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
@@ -37,7 +37,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "index.ts");
+      validateFileExist(projectPath, "src/index.ts");
 
       await startDebugging("Debug in Teams (Chrome)");
 

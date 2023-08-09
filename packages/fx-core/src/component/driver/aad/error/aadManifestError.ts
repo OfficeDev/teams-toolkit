@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT
+// Licensed under the MIT license.
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
@@ -64,6 +64,18 @@ export class UnknownResourceAccessTypeUserError extends UserError {
         "error.aad.manifest.UnknownResourceAccessType",
         unknownType
       ),
+      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+    });
+  }
+}
+
+export class DeleteOrUpdatePermissionFailedError extends UserError {
+  constructor(actionName: string) {
+    super({
+      source: actionName,
+      name: "DeleteOrUpdatePermissionFailed",
+      message: getDefaultString("error.aad.manifest.DeleteOrUpdatePermissionFailed"),
+      displayMessage: getLocalizedString("error.aad.manifest.DeleteOrUpdatePermissionFailed"),
       helpLink: "https://aka.ms/teamsfx-aad-manifest",
     });
   }

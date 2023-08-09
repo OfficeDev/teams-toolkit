@@ -13,7 +13,7 @@ import {
   Resource,
   ResourceToDeploy,
   Capability,
-} from "../constants";
+} from "../utils/constants";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import * as chai from "chai";

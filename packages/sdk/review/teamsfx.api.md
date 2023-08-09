@@ -77,7 +77,7 @@ export class AppCredential implements TokenCredential {
 // @public
 export type AppCredentialAuthConfig = OnBehalfOfCredentialAuthConfig;
 
-// @public
+// @public @deprecated
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
@@ -315,10 +315,10 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //
-// @public
+// @public @deprecated
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
-// @public
+// @public @deprecated
 export function createMicrosoftGraphClientWithCredential(credential: TokenCredential, scopes?: string | string[]): Client;
 
 // @public
@@ -377,7 +377,7 @@ export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: stri
 // @public
 export function handleMessageExtensionQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
 
-// @public
+// @public @deprecated
 export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 
 // @public
@@ -458,7 +458,7 @@ export interface MessageExtensionTokenResponse extends TokenResponse {
     ssoTokenExpiration: string;
 }
 
-// @public
+// @public @deprecated
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     constructor(credential: TokenCredential, scopes?: string | string[]);
@@ -483,9 +483,10 @@ class NotificationBot_2 {
     findAllMembers(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2[]>;
     findChannel(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2 | undefined>;
     findMember(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2 | undefined>;
-    getPagedInstallations(pageSize?: number, continuationToken?: string): Promise<PagedData<TeamsBotInstallation_2>>;
+    getPagedInstallations(pageSize?: number, continuationToken?: string, validationEnabled?: boolean): Promise<PagedData<TeamsBotInstallation_2>>;
     // @deprecated
     installations(): Promise<TeamsBotInstallation_2[]>;
+    validateInstallation(conversationReference: Partial<ConversationReference>): Promise<boolean>;
 }
 
 // @public @deprecated
@@ -644,7 +645,7 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
     ssoTokenExpiration: string;
 }
 
-// @public
+// @public @deprecated
 export class TeamsFx implements TeamsFxConfiguration {
     constructor(identityType?: IdentityType, customConfig?: Record<string, string> | AuthenticationConfiguration);
     getConfig(key: string): string;

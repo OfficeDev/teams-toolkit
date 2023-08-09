@@ -19,11 +19,7 @@ import { Utils } from "../../../src/component/generator/spfx/utils/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
 import { setTools } from "../../../src/core/globalVars";
-import {
-  PackageSelectOptionsHelper,
-  QuestionNames,
-  SPFxVersionOptionIds,
-} from "../../../src/question";
+import { QuestionNames, SPFxVersionOptionIds } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 
 describe("SPFxGenerator", function () {
@@ -384,9 +380,9 @@ describe("SPFxGenerator", function () {
       [QuestionNames.AppName]: "spfxTestApp",
       [QuestionNames.SPFxInstallPackage]: SPFxVersionOptionIds.globalPackage,
       [QuestionNames.SPFxSolution]: "new",
+      globalSpfxPackageVersion: "1.17.0",
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
-    sinon.stub(PackageSelectOptionsHelper, "isLowerThanRecommendedVersion").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
 
@@ -460,7 +456,7 @@ describe("SPFxGenerator", function () {
         return ["helloworld", "second"] as any;
       }
     });
-    sinon.stub(fs, "stat").resolves({
+    sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
       },
@@ -490,7 +486,7 @@ describe("SPFxGenerator", function () {
 
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readdir").resolves(["helloworld", "second"] as any);
-    sinon.stub(fs, "stat").resolves({
+    sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
       },
@@ -523,7 +519,7 @@ describe("SPFxGenerator", function () {
         return ["helloworld", "second"] as any;
       }
     });
-    sinon.stub(fs, "stat").resolves({
+    sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
       },

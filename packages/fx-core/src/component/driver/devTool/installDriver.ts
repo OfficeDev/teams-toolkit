@@ -82,7 +82,7 @@ export class ToolsInstallDriver implements StepDriver {
     return wrapRun(async () => {
       const impl = new ToolsInstallDriverImpl(wrapContext);
       return await impl.run(args, outputEnvVarNames);
-    });
+    }, ACTION_NAME);
   }
 }
 
@@ -144,7 +144,7 @@ export class ToolsInstallDriverImpl {
     this.setDevCertTelemetry(trustDevCert, localCertResult);
 
     if (typeof localCertResult.isTrusted === "undefined") {
-      this.context.logProvider.warning(Summaries.devCertSkipped());
+      await this.context.logProvider.warning(Summaries.devCertSkipped());
       this.context.addSummary(Summaries.devCertSkipped());
     } else if (localCertResult.isTrusted === false) {
       throw localCertResult.error;
@@ -173,7 +173,7 @@ export class ToolsInstallDriverImpl {
     if (!funcStatus.isInstalled && funcStatus.error) {
       throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error, funcStatus.error.helpLink);
     } else if (funcStatus.error) {
-      this.context.logProvider.warning(funcStatus.error.message);
+      await this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(
         Summaries.funcSuccess(funcStatus.details.binFolders) + funcStatus.error.message
       );
@@ -205,7 +205,7 @@ export class ToolsInstallDriverImpl {
         dotnetStatus.error.helpLink
       );
     } else if (dotnetStatus.error) {
-      this.context.logProvider.warning(dotnetStatus.error?.message);
+      await this.context.logProvider.warning(dotnetStatus.error?.message);
       this.context.addSummary(dotnetStatus.error?.message);
     } else {
       this.context.addSummary(Summaries.dotnetSuccess(dotnetStatus?.details?.binFolders));

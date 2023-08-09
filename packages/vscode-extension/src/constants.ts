@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
@@ -22,7 +24,7 @@ export enum GlobalKey {
   OpenReadMe = "fx-extension.openReadMe",
   OpenSampleReadMe = "fx-extension.openSampleReadMe",
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
-  ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
+  CreateWarnings = "CreateWarnings",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;

@@ -195,6 +195,21 @@ describe("OfficeAddinGenerator", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
     inputs[QuestionNames.OfficeAddinManifest] = "manifest.xml";
 
+    let progressBarStartCalled = 0;
+    let progressBarNextCalled = 0;
+    let progessBarEndCalled = 0;
+    const createProgressBarStub = sinon.stub(context.userInteraction, "createProgressBar").returns({
+      start: async () => {
+        progressBarStartCalled++;
+      },
+      next: async () => {
+        progressBarNextCalled++;
+      },
+      end: async () => {
+        progessBarEndCalled++;
+      },
+    });
+
     const copyAddinFilesStub = sinon
       .stub(HelperMethods, "copyAddinFiles")
       .callsFake((from: string, to: string) => {
@@ -234,6 +249,9 @@ describe("OfficeAddinGenerator", function () {
     chai.expect(updateManifestStub.calledOnce).to.be.true;
     chai.expect(convertProjectStub.calledOnce).to.be.true;
     chai.expect(inputs[QuestionNames.OfficeAddinHost]).to.eq("Outlook");
+    chai.expect(progressBarStartCalled).to.eq(1);
+    chai.expect(progressBarNextCalled).to.eq(3);
+    chai.expect(progessBarEndCalled).to.eq(1);
   });
 
   afterEach(async () => {
@@ -275,7 +293,7 @@ describe("helperMethods", async () => {
         return;
       });
 
-      sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves(manifestTemplatePath);
+      sandbox.stub(manifestUtils, "getTeamsAppManifestPath").returns(manifestTemplatePath);
     });
 
     afterEach(() => {

@@ -9,3 +9,7 @@ export function convertToAlphanumericOnly(appName: string): string {
 export function loadingOptionsPlaceholder(): string {
   return getLocalizedString("ui.select.LoadingOptionsPlaceholder");
 }
+
+export function loadingDefaultPlaceholder(): string {
+  return getLocalizedString("ui.select.LoadingDefaultPlaceholder");
+}

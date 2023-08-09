@@ -198,7 +198,7 @@ describe("teamsApp/validateAppPackage", async () => {
     }
   });
 
-  it("happy path - partnerCenterValidation", async () => {
+  it("validate app package - error", async () => {
     sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
       errors: [
         {
@@ -255,10 +255,10 @@ describe("teamsApp/validateAppPackage", async () => {
       showMessage: true,
     };
     let result = await teamsAppDriver.run(args, mockedDriverContext);
-    chai.assert(result.isOk());
+    chai.assert(result.isErr());
 
     result = await teamsAppDriver.run(args, contextWithoutUI);
-    chai.assert(result.isOk());
+    chai.assert(result.isErr());
   });
 
   it("validate app package - no error", async () => {

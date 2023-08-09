@@ -3,7 +3,7 @@
 
 import * as vscode from "vscode";
 
-import { ProductName, Stage, ok } from "@microsoft/teamsfx-api";
+import { FxError, ProductName, Result, Stage, ok } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { TaskCommand } from "@microsoft/teamsfx-core";
 import { isValidProjectV3 } from "@microsoft/teamsfx-core";
@@ -36,40 +36,39 @@ const deprecatedTasks = [
 
 const customTasks = Object.freeze({
   [TaskCommand.migrate]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new MigrateTaskTerminal(d),
+    createTerminal: (d: vscode.TaskDefinition) => Promise.resolve(new MigrateTaskTerminal(d)),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.checkPrerequisites]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
+    createTerminal: (d: vscode.TaskDefinition) => Promise.resolve(new PrerequisiteTaskTerminal(d)),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.startLocalTunnel]: {
-    createTerminal: async (d: vscode.TaskDefinition) => {
-      return DevTunnelTaskTerminal.create(d);
-    },
+    createTerminal: (d: vscode.TaskDefinition) => Promise.resolve(DevTunnelTaskTerminal.create(d)),
     presentationReveal: vscode.TaskRevealKind.Silent,
     presentationEcho: true,
     presentationshowReuseMessage: true,
   },
   [TaskCommand.launchWebClient]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new LaunchTeamsClientTerminal(d),
+    createTerminal: (d: vscode.TaskDefinition) => Promise.resolve(new LaunchTeamsClientTerminal(d)),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.provision]: {
-    createTerminal: async (d: vscode.TaskDefinition) =>
-      new LifecycleTaskTerminal(d, Stage.provision),
+    createTerminal: (d: vscode.TaskDefinition) =>
+      Promise.resolve(new LifecycleTaskTerminal(d, Stage.provision)),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.deploy]: {
-    createTerminal: async (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.deploy),
+    createTerminal: (d: vscode.TaskDefinition) =>
+      Promise.resolve(new LifecycleTaskTerminal(d, Stage.deploy)),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
@@ -79,6 +78,7 @@ const customTasks = Object.freeze({
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async provideTasks(
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task[] | undefined> {
@@ -94,15 +94,16 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       async (): Promise<vscode.Task | undefined> => {
         let resolvedTask: vscode.Task | undefined = undefined;
         if (commonUtils.getLocalDebugSessionId() === commonUtils.DebugNoSessionId) {
-          resolvedTask = await this._resolveTask(task, token);
+          resolvedTask = this._resolveTask(task, token);
         } else {
           // Only send telemetry within a local debug session.
           await localTelemetryReporter.runWithTelemetry(
             TelemetryEvent.DebugTaskProvider,
-            async () => {
-              resolvedTask = await this._resolveTask(task, token);
-              return ok(resolvedTask);
-            }
+            () =>
+              new Promise<Result<vscode.Task | undefined, FxError>>((resolve) => {
+                resolvedTask = this._resolveTask(task, token);
+                resolve(ok(resolvedTask));
+              })
           );
         }
         return resolvedTask;
@@ -110,10 +111,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     );
   }
 
-  private async _resolveTask(
+  private _resolveTask(
     task: vscode.Task,
     token?: vscode.CancellationToken | undefined
-  ): Promise<vscode.Task | undefined> {
+  ): vscode.Task | undefined {
     if (task.definition.type !== TeamsfxTaskProvider.type || !task.definition.command) {
       return undefined;
     }

@@ -1,0 +1,4 @@
+version: v1.2
+
+additionalMetadata:
+  sampleTag: testRepo:testSample

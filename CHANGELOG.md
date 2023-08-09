@@ -1,7 +1,7 @@
 ## Changelogs
 |Product|Docuements|README|
 |----|----|----|
-|[ms-teams-vscode-extension](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension)|[WHATISNEW](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/WHATISNEW.md) [CHANGELOG](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/CHANGELOG.md) |[README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/README.md)|
+|[ms-teams-vscode-extension](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension)|[CHANGELOG](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/CHANGELOG.md) |[README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/README.md)|
 |[@microsoft/teamsfx](https://www.npmjs.com/package/@microsoft/teamsfx)| [CHANGELOG](https://github.com/OfficeDev/TeamsFx/blob/main/packages/sdk/CHANGELOG.md)|[README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/sdk/README.md)|
 |[@microsoft/teamsfx-react](https://www.npmjs.com/package/@microsoft/teamsfx-react)|[CHANGELOG](https://github.com/OfficeDev/TeamsFx/blob/main/packages/sdk-react/CHANGELOG.md)|[README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/sdk-react/README.md)|
 |[Microsoft.TeamsFx](https://www.nuget.org/packages/Microsoft.TeamsFx)|[CHANGELOG](https://github.com/OfficeDev/TeamsFx/blob/main/packages/dotnet-sdk/CHANGELOG.md)|[README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/dotnet-sdk/README.md)|

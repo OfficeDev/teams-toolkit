@@ -1,6 +1,5 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -8,10 +7,13 @@ import {
   Notification,
   LocalDebugTaskLabel,
   CliVersion,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { initPage, validateTabNoneSSO } from "../../../playwrightOperation";
+import {
+  initPage,
+  validateTabNoneSSO,
+} from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   startDebugging,
@@ -19,7 +21,7 @@ import {
   waitForTerminal,
   validateUpgrade,
   upgradeByCommandPalette,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { execCommand } from "../../../utils/execCommand";
 import { expect } from "chai";
@@ -33,7 +35,7 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.BasicTab,
+      Capability.TabNonSso,
       "javascript"
     );
     await mirgationDebugTestContext.before();

@@ -2,14 +2,17 @@
  * @author Aocheng Wang <aochengwang@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateNotificationBot } from "../../playwrightOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  initPage,
+  validateNotificationBot,
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
   LocalDebugTaskLabel,
   LocalDebugTaskInfo,
-} from "../../constants";
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";

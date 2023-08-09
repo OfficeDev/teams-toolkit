@@ -12,7 +12,7 @@ provision:
       # based on the definition in manifest. If you don't want to change the
       # name, make sure the name in AAD manifest is the same with the name
       # defined here.
-      name: {{appName}}-aad
+      name: {{appName}}
       # If the value is false, the action will not generate client secret for you
       generateClientSecret: true
       # Authenticate users with a Microsoft work or school account in your
@@ -37,9 +37,9 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
-  
+
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
   - uses: script
     with:
@@ -66,7 +66,7 @@ provision:
       # Relative path to this file. Environment variables in manifest will
       # be replaced before apply to AAD app
       manifestPath: ./aad.manifest.json
-      outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
+      outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

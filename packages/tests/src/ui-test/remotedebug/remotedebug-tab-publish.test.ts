@@ -3,13 +3,16 @@
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../constants";
+import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
   runPublish,
 } from "./remotedebugContext";
-import { execCommandIfExist, createNewProject } from "../../vscodeOperation";
+import {
+  execCommandIfExist,
+  createNewProject,
+} from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
 import { cleanUpStagedPublishApp } from "../../utils/cleanHelper";
 

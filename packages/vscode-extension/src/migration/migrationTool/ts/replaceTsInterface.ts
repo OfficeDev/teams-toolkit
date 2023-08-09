@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   ASTPath,
   identifier,
@@ -30,7 +33,7 @@ export function replaceInterface(
   // find all of TSTypeReference
   const tsTypeReferencePaths: Collection<TSTypeReference> = root.find(TSTypeReference);
   tsTypeReferencePaths.forEach((path) => {
-    const typeNamePath = path.get("typeName");
+    const typeNamePath = path.get("typeName") as ASTPath;
     replaceInterfacePath(typeNamePath, directlyImportReplacements, namespaceImportReplacements);
   });
 
@@ -39,7 +42,7 @@ export function replaceInterface(
     TSExpressionWithTypeArguments
   );
   tsExpressionWithTypeArgumentPaths.forEach((path) => {
-    const expressionPath = path.get("expression");
+    const expressionPath = path.get("expression") as ASTPath;
     replaceInterfacePath(expressionPath, directlyImportReplacements, namespaceImportReplacements);
   });
 }
@@ -59,7 +62,7 @@ function replaceInterfacePath(
   if (!path?.node?.type) {
     return;
   }
-  let targetReplacement;
+  let targetReplacement: TargetReplacement | undefined;
   if (path.node.type === "Identifier") {
     // Directly import
     targetReplacement = directlyImportReplacements.get(path.node.name);

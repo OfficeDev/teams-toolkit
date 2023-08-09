@@ -1,15 +1,14 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
-import { Timeout, Capability, Notification } from "../../../constants";
+import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   startDebugging,
   stopDebugging,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 
 describe("Migration Tests", function () {
@@ -22,7 +21,7 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.Tab,
+      Capability.Bot,
       "javascript"
     );
     await mirgationDebugTestContext.before();

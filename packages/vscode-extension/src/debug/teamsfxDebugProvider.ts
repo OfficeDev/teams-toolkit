@@ -39,7 +39,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
     debugConfiguration: TeamsfxDebugConfiguration,
     token?: vscode.CancellationToken
   ): Promise<vscode.DebugConfiguration | undefined> {
-    return Correlator.runWithId(
+    return await Correlator.runWithId(
       commonUtils.getLocalDebugSessionId(),
       this._resolveDebugConfiguration,
       folder,
@@ -79,14 +79,14 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       let env: string | undefined = undefined;
 
       // match ${{xxx:yyy}}
-      let matchResult = url.match(/\${{(.+):([A-Za-z0-9_]+)}}/);
+      let matchResult = /\${{(.+):([A-Za-z0-9_]+)}}/.exec(url);
       if (matchResult) {
         env = matchResult[1];
       }
 
       if (!env) {
         // match ${{yyy}}
-        matchResult = url.match(/\${{([A-Za-z0-9_]+)}}/);
+        matchResult = /\${{([A-Za-z0-9_]+)}}/.exec(url);
         if (matchResult) {
           // prompt to select env
           const inputs = getSystemInputs();
@@ -127,7 +127,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         TelemetryEvent.DebugProviderResolveDebugConfiguration,
         {
           [TelemetryProperty.DebugRemote]: (!isLocal).toString(),
-          [TelemetryProperty.Hub]: debugConfiguration.teamsfxHub + "",
+          [TelemetryProperty.Hub]: debugConfiguration.teamsfxHub?.toString() ?? "undefined",
         },
         async () => {
           if (debugConfiguration.timeout === undefined) {
@@ -171,11 +171,13 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
       // NOTE: handle the case that msedge/chrome will be resolved twice
       if (!debugConfiguration.teamsfxResolved) {
-        VsCodeLogInstance.info(sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub!));
+        await VsCodeLogInstance.info(
+          sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub ?? Hub.teams)
+        );
         VsCodeLogInstance.outputChannel.appendLine("");
         VsCodeLogInstance.outputChannel.appendLine(
           sideloadingDisplayMessages.sideloadingUrlMessage(
-            debugConfiguration.teamsfxHub!,
+            debugConfiguration.teamsfxHub ?? Hub.teams,
             debugConfiguration.url
           )
         );
@@ -188,7 +190,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
       debugConfiguration.teamsfxResolved = true;
     } catch (error: any) {
-      showError(error);
+      await showError(error);
       terminateAllRunningTeamsfxTasks();
       await vscode.debug.stopDebugging();
       // not for undefined
@@ -202,8 +204,8 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 }
 
 async function generateAccountHint(includeTenantId = true): Promise<string> {
-  let tenantId = undefined,
-    loginHint = undefined;
+  let tenantId: string | undefined = undefined;
+  let loginHint: string | undefined = undefined;
   const accountInfo = M365TokenInstance.getCachedAccountInfo();
   if (accountInfo !== undefined) {
     tenantId = accountInfo.tenantId;
@@ -214,8 +216,8 @@ async function generateAccountHint(includeTenantId = true): Promise<string> {
       const tokenObject = tokenObjectRes.isOk() ? tokenObjectRes.value.accountInfo : undefined;
       if (tokenObject) {
         // user signed in
-        tenantId = tokenObject.tid;
-        loginHint = tokenObject.upn;
+        tenantId = tokenObject.tid as string;
+        loginHint = tokenObject.upn as string;
       } else {
         // no signed user
         loginHint = "login_your_m365_account"; // a workaround that user has the chance to login

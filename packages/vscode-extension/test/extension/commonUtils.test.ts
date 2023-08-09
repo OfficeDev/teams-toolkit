@@ -1,6 +1,7 @@
 import * as chai from "chai";
 import * as os from "os";
 import * as sinon from "sinon";
+import * as cp from "child_process";
 import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
@@ -36,6 +37,14 @@ describe("CommonUtils", () => {
       const version = "4.6.0";
 
       chai.expect(commonUtils.getPackageVersion(version)).equals("formal");
+    });
+  });
+
+  describe("openFolderInExplorer", () => {
+    it("happy path", () => {
+      const folderPath = "fakePath";
+      sinon.stub(cp, "exec");
+      commonUtils.openFolderInExplorer(folderPath);
     });
   });
 
@@ -162,6 +171,12 @@ describe("CommonUtils", () => {
     it("throw error", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
+      const result = await commonUtils.getAppName();
+      chai.expect(result).equals(undefined);
+    });
+    it("should return undefined if getTeamsAppName returns empty string", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(core, "getTeamsAppName").resolves(ok(""));
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });

@@ -3,7 +3,7 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "./commonUtils";
-import { TemplateProject } from "../commonlib/constants";
+import { TemplateProjectFolder } from "./constants";
 import { Capability } from "../utils/constants";
 import path from "path";
 
@@ -96,9 +96,11 @@ export class Executor {
     workspace: string,
     cmd: string,
     env = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    npx = false
   ) {
-    const command = `teamsfx ${cmd} --env ${env}`;
+    const npxCommand = npx ? "npx " : "";
+    const command = `${npxCommand} teamsfx ${cmd} --env ${env}`;
     return this.execute(command, workspace, processEnv);
   }
 
@@ -109,9 +111,10 @@ export class Executor {
   static async provisionWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "provision", env, processEnv);
+    return this.executeCmd(workspace, "provision", env, processEnv, npx);
   }
 
   static async validate(workspace: string, env = "dev") {
@@ -121,9 +124,10 @@ export class Executor {
   static async validateWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "deploy", env, processEnv);
+    return this.executeCmd(workspace, "deploy", env, processEnv, npx);
   }
 
   static async deploy(workspace: string, env = "dev") {
@@ -133,9 +137,10 @@ export class Executor {
   static async deployWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "deploy", env, processEnv);
+    return this.executeCmd(workspace, "deploy", env, processEnv, npx);
   }
 
   static async publish(workspace: string, env = "dev") {
@@ -145,9 +150,10 @@ export class Executor {
   static async publishWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "publish", env, processEnv);
+    return this.executeCmd(workspace, "publish", env, processEnv, npx);
   }
 
   static async preview(workspace: string, env = "dev") {
@@ -157,9 +163,10 @@ export class Executor {
   static async previewWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
-    env = "dev"
+    env = "dev",
+    npx = false
   ) {
-    return this.executeCmd(workspace, "preview", env, processEnv);
+    return this.executeCmd(workspace, "preview", env, processEnv, npx);
   }
 
   static async installCLI(workspace: string, version: string, global: boolean) {
@@ -175,7 +182,7 @@ export class Executor {
   static async createTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
+    template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
     const command = `teamsfx new template ${template} --interactive false `;
@@ -224,11 +231,17 @@ export class Executor {
   static async openTemplateProject(
     appName: string,
     testFolder: string,
-    template: TemplateProject,
-    processEnv?: NodeJS.ProcessEnv
+    template: TemplateProjectFolder,
+    processEnv?: NodeJS.ProcessEnv,
+    subFolder?: string
   ) {
     const timeout = 100000;
-    const oldPath = path.resolve("./resource", template);
+    let oldPath = "";
+    if (subFolder) {
+      oldPath = path.resolve("./resource", subFolder, template);
+    } else {
+      oldPath = path.resolve("./resource", template);
+    }
     const newPath = path.resolve(testFolder, appName);
     try {
       await this.execute(
@@ -245,6 +258,7 @@ export class Executor {
     const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
     editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
     editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+    console.log(`successfully open project: ${newPath}`);
   }
 
   static async setSubscription(

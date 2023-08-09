@@ -6,6 +6,16 @@ on:
       cases:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
+      
+      target-testplan-id:
+        description: "target testplan id: 24569079. If not set, will not archive ado testplan"
+        required: false
+        type: string
+
+      target-version:
+        description: "target TTK version. Sample: 5.0.2-alpha.2fdf2b99b.0, 5.0.2-rc.0"
+        required: false
+        type: string
 
   schedule:
     - cron: "0 22 * * *"
@@ -30,6 +40,8 @@ jobs:
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
+      ADO_TOKEN: ${{ secrets.ADO_PAT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -43,26 +55,16 @@ jobs:
         run: |
           npm config set legacy-peer-deps true
 
+      - name: manage pkgs to setup
+        run: bash .github/scripts/lerna.sh tests
+
       - name: Setup project
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
           max_attempts: 5
           command: |
-            npm run setup-metrics
-
-      - name: Package CLI
-        working-directory: packages/cli
-        run: |
-          rm -f *.tgz
-          npm pack
-          mv *.tgz teamsfx-cli.tgz
-
-      - name: Upload to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Teamsfx-cli
-          path: ./packages/cli/teamsfx-cli.tgz
+            npm run setup
 
       - name: List cases for schedule
         id: schedule-cases
@@ -100,6 +102,23 @@ jobs:
         run: |
           npm run test:e2e:clean
 
+      - name: Archive Test Plan
+        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        working-directory: ./packages/tests
+        run: |
+          npm install
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-version }}`
+          npx ts-node src/scripts/testPlan.ts archive $testplanid
+  
+      - name: Upload testplan to artifact
+        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: testplan
+          path: |
+            ./packages/tests/testplan.json
+
+
   execute-case:
     if: ${{ needs.setup.outputs.cases }}
     env:
@@ -119,6 +138,7 @@ jobs:
       TEAMSFX_AAD_DEPLOY_ONLY: "true"
       SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
       SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
+      ADO_TOKEN: ${{ secrets.ADO_PAT }}
     needs: setup
     runs-on: ubuntu-latest
     strategy:
@@ -145,6 +165,9 @@ jobs:
           sudo apt-get install azure-functions-core-tools-4
           which func
           func --version
+
+      - name: manage pkgs to setup
+        run: bash .github/scripts/lerna.sh tests
 
       - name: Setup legacy-peer-deps
         run: |
@@ -187,7 +210,7 @@ jobs:
           path: packages/tests/src/e2e/resource
 
       - name: Download samples(rc)
-        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false
+        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false && contains(matrix.cases, 'SignatureOutlook') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -200,7 +223,15 @@ jobs:
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
           ref: main
-          path: packages/tests/e2e/src/resource
+          path: packages/tests/src/e2e/resource
+      
+      - name: Download samples from office repo
+        if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'SignatureOutlook')
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/Office-Add-in-samples
+          ref: main
+          path: packages/tests/src/e2e/resource
 
       - name: run test
         working-directory: packages/tests/src/e2e
@@ -230,6 +261,19 @@ jobs:
           name: test-result-${{ steps.get-report-name.outputs.name }}
           path: |
             ./packages/tests/src/e2e/mochawesome-report/mochawesome.json
+      
+      - name: Download TestPlan
+        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: testplan
+          path: ./packages/tests
+
+      - name: Sync to Azure DevOps Test Plan
+        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
+        working-directory: packages/tests
+        run: |
+          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
@@ -255,6 +299,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+
+      - name: manage pkgs to setup
+        run: bash .github/scripts/lerna.sh tests
 
       - name: Setup legacy-peer-deps
         run: |
@@ -428,16 +475,3 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
-
-      - name: Send E-mail to the whole team
-        uses: satak/webrequest-action@master
-        with:
-          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
-          method: POST
-          payload: |
-            {
-              "to": "${{ steps.list-jobs.outputs.to }}",
-              "body": "${{ steps.list-jobs.outputs.body }}",
-              "subject": "${{ steps.list-jobs.outputs.subject }}",
-              "apiKey": "${{ secrets.MAIL_API_KEY }}"
-            }

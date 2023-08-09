@@ -10,7 +10,7 @@ import {
   Timeout,
   TestFilePath,
   Notification,
-} from "../../constants";
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import {
   cleanUpAadApp,
@@ -23,7 +23,7 @@ import {
   execCommandIfExist,
   getNotification,
   clearNotifications,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { ModalDialog, InputBox, VSBrowser } from "vscode-extension-tester";
 import { dotenvUtil } from "../../utils/envUtil";
 

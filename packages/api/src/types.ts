@@ -66,24 +66,11 @@ export interface EnvMeta {
   sideloading: boolean;
 }
 export interface Inputs extends Record<string, any> {
-  projectPath?: string;
-  targetEnvName?: string;
-  sourceEnvName?: string;
-  targetResourceGroupName?: string;
-  targetResourceLocationName?: string; // for vs to create a new resource group
-  targetSubscriptionId?: string;
   platform: Platform;
-  stage?: Stage;
-  vscodeEnv?: VsCodeEnv;
-  ignoreConfigPersist?: boolean;
-  ignoreEnvInfo?: boolean;
-  env?: string;
+  projectPath?: string;
   projectId?: string;
-  existingResources?: string[];
-  locale?: string;
-  isM365?: boolean;
-  inProductDoc?: boolean; // AB test for in product doc feature
-  teamsAppFromTdp?: any;
+  nonInteractive?: boolean;
+  correlationId?: string;
 }
 
 export type InputsWithProjectPath = Inputs & { projectPath: string };
@@ -130,3 +117,42 @@ export type ManifestCapability =
       snippet?: IWebApplicationInfo;
       existingApp?: boolean;
     };
+
+export enum OpenAIManifestAuthType {
+  None = "none",
+  UserHttp = "user_http",
+  ServiceHttp = "service_http",
+  OAuth = "oauth",
+}
+
+export interface OpenAIPluginManifest {
+  schema_version: string;
+  name_for_human: string;
+  name_for_model: string;
+  description_for_human: string;
+  description_for_model: string;
+  auth: { type: OpenAIManifestAuthType };
+  api: {
+    type: string;
+    url: string;
+  };
+  logo_url: string;
+  contact_email: string;
+  legal_info_url: string;
+}
+
+export interface ApiOperation {
+  id: string;
+  label: string;
+  groupName: string;
+}
+
+export interface Warning {
+  type: string;
+  content: string;
+}
+
+export interface CreateProjectResult {
+  projectPath: string;
+  warnings?: Warning[];
+}

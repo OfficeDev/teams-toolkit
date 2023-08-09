@@ -44,9 +44,10 @@ import {
 } from "./error";
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
-import { PackageSelectOptionsHelper, SPFxVersionOptionIds } from "../../../question/create";
+import { SPFxVersionOptionIds } from "../../../question/create";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
+import semver from "semver";
 
 export class SPFxGenerator {
   @hooks([
@@ -104,7 +105,7 @@ export class SPFxGenerator {
       getLocalizedString("plugins.spfx.import.title"),
       3
     );
-    importProgress.start();
+    await importProgress.start();
 
     const importDetails = [];
     try {
@@ -149,9 +150,9 @@ export class SPFxGenerator {
 
       importDetails.push(
         `(.) Processing: Generating SPFx project templates with app name: ${
-          inputs[QuestionNames.AppName]
-        }, component id: ${webpartManifest["id"]}, web part name: ${
-          webpartManifest["preconfiguredEntries"][0].title.default
+          inputs[QuestionNames.AppName] as string
+        }, component id: ${webpartManifest["id"] as string}, web part name: ${
+          webpartManifest["preconfiguredEntries"][0].title.default as string
         }`
       );
       const templateRes = await Generator.generateTemplate(
@@ -175,8 +176,8 @@ export class SPFxGenerator {
       importDetails.push(
         getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
       );
-      context.logProvider.info(importDetails.join(EOL), true);
-      context.logProvider.error(
+      await context.logProvider.info(importDetails.join(EOL), true);
+      void context.logProvider.error(
         getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
       );
 
@@ -191,11 +192,11 @@ export class SPFxGenerator {
     importDetails.push(
       getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
     );
-    context.logProvider.info(importDetails.join(EOL), true);
-    context.logProvider.info(
+    await context.logProvider.info(importDetails.join(EOL), true);
+    void context.logProvider.info(
       getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
     );
-    context.userInteraction.showMessage(
+    void context.userInteraction.showMessage(
       "info",
       getLocalizedString("plugins.spfx.import.success", destinationPath),
       false
@@ -227,12 +228,14 @@ export class SPFxGenerator {
 
       await progressHandler?.next(getLocalizedString("plugins.spfx.scaffold.dependencyCheck"));
 
-      const yoChecker = new YoChecker(context.logProvider!);
-      const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
+      const yoChecker = new YoChecker(context.logProvider);
+      const spGeneratorChecker = new GeneratorChecker(context.logProvider);
 
       if (shouldInstallLocally) {
         const latestYoInstalled = await yoChecker.isLatestInstalled();
-        const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled();
+        const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled(
+          inputs.latestSpfxPackageVersion
+        );
 
         if (!latestYoInstalled || !latestGeneratorInstalled) {
           await progressHandler?.next(
@@ -254,7 +257,12 @@ export class SPFxGenerator {
           }
         }
       } else {
-        const isLowerVersion = PackageSelectOptionsHelper.isLowerThanRecommendedVersion();
+        const isLowerVersion =
+          !!inputs.globalSpfxPackageVersion &&
+          semver.lte(
+            inputs.globalSpfxPackageVersion,
+            Constants.RecommendedLowestSpfxVersion.substring(1)
+          );
         if (isLowerVersion) {
           context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.UseNotRecommendedVersion);
         }
@@ -274,13 +282,13 @@ export class SPFxGenerator {
       const yoEnv: NodeJS.ProcessEnv = process.env;
       if (yoEnv.PATH) {
         yoEnv.PATH = shouldInstallLocally
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+          ? `${yoChecker.getBinFolders().join(path.delimiter)}${path.delimiter}${
               process.env.PATH ?? ""
             }`
           : process.env.PATH;
       } else {
         yoEnv.Path = shouldInstallLocally
-          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+          ? `${yoChecker.getBinFolders().join(path.delimiter)}${path.delimiter}${
               process.env.Path ?? ""
             }`
           : process.env.Path;
@@ -321,14 +329,14 @@ export class SPFxGenerator {
         );
       } catch (yoError) {
         if ((yoError as any).message) {
-          context.logProvider.error((yoError as any).message);
+          void context.logProvider.error((yoError as any).message);
         }
         throw YoGeneratorScaffoldError();
       }
 
       const newPath = path.join(destinationPath, "src");
       if (!isAddSPFx) {
-        const currentPath = path.join(destinationPath, solutionName!);
+        const currentPath = path.join(destinationPath, solutionName);
         await fs.rename(currentPath, newPath);
       }
 
@@ -378,7 +386,7 @@ export class SPFxGenerator {
       return ok(componentId);
     } catch (error) {
       await progressHandler?.end(false);
-      return err(ScaffoldError(error));
+      return err(ScaffoldError(error as Error));
     }
   }
 
@@ -413,7 +421,7 @@ export class SPFxGenerator {
   private static async getWebpartManifest(spfxFolder: string): Promise<any | undefined> {
     const webpartsDir = path.join(spfxFolder, "src", "webparts");
     if (await fs.pathExists(webpartsDir)) {
-      const webparts = (await fs.readdir(webpartsDir)).filter(async (file) =>
+      const webparts = (await fs.readdir(webpartsDir)).filter((file) =>
         fs.statSync(path.join(webpartsDir, file)).isDirectory()
       );
       if (webparts.length < 1) {
@@ -424,7 +432,7 @@ export class SPFxGenerator {
       const webpartManifestPath = path.join(
         webpartsDir,
         webparts[0],
-        `${webpartName}WebPart.manifest.json`
+        `${webpartName as string}WebPart.manifest.json`
       );
       if (!(await fs.pathExists(webpartManifestPath))) {
         throw new FileNotFoundError(
@@ -469,7 +477,7 @@ export class SPFxGenerator {
       importDetails.push(`(√) Done: Succeeded to load manifest.json.`);
 
       const webpartsDir = path.join(spfxFolder, "src", "webparts");
-      const webparts = (await fs.readdir(webpartsDir)).filter(async (file) =>
+      const webparts = (await fs.readdir(webpartsDir)).filter((file) =>
         fs.statSync(path.join(webpartsDir, file)).isDirectory()
       );
       if (webparts.length > 1) {
@@ -481,7 +489,7 @@ export class SPFxGenerator {
           const webpartManifestPath = path.join(
             webpartsDir,
             webpart,
-            `${webpart.split(path.sep).pop()}WebPart.manifest.json`
+            `${webpart.split(path.sep).pop() as string}WebPart.manifest.json`
           );
           if (!(await fs.pathExists(webpartManifestPath))) {
             importDetails.push(
@@ -498,7 +506,11 @@ export class SPFxGenerator {
               .trim()
           );
           importDetails.push(
-            ` [${i}] Adding web part to Teams manifest with component id: ${webpartManifest["id"]}, web part name: ${webpartManifest["preconfiguredEntries"][0].title.default}...`
+            ` [${i}] Adding web part to Teams manifest with component id: ${
+              webpartManifest["id"] as string
+            }, web part name: ${
+              webpartManifest["preconfiguredEntries"][0].title.default as string
+            }...`
           );
           const componentId = webpartManifest["id"];
           const webpartName = webpartManifest["preconfiguredEntries"][0].title.default;

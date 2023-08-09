@@ -44,7 +44,7 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    return wrapRun(() => this.copy(args, wrapContext));
+    return wrapRun(() => this.copy(args, wrapContext), actionName);
   }
 
   public async execute(

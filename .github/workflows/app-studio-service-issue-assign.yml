@@ -38,17 +38,3 @@ jobs:
           token: ${{secrets.GITHUB_TOKEN}}
         env:
           ISSUE_NUMBER: ${{github.event.inputs.issueNumber}}
-
-      - name: Send E-mail to issue assignee
-        if: ${{ steps.check.outputs.to != '' }}
-        uses: satak/webrequest-action@master
-        with:
-          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
-          method: POST
-          payload: |
-            {
-              "to": "${{ steps.check.outputs.to }}",
-              "body": "${{ steps.check.outputs.body }}",
-              "subject": "${{ steps.check.outputs.subject }}",
-              "apiKey": "${{ secrets.MAIL_API_KEY }}"
-            }

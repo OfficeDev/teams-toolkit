@@ -1,19 +1,22 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as path from "path";
 import * as fs from "fs-extra";
 import { expect } from "chai";
 import { InputBox, VSBrowser } from "vscode-extension-tester";
-import { CommandPaletteCommands, Timeout, Notification } from "../../constants";
+import {
+  CommandPaletteCommands,
+  Timeout,
+  Notification,
+} from "../../utils/constants";
 import { RemoteDebugTestContext } from "./remotedebugContext";
 import {
   execCommandIfExist,
   getNotification,
   createNewProject,
   clearNotifications,
-} from "../../vscodeOperation";
-import { initPage, validateSpfx } from "../../playwrightOperation";
+} from "../../utils/vscodeOperation";
+import { initPage, validateSpfx } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
@@ -84,7 +87,7 @@ describe("Remote debug Tests", function () {
       await driver.sleep(Timeout.longTimeWait);
 
       // Validate app name is in the page
-      await validateSpfx(page, appName);
+      await validateSpfx(page, { displayName: appName });
     }
   );
 });

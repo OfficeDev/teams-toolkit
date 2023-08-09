@@ -5,7 +5,7 @@
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
 import { hooks } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, Platform, Result, SystemError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -21,7 +21,6 @@ import {
   MigrationContext,
 } from "../../../../src/core/middleware/utils/migrationContext";
 import {
-  generateAppYml,
   manifestsMigration,
   statesMigration,
   updateLaunchJson,
@@ -154,6 +153,7 @@ describe("ProjectMigratorMW", () => {
     const tools = new MockTools();
     setTools(tools);
     sandbox.stub(MigratorV3, "migrate").throws(new Error("mocker error"));
+    sandbox.stub(MigratorV3, "rollbackMigration").resolves();
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
     inputs.projectPath = projectPath;
@@ -161,7 +161,40 @@ describe("ProjectMigratorMW", () => {
       arguments: [inputs],
     };
     const context = await MigrationContext.create(ctx);
-    const res = wrapRunMigration(context, migrate);
+    try {
+      await wrapRunMigration(context, migrate);
+    } catch (error) {
+      assert.isTrue(error.message.includes("mocker error"));
+      return;
+    }
+    assert.fail("should throw");
+  });
+
+  it("wrap run unhandled error ", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    sandbox.stub(MigratorV3, "preMigration").rejects({
+      code: "ENOENT",
+      path: "project/mocked_file",
+      message: "mocked missing file error",
+    });
+    MigratorV3.subMigrations[0] = MigratorV3.preMigration;
+    sandbox.stub(MigratorV3, "rollbackMigration").resolves();
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const ctx = {
+      arguments: [inputs],
+    };
+    const context = await MigrationContext.create(ctx);
+    try {
+      await wrapRunMigration(context, migrate);
+    } catch (error) {
+      assert.isTrue(error.message.includes("mocked missing file error"));
+      assert.isTrue(context.currentStep === "preMigration");
+      return;
+    }
+    assert.fail("should throw");
   });
 
   it("happy path run error - notAllowedMigrationError", async () => {
@@ -937,9 +970,9 @@ describe("userdataMigration", () => {
 
   it("Should successfully resolve different EOLs of userdata", async () => {
     sandbox
-      .stub(fs, "readFileSync")
-      .returns(
-        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n"
+      .stub(fs, "readFile")
+      .resolves(
+        "fx-resource-aad-app-for-teams.clientSecret=abcd\nfx-resource-bot.botPassword=1234\n" as unknown as Buffer
       );
 
     const migrationContext = await mockMigrationContext(projectPath);
@@ -1206,6 +1239,20 @@ describe("Migration utils", () => {
         source: VersionSource.teamsapp,
       }),
       VersionState.unsupported
+    );
+    assert.equal(
+      getVersionState({
+        version: "v1.2",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
+        version: "1.2",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
     );
     assert.equal(
       getVersionState({

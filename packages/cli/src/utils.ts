@@ -12,7 +12,7 @@ import {
   Question,
   SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
-import { getSingleOption } from "@microsoft/teamsfx-core";
+import { getSingleOption, sampleProvider } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
@@ -186,4 +186,18 @@ export function getVersion(): string {
   const pkgPath = path.resolve(__dirname, "..", "package.json");
   const pkgContent = fs.readJsonSync(pkgPath);
   return pkgContent.version;
+}
+
+export async function getTemplates() {
+  await sampleProvider.fetchSampleConfig();
+  const samples = sampleProvider.SampleCollection.samples.map((sample) => {
+    return {
+      tags: sample.tags,
+      title: sample.title,
+      description: sample.shortDescription,
+      sampleAppName: sample.id,
+      sampleAppUrl: sample.downloadUrl,
+    };
+  });
+  return samples;
 }

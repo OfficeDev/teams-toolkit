@@ -66,9 +66,7 @@ describe("Collaboration", function () {
         }
       );
 
-      expect(checkPermissionResult.stdout).to.contains(
-        "Resource Name: Azure AD App, Permission: Owner"
-      );
+      // TODO: Check for aad admin is skipped since now test account will not be added as admin when create aad app.
       expect(checkPermissionResult.stdout).to.contains(
         "Resource Name: Teams App, Permission: Administrator"
       );

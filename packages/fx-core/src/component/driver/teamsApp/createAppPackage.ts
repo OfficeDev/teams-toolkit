@@ -17,6 +17,7 @@ import { Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
+import { isCopilotPluginEnabled } from "../../../common/featureFlags";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -148,6 +149,47 @@ export class CreateAppPackageDriver implements StepDriver {
         const fileName = `${appDirectory}/${file}`;
         const dir = path.dirname(file);
         zip.addLocalFile(fileName, dir === "." ? "" : dir);
+      }
+    }
+
+    // M365 Copilot plugin, API specification and Adaptive card templates
+    if (
+      isCopilotPluginEnabled() &&
+      manifest.composeExtensions &&
+      manifest.composeExtensions.length > 0 &&
+      manifest.composeExtensions[0].type == "apiBased" &&
+      manifest.composeExtensions[0].apiSpecFile
+    ) {
+      const apiSpecFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecFile}`;
+      if (!(await fs.pathExists(apiSpecFile))) {
+        return err(
+          new FileNotFoundError(
+            actionName,
+            apiSpecFile,
+            "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+          )
+        );
+      }
+      const dir = path.dirname(manifest.composeExtensions[0].apiSpecFile);
+      zip.addLocalFile(apiSpecFile, dir === "." ? "" : dir);
+
+      if (manifest.composeExtensions[0].commands.length > 0) {
+        for (const command of manifest.composeExtensions[0].commands) {
+          if (command.apiResponseRenderingTemplate) {
+            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplate}`;
+            if (!(await fs.pathExists(adaptiveCardFile))) {
+              return err(
+                new FileNotFoundError(
+                  actionName,
+                  adaptiveCardFile,
+                  "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+                )
+              );
+            }
+            const dir = path.dirname(command.apiResponseRenderingTemplate);
+            zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
+          }
+        }
       }
     }
 

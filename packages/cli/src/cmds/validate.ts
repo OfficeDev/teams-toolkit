@@ -2,8 +2,11 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import { validateAppPackageOption, validateSchemaOption } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
+import {
+  CoreQuestionNames,
+  validateAppPackageOption,
+  validateSchemaOption,
+} from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -15,6 +18,7 @@ import {
   ValidateApplicationOptions,
 } from "../constants";
 import { ArgumentConflictError, MissingRequiredArgumentError } from "../error";
+import { globals } from "../globals";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -31,6 +35,7 @@ export class ManifestValidate extends YargsCommand {
   public readonly description = "Validate the Teams app using manifest schema or validation rules.";
 
   public builder(yargs: Argv): Argv<any> {
+    globals.options = ["manifest-file-path", "app-package-file-path", "env"];
     return yargs
       .hide("interactive")
       .version(false)
@@ -61,8 +66,10 @@ export class ManifestValidate extends YargsCommand {
       if (!CLIUIInstance.interactive) {
         if (args[AppPackageFilePathParamName]) {
           inputs[CoreQuestionNames.ValidateMethod] = validateAppPackageOption.id;
+          inputs[CoreQuestionNames.TeamsAppPackageFilePath] = args[AppPackageFilePathParamName];
         } else {
           inputs[CoreQuestionNames.ValidateMethod] = validateSchemaOption.id;
+          inputs[CoreQuestionNames.TeamsAppManifestFilePath] = args[ManifestFilePathParamName];
         }
       }
       const result = await core.validateApplication(inputs);

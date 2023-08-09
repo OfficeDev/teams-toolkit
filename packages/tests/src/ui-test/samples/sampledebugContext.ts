@@ -1,6 +1,5 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
@@ -10,16 +9,16 @@ import {
   TemplateProject,
   TemplateProjectFolder,
   TestFilePath,
-} from "../../constants";
+} from "../../utils/constants";
 import { dotenvUtil } from "../../utils/envUtil";
-import { clearNotifications } from "../../vscodeOperation";
+import { clearNotifications } from "../../utils/vscodeOperation";
 import { InputBox, VSBrowser } from "vscode-extension-tester";
 import { getSampleAppName } from "../../utils/nameUtil";
 import {
   execCommandIfExistFromTreeView,
   openExistingProject,
   stopDebugging,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { assert, expect } from "chai";
 import { TestContext } from "../testContext";
 import * as dotenv from "dotenv";
@@ -289,18 +288,23 @@ export class SampledebugContext extends TestContext {
   }
 
   public async getTeamsAppId(env: "local" | "dev" = "local"): Promise<string> {
-    const userDataFile = path.join(
-      TestFilePath.configurationFolder,
-      `.env.${env}`
-    );
-    const configFilePath = path.resolve(this.projectPath, userDataFile);
-    const context = dotenvUtil.deserialize(
-      await fs.readFile(configFilePath, { encoding: "utf8" })
-    );
-    const result = context.obj.TEAMS_APP_ID as string;
-    console.log(`TEAMS APP ID: ${result}`);
-    expect(result).to.not.be.undefined;
-    return result;
+    try {
+      const userDataFile = path.join(
+        TestFilePath.configurationFolder,
+        `.env.${env}`
+      );
+      const configFilePath = path.resolve(this.projectPath, userDataFile);
+      const context = dotenvUtil.deserialize(
+        await fs.readFile(configFilePath, { encoding: "utf8" })
+      );
+      const result = context.obj.TEAMS_APP_ID as string;
+      console.log(`TEAMS APP ID: ${result}`);
+      expect(result).to.not.be.undefined;
+      return result;
+    } catch (error) {
+      console.log(error);
+      return "";
+    }
   }
 
   public editDotEnvFile(

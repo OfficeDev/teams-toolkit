@@ -36,7 +36,7 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
     if (!globalVariables.workspaceUri || !isValidProject(globalVariables.workspaceUri.fsPath)) {
       return ok(Void);
     }
-    return await this.mutex.runExclusive(async () => {
+    return await this.mutex.runExclusive(() => {
       if (!this.needRefresh) {
         this.needRefresh = true;
         this._onDidChangeTreeData.fire();
@@ -45,10 +45,10 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
     });
   }
 
-  public refreshRemoteEnvWarning() {
+  public async refreshRemoteEnvWarning() {
     // TODO: remove the dependency of child number.
     // Reload the whole treeview because collapsible state need to be recalculated.
-    this.reloadEnvironments();
+    await this.reloadEnvironments();
 
     // for (const node of this.environments) {
     //   const envNode = node as EnvironmentNode;
@@ -62,7 +62,7 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
     return element.getTreeItem();
   }
 
-  public getChildren(element?: DynamicNode): Thenable<DynamicNode[] | undefined | null> {
+  public getChildren(element?: DynamicNode): vscode.ProviderResult<DynamicNode[]> {
     if (!element) {
       return this.getEnvironments();
     }

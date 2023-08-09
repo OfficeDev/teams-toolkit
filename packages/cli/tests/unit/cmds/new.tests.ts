@@ -2,14 +2,13 @@
 // Licensed under the MIT license.
 
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
-import { FxCore, UserCancelError } from "@microsoft/teamsfx-core";
+import { FxCore, sampleProvider, UserCancelError } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import "mocha";
 import sinon from "sinon";
 import yargs from "yargs";
 import * as activate from "../../../src/activate";
 import New from "../../../src/cmds/new";
-import * as constants from "../../../src/constants";
 import { RootFolderNode } from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
@@ -28,10 +27,12 @@ describe("New Command Tests", function () {
     mockTelemetry(sandbox, telemetryEvents);
     mockLogProvider(sandbox, logs);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
-    sandbox.stub(FxCore.prototype, "createProject").resolves(ok(""));
+    sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "" }));
+    sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "" }));
     sandbox.stub(questionUtils, "filterQTreeNode").resolves(RootFolderNode);
     sandbox.stub(utils, "flattenNodes").returns([RootFolderNode]);
     sandbox.stub(fs, "pathExistsSync").callsFake((filePath: string) => !filePath.includes("fake"));
+    sandbox.stub(sampleProvider, "fetchSampleConfig").resolves();
   });
 
   afterEach(() => {
@@ -47,7 +48,6 @@ describe("New Command Tests", function () {
     const cmd = new New();
     await cmd.builder(yargs);
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
-    expect(positionals).deep.equals(["template-name"], JSON.stringify(positionals));
   });
 
   it("Builder Check - error", async () => {
@@ -106,7 +106,7 @@ describe("New Command Tests", function () {
     const result = await listCmd.runCommand({});
     expect(result.isOk()).equals(true);
     expect(logs.length).equals(3);
-    expect(logs[1]).includes(JSON.stringify(constants.templates, undefined, 4));
+    expect(logs[1]).includes(JSON.stringify(await utils.getTemplates(), undefined, 4));
     expect(logs[2]).includes("teamsfx new template <sampleAppName>");
   });
 });

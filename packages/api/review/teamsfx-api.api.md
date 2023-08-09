@@ -13,7 +13,17 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
-export const AdaptiveCardsFolderName = "adaptiveCards";
+export const AdaptiveFolderName = "adaptiveCards";
+
+// @public (undocumented)
+export interface ApiOperation {
+    // (undocumented)
+    groupName: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+}
 
 // @public (undocumented)
 export const AppPackageFolderName = "appPackage";
@@ -67,6 +77,8 @@ export interface BaseQuestion {
     title?: string | LocalFunc<string | undefined>;
     totalSteps?: number;
     value?: unknown;
+    // (undocumented)
+    valueType?: "skip" | "success";
 }
 
 // @public
@@ -86,8 +98,115 @@ export abstract class BasicLogin {
 // @public (undocumented)
 export const BuildFolderName = "build";
 
+// Warning: (ae-forgotten-export) The symbol "CLICommandOptionBase" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export interface CLIArrayOption extends CLICommandOptionBase {
+    // (undocumented)
+    choiceListCommand?: string;
+    // (undocumented)
+    choices?: string[];
+    // (undocumented)
+    default?: string[];
+    // (undocumented)
+    type: "array";
+    // (undocumented)
+    value?: string[];
+}
+
+// @public (undocumented)
+export interface CLIBooleanOption extends CLICommandOptionBase {
+    // (undocumented)
+    default?: boolean;
+    // (undocumented)
+    type: "boolean";
+    // (undocumented)
+    value?: boolean;
+}
+
+// @public (undocumented)
+export interface CLICommand {
+    // (undocumented)
+    arguments?: CLICommandArgument[];
+    // (undocumented)
+    commands?: CLICommand[];
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    examples?: CLIExample[];
+    // (undocumented)
+    footer?: string;
+    // (undocumented)
+    fullName?: string;
+    // (undocumented)
+    handler?: (cmd: CLIContext) => Promise<Result<undefined, FxError>>;
+    // (undocumented)
+    header?: string;
+    // (undocumented)
+    hidden?: boolean;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    options?: CLICommandOption[];
+    // (undocumented)
+    sortCommands?: boolean;
+    // (undocumented)
+    sortOptions?: boolean;
+    // (undocumented)
+    telemetry?: {
+        event: string;
+    };
+    // (undocumented)
+    version?: string;
+}
+
+// @public (undocumented)
+export type CLICommandArgument = CLICommandOption;
+
+// @public (undocumented)
+export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOption;
+
+// @public (undocumented)
+export interface CLIContext {
+    // (undocumented)
+    argumentValues: string[];
+    // (undocumented)
+    command: CLICommand;
+    // (undocumented)
+    globalOptionValues: Record<string, OptionValue>;
+    // (undocumented)
+    optionValues: Record<string, OptionValue>;
+    // (undocumented)
+    telemetryProperties: Record<string, string>;
+}
+
+// @public (undocumented)
+export interface CLIExample {
+    // (undocumented)
+    command: string;
+    // (undocumented)
+    description: string;
+}
+
+// @public (undocumented)
+export type CLIOptionType = "boolean" | "string" | "array";
+
 // @public (undocumented)
 export const CLIPlatforms: Platform[];
+
+// @public (undocumented)
+export interface CLIStringOption extends CLICommandOptionBase {
+    // (undocumented)
+    choiceListCommand?: string;
+    // (undocumented)
+    choices?: string[];
+    // (undocumented)
+    default?: string;
+    // (undocumented)
+    type: "string";
+    // (undocumented)
+    value?: string;
+}
 
 // @public
 export enum Colors {
@@ -134,6 +253,14 @@ export enum CoreCallbackEvent {
     unlock = "unlock"
 }
 
+// @public (undocumented)
+export interface CreateProjectResult {
+    // (undocumented)
+    projectPath: string;
+    // (undocumented)
+    warnings?: Warning[];
+}
+
 // @public
 export interface CryptoProvider {
     decrypt(ciphertext: string): Result<string, FxError>;
@@ -166,6 +293,8 @@ export interface EnvMeta {
 
 // @public (undocumented)
 export interface ErrorOptionBase {
+    // (undocumented)
+    categories?: string[];
     // (undocumented)
     displayMessage?: string;
     // (undocumented)
@@ -231,6 +360,8 @@ export interface FuncValidation<T extends string | string[] | OptionItem | Optio
 
 // @public (undocumented)
 export interface FxError extends Error {
+    // (undocumented)
+    categories?: string[];
     innerError?: any;
     source: string;
     timestamp: Date;
@@ -258,41 +389,15 @@ export interface InputResult<T> {
 // @public (undocumented)
 export interface Inputs extends Record<string, any> {
     // (undocumented)
-    env?: string;
+    correlationId?: string;
     // (undocumented)
-    existingResources?: string[];
-    // (undocumented)
-    ignoreConfigPersist?: boolean;
-    // (undocumented)
-    ignoreEnvInfo?: boolean;
-    // (undocumented)
-    inProductDoc?: boolean;
-    // (undocumented)
-    isM365?: boolean;
-    // (undocumented)
-    locale?: string;
+    nonInteractive?: boolean;
     // (undocumented)
     platform: Platform;
     // (undocumented)
     projectId?: string;
     // (undocumented)
     projectPath?: string;
-    // (undocumented)
-    sourceEnvName?: string;
-    // (undocumented)
-    stage?: Stage;
-    // (undocumented)
-    targetEnvName?: string;
-    // (undocumented)
-    targetResourceGroupName?: string;
-    // (undocumented)
-    targetResourceLocationName?: string;
-    // (undocumented)
-    targetSubscriptionId?: string;
-    // (undocumented)
-    teamsAppFromTdp?: any;
-    // (undocumented)
-    vscodeEnv?: VsCodeEnv;
 }
 
 // @public (undocumented)
@@ -302,6 +407,9 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
+    additionalValidationOnAccept?: ValidateFunc<string>;
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     password?: boolean;
 }
 
@@ -323,6 +431,7 @@ export interface IQTreeNode {
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
+    interactiveOnly?: "self" | "children" | "all";
 }
 
 // @public (undocumented)
@@ -397,6 +506,9 @@ export type ManifestCapability = {
 };
 
 // @public (undocumented)
+export const ManifestTemplateFileName = "manifest.json";
+
+// @public (undocumented)
 export type MaybePromise<T> = T | Promise<T>;
 
 // @public (undocumented)
@@ -410,6 +522,8 @@ export interface MultiFileQuestion extends UserInputQuestion {
 
 // @public
 export interface MultiSelectConfig extends UIConfig<string[]> {
+    // (undocumented)
+    default?: string[] | (() => Promise<string[]>);
     onDidChangeSelection?: OnSelectionChangeFunc;
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
@@ -418,6 +532,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 
 // @public
 export interface MultiSelectQuestion extends UserInputQuestion {
+    cliChoiceListCommand?: string;
     default?: string[] | LocalFunc<string[] | undefined>;
     dynamicOptions?: DynamicOptions;
     onDidChangeSelection?: OnSelectionChangeFunc;
@@ -436,6 +551,47 @@ export type MultiSelectResult = InputResult<StaticOptions>;
 // @public (undocumented)
 export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
 
+// @public (undocumented)
+export enum OpenAIManifestAuthType {
+    // (undocumented)
+    None = "none",
+    // (undocumented)
+    OAuth = "oauth",
+    // (undocumented)
+    ServiceHttp = "service_http",
+    // (undocumented)
+    UserHttp = "user_http"
+}
+
+// @public (undocumented)
+export interface OpenAIPluginManifest {
+    // (undocumented)
+    api: {
+        type: string;
+        url: string;
+    };
+    // (undocumented)
+    auth: {
+        type: OpenAIManifestAuthType;
+    };
+    // (undocumented)
+    contact_email: string;
+    // (undocumented)
+    description_for_human: string;
+    // (undocumented)
+    description_for_model: string;
+    // (undocumented)
+    legal_info_url: string;
+    // (undocumented)
+    logo_url: string;
+    // (undocumented)
+    name_for_human: string;
+    // (undocumented)
+    name_for_model: string;
+    // (undocumented)
+    schema_version: string;
+}
+
 // @public
 export interface OptionItem {
     buttons?: {
@@ -451,6 +607,9 @@ export interface OptionItem {
     id: string;
     label: string;
 }
+
+// @public (undocumented)
+export type OptionValue = string | boolean | string[] | undefined;
 
 // @public
 export interface PermissionRequestProvider {
@@ -484,6 +643,7 @@ export class QTreeNode implements IQTreeNode {
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
+    interactiveOnly?: "self" | "children" | "all";
     trim(): QTreeNode | undefined;
     // (undocumented)
     validate(): boolean;
@@ -497,6 +657,7 @@ export type SelectFileConfig = UIConfig<string> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string | (() => Promise<string>);
     possibleFiles?: {
         id: string;
         label: string;
@@ -512,13 +673,16 @@ export type SelectFilesConfig = UIConfig<string[]> & {
     filters?: {
         [name: string]: string[];
     };
+    default?: string[] | (() => Promise<string[]>);
 };
 
 // @public (undocumented)
 export type SelectFilesResult = InputResult<string[]>;
 
 // @public
-export type SelectFolderConfig = UIConfig<string>;
+export type SelectFolderConfig = UIConfig<string> & {
+    default?: string | (() => Promise<string>);
+};
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
@@ -568,6 +732,8 @@ export interface SingleFileQuestion extends UserInputQuestion {
 
 // @public
 export interface SingleSelectConfig extends UIConfig<string> {
+    // (undocumented)
+    default?: string | (() => Promise<string>);
     options: StaticOptions | (() => Promise<StaticOptions>);
     returnObject?: boolean;
     skipSingleOption?: boolean;
@@ -575,6 +741,7 @@ export interface SingleSelectConfig extends UIConfig<string> {
 
 // @public
 export interface SingleSelectQuestion extends UserInputQuestion {
+    cliChoiceListCommand?: string;
     default?: string | LocalFunc<string | undefined>;
     dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
@@ -606,6 +773,8 @@ export enum Stage {
     buildAad = "buildAad",
     // (undocumented)
     checkPermission = "checkPermission",
+    // (undocumented)
+    copilotPluginAddAPI = "copilotPluginAddAPI",
     // (undocumented)
     create = "create",
     // (undocumented)
@@ -706,6 +875,8 @@ export type SubscriptionInfo = {
 export class SystemError extends Error implements FxError {
     constructor(opt: SystemErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     innerError?: any;
     issueLink?: string;
@@ -764,6 +935,7 @@ export const TemplateFolderName = "templates";
 
 // @public
 export interface TextInputQuestion extends UserInputQuestion {
+    additionalValidationOnAccept?: StringValidation | FuncValidation<string>;
     default?: string | LocalFunc<string | undefined>;
     password?: boolean;
     // (undocumented)
@@ -866,7 +1038,7 @@ export interface UIConfig<T> {
         tooltip: string;
         command: string;
     }[];
-    default?: T;
+    default?: T | (() => Promise<T>);
     name: string;
     placeholder?: string;
     prompt?: string;
@@ -880,6 +1052,8 @@ export interface UIConfig<T> {
 export class UserError extends Error implements FxError {
     constructor(opt: UserErrorOptions);
     constructor(source: string, name: string, message: string, displayMessage?: string);
+    // (undocumented)
+    categories?: string[];
     displayMessage?: string;
     helpLink?: string;
     innerError?: any;
@@ -896,9 +1070,17 @@ export interface UserErrorOptions extends ErrorOptionBase {
 
 // @public
 export interface UserInputQuestion extends BaseQuestion {
+    alternativeNames?: string[];
+    // (undocumented)
+    cliDescription?: string;
+    cliName?: string;
+    cliShortName?: string;
+    cliType?: "option" | "argument";
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
+    isBoolean?: boolean;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
+    required?: boolean;
     title: string | LocalFunc<string | undefined>;
     type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
     validation?: ValidationSchema;
@@ -960,6 +1142,14 @@ export enum VsCodeEnv {
     local = "local",
     // (undocumented)
     remote = "remote"
+}
+
+// @public (undocumented)
+export interface Warning {
+    // (undocumented)
+    content: string;
+    // (undocumented)
+    type: string;
 }
 
 

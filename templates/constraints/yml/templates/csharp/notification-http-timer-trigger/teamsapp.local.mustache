@@ -1,0 +1,24 @@
+{{#header}} version: 1.1.0 {{/header}}
+
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#botAadAppCreate}} {{/botAadAppCreate}}
+
+{{#fileCreateOrUpdateJsonFile}} appsettings, BOT {{/fileCreateOrUpdateJsonFile}}
+
+{{#botFrameworkCreate}} {{/botFrameworkCreate}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#fileCreateOrUpdateJsonFile}}
+{
+  "launchSettings": true,
+  "localstore": true,
+  "commandLineArgs": "\"host start --port 5130 --pause-on-error\""
+  }
+{{/fileCreateOrUpdateJsonFile}}

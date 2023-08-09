@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -8,11 +10,11 @@ import { TokenCacheContext } from "@azure/msal-node";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
-import * as keytarType from "keytar";
 import VsCodeLogInstance from "./log";
 import * as os from "os";
-import { env } from "vscode";
 import { localize } from "../utils/localizeUtils";
+import { context } from "../globalVariables";
+import { SecretStorage } from "vscode";
 
 const cacheDir = os.homedir + `/.${ConfigFolderName}/account`;
 const cachePath = os.homedir + `/.${ConfigFolderName}/account/token.cache.`;
@@ -24,34 +26,16 @@ const serviceName = "Microsoft Teams Toolkit";
 
 export const UTF8 = "utf8";
 
-// the recommended way to use keytar in vscode, https://code.visualstudio.com/api/advanced-topics/remote-extensions#persisting-secrets
-declare const __webpack_require__: typeof require;
-declare const __non_webpack_require__: typeof require;
-function getNodeModule<T>(moduleName: string): T | undefined {
-  const r = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-  try {
-    return r(`${env.appRoot}/node_modules.asar/${moduleName}`);
-  } catch (err) {
-    // Not in ASAR.
-  }
-  try {
-    return r(`${env.appRoot}/node_modules/${moduleName}`);
-  } catch (err) {
-    // Not available.
-  }
-  return undefined;
-}
-
 class AccountCrypto {
   private readonly algorithm: crypto.CipherGCMTypes = "aes-256-gcm";
   private readonly accountName: string;
-  private readonly keytar?: typeof keytarType;
+  private secretStorage?: SecretStorage;
 
   private currentKey?: string;
 
   constructor(accountName: string) {
     this.accountName = accountName;
-    this.keytar = getNodeModule<typeof keytarType>("keytar");
+    this.secretStorage = context?.secrets;
   }
 
   public async encrypt(content: string): Promise<string> {
@@ -95,14 +79,18 @@ class AccountCrypto {
       return this.currentKey.length === 32 ? this.currentKey : undefined;
     } else {
       try {
-        if (this.keytar) {
-          let key = await this.keytar.getPassword(serviceName, this.accountName);
+        // Update the secretStorage again, as the context is set during activation.
+        if (!this.secretStorage) {
+          this.secretStorage = context?.secrets;
+        }
+        if (this.secretStorage) {
+          let key = await this.secretStorage.get(serviceName + "." + this.accountName);
           if (!key || key.length !== 32) {
             key = crypto.randomBytes(256).toString("hex").slice(0, 32);
-            await this.keytar.setPassword(serviceName, this.accountName, key);
+            await this.secretStorage.store(serviceName + "." + this.accountName, key);
 
             // validate key again
-            const savedKey = await this.keytar.getPassword(serviceName, this.accountName);
+            const savedKey = await this.secretStorage.get(serviceName + "." + this.accountName);
             if (savedKey === key) {
               this.currentKey = key;
             }
@@ -161,7 +149,9 @@ export class CryptoCachePlugin {
           }
         }
       } catch (err) {
-        VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.readTokenFail") + err.message);
+        await VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.readTokenFail") + err.message
+        );
       }
     } else {
       try {
@@ -169,7 +159,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.warning(
+        await VsCodeLogInstance.warning(
           localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message
         );
       }
@@ -185,7 +175,9 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message);
+        await VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message
+        );
       }
     }
   }
@@ -205,7 +197,7 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
   } catch (err) {
-    VsCodeLogInstance.warning(
+    await VsCodeLogInstance.warning(
       localize("teamstoolkit.cacheAccess.saveHomeAccountIdFail") + err.message
     );
   }
@@ -216,7 +208,9 @@ export async function clearCache(accountName: string) {
   try {
     await fs.writeFile(cachePath + accountName + cachePathEnd, "");
   } catch (err) {
-    VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message);
+    await VsCodeLogInstance.warning(
+      localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message
+    );
   }
 }
 
@@ -225,7 +219,7 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      VsCodeLogInstance.warning(
+      await VsCodeLogInstance.warning(
         localize("teamstoolkit.cacheAccess.readHomeAccountIdFail") + err.message
       );
     }

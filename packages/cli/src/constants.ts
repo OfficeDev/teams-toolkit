@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
-import { sampleProvider, CoreQuestionNames } from "@microsoft/teamsfx-core";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
+import chalk from "chalk";
 
 export type OptionsMap = { [_: string]: Options };
 
@@ -121,16 +122,6 @@ export const TeamsAppManifestOptions: OptionsMap = {
   },
 };
 
-export const templates = sampleProvider.SampleCollection.samples.map((sample) => {
-  return {
-    tags: sample.tags,
-    title: sample.title,
-    description: sample.shortDescription,
-    sampleAppName: sample.id,
-    sampleAppUrl: sample.url,
-  };
-});
-
 export enum CLILogLevel {
   error = 0,
   verbose,
@@ -159,3 +150,7 @@ export const AddFeatureFunc = {
 export const EmptyQTreeNode = new QTreeNode({ type: "group" });
 
 export const SUPPORTED_SPFX_VERSION = "1.16.1";
+
+export const FooterText = `For more information about the Teams Toolkit: ${chalk.cyanBright(
+  "https://aka.ms/teamsfx-cli"
+)}.`;

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    // Debug project within Teams
+    "Microsoft Teams (browser)": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "commandLineArgs": "--port 7071"
+    }		
+  }
+}

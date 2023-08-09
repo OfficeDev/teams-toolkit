@@ -3,7 +3,9 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
+  ApiOperation,
   CoreCallbackEvent,
+  CreateProjectResult,
   CryptoProvider,
   err,
   Func,
@@ -11,6 +13,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
+  OpenAIPluginManifest,
   QTreeNode,
   Result,
   Stage,
@@ -23,12 +26,11 @@ import "reflect-metadata";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import { validateSchemaOption } from "../component/constants";
 import "../component/driver/index";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
+import { ErrorResult } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW } from "../component/middleware/envMW";
-import { QuestionMW } from "../component/middleware/questionMW";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
@@ -42,8 +44,6 @@ import { FxCoreV3Implement } from "./FxCoreImplementV3";
 import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
-import { QuestionNames } from "../question/questionNames";
-import { questions } from "../question";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
@@ -71,8 +71,15 @@ export class FxCore {
   /**
    * lifecycle command: create new project
    */
-  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     return this.v3Implement.dispatch(this.createProject, inputs);
+  }
+
+  /**
+   * lifecycle command: create new sample project
+   */
+  async createSampleProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
+    return this.v3Implement.dispatch(this.createSampleProject, inputs);
   }
 
   /**
@@ -139,13 +146,8 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
-  @hooks([QuestionMW(questions.selectTeamsAppValidationMethod)])
   async validateApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    if (inputs[QuestionNames.ValidateMethod] === validateSchemaOption.id) {
-      return await this.validateManifest(inputs);
-    } else {
-      return await this.validateAppPackage(inputs);
-    }
+    return this.v3Implement.dispatch(this.validateApplication, inputs);
   }
   /**
    * v3 only none lifecycle command
@@ -244,7 +246,7 @@ export class FxCore {
         (d: any) => d.uses === "teamsApp/create"
       );
       if (teamsAppCreate) {
-        const name = (teamsAppCreate.with as any).name;
+        const name = teamsAppCreate.with.name;
         if (name) {
           return ok(name.replace("-${{TEAMSFX_ENV}}", "") || "");
         }
@@ -408,8 +410,8 @@ export class FxCore {
 
     const projectModel = maybeProjectModel.value;
     const driverContext: DriverContext = {
-      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider!,
-      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider!,
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
       ui: TOOLS.ui,
       progressBar: undefined,
       logProvider: TOOLS.logProvider,
@@ -480,5 +482,21 @@ export class FxCore {
 
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<Void, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
+  }
+
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return this.v3Implement.dispatch(this.copilotPluginAddAPI, inputs);
+  }
+
+  async copilotPluginLoadOpenAIManifest(
+    inputs: Inputs
+  ): Promise<Result<OpenAIPluginManifest, FxError>> {
+    return this.v3Implement.dispatch(this.copilotPluginLoadOpenAIManifest, inputs);
+  }
+
+  async copilotPluginListOperations(
+    inputs: Inputs
+  ): Promise<Result<ApiOperation[], ErrorResult[]>> {
+    return this.v3Implement.dispatch(this.copilotPluginListOperations, inputs);
   }
 }

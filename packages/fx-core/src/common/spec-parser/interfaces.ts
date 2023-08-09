@@ -37,9 +37,9 @@ export interface WarningResult {
   content: string;
 
   /**
-   * The api path of the warning.
+   * data of the warning.
    */
-  apiPath?: string;
+  data?: any;
 }
 
 /**
@@ -57,32 +57,35 @@ export interface ErrorResult {
   content: string;
 
   /**
-   * The api path of the error.
+   * data of the error.
    */
-  apiPath?: string;
+  data?: any;
 }
 
 /**
  * An enum that represents the types of errors that can occur during validation.
  */
 export enum ErrorType {
-  SpecNotValid,
-  VersionNotSupported,
-  RemoteReferenceNotSupported,
+  SpecNotValid = "spec-not-valid",
+  VersionNotSupported = "version-not-supported",
+  RemoteRefNotSupported = "remote-ref-not-supported",
+  NoServerInformation = "no-server-information",
+  MultipleServerInformation = "multiple-server-information",
+  NoSupportedApi = "no-supported-api",
 
-  ListFailed,
-  Cancelled,
-  Unknown,
+  ListFailed = "list-failed",
+  Cancelled = "cancelled",
+  Unknown = "unknown",
 }
 
 /**
  * An enum that represents the types of warnings that can occur during validation.
  */
 export enum WarningType {
-  AuthNotSupported,
-  MethodNotSupported,
-  OperationIdMissing,
-  Unknown,
+  AuthNotSupported = "auth-not-supported",
+  MethodNotSupported = "method-not-supported",
+  OperationIdMissing = "operationid-missing",
+  Unknown = "unknown",
 }
 
 /**
@@ -92,4 +95,56 @@ export enum ValidationStatus {
   Valid,
   Warning, // If there are any warnings, the file is still valid
   Error, // If there are any errors, the file is not valid
+}
+
+export interface TextBlockElement {
+  type: string;
+  text: string;
+  wrap: boolean;
+}
+
+export interface ArrayElement {
+  type: string;
+  $data: string;
+  items: Array<TextBlockElement | ArrayElement>;
+}
+
+export interface AdaptiveCard {
+  type: string;
+  $schema: string;
+  version: string;
+  body: Array<TextBlockElement | ArrayElement>;
+}
+
+export interface PartialManifest {
+  description: Description;
+  composeExtensions: ComposeExtension[];
+}
+
+export interface Description {
+  short: string;
+  full: string;
+}
+
+export interface ComposeExtension {
+  type: string;
+  apiSpecFile: string;
+  supportsConversationalAI: boolean;
+  commands: Command[];
+}
+
+export interface Command {
+  id: string;
+  type: string;
+  context: string[];
+  title: string;
+  description?: string;
+  parameters: Parameter[];
+  apiResponseRenderingTemplate?: string;
+}
+
+export interface Parameter {
+  name: string;
+  title: string;
+  description: string;
 }

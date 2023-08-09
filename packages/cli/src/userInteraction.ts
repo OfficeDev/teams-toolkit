@@ -26,6 +26,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   StaticOptions,
@@ -36,6 +37,7 @@ import {
 
 import {
   InputValidationError,
+  MissingRequiredInputError,
   SelectSubscriptionError,
   UnhandledError,
   assembleError,
@@ -50,6 +52,7 @@ import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
 import * as util from "util";
 import { strings } from "./resource";
+import { globals } from "./globals";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
@@ -155,15 +158,16 @@ class CLIUserInteraction implements UserInteraction {
   }
 
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
-    if (this.presetAnswers.has(question.name!)) {
-      const answer = this.presetAnswers.get(question.name!);
+    const questionName = question.name!;
+    if (this.presetAnswers.has(questionName)) {
+      const answer = this.presetAnswers.get(questionName);
       if (answer === undefined) {
         /// TOOD: this is only for APIM
         return ok(answer);
       }
       const result = await question.validate?.(answer);
       if (typeof result === "string") {
-        return err(new InputValidationError(question.name!, result));
+        return err(new InputValidationError(questionName, result));
       }
       return ok(answer);
     }
@@ -173,7 +177,12 @@ class CLIUserInteraction implements UserInteraction {
       if (question.default !== undefined) {
         // if it has a defualt value, return it at first.
         return ok(question.default);
-      } else if (
+      }
+      if (globals.options.includes(questionName)) {
+        // if the question is the required option, return error if value is missing
+        return err(new MissingRequiredInputError(questionName, cliSource));
+      }
+      if (
         question.type === "list" &&
         Array.isArray(question.choices) &&
         question.choices.length > 0
@@ -366,7 +375,7 @@ class CLIUserInteraction implements UserInteraction {
         return ok({ type: "skip", result: sub });
       }
     }
-    const loadRes = await this.loadOptions(config);
+    const loadRes = await this.loadSelectDynamicData(config);
     if (loadRes.isErr()) {
       return err(loadRes.error);
     }
@@ -386,7 +395,7 @@ class CLIUserInteraction implements UserInteraction {
     return new Promise(async (resolve) => {
       const [choices, defaultValue] = this.toChoices(
         config.options as StaticOptions,
-        config.default
+        config.default as string
       );
       const result = await this.singleSelect(
         config.name,
@@ -412,14 +421,14 @@ class CLIUserInteraction implements UserInteraction {
           error.source = cliSource;
           resolve(err(error));
         }
-        const anwser = (config.options as StaticOptions)[index];
-        if (config.returnObject) {
-          resolve(ok({ type: "success", result: anwser }));
+        const answer = (config.options as StaticOptions)[index];
+        if (!answer || config.returnObject) {
+          resolve(ok({ type: "success", result: answer }));
         } else {
-          if (typeof anwser === "string") {
-            resolve(ok({ type: "success", result: anwser }));
+          if (typeof answer === "string") {
+            resolve(ok({ type: "success", result: answer }));
           } else {
-            resolve(ok({ type: "success", result: anwser.id }));
+            resolve(ok({ type: "success", result: answer.id }));
           }
         }
       } else {
@@ -428,16 +437,42 @@ class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  async loadOptions(
+  async loadSelectDynamicData(
     config: MultiSelectConfig | SingleSelectConfig
   ): Promise<Result<undefined, FxError>> {
-    if (typeof config.options === "function") {
+    if (typeof config.options === "function" || typeof config.default === "function") {
       const bar = await this.createProgressBar(config.title, 1);
       await bar.start();
       await bar.next(loadingOptionsPlaceholder());
       try {
-        const options = await config.options();
-        config.options = options;
+        if (typeof config.options === "function") {
+          const options = await config.options();
+          config.options = options;
+        }
+        if (typeof config.default === "function") {
+          config.default = await config.default();
+        }
+        return ok(undefined);
+      } catch (e) {
+        return err(assembleError(e));
+      } finally {
+        await bar.end(true, true);
+      }
+    }
+    return ok(undefined);
+  }
+
+  async loadDefaultValue(
+    config: InputTextConfig | SelectFileConfig | SelectFilesConfig
+  ): Promise<Result<undefined, FxError>> {
+    if (typeof config.default === "function") {
+      const bar = await this.createProgressBar(config.title, 1);
+      await bar.start();
+      await bar.next(loadingOptionsPlaceholder());
+      try {
+        if (typeof config.default === "function") {
+          config.default = await config.default();
+        }
         return ok(undefined);
       } catch (e) {
         return err(assembleError(e));
@@ -451,7 +486,7 @@ class CLIUserInteraction implements UserInteraction {
   public async selectOptions(
     config: MultiSelectConfig
   ): Promise<Result<MultiSelectResult, FxError>> {
-    const loadRes = await this.loadOptions(config);
+    const loadRes = await this.loadSelectDynamicData(config);
     if (loadRes.isErr()) {
       return err(loadRes.error);
     }
@@ -471,7 +506,7 @@ class CLIUserInteraction implements UserInteraction {
     return new Promise(async (resolve) => {
       const [choices, defaultValue] = this.toChoices(
         config.options as StaticOptions,
-        config.default
+        config.default as string[]
       );
       const result = await this.multiSelect(
         config.name,
@@ -517,12 +552,16 @@ class CLIUserInteraction implements UserInteraction {
   }
 
   public async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
+    const loadRes = await this.loadDefaultValue(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     return new Promise(async (resolve) => {
       const result = await this.input(
         config.name,
         !!config.password,
         config.title,
-        config.default,
+        config.default as string,
         this.toValidationFunc(config.validation)
       );
       if (result.isOk()) {
@@ -533,17 +572,31 @@ class CLIUserInteraction implements UserInteraction {
     });
   }
 
+  public async selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputTextResult, FxError>> {
+    const loadRes = await this.loadDefaultValue(config.inputBoxConfig);
+    if (loadRes.isErr()) return err(loadRes.error);
+    return this.inputText(config.inputBoxConfig);
+  }
   public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
+    const loadRes = await this.loadDefaultValue(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title,
-      default: config.default || "./",
+      default: (config.default as string) || "./",
       validation: config.validation || pathValidation,
     };
     return this.inputText(newConfig);
   }
-
   public async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
+    const loadRes = await this.loadDefaultValue(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     const validation = async (input: string) => {
       const strings = input.split(";").map((s) => s.trim());
       if (config.validation) {
@@ -561,7 +614,7 @@ class CLIUserInteraction implements UserInteraction {
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title + " (Please use ';' to split file paths)",
-      default: config.default?.join("; "),
+      default: (config.default as string[])?.join("; "),
       validation,
     };
     return new Promise(async (resolve) => {
@@ -579,10 +632,14 @@ class CLIUserInteraction implements UserInteraction {
   public async selectFolder(
     config: SelectFolderConfig
   ): Promise<Result<SelectFolderResult, FxError>> {
+    const loadRes = await this.loadDefaultValue(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title,
-      default: config.default || "./",
+      default: (config.default as string) || "./",
       validation: config.validation || pathValidation,
     };
     return this.inputText(newConfig);

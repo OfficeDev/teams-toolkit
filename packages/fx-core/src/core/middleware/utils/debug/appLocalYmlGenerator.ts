@@ -77,7 +77,7 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
   }
 
   public async generateAppYml(): Promise<string> {
-    this.generateHandlerbarsContext();
+    await this.generateHandlerbarsContext();
 
     switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
       case "javascript":
@@ -88,7 +88,7 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
     }
   }
 
-  private async generateHandlerbarsContext(): Promise<void> {
+  private generateHandlerbarsContext(): Promise<void> {
     let functionName: string | undefined = undefined;
     if (OldProjectSettingsHelper.includeFunction(this.oldProjectSettings)) {
       functionName =
@@ -118,5 +118,6 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
         this.handlebarsContext.config.deploy.ssoFunction = true;
       }
     }
+    return Promise.resolve();
   }
 }

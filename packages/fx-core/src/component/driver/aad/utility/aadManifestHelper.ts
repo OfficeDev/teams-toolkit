@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT
+// Licensed under the MIT license.
 
 import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";

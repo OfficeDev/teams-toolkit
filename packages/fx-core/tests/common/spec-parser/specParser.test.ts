@@ -1,14 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as util from "util";
+import fs from "fs-extra";
 import "mocha";
 import { expect } from "chai";
 import sinon from "sinon";
 import { SpecParser } from "../../../src/common/spec-parser/specParser";
-import { ErrorType, ValidationStatus } from "../../../src/common/spec-parser/interfaces";
+import {
+  ErrorType,
+  ValidationStatus,
+  WarningType,
+} from "../../../src/common/spec-parser/interfaces";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
+import { OpenAPIV3 } from "openapi-types";
+import * as SpecFilter from "../../../src/common/spec-parser/specFilter";
+import * as ManifestUpdater from "../../../src/common/spec-parser/manifestUpdater";
+import * as AdaptiveCardGenerator from "../../../src/common/spec-parser/adaptiveCardGenerator";
+import jsyaml from "js-yaml";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -16,30 +27,274 @@ describe("SpecParser", () => {
   });
 
   describe("validate", () => {
-    it("should return a valid result when the spec is valid", async () => {
-      const parser = new SpecParser("/path/to/spec.yaml");
-      const validateStub = sinon.stub(SwaggerParser, "validate").resolves({} as any);
-
-      const result = await parser.validate();
-
-      expect(result.status).to.equal(ValidationStatus.Valid);
-      expect(result.warnings).to.be.an("array").that.is.empty;
-      expect(result.errors).to.be.an("array").that.is.empty;
-      sinon.assert.calledOnce(validateStub);
-    });
-
     it("should return an error result when the spec is not valid", async () => {
-      const parser = new SpecParser("/path/to/spec.yaml");
-      const validateStub = sinon.stub(SwaggerParser, "validate").rejects(new Error("Invalid spec"));
+      const specParser = new SpecParser("/path/to/spec.yaml");
+      const parseStub = sinon.stub(specParser.parser, "parse").rejects(new Error("Invalid spec"));
 
-      const result = await parser.validate();
+      const result = await specParser.validate();
 
       expect(result.status).to.equal(ValidationStatus.Error);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.has.lengthOf(1);
       expect(result.errors[0].type).to.equal(ErrorType.SpecNotValid);
       expect(result.errors[0].content).to.equal("Error: Invalid spec");
-      sinon.assert.calledOnce(validateStub);
+      sinon.assert.calledOnce(parseStub);
+    });
+
+    it("should return an error result object if the spec version is not supported", async function () {
+      const specPath = "path/to/spec";
+      const spec = { openapi: "2.0.0" };
+      const specParser = new SpecParser(specPath);
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.VersionNotSupported,
+            content: ConstantString.SpecVersionNotSupported,
+            data: "2.0.0",
+          },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return an error result object if no server information", async function () {
+      const specPath = "path/to/spec";
+      const spec = { openapi: "3.0.0" };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return an error result object if has multiple server information", async function () {
+      const specPath = "path/to/spec";
+      const spec = { openapi: "3.0.0", servers: ["server1", "server2"] };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.MultipleServerInformation,
+            content: ConstantString.MultipleServerInformation,
+            data: ["server1", "server2"],
+          },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return an error result object if no supported apis", async function () {
+      const specPath = "path/to/spec";
+      const spec = { openapi: "3.0.0", servers: ["server1"] };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [{ type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi }],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return an error result object if contain remote reference", async function () {
+      const spec = {
+        openapi: "3.0.3",
+        info: {
+          title: "Swagger Petstore - OpenAPI 3.",
+          version: "1.0.11",
+        },
+        servers: [
+          {
+            url: "https://petstore3.swagger.io/api/v3",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "updatePet",
+              responses: {
+                "200": {
+                  description: "Successful operation",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "https://petstore3.swagger.io/api/v3/openapi.json#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            Pet: {
+              type: "object",
+              properties: {
+                name: {
+                  type: "string",
+                  example: "doggie",
+                },
+              },
+            },
+          },
+        },
+      } as OpenAPIV3.Document;
+      const specPath = "path/to/spec";
+      const specParser = new SpecParser(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result.errors[0].type).equal(ErrorType.RemoteRefNotSupported);
+      expect(result.status).equal(ValidationStatus.Error);
+    });
+
+    it("should return an warning result object if missing operation id", async function () {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "/v3",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/xml": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Warning,
+        warnings: [
+          {
+            type: WarningType.OperationIdMissing,
+            content: util.format(ConstantString.MissingOperationId, "GET /pet"),
+            data: ["GET /pet"],
+          },
+        ],
+        errors: [],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return a valid result when the spec is valid", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "/v3",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/xml": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+      sinon.assert.calledOnce(dereferenceStub);
     });
   });
 
@@ -60,15 +315,183 @@ describe("SpecParser", () => {
         expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
       }
     });
+
+    it("should throw an error if the signal is aborted after loadSpec", async () => {
+      const manifestPath = "path/to/manifest";
+      const filter = ["GET /pet/{petId}"];
+      const specPath = "path/to/spec";
+      const adaptiveCardFolder = "path/to/adaptiveCardFolder";
+      try {
+        const signal = { aborted: false } as any;
+
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+
+        const parseStub = sinon.stub(specParser as any, "loadSpec").callsFake(async () => {
+          signal.aborted = true;
+          return Promise.resolve();
+        });
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        await specParser.generate(manifestPath, filter, specPath, adaptiveCardFolder, signal);
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should throw an error if the signal is aborted after specFilter", async () => {
+      try {
+        const signal = { aborted: false } as any;
+
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+        const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        const specFilterStub = sinon
+          .stub(SpecFilter, "specFilter")
+          .callsFake((filter: string[], unResolveSpec: any) => {
+            signal.aborted = true;
+            return {} as any;
+          });
+        const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+        const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+        const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+        const filter = ["get /hello"];
+
+        const outputSpecPath = "path/to/output.yaml";
+        await specParser.generate(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          "path/to/adaptiveCardFolder",
+          signal
+        );
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should throw an error if the signal is aborted after updateManifest", async () => {
+      try {
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+        const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+        const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+        const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+        const JsyamlSpy = sinon.spy(jsyaml, "dump");
+        const signal = { aborted: false } as any;
+
+        const manifestUpdaterStub = sinon
+          .stub(ManifestUpdater, "updateManifest")
+          .callsFake(
+            (
+              manifestPath: string,
+              outputSpecPath: string,
+              adaptiveCardFolder: string,
+              spec: OpenAPIV3.Document
+            ) => {
+              signal.aborted = true;
+              return {} as any;
+            }
+          );
+        const generateAdaptiveCardStub = sinon
+          .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+          .returns({} as any);
+
+        const filter = ["get /hello"];
+
+        const outputSpecPath = "path/to/output.yaml";
+        await specParser.generate(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          "path/to/adaptiveCardFolder",
+          signal
+        );
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should generate a new spec and write it to a yaml file", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = { openapi: "3.0.0", paths: {} };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+      const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns({} as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      await specParser.generate(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        "path/to/adaptiveCardFolder"
+      );
+
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(writeFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(writeFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+    });
+
+    it("should generate a new spec and write it to a json file", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = { openapi: "3.0.0", paths: {} };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
+      const writeFileStub = sinon.stub(fs, "writeFile").resolves();
+      const writeJsonStub = sinon.stub(fs, "writeJSON").resolves();
+      const JSONStringifySpy = sinon.spy(JSON, "stringify");
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns({} as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.json";
+      await specParser.generate(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        "path/to/adaptiveCardFolder"
+      );
+
+      expect(JsyamlSpy.calledOnce).to.be.false;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(writeFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(writeFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+    });
   });
 
   describe("list", () => {
-    it("should return a list of HTTP methods and paths for all GET and POST operations without security", async () => {
+    it("should return a list of HTTP methods and paths for all GET with 1 parameter and without security", async () => {
       const specPath = "valid-spec.yaml";
-      const parser = new SpecParser(specPath);
-      sinon.stub(SwaggerParser, "validate").resolves({
+      const specParser = new SpecParser(specPath);
+      const spec = {
         paths: {
-          "/pets/{petId}": {
+          "/pets": {
             get: {
               operationId: "getPetById",
               security: [{ api_key: [] }],
@@ -77,6 +500,15 @@ describe("SpecParser", () => {
           "/user/{userId}": {
             get: {
               operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
             },
             post: {
               operationId: "createUser",
@@ -89,19 +521,25 @@ describe("SpecParser", () => {
             },
           },
         },
-      } as any);
-      const result = await parser.list();
+      };
 
-      expect(result).to.deep.equal(["GET /user/{userId}", "POST /store/order"]);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal(["GET /user/{userId}"]);
     });
 
     it("should throw an error when the SwaggerParser library throws an error", async () => {
       const specPath = "invalid-spec.yaml";
-      const parser = new SpecParser(specPath);
+      const specParser = new SpecParser(specPath);
       sinon.stub(SwaggerParser, "validate").rejects(new Error("Invalid specification"));
-
+      const parseStub = sinon
+        .stub(specParser.parser, "parse")
+        .rejects(new Error("Invalid specification"));
       try {
-        await parser.list();
+        await specParser.list();
         expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain("Invalid specification");

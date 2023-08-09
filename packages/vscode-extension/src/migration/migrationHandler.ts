@@ -143,7 +143,7 @@ async function updateCodeInplace(
 ): Promise<Result<null, FxError>> {
   try {
     const sourceCode = (await fs.readFile(filePath)).toString();
-    vsCodeLogProvider.info(
+    await vsCodeLogProvider.info(
       util.format(
         localize("teamstoolkit.migrateTeamsTabApp.updatingCode"),
         type === "ts" ? "typescript" : "javascript",
@@ -174,7 +174,7 @@ async function updateCodeInplace(
       error.code,
       error.message
     );
-    vsCodeLogProvider.warning(message);
+    await vsCodeLogProvider.warning(message);
     const fxError = new UserError({
       error,
       source: ExtensionSource,

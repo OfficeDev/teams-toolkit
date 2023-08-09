@@ -1,0 +1,19 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#script}} TAB {{/script}}
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+deploy:
+{{#devToolInstall}} devCert {{/devToolInstall}}
+{{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}
+{{#fileCreateOrUpdateEnvironmentFile}} target: ./.localConfigs {{/fileCreateOrUpdateEnvironmentFile}}
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}

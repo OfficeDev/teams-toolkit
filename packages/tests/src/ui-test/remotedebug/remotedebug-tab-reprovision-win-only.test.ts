@@ -1,21 +1,22 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout, ValidationContent } from "../../constants";
+import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
   reRunProvision,
   runDeploy,
+  setSkuNameToB1,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
   createNewProject,
   clearNotifications,
-} from "../../vscodeOperation";
-import { initPage, validateBasicTab } from "../../playwrightOperation";
+} from "../../utils/vscodeOperation";
+import { initPage, validateBasicTab } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import {
@@ -69,6 +70,8 @@ describe("Remote debug Tests", function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
       await createNewProject("tabnsso", appName);
+      await setSkuNameToB1(projectPath);
+      await driver.sleep(Timeout.shortTimeWait);
       await runProvision(appName);
       await clearNotifications();
       await cleanUpResourceGroup(appName, "dev");

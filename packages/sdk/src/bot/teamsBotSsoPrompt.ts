@@ -368,7 +368,8 @@ export class TeamsBotSsoPrompt extends Dialog {
       context.activity.from.id
     );
     internalLogger.verbose(
-      "Get Teams member account user principal name: " + account.userPrincipalName
+      "Get Teams member account user principal name: " +
+        (account.userPrincipalName ? account.userPrincipalName : "")
     );
 
     const loginHint: string = account.userPrincipalName ? account.userPrincipalName : "";

@@ -21,7 +21,6 @@
   "homepage": "https://github.com/OfficeDev/TeamsFx",
   "sideEffects": false,
   "devDependencies": {
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
     "@rollup/plugin-commonjs": "^13.0.2",
     "@rollup/plugin-json": "^4.0.0",
     "@rollup/plugin-node-resolve": "^8.0.0",
@@ -31,6 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^4.13.0",
     "eslint": "^8.1.0",
+    "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",

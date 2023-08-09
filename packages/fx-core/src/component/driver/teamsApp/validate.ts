@@ -5,12 +5,13 @@ import { Result, FxError, ok, err, Platform, ManifestUtil, Colors } from "@micro
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { EOL } from "os";
+import { merge } from "lodash";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryUtils } from "./utils/telemetry";
+import { TelemetryUtils, TelemetryPropertyKey } from "./utils/telemetry";
 import { AppStudioResultFactory } from "./results";
 import { AppStudioError } from "./errors";
 import { manifestUtils } from "./utils/ManifestUtils";
@@ -62,7 +63,7 @@ export class ValidateManifestDriver implements StepDriver {
       return err(result.error);
     }
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath!, context.projectPath)
+      getAbsolutePath(args.manifestPath, context.projectPath)
     );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
@@ -138,6 +139,12 @@ export class ValidateManifestDriver implements StepDriver {
         context.logProvider?.info(outputMessage);
       }
 
+      merge(context.telemetryProperties, {
+        [TelemetryPropertyKey.validationErrors]: validationResult
+          .map((r: string) => r.replace(/\//g, ""))
+          .join(";"),
+      });
+
       return err(
         AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
           getDefaultString("driver.teamsApp.validate.result", summaryStr),
@@ -159,7 +166,7 @@ export class ValidateManifestDriver implements StepDriver {
         summaryStr
       );
       if (context.platform === Platform.VS) {
-        context.logProvider.info(validationSuccess);
+        await context.logProvider.info(validationSuccess);
       }
       if (args.showMessage) {
         context.ui?.showMessage("info", validationSuccess, false);

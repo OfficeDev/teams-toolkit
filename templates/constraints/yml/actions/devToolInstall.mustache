@@ -1,0 +1,28 @@
+  # Install development tool(s)
+  - uses: devTool/install
+    with:
+{{#devCert}}
+      devCert:
+        trust: true
+{{/devCert}}
+{{#func}}
+      func:
+        version: ~4.0.4670
+        symlinkDir: ./devTools/func
+{{/func}}
+{{#dotnet}}
+      dotnet: true
+{{/dotnet}}
+    # Write the information of installed development tool(s) into environment
+    # file for the specified environment variable(s).
+    writeToEnvironmentFile:
+{{#devCert}}
+      sslCertFile: SSL_CRT_FILE
+      sslKeyFile: SSL_KEY_FILE
+{{/devCert}}
+{{#func}}
+      funcPath: FUNC_PATH
+{{/func}}
+{{#dotnet}}
+      dotnetPath: DOTNET_PATH
+{{/dotnet}}

@@ -203,12 +203,12 @@ describe("UI Unit Tests", async () => {
 
       const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
       const mockDisposable = stubInterface<Disposable>();
-      let acceptListener: (e: void) => any;
+      let onHideListener: (e: void) => any;
       mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
-        acceptListener = listener;
         return mockDisposable;
       });
       mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        onHideListener = listener;
         return mockDisposable;
       });
       mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
@@ -216,7 +216,7 @@ describe("UI Unit Tests", async () => {
       });
       mockQuickPick.show.callsFake(() => {
         mockQuickPick.selectedItems = [{ id: "browse" } as FxQuickPickItem];
-        acceptListener();
+        onHideListener();
       });
       sinon.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
@@ -283,7 +283,7 @@ describe("UI Unit Tests", async () => {
       sinon.restore();
     });
 
-    it("has returns invalid input", async function (this: Mocha.Context) {
+    it("has returns invalid input item id", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
         name: "name",
@@ -304,6 +304,91 @@ describe("UI Unit Tests", async () => {
       if (result.isErr()) {
         expect(result.error.name).to.equal("InvalidInput");
       }
+      sinon.restore();
+    });
+
+    it("selects a file which pass validation", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SelectFileConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        default: "default file",
+        validation: (input: string) => {
+          if (input === "default file") {
+            return undefined;
+          }
+          return "validation failed";
+        },
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "default" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sinon.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const res = await ui.selectFile(config);
+      expect(res.isOk()).is.true;
+
+      sinon.restore();
+    });
+
+    it("selects a file with error thrown when validating result", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SelectFileConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        default: "default file",
+        validation: (input: string) => {
+          throw new UserError("source", "name", "", "");
+        },
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "default" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sinon.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const res = await ui.selectFile(config);
+      expect(res.isErr()).is.true;
+
       sinon.restore();
     });
   });

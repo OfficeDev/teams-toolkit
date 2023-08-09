@@ -4,7 +4,13 @@
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
-import { MockLogProvider, MockM365TokenProvider, MockTools } from "../../../core/utils";
+import fs from "fs-extra";
+import {
+  MockLogProvider,
+  MockM365TokenProvider,
+  MockTools,
+  randomAppName,
+} from "../../../core/utils";
 import {
   err,
   InputsWithProjectPath,
@@ -12,6 +18,8 @@ import {
   Platform,
   UserError,
   ManifestUtil,
+  TeamsAppManifest,
+  Context,
 } from "@microsoft/teamsfx-api";
 import {
   checkIfAppInDifferentAcountSameTenant,
@@ -26,11 +34,15 @@ import { createContextV3 } from "../../../../src/component/utils";
 import { RestoreFn } from "mocked-env";
 import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
+import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { setTools } from "../../../../src/core/globalVars";
 import { QuestionNames } from "../../../../src/question";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
+import * as commonTools from "../../../../src/common/featureFlags";
 
 describe("appStudio", () => {
   const tools = new MockTools();
@@ -43,19 +55,6 @@ describe("appStudio", () => {
 
     afterEach(() => {
       sandbox.restore();
-    });
-
-    it("updateManifestV3 getManifestV3 Error", async () => {
-      sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
-      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-      sandbox.stub(manifestUtils, "getManifestV3").resolves(err(new UserError({})));
-      const ctx = createContextV3();
-      const inputs: InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: "projectPath",
-      };
-      const res = await updateManifestV3(ctx, inputs);
-      chai.assert.isTrue(res.isErr());
     });
 
     it("get app successfully: returns false", async () => {
@@ -416,5 +415,115 @@ describe("appStudio", () => {
       const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isOk());
     });
+  });
+});
+
+describe("App-manifest Component - v3", () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  const appName = randomAppName();
+  const inputs: InputsWithProjectPath = {
+    projectPath: getAzureProjectRoot(),
+    platform: Platform.VSCode,
+    "app-name": appName,
+    appPackagePath: "fakePath",
+  };
+  const cliInputs = {
+    projectPath: getAzureProjectRoot(),
+    platform: Platform.CLI,
+    "app-name": appName,
+    appPackagePath: "fakePath",
+  };
+  let context: Context;
+  setTools(tools);
+
+  beforeEach(() => {
+    context = createContextV3();
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+      ok({
+        unique_name: "fakename",
+      })
+    );
+
+    context.logProvider = new MockLogProvider();
+    context.tokenProvider = {
+      m365TokenProvider: new MockedM365Provider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
+    };
+
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox
+      .stub(Container, "get")
+      .withArgs(sandbox.match("teamsApp/zipAppPackage"))
+      .returns(new CreateAppPackageDriver())
+      .withArgs(sandbox.match("teamsApp/update"))
+      .returns(new ConfigureTeamsAppDriver());
+    sandbox.stub(envUtil, "readEnv").resolves();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("updateManifestV3 - preview only", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.id = "";
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJSON").resolves(manifest);
+    sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
+
+    await updateManifestV3(context, cliInputs);
+  });
+
+  it("updateManifestV3 - happy path", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.id = "";
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJSON").resolves(manifest);
+    sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok("View in Developer Portal"));
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
+
+    await updateManifestV3(context, inputs);
+  });
+
+  it("updateManifestV3 - rebuild", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.id = "";
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "readJSON").resolves(manifest);
+    sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview and update"));
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
+    sandbox.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
+
+    await updateManifestV3(context, inputs);
+  });
+
+  it("updateManifestV3 - getManifestV3 Error", async () => {
+    sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
+    sandbox.stub(manifestUtils, "getManifestV3").resolves(err(new UserError({})));
+    const ctx = createContextV3();
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: "projectPath",
+    };
+    const res = await updateManifestV3(ctx, inputs);
+    chai.assert.isTrue(res.isErr());
   });
 });

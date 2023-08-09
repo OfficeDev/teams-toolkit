@@ -205,7 +205,7 @@ async function checkPort(
 }
 
 export async function checkPrerequisitesForGetStarted(): Promise<Result<void, FxError>> {
-  const nodeChecker = await getOrderedCheckersForGetStarted();
+  const nodeChecker = getOrderedCheckersForGetStarted();
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
   const res = await _checkAndInstall(prerequisiteCheckForGetStartedDisplayMessages, nodeChecker, {
     [TelemetryProperty.DebugIsTransparentTask]: "false",
@@ -222,7 +222,7 @@ export async function checkAndInstallForTask(
   ports: number[] | undefined,
   telemetryProperties: { [key: string]: string }
 ): Promise<Result<Void, FxError>> {
-  const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
+  const orderedCheckers = getOrderedCheckersForTask(prerequisites, ports);
 
   const additionalTelemetryProperties = Object.assign(
     {
@@ -236,7 +236,7 @@ export async function checkAndInstallForTask(
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
-        VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
+        await VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
         terminateAllRunningTeamsfxTasks();
       }
 
@@ -277,7 +277,7 @@ async function _checkAndInstall(
     );
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(displayMessages.title);
+    await VsCodeLogInstance.info(displayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // Get deps
@@ -301,7 +301,7 @@ async function _checkAndInstall(
     VsCodeLogInstance.outputChannel.appendLine("");
 
     for (const orderedChecker of orderedCheckers) {
-      const orderedCheckerInfo = orderedChecker.info as PrerequisiteCheckerInfo;
+      const orderedCheckerInfo = orderedChecker.info;
       const checkResult = await getCheckPromise(
         orderedCheckerInfo,
         depsManager,
@@ -420,7 +420,7 @@ async function ensureM365Account(
     async (ctx: TelemetryContext) => {
       const isSideloadingEnabled = await getSideloadingStatus(m365Result.value.token);
       // true, false or undefined for error
-      ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = `${isSideloadingEnabled}`;
+      ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = String(!!isSideloadingEnabled);
       if (isSideloadingEnabled === false) {
         // sideloading disabled
         return err(
@@ -465,7 +465,7 @@ function checkM365Account(
         if (accountResult.isErr()) {
           result = ResultStatus.failed;
           error = accountResult.error;
-          openAccountHelpHandler();
+          await openAccountHelpHandler();
         } else {
           loginHint = accountResult.value.loginHint;
         }
@@ -666,7 +666,7 @@ async function checkFailure(
   }
 }
 
-async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChecker[]> {
+function getOrderedCheckersForGetStarted(): PrerequisiteOrderedChecker[] {
   const workspacePath = globalVariables.workspaceUri?.fsPath;
   return [
     {
@@ -676,10 +676,10 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
   ];
 }
 
-async function getOrderedCheckersForTask(
+function getOrderedCheckersForTask(
   prerequisites: string[],
   ports?: number[]
-): Promise<PrerequisiteOrderedChecker[]> {
+): PrerequisiteOrderedChecker[] {
   const checkers: PrerequisiteOrderedChecker[] = [];
   if (prerequisites.includes(Prerequisite.nodejs)) {
     checkers.push({ info: { checker: DepsType.ProjectNode }, fastFail: true });

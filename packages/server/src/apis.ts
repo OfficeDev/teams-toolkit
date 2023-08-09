@@ -2,7 +2,9 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   Colors,
+  CreateProjectResult,
   FxError,
   Inputs,
   InputTextConfig,
@@ -11,6 +13,7 @@ import {
   LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
+  OpenAIPluginManifest,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -69,7 +72,7 @@ export interface IServerConnection {
   createProjectRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<string, FxError>>;
+  ) => Promise<Result<CreateProjectResult, FxError>>;
   localDebugRequest: (inputs: Inputs, token: CancellationToken) => Promise<Result<Void, FxError>>;
   provisionResourcesRequest: (
     inputs: Inputs,
@@ -159,6 +162,18 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Tunnel[], FxError>>;
+  copilotPluginAddAPIRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
+  loadOpenAIPluginManifestRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<OpenAIPluginManifest, FxError>>;
+  listOpenAPISpecOperationsRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<ApiOperation[], FxError>>;
 }
 
 /**

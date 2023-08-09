@@ -1,23 +1,25 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
   Capability,
   Notification,
   ResourceToDeploy,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { validateTab, initPage } from "../../../playwrightOperation";
+import { validateTab, initPage } from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
-} from "../../../vscodeOperation";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+} from "../../../utils/vscodeOperation";
+import {
+  CLIVersionCheck,
+  updateFunctionAuthorizationPolicy,
+} from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -47,7 +49,9 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await mirgationDebugTestContext.createProjectCLI(false);
+      const projectPath = await mirgationDebugTestContext.createProjectCLI(
+        false
+      );
       // verify popup
       await validateNotification(Notification.Upgrade);
 
@@ -55,6 +59,7 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Bot);
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
 
+      await updateFunctionAuthorizationPolicy("4.2.5", projectPath);
       // v2 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
@@ -86,7 +91,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, Env.displayName, false);
+      await validateTab(page, {
+        displayName: Env.displayName,
+        includeFunction: false,
+      });
     }
   );
 });

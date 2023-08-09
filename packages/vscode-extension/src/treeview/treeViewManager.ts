@@ -48,7 +48,6 @@ class TreeViewManager {
   }
 
   public async updateTreeViewsByContent(removeProjectRelatedCommands = false): Promise<void> {
-    const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
     let isTeamsApp = false;
     const manifestRes = await manifestUtils.readAppManifest(workspaceUri?.fsPath || "");
     if (manifestRes.isOk()) {
@@ -65,6 +64,22 @@ class TreeViewManager {
       developmentCommands.splice(3);
       developmentTreeviewProvider.refresh();
     }
+    if (!isTeamsApp) {
+      const utilityTreeviewProvider = this.getTreeView(
+        "teamsfx-utility"
+      ) as CommandsTreeViewProvider;
+      const utilityCommands = utilityTreeviewProvider.getCommands();
+      const validateCommandIndex = utilityCommands.findIndex(
+        (command) =>
+          command.commandId === "fx-extension.openAppManagement" ||
+          command.commandId === "fx-extension.publishInDeveloperPortal"
+      );
+      if (validateCommandIndex >= 0) {
+        utilityCommands.splice(validateCommandIndex, 1);
+      }
+      utilityTreeviewProvider.refresh();
+    }
+    const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
     if (hasAdaptiveCard) {
       // after "Validate application" command, the adaptive card will be shown
       const utilityTreeviewProvider = this.getTreeView(
@@ -89,24 +104,9 @@ class TreeViewManager {
       }
       utilityTreeviewProvider.refresh();
     }
-    if (!isTeamsApp) {
-      const utilityTreeviewProvider = this.getTreeView(
-        "teamsfx-utility"
-      ) as CommandsTreeViewProvider;
-      const utilityCommands = utilityTreeviewProvider.getCommands();
-      const validateCommandIndex = utilityCommands.findIndex(
-        (command) =>
-          command.commandId === "fx-extension.openAppManagement" ||
-          command.commandId === "fx-extension.publishInDeveloperPortal"
-      );
-      if (validateCommandIndex >= 0) {
-        utilityCommands.splice(validateCommandIndex, 1);
-      }
-      utilityTreeviewProvider.refresh();
-    }
   }
 
-  public async updateTreeViewsOnSPFxChanged(): Promise<void> {
+  public updateTreeViewsOnSPFxChanged(): void {
     const developmentTreeviewProvider = this.getTreeView(
       "teamsfx-development"
     ) as CommandsTreeViewProvider;
@@ -117,11 +117,11 @@ class TreeViewManager {
     developmentTreeviewProvider.refresh();
   }
 
-  public getTreeView(viewName: string) {
+  public getTreeView(viewName: string): unknown {
     return this.treeviewMap.get(viewName);
   }
 
-  public async setRunningCommand(
+  public setRunningCommand(
     commandName: string,
     blockedCommands: string[],
     blockingTooltip?: string
@@ -143,7 +143,7 @@ class TreeViewManager {
     }
   }
 
-  public async restoreRunningCommand(blockedCommands: string[]) {
+  public restoreRunningCommand(blockedCommands: string[]) {
     if (!this.runningCommand) {
       return;
     }

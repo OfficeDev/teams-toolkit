@@ -60,6 +60,11 @@ export const TelemetryConstants = {
     errorMessage: "error-message",
     errorStack: "error-stack",
     timeCost: "time-cost",
+    errorName: "error-name", // need classify, keep error name as a separate property for telemetry analysis, error name should has limited set of values
+    innerError: "inner-error", // need classify, JSON serialized raw inner error that is caused by internal error or external call error
+    errorCat1: "error-cat1", // need classify, error category level 1
+    errorCat2: "error-cat2", // need classify, error category level 2
+    errorCat3: "error-cat3", // need classify, error category level 3
   },
   values: {
     yes: "yes",

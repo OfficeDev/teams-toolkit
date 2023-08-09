@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -9,23 +12,24 @@ import {
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
-  validateNotificationBot,
   initPage,
+  validateNotificationBot,
 } from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
-  upgradeByTreeView,
+  startDebugging,
+  upgrade,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
+import {
+  CLIVersionCheck,
+  getBotSiteEndpoint,
+} from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.testAzureCase);
   let mirgationDebugTestContext: MigrationTestContext;
-  CliHelper.setV3Enable();
 
   beforeEach(async function () {
     // ensure workbench is ready
@@ -41,45 +45,50 @@ describe("Migration Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await mirgationDebugTestContext.after(true, true, "dev");
+    await mirgationDebugTestContext.after(false, true, "dev");
   });
 
   it(
-    "[auto] notification bot template upgrade test - js",
+    "[auto] [P0] V2 notification bot template upgrade test - js",
     {
-      testPlanCaseId: 17184123,
+      testPlanCaseId: 17184124,
       author: "frankqian@microsoft.com",
     },
     async () => {
       // install v2 stable cli 1.2.6
       await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsfx -v");
-      console.log(result.stdout);
-      expect(
-        (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)
-      ).to.be.true;
+      await CLIVersionCheck("V2", mirgationDebugTestContext.testRootFolder);
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
-      await validateNotification(Notification.Upgrade);
+      try {
+        await validateNotification(Notification.Upgrade);
+      } catch (error) {
+        await validateNotification(Notification.Upgrade_dicarded);
+      }
+
+      // v2 provision
+      await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
       // upgrade
-      await upgradeByTreeView();
+      await startDebugging();
+      await upgrade();
       // verify upgrade
       await validateUpgrade();
+
       // install test cil in project
       await CliHelper.installCLI(
         Env.TARGET_CLI,
         false,
-        mirgationDebugTestContext.projectPath
+        mirgationDebugTestContext.testRootFolder
       );
       // enable cli v3
       CliHelper.setV3Enable();
 
       // remote provision
       await mirgationDebugTestContext.provisionWithCLI("dev", true);
+      await CLIVersionCheck("V3", mirgationDebugTestContext.testRootFolder);
       // remote deploy
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
       await mirgationDebugTestContext.deployWithCLI("dev");
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
@@ -91,7 +100,11 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateNotificationBot(page);
+      const funcEndpoint = await getBotSiteEndpoint(
+        mirgationDebugTestContext.projectPath,
+        "dev"
+      );
+      await validateNotificationBot(page, funcEndpoint + "/api/notification");
     }
   );
 });

@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -55,7 +55,7 @@ describe("Migration Tests", function () {
     "[auto] [P0] V2 notification bot template upgrade test - js",
     {
       testPlanCaseId: 17184123,
-      author: "v-helzha@microsoft.com",
+      author: "frankqian@microsoft.com",
     },
     async () => {
       // install v2 stable cli 1.2.6

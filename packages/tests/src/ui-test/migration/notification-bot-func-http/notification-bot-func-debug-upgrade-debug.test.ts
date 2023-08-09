@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -40,7 +40,7 @@ describe("Migration Tests", function () {
 
     mirgationDebugTestContext = new MigrationTestContext(
       Capability.Notification,
-      "typescript",
+      "javascript",
       Trigger.Http
     );
     await mirgationDebugTestContext.before();
@@ -52,10 +52,10 @@ describe("Migration Tests", function () {
   });
 
   it(
-    "[auto] [P0] V2 notification bot template upgrade test - ts",
+    "[auto] [P0] V2 notification bot template upgrade test - js",
     {
-      testPlanCaseId: 17184123,
-      author: "v-helzha@microsoft.com",
+      testPlanCaseId: 17184124,
+      author: "frankqian@microsoft.com",
     },
     async () => {
       // install v2 stable cli 1.2.6

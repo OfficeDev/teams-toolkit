@@ -320,6 +320,14 @@ export class CapabilityOptions {
     };
   }
 
+  static SearchMe(): OptionItem {
+    return {
+      id: "search-message-extension",
+      label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+      detail: getLocalizedString("core.SearchAppOptionItem.detail"),
+    };
+  }
+
   static collectFormMe(): OptionItem {
     return {
       id: "collect-form-message-extension",
@@ -368,16 +376,22 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
-      ...CapabilityOptions.mes(),
+      ...CapabilityOptions.mes(inputs),
     ];
   }
 
-  static mes(): OptionItem[] {
-    return [
-      CapabilityOptions.linkUnfurling(),
-      CapabilityOptions.m365SearchMe(),
-      CapabilityOptions.collectFormMe(),
-    ];
+  static mes(inputs?: Inputs): OptionItem[] {
+    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
+      ? [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.SearchMe(),
+          CapabilityOptions.collectFormMe(),
+        ]
+      : [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+        ];
   }
 
   static copilotPlugins(): OptionItem[] {

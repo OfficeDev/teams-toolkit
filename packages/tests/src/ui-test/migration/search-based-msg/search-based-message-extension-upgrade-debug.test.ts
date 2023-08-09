@@ -1,6 +1,6 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -18,6 +18,7 @@ import {
   upgrade,
   waitForTerminal,
   validateUpgrade,
+  upgradeByTreeView,
 } from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
@@ -56,8 +57,7 @@ describe("Migration Tests", function () {
       await validateNotification(Notification.Upgrade);
 
       // upgrade
-      await startDebugging();
-      await upgrade();
+      await upgradeByTreeView();
       // verify upgrade
       await validateUpgrade();
       // enable cli v3

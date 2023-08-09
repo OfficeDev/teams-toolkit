@@ -1,6 +1,6 @@
-/**
- * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import { initPage, validateBot } from "../../utils/playwrightOperation";
@@ -37,7 +37,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "index.ts");
+      validateFileExist(projectPath, "src/index.ts");
 
       await startDebugging("Debug in Teams (Chrome)");
 

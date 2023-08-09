@@ -124,6 +124,9 @@
     "webpack": "^5.62.1",
     "yargs": "^17.2.1"
   },
+  "resolutions": {
+    "lodash.trimend": "https://github.com/lodash/lodash.git#4.17"
+  },
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {
     "access": "public"

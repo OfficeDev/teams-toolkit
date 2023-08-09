@@ -76,6 +76,7 @@ import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
 import { ValidationStatus } from "../../src/common/spec-parser/interfaces";
+import { apiSpecFolderName } from "../../src/component/generator/copilotPlugin/generator";
 
 const tools = new MockTools();
 
@@ -1279,12 +1280,29 @@ describe("copilotPlugin", async () => {
     sinon.restore();
   });
 
-  it("add API", async () => {
+  it("add API - json", async () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
-      [QuestionNames.ApiSpecLocation]: "https://example.json",
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves();
+    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
+    const result = await core.copilotPluginAddAPI(inputs);
+    console.log(result);
+    assert.isTrue(result.isOk());
+  });
+
+  it("add API - yaml", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.yml",
       [QuestionNames.ApiOperation]: ["testOperation"],
       projectPath: path.join(os.tmpdir(), appName),
     };

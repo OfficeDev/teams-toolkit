@@ -680,6 +680,7 @@ export class FxCoreV3Implement {
       AppPackageFolderName,
       AdaptiveFolderName
     );
+    await fs.ensureDir(adaptiveCardFolder);
 
     try {
       await specParser.generate(manifestPath, operations, openapiSpecPath, adaptiveCardFolder);

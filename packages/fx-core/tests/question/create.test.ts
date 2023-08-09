@@ -1116,7 +1116,6 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1126,7 +1125,7 @@ describe("scaffold question", () => {
             },
             auth: { type: "none" },
           };
-          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+          const getStub = sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -1135,10 +1134,11 @@ describe("scaffold question", () => {
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
             question.additionalValidationOnAccept as any
-          ).validFunc("url", inputs);
+          ).validFunc("test.com", inputs);
 
           assert.isUndefined(validationRes);
           assert.isUndefined(additionalValidationRes);
+          assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
         });
 
         it("cannot load openAI plugin manifest", async () => {

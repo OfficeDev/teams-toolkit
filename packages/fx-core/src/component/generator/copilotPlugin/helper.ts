@@ -74,7 +74,8 @@ export interface ErrorResult {
 
 export class OpenAIPluginManifestHelper {
   static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
-    let path = input + manifestFilePath;
+    let path =
+      (input.endsWith("/") ? input.substring(0, input.length - 1) : input) + manifestFilePath;
     if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
       path = "https://" + path;
     }

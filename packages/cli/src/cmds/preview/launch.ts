@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Colors, FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
-import { Hub } from "@microsoft/teamsfx-core";
+import { HubTypes } from "@microsoft/teamsfx-core";
 import cliLogger from "../../commonlib/log";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
@@ -13,7 +13,7 @@ import { OpeningBrowserFailed } from "./errors";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 
 export async function openHubWebClientNew(
-  hub: Hub,
+  hub: HubTypes,
   url: string,
   browser: constants.Browser,
   browserArguments: string[] = [],
@@ -31,7 +31,7 @@ export async function openHubWebClientNew(
 }
 
 async function _openHubWebClientNew(
-  hub: Hub,
+  hub: HubTypes,
   url: string,
   browser: constants.Browser,
   browserArguments: string[] = []

@@ -6,7 +6,7 @@ import { TemplateType } from "./constant";
 import { deployArgs, templateArgs } from "./interface";
 import { getFileExtension } from "./util/util";
 
-export async function validateArgs(args: deployArgs): Promise<string[]> {
+export function validateArgs(args: deployArgs): Promise<string[]> {
   const invalidParameters: string[] = [];
   if (!args.subscriptionId || !uuidValidate(args.subscriptionId)) {
     invalidParameters.push("subscriptionId is invalid");
@@ -16,10 +16,10 @@ export async function validateArgs(args: deployArgs): Promise<string[]> {
     invalidParameters.push("resourceGroupName is invalid");
   }
 
-  const res = await validateTemplates(args.templates);
+  const res = validateTemplates(args.templates);
   invalidParameters.push(...res);
 
-  return invalidParameters;
+  return Promise.resolve(invalidParameters);
 }
 
 function validateTemplates(templates: templateArgs[]): string[] {

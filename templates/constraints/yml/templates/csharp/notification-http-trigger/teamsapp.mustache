@@ -1,0 +1,24 @@
+{{#header}} version: 1.1.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsfx provision' is executed
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#botAadAppCreate}} {{/botAadAppCreate}}
+
+{{#armDeploy}} deploymentName: Create-resources-for-bot {{/armDeploy}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+# Triggered when 'teamsfx deploy' is executed
+deploy:
+{{#cliRunDotnetCommand}} publish {{/cliRunDotnetCommand}}
+{{#azureFunctionsZipDeploy}}
+  artifactFolder: bin/Release/net6.0/win-x86/publish,
+  resourceId: ${{BOT_AZURE_FUNCTION_APP_RESOURCE_ID}}
+{{/azureFunctionsZipDeploy}}

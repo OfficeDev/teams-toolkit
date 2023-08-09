@@ -10,7 +10,7 @@ import path from "path";
 import * as sinon from "sinon";
 import {
   developerPortalScaffoldUtils,
-  getTemplateId,
+  getProjectTypeAndCapability,
 } from "../../src/component/developerPortalScaffoldUtils";
 import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
 import {
@@ -1071,7 +1071,7 @@ describe("developPortalScaffoldUtils", () => {
     });
   });
 
-  describe("getTemplateId", () => {
+  describe("getProjectTypeAndCapability", () => {
     const validBot: Bot = {
       botId: "botId",
       isNotificationOnly: false,
@@ -1120,7 +1120,7 @@ describe("developPortalScaffoldUtils", () => {
         messagingExtensions: [validMessagingExtension],
       };
 
-      const res = getTemplateId(appDefinition);
+      const res = getProjectTypeAndCapability(appDefinition);
       chai.assert.equal(res?.templateId, CapabilityOptions.nonSsoTabAndBot().id);
       chai.assert.equal(res?.projectType, "tab-bot-type");
     });
@@ -1131,7 +1131,7 @@ describe("developPortalScaffoldUtils", () => {
         staticTabs: [validStaticTab],
       };
 
-      const res = getTemplateId(appDefinition);
+      const res = getProjectTypeAndCapability(appDefinition);
       chai.assert.equal(res?.templateId, CapabilityOptions.nonSsoTab().id);
       chai.assert.equal(res?.projectType, "tab-type");
     });
@@ -1143,7 +1143,7 @@ describe("developPortalScaffoldUtils", () => {
         messagingExtensions: [validMessagingExtension],
       };
 
-      const res = getTemplateId(appDefinition);
+      const res = getProjectTypeAndCapability(appDefinition);
       chai.assert.equal(res?.templateId, CapabilityOptions.botAndMe().id);
       chai.assert.equal(res?.projectType, "bot-me-type");
     });
@@ -1154,7 +1154,7 @@ describe("developPortalScaffoldUtils", () => {
         messagingExtensions: [validMessagingExtension],
       };
 
-      const res = getTemplateId(appDefinition);
+      const res = getProjectTypeAndCapability(appDefinition);
       chai.assert.equal(res?.templateId, CapabilityOptions.me().id);
       chai.assert.equal(res?.projectType, "me-type");
     });
@@ -1165,7 +1165,7 @@ describe("developPortalScaffoldUtils", () => {
         bots: [validBot],
       };
 
-      const res = getTemplateId(appDefinition);
+      const res = getProjectTypeAndCapability(appDefinition);
       chai.assert.equal(res?.templateId, CapabilityOptions.basicBot().id);
       chai.assert.equal(res?.projectType, "bot-type");
     });
@@ -1175,7 +1175,7 @@ describe("developPortalScaffoldUtils", () => {
         teamsAppId: "id",
       };
 
-      const res = getTemplateId(appDefinition);
+      const res = getProjectTypeAndCapability(appDefinition);
       chai.assert.isUndefined(res);
     });
   });

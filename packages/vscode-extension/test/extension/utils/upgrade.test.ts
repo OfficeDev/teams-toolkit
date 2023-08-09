@@ -24,24 +24,21 @@ const reporterSpy = spy.interface({
     measurements?: { [p: string]: number }
   ): void {},
 });
-describe("upgrade show what's new log", () => {
+describe("upgrade show changelog", () => {
   const sandbox = sinon.createSandbox();
   let context: vscode.ExtensionContext;
+  let telemetryStub: sinon.SinonStub;
   const mockGlobalState: vscode.Memento = {
     keys: gloablStateKeys,
     get: globalStateGet,
     update: globalStateUpdate,
   };
-  before(() => {
-    chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
-  });
   beforeEach(() => {
     context = {
       subscriptions: [],
       globalState: mockGlobalState,
     } as unknown as vscode.ExtensionContext;
     sandbox.stub(versionUtil, "getExtensionId").returns("");
-    sandbox.stub(vscode.window, "showInformationMessage").resolves();
     sandbox.stub(vscode.extensions, "getExtension").returns({
       packageJSON: { version: "5.0.0" },
       id: "",
@@ -54,26 +51,43 @@ describe("upgrade show what's new log", () => {
         return Promise.resolve();
       },
     });
+    telemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
   });
   afterEach(() => {
     sandbox.restore();
   });
-  it("show what's new notification happy path", async () => {
+  it("show changelog notification happy path", async () => {
     const contextSpy = sandbox.spy(context.globalState, "update");
     sandbox.stub(context.globalState, "get").returns("4.99.0");
+    let title = "";
+    sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
+        title = option.title;
+        return Promise.resolve(option);
+      });
+    const instance = new ExtensionUpgrade(context);
+    await instance.showChangeLog();
+    chai.assert(title === "Changelog");
+    chai.assert(contextSpy.callCount == 2);
+    chai.assert(telemetryStub.calledWith("show-what-is-new-notification"));
+  });
+  it("should not show changelog if button is not clicked", async () => {
+    const contextSpy = sandbox.spy(context.globalState, "update");
+    sandbox.stub(context.globalState, "get").returns("4.99.0");
+    sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined);
     const instance = new ExtensionUpgrade(context);
     await instance.showChangeLog();
     chai.assert(contextSpy.callCount == 2);
-    chai
-      .expect(reporterSpy.sendTelemetryEvent)
-      .to.have.been.called.with("show-what-is-new-notification");
+    chai.assert(telemetryStub.calledOnce);
   });
-  it("should not show whate's new log when version is not changed", async () => {
+  it("should not show changelog when version is not changed", async () => {
     const contextSpy = sandbox.spy(context.globalState, "update");
     sandbox.stub(context.globalState, "get").returns("5.0.0");
+    sandbox.stub(vscode.window, "showInformationMessage").resolves();
     const instance = new ExtensionUpgrade(context);
     await instance.showChangeLog();
     sinon.assert.notCalled(contextSpy);
-    chai.expect(reporterSpy.sendTelemetryEvent).to.not.have.been.called;
+    chai.assert(telemetryStub.notCalled);
   });
 });

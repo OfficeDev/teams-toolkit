@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -49,7 +49,9 @@ export function parseLocale(): string {
     }
   } catch {}
   const vscodeConfigString = process.env.VSCODE_NLS_CONFIG;
-  return vscodeConfigString ? JSON.parse(vscodeConfigString).locale : "en-us";
+  return vscodeConfigString
+    ? (JSON.parse(vscodeConfigString) as Record<string, string>).locale
+    : "en-us";
 }
 
 function getLocalizedString(key: string, isDefault: boolean, defValue?: string): string {
@@ -81,7 +83,7 @@ export function loadLocalizedStrings(): void {
     `package.nls.${loadedLocale}.json`
   );
   if (fs.pathExistsSync(nlsFile)) {
-    loadedCollection = fs.readJsonSync(nlsFile);
+    loadedCollection = fs.readJsonSync(nlsFile) as Record<string, string> | undefined;
   } else {
     loadedCollection = {};
   }
@@ -96,7 +98,7 @@ function loadDefaultStrings(): void {
       "package.nls.json"
     );
     if (fs.pathExistsSync(defaultNlsFile)) {
-      defaultCollection = fs.readJsonSync(defaultNlsFile);
+      defaultCollection = fs.readJsonSync(defaultNlsFile) as Record<string, string> | undefined;
     } else {
       defaultCollection = {};
     }

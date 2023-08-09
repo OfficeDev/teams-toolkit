@@ -1,5 +1,5 @@
 name: publish to VSCode marketplace
-run-name: Publish-${{ inputs.run_id }}-${{ github.ref_name }}-isPreview-${{ inputs.isPreview }}
+run-name: Publish-${{ inputs.run_id }}-${{ github.ref_name }}-isPreview-${{ inputs.isPreview }}-${{ inputs.series }}
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +11,10 @@ on:
         description: "Publish VSIX as a preview version(yes or no)"
         required: true
         default: "no"
+      series:
+        description: "release sprint series name"
+        required: false
+        default: ""
 
 jobs:
   publish-to-vscode-marketplace:

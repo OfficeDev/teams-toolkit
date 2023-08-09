@@ -1,17 +1,20 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../constants";
+import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
   runDeploy,
 } from "./remotedebugContext";
-import { execCommandIfExist, createNewProject } from "../../vscodeOperation";
+import {
+  execCommandIfExist,
+  createNewProject,
+} from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
-import { initPage, validateMsg } from "../../playwrightOperation";
+import { initPage, validateCreatedCard } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
@@ -54,7 +57,7 @@ describe("Remote debug Tests", function () {
   it(
     "[auto] Remote debug for Message Extension project Tests",
     {
-      testPlanCaseId: 14907799,
+      testPlanCaseId: 24739650,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -71,7 +74,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateMsg(page);
+      await validateCreatedCard(page);
     }
   );
 });

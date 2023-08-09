@@ -8,7 +8,7 @@ import * as path from "path";
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import open from "open";
 import cliLogger from "../../commonlib/log";
-import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
+import cliTelemetry from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -132,7 +132,7 @@ export function createTaskStopCb(
     } else {
       const error = TaskFailed(taskTitle);
       if (!background && ifNpmInstall && telemetryProperties !== undefined) {
-        const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
+        const localEnvManager = new LocalEnvManager(cliLogger, cliTelemetry.reporter);
         const npmInstallLogInfo = await localEnvManager.getNpmInstallLogInfo();
         let validNpmInstallLogInfo = false;
         if (

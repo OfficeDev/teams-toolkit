@@ -14,6 +14,7 @@ import { TelemetryUtils } from "../driver/teamsApp/utils/telemetry";
 import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { AppStudioClient } from "../driver/teamsApp/clients/appStudioClient";
+import { AppIdNotExist } from "../../core/error";
 
 const EventName = {
   grantPermission: "grant-permission",
@@ -50,7 +51,7 @@ export class AadCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, objectId));
     }
   }
 
@@ -63,7 +64,7 @@ export class AadCollaboration {
       const owners = await this.aadAppClient.getOwners(objectId);
       return ok(owners ?? []);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, objectId));
     }
   }
 
@@ -87,15 +88,17 @@ export class AadCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, objectId));
     }
   }
 
-  private handleError(error: any, ctx: Context): FxError {
+  private handleError(error: any, ctx: Context, appId: string): FxError {
     if (axios.isAxiosError(error)) {
       const message = JSON.stringify(error.response!.data);
       ctx.logProvider?.error(message);
-      if (error.response!.status >= 400 && error.response!.status < 500) {
+      if (error.response!.status === 404) {
+        return new AppIdNotExist(appId);
+      } else if (error.response!.status >= 400 && error.response!.status < 500) {
         return new HttpClientError(componentNameAad, message);
       } else {
         return new HttpServerError(componentNameAad, message);
@@ -140,7 +143,7 @@ export class TeamsCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, teamsAppId));
     }
   }
 
@@ -175,7 +178,7 @@ export class TeamsCollaboration {
 
       return ok(teamsAppAdmin);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, teamsAppId));
     }
   }
 
@@ -200,28 +203,31 @@ export class TeamsCollaboration {
       const result: ResourcePermission[] = [
         {
           name: Constants.PERMISSIONS.name,
-          roles: [teamsAppRoles as string],
+          roles: [teamsAppRoles],
           type: Constants.PERMISSIONS.type,
           resourceId: teamsAppId,
         },
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, teamsAppId));
     }
   }
 
-  private handleError(error: any, ctx: Context): FxError {
+  private handleError(error: any, ctx: Context, appId: string): FxError {
     if (error.innerError) {
       const message = JSON.stringify(error.innerError.response.data);
       ctx.logProvider?.error(message);
-      const fxError =
-        error.innerError.response.status &&
-        error.innerError.response.status >= 400 &&
-        error.innerError.response.status < 500
-          ? new HttpClientError(componentNameTeams, message)
-          : new HttpServerError(componentNameTeams, message);
-      return fxError;
+      if (error.innerError.response.status) {
+        const statusCode = error.innerError.response.status;
+        if (statusCode === 404) {
+          return new AppIdNotExist(appId);
+        } else if (statusCode >= 400 && statusCode < 500) {
+          return new HttpClientError(componentNameTeams, message);
+        } else {
+          return new HttpServerError(componentNameTeams, message);
+        }
+      }
     }
 
     const message = JSON.stringify(error);

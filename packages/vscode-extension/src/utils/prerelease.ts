@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 "use strict";
@@ -19,22 +19,22 @@ export class PrereleasePage {
     const prereleaseVersion = this.context.globalState.get<string>(PrereleaseState.Version);
     if (
       prereleaseVersion === undefined ||
-      (versionUtil.isPrereleaseVersion(teamsToolkitVersion) &&
+      (teamsToolkitVersion &&
+        versionUtil.isPrereleaseVersion(teamsToolkitVersion) &&
         teamsToolkitVersion != prereleaseVersion)
     ) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
-      this.context.globalState.update(PrereleaseState.Version, teamsToolkitVersion);
-      this.show();
+      await this.context.globalState.update(PrereleaseState.Version, teamsToolkitVersion);
+      await this.show();
     }
   }
   public async show() {
     const uri = vscode.Uri.file(`${folder.getResourceFolder()}/PRERELEASE.md`);
-    vscode.workspace.openTextDocument(uri).then(() => {
-      const PreviewMarkdownCommand = "markdown.showPreview";
-      vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
-    });
+    await vscode.workspace.openTextDocument(uri);
+    const PreviewMarkdownCommand = "markdown.showPreview";
+    await vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
   }
-  public getTeamsToolkitVersion(): any {
+  public getTeamsToolkitVersion(): string | undefined {
     const extensionId = versionUtil.getExtensionId();
     const teamsToolkit = vscode.extensions.getExtension(extensionId);
     return teamsToolkit?.packageJSON.version;

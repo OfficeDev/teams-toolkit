@@ -9,6 +9,14 @@ import { TokenCredential } from "@azure/identity";
 
 /**
  * Get Microsoft graph client.
+ * @deprecated Use `TokenCredentialAuthenticationProvider` and `Client.initWithMiddleware` instead.
+ * ```typescript
+ * const authProvider = new TokenCredentialAuthenticationProvider(credential, { scopes: scope });
+ * const graph = Client.initWithMiddleware({
+ *   authProvider: authProvider,
+ * });
+ * ```
+ *
  * @example
  * Get Microsoft graph client by TokenCredential
  * ```typescript
@@ -29,7 +37,7 @@ import { TokenCredential } from "@azure/identity";
  * };
  * const prompt = new TeamsBotSsoPrompt(dialogId, {
  *    config: config
- *    scopes: '["User.Read"],
+ *    scopes: ["User.Read"],
  * });
  * this.addDialog(prompt);
  *
@@ -71,6 +79,14 @@ export function createMicrosoftGraphClient(
 // eslint-disable-next-line no-secrets/no-secrets
 /**
  * Get Microsoft graph client.
+ * @deprecated Use `TokenCredentialAuthenticationProvider` and `Client.initWithMiddleware` instead.
+ * ```typescript
+ * const authProvider = new TokenCredentialAuthenticationProvider(credential, { scopes: scope });
+ * const graph = Client.initWithMiddleware({
+ *   authProvider: authProvider,
+ * });
+ * ```
+ * 
  * @example
  * Get Microsoft graph client by TokenCredential
  * ```typescript

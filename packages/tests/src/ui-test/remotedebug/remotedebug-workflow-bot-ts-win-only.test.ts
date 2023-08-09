@@ -1,20 +1,22 @@
-/**
- * @author Anne Fu <v-annefu@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../constants";
+import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
   runDeploy,
 } from "./remotedebugContext";
-import { execCommandIfExist, createNewProject } from "../../vscodeOperation";
+import {
+  execCommandIfExist,
+  createNewProject,
+} from "../../utils/vscodeOperation";
 import {
   initPage,
   validateBot,
   validateWorkFlowBot,
-} from "../../playwrightOperation";
+} from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
@@ -80,7 +82,10 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateBot(page, "helloWorld");
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World Bot is Running",
+      });
       await validateWorkFlowBot(page);
     }
   );

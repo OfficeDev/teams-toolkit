@@ -25,6 +25,7 @@ import {
 import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 import isUUID from "validator/lib/isUUID";
 import { InvalidBotIdUserError } from "./error/invalidBotIdError";
+import { TelemetryUtils } from "../teamsApp/utils/telemetry";
 
 const actionName = "botFramework/create";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
@@ -46,7 +47,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     return wrapRun(async () => {
       const result = await this.handler(args, context);
       return result.output;
-    });
+    }, actionName);
   }
 
   @hooks([
@@ -62,7 +63,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       const result = await this.handler(args, ctx);
       summaries = result.summaries;
       return result.output;
-    });
+    }, actionName);
     return {
       result: outputResult,
       summaries,
@@ -106,6 +107,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
         configuredChannels,
       };
 
+      TelemetryUtils.init(context); // AppStudioClient will use TelemetryUtils to send telemetry.
       const result = await createOrUpdateBotRegistration(
         context.m365TokenProvider,
         botRegistrationData

@@ -50,14 +50,23 @@ import {
   UIConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { UserCancelError, assembleError, loadingOptionsPlaceholder } from "@microsoft/teamsfx-core";
+import {
+  assembleError,
+  loadingDefaultPlaceholder,
+  loadingOptionsPlaceholder,
+  UserCancelError,
+} from "@microsoft/teamsfx-core";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { showOutputChannel } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import {
+  SelectFileOrInputResultType,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
@@ -140,8 +149,8 @@ export class VsCodeUI implements UserInteraction {
     this.context = context;
   }
 
-  async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    if (typeof option.options === "object" && option.options.length === 0) {
+  async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+    if (typeof config.options === "object" && config.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,
@@ -154,147 +163,157 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick = window.createQuickPick<FxQuickPickItem>();
-      quickPick.title = option.title;
-      const buttons: QuickInputButton[] = option.buttons
-        ? option.buttons.map((button) => {
+      quickPick.title = config.title;
+      const buttons: QuickInputButton[] = config.buttons
+        ? config.buttons.map((button) => {
             return {
               iconPath: new ThemeIcon(button.icon),
               tooltip: button.tooltip,
             } as QuickInputButton;
           })
         : [];
-      if (option.step && option.step > 1) {
+      if (config.step && config.step > 1) {
         quickPick.buttons = [QuickInputButtons.Back, ...buttons];
       } else {
         quickPick.buttons = buttons;
       }
-      quickPick.placeholder = option.placeholder;
+      quickPick.placeholder = config.placeholder;
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = false;
-      return await new Promise<Result<SingleSelectResult, FxError>>(
-        async (resolve): Promise<void> => {
-          // set items
-          let options: StaticOptions = [];
-          let isSkip = false;
-          if (typeof option.options === "function") {
-            quickPick.busy = true;
-            quickPick.placeholder = loadingOptionsPlaceholder();
-            option
-              .options()
-              .then((results) => {
-                options = results;
-                quickPick.items = convertToFxQuickPickItems(options);
-                quickPick.busy = false;
-                quickPick.placeholder = option.placeholder;
-                if (option.skipSingleOption && options.length === 1) {
-                  quickPick.selectedItems = [quickPick.items[0]];
-                  isSkip = true;
-                  onDidAccept();
+      return await new Promise<Result<SingleSelectResult, FxError>>((resolve) => {
+        let options: StaticOptions = [];
+        let defaultValue: string | undefined = undefined;
+        let isSkip = false;
+        const onDidAccept = async () => {
+          const selectedItems = quickPick.selectedItems;
+          if (selectedItems && selectedItems.length > 0) {
+            const item = selectedItems[0];
+            let result: string | OptionItem;
+            if (
+              typeof options[0] === "string" ||
+              config.returnObject === undefined ||
+              config.returnObject === false
+            ) {
+              result = item.id;
+              if (config.validation) {
+                try {
+                  const validateRes = await config.validation(result);
+                  if (validateRes) {
+                    return;
+                  }
+                } catch (e) {
+                  resolve(err(assembleError(e)));
                 }
-              })
-              .catch((error) => {
-                resolve(err(assembleError(error)));
-              });
-          } else {
-            options = option.options as StaticOptions;
+              }
+            } else result = getOptionItem(item);
+            resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
           }
+        };
+
+        const loadDynamicData = async () => {
+          try {
+            if (typeof config.options === "function") {
+              options = await config.options();
+            } else {
+              options = config.options;
+            }
+            if (typeof config.default === "function") {
+              defaultValue = await config.default();
+            } else {
+              defaultValue = config.default;
+            }
+          } catch (e) {
+            resolve(err(assembleError(e)));
+          }
+        };
+
+        const onDataLoaded = async () => {
+          quickPick.busy = false;
+          quickPick.placeholder = config.placeholder;
           quickPick.items = convertToFxQuickPickItems(options);
-          // set default
-          if (option.default) {
-            // let defaultOption: string | OptionItem | undefined;
+          if (config.skipSingleOption && options.length === 1) {
+            quickPick.selectedItems = [quickPick.items[0]];
+            isSkip = true;
+            await onDidAccept();
+          }
+          if (defaultValue) {
             if (options && options.length > 0 && typeof options[0] === "string") {
-              const defaultOption = (options as string[]).find((o) => o == option.default);
+              const defaultOption = (options as string[]).find((o) => o == defaultValue);
               if (defaultOption) {
-                const newItems = (options as string[]).filter((o) => o != option.default);
+                const newItems = (options as string[]).filter((o) => o != defaultValue);
                 newItems.unshift(defaultOption);
                 quickPick.items = convertToFxQuickPickItems(newItems);
               }
             } else {
-              const defaultOption = (options as OptionItem[]).find((o) => o.id == option.default);
+              const defaultOption = (options as OptionItem[]).find((o) => o.id == defaultValue);
               if (defaultOption) {
-                const newItems = (options as OptionItem[]).filter((o) => o.id != option.default);
+                const newItems = (options as OptionItem[]).filter((o) => o.id != defaultValue);
                 newItems.unshift(defaultOption);
                 quickPick.items = convertToFxQuickPickItems(newItems);
               }
             }
           }
-
-          const onDidAccept = async () => {
-            const selectedItems = quickPick.selectedItems;
-            if (selectedItems && selectedItems.length > 0) {
-              const item = selectedItems[0];
-              let result: string | OptionItem;
-              if (
-                typeof options[0] === "string" ||
-                option.returnObject === undefined ||
-                option.returnObject === false
-              ) {
-                result = item.id;
-                if (option.validation) {
-                  try {
-                    const validateRes = await option.validation(result);
-                    if (validateRes) {
-                      return;
-                    }
-                  } catch (e) {
-                    resolve(err(assembleError(e)));
-                  }
-                }
-              } else result = getOptionItem(item);
-              resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
-            }
-          };
-
-          disposables.push(
-            quickPick.onDidAccept(onDidAccept),
-            quickPick.onDidHide(() => {
-              resolve(err(new UserCancelError("VSC")));
-            }),
-            quickPick.onDidTriggerButton((button) => {
-              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-              else if (option.buttons && buttons.indexOf(button) !== -1) {
-                const curButton = option.buttons?.find((btn) => {
-                  return (
-                    btn.icon === (button.iconPath as ThemeIcon).id && btn.tooltip === button.tooltip
-                  );
-                });
-                if (curButton) {
-                  commands.executeCommand(curButton.command);
-                }
-              } else {
-                quickPick.selectedItems = quickPick.activeItems;
-                onDidAccept();
-              }
-            }),
-            quickPick.onDidTriggerItemButton((event) => {
-              const itemOptions: StaticOptions = options;
-              if (itemOptions.length > 0 && typeof itemOptions[0] === "string") {
-                return;
-              }
-              const triggerItem: OptionItem | undefined = (itemOptions as OptionItem[]).find(
-                (singleOption: string | OptionItem) => {
-                  if (typeof singleOption !== "string") {
-                    return (singleOption as OptionItem).id === event.item.id;
-                  }
-                }
-              );
-              if (triggerItem) {
-                const triggerButton = triggerItem.buttons?.find((button) => {
-                  return button.iconPath === (event.button.iconPath as ThemeIcon).id;
-                });
-                if (triggerButton) {
-                  commands.executeCommand(triggerButton.command, event.item);
-                }
-              }
-            })
-          );
-
-          disposables.push(quickPick);
-          quickPick.show();
+        };
+        if (typeof config.options === "function" || typeof config.default === "function") {
+          // load dynamic data (options or default)
+          quickPick.busy = true;
+          quickPick.placeholder = loadingOptionsPlaceholder();
+          loadDynamicData()
+            .then(onDataLoaded)
+            .catch((e) => resolve(err(assembleError(e))));
+        } else {
+          options = config.options;
+          defaultValue = config.default;
+          onDataLoaded().catch((e) => resolve(err(assembleError(e))));
         }
-      );
+        disposables.push(
+          quickPick.onDidAccept(onDidAccept),
+          quickPick.onDidHide(() => {
+            resolve(err(new UserCancelError("VSC")));
+          }),
+          quickPick.onDidTriggerButton(async (button) => {
+            if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
+            else if (config.buttons && buttons.indexOf(button) !== -1) {
+              const curButton = config.buttons?.find((btn) => {
+                return (
+                  btn.icon === (button.iconPath as ThemeIcon).id && btn.tooltip === button.tooltip
+                );
+              });
+              if (curButton) {
+                await commands.executeCommand(curButton.command);
+              }
+            } else {
+              quickPick.selectedItems = quickPick.activeItems;
+              await onDidAccept();
+            }
+          }),
+          quickPick.onDidTriggerItemButton(async (event) => {
+            const itemOptions: StaticOptions = options;
+            if (itemOptions.length > 0 && typeof itemOptions[0] === "string") {
+              return;
+            }
+            const triggerItem: OptionItem | undefined = (itemOptions as OptionItem[]).find(
+              (singleOption: string | OptionItem) => {
+                if (typeof singleOption !== "string") {
+                  return singleOption.id === event.item.id;
+                }
+              }
+            );
+            if (triggerItem) {
+              const triggerButton = triggerItem.buttons?.find((button) => {
+                return button.iconPath === (event.button.iconPath as ThemeIcon).id;
+              });
+              if (triggerButton) {
+                await commands.executeCommand(triggerButton.command, event.item);
+              }
+            }
+          })
+        );
+        disposables.push(quickPick);
+        quickPick.show();
+      });
     } finally {
       disposables.forEach((d) => {
         d.dispose();
@@ -302,8 +321,8 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    if (typeof option.options === "object" && option.options.length === 0) {
+  async selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
+    if (typeof config.options === "object" && config.options.length === 0) {
       return err(
         new SystemError(
           ExtensionSource,
@@ -316,57 +335,74 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<FxQuickPickItem> = window.createQuickPick<FxQuickPickItem>();
-      quickPick.title = option.title;
-      if (option.step && option.step > 1) {
+      quickPick.title = config.title;
+      if (config.step && config.step > 1) {
         quickPick.buttons = [QuickInputButtons.Back];
       }
-      quickPick.placeholder = option.placeholder
-        ? option.placeholder + localize("teamstoolkit.qm.multiSelectKeyboard")
+      quickPick.placeholder = config.placeholder
+        ? config.placeholder + localize("teamstoolkit.qm.multiSelectKeyboard")
         : localize("teamstoolkit.qm.multiSelectKeyboard");
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = true;
       const preIds: Set<string> = new Set<string>();
-      return await new Promise<Result<MultiSelectResult, FxError>>(
-        async (resolve): Promise<void> => {
-          // set items
-          let options: StaticOptions = [];
-          let isSkip = false;
-          if (typeof option.options === "function") {
-            quickPick.busy = true;
-            quickPick.placeholder = loadingOptionsPlaceholder();
-            option
-              .options()
-              .then((results) => {
-                options = results;
-                quickPick.items = convertToFxQuickPickItems(options);
-                quickPick.busy = false;
-                quickPick.placeholder = option.placeholder;
-                if (option.skipSingleOption && options.length === 1) {
-                  quickPick.selectedItems = [quickPick.items[0]];
-                  isSkip = true;
-                  onDidAccept();
-                }
-              })
-              .catch((error) => {
-                resolve(err(assembleError(error)));
-              });
-          } else {
-            options = option.options as StaticOptions;
+      return await new Promise<Result<MultiSelectResult, FxError>>((resolve) => {
+        let options: StaticOptions = [];
+        let isSkip = false;
+        let defaultValue: string[] = [];
+        const optionMap = new Map<string, FxQuickPickItem>();
+        const loadDynamicData = async () => {
+          try {
+            if (typeof config.options === "function") {
+              options = await config.options();
+            } else {
+              options = config.options;
+            }
+            if (typeof config.default === "function") {
+              defaultValue = await config.default();
+            } else {
+              defaultValue = config.default || [];
+            }
+          } catch (e) {
+            resolve(err(assembleError(e)));
           }
+        };
+        const onDidAccept = async () => {
+          const strArray = Array.from(quickPick.selectedItems.map((i) => i.id));
+          if (config.validation) {
+            const validateRes = await config.validation(strArray);
+            if (validateRes) {
+              return;
+            }
+          }
+          let result: OptionItem[] | string[] = strArray;
+          if (
+            typeof options[0] === "string" ||
+            config.returnObject === undefined ||
+            config.returnObject === false
+          )
+            result = strArray;
+          else result = quickPick.selectedItems.map((i) => getOptionItem(i));
+          resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
+        };
+
+        const onDataLoaded = async () => {
+          quickPick.busy = false;
+          quickPick.placeholder = config.placeholder;
           quickPick.items = convertToFxQuickPickItems(options);
-          const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
           }
-
-          // set default values
-          if (option.default) {
-            const ids = option.default as string[];
+          if (config.skipSingleOption && options.length === 1) {
+            quickPick.selectedItems = [quickPick.items[0]];
+            isSkip = true;
+            await onDidAccept();
+          }
+          if (defaultValue) {
             const selectedItems: FxQuickPickItem[] = [];
             preIds.clear();
-            for (const id of ids) {
+            for (const id of defaultValue) {
               const item = optionMap.get(id);
               if (item) {
                 selectedItems.push(item);
@@ -375,67 +411,62 @@ export class VsCodeUI implements UserInteraction {
             }
             quickPick.selectedItems = selectedItems;
           }
+        };
 
-          const onDidAccept = async () => {
-            const strArray = Array.from(quickPick.selectedItems.map((i) => i.id));
-            if (option.validation) {
-              const validateRes = await option.validation(strArray);
-              if (validateRes) {
-                return;
+        if (typeof config.options === "function" || typeof config.default === "function") {
+          //load dynamic data
+          quickPick.busy = true;
+          quickPick.placeholder = loadingOptionsPlaceholder();
+          loadDynamicData()
+            .then(onDataLoaded)
+            .catch((e) => resolve(err(assembleError(e))));
+        } else {
+          options = config.options;
+          defaultValue = config.default as string[] | [];
+          onDataLoaded().catch((e) => resolve(err(assembleError(e))));
+        }
+
+        disposables.push(
+          quickPick.onDidAccept(onDidAccept),
+          quickPick.onDidHide(() => {
+            resolve(err(new UserCancelError("VSC")));
+          }),
+          quickPick.onDidTriggerButton(async (button) => {
+            if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
+            else {
+              await onDidAccept();
+            }
+          })
+        );
+
+        if (config.onDidChangeSelection) {
+          const changeHandler = async function (items: readonly FxQuickPickItem[]): Promise<any> {
+            let currentIds = new Set<string>();
+            for (const item of items) {
+              currentIds.add(item.id);
+            }
+            if (config.onDidChangeSelection) {
+              const currentClone = cloneSet(currentIds);
+              currentIds = await config.onDidChangeSelection(currentIds, preIds);
+              const selectedItems: FxQuickPickItem[] = [];
+              preIds.clear();
+              for (const id of currentIds) {
+                const item = optionMap.get(id);
+                if (item) {
+                  selectedItems.push(item);
+                  preIds.add(id);
+                }
+              }
+              if (!isSame(currentClone, currentIds)) {
+                quickPick.selectedItems = selectedItems;
               }
             }
-            let result: OptionItem[] | string[] = strArray;
-            if (
-              typeof options[0] === "string" ||
-              option.returnObject === undefined ||
-              option.returnObject === false
-            )
-              result = strArray;
-            else result = quickPick.selectedItems.map((i) => getOptionItem(i));
-            resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
           };
-
-          disposables.push(
-            quickPick.onDidAccept(onDidAccept),
-            quickPick.onDidHide(() => {
-              resolve(err(new UserCancelError("VSC")));
-            }),
-            quickPick.onDidTriggerButton((button) => {
-              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-              else onDidAccept();
-            })
-          );
-
-          if (option.onDidChangeSelection) {
-            const changeHandler = async function (items: readonly FxQuickPickItem[]): Promise<any> {
-              let currentIds = new Set<string>();
-              for (const item of items) {
-                currentIds.add(item.id);
-              }
-              if (option.onDidChangeSelection) {
-                const currentClone = cloneSet(currentIds);
-                currentIds = await option.onDidChangeSelection(currentIds, preIds);
-                const selectedItems: FxQuickPickItem[] = [];
-                preIds.clear();
-                for (const id of currentIds) {
-                  const item = optionMap.get(id);
-                  if (item) {
-                    selectedItems.push(item);
-                    preIds.add(id);
-                  }
-                }
-                if (!isSame(currentClone, currentIds)) {
-                  quickPick.selectedItems = selectedItems;
-                }
-              }
-            };
-            disposables.push(quickPick.onDidChangeSelection(changeHandler));
-          }
-
-          disposables.push(quickPick);
-          quickPick.show();
+          disposables.push(quickPick.onDidChangeSelection(changeHandler));
         }
-      );
+        disposables.push(quickPick);
+        quickPick.show();
+      });
     } finally {
       disposables.forEach((d) => {
         d.dispose();
@@ -443,34 +474,88 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async inputText(option: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
+  async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
     const disposables: Disposable[] = [];
     try {
       const inputBox: InputBox = window.createInputBox();
-      inputBox.title = option.title;
-      if (option.step && option.step > 1) {
+      inputBox.title = config.title;
+      if (config.step && config.step > 1) {
         inputBox.buttons = [QuickInputButtons.Back];
       }
-      inputBox.placeholder = option.placeholder;
-      inputBox.value = option.default || "";
       inputBox.ignoreFocusOut = true;
-      inputBox.password = option.password === true;
-      inputBox.prompt = option.prompt;
+      inputBox.password = config.password === true;
+      inputBox.prompt = config.prompt;
       return await new Promise<Result<InputTextResult, FxError>>((resolve): void => {
+        let defaultValue: string | undefined = undefined;
+        const loadDynamicData = async () => {
+          try {
+            if (typeof config.default === "function") {
+              defaultValue = await config.default();
+            }
+          } catch (e) {
+            resolve(err(assembleError(e)));
+          }
+        };
+        const onDataLoaded = () => {
+          inputBox.busy = false;
+          inputBox.enabled = true;
+          inputBox.placeholder = config.placeholder;
+          inputBox.value = defaultValue || "";
+        };
+
         const onDidAccept = async () => {
-          const validationRes = option.validation
-            ? await option.validation(inputBox.value)
+          const validationRes = config.validation
+            ? await config.validation(inputBox.value)
             : undefined;
           if (!validationRes) {
+            inputBox.enabled = false;
+            inputBox.busy = true;
+            if (config.additionalValidationOnAccept) {
+              const oldValue = inputBox.value;
+              inputBox.placeholder = localize("teamstoolkit.qm.validatingInput");
+              inputBox.value = "";
+              try {
+                const additionalValidationOnAcceptRes = await config.additionalValidationOnAccept(
+                  oldValue
+                );
+
+                if (!additionalValidationOnAcceptRes) {
+                  resolve(ok({ type: "success", result: oldValue }));
+                } else {
+                  inputBox.validationMessage = additionalValidationOnAcceptRes;
+                  inputBox.busy = false;
+                  inputBox.enabled = true;
+                  inputBox.value = oldValue;
+                  return;
+                }
+              } catch (e) {
+                resolve(err(assembleError(e)));
+              }
+            } else {
+              resolve(ok({ type: "success", result: inputBox.value }));
+            }
             resolve(ok({ type: "success", result: inputBox.value }));
           } else {
             inputBox.validationMessage = validationRes;
           }
         };
+
+        if (typeof config.default === "function") {
+          inputBox.busy = true;
+          inputBox.enabled = false;
+          inputBox.placeholder = loadingDefaultPlaceholder();
+          loadDynamicData()
+            .then(onDataLoaded)
+            .catch((e) => resolve(err(assembleError(e))));
+        } else {
+          defaultValue = config.default || "";
+          onDataLoaded();
+        }
+
         disposables.push(
           inputBox.onDidChangeValue(async (text) => {
-            if (option.validation) {
-              const validationRes = option.validation ? await option.validation(text) : undefined;
+            if (config.validation) {
+              const validationRes = config.validation ? await config.validation(text) : undefined;
               if (!!validationRes) {
                 inputBox.validationMessage = validationRes;
               } else {
@@ -482,9 +567,11 @@ export class VsCodeUI implements UserInteraction {
           inputBox.onDidHide(() => {
             resolve(err(new UserCancelError("VSC")));
           }),
-          inputBox.onDidTriggerButton((button) => {
+          inputBox.onDidTriggerButton(async (button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-            else onDidAccept();
+            else {
+              await onDidAccept();
+            }
           })
         );
         disposables.push(inputBox);
@@ -510,16 +597,27 @@ export class VsCodeUI implements UserInteraction {
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = false;
-      return await new Promise<Result<SelectFolderResult, FxError>>(
-        async (resolve): Promise<void> => {
-          // set options
+      return await new Promise<Result<SelectFolderResult, FxError>>((resolve) => {
+        let defaultValue: string | undefined = undefined;
+        const loadDynamicData = async () => {
+          try {
+            if (typeof config.default === "function") {
+              defaultValue = await config.default();
+            }
+          } catch (e) {
+            resolve(err(assembleError(e)));
+          }
+        };
+        const onDataLoaded = () => {
+          quickPick.busy = false;
+          quickPick.placeholder = config.placeholder;
           quickPick.items = [
-            ...(config.default
+            ...(defaultValue
               ? [
                   {
                     id: "default",
                     label: localize("teamstoolkit.qm.defaultFolder"),
-                    description: config.default,
+                    description: defaultValue,
                   },
                 ]
               : []),
@@ -528,52 +626,63 @@ export class VsCodeUI implements UserInteraction {
               label: `$(folder) ${localize("teamstoolkit.qm.browse")}`,
             },
           ];
+        };
 
-          let hideByDialog = false;
-          const onDidAccept = async () => {
-            const selectedItems = quickPick.selectedItems;
-            if (selectedItems && selectedItems.length > 0) {
-              const item = selectedItems[0];
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectFolder, {
-                [TelemetryProperty.SelectedOption]: item.id,
+        if (typeof config.default === "function") {
+          quickPick.busy = true;
+          quickPick.placeholder = loadingDefaultPlaceholder();
+          loadDynamicData()
+            .then(onDataLoaded)
+            .catch((e) => resolve(err(assembleError(e))));
+        } else {
+          defaultValue = config.default;
+          onDataLoaded();
+        }
+
+        let hideByDialog = false;
+        const onDidAccept = async () => {
+          const selectedItems = quickPick.selectedItems;
+          if (selectedItems && selectedItems.length > 0) {
+            const item = selectedItems[0];
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectFolder, {
+              [TelemetryProperty.SelectedOption]: item.id,
+            });
+            if (item.id === "default") {
+              resolve(ok({ type: "success", result: defaultValue as string }));
+            } else {
+              hideByDialog = true;
+              const uriList: Uri[] | undefined = await window.showOpenDialog({
+                defaultUri: defaultValue ? Uri.file(defaultValue) : undefined,
+                canSelectFiles: false,
+                canSelectFolders: true,
+                canSelectMany: false,
+                title: config.title,
               });
-              if (item.id === "default") {
-                resolve(ok({ type: "success", result: config.default }));
+              if (uriList && uriList.length > 0) {
+                const result = uriList[0].fsPath;
+                resolve(ok({ type: "success", result: result }));
               } else {
-                hideByDialog = true;
-                const uriList: Uri[] | undefined = await window.showOpenDialog({
-                  defaultUri: config.default ? Uri.file(config.default) : undefined,
-                  canSelectFiles: false,
-                  canSelectFolders: true,
-                  canSelectMany: false,
-                  title: config.title,
-                });
-                if (uriList && uriList.length > 0) {
-                  const result = uriList[0].fsPath;
-                  resolve(ok({ type: "success", result: result }));
-                } else {
-                  resolve(err(new UserCancelError("VSC")));
-                }
-              }
-            }
-          };
-
-          disposables.push(
-            quickPick.onDidAccept(onDidAccept),
-            quickPick.onDidHide(() => {
-              if (!hideByDialog) {
                 resolve(err(new UserCancelError("VSC")));
               }
-            }),
-            quickPick.onDidTriggerButton((button) => {
-              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-            })
-          );
+            }
+          }
+        };
 
-          disposables.push(quickPick);
-          quickPick.show();
-        }
-      );
+        disposables.push(
+          quickPick.onDidAccept(onDidAccept),
+          quickPick.onDidHide(() => {
+            if (!hideByDialog) {
+              resolve(err(new UserCancelError("VSC")));
+            }
+          }),
+          quickPick.onDidTriggerButton((button) => {
+            if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
+          })
+        );
+
+        disposables.push(quickPick);
+        quickPick.show();
+      });
     } finally {
       disposables.forEach((d) => {
         d.dispose();
@@ -582,10 +691,18 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
-    return this.selectFileInQuickPick(config, "file", config.default);
+    if (config.default && typeof config.default === "function") {
+      //TODO quick workaround solution, which will blocking the UI popup
+      config.default = await config.default();
+    }
+    return this.selectFileInQuickPick(config, "file", config.default as string);
   }
 
   async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
+    if (config.default && typeof config.default === "function") {
+      //TODO  quick workaround solution, which will blocking the UI popup
+      config.default = await config.default();
+    }
     return this.selectFileInQuickPick(
       config,
       "files",
@@ -642,7 +759,7 @@ export class VsCodeUI implements UserInteraction {
       quickPick.matchOnDetail = false;
       quickPick.canSelectMany = false;
       let fileSelectorIsOpen = false;
-      return await new Promise(async (resolve) => {
+      return await new Promise((resolve) => {
         // set options
         quickPick.items = [
           ...(config.possibleFiles
@@ -664,14 +781,15 @@ export class VsCodeUI implements UserInteraction {
 
         const onDidAccept = async () => {
           const selectedItems = quickPick.selectedItems;
+          let result;
           if (selectedItems && selectedItems.length > 0) {
             const item = selectedItems[0];
             if (item.id === "default") {
-              resolve(ok({ type: "success", result: config.default }));
+              result = config.default as string;
             } else if (item.id === "browse") {
               fileSelectorIsOpen = true;
               const uriList: Uri[] | undefined = await window.showOpenDialog({
-                defaultUri: config.default ? Uri.file(config.default) : undefined,
+                defaultUri: config.default ? Uri.file(config.default as string) : undefined,
                 canSelectFiles: true,
                 canSelectFolders: false,
                 canSelectMany: type === "files",
@@ -681,22 +799,37 @@ export class VsCodeUI implements UserInteraction {
               if (uriList && uriList.length > 0) {
                 if (type === "files") {
                   const results = uriList.map((u) => u.fsPath);
-                  resolve(ok({ type: "success", result: results }));
+                  result = results;
                 } else {
-                  const result = uriList[0].fsPath;
-                  resolve(ok({ type: "success", result: result }));
+                  result = uriList[0].fsPath;
                 }
               } else {
-                resolve(err(new UserCancelError("VSC")));
+                quickPick.selectedItems = [];
+                return;
               }
             } else {
-              resolve(
-                ok({
-                  type: "success",
-                  result: config.possibleFiles?.find((f) => f.id === item.id)?.id,
-                })
-              );
+              result = config.possibleFiles?.find((f) => f.id === item.id)?.id;
             }
+
+            if (config.validation && result !== undefined) {
+              quickPick.busy = true;
+              quickPick.enabled = false;
+              try {
+                const validationResult = await config.validation(result);
+                quickPick.busy = false;
+                quickPick.enabled = true;
+                if (validationResult) {
+                  void this.showMessage("error", validationResult, false);
+                  quickPick.selectedItems = [];
+                  quickPick.activeItems = [];
+                  return;
+                }
+              } catch (e) {
+                resolve(err(assembleError(e)));
+              }
+            }
+
+            resolve(ok({ type: "success", result: result }));
           }
         };
 
@@ -722,12 +855,12 @@ export class VsCodeUI implements UserInteraction {
 
   async openUrl(link: string): Promise<Result<boolean, FxError>> {
     const uri = Uri.parse(link);
-    return new Promise(async (resolve) => {
-      env.openExternal(uri).then((v) => {
-        if (v) resolve(ok(v));
-        else resolve(err(internalUIError));
-      });
-    });
+    const result = await env.openExternal(uri);
+    if (result) {
+      return ok(result);
+    } else {
+      return err(internalUIError);
+    }
   }
 
   async selectFileOrInput(
@@ -748,11 +881,17 @@ export class VsCodeUI implements UserInteraction {
           const inputRes = await this.inputText(config.inputBoxConfig);
           if (inputRes.isOk()) {
             if (inputRes.value.type === "back") continue;
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.selectFileOrInputResultType, {
+              [TelemetryProperty.SelectedOption]: SelectFileOrInputResultType.Input,
+            });
             return ok(inputRes.value);
           } else {
             return err(inputRes.error);
           }
         } else {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.selectFileOrInputResultType, {
+            [TelemetryProperty.SelectedOption]: SelectFileOrInputResultType.LocalFile,
+          });
           return ok(selectFileOrItemRes.value);
         }
       } else {
@@ -784,7 +923,7 @@ export class VsCodeUI implements UserInteraction {
     if (message instanceof Array) {
       message = message.map((x) => x.content).join("");
     }
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const option = { modal: modal };
       try {
         let promise: Thenable<string | undefined>;
@@ -800,10 +939,13 @@ export class VsCodeUI implements UserInteraction {
           case "error":
             promise = window.showErrorMessage(message as string, option, ...items);
         }
-        promise.then((v) => {
-          if (v) resolve(ok(v));
-          else resolve(err(new UserCancelError("VSC")));
-        });
+        promise.then(
+          (v) => {
+            if (v) resolve(ok(v));
+            else resolve(err(new UserCancelError("VSC")));
+          },
+          (error) => {}
+        );
       } catch (error) {
         resolve(err(assembleError(error)));
       }
@@ -823,7 +965,7 @@ export class VsCodeUI implements UserInteraction {
       // Since we are not activated yet, vscode will not deactivate() and dispose() our resourses (which have been allocated in activate()).
       // This may cause resource leaks.For example, buffered events in TelemetryReporter is not sent.
       // So manually dispose them.
-      ExtTelemetry.reporter?.dispose();
+      await ExtTelemetry.reporter?.dispose();
     }
 
     // wait 2 seconds before reloading.
@@ -836,14 +978,14 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async executeFunction(config: ExecuteFuncConfig) {
+  async executeFunction(config: ExecuteFuncConfig): Promise<unknown> {
     const quickPick = window.createQuickPick<FxQuickPickItem>();
     quickPick.title = config.title;
     quickPick.busy = true;
     quickPick.enabled = false;
     quickPick.show();
     try {
-      return await config.func(config.inputs);
+      return (await config.func(config.inputs)) as unknown;
     } finally {
       quickPick.hide();
       quickPick.dispose();
@@ -888,7 +1030,7 @@ export class VsCodeUI implements UserInteraction {
 
       const processId = await Promise.race([terminal.processId, timeoutPromise]);
       await sleep(500);
-      await showOutputChannel();
+      showOutputChannel();
       return ok(processId?.toString() ?? "");
     } catch (error) {
       return err(assembleError(error));
@@ -897,18 +1039,16 @@ export class VsCodeUI implements UserInteraction {
 
   public async openFile(filePath: string): Promise<Result<boolean, FxError>> {
     const uri = Uri.file(filePath);
-    return new Promise(async (resolve) => {
-      const doc = await workspace.openTextDocument(uri);
-      if (doc) {
-        if (filePath.endsWith(".md")) {
-          await commands.executeCommand("markdown.showPreview", uri);
-        } else {
-          await window.showTextDocument(doc);
-        }
-        resolve(ok(true));
+    const doc = await workspace.openTextDocument(uri);
+    if (doc) {
+      if (filePath.endsWith(".md")) {
+        await commands.executeCommand("markdown.showPreview", uri);
       } else {
-        resolve(err(internalUIError));
+        await window.showTextDocument(doc);
       }
-    });
+      return ok(true);
+    } else {
+      return err(internalUIError);
+    }
   }
 }

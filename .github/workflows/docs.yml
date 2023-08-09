@@ -44,6 +44,51 @@ jobs:
           name: ${{ matrix.repo }}
           path: akas.data
 
+  output-link-result:
+    runs-on: ubuntu-latest
+    needs: aka-validation
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: List akas
+        id: list-akas
+        working-directory: artifacts
+        run: |
+          files=(*)
+          lists=""
+          touch result.txt
+
+          for file in "${files[@]}";
+          do
+            echo $file
+            while IFS= read -r line
+            do
+              aka=`echo $line | awk -F '=>' '{print $1}'`
+              redirect=`echo $line | awk -F '=>' '{print $2}'`
+
+              label=""
+              if [[ $redirect == *"bing.com"* ]];
+              then
+                label="INVALID"
+              elif [[ $redirect == *"white list"* ]];
+              then
+                label="SKIPPED"
+              else
+                label="VALID"
+              fi
+
+              row="$file $aka $label"
+              echo $row >> result.txt
+            done < $file/akas.data
+          done
+
+      - name: upload result to artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: result
+          path: artifacts/result.txt
+
   report:
     runs-on: ubuntu-latest
     needs: aka-validation
@@ -108,16 +153,3 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
-
-      - name: Send E-mail to the whole team
-        uses: satak/webrequest-action@master
-        with:
-          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
-          method: POST
-          payload: |
-            {
-              "to": "${{ steps.list-akas.outputs.to }}",
-              "body": "${{ steps.list-akas.outputs.body }}",
-              "subject": "${{ steps.list-akas.outputs.subject }}",
-              "apiKey": "${{ secrets.MAIL_API_KEY }}"
-            }

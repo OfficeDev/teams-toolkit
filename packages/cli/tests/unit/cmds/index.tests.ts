@@ -1,11 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { assert } from "chai";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
 import { registerCommands } from "../../../src/cmds/index";
+import { initTelemetryReporter, sendCommandUsageTelemetry } from "../../../src/index";
+import cliTelemetry from "../../../src/telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect } from "../utils";
 
 describe("Register Commands Tests", function () {
@@ -62,5 +66,47 @@ describe("Register Commands Tests", function () {
     expect(registeredCommands).includes("publish");
     expect(registeredCommands).includes("config");
     expect(registeredCommands).includes("preview");
+  });
+});
+
+describe("initTelemetryReporter", function () {
+  it("happy path", () => {
+    initTelemetryReporter();
+    assert.isDefined(cliTelemetry.reporter);
+  });
+});
+
+describe("sendCommandUsageTelemetry", function () {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", () => {
+    const sendTelemetryStub = sandbox.stub(cliTelemetry, "sendTelemetryEvent");
+    sendCommandUsageTelemetry(["node", "cli.js", "new", "-h"]);
+    assert.isTrue(
+      sendTelemetryStub.calledWith(TelemetryEvent.Command, {
+        [TelemetryProperty.CommandOptions]: "h",
+        [TelemetryProperty.CommandHead]: "new",
+        [TelemetryProperty.CommandBody]: "new",
+        [TelemetryProperty.CommandHelp]: "true",
+        [TelemetryProperty.Interactive]: "",
+        [TelemetryProperty.CommandLogLevel]: "info",
+      })
+    );
+  });
+  it("happy path --debug", () => {
+    const sendTelemetryStub = sandbox.stub(cliTelemetry, "sendTelemetryEvent");
+    sendCommandUsageTelemetry(["node", "cli.js", "new", "template", "-h", "--debug"]);
+    assert.isTrue(
+      sendTelemetryStub.calledWith(TelemetryEvent.Command, {
+        [TelemetryProperty.CommandOptions]: "h,debug",
+        [TelemetryProperty.CommandHead]: "new",
+        [TelemetryProperty.CommandBody]: "new template",
+        [TelemetryProperty.CommandHelp]: "true",
+        [TelemetryProperty.Interactive]: "",
+        [TelemetryProperty.CommandLogLevel]: "debug",
+      })
+    );
   });
 });

@@ -123,7 +123,7 @@ function generateDefaultConfig(teamsfx: TeamsFx, databaseName?: string): Connect
   internalLogger.verbose(
     `SQL server ${teamsfx.getConfig("sqlServerEndpoint")}
     , user name ${teamsfx.getConfig("sqlUsername")}
-    , database name ${databaseName}`
+    , database name ${databaseName ? databaseName : ""}`
   );
 
   const config = {
@@ -182,7 +182,7 @@ async function generateTokenConfig(
     internalLogger.verbose(
       `Generate token configuration success
       , server endpoint is ${teamsfx.getConfig("sqlServerEndpoint")}
-      , database name is ${databaseName}`
+      , database name is ${databaseName ? databaseName : ""}`
     );
     return config;
   }

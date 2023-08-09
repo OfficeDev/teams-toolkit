@@ -1,14 +1,14 @@
-/**
- * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
-import { openExistingProject } from "../../vscodeOperation";
+import { openExistingProject } from "../../utils/vscodeOperation";
 import * as fs from "fs-extra";
 import { execCommand } from "../../utils/execCommand";
-import { stopDebugging } from "../../vscodeOperation";
+import { stopDebugging } from "../../utils/vscodeOperation";
 import { TestContext } from "../testContext";
 import { dotenvUtil } from "../../utils/envUtil";
-import { TestFilePath } from "../../constants";
+import { TestFilePath } from "../../utils/constants";
 
 export type LocalDebugTestName =
   | "tab"
@@ -133,7 +133,7 @@ export class LocalDebugTestContext extends TestContext {
       case "msg":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities message-extension --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capabilities collectformmessagingextension --programming-language ${this.lang}`
         );
         break;
       case "msgsa":

@@ -17,9 +17,9 @@ export class VSCodeLogger implements DepsLogger {
     this.logger = logger;
   }
 
-  public async debug(message: string): Promise<boolean> {
+  public debug(message: string): Promise<boolean> {
     this.addToDetailCache(LogLevel.Debug, message);
-    return true;
+    return Promise.resolve(true);
   }
 
   public async info(message: string): Promise<boolean> {
@@ -56,7 +56,7 @@ export class VSCodeLogger implements DepsLogger {
   }
 
   private addToDetailCache(level: LogLevel, message: string): void {
-    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
+    const line = `${String(LogLevel[level])} ${new Date().toISOString()}: ${message}`;
     this.detailLogLines.push(line);
   }
 }

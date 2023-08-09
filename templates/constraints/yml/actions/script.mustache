@@ -1,0 +1,23 @@
+{{#FUNC}}
+  # Set required variables for local launch
+{{/FUNC}}
+{{^FUNC}}
+  # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+{{/FUNC}}
+  - uses: script
+    with:
+      run:
+{{#TAB}}
+  {{#DOTNET}}
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";
+        echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302";
+  {{/DOTNET}}
+  {{^DOTNET}}
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
+  {{/DOTNET}}
+{{/TAB}}
+{{#FUNC}}
+        echo "::set-teamsfx-env FUNC_NAME=getUserProfile";
+        echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
+{{/FUNC}}

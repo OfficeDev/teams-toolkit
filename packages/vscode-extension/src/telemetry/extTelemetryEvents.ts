@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 export enum TelemetryEvent {
   ManageAccount = "manage-account",
   CreateAccountStart = "create-account-start",
@@ -233,6 +234,15 @@ export enum TelemetryEvent {
 
   // Select to input a value when choosing between browsing local file or proceeding to input
   ContinueToInput = "continue-to-input",
+  selectFileOrInputResultType = "select-file-or-input-result-type",
+
+  // Copilot plugin
+  CopilotPluginAddAPI = "copilot-plugin-add-api",
+
+  ShowScaffoldingWarningSummary = "show-scaffolding-warning-summary",
+  ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
+
+  FindSimilarIssues = "find-similar-issues",
 }
 
 export enum TelemetryProperty {
@@ -411,6 +421,11 @@ export enum InProductGuideInteraction {
   Hide = "hide",
   ScrollToBottom = "scroll-to-bottom",
   RunCommand = "run-command",
+}
+
+export enum SelectFileOrInputResultType {
+  LocalFile = "local-file",
+  Input = "input",
 }
 
 export const TelemetryComponentType = "extension";

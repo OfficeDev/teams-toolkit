@@ -101,8 +101,8 @@ const config = {
           to: "../templates/",
         },
         {
-          from: "./WHATISNEW.md",
-          to: "../resource/WHATISNEW.md",
+          from: "./CHANGELOG.md",
+          to: "../resource/CHANGELOG.md",
         },
         {
           from: "./PRERELEASE.md",

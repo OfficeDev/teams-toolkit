@@ -37,9 +37,15 @@ import {
   err,
   ok,
   SingleFileOrInputConfig,
+  IQTreeNode,
 } from "@microsoft/teamsfx-api";
-import { EmptyOptionError, UserCancelError } from "../../src/error/common";
-import { traverse } from "../../src/ui/visitor";
+import {
+  EmptyOptionError,
+  MissingRequiredInputError,
+  UserCancelError,
+} from "../../src/error/common";
+import { questionVisitor, traverse } from "../../src/ui/visitor";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 function createInputs(): Inputs {
   return {
@@ -270,7 +276,7 @@ describe("Question Model - Visitor Test", () => {
       const res = await traverse(root, inputs, mockUI);
       assert.isTrue(res.isErr() && res.error instanceof UserCancelError);
       for (let i = 1; i < cancelNum; ++i) {
-        assert.isTrue(inputs[`${i}`] === `mocked value of ${i}`);
+        assert.isUndefined(inputs[`${i}`]);
       }
       assert.sameOrderedMembers(expectedSequence, actualSequence);
     });
@@ -734,7 +740,7 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(inputs["test"] === "file");
     });
 
-    it("single file or input with validation", async () => {
+    it("single file or input with validation and additional validation", async () => {
       sandbox.stub(mockUI, "selectFileOrInput").resolves(ok({ type: "success", result: "file" }));
       const validation: StringValidation = {
         equals: "test",
@@ -750,6 +756,9 @@ describe("Question Model - Visitor Test", () => {
         inputBoxConfig: {
           name: "input",
           title: "input",
+          additionalValidationOnAccept: async (input) => {
+            return undefined;
+          },
         },
         validation: validation,
       };
@@ -757,6 +766,76 @@ describe("Question Model - Visitor Test", () => {
       const res = await traverse(new QTreeNode(question), inputs, mockUI);
       assert.isTrue(res.isOk());
       assert.isTrue(inputs["test"] === "file");
+    });
+
+    it("the order of condition visit should be in DFS order", async () => {
+      const actualSequence: string[] = [];
+      sandbox.stub(mockUI, "inputText").callsFake(async (config: InputTextConfig) => {
+        actualSequence.push(config.name);
+        return ok({ type: "success", result: config.name });
+      });
+      const node: IQTreeNode = {
+        data: {
+          type: "text",
+          title: "1",
+          name: "1",
+        },
+        children: [
+          {
+            data: {
+              type: "text",
+              title: "2",
+              name: "2",
+            },
+            children: [
+              {
+                data: {
+                  type: "text",
+                  title: "3",
+                  name: "3",
+                },
+              },
+            ],
+          },
+          {
+            data: {
+              type: "text",
+              title: "4",
+              name: "4",
+            },
+            condition: (inputs) => inputs["3"] === "3",
+          },
+        ],
+      };
+
+      const expectedSequence = ["1", "2", "3", "4"];
+
+      const inputs = createInputs();
+      const res = await traverse(node, inputs, mockUI);
+      assert.isTrue(res.isOk());
+
+      assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
+  });
+
+  describe("questionVisitor", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("should return error for non-interactive mode", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
+      const question: TextInputQuestion = {
+        type: "text",
+        name: "test",
+        title: "test",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        nonInteractive: true,
+      };
+      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
     });
   });
 });

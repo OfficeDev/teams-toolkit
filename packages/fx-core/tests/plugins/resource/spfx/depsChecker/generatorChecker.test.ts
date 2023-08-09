@@ -12,7 +12,6 @@ import { telemetryHelper } from "../../../../../src/component/generator/spfx/uti
 import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
-import { PackageSelectOptionsHelper } from "../../../../../src/question/create";
 
 class StubLogger implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -63,7 +62,6 @@ describe("generator checker", () => {
 
   afterEach(() => {
     restore();
-    PackageSelectOptionsHelper.clear();
   });
 
   describe("getDependencyInfo", async () => {
@@ -161,7 +159,7 @@ describe("generator checker", () => {
         return "latest";
       });
 
-      const result = await checker.isLatestInstalled();
+      const result = await checker.isLatestInstalled("latest");
       chai.expect(result).is.true;
     });
 
@@ -182,28 +180,7 @@ describe("generator checker", () => {
         return "latest";
       });
 
-      const result = await checker.isLatestInstalled();
-      chai.expect(result).is.false;
-    });
-
-    it("latest not installed", async () => {
-      const checker = new GeneratorChecker(new StubLogger());
-      stub(fs, "pathExists").callsFake(async () => {
-        console.log("stub pathExists");
-        return false;
-      });
-
-      stub(GeneratorChecker.prototype, <any>"queryVersion").callsFake(async () => {
-        console.log("stub queryversion");
-        return "lower version";
-      });
-
-      stub(GeneratorChecker.prototype, <any>"findLatestVersion").callsFake(async () => {
-        console.log("stub findLatestVersion");
-        return "latest";
-      });
-
-      const result = await checker.isLatestInstalled();
+      const result = await checker.isLatestInstalled(undefined);
       chai.expect(result).is.false;
     });
 
@@ -216,7 +193,7 @@ describe("generator checker", () => {
 
       stub(GeneratorChecker.prototype, <any>"queryVersion").throws("error");
 
-      const result = await checker.isLatestInstalled();
+      const result = await checker.isLatestInstalled(undefined);
       chai.expect(result).is.false;
     });
   });

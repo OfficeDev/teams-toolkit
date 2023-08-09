@@ -42,7 +42,7 @@ on:
         type: string
 
       target-testplan-id:
-        description: "target testplan id"
+        description: "target testplan id: 24569079. If not set, will not archive ado testplan"
         required: false
         type: string
 
@@ -54,6 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ADO_TOKEN: ${{ secrets.ADO_PAT }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
+
     steps:
       - name: Init GitHub CLI
         run: |
@@ -135,18 +137,15 @@ jobs:
             ./${{ steps.ttk.outputs.package }}
 
       - name: Archive Test Plan
-        if: contains(steps.ttk.outputs.version, 'alpha') == false
+        if: ${{ github.event.inputs.target-testplan-id != '' }}
         working-directory: ./packages/tests
         run: |
           npm install
-          testplanid='${{ github.event.inputs.target-testplan-id }}'
-          if [ -z "$testplanid" ]; then
-            testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
-          fi
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
-        if: contains(steps.ttk.outputs.version, 'alpha') == false
+        if: ${{ github.event.inputs.target-testplan-id != '' }}
         uses: actions/upload-artifact@v3
         with:
           name: testplan
@@ -398,14 +397,14 @@ jobs:
             ~/.fx/telemetryTest.log
 
       - name: Download TestPlan
-        if: always() && contains(needs.setup.outputs.ttk-version, 'alpha') == false
+        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
         uses: actions/download-artifact@v3
         with:
           name: testplan
           path: ./packages/tests
 
       - name: Sync to Azure DevOps Test Plan
-        if: always() && contains(needs.setup.outputs.ttk-version, 'alpha') == false
+        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
         working-directory: packages/tests
         run: |
           npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json
@@ -536,11 +535,3 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
-
-      - name: Send E-mail
-        run: |
-          curl \
-            --request POST \
-            --header "Content-Type: application/json" \
-            --data '{"to": "${{ steps.list-jobs.outputs.to }}", "body": "${{ steps.list-jobs.outputs.body }}", "subject": "${{ steps.list-jobs.outputs.subject }}", "apiKey": "${{ secrets.MAIL_API_KEY }}"}' \
-            'https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs'

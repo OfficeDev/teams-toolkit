@@ -10,9 +10,13 @@ import {
   startDebugging,
   stopDebugging,
   waitForTerminal,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel, DebugItemSelect } from "../../constants";
+import {
+  Timeout,
+  LocalDebugTaskLabel,
+  DebugItemSelect,
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist, updateAadTemplate } from "../../utils/commonUtils";

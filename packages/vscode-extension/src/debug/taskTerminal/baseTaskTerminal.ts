@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
@@ -41,13 +40,17 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
     this.do()
       .then((res) => {
         const error = res.isErr() ? res.error : undefined;
-        this.stop(error);
+        this.stop(error).catch((error) => {
+          this.writeEmitter.fire(`${error?.message as string}\r\n`);
+        });
       })
       .catch((error) => this.stop(error));
   }
 
   close(): void {
-    this.stop();
+    this.stop().catch((error) => {
+      this.writeEmitter.fire(`${error?.message as string}\r\n`);
+    });
   }
 
   handleInput(data: string): void {
@@ -59,17 +62,19 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
           getDefaultString("teamstoolkit.localDebug.taskCancelError"),
           localize("teamstoolkit.localDebug.taskCancelError")
         )
-      );
+      ).catch((error) => {
+        this.writeEmitter.fire(`${error?.message as string}\r\n`);
+      });
     }
   }
 
   protected async stop(error?: any, outputError = true): Promise<void> {
     if (error) {
       // TODO: add color
-      this.writeEmitter.fire(`${error?.message}\r\n`);
+      this.writeEmitter.fire(`${error?.message as string}\r\n`);
       const fxError = assembleError(error);
       if (outputError) {
-        showError(fxError);
+        await showError(fxError);
       }
       this.closeEmitter.fire(1);
 

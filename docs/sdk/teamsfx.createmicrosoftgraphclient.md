@@ -4,6 +4,18 @@
 
 ## createMicrosoftGraphClient() function
 
+> Warning: This API is now obsolete.
+> 
+> Use `TokenCredentialAuthenticationProvider` and `Client.initWithMiddleware` instead.
+> 
+> ```typescript
+> const authProvider = new TokenCredentialAuthenticationProvider(credential, { scopes: scope });
+> const graph = Client.initWithMiddleware({
+>   authProvider: authProvider,
+> });
+> ```
+> 
+
 Get Microsoft graph client.
 
 <b>Signature:</b>
@@ -51,7 +63,7 @@ const config: Configuration = {
 };
 const prompt = new TeamsBotSsoPrompt(dialogId, {
    config: config
-   scopes: '["User.Read"],
+   scopes: ["User.Read"],
 });
 this.addDialog(prompt);
 

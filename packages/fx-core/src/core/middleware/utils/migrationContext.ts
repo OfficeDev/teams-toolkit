@@ -20,6 +20,7 @@ export interface MigrationContext extends CoreHookContext {
   ): Promise<void>;
   addReport(report: string): void;
   addTelemetryProperties(properties: Record<string, string>): void;
+  currentStep?: string;
 }
 
 export class MigrationContext {

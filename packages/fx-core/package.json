@@ -51,9 +51,16 @@
     "test:azureFuncDeploy": "nyc mocha \"tests/component/driver/deploy/azure/AzureFunctionDeployDriver.test.ts\"",
     "test:devportal": "nyc mocha \"tests/component/developerPortalScaffoldUtils.test.ts\"",
     "test:visitor": "nyc mocha \"tests/ui/qm.visitor.test.ts\"",
+    "test:validUtils": "nyc mocha \"tests/ui/validationUtils.test.ts\"",
     "test:question": "nyc mocha \"tests/question/*.test.ts\"",
     "test:coll": "nyc mocha \"tests/core/collaborator.test.ts\"",
     "test:specParser": "npx mocha \"tests/common/spec-parser/**/specParser.test.ts\"",
+    "test:specFilter": "npx mocha \"tests/common/spec-parser/**/specFilter.test.ts\"",
+    "test:specParserUtils": "npx mocha \"tests/common/spec-parser/**/utils.test.ts\"",
+    "test:manifestUpdater": "npx mocha \"tests/common/spec-parser/**/manifestUpdater.test.ts\"",
+    "test:adaptiveCardGenerator": "npx mocha \"tests/common/spec-parser/**/adaptiveCardGenerator.test.ts\"",
+    "test:error": "nyc mocha \"tests/error/*.test.ts\"",
+    "test:cutils": "nyc mocha \"tests/component/utils.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -65,7 +72,8 @@
     "install:tabs": "cd tabs && npm install",
     "installAll": "npm run install:tabs",
     "checkUnusedStrings": "node ./scripts/find-unused-strings.js ./resource/package.nls.json ./src || exit 1",
-    "deleteUnusedStrings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src"
+    "clean:strings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src",
+    "gen:cli": "npx ts-node ./src/question/generator.ts && npx prettier --write \"src/question/options/*.ts\" && npx prettier --write \"src/question/inputs/*.ts\""
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
@@ -77,7 +85,7 @@
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/core-auth": "^1.4.0",
     "@azure/identity": "^3.1.3",
-    "@azure/ms-rest-js": "^2.6.6",
+    "@azure/ms-rest-js": "^2.7.0",
     "@azure/msal-node": "^1.14.6",
     "@azure/storage-blob": "^12.7.0",
     "@feathersjs/hooks": "^0.6.5",
@@ -127,15 +135,11 @@
     "uuid": "^8.3.2",
     "validator": "^13.7.0",
     "xml2js": "^0.5.0",
-    "yaml": "^2.2.2",
-    "yaml-language-server": "1.7.0",
-    "@microsoft/dev-tunnels-contracts": "~1.0.7360",
-    "@microsoft/dev-tunnels-management": "~1.0.7360"
+    "yaml": "^2.2.2"
   },
   "devDependencies": {
     "@azure/storage-blob": "^12.5.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.4",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
@@ -176,6 +180,7 @@
     "copy-webpack-plugin": "^6.4.1",
     "dotenv": "^8.2.0",
     "eslint": "^7.22.0",
+    "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
@@ -194,6 +199,7 @@
     "source-map-support": "^0.5.19",
     "tmp": "^0.2.1",
     "ts-loader": "^8.0.3",
+    "ts-morph": "^19.0.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3",
     "webpack": "^5.61.0"

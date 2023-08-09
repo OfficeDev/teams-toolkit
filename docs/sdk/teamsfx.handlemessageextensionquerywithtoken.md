@@ -4,6 +4,11 @@
 
 ## handleMessageExtensionQueryWithToken() function
 
+> Warning: This API is now obsolete.
+> 
+> Use [handleMessageExtensionQueryWithSSO()](./teamsfx.handlemessageextensionquerywithsso.md) instead.
+> 
+
 Users execute query in message extension with SSO or access token.
 
 <b>Signature:</b>

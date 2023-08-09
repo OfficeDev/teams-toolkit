@@ -4,6 +4,11 @@
 
 ## TeamsFx class
 
+> Warning: This API is now obsolete.
+> 
+> Please use [TeamsUserCredential](./teamsfx.teamsusercredential.md) in browser environment and [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) or [AppCredential](./teamsfx.appcredential.md) in NodeJS.
+> 
+
 A class providing credential and configuration.
 
 <b>Signature:</b>

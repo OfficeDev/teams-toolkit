@@ -8,6 +8,7 @@ import {
   Inputs,
   LogProvider,
   Ok,
+  OpenAIPluginManifest,
   Platform,
   Result,
   Stage,
@@ -26,8 +27,9 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
-import { Hub } from "../../src/common/m365/constants";
+import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
+import { SpecParser } from "../../src/common/spec-parser/specParser";
 import {
   DriverDefinition,
   DriverInstance,
@@ -47,6 +49,8 @@ import { manifestUtils } from "../../src/component/driver/teamsApp/utils/Manifes
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import "../../src/component/feature/sso";
+import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
+import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -59,6 +63,7 @@ import {
   FileNotFoundError,
   InvalidProjectError,
   MissingEnvironmentVariablesError,
+  MissingRequiredInputError,
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
 import {
@@ -67,137 +72,108 @@ import {
   ScratchOptions,
   questionNodes,
 } from "../../src/question";
-import { MockTools, deleteFolder, randomAppName } from "./utils";
-import { FeatureFlagName } from "../../src/common/constants";
+import { HubOptions } from "../../src/question/other";
+import { validationUtils } from "../../src/ui/validationUtils";
+import { MockTools, randomAppName } from "./utils";
+import { ValidationStatus } from "../../src/common/spec-parser/interfaces";
 
 const tools = new MockTools();
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
-
   const appName = randomAppName();
-  let projectPath = path.resolve(os.tmpdir(), appName);
   beforeEach(() => {
     setTools(tools);
   });
   afterEach(async () => {
     sandbox.restore();
-    deleteFolder(projectPath);
   });
 
   it("deploy aad manifest happy path with param", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [QuestionNames.AppName]: appName,
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [QuestionNames.Folder]: os.tmpdir(),
-        [QuestionNames.AadAppManifestFilePath]: path.join(
-          os.tmpdir(),
-          appName,
-          "aad.manifest.json"
-        ),
-        [QuestionNames.TargetEnvName]: "dev",
-        stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: path.join(os.tmpdir(), appName, "aad.manifest.json"),
+      [QuestionNames.TargetEnvName]: "dev",
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
 
-      const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "run");
-      await core.deployAadManifest(inputs);
-      sandbox.assert.calledOnce(runSpy);
-      assert.isNotNull(runSpy.getCall(0).args[0]);
-      assert.strictEqual(
-        runSpy.getCall(0).args[0].manifestPath,
-        path.join(os.tmpdir(), appName, "aad.manifest.json")
-      );
-      runSpy.restore();
-    } finally {
-      restore();
-    }
+    const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "run");
+    await core.deployAadManifest(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    assert.isNotNull(runSpy.getCall(0).args[0]);
+    assert.strictEqual(
+      runSpy.getCall(0).args[0].manifestPath,
+      path.join(os.tmpdir(), appName, "aad.manifest.json")
+    );
+    runSpy.restore();
   });
 
   it("add web part to SPFx", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const appPath = path.join(os.tmpdir(), appName);
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [QuestionNames.Folder]: os.tmpdir(),
-        "spfx-folder": ".\\src",
-        "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
-        "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
-        "spfx-webpart-name": "helloworld",
-        "spfx-install-latest-package": "true",
-        "spfx-load-package-version": "loaded",
-        stage: Stage.addWebpart,
-        projectPath: appPath,
-      };
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appPath = path.join(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      "spfx-folder": ".\\src",
+      "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+      "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
+      "spfx-webpart-name": "helloworld",
+      "spfx-install-latest-package": "true",
+      "spfx-load-package-version": "loaded",
+      stage: Stage.addWebpart,
+      projectPath: appPath,
+    };
 
-      const runSpy = sandbox.spy(AddWebPartDriver.prototype, "run");
-      await core.addWebpart(inputs);
-      sandbox.assert.calledOnce(runSpy);
-      runSpy.restore();
-    } finally {
-      restore();
-    }
+    const runSpy = sandbox.spy(AddWebPartDriver.prototype, "run");
+    await core.addWebpart(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    runSpy.restore();
   });
 
   it("deploy aad manifest happy path", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     const promtionOnVSC =
       'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
-    try {
-      const core = new FxCore(tools);
-      const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
-        ["info" | "warn" | "error", string, boolean, ...string[]],
-        Promise<Result<string | undefined, FxError>>
-      >;
-      const openUrl = sandbox.spy(tools.ui, "openUrl");
-      const appName = await mockV3Project();
-      sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [QuestionNames.AppName]: appName,
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [QuestionNames.Folder]: os.tmpdir(),
-        [QuestionNames.AadAppManifestFilePath]: path.join(
-          os.tmpdir(),
-          appName,
-          "aad.manifest.json"
-        ),
-        env: "dev",
-        stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      const res = await core.deployAadManifest(inputs);
-      assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "build")));
-      await deleteTestProject(appName);
-      assert.isTrue(res.isOk());
-      assert.isTrue(showMessage.called);
-      assert.equal(showMessage.getCall(0).args[0], "info");
-      assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
-      assert.isFalse(showMessage.getCall(0).args[2]);
-      assert.equal(showMessage.getCall(0).args[3], "Learn more");
-      assert.isFalse(openUrl.called);
-    } finally {
-      restore();
-    }
+
+    const core = new FxCore(tools);
+    const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
+      ["info" | "warn" | "error", string, boolean, ...string[]],
+      Promise<Result<string | undefined, FxError>>
+    >;
+    const openUrl = sandbox.spy(tools.ui, "openUrl");
+    const appName = await mockV3Project();
+    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: path.join(os.tmpdir(), appName, "aad.manifest.json"),
+      env: "dev",
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "build")));
+    await deleteTestProject(appName);
+    assert.isTrue(res.isOk());
+    assert.isTrue(showMessage.called);
+    assert.equal(showMessage.getCall(0).args[0], "info");
+    assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
+    assert.isFalse(showMessage.getCall(0).args[2]);
+    assert.equal(showMessage.getCall(0).args[3], "Learn more");
+    assert.isFalse(openUrl.called);
   });
   it("deploy aad manifest happy path with click learn more", async () => {
     const core = new FxCore(tools);
@@ -257,206 +233,154 @@ describe("Core basic APIs", () => {
   });
 
   it("deploy aad manifest return err", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
-      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [QuestionNames.AppName]: appName,
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [QuestionNames.Folder]: os.tmpdir(),
-        [QuestionNames.AadAppManifestFilePath]: appManifestPath,
-        env: "dev",
-        stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      sandbox
-        .stub(UpdateAadAppDriver.prototype, "run")
-        .throws(new UserError("error name", "fake_error", "fake_err_msg"));
-      const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
-      const res = await core.deployAadManifest(inputs);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.strictEqual(res.error.message, "fake_err_msg");
-      }
-    } finally {
-      restore();
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: appManifestPath,
+      env: "dev",
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "run")
+      .throws(new UserError("error name", "fake_error", "fake_err_msg"));
+    const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.strictEqual(res.error.message, "fake_err_msg");
     }
   });
 
   it("deploy aad manifest with missing env err", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
-      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([""]));
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [QuestionNames.AppName]: appName,
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [QuestionNames.Folder]: os.tmpdir(),
-        [QuestionNames.AadAppManifestFilePath]: appManifestPath,
-        env: undefined,
-        stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      sandbox
-        .stub(UpdateAadAppDriver.prototype, "run")
-        .resolves(
-          err(
-            new MissingEnvironmentVariablesError(
-              "aadApp/update",
-              "AAD_APP_OBJECT_ID",
-              "fake path",
-              "https://fake-help-link"
-            )
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([""]));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: appManifestPath,
+      env: undefined,
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "run")
+      .resolves(
+        err(
+          new MissingEnvironmentVariablesError(
+            "aadApp/update",
+            "AAD_APP_OBJECT_ID",
+            "fake path",
+            "https://fake-help-link"
           )
-        );
-      const res = await core.deployAadManifest(inputs);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        // Cannot assert the full message because the mocked code can't get correct env file path
-        assert.include(
-          res.error.message,
-          "The program cannot proceed as the following environment variables are missing: 'AAD_APP_OBJECT_ID', which are required for file: fake path. Make sure the required variables are set either by editing the .env file"
-        );
-        assert.include(
-          res.error.message,
-          "If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables"
-        );
-      }
-    } finally {
-      restore();
+        )
+      );
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      // Cannot assert the full message because the mocked code can't get correct env file path
+      assert.include(
+        res.error.message,
+        "The program cannot proceed as the following environment variables are missing: 'AAD_APP_OBJECT_ID', which are required for file: fake path. Make sure the required variables are set either by editing the .env file"
+      );
+      assert.include(
+        res.error.message,
+        "If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables"
+      );
     }
   });
 
   it("deploy aad manifest not exist", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
-      await fs.remove(appManifestPath);
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        [QuestionNames.AppName]: appName,
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
-        [QuestionNames.Folder]: os.tmpdir(),
-        [QuestionNames.AadAppManifestFilePath]: path.join(
-          os.tmpdir(),
-          appName,
-          "aad.manifest.json"
-        ),
-        env: "dev",
-        stage: Stage.deployAad,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      const res = await core.deployAadManifest(inputs);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.isTrue(res.error instanceof FileNotFoundError);
-      }
-      await deleteTestProject(appName);
-    } finally {
-      restore();
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appManifestPath = path.join(os.tmpdir(), appName, "aad.manifest.json");
+    await fs.remove(appManifestPath);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: path.join(os.tmpdir(), appName, "aad.manifest.json"),
+      env: "dev",
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof FileNotFoundError);
     }
+    await deleteTestProject(appName);
   });
 
   it("phantomMigrationV3 happy path", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV2Project();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), appName),
-        skipUserConfirm: true,
-      };
-      const res = await core.phantomMigrationV3(inputs);
-      assert.isTrue(res.isOk());
-      await deleteTestProject(appName);
-    } finally {
-      restore();
-    }
+    const core = new FxCore(tools);
+    const appName = await mockV2Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), appName),
+      skipUserConfirm: true,
+    };
+    const res = await core.phantomMigrationV3(inputs);
+    assert.isTrue(res.isOk());
+    await deleteTestProject(appName);
   });
 
   it("phantomMigrationV3 return error for invalid V2 project", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     sandbox.stub(projectMigratorV3, "checkActiveResourcePlugins").resolves(false);
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV2Project();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), appName),
-        skipUserConfirm: true,
-      };
-      const res = await core.phantomMigrationV3(inputs);
-      assert.isTrue(res.isErr());
-      assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
-      await deleteTestProject(appName);
-    } finally {
-      restore();
-    }
+
+    const core = new FxCore(tools);
+    const appName = await mockV2Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), appName),
+      skipUserConfirm: true,
+    };
+    const res = await core.phantomMigrationV3(inputs);
+    assert.isTrue(res.isErr());
+    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
+    await deleteTestProject(appName);
   });
 
   it("phantomMigrationV3 return error for non-project", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir()),
-        skipUserConfirm: true,
-      };
-      const res = await core.phantomMigrationV3(inputs);
-      assert.isTrue(res.isErr());
-      assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
-    } finally {
-      restore();
-    }
+    const core = new FxCore(tools);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir()),
+      skipUserConfirm: true,
+    };
+    const res = await core.phantomMigrationV3(inputs);
+    assert.isTrue(res.isErr());
+    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
   });
 
   it("phantomMigrationV3 return error for V5 project", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const core = new FxCore(tools);
-      const appName = await mockV3Project();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), appName),
-      };
-      const res = await core.phantomMigrationV3(inputs);
-      assert.isTrue(res.isErr());
-      assert.isTrue(res._unsafeUnwrapErr().message.includes(new NoNeedUpgradeError().message));
-      await deleteTestProject(appName);
-    } finally {
-      restore();
-    }
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const res = await core.phantomMigrationV3(inputs);
+    assert.isTrue(res.isErr());
+    assert.isTrue(res._unsafeUnwrapErr().message.includes(new NoNeedUpgradeError().message));
+    await deleteTestProject(appName);
   });
 
   it("permission v3", async () => {
@@ -467,8 +391,8 @@ describe("Core basic APIs", () => {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    sandbox.stub(questionNodes, "grantPermission").returns(undefined);
-    sandbox.stub(questionNodes, "listCollaborator").returns(undefined);
+    sandbox.stub(questionNodes, "grantPermission").returns({ data: { type: "group" } });
+    sandbox.stub(questionNodes, "listCollaborator").returns({ data: { type: "group" } });
     sandbox.stub(collaborator, "listCollaborator").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "checkPermission").resolves(ok(undefined as any));
     sandbox.stub(collaborator, "grantPermission").resolves(ok(undefined as any));
@@ -514,7 +438,6 @@ describe("Core basic APIs", () => {
 
   it("buildAadManifest method should exist", async () => {
     const restore = mockedEnv({
-      TEAMSFX_V3: "true",
       TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
       NODE_ENV: "development", // workaround test failure that when local template not released to GitHub
       AAD_APP_OBJECT_ID: getUuid(),
@@ -544,8 +467,8 @@ describe("Core basic APIs", () => {
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
       };
       const res = await core.createProject(inputs);
-      projectPath = inputs.projectPath!;
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      const projectPath = inputs.projectPath!;
+      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
       const implement = new FxCoreV3Implement(tools);
 
@@ -563,7 +486,6 @@ describe("Core basic APIs", () => {
 
   it("addSso method should exist", async () => {
     const restore = mockedEnv({
-      TEAMSFX_V3: "true",
       TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failures when template changed but not release to GitHub alpha template
       NODE_ENV: "development", // workaround test failures when template changed but not release to GitHub alpha template
     });
@@ -581,8 +503,8 @@ describe("Core basic APIs", () => {
         projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
       };
       const res = await core.createProject(inputs);
-      projectPath = inputs.projectPath!;
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      const projectPath = inputs.projectPath!;
+      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
       const implement = new FxCoreV3Implement(tools);
 
@@ -923,15 +845,13 @@ describe("Teams app APIs", async () => {
     };
 
     const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "run");
+    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
   });
 
   it("validate manifest", async () => {
     const appName = await mockV3Project();
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
@@ -940,13 +860,9 @@ describe("Teams app APIs", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    try {
-      const runSpy = sinon.spy(ValidateManifestDriver.prototype, "run");
-      await core.validateApplication(inputs);
-      sinon.assert.calledOnce(runSpy);
-    } finally {
-      restore();
-    }
+    const runSpy = sinon.spy(ValidateManifestDriver.prototype, "run");
+    await core.validateApplication(inputs);
+    sinon.assert.calledOnce(runSpy);
   });
 
   it("create app package", async () => {
@@ -995,7 +911,7 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(err({ foo: "bar" } as any));
     const appName = await mockV3Project();
     const inputs: Inputs = {
-      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.M365Host]: HubOptions.teams().id,
       [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
@@ -1016,7 +932,7 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(err({ foo: "bar" } as any));
     const inputs: Inputs = {
-      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.M365Host]: HubOptions.teams().id,
       [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
@@ -1037,7 +953,7 @@ describe("previewWithManifest", () => {
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(LaunchHelper.prototype, "getLaunchUrl").resolves(ok("test-url"));
     const inputs: Inputs = {
-      [QuestionNames.M365Host]: Hub.teams,
+      [QuestionNames.M365Host]: HubOptions.teams().id,
       [QuestionNames.TeamsAppManifestFilePath]: path.join(
         os.tmpdir(),
         appName,
@@ -1261,7 +1177,10 @@ describe("isEnvFile", async () => {
       mockedEnvRestore();
     });
     it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_CLI_DOTNET: "false",
+        [FeatureFlagName.CopilotPlugin]: "false",
+      });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
       assert.isTrue(res.isOk());
@@ -1284,7 +1203,10 @@ describe("isEnvFile", async () => {
       }
     });
     it("happy path with runtime", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_CLI_DOTNET: "true",
+        [FeatureFlagName.CopilotPlugin]: "false",
+      });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
       assert.isTrue(res.isOk());
@@ -1327,6 +1249,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
+          "copilot-plugin-option",
           "api-spec-location",
           "openai-plugin-manifest-location",
           "api-operation",
@@ -1347,6 +1270,138 @@ describe("isEnvFile", async () => {
           collectNodeNames(child, names);
         }
       }
+    }
+  });
+});
+
+describe("copilotPlugin", async () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("add API", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "https://example.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves();
+    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isOk());
+  });
+
+  it("add API - assembleError", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "https://example.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isErr());
+  });
+
+  it("load OpenAI manifest - should run successful", async () => {
+    const core = new FxCore(tools);
+    const inputs = { domain: "mydomain.com" };
+    sinon
+      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
+      .returns(Promise.resolve<OpenAIPluginManifest>(undefined as any));
+    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
+    assert.isTrue(result.isOk());
+  });
+
+  it("load OpenAI manifest - should return an error when an exception is thrown", async () => {
+    const core = new FxCore(tools);
+    const inputs = { domain: "mydomain.com" };
+    sinon
+      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
+      .throws(new Error("Test error"));
+    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
+    assert.isTrue(result.isErr());
+  });
+
+  it("load operations - should return a list of operations when given valid inputs", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      manifest: {},
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+    };
+    const expectedResult = [
+      { id: "operation1", label: "operation1", groupName: "1" },
+      { id: "operation2", label: "operation2", groupName: "2" },
+    ];
+    sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(ok(expectedResult)));
+    const result = await core.copilotPluginListOperations(inputs as any);
+    assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      assert.deepEqual(result.value, expectedResult);
+    }
+  });
+
+  it("load operations - should return an error when an exception is thrown", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      manifest: {},
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+    };
+    sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(err([])));
+    const result = await core.copilotPluginListOperations(inputs as any);
+    assert.isTrue(result.isErr());
+  });
+
+  it("load operations - no manifest in inputs", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+      includeExistingAPIs: false,
+    };
+
+    sinon
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
+    sinon.stub(SpecParser.prototype, "list").resolves([]);
+
+    try {
+      await core.copilotPluginListOperations(inputs as any);
+    } catch (e: any) {
+      assert.equal(e.name, MissingRequiredInputError.name);
+    }
+  });
+
+  it("load operations - invalid manifest", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      apiSpecUrl: "https://example.com/api-spec",
+      shouldLogWarning: true,
+      includeExistingAPIs: false,
+      "manifest-path": "fakePath",
+    };
+
+    sinon
+      .stub(manifestUtils, "_readAppManifest")
+      .returns(Promise.resolve(err(new FileNotFoundError("file", "fakePath"))));
+    sinon
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
+    sinon.stub(SpecParser.prototype, "list").resolves([]);
+
+    try {
+      await core.copilotPluginListOperations(inputs as any);
+    } catch (e: any) {
+      assert.equal(e.name, FileNotFoundError.name);
     }
   });
 });

@@ -9,6 +9,7 @@ import sinon from "sinon";
 import ServerAzureAccountProvider from "../../../src/providers/token/azure";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { err, ok } from "@microsoft/teamsfx-api";
+import { NotImplementedError } from "@microsoft/teamsfx-core";
 
 chai.use(chaiAsPromised);
 
@@ -73,17 +74,19 @@ describe("azure", () => {
 
   it("signout", async () => {
     const azure = new ServerAzureAccountProvider(msgConn);
-    await chai.expect(azure.signout()).to.be.rejected;
+    chai.expect(() => azure.signout()).to.throw(NotImplementedError);
   });
 
   it("setStatusChangeMap", async () => {
     const azure = new ServerAzureAccountProvider(msgConn);
-    await chai.expect(azure.setStatusChangeMap("test", sandbox.fake())).to.be.rejected;
+    chai
+      .expect(() => azure.setStatusChangeMap("test", sandbox.fake()))
+      .to.throw(NotImplementedError);
   });
 
   it("removeStatusChangeMap", async () => {
     const azure = new ServerAzureAccountProvider(msgConn);
-    await chai.expect(azure.removeStatusChangeMap("test")).to.be.rejected;
+    chai.expect(() => azure.removeStatusChangeMap("test")).to.throw(NotImplementedError);
   });
 
   describe("getJsonObject", () => {

@@ -55,6 +55,21 @@ describe("uri handler", () => {
     sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1", "test");
   });
 
+  it("error hanlding uri", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse(
+      "vscode://test.test?appId=1&referrer=developerportal&login_hint=test"
+    );
+
+    const executeCommand = sandbox
+      .stub(vscode.commands, "executeCommand")
+      .returns(Promise.reject(""));
+    await handler.handleUri(uri);
+
+    chai.assert.isTrue(executeCommand.calledOnce);
+    sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1", "test");
+  });
+
   it("valid code spaces callback uri", async () => {
     try {
       const handler = new UriHandler();

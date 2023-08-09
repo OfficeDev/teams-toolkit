@@ -16,11 +16,15 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
+  Context,
   CoreCallbackEvent,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,
   M365TokenProvider,
+  ManifestTemplateFileName,
+  ManifestUtil,
   OptionItem,
   Platform,
   Result,
@@ -36,6 +40,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  Warning,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -56,6 +61,7 @@ import {
   askSubscription,
   assembleError,
   environmentManager,
+  generateScaffoldingSummary,
   getFixedCommonProjectSettings,
   getHashedEnv,
   globalStateGet,
@@ -65,6 +71,7 @@ import {
   isValidProject,
   pathUtils,
   setRegion,
+  manifestUtils,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -118,7 +125,6 @@ import {
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
   getTriggerFromProperty,
-  isExistingTabApp,
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
@@ -135,15 +141,18 @@ export function activate(): Result<Void, FxError> {
     const fixedProjectSettings = getFixedCommonProjectSettings(
       globalVariables.workspaceUri?.fsPath
     );
-    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
+    ExtTelemetry.addSharedProperty(
+      TelemetryProperty.ProjectId,
+      fixedProjectSettings?.projectId as string
+    );
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
-    AzureAccountManager.setStatusChangeMap(
+    void AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
       (status, token, accountInfo) => {
         if (status === signedIn) {
-          window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
+          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
         } else if (status === signedOut) {
-          window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
+          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
         }
         return Promise.resolve();
       },
@@ -158,14 +167,14 @@ export function activate(): Result<Void, FxError> {
       accountInfo: Record<string, unknown> | undefined
     ) => {
       if (status === signedIn) {
-        window.showInformationMessage(localize("teamstoolkit.handlers.m365SignIn"));
+        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignIn"));
       } else if (status === signedOut) {
-        window.showInformationMessage(localize("teamstoolkit.handlers.m365SignOut"));
+        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignOut"));
       }
       return Promise.resolve();
     };
 
-    M365TokenInstance.setStatusChangeMap(
+    void M365TokenInstance.setStatusChangeMap(
       "successfully-sign-in-m365",
       { scopes: AppStudioScopes },
       m365NotificationCallback,
@@ -178,7 +187,6 @@ export function activate(): Result<Void, FxError> {
         m365TokenProvider: m365Login,
       },
       telemetryReporter: ExtTelemetry.reporter,
-      treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
       expServiceProvider: exp.getExpService(),
     };
@@ -222,13 +230,13 @@ export function activate(): Result<Void, FxError> {
     }
   } catch (e) {
     const FxError: FxError = {
-      name: e.name,
+      name: (e as Error).name,
       source: ExtensionSource,
-      message: e.message,
-      stack: e.stack,
+      message: (e as Error).message,
+      stack: (e as Error).stack,
       timestamp: new Date(),
     };
-    showError(FxError);
+    void showError(FxError);
     return err(FxError);
   }
   return result;
@@ -285,26 +293,28 @@ export function addFileSystemWatcher(workspacePath: string) {
     });
 
     const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidCreate((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidChange(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidChange((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidDelete(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidDelete((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
   }
 }
 
-export async function refreshSPFxTreeOnFileChanged() {
-  await globalVariables.initializeGlobalVariables(globalVariables.context);
+export function refreshSPFxTreeOnFileChanged() {
+  globalVariables.initializeGlobalVariables(globalVariables.context);
 
-  await TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
+  TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
 
 export async function sendSDKVersionTelemetry(filePath: string) {
-  const packageLockFile = await fs.readJson(filePath).catch(() => {});
+  const packageLockFile = (await fs.readJson(filePath).catch(() => {})) as {
+    dependencies: { [key: string]: { version: string } };
+  };
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateSDKPackages, {
     [TelemetryProperty.BotbuilderVersion]: packageLockFile?.dependencies["botbuilder"]?.version,
     [TelemetryProperty.TeamsFxVersion]:
@@ -352,34 +362,30 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
     return err(result.error);
   }
 
-  const projectPathUri = result.value as Uri;
-  if (await isExistingTabApp(projectPathUri.fsPath)) {
-    // show local preview button for existing tab app
-    await openFolder(projectPathUri, false, true, args);
-  } else {
-    // show local debug button by default
-    await openFolder(projectPathUri, true, false, args);
-  }
+  const res = result.value as CreateProjectResult;
+  const projectPathUri = Uri.file(res.projectPath);
+  // show local debug button by default
+  await openFolder(projectPathUri, true, res.warnings, args);
   return result;
 }
 
 export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
-  showLocalPreviewMessage: boolean,
+  warnings?: Warning[] | undefined,
   args?: any[]
 ) {
-  await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, folderPath, args);
+  await updateAutoOpenGlobalKey(showLocalDebugMessage, folderPath, warnings, args);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
     [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
   });
-  commands.executeCommand("vscode.openFolder", folderPath, true);
+  await commands.executeCommand("vscode.openFolder", folderPath, true);
 }
 
 export async function updateAutoOpenGlobalKey(
   showLocalDebugMessage: boolean,
-  showLocalPreviewMessage: boolean,
   projectUri: Uri,
+  warnings: Warning[] | undefined,
   args?: any[]
 ): Promise<void> {
   if (isTriggerFromWalkThrough(args)) {
@@ -394,14 +400,14 @@ export async function updateAutoOpenGlobalKey(
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
   }
 
-  if (showLocalPreviewMessage) {
-    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, true);
+  if (warnings?.length) {
+    await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
   }
 }
 
 export async function createProjectFromWalkthroughHandler(
   args?: any[]
-): Promise<Result<any, FxError>> {
+): Promise<Result<CreateProjectResult, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;
@@ -436,13 +442,13 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
     }
 
     const hub = inputs[CoreQuestionNames.M365Host] as Hub;
-    const url = result.value as string;
+    const url = result.value;
     properties[TelemetryProperty.Hub] = hub;
 
     await openHubWebClient(hub, url);
   } catch (error) {
     const assembledError = assembleError(error);
-    showError(assembledError);
+    void showError(assembledError);
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.TreeViewPreview,
       assembledError,
@@ -638,13 +644,13 @@ export async function publishInDeveloperPortalHandler(
   return res;
 }
 
-export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
+export function showOutputChannel(args?: any[]): Result<any, FxError> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
   VsCodeLogInstance.outputChannel.show();
   return ok(null);
 }
 
-export async function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
+export function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
   const scheme = "file://";
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification,
@@ -657,7 +663,7 @@ export async function openFolderHandler(args?: any[]): Promise<Result<any, FxErr
     const uri = Uri.file(path);
     openFolderInExplorer(uri.fsPath);
   }
-  return ok(null);
+  return Promise.resolve(ok(null));
 }
 
 export async function addWebpart(args?: any[]) {
@@ -690,13 +696,11 @@ export async function runCommand(
         if (!isImportSPFxEnabled()) {
           inputs["spfx-solution"] = "new";
         }
-        inputs["scratch"] = "yes";
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {
-          const uri = Uri.file(tmpResult.value);
-          result = ok(uri);
+          result = ok(tmpResult.value);
         }
         break;
       }
@@ -753,6 +757,10 @@ export async function runCommand(
         result = await core.createAppPackage(inputs);
         break;
       }
+      case Stage.copilotPluginAddAPI: {
+        result = await core.copilotPluginAddAPI(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,
@@ -761,7 +769,7 @@ export async function runCommand(
         );
     }
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   await processResult(eventName, result, inputs, telemetryProperties);
@@ -778,25 +786,24 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
     }
 
     inputs.stage = Stage.create;
-    inputs["scratch"] = "no";
-    const tmpResult = await core.createProject(inputs);
+    const tmpResult = await core.createSampleProject(inputs);
     if (tmpResult.isErr()) {
       result = err(tmpResult.error);
     } else {
-      const uri = Uri.file(tmpResult.value);
+      const uri = Uri.file((tmpResult.value as CreateProjectResult).projectPath);
       result = ok(uri);
     }
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   if (result.isErr()) {
     const error = result.error;
     if (!isUserCancelError(error)) {
       if (isLoginFailureError(error)) {
-        window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
+        void window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
       } else {
-        showError(error);
+        void showError(error);
       }
     }
   }
@@ -844,7 +851,7 @@ export async function runUserTask(
     inputs.env = envName;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
-    result = wrapError(e);
+    result = wrapError(e as Error);
   }
 
   await processResult(eventName, result, inputs, telemetryProperties);
@@ -898,10 +905,10 @@ async function processResult(
       return;
     }
     if (isLoginFailureError(error)) {
-      window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
+      void window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
       return;
     }
-    showError(error);
+    void showError(error);
   } else {
     if (eventName) {
       if (eventName === TelemetryEvent.CreateNewEnvironment) {
@@ -955,16 +962,9 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     await commonUtils.triggerV3Migration();
     return undefined;
   } catch (error: any) {
-    showError(error);
+    void showError(error as FxError);
     return "1";
   }
-}
-
-/**
- * check & install required dependencies during local debug when selected hosting type is SPFx.
- */
-export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
-  return undefined;
 }
 
 /**
@@ -975,7 +975,7 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
     await commonUtils.triggerV3Migration();
     return undefined;
   } catch (error: any) {
-    showError(error);
+    void showError(error as FxError);
     return "1";
   }
 }
@@ -988,7 +988,7 @@ export async function installAppInTeams(): Promise<string | undefined> {
     await commonUtils.triggerV3Migration();
     return undefined;
   } catch (error: any) {
-    showError(error);
+    void showError(error as FxError);
     return "1";
   }
 }
@@ -1005,7 +1005,7 @@ export async function validateGetStartedPrerequisitesHandler(
   );
   const result = await localPrerequisites.checkPrerequisitesForGetStarted();
   if (result.isErr()) {
-    showError(result.error);
+    void showError(result.error);
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -1019,7 +1019,7 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
     await commonUtils.triggerV3Migration();
     return undefined;
   } catch (error: any) {
-    showError(error);
+    void showError(error as FxError);
     return "1";
   }
 }
@@ -1028,7 +1028,7 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  * Get path delimiter
  * Usage like ${workspaceFolder}/devTools/func${command:...}${env:PATH}
  */
-export async function getPathDelimiterHandler(): Promise<string> {
+export function getPathDelimiterHandler(): string {
   return path.delimiter;
 }
 
@@ -1046,7 +1046,7 @@ export async function getDotnetPathHandler(): Promise<string> {
         .join(path.delimiter)}${path.delimiter}`;
     }
   } catch (error: any) {
-    showError(assembleError(error));
+    void showError(assembleError(error));
   }
 
   return `${path.delimiter}`;
@@ -1060,7 +1060,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     await commonUtils.triggerV3Migration();
     return undefined;
   } catch (error: any) {
-    showError(error);
+    void showError(error as FxError);
     return "1";
   }
 }
@@ -1068,7 +1068,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
   let documentName = "general";
   if (args && args.length >= 2) {
-    documentName = args[1];
+    documentName = args[1] as string;
   }
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
@@ -1175,9 +1175,9 @@ export async function checkUpgrade(args?: any[]) {
   if (triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.Auto) {
     input["isNonmodalMessage"] = true;
     // not await here to avoid blocking the UI.
-    core.phantomMigrationV3(input).then((result) => {
+    void core.phantomMigrationV3(input).then((result) => {
       if (result.isErr()) {
-        showError(result.error);
+        void showError(result.error);
       }
     });
     return;
@@ -1190,7 +1190,7 @@ export async function checkUpgrade(args?: any[]) {
   }
   const result = await core.phantomMigrationV3(input);
   if (result.isErr()) {
-    showError(result.error);
+    void showError(result.error);
   }
 }
 
@@ -1205,24 +1205,30 @@ export async function openSurveyHandler(args?: any[]) {
 }
 
 export async function autoOpenProjectHandler(): Promise<void> {
-  const isOpenWalkThrough = await globalStateGet(GlobalKey.OpenWalkThrough, false);
-  const isOpenReadMe = await globalStateGet(GlobalKey.OpenReadMe, "");
-  const isOpenSampleReadMe = await globalStateGet(GlobalKey.OpenSampleReadMe, false);
+  const isOpenWalkThrough = (await globalStateGet(GlobalKey.OpenWalkThrough, false)) as boolean;
+  const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
+  const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
+  const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, [])) as string;
   if (isOpenWalkThrough) {
-    showLocalDebugMessage();
-    showLocalPreviewMessage();
+    await showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+
+    if (globalVariables.workspaceUri?.fsPath) {
+      await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+      await globalStateUpdate(GlobalKey.CreateWarnings, "");
+    }
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
-    showLocalDebugMessage();
-    showLocalPreviewMessage();
+    await showLocalDebugMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
+
+    await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    await globalStateUpdate(GlobalKey.CreateWarnings, "");
   }
   if (isOpenSampleReadMe) {
-    showLocalDebugMessage();
-    showLocalPreviewMessage();
+    await showLocalDebugMessage();
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
@@ -1234,18 +1240,20 @@ export async function openReadMeHandler(args: any[]) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
-        Correlator.run(() => createNewProjectHandler([TelemetryTriggerFrom.Notification]));
+        await Correlator.run(
+          async () => await createNewProjectHandler([TelemetryTriggerFrom.Notification])
+        );
       },
     };
 
     const openFolder = {
       title: localize("teamstoolkit.handlers.openFolderTitle"),
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.openFolder");
+        await commands.executeCommand("vscode.openFolder");
       },
     };
 
-    vscode.window
+    void vscode.window
       .showInformationMessage(
         localize("teamstoolkit.handlers.createProjectNotification"),
         createProject,
@@ -1294,93 +1302,27 @@ export async function openReadMeHandler(args: any[]) {
   }
 }
 
-export async function postUpgrade(): Promise<void> {
-  await openUpgradeChangeLogsHandler();
-  await popupAfterUpgrade();
-}
-
-async function popupAfterUpgrade(): Promise<void> {
-  const aadClientSecretFlag = "NeedToSetAADClientSecretEnv";
-  const aadClientSecret = await globalStateGet(aadClientSecretFlag, "");
-  if (
-    aadClientSecret !== "" &&
-    workspace.workspaceFolders &&
-    workspace.workspaceFolders.length > 0
-  ) {
-    try {
-      const learnMoreLink = localize("teamstoolkit.upgradeToMultiEnvAndBicep.learnMoreLink");
-      const learnMoreText = localize("teamstoolkit.upgradeToMultiEnvAndBicep.learnMoreText");
-      const option = { modal: false };
-      const outputMsg = util.format(
-        localize("teamstoolkit.upgradeToMultiEnvAndBicep.outputMsg"),
-        aadClientSecret,
-        learnMoreLink
-      );
-      const showMsg = util.format(
-        localize("teamstoolkit.upgradeToMultiEnvAndBicep.showMsg"),
-        aadClientSecret
-      );
-      VsCodeLogInstance.warning(outputMsg);
-      window.showWarningMessage(showMsg, option, learnMoreText).then((result) => {
-        if (result === learnMoreText) {
-          return env.openExternal(Uri.parse(learnMoreLink));
-        }
-      });
-    } finally {
-      await globalStateUpdate(aadClientSecretFlag, "");
-    }
-  }
-}
-
-async function openUpgradeChangeLogsHandler() {
-  const openUpgradeChangelogsFlag = "openUpgradeChangelogs";
-  if (
-    (await globalStateGet(openUpgradeChangelogsFlag, false)) &&
-    workspace.workspaceFolders &&
-    workspace.workspaceFolders.length > 0
-  ) {
-    try {
-      await globalStateUpdate(openUpgradeChangelogsFlag, false);
-
-      const workspacePath: string = workspace.workspaceFolders[0].uri.fsPath;
-      const backupName = ".backup";
-      const changeLogsName = "upgrade-change-logs.md";
-      const changeLogsPath: string = (await fs.pathExists(
-        path.join(workspacePath, backupName, changeLogsName)
-      ))
-        ? path.join(workspacePath, backupName, changeLogsName)
-        : path.join(workspacePath, `.teamsfx${backupName}`, changeLogsName);
-      const uri = Uri.file(changeLogsPath);
-
-      workspace.openTextDocument(uri).then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreview";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
-    } catch (err) {
-      // do nothing
-    }
-  }
-}
-
-async function openSampleReadmeHandler(args?: any) {
+export async function openSampleReadmeHandler(args?: any) {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     const uri = Uri.file(`${workspacePath}/README.md`);
-    workspace.openTextDocument(uri).then(() => {
-      if (isTriggerFromWalkThrough(args)) {
-        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      } else {
-        const PreviewMarkdownCommand = "markdown.showPreview";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      }
-    });
+    await workspace.openTextDocument(uri);
+    if (isTriggerFromWalkThrough(args as unknown[])) {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+      await commands.executeCommand(PreviewMarkdownCommand, uri);
+    } else {
+      const PreviewMarkdownCommand = "markdown.showPreview";
+      await commands.executeCommand(PreviewMarkdownCommand, uri);
+    }
   }
 }
 
-async function showLocalDebugMessage() {
-  const isShowLocalDebugMessage = await globalStateGet(GlobalKey.ShowLocalDebugMessage, false);
+export async function showLocalDebugMessage() {
+  const isShowLocalDebugMessage = (await globalStateGet(
+    GlobalKey.ShowLocalDebugMessage,
+    false
+  )) as boolean;
 
   if (!isShowLocalDebugMessage) {
     return;
@@ -1391,7 +1333,7 @@ async function showLocalDebugMessage() {
   const localDebug = {
     title: localize("teamstoolkit.handlers.localDebugTitle"),
     run: async (): Promise<void> => {
-      selectAndDebug();
+      await selectAndDebug();
     },
   };
 
@@ -1412,7 +1354,7 @@ async function showLocalDebugMessage() {
       openFolderCommand
     );
   }
-  vscode.window.showInformationMessage(message, localDebug).then((selection) => {
+  void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
     if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
       selection.run();
@@ -1420,45 +1362,46 @@ async function showLocalDebugMessage() {
   });
 }
 
-async function showLocalPreviewMessage() {
-  const isShowLocalPreviewMessage = await globalStateGet(GlobalKey.ShowLocalPreviewMessage, false);
+async function ShowScaffoldingWarningSummary(
+  workspacePath: string,
+  warning: string
+): Promise<void> {
+  try {
+    let createWarnings: Warning[] = [];
 
-  if (!isShowLocalPreviewMessage) {
-    return;
-  } else {
-    await globalStateUpdate(GlobalKey.ShowLocalPreviewMessage, false);
-  }
-
-  const localPreview = {
-    title: localize("teamstoolkit.handlers.localPreviewTitle"),
-    run: async (): Promise<void> => {
-      treeViewPreviewHandler(environmentManager.getLocalEnvName());
-    },
-  };
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
-  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
-  const isWindows = process.platform === "win32";
-  let message = util.format(
-    localize("teamstoolkit.handlers.localPreviewDescription.fallback"),
-    appName,
-    globalVariables.workspaceUri?.fsPath
-  );
-  if (isWindows) {
-    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
-    const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-    message = util.format(
-      localize("teamstoolkit.handlers.localPreviewDescription"),
-      appName,
-      openFolderCommand
-    );
-  }
-  vscode.window.showInformationMessage(message, localPreview).then((selection) => {
-    if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
-      selection.run();
+    if (warning) {
+      try {
+        createWarnings = JSON.parse(warning) as Warning[];
+      } catch (e) {
+        const error = assembleError(e);
+        ExtTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.ShowScaffoldingWarningSummaryError,
+          error
+        );
+      }
     }
-  });
+    const manifestRes = await manifestUtils._readAppManifest(
+      path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
+    );
+    if (manifestRes.isOk()) {
+      if (ManifestUtil.parseCommonProperties(manifestRes.value).isCopilotPlugin) {
+        const message = generateScaffoldingSummary(createWarnings, manifestRes.value);
+        if (message) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
+          VsCodeLogInstance.outputChannel.show();
+          void VsCodeLogInstance.info(message);
+        }
+      }
+    } else {
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.ShowScaffoldingWarningSummaryError,
+        manifestRes.error
+      );
+    }
+  } catch (e) {
+    const error = assembleError(e);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ShowScaffoldingWarningSummaryError, error);
+  }
 }
 
 export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1491,7 +1434,7 @@ export async function openReportIssues(args?: any[]): Promise<Result<boolean, Fx
 
 export async function openExternalHandler(args?: any[]) {
   if (args && args.length > 0) {
-    const url = args[0].url;
+    const url = (args[0] as { url: string }).url;
     return env.openExternal(Uri.parse(url));
   }
 }
@@ -1765,20 +1708,20 @@ export function registerAccountMenuCommands(context: ExtensionContext) {
       try {
         switch (node.contextValue) {
           case "signedinM365": {
-            Correlator.run(() => {
-              signOutM365(true);
+            await Correlator.run(async () => {
+              await signOutM365(true);
             });
             break;
           }
           case "signedinAzure": {
-            Correlator.run(() => {
-              signOutAzure(true);
+            await Correlator.run(async () => {
+              await signOutAzure(true);
             });
             break;
           }
         }
       } catch (e) {
-        showError(e);
+        void showError(e as FxError);
       }
     })
   );
@@ -1826,8 +1769,22 @@ export async function showError(e: UserError | SystemError) {
         commands.executeCommand("vscode.open", issueLink);
       },
     };
+    const similarIssueLink = Uri.parse(
+      `https://github.com/OfficeDev/TeamsFx/issues?q=is:issue+in:title+${errorCode}`
+    );
+    const similarIssues = {
+      title: localize("teamstoolkit.handlers.similarIssues"),
+      run: async (): Promise<void> => {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.FindSimilarIssues);
+        await commands.executeCommand("vscode.open", similarIssueLink);
+      },
+    };
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
-    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
+    const button = await window.showErrorMessage(
+      `[${errorCode}]: ${notificationMessage}`,
+      issue,
+      similarIssues
+    );
     if (button) await button.run();
   } else {
     if (!(e instanceof ConcurrentError))
@@ -1847,8 +1804,8 @@ export async function cmpAccountsHandler(args: any[]) {
     id: "signOutAzure",
     label: localize("teamstoolkit.handlers.signOutOfAzure"),
     function: async () =>
-      Correlator.run(() => {
-        signOutAzure(false);
+      await Correlator.run(async () => {
+        await signOutAzure(false);
       }),
   };
 
@@ -1862,8 +1819,8 @@ export async function cmpAccountsHandler(args: any[]) {
     id: "signOutM365",
     label: localize("teamstoolkit.handlers.signOutOfM365"),
     function: async () =>
-      Correlator.run(() => {
-        signOutM365(false);
+      await Correlator.run(async () => {
+        await signOutM365(false);
       }),
   };
 
@@ -1871,7 +1828,7 @@ export async function cmpAccountsHandler(args: any[]) {
     id: "createAccounts",
     label: `$(add) ${localize("teamstoolkit.commands.createAccount.title")}`,
     function: async () => {
-      Correlator.run(() => createAccountHandler([]));
+      await Correlator.run(() => createAccountHandler([]));
     },
   };
 
@@ -1942,7 +1899,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     if (editedSecret.isOk() && editedSecret.value.result) {
       const newCiphertext = await core.encrypt(editedSecret.value.result, inputs);
       if (newCiphertext.isOk()) {
-        editor.edit((editBuilder) => {
+        await editor.edit((editBuilder) => {
           editBuilder.replace(selection, newCiphertext.value);
         });
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
@@ -1954,7 +1911,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     }
   } else {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    window.showErrorMessage(result.error.message);
+    void window.showErrorMessage(result.error.message);
   }
 }
 
@@ -1965,18 +1922,15 @@ export async function openAdaptiveCardExt(
   const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
   const extension = vscode.extensions.getExtension(acExtId);
   if (!extension) {
-    vscode.window
-      .showInformationMessage(
-        localize("teamstoolkit.handlers.installAdaptiveCardExt"),
-        "Install",
-        "Cancel"
-      )
-      .then(async (selection) => {
-        if (selection === "Install") {
-          await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
-          await vscode.commands.executeCommand("workbench.view.extension.cardLists");
-        }
-      });
+    const selection = await vscode.window.showInformationMessage(
+      localize("teamstoolkit.handlers.installAdaptiveCardExt"),
+      "Install",
+      "Cancel"
+    );
+    if (selection === "Install") {
+      await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
+      await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+    }
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
@@ -2026,11 +1980,11 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     return err(res.error);
   }
 
-  const manifestFile = `${workspacePath}/${BuildFolderName}/aad.${envName}.json`;
+  const manifestFile = `${workspacePath as string}/${BuildFolderName}/aad.${envName}.json`;
 
   if (fs.existsSync(manifestFile)) {
-    workspace.openTextDocument(manifestFile).then((document) => {
-      window.showTextDocument(document);
+    void workspace.openTextDocument(manifestFile).then((document) => {
+      void window.showTextDocument(document);
     });
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAadManifestFile, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -2042,7 +1996,7 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
       "FileNotFound",
       util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
     );
-    showError(error);
+    void showError(error);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, error);
     return err(error);
   }
@@ -2065,7 +2019,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtensionErrors.NoWorkspaceError,
       localize("teamstoolkit.handlers.noOpenWorkspace")
     );
-    showError(noOpenWorkspaceError);
+    void showError(noOpenWorkspaceError);
     ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noOpenWorkspaceError);
     return err(noOpenWorkspaceError);
   }
@@ -2076,13 +2030,13 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtensionErrors.InvalidProject,
       localize("teamstoolkit.handlers.invalidProject")
     );
-    showError(invalidProjectError);
+    void showError(invalidProjectError);
     ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidProjectError);
     return err(invalidProjectError);
   }
 
-  let sourcePath: string;
-  let env;
+  let sourcePath: string | undefined = undefined;
+  let env: string | undefined = undefined;
   if (args && args.length > 0) {
     env = args[0].env;
     if (!env) {
@@ -2094,24 +2048,12 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       env = envRes.value;
     }
 
-    if (args[0].type === "config") {
-      sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/configs/`,
-        `config.${env}.json`
-      );
-    } else if (args[0].type === "state") {
-      sourcePath = path.resolve(
-        `${workspacePath}/.${ConfigFolderName}/states/`,
-        `state.${env}.json`
-      );
-    } else {
-      // Load env folder from yml
-      const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
-      if (envFolder.isOk()) {
-        sourcePath = path.resolve(`${envFolder.value}/.env.${env}`);
-      } else {
-        return err(envFolder.error);
-      }
+    // Load env folder from yml
+    const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
+    if (envFolder.isOk() && envFolder.value) {
+      sourcePath = path.resolve(`${envFolder.value}/.env.${env as string}`);
+    } else if (envFolder.isErr()) {
+      return err(envFolder.error);
     }
   } else {
     const invalidArgsError = new SystemError(
@@ -2119,75 +2061,24 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtensionErrors.InvalidArgs,
       util.format(localize("teamstoolkit.handlers.invalidArgs"), args ? JSON.stringify(args) : args)
     );
-    showError(invalidArgsError);
+    void showError(invalidArgsError);
     ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidArgsError);
     return err(invalidArgsError);
   }
 
-  if (!(await fs.pathExists(sourcePath))) {
-    if (args[0].type === "config") {
-      const noEnvError = new UserError(
-        ExtensionSource,
-        ExtensionErrors.EnvConfigNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
-      );
-      showError(noEnvError);
-      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
-      return err(noEnvError);
-    } else if (args[0].type === "env") {
-      const noEnvError = new UserError(
-        ExtensionSource,
-        ExtensionErrors.EnvFileNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
-      );
-      showError(noEnvError);
-      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
-      return err(noEnvError);
-    } else {
-      const isLocalEnv = env === environmentManager.getLocalEnvName();
-      const message = isLocalEnv
-        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
-        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env);
-      const noEnvError = new UserError(
-        ExtensionSource,
-        ExtensionErrors.EnvStateNotFoundError,
-        message
-      );
-      const provision = {
-        title: localize("teamstoolkit.commandsTreeViewProvider.provisionTitle"),
-        run: async (): Promise<void> => {
-          Correlator.run(provisionHandler, [TelemetryTriggerFrom.Other]);
-        },
-      };
-      const localdebug = {
-        title: localize("teamstoolkit.handlers.localDebugTitle"),
-        run: async (): Promise<void> => {
-          Correlator.run(selectAndDebugHandler, [TelemetryTriggerFrom.Other]);
-        },
-      };
-
-      const errorCode = `${noEnvError.source}.${noEnvError.name}`;
-      const notificationMessage = noEnvError.displayMessage ?? noEnvError.message;
-      window
-        .showErrorMessage(
-          `[${errorCode}]: ${notificationMessage}`,
-          isLocalEnv ? localdebug : provision
-        )
-        .then((selection) => {
-          if (
-            selection?.title === localize("teamstoolkit.commandsTreeViewProvider.provisionTitle") ||
-            selection?.title === localize("teamstoolkit.handlers.localDebugTitle")
-          ) {
-            selection.run();
-          }
-        });
-      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
-      return err(noEnvError);
-    }
+  if (sourcePath && !(await fs.pathExists(sourcePath))) {
+    const noEnvError = new UserError(
+      ExtensionSource,
+      ExtensionErrors.EnvFileNotFoundError,
+      util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
+    );
+    void showError(noEnvError);
+    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
+    return err(noEnvError);
   }
 
-  workspace.openTextDocument(sourcePath).then((document) => {
-    window.showTextDocument(document);
+  void workspace.openTextDocument(sourcePath as string).then((document) => {
+    void window.showTextDocument(document);
   });
   ExtTelemetry.sendTelemetryEvent(telemetryName, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -2223,41 +2114,39 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
       return err(env.error);
     }
-    const manifestPath = `${workspacePath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value}.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
+    const manifestPath = `${
+      workspacePath as string
+    }/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value as string}.json`;
+    void workspace.openTextDocument(manifestPath).then((document) => {
+      void window.showTextDocument(document);
     });
   }
   return result;
 }
 
-export async function editManifestTemplate(args: any[]) {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.EditManifestTemplate,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-
+export async function copilotPluginAddAPIHandler(args: any[]) {
+  // Telemetries are handled in runCommand()
+  const inputs = getSystemInputs();
   if (args && args.length > 0) {
-    const segments = args[0].fsPath.split(".");
-    const env = segments[segments.length - 2] === "local" ? "local" : "remote";
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
-    });
+    const filePath = args[0].fsPath as string;
+    inputs[CoreQuestionNames.ManifestPath] = filePath;
   }
+  const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
+  return result;
 }
 
-export async function editAadManifestTemplate(args: any[]) {
+export function editAadManifestTemplate(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.EditAadManifestTemplate,
     getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
   );
   if (args && args.length > 1) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
-    workspace.openTextDocument(manifestPath).then((document) => {
-      window.showTextDocument(document);
+    const manifestPath = `${
+      workspacePath as string
+    }/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
+    void workspace.openTextDocument(manifestPath).then((document) => {
+      void window.showTextDocument(document);
     });
   }
 }
@@ -2287,16 +2176,16 @@ export async function signOutM365(isFromTreeView: boolean) {
   result = await M365TokenInstance.signout();
   if (result) {
     accountTreeViewProviderInstance.m365AccountNode.setSignedOut();
-    envTreeProviderInstance.refreshRemoteEnvWarning();
+    await envTreeProviderInstance.refreshRemoteEnvWarning();
   }
 }
 
 export async function signInAzure() {
-  vscode.commands.executeCommand("fx-extension.signinAzure");
+  await vscode.commands.executeCommand("fx-extension.signinAzure");
 }
 
 export async function signInM365() {
-  vscode.commands.executeCommand("fx-extension.signinM365");
+  await vscode.commands.executeCommand("fx-extension.signinM365");
 }
 
 export interface VscQuickPickItem extends QuickPickItem {
@@ -2495,9 +2384,9 @@ export async function openLifecycleTreeview(args?: any[]) {
     getTriggerFromProperty(args)
   );
   if (globalVariables.isTeamsFxProject) {
-    vscode.commands.executeCommand("teamsfx-lifecycle.focus");
+    await vscode.commands.executeCommand("teamsfx-lifecycle.focus");
   } else {
-    vscode.commands.executeCommand("workbench.view.extension.teamsfx");
+    await vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }
 }
 
@@ -2864,7 +2753,7 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   return Promise.resolve(ok(false));
 }
 
-export async function openAccountHelpHandler(args?: any[]) {
+export function openAccountHelpHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.AccountHelp);
 }
 
@@ -2905,19 +2794,19 @@ export async function refreshSideloadingCallback(args?: any[]): Promise<Result<n
   return ok(null);
 }
 
-export async function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
+export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
   VS_CODE_UI.showMessage(
     "error",
     localize("teamstoolkit.accountTree.sideloadingMessage"),
     false,
     localize("teamstoolkit.accountTree.sideloadingLearnMore")
   )
-    .then(async (result) => {
+    .then((result) => {
       if (
         result.isOk() &&
         result.value === localize("teamstoolkit.accountTree.sideloadingLearnMore")
       ) {
-        await openAccountHelpHandler();
+        openAccountHelpHandler();
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingLearnMore);
       }
     })
@@ -2926,7 +2815,7 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideloadingDisabled,
   });
-  return ok(null);
+  return Promise.resolve(ok(null));
 }
 
 export async function signinAzureCallback(args?: any[]): Promise<Result<null, FxError>> {
@@ -2998,9 +2887,9 @@ export async function scaffoldFromDeveloperPortalHandler(
     );
     if (tokenRes.isErr()) {
       if ((tokenRes.error as any).displayMessage) {
-        window.showErrorMessage((tokenRes.error as any).displayMessage);
+        void window.showErrorMessage((tokenRes.error as any).displayMessage);
       } else {
-        vscode.window.showErrorMessage(
+        void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
@@ -3022,7 +2911,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
     await progressBar.end(true);
   } catch (e) {
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.generalError.message")
     );
     await progressBar.end(false);
@@ -3045,7 +2934,7 @@ export async function scaffoldFromDeveloperPortalHandler(
       error,
       properties
     );
-    vscode.window.showErrorMessage(
+    void vscode.window.showErrorMessage(
       localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message")
     );
     return err(error);

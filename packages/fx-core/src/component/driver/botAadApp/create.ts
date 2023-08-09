@@ -50,7 +50,7 @@ export class CreateBotAadAppDriver implements StepDriver {
     return wrapRun(async () => {
       const result = await this.handler(args, context);
       return result.output;
-    });
+    }, actionName);
   }
 
   @hooks([
@@ -67,7 +67,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       const result = await this.handler(args, ctx, outputEnvVarNames);
       summaries = result.summaries;
       return result.output;
-    });
+    }, actionName);
     return {
       result: outputResult,
       summaries,

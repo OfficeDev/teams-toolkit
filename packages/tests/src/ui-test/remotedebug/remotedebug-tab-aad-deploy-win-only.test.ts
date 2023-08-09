@@ -4,7 +4,7 @@
 import * as path from "path";
 import * as chai from "chai";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../constants";
+import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
@@ -15,7 +15,7 @@ import {
   createNewProject,
   getNotification,
   runDeployAadAppManifest,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { updateAadTemplate } from "../../utils/commonUtils";

@@ -7,7 +7,7 @@ import sinon from "sinon";
 import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
 import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
-import { Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
@@ -57,7 +57,7 @@ describe("serverConnections", () => {
 
   it("createProjectRequest", () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns("test");
+    const fake = sandbox.fake.returns({ projectPath: "test" });
     sandbox.replace(connection["core"], "createProject", fake);
     const inputs = {
       platform: "vs",
@@ -65,7 +65,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.createProjectRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok({ projectPath: "test" }));
     });
   });
 
@@ -321,18 +321,6 @@ describe("serverConnections", () => {
     });
   });
 
-  it("getProjectComponents", () => {
-    const connection = new ServerConnection(msgConn);
-    const inputs = {
-      platform: "vs",
-    };
-    const token = {};
-    const res = connection.getProjectComponents(inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok(""));
-    });
-  });
-
   it("getProjectMigrationStatusRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns({
@@ -430,5 +418,38 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     assert.isTrue(res.isErr());
+  });
+
+  it("loadOpenAIPluginManifestRequest succeed", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok({}));
+    sandbox.replace(connection["core"], "copilotPluginLoadOpenAIManifest", fake);
+    const res = await connection.loadOpenAIPluginManifestRequest(
+      {} as Inputs,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+  });
+
+  it("copilotPluginListOperations fail", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(err([{ content: "error1" }, { content: "error2" }]));
+    sandbox.replace(connection["core"], "copilotPluginListOperations", fake);
+    const res = await connection.listOpenAPISpecOperationsRequest(
+      {} as Inputs,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.message, "error1\nerror2");
+    }
+  });
+
+  it("copilotPluginAddAPIRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok({}));
+    sandbox.replace(connection["core"], "copilotPluginAddAPI", fake);
+    const res = await connection.copilotPluginAddAPIRequest({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
   });
 });

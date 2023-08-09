@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { FileNotFoundError, JSONSyntaxError, ReadFileError, UnhandledError } from "../error/common";
 import fs from "fs-extra";

@@ -1,0 +1,12 @@
+  # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage
+    with:
+      # Path to manifest template
+    {{#localManifest}}
+      manifestPath: ./appPackage/manifest.local.json
+    {{/localManifest}}
+    {{^localManifest}}
+      manifestPath: ./appPackage/manifest.json
+    {{/localManifest}}
+      outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json

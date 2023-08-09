@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as vscode from "vscode";
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
@@ -42,7 +41,7 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
       [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
         portOccupancy: maskArrayValue(
           this.args.portOccupancy?.map((p) => `${p}`),
-          Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
+          Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => String(p))
         ),
         prerequisites: maskArrayValue(this.args.prerequisites, Object.values(Prerequisite)),
       }),
@@ -63,7 +62,7 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     }
 
     return Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
-      if (commonUtils.checkAndSkipDebugging()) {
+      if (await commonUtils.checkAndSkipDebugging()) {
         throw new Error(DebugSessionExists);
       }
       await sendDebugAllStartEvent(additionalProperties);
@@ -86,7 +85,7 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     const duration = this.getDurationInSeconds();
     const displayMessages = v3PrerequisiteCheckTaskDisplayMessages;
     if (res.isOk() && duration) {
-      VsCodeLogInstance.info(displayMessages.durationMessage(duration));
+      await VsCodeLogInstance.info(displayMessages.durationMessage(duration));
     }
     return res;
   }
@@ -99,6 +98,6 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
         return;
       }
     }
-    super.stop(error);
+    await super.stop(error);
   }
 }

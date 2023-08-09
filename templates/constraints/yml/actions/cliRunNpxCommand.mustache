@@ -1,0 +1,11 @@
+  - uses: cli/runNpxCommand
+    with:
+    {{#workingDirectory}}
+      workingDirectory: {{{workingDirectory}}}
+    {{/workingDirectory}}
+    {{#bundle}}
+      args: gulp bundle --ship --no-color
+    {{/bundle}}
+    {{#package}}
+      args: gulp package-solution --ship --no-color
+    {{/package}}

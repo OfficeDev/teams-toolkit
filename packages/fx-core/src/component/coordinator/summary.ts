@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { combine, FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 import { DriverDefinition, ExecutionResult, ILifecycle } from "../configManager/interface";
 import { EOL } from "os";

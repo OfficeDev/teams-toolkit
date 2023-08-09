@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, LogLevel, Question, Result, Stage, err, ok } from "@microsoft/teamsfx-api";
+import {
+  CreateProjectResult,
+  FxError,
+  LogLevel,
+  Question,
+  Result,
+  Stage,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
@@ -16,7 +25,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
+import { flattenNodes, getSystemInputs, getTemplates, toLocaleLowerCase } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import { FileNotFoundError } from "@microsoft/teamsfx-core";
 
@@ -90,12 +99,12 @@ class NewTemplate extends YargsCommand {
 
   public readonly subCommands: YargsCommand[] = [new NewTemplateList()];
 
-  public builder(yargs: Argv): Argv<any> {
+  public async builder(yargs: Argv): Promise<Argv<any>> {
     const RootFolderNodeData = constants.RootFolderNode.data as Question;
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    const templatesNames = constants.templates.map((t) => toLocaleLowerCase(t.sampleAppName));
+    const templatesNames = (await getTemplates()).map((t) => toLocaleLowerCase(t.sampleAppName));
     yargs
       .positional("template-name", {
         description: "Enter the template name",
@@ -132,7 +141,7 @@ class NewTemplate extends YargsCommand {
 
     const core = activeRes.value;
 
-    const hitTempaltes = constants.templates.filter(
+    const hitTempaltes = (await getTemplates()).filter(
       (t) => t.sampleAppName.toLocaleLowerCase() === args["template-name"]
     );
     const templateName = hitTempaltes[0].sampleAppName;
@@ -146,7 +155,7 @@ class NewTemplate extends YargsCommand {
     inputs["samples"] = templateName;
     inputs["folder"] = folder;
     inputs.projectId = inputs.projectId ?? uuid.v4();
-    const result = await core.createProject(inputs);
+    const result = await core.createSampleProject(inputs);
     if (result.isErr()) {
       properties[TelemetryProperty.Success] = TelemetrySuccess.No;
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, result.error, properties);
@@ -154,7 +163,7 @@ class NewTemplate extends YargsCommand {
     }
 
     properties[TelemetryProperty.NewProjectId] = inputs.projectId;
-    const sampleAppFolder = result.value;
+    const sampleAppFolder = (result.value as CreateProjectResult).projectPath;
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Downloaded the '${CLILogProvider.white(templateName)}' sample to '${CLILogProvider.white(
@@ -182,7 +191,7 @@ class NewTemplateList extends YargsCommand {
     CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
     CLILogProvider.necessaryLog(
       LogLevel.Info,
-      JSON.stringify(constants.templates, undefined, 4),
+      JSON.stringify(await getTemplates(), undefined, 4),
       true
     );
     CLILogProvider.necessaryLog(

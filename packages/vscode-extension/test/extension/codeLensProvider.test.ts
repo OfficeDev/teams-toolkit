@@ -4,13 +4,15 @@ import { envUtil } from "@microsoft/teamsfx-core";
 import { ok } from "@microsoft/teamsfx-api";
 import {
   AadAppTemplateCodeLensProvider,
+  CopilotPluginCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PlaceholderCodeLens,
+  TeamsAppYamlCodeLensProvider,
 } from "../../src/codeLensProvider";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
+import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 
 describe("Manifest codelens", () => {
   afterEach(() => {
@@ -165,5 +167,85 @@ describe("Crypto CodeLensProvider", () => {
     ) as vscode.CodeLens[];
 
     chai.assert.equal(codelens.length, 0);
+  });
+});
+
+describe("Copilot plugin CodeLensProvider", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("Add API", async () => {
+    const document = {
+      fileName: "manifest.json",
+      getText: () => {
+        return `"composeExtensions": {}`;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: `"composeExtensions": {}`,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    const copilotPluginCodelensProvider = new CopilotPluginCodeLensProvider();
+    const codelens: vscode.CodeLens[] = copilotPluginCodelensProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 1);
+    chai.expect(codelens[0].command).to.deep.equal({
+      title: "➕Add another API",
+      command: "fx-extension.copilotPluginAddAPI",
+      arguments: [{ fsPath: document.fileName }],
+    });
+  });
+});
+
+describe("teamsapp.yml CodeLensProvider", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should work with correct teamsapp.yml", async () => {
+    const text = `
+version: 1.1.0
+
+provision:
+  provision: 1 // this line shouldn't have codelens
+deploy:
+  publish: 2 // this line shouldn't have codelens
+publish:
+  ccc: 3`;
+    const document = {
+      fileName: "teamsapp.yml",
+      getText: () => {
+        return text;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: text,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    const provider = new TeamsAppYamlCodeLensProvider();
+    const codelens: vscode.CodeLens[] = provider.provideCodeLenses(document) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 3);
+    chai.expect(codelens[0].command?.command).eq("fx-extension.provision");
+    chai.expect(codelens[0].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
+    chai.expect(codelens[1].command?.command).eq("fx-extension.deploy");
+    chai.expect(codelens[1].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
+    chai.expect(codelens[2].command?.command).eq("fx-extension.publish");
+    chai.expect(codelens[2].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
   });
 });

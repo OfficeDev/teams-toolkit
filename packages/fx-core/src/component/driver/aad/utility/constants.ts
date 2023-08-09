@@ -27,6 +27,10 @@ export const permissionsKeys = {
   type: "M365",
 };
 
+export const aadErrorCode = {
+  permissionErrorCode: "CannotDeleteOrUpdateEnabledEntitlement",
+};
+
 export const constants = {
   aadAppPasswordDisplayName: "default",
   oauthAuthorityPrefix: "https://login.microsoftonline.com",

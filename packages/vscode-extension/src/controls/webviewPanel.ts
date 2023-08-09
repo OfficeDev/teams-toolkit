@@ -24,7 +24,6 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
 import { Commands } from "./Commands";
-import { EventMessages } from "./messages";
 import { PanelType } from "./PanelType";
 
 export class WebviewPanel {
@@ -114,33 +113,15 @@ export class WebviewPanel {
       async (msg) => {
         switch (msg.command) {
           case Commands.OpenExternalLink:
-            vscode.env.openExternal(vscode.Uri.parse(msg.data));
+            void vscode.env.openExternal(vscode.Uri.parse(msg.data));
             break;
           case Commands.CloneSampleApp:
-            Correlator.run(async () => {
+            await Correlator.run(async () => {
               await this.downloadSampleApp(msg);
             });
             break;
           case Commands.DisplayCommands:
-            vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
-            break;
-          case Commands.SigninM365:
-            Correlator.run(async () => {
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-                [TelemetryProperty.AccountType]: AccountType.M365,
-              });
-              await M365TokenInstance.getJsonObject({ scopes: AppStudioScopes });
-            });
-            break;
-          case Commands.SigninAzure:
-            Correlator.run(async () => {
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-                [TelemetryProperty.AccountType]: AccountType.Azure,
-              });
-              await AzureAccountManager.getIdentityCredentialAsync(false);
-            });
+            await vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
             break;
           case Commands.CreateNewProject:
             await vscode.commands.executeCommand(
@@ -186,7 +167,7 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      openFolder(res.value, true, false);
+      await openFolder(res.value, true);
     } else {
       props[TelemetryProperty.Success] = TelemetrySuccess.No;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
@@ -196,8 +177,8 @@ export class WebviewPanel {
   private async LoadSampleCollection() {
     await sampleProvider.fetchSampleConfig();
     if (this.panel && this.panel.webview) {
-      this.panel.webview.postMessage({
-        message: EventMessages.LoadSampleCollection,
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleCollection,
         data: sampleProvider.SampleCollection,
       });
     }
@@ -239,7 +220,7 @@ export class WebviewPanel {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ms-teams</title>
-            <base href='${scriptBaseUri}' />
+            <base href='${scriptBaseUri.toString()}' />
           </head>
           <body>
             <div id="root"></div>
@@ -247,7 +228,7 @@ export class WebviewPanel {
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
             </script>
-            <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
+            <script nonce="${nonce}"  type="module" src="${scriptUri.toString()}"></script>
           </body>
         </html>`;
   }
@@ -288,8 +269,6 @@ export class WebviewPanel {
     }
 
     WebviewPanel.currentPanels.splice(panelIndex, 1);
-
-    AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 
     // Clean up our resources
     this.panel.dispose();

@@ -6,6 +6,10 @@
 // Import polyfills for fetch required by msgraph-sdk-javascript.
 require("isomorphic-fetch");
 const teamsfxSdk = require("@microsoft/teamsfx");
+const { Client } = require("@microsoft/microsoft-graph-client");
+const {
+  TokenCredentialAuthenticationProvider,
+} = require("@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials");
 const config = require("../config");
 
 /**
@@ -16,7 +20,6 @@ const config = require("../config");
  * This function initializes the teamsfx SDK with the configuration and calls these APIs:
  * - new OnBehalfOfUserCredential(ssoToken, authConfig)  - Construct OnBehalfOfUserCredential instance with the received SSO token and initialized configuration.
  * - getUserInfo() - Get the user's information from the received SSO token.
- * - createMicrosoftGraphClientWithCredential() - Get a graph client to access user's Microsoft 365 data.
  *
  * The response contains multiple message blocks constructed into a JSON object, including:
  * - An echo of the request body.
@@ -92,9 +95,16 @@ module.exports = async function (context, req, teamsfxContext) {
 
   // Create a graph client to access user's Microsoft 365 data after user has consented.
   try {
-    const graphClient = teamsfxSdk.createMicrosoftGraphClientWithCredential(credential, [
-      ".default",
-    ]);
+    // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+    const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+      scopes: ["https://graph.microsoft.com/.default"],
+    });
+
+    // Initialize Graph client instance with authProvider
+    const graphClient = Client.initWithMiddleware({
+      authProvider: authProvider,
+    });
+
     const profile = await graphClient.api("/me").get();
     res.body.graphClientMessage = profile;
   } catch (e) {

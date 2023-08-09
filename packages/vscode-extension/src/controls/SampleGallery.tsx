@@ -1,73 +1,28 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as React from "react";
-import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
+import { Icon, Image, FontIcon } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import { SampleCardProps, SampleCollection, SampleInfo, SampleListProps } from "./ISamples";
-import InMeetingApp from "../../img/webview/sample/in-meeting-app.png";
-import ShareNow from "../../img/webview/sample/share-now.gif";
-import ToDoList from "../../img/webview/sample/to-do-list.gif";
-import ToDoListSharepoint from "../../img/webview/sample/to-do-list-sharepoint.gif";
-import ToDoListM365 from "../../img/webview/sample/to-do-list-M365.gif";
-import NpmSearchConnectorM365 from "../../img/webview/sample/npm-search-connector-M365.gif";
-import HelloWorldTabWithBackend from "../../img/webview/sample/helloWorld-tab-with-backend.gif";
 import { Watch, Setting } from "./resources";
-import GraphToolkitContactExporter from "../../img/webview/sample/graph-toolkit-contact-exporter.gif";
-import GraphToolkitOneProductivityHub from "../../img/webview/sample/graph-toolkit-one-productivity-hub.gif";
-import BOTSSO from "../../img/webview/sample/bot-sso.gif";
-import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
-import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
-import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
-import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
-import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
-import StockUpdate from "../../img/webview/sample/stock-update.gif";
-import MsgExtSSO from "../../img/webview/sample/message-extension-sso.gif";
-import VideoFilterApp from "../../img/webview/sample/video-filter-app-sample-in-test-app.gif";
-import DashboardTab from "../../img/webview/sample/team-central-dashboard.gif";
-import TeamsTabAndOutlookAddin from "../../img/webview/sample/hello-world-teams-tab-and-outlook-add-in.png";
-import OutlookSetSignatureAddin from "../../img/webview/sample/outlook-set-signature-overview.png";
-import DevAssistDashboard from "../../img/webview/sample/dev-assist-dashboard.png";
-import LiveShareDiceRoller from "../../img/webview/sample/live-share-dice-roller.gif";
-import TeamsChef from "../../img/webview/sample/teams-chef.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 
-const imageMapping: { [p: string]: any } = {
-  "todo-list-with-Azure-backend": ToDoList,
-  "todo-list-SPFx": ToDoListSharepoint,
-  "share-now": ShareNow,
-  "hello-world-in-meeting": InMeetingApp,
-  "todo-list-with-Azure-backend-M365": ToDoListM365,
-  "NPM-search-connector-M365": NpmSearchConnectorM365,
-  "hello-world-tab-with-backend": HelloWorldTabWithBackend,
-  "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
-  "bot-sso": BOTSSO,
-  "graph-connector-app": GraphConnector,
-  "adaptive-card-notification": AdaptiveCardNotification,
-  "incoming-webhook-notification": IncomingWebhook,
-  "graph-toolkit-one-productivity-hub": GraphToolkitOneProductivityHub,
-  "bot-proactive-messaging-teamsfx": SendProactiveMsg,
-  "stocks-update-notification-bot": StockUpdate,
-  "query-org-user-with-message-extension-sso": MsgExtSSO,
-  "teams-videoapp-sample": VideoFilterApp,
-  "team-central-dashboard": DashboardTab,
-  "hello-world-teams-tab-and-outlook-add-in": TeamsTabAndOutlookAddin,
-  "outlook-add-in-set-signature": OutlookSetSignatureAddin,
-  "developer-assist-dashboard": DevAssistDashboard,
-  "live-share-dice-roller": LiveShareDiceRoller,
-  "teams-chef-bot": TeamsChef,
-};
-
-export default class SampleGallery extends React.Component<any, any> {
-  constructor(props: any) {
+export default class SampleGallery extends React.Component<
+  unknown,
+  { samples: Array<SampleInfo>; highlightSampleId?: string }
+> {
+  constructor(props: unknown) {
     super(props);
     this.state = {
       samples: [],
-      highlightSample: "",
     };
   }
 
@@ -84,12 +39,12 @@ export default class SampleGallery extends React.Component<any, any> {
 
   render() {
     const samples = this.state.samples as Array<SampleInfo>;
-    const hightSample = samples.filter(
-      (sample: SampleInfo) => sample.id == this.state.highlightSample
+    const highlightedSample = samples.filter(
+      (sample: SampleInfo) => sample.id == this.state.highlightSampleId
     )[0];
     return (
       <div>
-        {this.state.highlightSample == "" && (
+        {!this.state.highlightSampleId && (
           <div className="sample-gallery">
             <div className="section" id="title">
               <div className="logo">
@@ -110,16 +65,16 @@ export default class SampleGallery extends React.Component<any, any> {
             </div>
           </div>
         )}
-        {this.state.highlightSample != "" && (
+        {this.state.highlightSampleId && (
           <SampleDetailPage
-            url={hightSample.url}
-            image={imageMapping[hightSample.id]}
-            tags={hightSample.tags}
-            time={hightSample.time}
-            configuration={hightSample.configuration}
-            title={hightSample.title}
-            description={hightSample.fullDescription}
-            sampleAppFolder={hightSample.id}
+            url={highlightedSample.downloadUrl}
+            image={highlightedSample.gifUrl}
+            tags={highlightedSample.tags}
+            time={highlightedSample.time}
+            configuration={highlightedSample.configuration}
+            title={highlightedSample.title}
+            description={highlightedSample.fullDescription}
+            sampleAppFolder={highlightedSample.id}
             highlightSample={this.highlightSample}
           ></SampleDetailPage>
         )}
@@ -130,7 +85,7 @@ export default class SampleGallery extends React.Component<any, any> {
   receiveMessage = (event: any) => {
     const message = event.data.message;
     switch (message) {
-      case EventMessages.LoadSampleCollection:
+      case Commands.LoadSampleCollection:
         const sampleCollection = event.data.data as SampleCollection;
         this.setState({
           samples: sampleCollection.samples,
@@ -143,7 +98,7 @@ export default class SampleGallery extends React.Component<any, any> {
 
   highlightSample = (id: string) => {
     this.setState({
-      highlightSample: id,
+      highlightSampleId: id,
     });
   };
 }
@@ -154,13 +109,13 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
   }
 
   render() {
-    const samples = this.props.samples as Array<SampleInfo>;
+    const samples = this.props.samples;
     if (samples) {
       return samples.map((sample, index) => {
         return (
           <SampleCard
-            url={sample.url}
-            image={imageMapping[sample.id]}
+            url={sample.downloadUrl}
+            image={sample.gifUrl}
             tags={sample.tags}
             time={sample.time}
             configuration={sample.configuration}

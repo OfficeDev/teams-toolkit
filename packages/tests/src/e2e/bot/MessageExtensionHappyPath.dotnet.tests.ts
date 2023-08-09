@@ -10,7 +10,7 @@ describe("Provision message extension Dotnet", () => {
     "Provision Resource: message extension dotnet",
     { testPlanCaseId: 15685646, author: "fanhu@microsoft.com" },
     async function () {
-      await happyPathTest(Runtime.Dotnet, "message-extension");
+      await happyPathTest(Runtime.Dotnet, "collect-form-message-extension");
     }
   );
 });

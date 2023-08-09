@@ -183,12 +183,12 @@ export class Channel implements NotificationTarget {
   /**
    * @internal
    */
-  private async newConversation(context: TurnContext): Promise<ConversationReference> {
+  private newConversation(context: TurnContext): Promise<ConversationReference> {
     const reference = TurnContext.getConversationReference(context.activity);
     const channelConversation = utils.cloneConversation(reference);
     channelConversation.conversation.id = this.info.id || "";
 
-    return channelConversation;
+    return Promise.resolve(channelConversation);
   }
 }
 
@@ -619,6 +619,33 @@ export class NotificationBot {
   }
 
   /**
+   * Validate the installation by getting paged memebers.
+   *
+   * @param conversationReference The bound `ConversationReference`.
+   * @returns Returns false if recieves `BotNotInConversationRoster` error, otherwise returns true.
+   */
+  public async validateInstallation(
+    conversationReference: Partial<ConversationReference>
+  ): Promise<boolean> {
+    let isValid = true;
+    await this.adapter.continueConversationAsync(
+      this.botAppId,
+      conversationReference,
+      async (context) => {
+        try {
+          // try get member to see if the installation is still valid
+          await TeamsInfo.getPagedMembers(context, 1);
+        } catch (error: any) {
+          if ((error.code as string) === "BotNotInConversationRoster") {
+            isValid = false;
+          }
+        }
+      }
+    );
+    return isValid;
+  }
+
+  /**
    * Gets a pagined list of targets where the bot is installed.
    *
    * @remarks
@@ -631,7 +658,8 @@ export class NotificationBot {
    */
   public async getPagedInstallations(
     pageSize?: number,
-    continuationToken?: string
+    continuationToken?: string,
+    validationEnabled = true
   ): Promise<PagedData<TeamsBotInstallation>> {
     if (this.conversationReferenceStore === undefined || this.adapter === undefined) {
       throw new Error("NotificationBot has not been initialized.");
@@ -641,19 +669,13 @@ export class NotificationBot {
     const targets: TeamsBotInstallation[] = [];
     for (const reference of references.data) {
       // validate connection
-      let valid = true;
-      await this.adapter.continueConversationAsync(this.botAppId, reference, async (context) => {
-        try {
-          // try get member to see if the installation is still valid
-          await TeamsInfo.getPagedMembers(context, 1);
-        } catch (error: any) {
-          if ((error.code as string) === "BotNotInConversationRoster") {
-            valid = false;
-          }
-        }
-      });
+      let valid;
+      if (validationEnabled) {
+        // try get member to see if the installation is still valid
+        valid = await this.validateInstallation(reference);
+      }
 
-      if (valid) {
+      if (!validationEnabled || (validationEnabled && valid)) {
         targets.push(new TeamsBotInstallation(this.adapter, reference, this.botAppId));
       } else {
         await this.conversationReferenceStore.remove(utils.getKey(reference), reference);

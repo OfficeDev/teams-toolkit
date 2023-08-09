@@ -9,7 +9,6 @@ import { CommandResponseMiddleware } from "../../../../src/conversation/middlewa
 import { TestCommandHandler, TestSsoCommandHandler } from "./testUtils";
 import mockedEnv from "mocked-env";
 import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
-import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../../src/core/errors";
 import { BotSsoConfig } from "../../../../src";
 
 describe("CommandBot Tests - Node", () => {

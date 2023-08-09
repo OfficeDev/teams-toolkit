@@ -2,15 +2,19 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
+  CreateProjectResult,
   Func,
   FxError,
   Inputs,
+  OpenAIPluginManifest,
   QTreeNode,
   Result,
   Stage,
   Tools,
+  UserError,
   Void,
   err,
   ok,
@@ -71,18 +75,19 @@ export default class ServerConnection implements IServerConnection {
       this.customizeValidateFuncRequest.bind(this),
       this.customizeOnSelectionChangeFuncRequest.bind(this),
       this.addSsoRequest.bind(this),
-      this.getProjectComponents.bind(this),
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
       this.publishInDeveloperPortalRequest.bind(this),
       this.setRegionRequest.bind(this),
       this.listDevTunnelsRequest.bind(this),
+      this.copilotPluginAddAPIRequest.bind(this),
+      this.loadOpenAIPluginManifestRequest.bind(this),
+      this.listOpenAPISpecOperationsRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
     });
   }
-
   public listen() {
     this.connection.listen();
   }
@@ -105,7 +110,7 @@ export default class ServerConnection implements IServerConnection {
   public async createProjectRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<CreateProjectResult, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -340,14 +345,6 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
-  public async getProjectComponents(
-    inputs: Inputs,
-    token: CancellationToken
-  ): Promise<Result<string | undefined, FxError>> {
-    // No components for V5
-    return ok("");
-  }
-
   public async getProjectMigrationStatusRequest(
     inputs: Inputs,
     token: CancellationToken
@@ -408,5 +405,50 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
+  }
+
+  public async copilotPluginAddAPIRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<Void, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginAddAPI(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async loadOpenAIPluginManifestRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<OpenAIPluginManifest, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginLoadOpenAIManifest(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async listOpenAPISpecOperationsRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<ApiOperation[], FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginListOperations(inputs),
+      inputs
+    );
+    if (res.isErr()) {
+      const msg = res.error.map((e) => e.content).join("\n");
+      return standardizeResult(
+        err(new UserError("Fx-VS", "ListOpenAPISpecOperationsError", msg, msg))
+      );
+    }
+    return standardizeResult(ok(res.value));
   }
 }

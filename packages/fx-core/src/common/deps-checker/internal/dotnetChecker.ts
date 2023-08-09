@@ -252,7 +252,7 @@ export class DotnetChecker implements DepsChecker {
 
   // from: https://github.com/dotnet/vscode-dotnet-runtime/blob/main/vscode-dotnet-runtime-library/src/Acquisition/AcquisitionInvoker.ts
   private async runDotnetInstallScript(version: DotnetVersion, installDir: string): Promise<void> {
-    const command = await this.getInstallCommand(version, installDir);
+    const command = this.getInstallCommand(version, installDir);
     const cwd = this.getResourceDir();
 
     const options: child_process.ExecFileOptions = {
@@ -432,10 +432,7 @@ export class DotnetChecker implements DepsChecker {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet");
   }
 
-  private async getInstallCommand(
-    version: DotnetVersion,
-    dotnetInstallDir: string
-  ): Promise<string[]> {
+  private getInstallCommand(version: DotnetVersion, dotnetInstallDir: string): string[] {
     if (isWindows()) {
       const command: string[] = [
         DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath()),

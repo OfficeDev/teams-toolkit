@@ -1,3 +1,9 @@
+# 2.3.0
+
+- Add an optional parameter `validationEnabled` to `getPagedInstallations` to enable or disable installation validation.
+- The `TeamsFx`, `AuthenticationConfiguration`, and `handleMessageExtensionQueryWithSSO` are deprecated and will be removed in a future release.
+- The `MSGraphAuthProvider` class, `createMicrosoftGraphClient` and `createMicrosoftGraphClientWithCredential` are deprecated. Use the `TokenCredentialAuthenticationProvider` class and the `Client.InitialWithMiddleware` method from the `@microsoft/microsoft-graph-client` package instead.
+
 # 2.2.0
 
 - Deprecate interfaces and APIs related with `BotFrameworkAdapter`.

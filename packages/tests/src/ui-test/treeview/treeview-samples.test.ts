@@ -10,7 +10,7 @@ import {
   createNewProject,
   execCommandIfExist,
   execCommandIfExistFromTreeView,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { TreeViewTestContext, createSampleProject } from "./treeviewContext";
 import {
   CommandPaletteCommands,
@@ -18,7 +18,7 @@ import {
   TreeViewCommands,
   TemplateProject,
   TemplateProjectFolder,
-} from "../../constants";
+} from "../../utils/constants";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
 import { assert } from "chai";

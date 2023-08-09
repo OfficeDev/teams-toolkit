@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author darrmill@microsoft.com, yefuwang@microsoft.com
  */
@@ -43,7 +46,7 @@ export class HelperMethods {
   }
 
   static async unzipProjectTemplate(projectFolder: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       // TODO: Verify file exists
       const readStream = fs.createReadStream(`${projectFolder}/${zipFile}`);
       readStream
@@ -51,7 +54,7 @@ export class HelperMethods {
         .on("error", function (err: unknown) {
           reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
         })
-        .on("close", async () => {
+        .on("close", () => {
           HelperMethods.moveUnzippedFiles(projectFolder);
           resolve();
         });
@@ -91,7 +94,7 @@ export class HelperMethods {
     );
 
     // Open project manifest file
-    const manifestTemplatePath = await manifestUtils.getTeamsAppManifestPath(projectRoot);
+    const manifestTemplatePath = manifestUtils.getTeamsAppManifestPath(projectRoot);
     const manifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
       manifestTemplatePath
     );

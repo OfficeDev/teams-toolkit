@@ -1,0 +1,23 @@
+ {{^noComment}}
+  # Generate runtime environment variables
+ {{/noComment}}
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+  {{#target}}
+      target: {{{target}}}
+  {{/target}}
+  {{^target}}
+      target: ./.localConfigs
+  {{/target}}
+      envs:
+  {{#BOT}}
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+  {{/BOT}}
+  {{#TAB}}
+        BROWSER: none
+        HTTPS: true
+        PORT: 53000
+        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
+        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+  {{/TAB}}

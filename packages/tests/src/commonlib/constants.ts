@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";
@@ -35,36 +37,11 @@ export type CliCapabilities =
   | "notification"
   | "command-bot"
   | "tab"
-  | "message-extension";
+  | "collect-form-message-extension";
 export type CliTriggerType =
   | "http-restify"
   | "http-functions"
   | "timer-functions";
-
-export enum TemplateProject {
-  HelloWorldTabBackEnd = "hello-world-tab-with-backend",
-  ContactExporter = "graph-toolkit-contact-exporter",
-  HelloWorldBotSSO = "bot-sso",
-  TodoListSpfx = "todo-list-SPFx",
-  MyFirstMetting = "hello-world-in-meeting",
-  TodoListM365 = "todo-list-with-Azure-backend-M365",
-  NpmSearch = "NPM-search-connector-M365",
-  AdaptiveCard = "adaptive-card-notification",
-  IncomingWebhook = "incoming-webhook-notification",
-  StockUpdate = "stocks-update-notification-bot",
-  QueryOrg = "query-org-user-with-message-extension-sso",
-  Dashboard = "team-central-dashboard",
-  GraphConnector = "graph-connector-app",
-  OneProductivityHub = "graph-toolkit-one-productivity-hub",
-  TodoListBackend = "todo-list-with-Azure-backend",
-  ShareNow = "share-now",
-  TabOutlookAddIn = "hello-world-teams-tab-and-outlook-add-in",
-  OutlookAddIn = "outlook-add-in-set-signature",
-  AssistDashboard = "developer-assist-dashboard",
-  ProactiveMessaging = "bot-proactive-messaging-teamsfx",
-  Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
-  DiceRoller = "live-share-dice-roller",
-}
 
 export enum Resource {
   AzureKeyVault = "azure-keyvault",

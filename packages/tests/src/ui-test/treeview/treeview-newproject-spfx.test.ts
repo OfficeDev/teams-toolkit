@@ -4,9 +4,9 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import { expect } from "chai";
-import { Timeout } from "../../constants";
+import { Timeout } from "../../utils/constants";
 import { TreeViewTestContext } from "./treeviewContext";
-import { createNewProject } from "../../vscodeOperation";
+import { createNewProject } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
 import { getNodeVersion } from "../../utils/getNodeVersion";
 

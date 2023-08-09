@@ -132,6 +132,33 @@ describe("v3 yaml parser", () => {
     });
   });
 
+  describe(`when parsing good_sample_tag.yml`, () => {
+    it("should return ok", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "good_sample_tag.yml"),
+        true
+      );
+      assert(result.isOk());
+      if (result.isOk()) {
+        const model = result.value;
+        chai.expect(model.additionalMetadata).is.not.undefined;
+        chai.expect(model.additionalMetadata!["sampleTag"]).is.equal("testRepo:testSample");
+      }
+    });
+  });
+
+  describe(`when parsing bad_sample_tag.yml`, () => {
+    it("should not return error", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "bad_sample_tag.yml"),
+        false
+      );
+      assert(result.isOk());
+    });
+  });
+
   describe(`when parsing yml with invalid env field`, () => {
     it("should return error if env field is of type string", async () => {
       const parser = new YamlParser();
@@ -225,8 +252,8 @@ describe("v3 yaml parser", () => {
       const errorMsg = result._unsafeUnwrapErr().message;
       chai
         .expect(errorMsg)
-        .includes(`Incorrect type. Expected "object"`)
-        .and.includes(`Value must be "teamsApp/create" | "botAadApp/create"`);
+        .includes(`Unable to parse yaml file`)
+        .and.includes(`Please open the yaml file`);
 
       result = await parser.parse(
         path.resolve(__dirname, "testing_data", "invalid_write_to_environment_file_number.yml"),

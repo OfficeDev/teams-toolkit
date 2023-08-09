@@ -35,7 +35,7 @@ import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 import { FileNotFoundError } from "../error/common";
 import { QuestionNames } from "../question/questionNames";
-import { CoreSource } from "./error";
+import { CoreSource, FailedToLoadManifestId } from "./error";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -98,7 +98,7 @@ export class CollaborationUtil {
       const instance = axios.create({
         baseURL: "https://graph.microsoft.com/v1.0",
       });
-      instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
+      instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken as string}`;
       const res = await instance.get(
         `/users?$filter=startsWith(mail,'${email}') or startsWith(userPrincipalName, '${email}')`
       );
@@ -204,7 +204,10 @@ export class CollaborationUtil {
     if (teamsAppManifestFilePath && !teamsAppId) {
       const teamsAppIdRes = await this.loadManifestId(teamsAppManifestFilePath);
       if (teamsAppIdRes.isOk()) {
-        teamsAppId = await this.parseManifestId(teamsAppIdRes.value);
+        teamsAppId = this.parseManifestId(teamsAppIdRes.value);
+        if (!teamsAppId) {
+          return err(new FailedToLoadManifestId(teamsAppManifestFilePath));
+        }
       } else {
         return err(teamsAppIdRes.error);
       }
@@ -213,7 +216,10 @@ export class CollaborationUtil {
     if (aadAppManifestFilePath && !aadObjectId) {
       const aadObjectIdRes = await this.loadManifestId(aadAppManifestFilePath);
       if (aadObjectIdRes.isOk()) {
-        aadObjectId = await this.parseManifestId(aadObjectIdRes.value);
+        aadObjectId = this.parseManifestId(aadObjectIdRes.value);
+        if (!aadObjectId) {
+          return err(new FailedToLoadManifestId(aadAppManifestFilePath));
+        }
       } else {
         return err(aadObjectIdRes.error);
       }
@@ -259,7 +265,7 @@ export class CollaborationUtil {
     return !!appId.match(CollaborationConstants.placeholderRegex);
   }
 
-  static async parseManifestId(appId: string): Promise<string | undefined> {
+  static parseManifestId(appId: string): string | undefined {
     // Hardcoded id in manifest
     if (uuidValidate(appId)) {
       return appId;
@@ -294,17 +300,17 @@ export async function listCollaborator(
   }
   const appIds = getAppIdsResult.value;
 
-  const hasAad = appIds!.aadObjectId != undefined;
-  const hasTeams = appIds!.teamsAppId != undefined;
+  const hasAad = appIds.aadObjectId != undefined;
+  const hasTeams = appIds.teamsAppId != undefined;
   const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
   const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
   const appStudioRes = hasTeams
-    ? await teamsCollaboration.listCollaborator(ctx, appIds!.teamsAppId!)
+    ? await teamsCollaboration.listCollaborator(ctx, appIds.teamsAppId!)
     : ok([]);
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
   const aadRes = hasAad
-    ? await aadCollaboration.listCollaborator(ctx, appIds!.aadObjectId!)
+    ? await aadCollaboration.listCollaborator(ctx, appIds.aadObjectId!)
     : ok([]);
   if (aadRes.isErr()) return err(aadRes.error);
   const aadOwners: AadOwner[] = aadRes.value;
@@ -380,9 +386,9 @@ export async function listCollaborator(
     }
 
     if (inputs.platform === Platform.CLI) {
-      ctx.userInteraction.showMessage("info", message, false);
+      void ctx.userInteraction.showMessage("info", message, false);
     } else if (inputs.platform === Platform.VSCode) {
-      ctx.userInteraction.showMessage(
+      void ctx.userInteraction.showMessage(
         "info",
         getLocalizedString(
           "core.collaboration.ListCollaboratorsSuccess",
@@ -390,7 +396,7 @@ export async function listCollaborator(
         ),
         false
       );
-      ctx.logProvider.info(message);
+      void ctx.logProvider.info(message);
     }
   }
   const aadOwnerCount = hasAad ? aadOwners.length : -1;
@@ -416,7 +422,7 @@ export async function checkPermission(
     return err(result.error);
   }
 
-  const userInfo = result.value as AppUser;
+  const userInfo = result.value;
 
   if (inputs.platform === Platform.CLI) {
     // TODO: get tenant id from .env
@@ -434,7 +440,7 @@ export async function checkPermission(
       { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
     ];
-    ctx.userInteraction.showMessage("info", message, false);
+    void ctx.userInteraction.showMessage("info", message, false);
   }
 
   const getAppIdsResult = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
@@ -446,19 +452,19 @@ export async function checkPermission(
   const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
   const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
 
-  const isTeamsActivated = appIds!.teamsAppId != undefined;
+  const isTeamsActivated = appIds.teamsAppId != undefined;
   const appStudioRes = isTeamsActivated
-    ? await teamsCollaboration.checkPermission(ctx, appIds!.teamsAppId!, userInfo)
+    ? await teamsCollaboration.checkPermission(ctx, appIds.teamsAppId!, userInfo)
     : ok([] as ResourcePermission[]);
   if (appStudioRes.isErr()) {
     return err(appStudioRes.error);
   }
   const permissions = appStudioRes.value;
-  const isAadActivated = appIds!.aadObjectId != undefined;
+  const isAadActivated = appIds.aadObjectId != undefined;
   if (isAadActivated) {
     const aadRes = await aadCollaboration.checkPermission(
       ctx,
-      appIds!.aadObjectId!,
+      appIds.aadObjectId!,
       result.value.aadId
     );
     if (aadRes.isErr()) return err(aadRes.error);
@@ -493,7 +499,7 @@ export async function checkPermission(
           color: Colors.BRIGHT_MAGENTA,
         },
       ];
-      ctx.userInteraction.showMessage("info", message, false);
+      void ctx.userInteraction.showMessage("info", message, false);
     }
   }
   const aadPermission = permissions.find((permission) => permission.name === "Azure AD App");
@@ -577,14 +583,14 @@ export async function grantPermission(
         { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       ];
 
-      ctx.userInteraction.showMessage("info", message, false);
+      void ctx.userInteraction.showMessage("info", message, false);
     }
-    const isAadActivated = appIds!.aadObjectId != undefined;
-    const isTeamsActivated = appIds!.teamsAppId != undefined;
+    const isAadActivated = appIds.aadObjectId != undefined;
+    const isTeamsActivated = appIds.teamsAppId != undefined;
     const teamsCollaboration = new TeamsCollaboration(ctx, tokenProvider.m365TokenProvider);
     const aadCollaboration = new AadCollaboration(tokenProvider.m365TokenProvider);
     const appStudioRes = isTeamsActivated
-      ? await teamsCollaboration.grantPermission(ctx, appIds!.teamsAppId!, userInfo)
+      ? await teamsCollaboration.grantPermission(ctx, appIds.teamsAppId!, userInfo)
       : ok([] as ResourcePermission[]);
     if (appStudioRes.isErr()) {
       return err(appStudioRes.error);
@@ -593,7 +599,7 @@ export async function grantPermission(
     if (isAadActivated) {
       const aadRes = await aadCollaboration.grantPermission(
         ctx,
-        appIds!.aadObjectId!,
+        appIds.aadObjectId!,
         userInfo.aadId
       );
       if (aadRes.isErr()) return err(aadRes.error);
@@ -604,7 +610,7 @@ export async function grantPermission(
     if (inputs.platform === Platform.CLI) {
       for (const permission of permissions) {
         const message = [
-          { content: `${permission.roles?.join(",")} `, color: Colors.BRIGHT_MAGENTA },
+          { content: `${permission.roles?.join(",") as string} `, color: Colors.BRIGHT_MAGENTA },
           {
             content: getLocalizedString("core.collaboration.PermissionHasBeenGrantTo"),
             color: Colors.BRIGHT_WHITE,
@@ -614,9 +620,9 @@ export async function grantPermission(
             content: getLocalizedString("core.collaboration.GrantPermissionResourceId"),
             color: Colors.BRIGHT_WHITE,
           },
-          { content: `${permission.resourceId}`, color: Colors.BRIGHT_MAGENTA },
+          { content: `${permission.resourceId as string}`, color: Colors.BRIGHT_MAGENTA },
         ];
-        ctx.userInteraction.showMessage("info", message, false);
+        void ctx.userInteraction.showMessage("info", message, false);
       }
     }
     return ok({

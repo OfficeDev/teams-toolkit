@@ -18,7 +18,9 @@
             "sample-localdebug-query-org",
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
-            "sample-localdebug-proactive-message"
+            "sample-localdebug-proactive-message",
+            "sample-localdebug-assistant-dashboard",
+            "sample-localdebug-hello-world-tab-outlook"
         ]
     },
     {
@@ -80,7 +82,10 @@
             "sample-remotedebug-stock-update",
             "sample-remotedebug-query-org",
             "sample-remotedebug-share-now",
-            "sample-remotedebug-proactive-message"
+            "sample-remotedebug-proactive-message",
+            "sample-remotedebug-assistant-dashboard",
+            "sample-remotedebug-hello-world-tab-outlook"
+
         ]
     },
     {

@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT
+// Licensed under the MIT license.
 
 import { UpdateAadAppOutput } from "../interface/updateAadAppOutput";
 import * as fs from "fs-extra";

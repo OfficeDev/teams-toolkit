@@ -1,0 +1,250 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: 
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: needs more info
+      - isNotLabeledWith:
+          label: no recent activity
+      - isNotLabeledWith:
+          label: bug
+      - isNotLabeledWith:
+          label: feature-request
+      - noActivitySince:
+          days: 7
+      actions:
+      - addLabel:
+          label: no recent activity
+      - addReply:
+          reply: >
+            This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. It will be closed if no further activity occurs **within 3 days of this comment**. If it *is* closed, feel free to comment when you are able to provide the additional information and we will re-investigate.
+    - description: 
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isOpen
+      - isIssue
+      - noActivitySince:
+          days: 3
+      - hasLabel:
+          label: no recent activity
+      - hasLabel:
+          label: needs more info
+      - isNotInAnyMilestone
+      - isNotLabeledWith:
+          label: bug
+      - isNotLabeledWith:
+          label: feature-request
+      actions:
+      - closeIssue
+      - addReply:
+          reply: 'Due to lack of details for further investigation, we will archive the issue for now. In case you still have following-up questions on this issue, please always feel free to reopen the issue by clicking ‘reopen issue’ button below the comment box. We will get back to you as soon as possible. '
+    - description: 
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: needs more info
+      - hasLabel:
+          label: bug
+      - isNotLabeledWith:
+          label: no recent activity
+      - noActivitySince:
+          days: 7
+      actions:
+      - addLabel:
+          label: no recent activity
+      - addReply:
+          reply: >
+            This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. As it is labeled with bug, it will be manually handled
+    - description: 
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: needs more info
+      - hasLabel:
+          label: feature-request
+      - isNotLabeledWith:
+          label: no recent activity
+      - noActivitySince:
+          days: 7
+      actions:
+      - addLabel:
+          label: no recent activity
+      - addReply:
+          reply: >
+            This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. As it is labeled with feature-request, it will be manually handled
+    - description: 
+      frequencies:
+      - daily:
+          time: 1:0
+      filters:
+      - isOpen
+      - isIssue
+      - noActivitySince:
+          days: 1
+      - hasLabel:
+          label: close-wait
+      - isNotLabeledWith:
+          label: bug
+      - isNotLabeledWith:
+          label: feature-request
+      - isNotInAnyMilestone
+      actions:
+      - closeIssue
+      - removeLabel:
+          label: close-wait
+    eventResponderTasks:
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Opened
+      then:
+      - addReply:
+          reply: Thank you for contacting us! Any issue or feedback from you is quite important to us. We will do our best to fully respond to your issue as soon as possible. Sometimes additional investigations may be needed, we will usually get back to you within 2 days by adding comments to this issue. Please stay tuned.
+      description: 
+    - if:
+      - payloadType: Issues
+      - hasLabel:
+          label: no recent activity
+      - not:
+          isAction:
+            action: Closed
+      then:
+      - removeLabel:
+          label: no recent activity
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - hasLabel:
+          label: no recent activity
+      then:
+      - removeLabel:
+          label: no recent activity
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - isOpen
+      - hasLabel:
+          label: needs more info
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      then:
+      - removeLabel:
+          label: needs more info
+      - addLabel:
+          label: needs attention
+      description: 
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Opened
+      - or:
+        - bodyContains:
+            pattern: 'API call to Developer Portal failed: (.*) API name: (.*), X-Correlation-ID: (.*).'
+            isRegex: True
+        - bodyContains:
+            pattern: Failed to (.*) teams app in app studio, due to \d{3}, .*
+            isRegex: True
+      then:
+      - addLabel:
+          label: upstream
+      - assignIcmUsers:
+          teamId: 97190
+          primary: True
+          secondary: False
+      - addReply:
+          reply: Sorry for the inconvenience! Based on the info provided, the issue is caused by the API failure from Teams Developer Portal. We will inform you once we get any updates.
+      description: 
+    - if:
+      - payloadType: Issues
+      - hasLabel:
+          label: close-wait
+      - not:
+          isActivitySender:
+            user: github-actions[bot]
+            issueAuthor: False
+      - not:
+          isAction:
+            action: Closed
+      then:
+      - removeLabel:
+          label: close-wait
+      description: 
+onFailure: 
+onSuccess: 

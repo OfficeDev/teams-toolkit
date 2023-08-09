@@ -42,22 +42,24 @@ export class CertificateAuthProvider implements AuthProvider {
    *
    * @throws {@link ErrorCode|InvalidParameter} - when custom httpsAgent in the request has duplicate properties with certOption provided in constructor.
    */
-  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+  public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     if (!config.httpsAgent) {
       config.httpsAgent = new Agent(this.certOption);
     } else {
       const existingProperties = new Set(Object.keys(config.httpsAgent.options));
       for (const property of Object.keys(this.certOption)) {
         if (existingProperties.has(property)) {
-          throw new ErrorWithCode(
-            formatString(ErrorMessage.DuplicateHttpsOptionProperty, property),
-            ErrorCode.InvalidParameter
+          return Promise.reject(
+            new ErrorWithCode(
+              formatString(ErrorMessage.DuplicateHttpsOptionProperty, property),
+              ErrorCode.InvalidParameter
+            )
           );
         }
       }
       Object.assign(config.httpsAgent.options, this.certOption);
     }
-    return config;
+    return Promise.resolve(config);
   }
 }
 

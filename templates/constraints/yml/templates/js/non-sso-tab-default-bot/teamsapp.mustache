@@ -1,0 +1,33 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsfx provision' is executed
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#botAadAppCreate}} {{/botAadAppCreate}}
+
+{{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
+
+{{#azureStorageEnableStaticWebsite}} {{/azureStorageEnableStaticWebsite}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+# Triggered when 'teamsfx deploy' is executed
+deploy:
+{{#cliRunNpmCommand}} install, args: install --production {{/cliRunNpmCommand}}
+{{#cliRunNpmCommand}} workingDirectory: tab, args: run build --if-present, build {{/cliRunNpmCommand}}
+{{#azureStorageDeploy}} artifactFolder: build, workingDirectory: tab {{/azureStorageDeploy}}
+{{#azureAppServiceZipDeploy}} workingDirectory: bot, resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}}, ignoreFile: .webappignore {{/azureAppServiceZipDeploy}}
+
+# Triggered when 'teamsfx publish' is executed
+publish:
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

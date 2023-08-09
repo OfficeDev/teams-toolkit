@@ -189,8 +189,9 @@ export interface IComposeExtension {
 
   /**
    * The Microsoft App ID specified for the bot powering the compose extension in the Bot Framework portal (https://dev.botframework.com/bots)
+   * It's not required for apiBased type
    */
-  botId: string;
+  botId?: string;
   /**
    * A value indicating whether the configuration of a compose extension can be updated by the user.
    */
@@ -201,6 +202,19 @@ export interface IComposeExtension {
    * A list of handlers that allow apps to be invoked when certain conditions are met
    */
   messageHandlers?: IComposeExtensionMessageHandler[];
+
+  /**
+   * To support SME, denotes what powers the compose extension
+   */
+  type?: "apiBased" | "botBased";
+  /**
+   * To support SME, it's the relative path to api spec file in the manifest
+   */
+  apiSpecFile?: string;
+  /**
+   * To support SME, whether the compose extension will work with biz chat as a plugin
+   */
+  supportsConversationalAI?: boolean;
 }
 
 export interface IComposeExtensionMessageHandler {
@@ -251,6 +265,10 @@ export interface IMessagingExtensionCommand {
   parameters?: IParameter[];
 
   taskInfo?: ITaskInfo;
+  /**
+   * To support SME
+   */
+  apiResponseRenderingTemplate?: string;
 }
 
 export interface IParameter {

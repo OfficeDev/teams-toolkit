@@ -69,7 +69,7 @@ export class DeveloperPortalScaffoldUtils {
       return err(manifestRes.error);
     }
 
-    const envRes = await updateEnv(appDefinition.teamsAppId!, ctx.projectPath!);
+    const envRes = await updateEnv(appDefinition.teamsAppId!, ctx.projectPath);
     if (envRes.isErr()) {
       return err(envRes.error);
     }
@@ -197,7 +197,7 @@ async function updateManifest(
   }
 
   // manifest: no tab, bot or me selected on TDP before
-  if (!getTemplateId(appDefinition)) {
+  if (!getProjectTypeAndCapability(appDefinition)) {
     // which means user selects a capability through TTK UI.
     manifest.bots = existingManifestTemplate.bots;
     manifest.composeExtensions = existingManifestTemplate.composeExtensions;
@@ -289,7 +289,7 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
   return tabs.find((o) => o.name === name);
 }
 
-export function getTemplateId(
+export function getProjectTypeAndCapability(
   teamsApp: AppDefinition
 ): { projectType: string; templateId: string } | undefined {
   // tab with bot, tab with message extension, tab with bot and message extension

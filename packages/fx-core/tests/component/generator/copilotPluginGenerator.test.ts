@@ -39,6 +39,7 @@ import {
 } from "../../../src/common/spec-parser/interfaces";
 import * as specParserUtils from "../../../src/common/spec-parser/utils";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -349,6 +350,33 @@ describe("copilotPluginGenerator", function () {
     const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
+  });
+
+  it.only("throws specParser exception", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+    };
+    const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox
+      .stub(SpecParser.prototype, "generate")
+      .throws(new SpecParserError("test", ErrorType.Unknown));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.message, "test");
+    }
   });
 });
 

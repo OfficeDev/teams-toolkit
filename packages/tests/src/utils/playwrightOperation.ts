@@ -196,7 +196,7 @@ export async function initPage(
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
     // verify add page is closed
-    await frame?.waitForSelector("button span:has-text('Add')", {
+    await frame?.waitForSelector("button>span:has-text('Add')", {
       state: "detached",
     });
     try {

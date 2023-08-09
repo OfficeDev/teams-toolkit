@@ -127,8 +127,8 @@ export const questionVisitor: QuestionTreeVisitor = async function (
   }
 
   // 3. for non-interactive mode, skip question asking and return error
-  if (inputs.nonInteractive && isCliNewUxEnabled()) {
-    return err(new MissingRequiredInputError(question.name, "core-ui"));
+  if (inputs.nonInteractive && isCliNewUxEnabled() && !question.default) {
+    return err(new MissingRequiredInputError(question.name, "qvisitor"));
   }
 
   // 4. need manual input from user

@@ -1974,7 +1974,7 @@ describe("openPreviewAadFile", () => {
     );
     sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
     sandbox.stub(handlers, "showError").callsFake(async () => {});
-    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(Void));
+    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(undefined));
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     sandbox.stub(vscode.workspace, "openTextDocument").resolves();
     sandbox.stub(vscode.window, "showTextDocument").resolves();

@@ -535,7 +535,7 @@ describe("adaptiveCardGenerator", () => {
       const parentArrayName = "";
 
       expect(() => generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
-        "oneOf, anyOf, and not schema is not supported"
+        "'oneOf', 'anyOf', and 'not' schema are not supported"
       );
     });
 
@@ -566,7 +566,7 @@ describe("adaptiveCardGenerator", () => {
       expect(actual).to.deep.equal(expected);
       sinon.assert.calledWithExactly(
         warnSpy,
-        "additionalProperties is not supported, and will be ignored."
+        "'additionalProperties' is not supported, and will be ignored."
       );
     });
 

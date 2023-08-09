@@ -12,7 +12,7 @@ import {
   TeamsInfo,
   TurnContext,
 } from "botbuilder";
-import { ConnectorClient } from "botframework-connector";
+import type { ConnectorClient } from "botframework-connector";
 import * as path from "path";
 import {
   NotificationTarget,

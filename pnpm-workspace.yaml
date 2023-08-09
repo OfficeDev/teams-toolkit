@@ -1,0 +1,11 @@
+packages:
+  -  "packages/api"
+  -  "packages/fx-core"
+  -  "packages/cli"
+  -  "packages/vscode-extension"
+  -  "packages/metrics-ts"
+  -  "packages/adaptivecards-tools-sdk"
+  -  "packages/manifest"
+  -  "packages/eslint-plugin-teamsfx"
+  -  "packages/tests"
+  -  "templates"

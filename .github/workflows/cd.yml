@@ -20,7 +20,7 @@ on:
         required: false
         description: "Please enter the package names you want to publish, such as cli, vscode, sdk, server and template. Please separate multiple entries with spaces"
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 16 * * *"
 
 jobs:
   cd:

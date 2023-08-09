@@ -1121,6 +1121,7 @@ function runtimeQuestion(): SingleSelectQuestion {
     staticOptions: [RuntimeOptions.NodeJS(), RuntimeOptions.DotNet()],
     default: RuntimeOptions.NodeJS().id,
     placeholder: getLocalizedString("core.getRuntimeQuestion.placeholder"),
+    cliHidden: true,
   };
 }
 const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
@@ -1564,14 +1565,11 @@ export function createProjectQuestionNode(): IQTreeNode {
   const createProjectQuestion: IQTreeNode = {
     data: { type: "group" },
     children: [
-      ...(isCLIDotNetEnabled()
-        ? [
-            {
-              condition: (inputs: Inputs) => CLIPlatforms.includes(inputs.platform),
-              data: runtimeQuestion(),
-            },
-          ]
-        : []),
+      {
+        condition: (inputs: Inputs) =>
+          isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform),
+        data: runtimeQuestion(),
+      },
       {
         condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
         data: projectTypeQuestion(),

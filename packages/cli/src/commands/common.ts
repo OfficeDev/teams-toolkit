@@ -29,18 +29,3 @@ export const EnvOption: CLICommandOption = {
   type: "string",
   description: "Specifies the environment name for the project.",
 };
-
-export const RequiredEnvOption: CLICommandOption = {
-  name: "env",
-  type: "string",
-  description: "Specifies the environment name for the project.",
-  required: true,
-};
-
-export const AadManifestPathOption: CLICommandOption = {
-  type: "string",
-  name: "manifest-file-path",
-  shortName: "m",
-  description:
-    "Specifies the AAD app manifest template file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
-};

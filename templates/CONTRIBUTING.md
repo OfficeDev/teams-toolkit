@@ -47,32 +47,50 @@ Cases that are not breaking changes:
 
 In order to streamline the maintenance process and reduce the risk of errors, it is necessary to address the issue of duplicate content in our templates.
 To address this issue, we are implementing a system of constraints that will standardize the way templates are updated and protect them from unexpected changes.
+
 Currently, these constraints have been applied to the following files within the template:
 
   * teamsapp.yml (teamsapp.yml.tpl)
   * teamsapp.local.yml (teamsapp.local.yml.tpl)
 
-There are four distinct commands available.
-* npm run verify <constraint-path>
+The [constraints for yml](https://github.com/OfficeDev/TeamsFx/tree/dev/templates/constraints/yml/templates) are in [mustache](https://mustache.github.io/mustache.5.html) format and follow a folder naming convention where one mustache file corresponds to a yml file.
 
-    The verify command verifies whether the constraint is satisfied.
-    When no constraint path is provided, this command will scan through all constraint files and verify that each one is being satisfied.
+For example, `js/dashboard-tab/teamsapp.yml.tpl` corresponds to `js/dashboard-tab/teamsapp.yml.tpl.mustache`.
 
-* npm run apply <constraint-path>
+Each teamsapp.yml file consists of a header and several actions. To simplify the process, we have abstracted each action into a partial mustache template that can be invoked by the yml constraints.
 
-    The apply command applies the constraint to corresponding template.
-    When no constraint path is provided, this command will scan through all constraint files and apply them to the templates.
-    This command will overwrite the template file, so ensure that there are no untracked changes in target templates before running this command.
+### How to work with constraints?
 
-* npm run init <template-path>
+The constraint engine provides four distinct commands:
 
-    The init command scans the template folder and identifies all supported files to initialize constraints for them.
-    Usually, you will need to review the generated constraints and make any necessary adjustments to ensure their correctness.
+```
+> npm run verify <constraint-path>
+```
 
-* npm run watch
+The verify command verifies whether the constraint is satisfied.
+When no constraint path is provided, this command will scan through all constraint files and verify that each one is being satisfied.
 
-    The watch command watches all mustache template in the [constraints/yml/actions](./constraints/yml/actions). Whenever a file change event occurs, it generates a preview of the mustache template in the same folder, which is particularly useful when writing a mustache template.
-    ![preview mustache demo](https://user-images.githubusercontent.com/26134943/255495650-a5bcd0f9-5342-4901-a53b-a41dda5f32ef.gif)
+```
+> npm run apply <constraint-path>
+```
+
+The apply command applies the constraint to corresponding template.
+When no constraint path is provided, this command will scan through all constraint files and apply them to the templates.
+This command will overwrite the template file, so ensure that there are no untracked changes in target templates before running this command.
+
+```
+> npm run init <template-path>
+```
+
+The init command scans the template folder and identifies all supported files to initialize constraints for them.
+Usually, you will need to review the generated constraints and make any necessary adjustments to ensure their correctness.
+
+```
+> npm run watch
+```
+
+The watch command watches all mustache template in the [constraints/yml/actions](./constraints/yml/actions). Whenever a file change event occurs, it generates a preview of the mustache template in the same folder, which is particularly useful when writing a mustache template.
+![preview mustache demo](https://user-images.githubusercontent.com/26134943/255495650-a5bcd0f9-5342-4901-a53b-a41dda5f32ef.gif)
 
 ### How to update templates with constraints?
 

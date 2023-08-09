@@ -53,13 +53,13 @@ Currently, these constraints have been applied to the following files within the
   * teamsapp.yml (teamsapp.yml.tpl)
   * teamsapp.local.yml (teamsapp.local.yml.tpl)
 
-The [constraints for yml](https://github.com/OfficeDev/TeamsFx/tree/dev/templates/constraints/yml/templates) are in [mustache](https://mustache.github.io/mustache.5.html) format and follow a folder naming convention where one mustache file corresponds to a yml file. 
+The [constraints for yml](https://github.com/OfficeDev/TeamsFx/tree/dev/templates/constraints/yml/templates) are in [mustache](https://mustache.github.io/mustache.5.html) format and follow a folder naming convention where one mustache file corresponds to a yml file.
 
 For example, `js/dashboard-tab/teamsapp.yml.tpl` corresponds to `js/dashboard-tab/teamsapp.yml.tpl.mustache`.
 
 Each teamsapp.yml file consists of a header and several actions. To simplify the process, we have abstracted each action into a partial mustache template that can be invoked by the yml constraints.
 
-### How to work with constriants?
+### How to work with constraints?
 
 The constraint engine provides four distinct commands:
 

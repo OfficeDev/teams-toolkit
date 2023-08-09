@@ -83,9 +83,9 @@ class ValidationUtils {
   }
 
   async validateManualInputs(question: Question, inputs: Inputs): Promise<string | undefined> {
-    if (question.type === "singleSelect") {
+    if (question.type === "singleSelect" && !question.skipValidation) {
       return await this.validateInputForSingleSelectQuestion(question, inputs);
-    } else if (question.type === "multiSelect") {
+    } else if (question.type === "multiSelect" && !question.skipValidation) {
       return await this.validateInputForMultipleSelectQuestion(question, inputs);
     } else {
       const validationFunc = (question as any).validation

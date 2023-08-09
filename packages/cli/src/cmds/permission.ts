@@ -17,16 +17,16 @@ import {
 import CLIUIInstance from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { MissingRequiredArgumentError } from "../error";
+import { MissingRequiredOptionError } from "../error";
 import { globals } from "../globals";
 
-const azureMessage =
+export const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
   "required to grant permission to Azure resources.\n" +
   "Assign Azure roles using the Azure portal: " +
   "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
 
-const spfxMessage =
+export const spfxMessage =
   "Notice: SPFX deployment permission needs to be handled manually by SharePoint site administrator.\n" +
   "Manage site admins using SharePoint admin center: " +
   "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
@@ -96,7 +96,7 @@ export class PermissionStatus extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("teamsfx status", "env");
+      const error = new MissingRequiredOptionError("teamsfx status", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
       return err(error);
     }
@@ -173,7 +173,7 @@ export class PermissionGrant extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("teamsfx grant", "env");
+      const error = new MissingRequiredOptionError("teamsfx grant", "env");
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, error);
       return err(error);
     }

@@ -11,9 +11,12 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface CreateProjectInputs extends Inputs {
+  /** @description New Project */
+  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type";
   /** @description Capabilities */
   capabilities?:
     | "bot"
+    | "ai-bot"
     | "notification"
     | "command-bot"
     | "workflow-bot"
@@ -23,8 +26,7 @@ export interface CreateProjectInputs extends Inputs {
     | "tab-spfx"
     | "link-unfurling"
     | "search-app"
-    | "CollectFormMessagingExtension"
-    | "copilot-plugin-capability";
+    | "collect-form-message-extension";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"

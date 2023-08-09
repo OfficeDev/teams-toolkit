@@ -750,12 +750,12 @@ describe("handlers", () => {
       const sandbox = sinon.createSandbox();
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(handlers.core, "deployAadManifest").resolves(ok("test_success"));
+      sandbox.stub(handlers.core, "deployAadManifest").resolves(ok(undefined));
       const input: Inputs = handlers.getSystemInputs();
       const res = await handlers.runCommand(Stage.deployAad, input);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
-        chai.assert.strictEqual(res.value, "test_success");
+        chai.assert.strictEqual(res.value, undefined);
       }
       sandbox.restore();
     });
@@ -768,10 +768,10 @@ describe("handlers", () => {
       let localDebugCalled = 0;
       sinon
         .stub(handlers.core, "localDebug")
-        .callsFake(async (inputs: Inputs): Promise<Result<Void, FxError>> => {
+        .callsFake(async (inputs: Inputs): Promise<Result<undefined, FxError>> => {
           ignoreEnvInfo = inputs.ignoreEnvInfo;
           localDebugCalled += 1;
-          return ok({});
+          return ok(undefined);
         });
 
       await handlers.runCommand(Stage.debug);
@@ -1954,7 +1954,7 @@ describe("openPreviewAadFile", () => {
     );
     sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
     sandbox.stub(handlers, "showError").callsFake(async () => {});
-    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(Void));
+    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(undefined));
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     const res = await handlers.openPreviewAadFile([]);
     chai.assert.isTrue(res.isErr());
@@ -1974,7 +1974,7 @@ describe("openPreviewAadFile", () => {
     );
     sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
     sandbox.stub(handlers, "showError").callsFake(async () => {});
-    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(Void));
+    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(undefined));
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     sandbox.stub(vscode.workspace, "openTextDocument").resolves();
     sandbox.stub(vscode.window, "showTextDocument").resolves();

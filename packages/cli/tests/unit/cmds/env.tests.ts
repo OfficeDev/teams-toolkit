@@ -5,27 +5,17 @@ import os from "os";
 import sinon, { SinonSandbox } from "sinon";
 import yargs, { Options } from "yargs";
 
-import {
-  err,
-  FxError,
-  Inputs,
-  LogLevel,
-  ok,
-  Result,
-  UserError,
-  Void,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, LogLevel, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import * as core from "@microsoft/teamsfx-core";
 
+import { CoreHookContext, VersionCheckRes, VersionState } from "@microsoft/teamsfx-core";
 import Env from "../../../src/cmds/env";
-import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import * as constants from "../../../src/constants";
 import LogProvider from "../../../src/commonlib/log";
-import { expect } from "../utils";
+import * as constants from "../../../src/constants";
+import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import * as Utils from "../../../src/utils";
 import { YargsCommand } from "../../../src/yargsCommand";
-import { CoreHookContext, VersionCheckRes } from "@microsoft/teamsfx-core";
-import { VersionState } from "@microsoft/teamsfx-core";
+import { expect } from "../utils";
 
 enum CommandName {
   Add = "add",
@@ -130,14 +120,16 @@ describe("Env Add Command Tests", function () {
     });
     sandbox
       .stub(core.FxCore.prototype, "createEnv")
-      .callsFake(async (inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> => {
-        if (createEnvError) {
-          return err(createEnvError);
+      .callsFake(
+        async (inputs: Inputs, ctx?: CoreHookContext): Promise<Result<undefined, FxError>> => {
+          if (createEnvError) {
+            return err(createEnvError);
+          }
+          sourceEnvName = inputs.sourceEnvName;
+          newTargetEnvName = inputs.newTargetEnvName;
+          return ok(undefined);
         }
-        sourceEnvName = inputs.sourceEnvName;
-        newTargetEnvName = inputs.newTargetEnvName;
-        return ok(Void);
-      });
+      );
     sandbox.stub(core.FxCore.prototype, "projectVersionCheck").resolves(
       ok<VersionCheckRes, FxError>({
         isSupport: VersionState.compatible,

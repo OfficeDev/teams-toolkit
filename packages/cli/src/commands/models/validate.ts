@@ -2,11 +2,9 @@
 // Licensed under the MIT license.
 import { CLICommand, Result, err, ok } from "@microsoft/teamsfx-api";
 import { ValidateTeamsAppInputs, ValidateTeamsAppOptions } from "@microsoft/teamsfx-core";
-import { assign } from "lodash";
 import { createFxCore } from "../../activate";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
 import { ProjectFolderOption } from "../common";
 
 export const validateCommand: CLICommand = {
@@ -23,8 +21,7 @@ export const validateCommand: CLICommand = {
     },
   ],
   handler: async (ctx) => {
-    const inputs = getSystemInputs() as ValidateTeamsAppInputs;
-    assign(inputs, ctx.optionValues);
+    const inputs = ctx.optionValues as ValidateTeamsAppInputs;
     if (!ctx.globalOptionValues.interactive) {
       const res = validateInputs(inputs);
       if (res.isErr()) {

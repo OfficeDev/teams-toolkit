@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import path from "path";
 import * as fs from "fs-extra";
 import { openExistingProject } from "../../utils/vscodeOperation";
@@ -64,7 +66,7 @@ export class MigrationTestContext extends TestContext {
     }
   }
 
-  public async createProjectCLI(V3: boolean) {
+  public async createProjectCLI(V3: boolean): Promise<string> {
     if (V3) {
       process.env["TEAMSFX_V3"] = "true";
     } else {
@@ -96,6 +98,7 @@ export class MigrationTestContext extends TestContext {
     }
     const projectPath = path.resolve(this.testRootFolder, this.appName);
     await openExistingProject(projectPath);
+    return projectPath;
   }
 
   public async disableDebugConsole(): Promise<void> {

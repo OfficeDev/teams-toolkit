@@ -890,7 +890,9 @@ export async function validateBot(
           options?.botCommand || "helloWorld"
         );
         await frame?.click('button[name="send"]');
-        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+        await frame?.waitForSelector(
+          `p:has-text("${options?.expected || ValidationContent.Bot}")`
+        );
         console.log("verify bot successfully!!!");
       }, 2);
       console.log(`${options?.expected}`);

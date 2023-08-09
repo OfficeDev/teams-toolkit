@@ -84,7 +84,7 @@ describe("Remote debug Tests", function () {
       await driver.sleep(Timeout.longTimeWait);
       await validateBot(page, {
         botCommand: "helloWorld",
-        expected: "Your Hello World App is Running",
+        expected: "Your Hello World Bot is Running",
       });
       await validateWorkFlowBot(page);
     }

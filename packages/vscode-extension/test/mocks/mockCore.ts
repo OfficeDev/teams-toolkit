@@ -33,6 +33,10 @@ export class MockCore {
     return ok("");
   }
 
+  async deployTeamsManifest(inputs: Inputs): Promise<Result<string, FxError>> {
+    return ok("");
+  }
+
   async deployArtifacts(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
   }
@@ -59,6 +63,10 @@ export class MockCore {
 
   async switchEnv(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
+  }
+
+  async getSelectedEnv(inputs: Inputs): Promise<Result<string, FxError>> {
+    return ok("dev");
   }
 
   async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {

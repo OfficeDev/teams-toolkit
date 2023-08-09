@@ -421,14 +421,14 @@ class CLIUserInteraction implements UserInteraction {
           error.source = cliSource;
           resolve(err(error));
         }
-        const anwser = (config.options as StaticOptions)[index];
-        if (config.returnObject) {
-          resolve(ok({ type: "success", result: anwser }));
+        const answer = (config.options as StaticOptions)[index];
+        if (!answer || config.returnObject) {
+          resolve(ok({ type: "success", result: answer }));
         } else {
-          if (typeof anwser === "string") {
-            resolve(ok({ type: "success", result: anwser }));
+          if (typeof answer === "string") {
+            resolve(ok({ type: "success", result: answer }));
           } else {
-            resolve(ok({ type: "success", result: anwser.id }));
+            resolve(ok({ type: "success", result: answer.id }));
           }
         }
       } else {

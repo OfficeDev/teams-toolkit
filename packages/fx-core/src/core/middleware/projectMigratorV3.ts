@@ -100,6 +100,7 @@ import { VersionForMigration } from "./types";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
+import { assembleError } from "../../error";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -156,7 +157,7 @@ const telemetryProperties = {
 };
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [
+export const subMigrations: Array<Migration> = [
   preMigration,
   manifestsMigration,
   generateAppYml,
@@ -228,21 +229,9 @@ export async function wrapRunMigration(context: MigrationContext, exec: Migratio
       context.telemetryProperties
     );
   } catch (error: any) {
-    let fxError: FxError;
-    if (error instanceof UserError || error instanceof SystemError) {
-      fxError = error;
-    } else {
-      if (!(error instanceof Error)) {
-        error = new Error(error.toString());
-      }
-      fxError = new SystemError({
-        error,
-        source: Component.core,
-        name: ErrorConstants.unhandledError,
-        message: error.message,
-        displayMessage: error.message,
-      });
-    }
+    const errorMessage = buildErrorMessage(error, context.currentStep);
+    const fxError = assembleError(error, Component.core);
+    fxError.message = errorMessage;
     sendTelemetryErrorEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorError,
@@ -255,7 +244,19 @@ export async function wrapRunMigration(context: MigrationContext, exec: Migratio
   await context.removeFxV2();
 }
 
-async function rollbackMigration(context: MigrationContext): Promise<void> {
+export function buildErrorMessage(error: any, step?: string): string {
+  let message = error.message;
+  if (error.code === "ENOENT" && error.path) {
+    const fileName = path.basename(error.path);
+    message = `Missing file: ${fileName}\n${message}`;
+  }
+  if (step) {
+    message = `MigrationStep: ${step}\n${message}`;
+  }
+  return message;
+}
+
+export async function rollbackMigration(context: MigrationContext): Promise<void> {
   await context.cleanModifiedPaths();
   await context.restoreBackup();
   await context.cleanBackup();
@@ -272,11 +273,12 @@ async function showSummaryReport(context: MigrationContext): Promise<void> {
 
 export async function migrate(context: MigrationContext): Promise<void> {
   for (const subMigration of subMigrations) {
+    context.currentStep = subMigration.name;
     await subMigration(context);
   }
 }
 
-async function preMigration(context: MigrationContext): Promise<void> {
+export async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(MetadataV2.configFolder);
 }
 

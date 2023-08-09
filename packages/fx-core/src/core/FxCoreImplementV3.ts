@@ -33,6 +33,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { SpecParser } from "../common/spec-parser/specParser";
+import { isYamlSpecFile } from "../common/spec-parser/utils";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
@@ -95,6 +96,11 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import {
+  apiSpecFolderName,
+  apiSpecJsonFileName,
+  apiSpecYamlFileName,
+} from "../component/generator/copilotPlugin/generator";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -649,8 +655,24 @@ export class FxCoreV3Implement {
   @hooks([ErrorHandlerMW, QuestionMW("copilotPluginAddAPI"), ConcurrentLockerMW])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<any, FxError>> {
     const operations = inputs[QuestionNames.ApiOperation] as string[];
-    const openapiSpecPath =
-      inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    const apiSpecFolderPath = path.join(
+      inputs.projectPath!,
+      AppPackageFolderName,
+      apiSpecFolderName
+    );
+    await fs.ensureDir(apiSpecFolderPath);
+
+    let isYaml: boolean;
+    try {
+      isYaml = await isYamlSpecFile(url);
+    } catch (e) {
+      isYaml = false;
+    }
+    const openapiSpecPath = path.join(
+      apiSpecFolderPath,
+      isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
+    );
     const manifestPath = inputs[QuestionNames.ManifestPath];
     const specParser = new SpecParser(openapiSpecPath);
     const adaptiveCardFolder = path.join(

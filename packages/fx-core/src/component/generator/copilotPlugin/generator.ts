@@ -43,10 +43,9 @@ import * as util from "util";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
-const manifestFileName = ManifestTemplateFileName;
-const apiSpecFolderName = "apiSpecFiles";
-const apiSpecYamlFileName = "openapi.yaml";
-const apiSpecJsonFileName = "openapi.json";
+export const apiSpecFolderName = "apiSpecFiles";
+export const apiSpecYamlFileName = "openapi.yaml";
+export const apiSpecJsonFileName = "openapi.json";
 
 const invalidApiSpecErrorName = "invalid-api-spec";
 
@@ -123,7 +122,11 @@ export class CopilotPluginGenerator {
       }
 
       // generate files
-      const manifestPath = path.join(destinationPath, AppPackageFolderName, manifestFileName);
+      const manifestPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
 
       const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);

@@ -1318,11 +1318,13 @@ describe("copilotPlugin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
-      [QuestionNames.ApiSpecLocation]: "https://example.json",
+      [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["testOperation"],
       projectPath: path.join(os.tmpdir(), appName),
     };
     const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").throws(new Error("fakeError"));
+    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());

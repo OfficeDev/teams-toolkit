@@ -27,6 +27,7 @@ import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
 import { SpecParser } from "../../../common/spec-parser/specParser";
 import { QuestionNames } from "../../../question/questionNames";
 import {
+  convertSpecParserErrorToFxError,
   generateScaffoldingSummary,
   logValidationResults,
   OpenAIPluginManifestHelper,
@@ -40,6 +41,7 @@ import { assembleError } from "../../../error";
 import { isYamlSpecFile } from "../../../common/spec-parser/utils";
 import { ConstantString } from "../../../common/spec-parser/constants";
 import * as util from "util";
+import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
@@ -185,7 +187,12 @@ export class CopilotPluginGenerator {
         return ok({ warnings: undefined });
       }
     } catch (e) {
-      const error = assembleError(e);
+      let error: FxError;
+      if (e instanceof SpecParserError) {
+        error = convertSpecParserErrorToFxError(e);
+      } else {
+        error = assembleError(e);
+      }
       return err(error);
     }
   }

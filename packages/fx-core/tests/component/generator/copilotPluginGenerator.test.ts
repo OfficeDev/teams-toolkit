@@ -352,7 +352,7 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(result.isErr());
   });
 
-  it.only("throws specParser exception", async function () {
+  it("throws specParser error", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",

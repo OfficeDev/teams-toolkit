@@ -100,6 +100,7 @@ import { VersionForMigration } from "./types";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
+import { assembleError } from "../../error";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -228,24 +229,10 @@ export async function wrapRunMigration(context: MigrationContext, exec: Migratio
       context.telemetryProperties
     );
   } catch (error: any) {
-    let fxError: FxError;
-    if (error instanceof UserError || error instanceof SystemError) {
-      fxError = error;
-    } else {
-      if (!(error instanceof Error)) {
-        error = new Error(error.toString());
-      }
-      const errorMessage = context.currentStep
-        ? `MigrationStep: ${context.currentStep}\n${error.message}`
-        : error.message;
-      fxError = new SystemError({
-        error,
-        source: Component.core,
-        name: ErrorConstants.unhandledError,
-        message: errorMessage,
-        displayMessage: errorMessage,
-      });
-    }
+    const fxError = assembleError(error, Component.core);
+    fxError.message = context.currentStep
+      ? `MigrationStep: ${context.currentStep}\n${fxError.message}`
+      : fxError.message;
     sendTelemetryErrorEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorError,

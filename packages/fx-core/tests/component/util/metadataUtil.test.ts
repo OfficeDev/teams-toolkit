@@ -45,7 +45,9 @@ describe("metadata util", () => {
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
   const mockProjectModel: ProjectModel = {
     version: "1.0.0",
-    sampleTag: "testRepo:testSample",
+    additionalMetadata: {
+      sampleTag: "testRepo:testSample",
+    },
     registerApp: {
       name: "registerApp",
       driverDefs: [
@@ -129,8 +131,56 @@ describe("metadata util", () => {
     assert(result.isOk());
   });
 
+  it("should normalize @/\\. in sampleTag", async () => {
+    sandbox.stub(yamlParser, "parse").resolves(
+      ok({
+        ...mockProjectModel,
+        additionalMetadata: { sampleTag: "Hello@world/this\\is.a.sample" },
+      })
+    );
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const result = await metadataUtil.parse(".", "dev");
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
+        "configureApp.actions": "",
+        "deploy.actions": "",
+        "provision.actions": "",
+        "publish.actions": "",
+        "registerApp.actions": "armdeploy,teamsAppcreate",
+        [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "Hello_world_this_is_a_sample",
+      })
+    );
+    assert(result.isOk());
+  });
+
+  it("should send empty sample-app-name if additionalMetadata is undefined", async () => {
+    sandbox.stub(yamlParser, "parse").resolves(
+      ok({
+        ...mockProjectModel,
+        additionalMetadata: undefined,
+      })
+    );
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const result = await metadataUtil.parse(".", "dev");
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
+        "configureApp.actions": "",
+        "deploy.actions": "",
+        "provision.actions": "",
+        "publish.actions": "",
+        "registerApp.actions": "armdeploy,teamsAppcreate",
+        [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "",
+      })
+    );
+    assert(result.isOk());
+  });
+
   it("no sample tag", async () => {
-    sandbox.stub(yamlParser, "parse").resolves(ok({ ...mockProjectModel, sampleTag: undefined }));
+    sandbox.stub(yamlParser, "parse").resolves(ok({ ...mockProjectModel, additionalMetadata: {} }));
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
     const result = await metadataUtil.parse(".", "dev");
     assert.isTrue(

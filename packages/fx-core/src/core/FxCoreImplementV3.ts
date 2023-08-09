@@ -18,7 +18,6 @@ import {
   Result,
   Stage,
   Tools,
-  Void,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -31,6 +30,7 @@ import { pathToFileURL } from "url";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
+import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { SpecParser } from "../common/spec-parser/specParser";
 import { VersionSource, VersionState } from "../common/versionMetadata";
@@ -74,13 +74,9 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { FileNotFoundError, InvalidProjectError, assembleError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ScratchOptions, ValidateTeamsAppInputs } from "../question";
-import { SPFxVersionOptionIds } from "../question/create";
-import {
-  HubTypes,
-  TeamsAppValidationOptions,
-  isAadMainifestContainsPlaceholder,
-} from "../question/other";
+import { ValidateTeamsAppInputs } from "../question";
+import { SPFxVersionOptionIds, ScratchOptions } from "../question/create";
+import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError } from "./error";
@@ -96,7 +92,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 
 export class FxCoreV3Implement {
   tools: Tools;

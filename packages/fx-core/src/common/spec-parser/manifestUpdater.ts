@@ -26,13 +26,9 @@ export async function updateManifest(
   };
 
   const updatedPart: PartialManifest = {
-    name: {
-      short: spec.info.title,
-      full: spec.info.title,
-    },
     description: {
       short: spec.info.title,
-      full: spec.info.description ?? "",
+      full: spec.info.description ?? originalManifest.description.full,
     },
     composeExtensions: [ComposeExtension],
   };

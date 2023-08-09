@@ -1,6 +1,6 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -8,7 +8,6 @@ import {
   Trigger,
   Notification,
   LocalDebugTaskLabel,
-  LocalDebugTaskResult,
   CliVersion,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
@@ -21,19 +20,19 @@ import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   startDebugging,
+  upgrade,
   waitForTerminal,
   validateUpgrade,
-  upgradeByTreeView,
+  stopDebugging,
 } from "../../../utils/vscodeOperation";
-import { VSBrowser } from "vscode-extension-tester";
-import { getScreenshotName } from "../../../utils/nameUtil";
 import { execCommand } from "../../../utils/execCommand";
 import { expect } from "chai";
+import { ModalDialog, VSBrowser } from "vscode-extension-tester";
+import { CLIVersionCheck } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testCase);
   let mirgationDebugTestContext: MigrationTestContext;
-  CliHelper.setV3Enable();
 
   beforeEach(async function () {
     // ensure workbench is ready
@@ -49,56 +48,71 @@ describe("Migration Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await mirgationDebugTestContext.after(true, true, "local");
+    await mirgationDebugTestContext.after(false, true, "local");
   });
 
   it(
-    "[auto] notification bot template upgrade test - ts",
+    "[auto] [P0] V2 notification bot template upgrade test - ts",
     {
-      testPlanCaseId: 17184124,
+      testPlanCaseId: 17184123,
       author: "frankqian@microsoft.com",
     },
     async () => {
       // install v2 stable cli 1.2.6
       await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsfx -v");
-      console.log(result.stdout);
-      expect(
-        (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)
-      ).to.be.true;
+      await CLIVersionCheck("V2", mirgationDebugTestContext.testRootFolder);
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
       await validateNotification(Notification.Upgrade);
 
-      // local debug
-      await mirgationDebugTestContext.debugWithCLI("local");
-
       // upgrade
-      await upgradeByTreeView();
-      //verify upgrade
+      await startDebugging();
+      await upgrade();
+      // verify upgrade
       await validateUpgrade();
       // enable cli v3
       CliHelper.setV3Enable();
 
       // local debug with TTK
+      const driver = VSBrowser.instance.driver;
+      await startDebugging();
+      await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
-        await startDebugging();
-
-        console.log("Start Local Tunnel");
         await waitForTerminal(
-          LocalDebugTaskLabel.StartLocalTunnel,
-          LocalDebugTaskResult.StartSuccess
+          "Start Azurite emulator",
+          "Azurite Blob service is successfully listening"
         );
-
-        console.log("Start Bot");
         await waitForTerminal(
           LocalDebugTaskLabel.StartBot,
-          LocalDebugTaskResult.AppSuccess
+          "Worker process started and initialized"
         );
-      } catch (error) {
-        await VSBrowser.instance.takeScreenshot(getScreenshotName("debug"));
-        throw new Error(error as string);
+      } catch {
+        const dialog = new ModalDialog();
+        console.log("click Cancel button for error dialog");
+        await dialog.pushButton("Cancel");
+        await driver.sleep(Timeout.shortTimeLoading);
+        console.log(
+          "Clicked button Cancel for failing to attach to main target"
+        );
+        await stopDebugging();
+        await startDebugging();
+        try {
+          await waitForTerminal(
+            LocalDebugTaskLabel.StartBot,
+            "Worker process started and initialized"
+          );
+        } catch {
+          const dialog = new ModalDialog();
+          console.log("click Cancel button for error dialog");
+          await dialog.pushButton("Debug Anyway");
+          console.log("Clicked button Debug Anyway");
+          await driver.sleep(Timeout.shortTimeLoading);
+          await waitForTerminal(
+            LocalDebugTaskLabel.StartBot,
+            "Worker process started and initialized"
+          );
+        }
       }
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId();
 
@@ -109,7 +123,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateNotificationBot(page);
+      await validateNotificationBot(
+        page,
+        "http://127.0.0.1:3978/api/notification"
+      );
     }
   );
 });

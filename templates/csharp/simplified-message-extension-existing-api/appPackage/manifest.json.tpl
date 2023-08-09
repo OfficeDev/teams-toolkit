@@ -16,7 +16,7 @@
     },
     "name": {
         "short": "{{appName}}-${{TEAMSFX_ENV}}",
-        "full": "full name for {{appName}}"
+        "full": "Full name for {{appName}}"
     },
     "description": {
         "short": "Short description for {{appName}}",

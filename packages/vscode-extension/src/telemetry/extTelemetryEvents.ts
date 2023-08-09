@@ -241,6 +241,8 @@ export enum TelemetryEvent {
 
   ShowScaffoldingWarningSummary = "show-scaffolding-warning-summary",
   ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
+
+  FindSimilarIssues = "find-similar-issues",
 }
 
 export enum TelemetryProperty {

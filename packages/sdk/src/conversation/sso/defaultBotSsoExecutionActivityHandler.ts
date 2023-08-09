@@ -21,6 +21,7 @@ import {
   TriggerPatterns,
 } from "../interface";
 import { BotSsoExecutionDialog } from "./botSsoExecutionDialog";
+import { OnBehalfOfCredentialAuthConfig } from "../..";
 
 /**
  * Default SSO execution activity handler
@@ -57,9 +58,13 @@ export class DefaultBotSsoExecutionActivityHandler
       endOnInvalidMessage: ssoConfig.dialog?.ssoPromptConfig?.endOnInvalidMessage,
     };
 
-    const teamsfx = new TeamsFx(IdentityType.User, { ...customConfig });
+    this.ssoExecutionDialog = new BotSsoExecutionDialog(
+      dedupStorage,
+      settings,
+      customConfig as OnBehalfOfCredentialAuthConfig,
+      customConfig.initiateLoginEndpoint!
+    );
 
-    this.ssoExecutionDialog = new BotSsoExecutionDialog(dedupStorage, settings, teamsfx);
     this.conversationState = conversationState;
     this.dialogState = conversationState.createProperty("DialogState");
     this.userState = userState;

@@ -755,7 +755,9 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 3);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginApiSpec().id });
           } else if (question.name === QuestionNames.ApiSpecLocation) {
-            const validRes = await (question as any).inputBoxConfig.validation("https://test.com");
+            const validRes = await (question as any).inputBoxConfig.validation!.validFunc(
+              "https://test.com"
+            );
             assert.isUndefined(validRes);
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
@@ -1054,7 +1056,9 @@ describe("scaffold question", () => {
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
 
-          const validate = question.inputBoxConfig.additionalValidationOnAccept!;
+          const validate = (
+            question.inputBoxConfig.additionalValidationOnAccept! as FuncValidation<string>
+          ).validFunc;
           const res = await validate("url1", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
             { id: "get operation1", label: "get operation1", groupName: "GET" },
@@ -1076,7 +1080,9 @@ describe("scaffold question", () => {
           });
           sandbox.stub(SpecParser.prototype, "list").throws(new Error("error1"));
 
-          const validate = question.inputBoxConfig.additionalValidationOnAccept!;
+          const validate = (
+            question.inputBoxConfig.additionalValidationOnAccept! as FuncValidation<string>
+          ).validFunc;
 
           let fxError: FxError;
           try {

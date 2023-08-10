@@ -376,18 +376,6 @@ export interface FolderQuestion extends UserInputQuestion {
   validation?: FuncValidation<string>;
 }
 
-/**
- * `FuncQuestion` will not show any UI, but load some dynamic data in the question flow;
- * The dynamic data can be referred by the following question.
- */
-export interface FuncQuestion extends BaseQuestion {
-  type: "func";
-  /**
-   * A function that will be called to when the question is activated.
-   */
-  func: LocalFunc<any>;
-}
-
 export interface SingleFileOrInputQuestion extends UserInputQuestion {
   type: "singleFileOrText";
   /**
@@ -398,7 +386,7 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
   /**
    * Config for the input box.
    */
-  inputBoxConfig: InputTextConfig;
+  inputBoxConfig: TextInputQuestion;
 
   /**
    * This will only take effect in VSC.
@@ -429,7 +417,6 @@ export type Question =
   | SingleFileQuestion
   | MultiFileQuestion
   | FolderQuestion
-  | FuncQuestion
   | SingleFileQuestion
   | SingleFileOrInputQuestion;
 

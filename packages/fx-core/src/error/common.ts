@@ -178,9 +178,9 @@ export class MissingRequiredInputError extends UserError {
 }
 
 export class InputValidationError extends UserError {
-  constructor(name: string, reason: string) {
+  constructor(name: string, reason: string, source?: string) {
     super({
-      source: "coordinator",
+      source: source || "coordinator",
       message: getDefaultString("error.common.InputValidationError", name, reason),
       displayMessage: getLocalizedString("error.common.InputValidationError", name, reason),
     });
@@ -249,8 +249,11 @@ export class UserCancelError extends UserError {
 }
 
 export class EmptyOptionError extends SystemError {
-  constructor(source?: string) {
-    super({ source: source ? camelCase(source) : "UI" });
+  constructor(name: string, source?: string) {
+    super({
+      source: source ? camelCase(source) : "UI",
+      message: `Select option is empty list for question name: ${name}`,
+    });
   }
 }
 

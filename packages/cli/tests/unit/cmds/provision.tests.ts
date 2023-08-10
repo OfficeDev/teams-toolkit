@@ -25,7 +25,7 @@ describe("Provision Command Tests", function () {
     mockLogProvider(sandbox, logs);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "provisionResources").callsFake(async (inputs: Inputs) => {
-      if (inputs.projectPath?.includes("real")) return ok("");
+      if (inputs.projectPath?.includes("real")) return ok(undefined);
       else if (inputs.projectPath?.includes("Cancel")) return err(new UserCancelError());
       else return err(new InvalidProjectError());
     });

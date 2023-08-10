@@ -188,7 +188,15 @@ export function getVersion(): string {
   return pkgContent.version;
 }
 
-export async function getTemplates() {
+export async function getTemplates(): Promise<
+  {
+    tags: string[];
+    title: string;
+    description: string;
+    sampleAppName: string;
+    sampleAppUrl?: string;
+  }[]
+> {
   await sampleProvider.fetchSampleConfig();
   const samples = sampleProvider.SampleCollection.samples.map((sample) => {
     return {

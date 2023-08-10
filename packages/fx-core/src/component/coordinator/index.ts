@@ -22,7 +22,6 @@ import {
   ok,
   Platform,
   Result,
-  Void,
 } from "@microsoft/teamsfx-api";
 import { glob } from "glob";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -399,7 +398,7 @@ class Coordinator {
   async preCheckYmlAndEnvForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
@@ -419,7 +418,7 @@ class Coordinator {
     if (unresolvedPlaceholders.length > 0) {
       return err(new LifeCycleUndefinedError(unresolvedPlaceholders.join(",")));
     }
-    return ok(Void);
+    return ok(undefined);
   }
 
   @hooks([
@@ -896,7 +895,7 @@ class Coordinator {
     ctx: Context,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     // update teams app
     if (!ctx.tokenProvider) {
       return err(new ObjectIsUndefinedError("tokenProvider"));
@@ -919,7 +918,7 @@ class Coordinator {
     await ctx.userInteraction.openUrl(
       `https://dev.teams.microsoft.com/apps/${updateRes.value}/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
     );
-    return ok(Void);
+    return ok(undefined);
   }
 }
 
@@ -948,7 +947,7 @@ function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
 }
 
 async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
-  // A temporary solution to avoid duplicate componentId
+  // A temporary solution to aundefined duplicate componentId
   if (sampleId === "todo-list-SPFx") {
     const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
     const componentId = uuid.v4();

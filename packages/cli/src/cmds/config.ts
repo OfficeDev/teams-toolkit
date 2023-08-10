@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, LogLevel, Result, ok } from "@microsoft/teamsfx-api";
+import { FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
 import { Argv, PositionalOptions } from "yargs";
 import CLILogProvider from "../commonlib/log";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -106,7 +106,7 @@ export class ConfigSet extends YargsCommand {
       const result = UserSettings.setConfigSync(opt);
       if (result.isErr()) {
         CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
-        return result;
+        return err(result.error);
       }
       CLILogProvider.necessaryLog(LogLevel.Info, `Successfully configured user setting ${option}.`);
     } else {

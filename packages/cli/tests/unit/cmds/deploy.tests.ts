@@ -24,7 +24,7 @@ describe("Deploy Command Tests", function () {
     mockTelemetry(sandbox, telemetryEvents);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
-      if (inputs.projectPath?.includes("real")) return ok("");
+      if (inputs.projectPath?.includes("real")) return ok(undefined);
       else return err(new InvalidProjectError());
     });
   });

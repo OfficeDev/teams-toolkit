@@ -35,7 +35,7 @@ export function colorize(message: string, type: TextType): string {
     case TextType.Important:
       return chalk.magentaBright(message);
     case TextType.Details:
-      return chalk.white(message);
+      return chalk.gray(message);
     case TextType.Commands:
       return chalk.blueBright(message);
   }

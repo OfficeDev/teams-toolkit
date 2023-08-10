@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, ok, Void } from "@microsoft/teamsfx-api";
+import { err, ok } from "@microsoft/teamsfx-api";
 import { FxCore, InvalidProjectError } from "@microsoft/teamsfx-core";
 import "mocha";
 import sinon from "sinon";
@@ -39,7 +39,7 @@ describe("Init Command Tests", () => {
       expect(inputs.projectPath).equals(TestFolder);
       expect(inputs.skipUserConfirm).equals(true);
       expect(inputs.nonInteractive).equals(undefined);
-      return Promise.resolve(ok(Void));
+      return Promise.resolve(ok(undefined));
     });
     const cmd = new Upgrade();
     const args = {
@@ -55,7 +55,7 @@ describe("Init Command Tests", () => {
     sandbox.stub(FxCore.prototype, "phantomMigrationV3").callsFake((inputs) => {
       if (inputs.projectPath?.includes("fake"))
         return Promise.resolve(err(new InvalidProjectError()));
-      return Promise.resolve(ok(Void));
+      return Promise.resolve(ok(undefined));
     });
 
     const cmd = new Upgrade();

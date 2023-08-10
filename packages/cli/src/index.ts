@@ -6,19 +6,19 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import "./console/screen";
-
-import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
-initializePreviewFeatureFlags();
-
+import { initializePreviewFeatureFlags, isCliNewUxEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import * as path from "path";
 import { registerCommands } from "./cmds";
+import { start as startNewUX } from "./commands/index";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
 import cliTelemetry from "./telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/cliTelemetryEvents";
 import { getVersion } from "./utils";
+
+initializePreviewFeatureFlags();
 
 function changeArgv(argv: string[]): string[] {
   return argv.map((s) => (s.startsWith("--") ? s.toLocaleLowerCase() : s));
@@ -61,6 +61,9 @@ export async function start(): Promise<void> {
   initTelemetryReporter();
   sendCommandUsageTelemetry(process.argv);
   registerPrompts();
+  if (isCliNewUxEnabled()) {
+    return startNewUX();
+  }
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
     "camel-case-expansion": false,

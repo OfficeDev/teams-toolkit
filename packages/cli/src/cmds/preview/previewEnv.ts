@@ -160,7 +160,7 @@ export default class PreviewEnv extends YargsCommand {
     );
   }
 
-  protected async doPreview(
+  async doPreview(
     workspaceFolder: string,
     env: string,
     manifestFilePath: string,
@@ -328,7 +328,7 @@ export default class PreviewEnv extends YargsCommand {
     const inputs = getSystemInputs(projectPath, env);
     inputs[CoreQuestionNames.M365Host] = hub;
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
-    inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
+    // inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation // confirm is skipped in question model
     return await core.previewWithManifest(inputs);
   }
 

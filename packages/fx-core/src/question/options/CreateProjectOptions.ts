@@ -12,6 +12,14 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
 export const CreateProjectOptions: CLICommandOption[] = [
   {
+    name: "runtime",
+    type: "string",
+    description: "Teams Toolkit: select runtime for your app",
+    default: "node",
+    hidden: true,
+    choices: ["node", "dotnet"],
+  },
+  {
     name: "capability",
     questionName: "capabilities",
     type: "string",
@@ -20,6 +28,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     required: true,
     choices: [
       "bot",
+      "ai-bot",
       "notification",
       "command-bot",
       "workflow-bot",
@@ -29,8 +38,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "tab-spfx",
       "link-unfurling",
       "search-app",
-      "CollectFormMessagingExtension",
-      "copilot-plugin-capability",
+      "collect-form-message-extension",
     ],
     choiceListCommand: "teamsfx list capabilities",
   },

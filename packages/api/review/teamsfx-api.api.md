@@ -102,61 +102,41 @@ export const BuildFolderName = "build";
 //
 // @public (undocumented)
 export interface CLIArrayOption extends CLICommandOptionBase {
-    // (undocumented)
     choiceListCommand?: string;
-    // (undocumented)
     choices?: string[];
-    // (undocumented)
     default?: string[];
+    skipValidation?: boolean;
     // (undocumented)
     type: "array";
-    // (undocumented)
     value?: string[];
 }
 
 // @public (undocumented)
 export interface CLIBooleanOption extends CLICommandOptionBase {
-    // (undocumented)
     default?: boolean;
     // (undocumented)
     type: "boolean";
-    // (undocumented)
     value?: boolean;
 }
 
 // @public (undocumented)
 export interface CLICommand {
-    // (undocumented)
     arguments?: CLICommandArgument[];
-    // (undocumented)
     commands?: CLICommand[];
-    // (undocumented)
     description: string;
-    // (undocumented)
     examples?: CLIExample[];
-    // (undocumented)
     footer?: string;
-    // (undocumented)
     fullName?: string;
-    // (undocumented)
-    handler?: (cmd: CLIContext) => Promise<Result<undefined, FxError>>;
-    // (undocumented)
+    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>>;
     header?: string;
-    // (undocumented)
     hidden?: boolean;
-    // (undocumented)
     name: string;
-    // (undocumented)
     options?: CLICommandOption[];
-    // (undocumented)
     sortCommands?: boolean;
-    // (undocumented)
     sortOptions?: boolean;
-    // (undocumented)
     telemetry?: {
         event: string;
     };
-    // (undocumented)
     version?: string;
 }
 
@@ -168,24 +148,23 @@ export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOpti
 
 // @public (undocumented)
 export interface CLIContext {
-    // (undocumented)
     argumentValues: string[];
-    // (undocumented)
-    command: CLICommand;
-    // (undocumented)
+    command: CLIFoundCommand;
     globalOptionValues: Record<string, OptionValue>;
-    // (undocumented)
     optionValues: Record<string, OptionValue>;
-    // (undocumented)
     telemetryProperties: Record<string, string>;
 }
 
 // @public (undocumented)
 export interface CLIExample {
-    // (undocumented)
     command: string;
-    // (undocumented)
     description: string;
+}
+
+// @public (undocumented)
+export interface CLIFoundCommand extends CLICommand {
+    // (undocumented)
+    fullName: string;
 }
 
 // @public (undocumented)
@@ -196,15 +175,12 @@ export const CLIPlatforms: Platform[];
 
 // @public (undocumented)
 export interface CLIStringOption extends CLICommandOptionBase {
-    // (undocumented)
     choiceListCommand?: string;
-    // (undocumented)
     choices?: string[];
-    // (undocumented)
     default?: string;
+    skipValidation?: boolean;
     // (undocumented)
     type: "string";
-    // (undocumented)
     value?: string;
 }
 
@@ -427,11 +403,12 @@ export interface IProgressHandler {
 export interface IQTreeNode {
     // (undocumented)
     children?: IQTreeNode[];
+    cliOptionDisabled?: "self" | "children" | "all";
     // (undocumented)
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
-    interactiveOnly?: "self" | "children" | "all";
+    inputsDisabled?: "self" | "children" | "all";
 }
 
 // @public (undocumented)
@@ -538,6 +515,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
     onDidChangeSelection?: OnSelectionChangeFunc;
     returnObject?: boolean;
     skipSingleOption?: boolean;
+    skipValidation?: boolean;
     staticOptions: StaticOptions;
     // (undocumented)
     type: "multiSelect";
@@ -599,6 +577,7 @@ export interface OptionItem {
         tooltip: string;
         command: string;
     }[];
+    // @deprecated (undocumented)
     cliName?: string;
     data?: unknown;
     description?: string;
@@ -639,11 +618,12 @@ export class QTreeNode implements IQTreeNode {
     addChild(node: QTreeNode): QTreeNode;
     // (undocumented)
     children?: QTreeNode[];
+    cliOptionDisabled?: "self" | "children" | "all";
     // (undocumented)
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
-    interactiveOnly?: "self" | "children" | "all";
+    inputsDisabled?: "self" | "children" | "all";
     trim(): QTreeNode | undefined;
     // (undocumented)
     validate(): boolean;
@@ -746,6 +726,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
     dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
     skipSingleOption?: boolean;
+    skipValidation?: boolean;
     staticOptions: StaticOptions;
     // (undocumented)
     type: "singleSelect";
@@ -1073,6 +1054,7 @@ export interface UserInputQuestion extends BaseQuestion {
     alternativeNames?: string[];
     // (undocumented)
     cliDescription?: string;
+    cliHidden?: boolean;
     cliName?: string;
     cliShortName?: string;
     cliType?: "option" | "argument";

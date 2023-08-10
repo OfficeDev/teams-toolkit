@@ -21,6 +21,7 @@ import {
   AppPackageFolderName,
   ManifestUtil,
   IComposeExtension,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -38,6 +39,7 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
+import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -126,40 +128,48 @@ export async function listOperations(
     apiSpecUrl = manifest.api.url;
   }
 
-  const specParser = new SpecParser(apiSpecUrl!);
-  const validationRes = await specParser.validate();
+  try {
+    const specParser = new SpecParser(apiSpecUrl!);
+    const validationRes = await specParser.validate();
 
-  logValidationResults(
-    validationRes.errors,
-    validationRes.warnings,
-    context,
-    true,
-    shouldLogWarning
-  );
-  if (validationRes.status === ValidationStatus.Error) {
-    return err(validationRes.errors);
-  }
-
-  let operations = await specParser.list();
-
-  // Filter out exsiting APIs
-  if (!includeExistingAPIs) {
-    if (!teamsManifestPath) {
-      throw new MissingRequiredInputError("teamsManifestPath", "inputs");
+    logValidationResults(
+      validationRes.errors,
+      validationRes.warnings,
+      context,
+      true,
+      shouldLogWarning
+    );
+    if (validationRes.status === ValidationStatus.Error) {
+      return err(validationRes.errors);
     }
-    const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
-    if (manifest.isOk()) {
-      const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-      operations = operations.filter(
-        (operation: string) => !existingOperationIds.includes(operation)
-      );
+
+    let operations = await specParser.list();
+
+    // Filter out exsiting APIs
+    if (!includeExistingAPIs) {
+      if (!teamsManifestPath) {
+        throw new MissingRequiredInputError("teamsManifestPath", "inputs");
+      }
+      const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+      if (manifest.isOk()) {
+        const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+        operations = operations.filter(
+          (operation: string) => !existingOperationIds.includes(operation)
+        );
+      } else {
+        throw manifest.error;
+      }
+    }
+
+    const sortedOperations = sortOperations(operations);
+    return ok(sortedOperations);
+  } catch (e) {
+    if (e instanceof SpecParserError) {
+      throw convertSpecParserErrorToFxError(e);
     } else {
-      throw manifest.error;
+      throw e;
     }
   }
-
-  const sortedOperations = sortOperations(operations);
-  return ok(sortedOperations);
 }
 
 function sortOperations(operations: string[]): ApiOperation[] {
@@ -411,4 +421,8 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
       path.join(AppPackageFolderName, ManifestTemplateFileName)
     )
   );
+}
+
+export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
+  return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
 }

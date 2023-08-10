@@ -21,11 +21,7 @@ function filterFiles(dir, fileList = [], filter = () => true) {
 }
 
 function filterYmlFiles(dir, fileList = []) {
-  return filterFiles(dir, fileList, (file) => file.endsWith(Ext.Yml));
-}
-
-function filterYmlTplFiles(dir, fileList = []) {
-  return filterFiles(dir, fileList, (file) => file.endsWith(".yml.tpl"));
+  return filterFiles(dir, fileList, (file) => file.endsWith(Ext.Yml) || file.endsWith(Ext.YmlTpl));
 }
 
 function filterMustacheFiles(dir, fileList = []) {
@@ -64,7 +60,6 @@ function writeFileSafe(filePath, content) {
 
 module.exports = {
   filterYmlFiles,
-  filterYmlTplFiles,
   filterMustacheFiles,
   renderMustache,
   writeFileSafe,

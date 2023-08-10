@@ -89,6 +89,13 @@ describe("utils", () => {
       assert.strictEqual(result, expected);
     });
 
+    it("should convert a path to camel case start with /", () => {
+      const path = "/this/is/a/{test}/path";
+      const expected = "ThisIsATestPath";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
     it("should return an empty string for an empty path", () => {
       const path = "";
       const expected = "";

@@ -15,7 +15,7 @@ export const CreateSampleProjectOptions: CLICommandOption[] = [
     name: "folder",
     type: "string",
     shortName: "f",
-    description: "Directory where the project will be created in.",
+    description: "Directory where the project folder will be created in.",
     required: true,
     default: "./",
   },

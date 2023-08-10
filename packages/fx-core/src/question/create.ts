@@ -998,9 +998,9 @@ function rootFolderQuestion(): FolderQuestion {
     cliShortName: "f",
     title: (inputs: Inputs) =>
       CLIPlatforms.includes(inputs.platform)
-        ? "Directory where the project will be created in"
+        ? "Directory where the project folder will be created in"
         : getLocalizedString("core.question.workspaceFolder.title"),
-    cliDescription: "Directory where the project will be created in.",
+    cliDescription: "Directory where the project folder will be created in.",
     placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
     default: (inputs: Inputs) =>
       CLIPlatforms.includes(inputs.platform)

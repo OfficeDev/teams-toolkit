@@ -16,6 +16,7 @@ import inquirer from "inquirer";
 import "mocha";
 import * as sinon from "sinon";
 import UI from "../../src/userInteraction";
+import fs from "fs-extra";
 
 describe("UserInteraction(CLI)", () => {
   const sandbox = sinon.createSandbox();
@@ -187,6 +188,39 @@ describe("UserInteraction(CLI)", () => {
         assert.isTrue(result.error instanceof UnhandledError);
       }
     });
+    it("InputValidationError - pass validation but failed on additionalValidation", async () => {
+      const config: InputTextConfig = {
+        name: "testInput",
+        title: "input text",
+        validation: (input: string) => {
+          return undefined;
+        },
+        additionalValidationOnAccept: (input: string) => {
+          return "failed";
+        },
+      };
+      UI.updatePresetAnswer("testInput", "somevalue");
+      const result = await UI.inputText(config);
+      assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        assert.isTrue(result.error instanceof InputValidationError);
+      }
+    });
+    it("InputValidationError -failed on additionalValidation", async () => {
+      const config: InputTextConfig = {
+        name: "testInput",
+        title: "input text",
+        additionalValidationOnAccept: (input: string) => {
+          return "failed";
+        },
+      };
+      UI.updatePresetAnswer("testInput", "somevalue");
+      const result = await UI.inputText(config);
+      assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        assert.isTrue(result.error instanceof InputValidationError);
+      }
+    });
   });
 
   describe("selectFile", () => {
@@ -229,14 +263,38 @@ describe("UserInteraction(CLI)", () => {
   });
 
   describe("selectFileOrInput", () => {
-    it("happy path", async () => {
-      sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "value" }));
+    it("happy path - local file", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      UI.updatePresetAnswer("test", "path");
       const res = await UI.selectFileOrInput({
         name: "test",
         title: "test",
         inputBoxConfig: {
           title: "test",
           name: "test",
+        },
+        inputOptionItem: {
+          id: "test",
+          label: "test",
+        },
+      });
+      assert.isTrue(res.isOk());
+    });
+    it("happy path - input url", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      UI.updatePresetAnswer("test", "https://www.test.com");
+      const res = await UI.selectFileOrInput({
+        name: "test",
+        title: "test",
+        inputBoxConfig: {
+          title: "test",
+          name: "test",
+          validation: (input: string) => {
+            return undefined;
+          },
+          additionalValidationOnAccept: (input: string) => {
+            return undefined;
+          },
         },
         inputOptionItem: {
           id: "test",

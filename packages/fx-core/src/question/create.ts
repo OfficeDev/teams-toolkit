@@ -1312,6 +1312,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
     cliShortName: "oapi",
+    cliDescription: "OpenAPI specification file location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
@@ -1358,6 +1359,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     cliShortName: "oai",
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
+    cliDescription: "OpenAI plugin website domain.",
     forgetLastValue: true,
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
@@ -1428,6 +1430,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    cliDescription: "Selects API(s) to be used in Copilot plugin.",
     cliShortName: "api",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")

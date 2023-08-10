@@ -303,6 +303,27 @@ describe("UserInteraction(CLI)", () => {
       });
       assert.isTrue(res.isOk());
     });
+
+    it("invalid local path", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      UI.updatePresetAnswer("test", "https://www.test.com");
+      const res = await UI.selectFileOrInput({
+        name: "test",
+        title: "test",
+        inputBoxConfig: {
+          title: "test",
+          name: "test",
+          validation: (input: string) => {
+            return "invalid";
+          },
+        },
+        inputOptionItem: {
+          id: "test",
+          label: "test",
+        },
+      });
+      assert.isTrue(res.isErr());
+    });
     it("load default value error", async () => {
       const res = await UI.selectFileOrInput({
         name: "test",

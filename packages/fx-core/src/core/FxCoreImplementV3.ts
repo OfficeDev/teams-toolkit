@@ -92,11 +92,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import {
-  apiSpecFolderName,
-  apiSpecJsonFileName,
-  apiSpecYamlFileName,
-} from "../component/generator/copilotPlugin/generator";
 
 export class FxCoreV3Implement {
   tools: Tools;

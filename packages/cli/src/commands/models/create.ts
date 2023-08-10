@@ -41,7 +41,7 @@ export const createCommand: CLICommand = {
     if (res.isErr()) {
       return err(res.error);
     }
-    logger.info(`Project created at: ${chalk.cyanBright(res.value)}`);
+    logger.info(`Project created at: ${chalk.cyanBright(res.value.projectPath)}`);
     return ok(undefined);
   },
 };

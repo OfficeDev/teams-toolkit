@@ -1306,16 +1306,19 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
+      type: "text",
       title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
       placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.placeholder"),
       name: "input-api-spec-url",
       step: 2, // Add "back" button
-      validation: async (input: string): Promise<string | undefined> => {
-        return isValidHttpUrl(input)
-          ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+      validation: {
+        validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+          return isValidHttpUrl(input)
+            ? undefined
+            : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+        },
       },
-      additionalValidationOnAccept: validationOnAccept,
+      additionalValidationOnAccept: { validFunc: validationOnAccept },
     },
     inputOptionItem: {
       id: "input",
@@ -1422,7 +1425,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     },
     dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
       if (!inputs.supportedApisFromApiSpec) {
-        throw new EmptyOptionError();
+        throw new EmptyOptionError(QuestionNames.ApiOperation, "question");
       }
 
       const operations = inputs.supportedApisFromApiSpec;

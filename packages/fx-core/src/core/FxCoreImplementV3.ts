@@ -677,12 +677,7 @@ export class FxCoreV3Implement {
     );
     await fs.ensureDir(apiSpecFolderPath);
 
-    let isYaml: boolean;
-    try {
-      isYaml = await isYamlSpecFile(url);
-    } catch (e) {
-      isYaml = false;
-    }
+    const isYaml = await isYamlSpecFile(url);
     const openapiSpecPath = path.join(
       apiSpecFolderPath,
       isYaml ? apiSpecYamlFileName : apiSpecJsonFileName

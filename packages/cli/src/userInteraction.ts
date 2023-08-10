@@ -595,14 +595,18 @@ class CLIUserInteraction implements UserInteraction {
     if (loadRes.isErr()) return err(loadRes.error);
     const validationFuncForInput = config.inputBoxConfig.validation;
     const validationFunc = async (input: string) => {
-      if (!input.toLowerCase().startsWith("http")) {
-        return await pathValidation(input);
+      const checkLocalPathRes = await pathValidation(input);
+      if (checkLocalPathRes) {
+        if (validationFuncForInput) {
+          return await validationFuncForInput(input);
+        } else {
+          return checkLocalPathRes;
+        }
       } else {
-        return await validationFuncForInput?.(input);
+        return undefined;
       }
     };
-    config.inputBoxConfig.validation = validationFunc;
-    return this.inputText(config.inputBoxConfig);
+    return this.inputText({ ...config.inputBoxConfig, validation: validationFunc });
   }
   public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     const loadRes = await this.loadDefaultValue(config);

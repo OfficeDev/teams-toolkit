@@ -22,11 +22,11 @@ A bot interaction can be a quick question and answer, or it can be a complex con
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-5. You will receive a welcome message from the bot, or start typing `welcome` or `learn` to get a response.
+5. You will receive a welcome message from the bot, and you can send anything to the bot to get an echoed response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![basic bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/d9dc7159-1f93-4790-8b83-a3bfe600799a)
+![basic bot](https://github.com/OfficeDev/TeamsFx/assets/25220706/8f5645ed-1cd9-43fd-9513-b0c9697d7dc0)
 
 ## What's included in the template
 
@@ -41,8 +41,6 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`adaptiveCards/learn.json`| Defines the adaptive card returned from bot when `learn` command is triggered. |
-|`adaptiveCards/welcome.json`| Defines the adaptive card returned from bot for welcome message and `welcome` command.|
 |`teamsBot.js`| Handles business logics for the Basic Bot.|
 |`index.js`|`index.js` is used to setup and configure the Basic Bot.|
 

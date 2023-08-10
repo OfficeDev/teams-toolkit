@@ -32,26 +32,7 @@
                 "groupchat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false,
-            "commandLists": [
-                {
-                    "scopes": [
-                        "personal",
-                        "team",
-                        "groupchat"
-                    ],
-                    "commands": [
-                        {
-                            "title": "welcome",
-                            "description": "Resend welcome card of this Bot"
-                        },
-                        {
-                            "title": "learn",
-                            "description": "Learn about Adaptive Card and Bot Command"
-                        }
-                    ]
-                }
-            ]
+            "isNotificationOnly": false
         }
     ],
     "composeExtensions": [],

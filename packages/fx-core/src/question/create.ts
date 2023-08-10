@@ -996,10 +996,16 @@ function rootFolderQuestion(): FolderQuestion {
     type: "folder",
     name: QuestionNames.Folder,
     cliShortName: "f",
-    title: getLocalizedString("core.question.workspaceFolder.title"),
-    cliDescription: "Root folder of the project.",
+    title: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "Directory where the project will be created in"
+        : getLocalizedString("core.question.workspaceFolder.title"),
+    cliDescription: "Directory where the project will be created in.",
     placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
-    default: path.join(os.homedir(), ConstantString.RootFolder),
+    default: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "./"
+        : path.join(os.homedir(), ConstantString.RootFolder),
   };
 }
 

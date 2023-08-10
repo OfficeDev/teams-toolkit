@@ -10,7 +10,16 @@
 
 import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
-export const CreateSampleProjectOptions: CLICommandOption[] = [];
+export const CreateSampleProjectOptions: CLICommandOption[] = [
+  {
+    name: "folder",
+    type: "string",
+    shortName: "f",
+    description: "Directory where the project will be created in.",
+    required: true,
+    default: "./",
+  },
+];
 export const CreateSampleProjectArguments: CLICommandArgument[] = [
   {
     name: "sample-name",

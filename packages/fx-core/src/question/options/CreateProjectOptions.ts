@@ -126,6 +126,14 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: ["javascript", "typescript", "csharp"],
   },
   {
+    name: "folder",
+    type: "string",
+    shortName: "f",
+    description: "Directory where the project will be created in.",
+    required: true,
+    default: "./",
+  },
+  {
     name: "app-name",
     type: "string",
     shortName: "n",

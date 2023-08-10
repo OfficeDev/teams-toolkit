@@ -181,7 +181,7 @@ describe("Copilot plugin CodeLensProvider", () => {
       {
         type: "apiBased",
         commands: [],
-      }
+      },
     ];
     const manifestString = JSON.stringify(manifest);
     const document = {

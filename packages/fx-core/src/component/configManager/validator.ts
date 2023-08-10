@@ -20,7 +20,7 @@ export class Validator {
   }
 
   private initVersion(version: string) {
-    const ajv = new Ajv();
+    const ajv = new Ajv({ allowUnionTypes: true });
     ajv.addKeyword("deprecationMessage");
     const schemaPath = path.join(getResourceFolder(), "yaml-schema", version, "yaml.schema.json");
     const schema = fs.readJSONSync(schemaPath);

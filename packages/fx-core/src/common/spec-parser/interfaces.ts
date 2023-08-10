@@ -74,6 +74,7 @@ export enum ErrorType {
   NoSupportedApi = "no-supported-api",
 
   ListFailed = "list-failed",
+  ListOperationMapFailed = "list-operation-map-failed",
   FilterSpecFailed = "filter-spec-failed",
   UpdateManifestFailed = "update-manifest-failed",
   GenerateAdaptiveCardFailed = "generate-adaptive-card-failed",

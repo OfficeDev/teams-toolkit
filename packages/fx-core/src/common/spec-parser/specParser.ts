@@ -19,7 +19,7 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
-import { isSupportedApi } from "./utils";
+import { convertPathToCamelCase, isSupportedApi } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";
@@ -164,6 +164,31 @@ export class SpecParser {
       return Array.from(Object.keys(apiMap));
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
+    }
+  }
+
+  /**
+   * List all the OpenAPI operations in the specification file and return a map of operationId and operation path.
+   * @returns A map of operationId and operation path, such as [{'getPetById': 'GET /pets/{petId}'}, {'getUser': 'GET /user/{userId}'}]
+   */
+  async listOperationMap(): Promise<Map<string, string>> {
+    try {
+      await this.loadSpec();
+      const apiMap = this.getAllSupportedApi(this.spec!);
+      const operationMap = new Map<string, string>();
+      for (const key in apiMap) {
+        const pathObjectItem = apiMap[key];
+        let operationId = pathObjectItem.operationId;
+        if (!operationId) {
+          const [method, path] = key.split(" ");
+          const methodName = method.toLowerCase();
+          operationId = `${methodName}${convertPathToCamelCase(path)}`;
+        }
+        operationMap.set(operationId, key);
+      }
+      return operationMap;
+    } catch (err) {
+      throw new SpecParserError((err as Error).toString(), ErrorType.ListOperationMapFailed);
     }
   }
 

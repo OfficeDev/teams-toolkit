@@ -129,10 +129,9 @@ export function generateCardFromResponse(
     ];
   }
 
-  // TODO: better ways to handler errors.
   if (schema.oneOf || schema.anyOf || schema.not || schema.allOf) {
     throw new Error(util.format(ConstantString.SchemaNotSupported, JSON.stringify(schema)));
   }
 
-  throw new Error(util.format(ConstantString, JSON.stringify(schema)));
+  throw new Error(util.format(ConstantString.UnknownSchema, JSON.stringify(schema)));
 }

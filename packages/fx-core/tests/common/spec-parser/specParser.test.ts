@@ -582,6 +582,85 @@ describe("SpecParser", () => {
     });
   });
 
+  describe("listOperationMap", () => {
+    it("should return a map of operation IDs to paths", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath);
+      const spec = {
+        paths: {
+          "/pets": {
+            get: {
+              operationId: "getPetById",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+            },
+            post: {
+              operationId: "createUser",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/store/order": {
+            get: {
+              parameters: [
+                {
+                  name: "orderId",
+                  in: "query",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+            },
+            post: {
+              operationId: "placeOrder",
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const expected = new Map<string, string>([
+        ["getUserById", "GET /user/{userId}"],
+        ["getStoreOrder", "GET /store/order"],
+      ]);
+      const result = await specParser.listOperationMap();
+      expect(result).to.deep.equal(expected);
+    });
+
+    it("should throw an error if loading the spec fails", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath);
+      const expectedError = new SpecParserError(
+        "Failed to load spec",
+        ErrorType.ListOperationMapFailed
+      );
+
+      sinon.stub(specParser as any, "loadSpec").rejects(expectedError);
+      try {
+        await specParser.listOperationMap();
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain("Failed to load spec");
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.ListOperationMapFailed);
+      }
+    });
+  });
+
   describe("list", () => {
     it("should return a list of HTTP methods and paths for all GET with 1 parameter and without security", async () => {
       const specPath = "valid-spec.yaml";

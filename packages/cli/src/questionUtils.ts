@@ -125,7 +125,7 @@ export async function toYargsOptionsGroup(nodes: IQTreeNode[]) {
   globals.options = [];
   for (const node of nodesWithoutGroup) {
     const data = node.data as Question;
-    if (isAutoSkipSelect(data) && data.type != "func") {
+    if (isAutoSkipSelect(data)) {
       // set the only option to default value so yargs will auto fill it.
       data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
       (data as any).hide = true;

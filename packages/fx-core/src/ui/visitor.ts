@@ -68,6 +68,17 @@ async function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown>
   return raw;
 }
 
+export async function loadOptions(
+  question: SingleSelectQuestion | MultiSelectQuestion,
+  inputs: Inputs
+): Promise<StaticOptions> {
+  let options = question.staticOptions;
+  if (question.dynamicOptions) {
+    options = await question.dynamicOptions(inputs);
+  }
+  return options;
+}
+
 export type QuestionTreeVisitor = (
   question: Question,
   ui: UserInteraction,
@@ -89,49 +100,52 @@ export const questionVisitor: QuestionTreeVisitor = async function (
   step?: number,
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
-  // 1. check and validate preset answer
+  // check and validate preset answer
   if (inputs[question.name] !== undefined) {
     // validate existing answer in inputs object
-    const res = await validationUtils.validateManualInputs(question, inputs);
-    if (res) return err(new InputValidationError(question.name, res));
+    const res = await validationUtils.validateInputs(question, inputs[question.name], inputs);
+    if (res) return err(new InputValidationError(question.name, res, "questionVisitor"));
     return ok({ type: "skip", result: inputs[question.name] });
   }
-  const title = (await getCallFuncValue(inputs, question.title)) as string;
 
-  // 2. run auto function question
-  if (question.type === "func") {
-    try {
-      let res: any;
-      if (ui.executeFunction) {
-        res = await ui.executeFunction({
-          name: question.name,
-          title: title ?? "Executing operation...",
-          func: question.func,
-          inputs: inputs,
-        });
-      } else {
-        res = await question.func(inputs);
-      }
-      if (typeof res === "object" && "isOk" in res) {
-        const fxresult = res as Result<any, FxError>;
-        if (fxresult.isOk()) {
-          return ok({ type: "skip", result: fxresult.value });
-        } else {
-          return err(fxresult.error);
+  // non-interactive mode
+  if (inputs.nonInteractive && isCliNewUxEnabled()) {
+    // first priority: use single option as value
+    if (question.type === "singleSelect" || question.type === "multiSelect") {
+      if (question.skipSingleOption) {
+        const options = await loadOptions(question, inputs);
+        if (options.length === 0) {
+          return err(new EmptyOptionError(question.name, "questionVisitor"));
+        }
+        if (options.length === 1) {
+          const value = getSingleOption(question, options);
+          if (value) {
+            return ok({ type: "skip", result: value });
+          }
         }
       }
-      return ok({ type: "skip", result: res });
-    } catch (e) {
-      return err(assembleError(e));
     }
+    // second priority: use default as value
+    if (question.default) {
+      const value = (await getCallFuncValue(inputs, question.default)) as
+        | string
+        | string[]
+        | OptionItem
+        | OptionItem[];
+      if (value) {
+        const validateRes = await validationUtils.validateInputs(question, value, inputs);
+        if (validateRes) {
+          return err(new InputValidationError(question.name, validateRes, "questionVisitor"));
+        } else {
+          return ok({ type: "skip", result: value });
+        }
+      }
+    }
+    return err(new MissingRequiredInputError(question.name, "questionVisitor"));
   }
 
-  // 3. for non-interactive mode, skip question asking and return error
-  if (inputs.nonInteractive && isCliNewUxEnabled()) {
-    return err(new MissingRequiredInputError(question.name, "core-ui"));
-  }
-
-  // 4. need manual input from user
+  // interactive mode
+  const title = (await getCallFuncValue(inputs, question.title)) as string;
   let defaultValue:
     | string
     | string[]
@@ -160,11 +174,11 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     const additionalValidationOnAcceptFunc = question.additionalValidationOnAccept
       ? getValidationFunction<string>(question.additionalValidationOnAccept, inputs)
       : undefined;
-    const inputQuestion = question;
+
     return await ui.inputText({
       name: question.name,
       title: title,
-      password: inputQuestion.password,
+      password: question.password,
       default: defaultValue as string | (() => Promise<string>),
       placeholder: placeholder,
       prompt: prompt,
@@ -174,21 +188,20 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       additionalValidationOnAccept: additionalValidationOnAcceptFunc,
     });
   } else if (question.type === "singleSelect" || question.type === "multiSelect") {
-    const selectQuestion = question;
     let options: StaticOptions | (() => Promise<StaticOptions>) | undefined = undefined;
-    if (selectQuestion.dynamicOptions) {
+    if (question.dynamicOptions) {
       options = async () => {
-        return selectQuestion.dynamicOptions!(inputs);
+        return question.dynamicOptions!(inputs);
       };
     } else {
-      if (!selectQuestion.staticOptions || selectQuestion.staticOptions.length === 0) {
-        return err(new EmptyOptionError());
+      if (!question.staticOptions || question.staticOptions.length === 0) {
+        return err(new EmptyOptionError(question.name, "questionVisitor"));
       }
-      if (selectQuestion.skipSingleOption && selectQuestion.staticOptions.length === 1) {
-        const returnResult = getSingleOption(selectQuestion, selectQuestion.staticOptions);
+      if (question.skipSingleOption && question.staticOptions.length === 1) {
+        const returnResult = getSingleOption(question, question.staticOptions);
         return ok({ type: "skip", result: returnResult });
       }
-      options = selectQuestion.staticOptions;
+      options = question.staticOptions;
     }
     if (question.type === "singleSelect") {
       const validationFunc = question.validation
@@ -198,7 +211,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         name: question.name,
         title: title,
         options: options,
-        returnObject: selectQuestion.returnObject,
+        returnObject: question.returnObject,
         default: defaultValue as string | (() => Promise<string>),
         placeholder: placeholder,
         prompt: prompt,
@@ -206,10 +219,9 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         totalSteps: totalSteps,
         buttons: question.buttons,
         validation: validationFunc,
-        skipSingleOption: selectQuestion.skipSingleOption,
+        skipSingleOption: question.skipSingleOption,
       });
     } else {
-      const mq = selectQuestion as MultiSelectQuestion;
       const validationFunc = question.validation
         ? getValidationFunction<string[]>(question.validation, inputs)
         : undefined;
@@ -217,15 +229,15 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         name: question.name,
         title: title,
         options: options,
-        returnObject: selectQuestion.returnObject,
+        returnObject: question.returnObject,
         default: defaultValue as string[] | (() => Promise<string[]>),
         placeholder: placeholder,
         prompt: prompt,
-        onDidChangeSelection: mq.onDidChangeSelection,
+        onDidChangeSelection: question.onDidChangeSelection,
         step: step,
         totalSteps: totalSteps,
         validation: validationFunc,
-        skipSingleOption: selectQuestion.skipSingleOption,
+        skipSingleOption: question.skipSingleOption,
       });
     }
   } else if (question.type === "multiFile") {
@@ -275,20 +287,32 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     const validationFunc = question.validation
       ? getValidationFunction<string>(question.validation, inputs)
       : undefined;
-    const additionalValidationOnAcceptFunc = question.inputBoxConfig.additionalValidationOnAccept
-      ? getValidationFunction<string>(
-          { validFunc: question.inputBoxConfig.additionalValidationOnAccept },
-          inputs
-        )
+    const inputValidationFunc = question.inputBoxConfig.validation
+      ? getValidationFunction<string>(question.inputBoxConfig.validation, inputs)
       : undefined;
-    question.inputBoxConfig.additionalValidationOnAccept = additionalValidationOnAcceptFunc;
+    const additionalValidationOnAcceptFunc = question.inputBoxConfig.additionalValidationOnAccept
+      ? getValidationFunction<string>(question.inputBoxConfig.additionalValidationOnAccept, inputs)
+      : undefined;
+    const innerTitle = (await getCallFuncValue(inputs, question.inputBoxConfig.title)) as string;
+    const innerPlaceholder = (await getCallFuncValue(
+      inputs,
+      question.inputBoxConfig.placeholder
+    )) as string;
+    const innerPrompt = (await getCallFuncValue(inputs, question.inputBoxConfig.prompt)) as string;
     const res = await ui.selectFileOrInput({
       name: question.name,
       title: title,
       placeholder: placeholder,
       prompt: prompt,
       inputOptionItem: question.inputOptionItem,
-      inputBoxConfig: question.inputBoxConfig,
+      inputBoxConfig: {
+        name: question.inputBoxConfig.name,
+        title: innerTitle,
+        placeholder: innerPlaceholder,
+        prompt: innerPrompt,
+        validation: inputValidationFunc,
+        additionalValidationOnAccept: additionalValidationOnAcceptFunc,
+      },
       filters: question.filters,
       step: step,
       totalSteps: totalSteps,
@@ -296,7 +320,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     });
     return res;
   }
-
   return err(
     new UserError(
       "API",
@@ -306,113 +329,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     )
   );
 };
-// export async function traverse(
-//   root: IQTreeNode,
-//   inputs: Inputs,
-//   ui: UserInteraction,
-//   telemetryReporter?: TelemetryReporter,
-//   visitor: QuestionTreeVisitor = questionVisitor
-// ): Promise<Result<Void, FxError>> {
-//   const stack: IQTreeNode[] = [];
-//   const history: IQTreeNode[] = [];
-//   stack.push(root);
-//   let step = 1; // manual input step
-//   let totalStep = 1;
-//   const parentMap = new Map<IQTreeNode, IQTreeNode>();
-//   // const valueMap = new Map<QTreeNode, unknown>();
-//   const autoSkipSet = new Set<IQTreeNode>();
-//   while (stack.length > 0) {
-//     const curr = stack.pop();
-//     if (!curr) continue;
-//     //visit
-//     if (curr.data.type !== "group") {
-//       const question = curr.data;
-//       totalStep = step + stack.length;
-//       let qvRes;
-//       try {
-//         qvRes = await visitor(question, ui, inputs, step, totalStep);
-//         sendTelemetryEvent(telemetryReporter, qvRes, question, inputs);
-//       } catch (e) {
-//         return err(assembleError(e));
-//       }
-//       if (qvRes.isErr()) {
-//         // Cancel or Error
-//         return err(qvRes.error);
-//       }
-//       const inputResult = qvRes.value;
-//       if (inputResult.type === "back") {
-//         stack.push(curr);
-
-//         // find the previous input that is neither group nor func nor single option select
-//         let found = false;
-//         while (history.length > 0) {
-//           const last = history.pop();
-//           if (!last) continue;
-//           if (last.children) {
-//             while (stack.length > 0) {
-//               const tmp = stack[stack.length - 1];
-//               if (last.children.includes(tmp)) {
-//                 stack.pop();
-//               } else {
-//                 break;
-//               }
-//             }
-//           }
-//           stack.push(last);
-//           if (last.data.type !== "group") delete inputs[last.data.name];
-
-//           const lastIsAutoSkip = autoSkipSet.has(last);
-//           if (last.data.type !== "group" && last.data.type !== "func" && !lastIsAutoSkip) {
-//             found = true;
-//             break;
-//           }
-//         }
-//         if (!found) {
-//           return err(new UserCancelError());
-//         }
-//         --step;
-//         continue; //ignore the following steps
-//       } else {
-//         //success or skip
-//         question.value = inputResult.result;
-//         inputs[question.name] = question.value;
-
-//         if (inputResult.type === "skip" || question.type === "func") {
-//           if (inputResult.type === "skip") autoSkipSet.add(curr);
-//         } else {
-//           ++step;
-//         }
-//       }
-//     }
-
-//     history.push(curr);
-
-//     if (curr.children) {
-//       const matchChildren: IQTreeNode[] = [];
-//       const valueInMap = findValue(curr, parentMap); //curr.data.type !== "group" ? curr.data.value : undefined; //valueMap.get(curr);
-//       for (const child of curr.children) {
-//         if (!child) continue;
-//         if (child.condition) {
-//           const validRes = await validate(
-//             child.condition,
-//             valueInMap as string | string[] | OptionItem | OptionItem[],
-//             inputs
-//           );
-//           if (validRes !== undefined) {
-//             continue;
-//           }
-//         }
-//         matchChildren.push(child);
-//       }
-//       for (let i = matchChildren.length - 1; i >= 0; --i) {
-//         const child = matchChildren[i];
-//         parentMap.set(child, curr);
-//         stack.push(child);
-//       }
-//     }
-//   }
-//   return ok(Void);
-// }
 
 /**
  * serialize the tree node into array in DFS order

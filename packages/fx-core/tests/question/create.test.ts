@@ -755,7 +755,9 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 3);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginApiSpec().id });
           } else if (question.name === QuestionNames.ApiSpecLocation) {
-            const validRes = await (question as any).inputBoxConfig.validation("https://test.com");
+            const validRes = await (question as any).inputBoxConfig.validation!.validFunc(
+              "https://test.com"
+            );
             assert.isUndefined(validRes);
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
@@ -1054,7 +1056,9 @@ describe("scaffold question", () => {
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
 
-          const validate = question.inputBoxConfig.additionalValidationOnAccept!;
+          const validate = (
+            question.inputBoxConfig.additionalValidationOnAccept! as FuncValidation<string>
+          ).validFunc;
           const res = await validate("url1", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
             { id: "get operation1", label: "get operation1", groupName: "GET" },
@@ -1076,7 +1080,9 @@ describe("scaffold question", () => {
           });
           sandbox.stub(SpecParser.prototype, "list").throws(new Error("error1"));
 
-          const validate = question.inputBoxConfig.additionalValidationOnAccept!;
+          const validate = (
+            question.inputBoxConfig.additionalValidationOnAccept! as FuncValidation<string>
+          ).validFunc;
 
           let fxError: FxError;
           try {
@@ -1116,7 +1122,6 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1126,7 +1131,7 @@ describe("scaffold question", () => {
             },
             auth: { type: "none" },
           };
-          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+          const getStub = sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -1135,13 +1140,14 @@ describe("scaffold question", () => {
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
             question.additionalValidationOnAccept as any
-          ).validFunc("url", inputs);
+          ).validFunc("test.com", inputs);
 
           assert.isUndefined(validationRes);
           assert.isUndefined(additionalValidationRes);
+          assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
         });
 
-        it("cannot load openAI plugin manifest", async () => {
+        it("remove ending slash before generating manifest URL and cannot load openAI plugin manifest", async () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1154,15 +1160,19 @@ describe("scaffold question", () => {
             },
             auth: "oauth",
           };
-          sandbox.stub(axios, "get").throws(new Error("error1"));
+          const getStub = sandbox.stub(axios, "get").throws(new Error("error1"));
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
 
-          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+          const res = await (question.additionalValidationOnAccept as any).validFunc(
+            "https://test.com/",
+            inputs
+          );
 
           assert.isFalse(res === undefined);
+          assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
         });
 
         it("invalid openAI plugin manifest spec: missing property", async () => {

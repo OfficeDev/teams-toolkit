@@ -846,7 +846,7 @@ describe("Teams app APIs", async () => {
     };
 
     const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "run");
-    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
   });
@@ -1301,7 +1301,7 @@ describe("copilotPlugin", async () => {
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves();
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
     console.log(result);
     assert.isTrue(result.isOk());

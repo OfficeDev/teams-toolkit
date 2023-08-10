@@ -43,7 +43,7 @@ import {
   MissingRequiredInputError,
   UserCancelError,
 } from "../../src/error/common";
-import { questionVisitor, traverse } from "../../src/ui/visitor";
+import { loadOptions, questionVisitor, traverse } from "../../src/ui/visitor";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 function createInputs(): Inputs {
@@ -860,6 +860,22 @@ describe("Question Model - Visitor Test", () => {
       };
       const res = await questionVisitor(question, new MockUserInteraction(), inputs);
       assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === "b");
+    });
+  });
+
+  describe("loadOptions", async () => {
+    it("load dynamic options", async () => {
+      const options = await loadOptions(
+        {
+          type: "singleSelect",
+          name: "test",
+          title: "test",
+          dynamicOptions: () => ["a"],
+          staticOptions: [],
+        },
+        { platform: Platform.VSCode }
+      );
+      assert.deepEqual(options, ["a"]);
     });
   });
 });

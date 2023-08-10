@@ -1309,6 +1309,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
       placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.placeholder"),
       name: "input-api-spec-url",
+      step: 2, // Add "back" button
       validation: {
         validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
           return isValidHttpUrl(input)

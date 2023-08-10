@@ -382,11 +382,7 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
               )
           );
         } else {
-          const cardPath = path.join(
-            AppPackageFolderName,
-            ManifestTemplateFileName,
-            command.apiResponseRenderingTemplate
-          );
+          const cardPath = path.join(AppPackageFolderName, command.apiResponseRenderingTemplate);
           if (!fs.existsSync(cardPath)) {
             warnings.push(
               getLocalizedString(

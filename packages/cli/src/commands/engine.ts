@@ -114,7 +114,11 @@ class CLIEngine {
       }
     } else {
       // discard other options and args for interactive mode
-      context.optionValues = pick(context.optionValues, ["projectPath"]);
+      context.optionValues = pick(context.optionValues, [
+        "projectPath",
+        "correlationId",
+        "platform",
+      ]);
       logger.info(
         `Some arguments/options are useless because the interactive mode is opened.` +
           ` If you want to run the command non-interactively, add '--interactive false' after your command` +

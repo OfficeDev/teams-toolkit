@@ -74,7 +74,8 @@ export interface ErrorResult {
 
 export class OpenAIPluginManifestHelper {
   static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
-    let path = input + manifestFilePath;
+    let path =
+      (input.endsWith("/") ? input.substring(0, input.length - 1) : input) + manifestFilePath;
     if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
       path = "https://" + path;
     }
@@ -286,10 +287,11 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
 
 export function generateScaffoldingSummary(
   specWarnings: Warning[],
-  teamsManifest: TeamsAppManifest
+  teamsManifest: TeamsAppManifest,
+  projectPath: string
 ): string {
   const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(specWarnings);
-  const manifestWarningResult = validateTeamsManifestLength(teamsManifest);
+  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
@@ -325,7 +327,10 @@ function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string 
     : "";
 }
 
-function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] {
+function validateTeamsManifestLength(
+  teamsManifest: TeamsAppManifest,
+  projectPath: string
+): string[] {
   const nameShortLimit = 30;
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
@@ -382,8 +387,8 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
           );
         } else {
           const cardPath = path.join(
+            projectPath,
             AppPackageFolderName,
-            ManifestTemplateFileName,
             command.apiResponseRenderingTemplate
           );
           if (!fs.existsSync(cardPath)) {

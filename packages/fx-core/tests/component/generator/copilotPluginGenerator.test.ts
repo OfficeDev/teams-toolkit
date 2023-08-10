@@ -439,19 +439,27 @@ describe("generateScaffoldingSummary", () => {
         { id: "command1", type: "action", title: "" },
       ],
     };
-    const res = generateScaffoldingSummary([], {
-      ...teamsManifest,
-      composeExtensions: [composeExtension],
-    });
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
     assert.equal(res.length, 0);
   });
 
   it("warnings about missing property", () => {
-    const res = generateScaffoldingSummary([], {
-      ...teamsManifest,
-      name: { short: "", full: "" },
-      description: { short: "", full: "" },
-    });
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        name: { short: "", full: "" },
+        description: { short: "", full: "" },
+      },
+      "path"
+    );
 
     assert.isTrue(
       res.includes(
@@ -467,18 +475,23 @@ describe("generateScaffoldingSummary", () => {
     const invalidFullName = "a".repeat(101);
     const invalidShortDescription = "a".repeat(101);
     const invalidFullDescription = "a".repeat(4001);
-    const res = generateScaffoldingSummary([], {
-      ...teamsManifest,
-      name: { short: invalidShortName, full: invalidFullName },
-      description: { short: invalidShortDescription, full: invalidFullDescription },
-    });
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        name: { short: invalidShortName, full: invalidFullName },
+        description: { short: invalidShortDescription, full: invalidFullDescription },
+      },
+      "path"
+    );
     assert.isTrue(res.includes("name/short"));
   });
 
   it("warnings about API spec", () => {
     const res = generateScaffoldingSummary(
       [{ type: WarningType.OperationIdMissing, content: "content" }],
-      teamsManifest
+      teamsManifest,
+      "path"
     );
 
     assert.isTrue(res.includes("content"));
@@ -489,10 +502,14 @@ describe("generateScaffoldingSummary", () => {
       type: "apiBased",
       commands: [{ id: "command1", type: "query", title: "" }],
     };
-    const res = generateScaffoldingSummary([], {
-      ...teamsManifest,
-      composeExtensions: [composeExtension],
-    });
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
 
     assert.isTrue(res.includes("apiResponseRenderingTemplate"));
   });
@@ -505,10 +522,14 @@ describe("generateScaffoldingSummary", () => {
       ],
     };
     sandbox.stub(fs, "existsSync").returns(false);
-    const res = generateScaffoldingSummary([], {
-      ...teamsManifest,
-      composeExtensions: [composeExtension],
-    });
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
 
     assert.isTrue(!res.includes("apiResponseRenderingTemplate"));
     assert.isTrue(res.includes("test"));

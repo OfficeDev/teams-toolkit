@@ -157,7 +157,7 @@ export async function initPage(
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    const addBtn = await frame?.waitForSelector("button span:has-text('Add')");
+    const addBtn = await frame?.waitForSelector("button>span:has-text('Add')");
 
     // dashboard template will have a popup
     if (options?.dashboardFlag) {
@@ -196,7 +196,7 @@ export async function initPage(
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
     // verify add page is closed
-    await frame?.waitForSelector("button span:has-text('Add')", {
+    await frame?.waitForSelector("button>span:has-text('Add')", {
       state: "detached",
     });
     try {
@@ -303,7 +303,7 @@ export async function initTeamsPage(
       }
       // default
       const addBtn = await frame?.waitForSelector(
-        "button span:has-text('Add')"
+        "button>span:has-text('Add')"
       );
       await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);

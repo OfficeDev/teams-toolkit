@@ -45,9 +45,9 @@ import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
-export const apiSpecFolderName = "apiSpecFiles";
-export const apiSpecYamlFileName = "openapi.yaml";
-export const apiSpecJsonFileName = "openapi.json";
+const apiSpecFolderName = "apiSpecFiles";
+const apiSpecYamlFileName = "openapi.yaml";
+const apiSpecJsonFileName = "openapi.json";
 
 const invalidApiSpecErrorName = "invalid-api-spec";
 

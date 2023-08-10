@@ -596,14 +596,14 @@ class CLIUserInteraction implements UserInteraction {
     const validationFuncForInput = config.inputBoxConfig.validation;
     const validationFunc = async (input: string) => {
       const checkLocalPathRes = await pathValidation(input);
-      if (!checkLocalPathRes) {
+      if (checkLocalPathRes) {
         if (validationFuncForInput) {
           return await validationFuncForInput(input);
         } else {
-          return undefined;
+          return checkLocalPathRes;
         }
       } else {
-        return checkLocalPathRes;
+        return undefined;
       }
     };
     return this.inputText({ ...config.inputBoxConfig, validation: validationFunc });

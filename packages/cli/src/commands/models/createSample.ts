@@ -36,7 +36,7 @@ export const createSampleCommand: CLICommand = {
     }
     logger.info(
       `Sample project '${chalk.white(inputs.samples)}' downloaded at: ${chalk.cyanBright(
-        res.value
+        res.value.projectPath
       )}`
     );
     return ok(undefined);

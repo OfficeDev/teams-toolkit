@@ -8,6 +8,7 @@ import {
   Question,
   SingleSelectQuestion,
   StaticOptions,
+  ValidationSchema,
   getValidationFunction,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError } from "../error/common";
@@ -15,9 +16,9 @@ import { EmptyOptionError } from "../error/common";
 class ValidationUtils {
   async validateInputForSingleSelectQuestion(
     question: SingleSelectQuestion,
+    value: string | OptionItem,
     inputs: Inputs
   ): Promise<string | undefined> {
-    const value = inputs[question.name] as string | OptionItem;
     let options = question.staticOptions;
     if (question.dynamicOptions) {
       options = await question.dynamicOptions(inputs);
@@ -27,9 +28,9 @@ class ValidationUtils {
 
   async validateInputForMultipleSelectQuestion(
     question: MultiSelectQuestion,
+    value: string[] | OptionItem[],
     inputs: Inputs
   ): Promise<string | undefined> {
-    const value = inputs[question.name] as string[] | OptionItem[];
     let options = question.staticOptions;
     if (question.dynamicOptions) {
       options = await question.dynamicOptions(inputs);
@@ -55,7 +56,7 @@ class ValidationUtils {
     returnObject?: boolean
   ): string | undefined {
     if (options.length === 0) {
-      return new EmptyOptionError(key).message;
+      return new EmptyOptionError(key, "validationUtils").message;
     }
     const optionIsStringArray = typeof options[0] === "string";
     if (returnObject) {
@@ -82,20 +83,63 @@ class ValidationUtils {
     }
   }
 
-  async validateManualInputs(question: Question, inputs: Inputs): Promise<string | undefined> {
-    if (question.type === "singleSelect" && !question.skipValidation) {
-      return await this.validateInputForSingleSelectQuestion(question, inputs);
-    } else if (question.type === "multiSelect" && !question.skipValidation) {
-      return await this.validateInputForMultipleSelectQuestion(question, inputs);
+  /**
+   * validate value against question model definition
+   */
+  async validateInputs(
+    question: Question,
+    value: string | string[] | OptionItem | OptionItem[],
+    inputs: Inputs
+  ): Promise<string | undefined> {
+    if (question.type === "singleSelect") {
+      if (question.skipValidation) return undefined;
+      return await this.validateInputForSingleSelectQuestion(
+        question,
+        value as string | OptionItem,
+        inputs
+      );
+    } else if (question.type === "multiSelect") {
+      if (question.skipValidation) return undefined;
+      return await this.validateInputForMultipleSelectQuestion(
+        question,
+        value as string[] | OptionItem[],
+        inputs
+      );
     } else {
-      const validationFunc = (question as any).validation
-        ? getValidationFunction<string | string[]>((question as any).validation, inputs)
-        : undefined;
-      if (validationFunc) {
-        return await validationFunc(inputs[question.name]);
+      if (question.validation) {
+        const vFunc = getValidationFunction<string | string[]>(question.validation, inputs);
+        const res = await vFunc(value as string | string[]);
+        if (res) return res;
       }
+      if (question.type === "text" && question.additionalValidationOnAccept) {
+        const vFunc = getValidationFunction<string | string[]>(
+          question.additionalValidationOnAccept,
+          inputs
+        );
+        const res = await vFunc(value as string | string[]);
+        if (res) return res;
+      }
+      if (question.type === "singleFileOrText" && question.inputBoxConfig.validation) {
+        const vFunc = getValidationFunction<string | string[]>(
+          question.inputBoxConfig.validation as ValidationSchema,
+          inputs
+        );
+        const res = await vFunc(value as string | string[]);
+        if (res) return res;
+      }
+      if (
+        question.type === "singleFileOrText" &&
+        question.inputBoxConfig.additionalValidationOnAccept
+      ) {
+        const vFunc = getValidationFunction<string | string[]>(
+          question.inputBoxConfig.additionalValidationOnAccept as ValidationSchema,
+          inputs
+        );
+        const res = await vFunc(value as string | string[]);
+        if (res) return res;
+      }
+      return undefined;
     }
-    return undefined;
   }
 }
 

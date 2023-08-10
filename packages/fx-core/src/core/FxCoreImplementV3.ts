@@ -33,7 +33,6 @@ import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { SpecParser } from "../common/spec-parser/specParser";
-import { isYamlSpecFile } from "../common/spec-parser/utils";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
@@ -670,29 +669,25 @@ export class FxCoreV3Implement {
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const operations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
-    const apiSpecFolderPath = path.join(
-      inputs.projectPath!,
-      AppPackageFolderName,
-      apiSpecFolderName
-    );
-    await fs.ensureDir(apiSpecFolderPath);
-
-    const isYaml = await isYamlSpecFile(url);
-    const openapiSpecPath = path.join(
-      apiSpecFolderPath,
-      isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
-    );
     const manifestPath = inputs[QuestionNames.ManifestPath];
-    const specParser = new SpecParser(openapiSpecPath);
+
+    // Get API spec file path from manifest
+    const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+    const apiSpecFile = manifestRes.value.composeExtensions![0].apiSpecFile;
+    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecFile!);
+
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
       AdaptiveFolderName
     );
-    await fs.ensureDir(adaptiveCardFolder);
 
     try {
-      await specParser.generate(manifestPath, operations, openapiSpecPath, adaptiveCardFolder);
+      const specParser = new SpecParser(url);
+      await specParser.generate(manifestPath, operations, outputAPISpecPath, adaptiveCardFolder);
     } catch (e) {
       const error = assembleError(e);
       return err(error);

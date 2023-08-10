@@ -1287,29 +1287,23 @@ describe("copilotPlugin", async () => {
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        type: "apiBased",
+        apiSpecFile: "apiSpecFiles/openapi.json",
+        commands: [],
+      },
+    ];
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves();
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
     console.log(result);
-    assert.isTrue(result.isOk());
-  });
-
-  it("add API - yaml", async () => {
-    const appName = await mockV3Project();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.Folder]: os.tmpdir(),
-      [QuestionNames.ApiSpecLocation]: "test.yml",
-      [QuestionNames.ApiOperation]: ["testOperation"],
-      projectPath: path.join(os.tmpdir(), appName),
-    };
-    const core = new FxCore(tools);
-    sinon.stub(SpecParser.prototype, "generate").resolves();
-    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
-    const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
   });
 

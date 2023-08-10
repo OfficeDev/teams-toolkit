@@ -32,6 +32,7 @@ import {
   appNameQuestion,
   createProjectQuestionNode,
   createSampleProjectQuestionNode,
+  folderQuestion,
   getLanguageOptions,
   getTemplate,
   openAIPluginManifestLocationQuestion,
@@ -1634,6 +1635,19 @@ describe("scaffold question", () => {
       inputs[QuestionNames.Capabilities] = ["taskpane"];
       const template = getTemplate(inputs);
       assert.equal(template, "taskpane");
+    });
+  });
+
+  describe("folderQuestion", () => {
+    it("should find taskpane template", () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+      };
+      const question = folderQuestion() as any;
+      const title = question.title(inputs);
+      const defaultV = question.default(inputs);
+      assert.equal(title, "Directory where the project folder will be created in");
+      assert.equal(defaultV, "./");
     });
   });
 });

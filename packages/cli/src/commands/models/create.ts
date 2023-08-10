@@ -8,13 +8,12 @@ import * as uuid from "uuid";
 import { createFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
-import { RootFolderOption } from "../common";
 import { createSampleCommand } from "./createSample";
 
 export const createCommand: CLICommand = {
   name: "new",
   description: "Create a new Teams application.",
-  options: [...CreateProjectOptions, RootFolderOption],
+  options: [...CreateProjectOptions],
   examples: [
     {
       command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp",

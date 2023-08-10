@@ -1279,6 +1279,9 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
         const errors = res.error;
+        if (inputs?.platform === Platform.CLI) {
+          return errors.map((e) => e.content).join("\n");
+        }
         if (
           errors.length === 1 &&
           errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
@@ -1386,6 +1389,9 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             inputs!.supportedApisFromApiSpec = res.value;
           } else {
             const errors = res.error;
+            if (inputs?.platform === Platform.CLI) {
+              return errors.map((e) => e.content).join("\n");
+            }
             if (
               errors.length === 1 &&
               errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox

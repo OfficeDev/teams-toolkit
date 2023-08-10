@@ -8,7 +8,7 @@ New features:
 
 - A new app template `AI Chat Bot` to help you get started with building a GPT-like chat bot with AI capabilities using `Teams AI Library`.
   ![AI Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/86a90d2a-efc3-4d8b-9e8c-5d34a1e8c081)
-- Onboaded a new sample `One Productivity Hub using Graph Toolkit with SPFx` that shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and SharePoint provider.
+- Onboarded a new sample `One Productivity Hub using Graph Toolkit with SPFx` that shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and SharePoint provider.
     ![SPFx Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/084ac508-49ea-4b30-854c-8b4d578ff6ee)
 - Added codelens to `teamsapp.yml` file to help you execute life-cycle commands easily after editing the file.
     ![Inline Commands](https://github.com/OfficeDev/TeamsFx/assets/11220663/f6897b26-0e3c-441c-b028-32093e8322a7)
@@ -21,6 +21,7 @@ Enhancements:
     ![image](https://github.com/OfficeDev/TeamsFx/assets/11220663/ec48bef2-fc59-4e0b-8f0f-263f4706f394)
 - Added a new property `additionalMetadata` & `sampleTag` in the yml schema for tracking telemetry events when using Teams Toolkit.
     > Note that the project created starting from this version of Teams Toolkit can operate in older versions.
+- Added progress bar when importing an existing xml-based Outlook add-in project.
 
 Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.2@beta`:
 
@@ -32,7 +33,6 @@ TeamsFx SDK ([`@microsoft/teamsfx`](https://www.npmjs.com/package/@microsoft/tea
 - Deprecated `handleMessageExtensionQueryWithToken` API as it has been replaced by `handleMessageExtensionQueryWithSSO`.
 - Deprecated `AuthenticationConfiguration` interface as it has been replaced by `OnBehalfOfCredentialAuthConfig` type.
 - Deprecated `MsGraphAuthProvider` class as `TokenCredentialAuthentication` has been natively supported in [Microsoft Graph Client Library since version 3.0.0](https://github.com/microsoftgraph/msgraph-sdk-javascript/blob/dev/docs/TokenCredentialAuthenticationProvider.md).
-- Added progress bar when importing an existing xml-based Outlook add-in project.
 
 Bug fixes:
 

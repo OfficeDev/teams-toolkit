@@ -991,7 +991,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
   return programmingLanguageQuestion;
 }
 
-function rootFolderQuestion(): FolderQuestion {
+export function folderQuestion(): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.Folder,
@@ -1559,7 +1559,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         // root folder
-        data: rootFolderQuestion(),
+        data: folderQuestion(),
       },
       {
         // app name
@@ -1625,7 +1625,7 @@ export function createSampleProjectQuestionNode(): IQTreeNode {
     data: sampleSelectQuestion(), // for create sample command, sample name is argument
     children: [
       {
-        data: rootFolderQuestion(),
+        data: folderQuestion(),
       },
     ],
   };

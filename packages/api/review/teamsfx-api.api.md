@@ -314,13 +314,6 @@ export interface Func extends FunctionRouter {
     params?: any;
 }
 
-// @public
-export interface FuncQuestion extends BaseQuestion {
-    func: LocalFunc<any>;
-    // (undocumented)
-    type: "func";
-}
-
 // @public (undocumented)
 export interface FunctionRouter {
     // (undocumented)
@@ -630,7 +623,7 @@ export class QTreeNode implements IQTreeNode {
 }
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -692,7 +685,7 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: InputTextConfig;
+    inputBoxConfig: TextInputQuestion;
     inputOptionItem: OptionItem;
     // (undocumented)
     type: "singleFileOrText";

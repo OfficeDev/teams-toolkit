@@ -1318,7 +1318,7 @@ describe("copilotPlugin", async () => {
     };
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").throws(new Error("fakeError"));
-    sinon.stub(validationUtils, "validateManualInputs").resolves(undefined);
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());

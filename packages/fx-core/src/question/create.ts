@@ -991,15 +991,21 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
   return programmingLanguageQuestion;
 }
 
-function rootFolderQuestion(): FolderQuestion {
+export function folderQuestion(): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.Folder,
     cliShortName: "f",
-    title: getLocalizedString("core.question.workspaceFolder.title"),
-    cliDescription: "Root folder of the project.",
+    title: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "Directory where the project folder will be created in"
+        : getLocalizedString("core.question.workspaceFolder.title"),
+    cliDescription: "Directory where the project folder will be created in.",
     placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
-    default: path.join(os.homedir(), ConstantString.RootFolder),
+    default: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "./"
+        : path.join(os.homedir(), ConstantString.RootFolder),
   };
 }
 
@@ -1553,7 +1559,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         // root folder
-        data: rootFolderQuestion(),
+        data: folderQuestion(),
       },
       {
         // app name
@@ -1619,7 +1625,7 @@ export function createSampleProjectQuestionNode(): IQTreeNode {
     data: sampleSelectQuestion(), // for create sample command, sample name is argument
     children: [
       {
-        data: rootFolderQuestion(),
+        data: folderQuestion(),
       },
     ],
   };

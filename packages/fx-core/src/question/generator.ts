@@ -147,7 +147,7 @@ export async function generateCliOptions(
   node: IQTreeNode,
   name: string,
   optionFolder = "./src/question/options",
-  excludes = ["folder"]
+  excludes?: string[]
 ): Promise<void> {
   // initialize
   const project = new Project({
@@ -181,7 +181,7 @@ export async function generateCliOptions(
 
     const cliName = data.cliName || questionName;
 
-    if (excludes.includes(cliName)) continue;
+    if (excludes?.includes(cliName)) continue;
 
     if (questionNames.has(questionName)) {
       continue;

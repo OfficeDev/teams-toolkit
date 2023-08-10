@@ -1,14 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AppPackageFolderName, ManifestUtil, TeamsAppManifest, TemplateFolderName } from "@microsoft/teamsfx-api";
+import {
+  AppPackageFolderName,
+  ManifestUtil,
+  TeamsAppManifest,
+  TemplateFolderName,
+} from "@microsoft/teamsfx-api";
 import {
   MetadataV3,
   envUtil,
   environmentManager,
   getAllowedAppMaps,
   getPermissionMap,
-  manifestUtils,
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";

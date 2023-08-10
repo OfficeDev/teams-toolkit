@@ -3,10 +3,11 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import { Command, PartialManifest, ComposeExtension, Parameter } from "./interfaces";
+import { Command, PartialManifest, ComposeExtension, Parameter, ErrorType } from "./interfaces";
 import fs from "fs-extra";
 import path from "path";
 import { getRelativePath, updateFirstLetter } from "./utils";
+import { SpecParserError } from "./specParserError";
 
 export async function updateManifest(
   manifestPath: string,
@@ -14,28 +15,32 @@ export async function updateManifest(
   adaptiveCardFolder: string,
   spec: OpenAPIV3.Document
 ): Promise<PartialManifest> {
-  // TODO: manifest interface can be updated when manifest parser library is ready
-  const originalManifest: PartialManifest = await fs.readJSON(manifestPath);
+  try {
+    // TODO: manifest interface can be updated when manifest parser library is ready
+    const originalManifest: PartialManifest = await fs.readJSON(manifestPath);
 
-  const commands = generateCommands(spec, adaptiveCardFolder, manifestPath);
-  const ComposeExtension: ComposeExtension = {
-    type: "apiBased",
-    apiSpecFile: getRelativePath(manifestPath, outputSpecPath),
-    commands: commands,
-    supportsConversationalAI: true,
-  };
+    const commands = generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const ComposeExtension: ComposeExtension = {
+      type: "apiBased",
+      apiSpecFile: getRelativePath(manifestPath, outputSpecPath),
+      commands: commands,
+      supportsConversationalAI: true,
+    };
 
-  const updatedPart: PartialManifest = {
-    description: {
-      short: spec.info.title,
-      full: spec.info.description ?? originalManifest.description.full,
-    },
-    composeExtensions: [ComposeExtension],
-  };
+    const updatedPart: PartialManifest = {
+      description: {
+        short: spec.info.title,
+        full: spec.info.description ?? originalManifest.description.full,
+      },
+      composeExtensions: [ComposeExtension],
+    };
 
-  const updatedManifest = { ...originalManifest, ...updatedPart };
+    const updatedManifest = { ...originalManifest, ...updatedPart };
 
-  return updatedManifest;
+    return updatedManifest;
+  } catch (err) {
+    throw new SpecParserError((err as Error).toString(), ErrorType.UpdateManifestFailed);
+  }
 }
 
 export function generateCommands(

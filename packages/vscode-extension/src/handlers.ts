@@ -1385,7 +1385,11 @@ async function ShowScaffoldingWarningSummary(
     );
     if (manifestRes.isOk()) {
       if (ManifestUtil.parseCommonProperties(manifestRes.value).isCopilotPlugin) {
-        const message = generateScaffoldingSummary(createWarnings, manifestRes.value);
+        const message = generateScaffoldingSummary(
+          createWarnings,
+          manifestRes.value,
+          workspacePath
+        );
         if (message) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
           VsCodeLogInstance.outputChannel.show();

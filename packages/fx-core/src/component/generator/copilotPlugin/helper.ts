@@ -287,10 +287,11 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
 
 export function generateScaffoldingSummary(
   specWarnings: Warning[],
-  teamsManifest: TeamsAppManifest
+  teamsManifest: TeamsAppManifest,
+  projectPath: string
 ): string {
   const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(specWarnings);
-  const manifestWarningResult = validateTeamsManifestLength(teamsManifest);
+  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
@@ -326,7 +327,10 @@ function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string 
     : "";
 }
 
-function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] {
+function validateTeamsManifestLength(
+  teamsManifest: TeamsAppManifest,
+  projectPath: string
+): string[] {
   const nameShortLimit = 30;
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
@@ -382,7 +386,11 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
               )
           );
         } else {
-          const cardPath = path.join(AppPackageFolderName, command.apiResponseRenderingTemplate);
+          const cardPath = path.join(
+            projectPath,
+            AppPackageFolderName,
+            command.apiResponseRenderingTemplate
+          );
           if (!fs.existsSync(cardPath)) {
             warnings.push(
               getLocalizedString(

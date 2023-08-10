@@ -1315,6 +1315,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
           return isValidHttpUrl(input)
             ? undefined
+            : inputs?.platform === Platform.CLI
+            ? "Please enter a valid URL or local path of your API Specification"
             : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
         },
       },

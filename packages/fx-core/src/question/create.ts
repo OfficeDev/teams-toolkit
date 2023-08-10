@@ -1285,6 +1285,9 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
         const errors = res.error;
+        if (inputs?.platform === Platform.CLI) {
+          return errors.map((e) => e.content).join("\n");
+        }
         if (
           errors.length === 1 &&
           errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
@@ -1321,6 +1324,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
           return isValidHttpUrl(input)
             ? undefined
+            : inputs?.platform === Platform.CLI
+            ? "Please enter a valid URL or local path of your API Specification"
             : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
         },
       },
@@ -1390,6 +1395,9 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             inputs!.supportedApisFromApiSpec = res.value;
           } else {
             const errors = res.error;
+            if (inputs?.platform === Platform.CLI) {
+              return errors.map((e) => e.content).join("\n");
+            }
             if (
               errors.length === 1 &&
               errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox

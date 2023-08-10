@@ -556,13 +556,29 @@ class CLIUserInteraction implements UserInteraction {
     if (loadRes.isErr()) {
       return err(loadRes.error);
     }
+
+    let validationFunc: (input: string) => string | undefined | Promise<string | undefined>;
+    if (config.validation || config.additionalValidationOnAccept) {
+      validationFunc = async (input: string) => {
+        let res: string | undefined = undefined;
+        if (config.validation) {
+          res = await config.validation(input);
+        }
+
+        if (!res && !!config.additionalValidationOnAccept) {
+          res = await config.additionalValidationOnAccept(input);
+        }
+
+        return res;
+      };
+    }
     return new Promise(async (resolve) => {
       const result = await this.input(
         config.name,
         !!config.password,
         config.title,
         config.default as string,
-        this.toValidationFunc(config.validation)
+        this.toValidationFunc(validationFunc)
       );
       if (result.isOk()) {
         resolve(ok({ type: "success", result: result.value }));
@@ -577,7 +593,20 @@ class CLIUserInteraction implements UserInteraction {
   ): Promise<Result<InputTextResult, FxError>> {
     const loadRes = await this.loadDefaultValue(config.inputBoxConfig);
     if (loadRes.isErr()) return err(loadRes.error);
-    return this.inputText(config.inputBoxConfig);
+    const validationFuncForInput = config.inputBoxConfig.validation;
+    const validationFunc = async (input: string) => {
+      const checkLocalPathRes = await pathValidation(input);
+      if (checkLocalPathRes) {
+        if (validationFuncForInput) {
+          return await validationFuncForInput(input);
+        } else {
+          return checkLocalPathRes;
+        }
+      } else {
+        return undefined;
+      }
+    };
+    return this.inputText({ ...config.inputBoxConfig, validation: validationFunc });
   }
   public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     const loadRes = await this.loadDefaultValue(config);

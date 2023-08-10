@@ -1141,7 +1141,7 @@ describe("scaffold question", () => {
           assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
         });
 
-        it("cannot load openAI plugin manifest", async () => {
+        it("remove ending slash before generating manifest URL and cannot load openAI plugin manifest", async () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1154,15 +1154,19 @@ describe("scaffold question", () => {
             },
             auth: "oauth",
           };
-          sandbox.stub(axios, "get").throws(new Error("error1"));
+          const getStub = sandbox.stub(axios, "get").throws(new Error("error1"));
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
 
-          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
+          const res = await (question.additionalValidationOnAccept as any).validFunc(
+            "https://test.com/",
+            inputs
+          );
 
           assert.isFalse(res === undefined);
+          assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
         });
 
         it("invalid openAI plugin manifest spec: missing property", async () => {

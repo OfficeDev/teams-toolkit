@@ -36,10 +36,12 @@ import {
   UnknownOptionError,
 } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { helper } from "./helper";
+import { tryDetectCICDPlatform } from "../commonlib/common/cicdPlatformDetector";
+import { CliConfigOptions } from "../userSetttings";
 
 class CLIEngine {
   isBundledElectronApp(): boolean {
@@ -60,7 +62,7 @@ class CLIEngine {
     const findRes = this.findCommand(rootCmd, args);
     const foundCommand = findRes.cmd;
     const remainingArgs = findRes.remainingArgs;
-    debugLogs.push(`find matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
+    debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
 
     const context: CLIContext = {
       command: foundCommand,
@@ -69,6 +71,8 @@ class CLIEngine {
       argumentValues: [],
       telemetryProperties: {
         [TelemetryProperty.CommandName]: foundCommand.fullName,
+        [TelemetryProperty.Component]: TelemetryComponentType,
+        [CliConfigOptions.RunFrom]: tryDetectCICDPlatform(),
       },
     };
 
@@ -81,6 +85,31 @@ class CLIEngine {
       }
     }
 
+    // load project meta in telemetry properties
+    if (context.optionValues.projectPath) {
+      const core = getFxCore();
+      const res = await core.getProjectMetadata(context.optionValues.projectPath as string);
+      if (res.isOk()) {
+        const value = res.value;
+        context.telemetryProperties[TelemetryProperty.ProjectId] = value.projectId || "";
+        context.telemetryProperties[TelemetryProperty.SettingsVersion] = value.version || "";
+      }
+    }
+
+    logger.debug(
+      `parsed context: ${JSON.stringify(
+        pick(context, [
+          "optionValues",
+          "globalOptionValues",
+          "argumentValues",
+          "telemetryProperties",
+        ]),
+        null,
+        2
+      )}`
+    );
+
+    // send start event
     if (context.command.telemetry) {
       CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
     }
@@ -380,7 +409,6 @@ class CLIEngine {
       context.optionValues.projectPath = projectPath;
       if (projectPath) {
         CliTelemetry.withRootFolder(projectPath);
-        const core = getFxCore();
       }
     }
 
@@ -400,18 +428,6 @@ class CLIEngine {
     context.telemetryProperties[TelemetryProperty.CorrelationId] =
       context.optionValues.correlationId;
 
-    debugLogs.push(
-      `parsed context: ${JSON.stringify(
-        pick(context, [
-          "optionValues",
-          "globalOptionValues",
-          "argumentValues",
-          "telemetryProperties",
-        ]),
-        null,
-        2
-      )}`
-    );
     return ok(undefined);
   }
 

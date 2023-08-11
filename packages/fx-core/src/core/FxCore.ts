@@ -224,15 +224,16 @@ export class FxCore {
    * get projectId
    */
   async getProjectId(projectPath: string): Promise<Result<string, FxError>> {
-    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
-    const maybeProjectModel = await metadataUtil.parse(ymlPath, "dev");
-    if (maybeProjectModel.isErr()) {
-      return err(maybeProjectModel.error);
+    const res = await this.getProjectMetadata(projectPath);
+    if (res.isErr()) {
+      return err(res.error);
     }
-    const projectModel = maybeProjectModel.value as any;
-    return ok(projectModel.projectId || "");
+    return ok(res.value.projectId || "");
   }
 
+  /**
+   * @description get projectId and version from yml
+   */
   async getProjectMetadata(
     projectPath: string
   ): Promise<Result<{ version?: string; projectId?: string }, FxError>> {
@@ -244,8 +245,8 @@ export class FxCore {
       const ymlContent = await fs.readFile(ymlPath, "utf-8");
       const ymlObject = parse(ymlContent);
       return ok({
-        projectId: (ymlObject?.projectId as string) ?? undefined,
-        version: (ymlObject?.version as string) ?? undefined,
+        projectId: ymlObject?.projectId ? ymlObject.projectId + "" : "",
+        version: ymlObject?.version ? ymlObject.version + "" : "",
       });
     } catch {
       return ok({});

@@ -15,7 +15,6 @@ import {
   SystemError,
   TeamsAppManifest,
   UserError,
-  Void,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -29,6 +28,7 @@ import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
+import { ValidationStatus } from "../../src/common/spec-parser/interfaces";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
 import {
   DriverDefinition,
@@ -75,7 +75,6 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { ValidationStatus } from "../../src/common/spec-parser/interfaces";
 
 const tools = new MockTools();
 
@@ -976,46 +975,63 @@ describe("getProjectId", async () => {
     sandbox.restore();
   });
   it("happy path", async () => {
-    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    const mockProjectModel: any = {
-      projectId: "12345",
-      provision: {
-        name: "provision",
-        driverDefs: [
-          {
-            uses: "teamsApp/create",
-            with: {
-              name: "huajie052602-${{TEAMSFX_ENV}}",
-            },
-            writeToEnvironmentFile: {
-              teamsAppId: "TEAMS_APP_ID",
-            },
-          },
-        ],
-      },
-    };
-    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     const core = new FxCore(tools);
+    sandbox.stub(core, "getProjectMetadata").resolves(
+      ok({
+        projectId: "12345",
+        version: "1.1.1",
+      })
+    );
     const res = await core.getProjectId(".");
     assert.isTrue(res.isOk() && res.value === "12345");
   });
   it("return empty value", async () => {
-    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    const mockProjectModel: any = {};
-    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     const core = new FxCore(tools);
+    sandbox.stub(core, "getProjectMetadata").resolves(ok({}));
     const res = await core.getProjectId(".");
     assert.isTrue(res.isOk() && res.value === "");
   });
-  it("parse yml error", async () => {
+});
+describe("getProjectMetadata", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    sandbox.stub(metadataUtil, "parse").resolves(err(new UserError({})));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves("version: 1.1.1\nprojectId: 12345" as any);
     const core = new FxCore(tools);
-    const res = await core.getProjectId(".");
-    assert.isTrue(res.isErr());
+    const res = await core.getProjectMetadata(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {
+        projectId: "12345",
+        version: "1.1.1",
+      });
+    }
+  });
+  it("yml not exist", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const core = new FxCore(tools);
+    const res = await core.getProjectMetadata(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {});
+    }
+  });
+  it("throw error", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    sandbox.stub(fs, "pathExists").rejects(new Error("mocked error"));
+    const core = new FxCore(tools);
+    const res = await core.getProjectMetadata(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {});
+    }
   });
 });
-
 describe("getTeamsAppName", async () => {
   const sandbox = sinon.createSandbox();
   afterEach(() => {

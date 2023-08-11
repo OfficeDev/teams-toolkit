@@ -62,7 +62,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     logger.debug(
-      `sendTelemetryErrorEvent: ${eventName}, properties: ${JSON.stringify(properties)}`
+      `sendTelemetryErrorEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`
     );
   }
 
@@ -77,12 +77,10 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    this.checkAndOverwriteSharedProperty(properties);
-
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
-    logger.debug(`sendTelemetryEvent: ${eventName}, properties: ${JSON.stringify(properties)}`);
+    logger.debug(`sendTelemetryEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`);
   }
 
   sendTelemetryException(

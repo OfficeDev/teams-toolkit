@@ -28,8 +28,9 @@ import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
-import { ValidationStatus } from "../../src/common/spec-parser/interfaces";
+import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
+import { SpecParserError } from "../../src/common/spec-parser/specParserError";
 import {
   DriverDefinition,
   DriverInstance,
@@ -75,8 +76,6 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
-import { SpecParserError } from "../../src/common/spec-parser/specParserError";
 
 const tools = new MockTools();
 

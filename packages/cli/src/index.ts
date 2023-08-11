@@ -59,7 +59,6 @@ export function sendCommandUsageTelemetry(processArgv: string[]): void {
  */
 export async function start(): Promise<void> {
   initTelemetryReporter();
-  sendCommandUsageTelemetry(process.argv);
   registerPrompts();
   if (isCliNewUxEnabled()) {
     return startNewUX();

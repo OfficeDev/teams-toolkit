@@ -20,9 +20,11 @@ import {
   Tools,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
+import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
-import { TelemetryReporterInstance } from "../common/telemetry";
+import { parse } from "yaml";
+import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
 import "../component/driver/index";
@@ -40,25 +42,17 @@ import { LocalCrypto } from "./crypto";
 import { environmentManager } from "./environment";
 import { InvalidInputError } from "./error";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
-import { setTools, TOOLS } from "./globalVars";
+import { ErrorContextMW, setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
-import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
-import { parse } from "yaml";
-import fs from "fs-extra";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
 export class FxCore {
-  tools: Tools;
-  isFromSample?: boolean;
-  settingsVersion?: string;
   v3Implement: FxCoreV3Implement;
 
   constructor(tools: Tools) {
-    this.tools = tools;
     setTools(tools);
-    TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
     this.v3Implement = new FxCoreV3Implement(tools);
   }
 
@@ -73,6 +67,7 @@ export class FxCore {
   /**
    * lifecycle command: create new project
    */
+  @ErrorContextMW({ component: "FxCore", stage: "createProject" })
   async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     return this.v3Implement.dispatch(this.createProject, inputs);
   }
@@ -80,6 +75,7 @@ export class FxCore {
   /**
    * lifecycle command: create new sample project
    */
+  @ErrorContextMW({ component: "FxCore", stage: "createSampleProject" })
   async createSampleProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     return this.v3Implement.dispatch(this.createSampleProject, inputs);
   }
@@ -87,6 +83,7 @@ export class FxCore {
   /**
    * lifecycle commands: provision
    */
+  @ErrorContextMW({ component: "FxCore", stage: "provision" })
   async provisionResources(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.provisionResources, inputs);
   }
@@ -94,10 +91,12 @@ export class FxCore {
   /**
    * lifecycle commands: deploy
    */
+  @ErrorContextMW({ component: "FxCore", stage: "deploy" })
   async deployArtifacts(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.deployArtifacts, inputs);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "localDebug" })
   async localDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
     inputs.env = environmentManager.getLocalEnvName();
     return this.provisionResources(inputs);
@@ -106,6 +105,7 @@ export class FxCore {
   /**
    * none lifecycle command, v3 only
    */
+  @ErrorContextMW({ component: "FxCore", stage: "deployAadManifest" })
   async deployAadManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.deployAadManifest, inputs);
   }
@@ -113,6 +113,7 @@ export class FxCore {
   /**
    * none lifecycle command, v3 only
    */
+  @ErrorContextMW({ component: "FxCore", stage: "addWebpart" })
   async addWebpart(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.addWebpart, inputs);
   }
@@ -120,6 +121,7 @@ export class FxCore {
   /**
    * lifecycle command: publish
    */
+  @ErrorContextMW({ component: "FxCore", stage: "publish" })
   async publishApplication(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.publishApplication, inputs);
   }
@@ -127,6 +129,7 @@ export class FxCore {
   /**
    * most commands will be deprecated in V3
    */
+  @ErrorContextMW({ component: "FxCore", stage: "executeUserTask" })
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
     return await this.v3Implement.dispatchUserTask(this.executeUserTask, func, inputs);
   }
@@ -134,6 +137,7 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "buildAadManifest" })
   async buildAadManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.buildAadManifest, inputs);
   }
@@ -141,6 +145,7 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "deployTeamsManifest" })
   async deployTeamsManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.deployTeamsManifest, inputs);
   }
@@ -148,24 +153,28 @@ export class FxCore {
   /**
    * v3 only none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "validateApplication" })
   async validateApplication(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.validateApplication, inputs);
   }
   /**
    * v3 only none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "validateManifest" })
   async validateManifest(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.validateManifest, inputs);
   }
   /**
    * v3 only none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "validateAppPackage" })
   async validateAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.validateAppPackage, inputs);
   }
   /**
    * v3 only none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "createAppPackage" })
   async createAppPackage(inputs: Inputs): Promise<Result<any, FxError>> {
     return this.v3Implement.dispatch(this.createAppPackage, inputs);
   }
@@ -176,6 +185,7 @@ export class FxCore {
    * @param {Inputs} inputs
    * @returns the url to preview the app
    */
+  @ErrorContextMW({ component: "FxCore", stage: "preview" })
   async previewWithManifest(inputs: Inputs): Promise<Result<string, FxError>> {
     return this.v3Implement.dispatch(this.previewWithManifest, inputs);
   }
@@ -198,6 +208,7 @@ export class FxCore {
   /**
    * get all dot envs
    */
+  @ErrorContextMW({ component: "FxCore", stage: "getDotEnvs" })
   async getDotEnvs(
     inputs: InputsWithProjectPath
   ): Promise<Result<{ [name: string]: DotenvParseOutput }, FxError>> {
@@ -207,6 +218,7 @@ export class FxCore {
   /**
    * given projectPath and filePath, return whether the filePath is a env file
    */
+  @ErrorContextMW({ component: "FxCore", stage: "isEnvFile" })
   async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
     const inputFileName = path.basename(inputFile);
     const envName = envUtil.extractEnvNameFromFileName(inputFileName);
@@ -223,6 +235,7 @@ export class FxCore {
   /**
    * get projectId
    */
+  @ErrorContextMW({ component: "FxCore", stage: "getProjectId" })
   async getProjectId(projectPath: string): Promise<Result<string, FxError>> {
     const res = await this.getProjectMetadata(projectPath);
     if (res.isErr()) {
@@ -234,6 +247,7 @@ export class FxCore {
   /**
    * @description get projectId and version from yml
    */
+  @ErrorContextMW({ component: "FxCore", stage: "getProjectMetadata" })
   async getProjectMetadata(
     projectPath: string
   ): Promise<Result<{ version?: string; projectId?: string }, FxError>> {
@@ -256,6 +270,7 @@ export class FxCore {
   /**
    * get Teams App Name from yml
    */
+  @ErrorContextMW({ component: "FxCore", stage: "getTeamsAppName" })
   async getTeamsAppName(projectPath: string): Promise<Result<string, FxError>> {
     const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
     const maybeProjectModel = await metadataUtil.parse(ymlPath, "dev");
@@ -280,6 +295,7 @@ export class FxCore {
   /**
    * get project info
    */
+  @ErrorContextMW({ component: "FxCore", stage: "getProjectInfo" })
   async getProjectInfo(
     projectPath: string,
     env: string
@@ -335,6 +351,7 @@ export class FxCore {
     return ok(res);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "grantPermission" })
   async grantPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     return this.v3Implement.dispatch(this.grantPermission, inputs);
   }
@@ -342,6 +359,7 @@ export class FxCore {
   /**
    * none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "checkPermission" })
   async checkPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     return this.v3Implement.dispatch(this.checkPermission, inputs);
   }
@@ -349,15 +367,18 @@ export class FxCore {
   /**
    * none lifecycle command
    */
+  @ErrorContextMW({ component: "FxCore", stage: "listCollaborator" })
   async listCollaborator(inputs: Inputs): Promise<Result<ListCollaboratorResult, FxError>> {
     return this.v3Implement.dispatch(this.listCollaborator, inputs);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "getSelectedEnv" })
   @hooks([ErrorHandlerMW, EnvLoaderMW(false)])
   async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
     return ok(inputs.env); //work for both v2 and v3
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "createLocalCrypto" })
   async createLocalCrypto(projectPath: string): Promise<Result<CryptoProvider, FxError>> {
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) {
@@ -371,6 +392,7 @@ export class FxCore {
   /**
    * only for vs code extension
    */
+  @ErrorContextMW({ component: "FxCore", stage: "encrypt" })
   @hooks([ErrorHandlerMW])
   async encrypt(plaintext: string, inputs: Inputs): Promise<Result<string, FxError>> {
     const res = await this.createLocalCrypto(inputs.projectPath!);
@@ -382,6 +404,7 @@ export class FxCore {
   /**
    * only for vs code extension
    */
+  @ErrorContextMW({ component: "FxCore", stage: "decrypt" })
   @hooks([ErrorHandlerMW])
   async decrypt(ciphertext: string, inputs: Inputs): Promise<Result<string, FxError>> {
     const res = await this.createLocalCrypto(inputs.projectPath!);
@@ -391,20 +414,24 @@ export class FxCore {
     return res.value.decrypt(ciphertext);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "createEnv" })
   async createEnv(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.createEnv, inputs);
   }
 
   // a phantom migration method for V3
+  @ErrorContextMW({ component: "FxCore", stage: "phantomMigrationV3" })
   async phantomMigrationV3(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.phantomMigrationV3, inputs);
   }
 
   // a project version check
+  @ErrorContextMW({ component: "FxCore", stage: "projectVersionCheck" })
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     return this.v3Implement.dispatch(this.projectVersionCheck, inputs);
   }
   // apply the given yaml template to current project.
+  @ErrorContextMW({ component: "FxCore", stage: "apply" })
   async apply(
     inputs: Inputs,
     templatePath: string,
@@ -450,6 +477,7 @@ export class FxCore {
     }
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "runLifecycle" })
   async runLifecycle(
     lifecycle: ILifecycle,
     driverContext: DriverContext,
@@ -494,28 +522,34 @@ export class FxCore {
     }
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "preProvisionForVS" })
   async preProvisionForVS(inputs: Inputs): Promise<Result<PreProvisionResForVS, FxError>> {
     return this.v3Implement.dispatch(this.preProvisionForVS, inputs);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "preCheckYmlAndEnvForVS" })
   async preCheckYmlAndEnvForVS(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.preCheckYmlAndEnvForVS, inputs);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "publishInDeveloperPortal" })
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.publishInDeveloperPortal, inputs);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "copilotPluginAddAPI" })
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return this.v3Implement.dispatch(this.copilotPluginAddAPI, inputs);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "copilotPluginLoadOpenAIManifest" })
   async copilotPluginLoadOpenAIManifest(
     inputs: Inputs
   ): Promise<Result<OpenAIPluginManifest, FxError>> {
     return this.v3Implement.dispatch(this.copilotPluginLoadOpenAIManifest, inputs);
   }
 
+  @ErrorContextMW({ component: "FxCore", stage: "copilotPluginListOperations" })
   async copilotPluginListOperations(
     inputs: Inputs
   ): Promise<Result<ApiOperation[], ErrorResult[]>> {

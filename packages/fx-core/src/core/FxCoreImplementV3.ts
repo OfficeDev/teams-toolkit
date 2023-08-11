@@ -82,7 +82,7 @@ import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { InvalidInputError } from "./error";
-import { TOOLS } from "./globalVars";
+import { ErrorContextMW, TOOLS, setErrorContext } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -97,8 +97,6 @@ import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types"
 
 export class FxCoreV3Implement {
   tools: Tools;
-  isFromSample?: boolean;
-  settingsVersion?: string;
 
   constructor(tools: Tools) {
     this.tools = tools;
@@ -247,6 +245,7 @@ export class FxCoreV3Implement {
       outputFilePath: manifestOutputPath,
     };
     const Context: DriverContext = createDriverContext(inputs);
+    setErrorContext({ component: "aadAppUpdate" });
     const res = await updateAadClient.run(inputArgs, Context);
     if (res.isErr()) {
       return err(res.error);
@@ -328,6 +327,7 @@ export class FxCoreV3Implement {
       inputs.stage = Stage.addFeature;
       inputs[QuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get<SSO>("sso");
+      setErrorContext({ component: "sso", method: "add" });
       res = await component.add(context as unknown as Context, inputs as InputsWithProjectPath);
     }
     return res;
@@ -335,6 +335,7 @@ export class FxCoreV3Implement {
 
   @hooks([ErrorHandlerMW, QuestionMW("addWebpart"), ProjectMigratorMWV3, ConcurrentLockerMW])
   async addWebpart(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    setErrorContext({ component: "spfxAdd", method: "run" });
     const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
     const args: AddWebPartArgs = {
       manifestPath: inputs[SPFxQuestionNames.ManifestPath],
@@ -369,6 +370,7 @@ export class FxCoreV3Implement {
   async grantPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     inputs.stage = Stage.grantPermission;
     const context = createContextV3();
+    setErrorContext({ component: "collaborator" });
     const res = await grantPermission(
       context,
       inputs as InputsWithProjectPath,
@@ -582,6 +584,7 @@ export class FxCoreV3Implement {
     await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
     return ok(undefined);
   }
+  @ErrorContextMW({ source: "Teams" })
   @hooks([QuestionMW("validateTeamsApp")])
   async validateApplication(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
     if (inputs["manifest-path"]) {

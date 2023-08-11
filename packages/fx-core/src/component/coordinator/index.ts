@@ -29,7 +29,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { ObjectIsUndefinedError } from "../../core/error";
-import { globalVars } from "../../core/globalVars";
+import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   assembleError,
@@ -142,6 +142,7 @@ const AzureDeployActions = [
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 class Coordinator {
+  @ErrorContextMW({ component: "Coordinator" })
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -278,6 +279,7 @@ class Coordinator {
     return ok({ projectPath: projectPath, warnings });
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {
     const list = await fs.readdir(projectPath);
     const csprojFiles = list.filter((fileName) => fileName.endsWith(".csproj"));
@@ -313,6 +315,7 @@ class Coordinator {
     return ok(undefined);
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   async ensureTrackingId(
     projectPath: string,
     trackingId: string | undefined = undefined
@@ -327,6 +330,7 @@ class Coordinator {
     return ok(settings.trackingId);
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   async preProvisionForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
@@ -395,6 +399,7 @@ class Coordinator {
     return ok(res);
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   async preCheckYmlAndEnvForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
@@ -421,6 +426,7 @@ class Coordinator {
     return ok(undefined);
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -702,6 +708,7 @@ class Coordinator {
     return ok(output);
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   convertExecuteResult(
     execRes: Result<ExecutionOutput, ExecutionError>,
     templatePath: string
@@ -735,6 +742,7 @@ class Coordinator {
     return [output, error];
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -815,6 +823,7 @@ class Coordinator {
     return ok(output);
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -883,6 +892,7 @@ class Coordinator {
     return ok(output);
   }
 
+  @ErrorContextMW({ component: "Coordinator" })
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,

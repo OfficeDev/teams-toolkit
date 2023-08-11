@@ -35,6 +35,7 @@ import {
   AzureStorageUploadFilesError,
 } from "../../../../error/deploy";
 import { ProgressMessages } from "../../../messages";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -70,6 +71,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
 
   protected helpLink = "https://aka.ms/teamsfx-actions/azure-storage-deploy";
 
+  @ErrorContextMW({ source: "Azure", component: "AzureStorageDeployDriverImpl" })
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,

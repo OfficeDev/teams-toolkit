@@ -36,6 +36,7 @@ import { AadCollaboration, TeamsCollaboration } from "../component/feature/colla
 import { FileNotFoundError } from "../error/common";
 import { QuestionNames } from "../question/questionNames";
 import { CoreSource, FailedToLoadManifestId } from "./error";
+import { setErrorContext } from "./globalVars";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters

@@ -13,6 +13,7 @@ import axiosRetry from "axios-retry";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadOwner } from "../../../../common/permissionInterface";
 import { DeleteOrUpdatePermissionFailedError } from "../error/aadManifestError";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
@@ -49,7 +50,7 @@ export class AadAppClient {
         axiosRetry.isNetworkError(error) || axiosRetry.isRetryableError(error), // retry when there's network error or 5xx error
     });
   }
-
+  @ErrorContextMW({ source: "Graph" })
   public async createAadApp(
     displayName: string,
     signInAudience = SignInAudience.AzureADMyOrg
@@ -63,7 +64,7 @@ export class AadAppClient {
 
     return <AADApplication>response.data;
   }
-
+  @ErrorContextMW({ source: "Graph" })
   public async generateClientSecret(objectId: string): Promise<string> {
     const requestBody = {
       passwordCredential: {
@@ -85,6 +86,7 @@ export class AadAppClient {
     return response.data.secretText;
   }
 
+  @ErrorContextMW({ source: "Graph", component: "AadAppClient" })
   public async updateAadApp(manifest: AADManifest): Promise<void> {
     const objectId = manifest.id!; // You need to ensure the object id exists in manifest
     const requestBody = AadManifestHelper.manifestToApplication(manifest);

@@ -401,6 +401,12 @@ export function fillInTelemetryPropsForFxError(
   props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
   props[TelemetryConstants.properties.errorName] = error.name;
 
+  // append global context properties
+  props[TelemetryConstants.properties.errorComponent] = globalVars.component;
+  props[TelemetryConstants.properties.errorStage] = globalVars.stage;
+  props[TelemetryConstants.properties.errorMethod] = globalVars.method;
+  props[TelemetryConstants.properties.errorSource] = globalVars.source;
+
   if (error.innerError) {
     props[TelemetryConstants.properties.innerError] = JSON.stringify(
       error.innerError,

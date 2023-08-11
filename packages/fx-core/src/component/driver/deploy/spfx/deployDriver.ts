@@ -29,6 +29,7 @@ import { DeploySPFxArgs } from "./interface/deployArgs";
 import { Constants, DeployProgressMessage } from "./utility/constants";
 import { sleep } from "./utility/sleep";
 import { SPOClient } from "./utility/spoClient";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 @Service(Constants.DeployDriverName)
 export class SPFxDeployDriver implements StepDriver {
@@ -69,7 +70,7 @@ export class SPFxDeployDriver implements StepDriver {
       summaries: wrapContext.summaries,
     };
   }
-
+  @ErrorContextMW({ source: "SPFx" })
   public async deploy(
     args: DeploySPFxArgs,
     context: WrapDriverContext

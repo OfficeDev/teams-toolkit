@@ -18,6 +18,8 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 import { updateProgress } from "../middleware/updateProgress";
 import { isCopilotPluginEnabled } from "../../../common/featureFlags";
+import { ErrorContextMW } from "../../../core/globalVars";
+import { camelCase } from "lodash";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -25,6 +27,7 @@ export const actionName = "teamsApp/zipAppPackage";
 export class CreateAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.createAppPackageDriver");
 
+  @ErrorContextMW({ component: camelCase(actionName), source: "Teams" })
   public async run(
     args: CreateAppPackageArgs,
     context: DriverContext
@@ -33,7 +36,7 @@ export class CreateAppPackageDriver implements StepDriver {
     const res = await this.build(args, wrapContext);
     return res;
   }
-
+  @ErrorContextMW({ component: camelCase(actionName), source: "Teams" })
   public async execute(
     args: CreateAppPackageArgs,
     context: DriverContext

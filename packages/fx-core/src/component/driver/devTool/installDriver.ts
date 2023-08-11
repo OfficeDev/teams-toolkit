@@ -34,6 +34,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
 import { DotnetChecker } from "../../../common/deps-checker/internal/dotnetChecker";
+import { ErrorContextMW } from "../../../core/globalVars";
 
 const ACTION_NAME = "devTool/install";
 const helpLink = "https://aka.ms/teamsfx-actions/devtool-install";
@@ -89,6 +90,7 @@ export class ToolsInstallDriver implements StepDriver {
 export class ToolsInstallDriverImpl {
   constructor(private context: WrapDriverContext) {}
 
+  @ErrorContextMW({ source: "DevTools" })
   async run(
     args: InstallToolArgs,
     outputEnvVarNames?: Map<string, string>

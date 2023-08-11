@@ -25,6 +25,7 @@ import { ensureBicepForDriver } from "./util/bicepChecker";
 import { ArmErrorHandle, DeployContext } from "./util/handleError";
 import { convertOutputs, getFileExtension, hasBicepTemplate } from "./util/util";
 import { validateArgs } from "./validator";
+import { ErrorContextMW } from "../../../core/globalVars";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -142,6 +143,7 @@ export class ArmDeployImpl {
     }
   }
 
+  @ErrorContextMW({ source: "Azure" })
   async innerExecuteDeployment(
     templateArg: templateArgs,
     deploymentParameters: Deployment

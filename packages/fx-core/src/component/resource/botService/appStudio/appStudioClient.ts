@@ -25,6 +25,7 @@ import {
 import { Messages } from "../messages";
 import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 function handleBotFrameworkError(e: any, apiName: string): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {
@@ -72,7 +73,7 @@ export class AppStudioClient {
   public static setRegion(region: string) {
     AppStudioClient.baseUrl = region;
   }
-
+  @ErrorContextMW({ source: "Teams" })
   public static async getBotRegistration(
     token: string,
     botId: string
@@ -96,7 +97,7 @@ export class AppStudioClient {
       handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
     }
   }
-
+  @ErrorContextMW({ source: "Teams" })
   public static async createBotRegistration(
     token: string,
     registration: IBotRegistration,
@@ -149,7 +150,7 @@ export class AppStudioClient {
 
     return;
   }
-
+  @ErrorContextMW({ source: "Teams" })
   public static async updateBotRegistration(
     token: string,
     botReg: IBotRegistration

@@ -10,7 +10,7 @@ New features:
   ![AI Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/86a90d2a-efc3-4d8b-9e8c-5d34a1e8c081)
 - Onboarded a new sample `One Productivity Hub using Graph Toolkit with SPFx` that shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and SharePoint provider.
     ![SPFx Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/084ac508-49ea-4b30-854c-8b4d578ff6ee)
-- Added codelens to `teamsapp.yml` file to help you execute life-cycle commands easily after editing the file.
+- Added CodeLens to the `teamsapp.yml` file to help you run life-cycle commands easily after editing the file.
     ![Inline Commands](https://github.com/OfficeDev/TeamsFx/assets/11220663/f6897b26-0e3c-441c-b028-32093e8322a7)
 
 Enhancements:

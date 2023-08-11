@@ -7,9 +7,8 @@ import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
 import { registerCommands } from "../../../src/cmds/index";
-import { initTelemetryReporter, sendCommandUsageTelemetry } from "../../../src/index";
+import { initTelemetryReporter } from "../../../src/index";
 import cliTelemetry from "../../../src/telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect } from "../utils";
 
 describe("Register Commands Tests", function () {

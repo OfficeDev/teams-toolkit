@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { fillInTelemetryPropsForFxError } from "../error";
-
-export class TelemetryReporterInstance {
-  public static telemetryReporter: TelemetryReporter | undefined;
-}
+import { FxError, SystemError } from "@microsoft/teamsfx-api";
+import { TelemetryConstants } from "../component/constants";
+import { TOOLS, globalVars } from "../core/globalVars";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -173,11 +170,7 @@ export function sendTelemetryEvent(
     properties = {};
   }
   properties[TelemetryProperty.Component] = component;
-  TelemetryReporterInstance.telemetryReporter?.sendTelemetryEvent(
-    eventName,
-    properties,
-    measurements
-  );
+  TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
 }
 
 export function sendTelemetryErrorEvent(
@@ -193,5 +186,50 @@ export function sendTelemetryErrorEvent(
 
   fillInTelemetryPropsForFxError(properties, fxError);
 
-  TelemetryReporterInstance.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
+  TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
+}
+
+/**
+ * fill in telemetry properties for FxError
+ * @param error FxError
+ * @param props teletry properties
+ */
+export function fillInTelemetryPropsForFxError(
+  props: Record<string, string>,
+  error: FxError
+): void {
+  const errorCode = error.source + "." + error.name;
+  const errorType =
+    error instanceof SystemError
+      ? TelemetryConstants.values.systemError
+      : TelemetryConstants.values.userError;
+  props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
+  props[TelemetryConstants.properties.errorCode] =
+    props[TelemetryConstants.properties.errorCode] || errorCode;
+  props[TelemetryConstants.properties.errorType] = errorType;
+  props[TelemetryConstants.properties.errorMessage] = error.message;
+  props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  props[TelemetryConstants.properties.errorName] = error.name;
+
+  // append global context properties
+  props[TelemetryConstants.properties.errorComponent] = globalVars.component;
+  props[TelemetryConstants.properties.errorStage] = globalVars.stage;
+  props[TelemetryConstants.properties.errorMethod] = globalVars.method;
+  props[TelemetryConstants.properties.errorSource] = globalVars.source;
+  if (error.innerError && error.innerError["code"]) {
+    props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
+  }
+
+  if (error.innerError) {
+    props[TelemetryConstants.properties.innerError] = JSON.stringify(
+      error.innerError,
+      Object.getOwnPropertyNames(error.innerError)
+    );
+  }
+
+  if (error.categories) {
+    props[TelemetryConstants.properties.errorCat1] = error.categories[0];
+    props[TelemetryConstants.properties.errorCat2] = error.categories[1];
+    props[TelemetryConstants.properties.errorCat3] = error.categories[2];
+  }
 }

@@ -2,13 +2,11 @@
 // Licensed under the MIT license.
 
 import { Tools } from "@microsoft/teamsfx-api";
-import { TelemetryReporterInstance } from "../common/telemetry";
 
 export let TOOLS: Tools;
 export let Locale: string | undefined;
 export function setTools(tools: Tools): void {
   TOOLS = tools;
-  TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
 }
 export function setLocale(locale?: string): void {
   Locale = locale;

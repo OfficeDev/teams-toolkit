@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
 
@@ -15,7 +15,7 @@ export const updateTeamsAppCommand: CLICommand = {
   },
   handler: async (ctx) => {
     const inputs = ctx.optionValues as InputsWithProjectPath;
-    const core = createFxCore();
+    const core = getFxCore();
     const res = await core.deployTeamsManifest(inputs);
     return res;
   },

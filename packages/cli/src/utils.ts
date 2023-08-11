@@ -182,10 +182,13 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
  * Shows in `teamsfx -v`.
  * @returns the version of teamsfx-cli.
  */
+let version: string;
 export function getVersion(): string {
+  if (version) return version;
   const pkgPath = path.resolve(__dirname, "..", "package.json");
   const pkgContent = fs.readJsonSync(pkgPath);
-  return pkgContent.version;
+  version = pkgContent.version;
+  return version;
 }
 
 export async function getTemplates(): Promise<

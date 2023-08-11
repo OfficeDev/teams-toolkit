@@ -69,7 +69,7 @@ describe("CLI commands", () => {
 
   describe("createCommand", async () => {
     it("happy path", async () => {
-      sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
         command: { ...createCommand, fullName: "teamsfx new" },
@@ -82,7 +82,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("core return error", async () => {
-      sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
         command: { ...createCommand, fullName: "teamsfx new" },
@@ -98,7 +98,7 @@ describe("CLI commands", () => {
 
   describe("createSampleCommand", async () => {
     it("happy path", async () => {
-      sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
         command: { ...createSampleCommand, fullName: "teamsfx new sample" },
@@ -111,7 +111,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("core return error", async () => {
-      sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
         command: { ...createSampleCommand, fullName: "teamsfx new sample" },

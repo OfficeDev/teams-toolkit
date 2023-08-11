@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { PermissionGrantInputs, PermissionGrantOptions } from "@microsoft/teamsfx-core";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { azureMessage, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
@@ -29,7 +29,7 @@ export const permissionGrantCommand: CLICommand = {
     logger.info(azureMessage);
     logger.info(spfxMessage);
     // setAppTypeInputs(inputs);// app type input is unused in FxCore
-    const core = createFxCore();
+    const core = getFxCore();
     const result = await core.grantPermission(inputs);
     if (result.isErr()) {
       return err(result.error);

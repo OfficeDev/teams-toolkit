@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AppPackageFolderName, TemplateFolderName } from "@microsoft/teamsfx-api";
+import {
+  AppPackageFolderName,
+  ManifestUtil,
+  TeamsAppManifest,
+  TemplateFolderName,
+} from "@microsoft/teamsfx-api";
 import {
   MetadataV3,
   envUtil,
@@ -526,6 +531,12 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
     const codeLenses: vscode.CodeLens[] = [];
+
+    const manifest: TeamsAppManifest = JSON.parse(document.getText());
+    if (!ManifestUtil.parseCommonProperties(manifest).isCopilotPlugin) {
+      return codeLenses;
+    }
+
     const text = document.getText();
     const regex = new RegExp(this.schemaRegex);
     const matches = regex.exec(text);

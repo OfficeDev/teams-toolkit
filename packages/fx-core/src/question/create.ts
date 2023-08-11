@@ -1430,7 +1430,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    cliDescription: "Selects API(s) to be used in Copilot plugin.",
+    cliDescription: "Specifies API(s) to be used in Copilot plugin.",
     cliShortName: "api",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")

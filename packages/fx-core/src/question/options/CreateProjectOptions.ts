@@ -116,7 +116,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "api-operation",
     type: "array",
     shortName: "api",
-    description: "Selects API(s) to be used in Copilot plugin.",
+    description: "Specifies API(s) to be used in Copilot plugin.",
   },
   {
     name: "programming-language",

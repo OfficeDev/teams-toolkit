@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DotnetChecker } from "./internal/dotnetChecker";
+import { DepsChecker, DepsType } from "./depsChecker";
 import { DepsLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
-import { DepsChecker } from "./depsChecker";
-import { ProjectNodeChecker, LtsNodeChecker } from "./internal/nodeChecker";
+import { DotnetChecker } from "./internal/dotnetChecker";
 import { FuncToolChecker } from "./internal/funcToolChecker";
-import { DepsType } from "./depsChecker";
+import { LtsNodeChecker, ProjectNodeChecker } from "./internal/nodeChecker";
 import { VxTestAppChecker } from "./internal/vxTestAppChecker";
 
 export class CheckerFactory {

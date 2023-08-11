@@ -46,50 +46,46 @@ export class CLILogProvider implements LogProvider {
     return path.join(os.tmpdir(), `.${ConfigFolderName}`, "cli-log", this.logFileName);
   }
 
-  trace(message: string): Promise<boolean> {
-    return this.log(LogLevel.Trace, message);
+  verbose(message: string): void {
+    this.log(LogLevel.Verbose, message);
   }
 
-  debug(message: string): Promise<boolean> {
-    return this.log(LogLevel.Debug, message);
+  debug(message: string): void {
+    this.log(LogLevel.Debug, message);
   }
 
-  info(message: Array<{ content: string; color: Colors }>): Promise<boolean>;
+  info(message: Array<{ content: string; color: Colors }>): void;
 
-  info(message: string): Promise<boolean>;
+  info(message: string): void;
 
-  info(message: string | Array<{ content: string; color: Colors }>): Promise<boolean> {
+  info(message: string | Array<{ content: string; color: Colors }>): void {
     if (message instanceof Array) {
       message = getColorizedString(message);
     } else {
       message = chalk.whiteBright(message);
     }
-    return this.log(LogLevel.Info, message);
+    this.log(LogLevel.Info, message);
   }
 
   white(msg: string): string {
     return chalk.whiteBright(msg);
   }
 
-  warning(message: string): Promise<boolean> {
-    return this.log(LogLevel.Warning, message);
+  warning(message: string): void {
+    this.log(LogLevel.Warning, message);
   }
 
-  error(message: string): Promise<boolean> {
-    return this.log(LogLevel.Error, message);
-  }
-
-  fatal(message: string): Promise<boolean> {
-    return this.log(LogLevel.Fatal, message);
+  error(message: string): void {
+    this.log(LogLevel.Error, message);
   }
 
   linkColor(msg: string): string {
     return chalk.cyanBright.underline(msg);
   }
 
-  async log(logLevel: LogLevel, message: string): Promise<boolean> {
+  log(logLevel: LogLevel, message: string): void {
     switch (logLevel) {
-      case LogLevel.Trace:
+      case LogLevel.Verbose:
       case LogLevel.Debug:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
           this.outputDetails(message);
@@ -109,11 +105,9 @@ export class CLILogProvider implements LogProvider {
         }
         break;
       case LogLevel.Error:
-      case LogLevel.Fatal:
         this.outputError(message);
         break;
     }
-    return true;
   }
 
   outputSuccess(template: string, ...args: string[]): void {
@@ -146,7 +140,7 @@ export class CLILogProvider implements LogProvider {
 
   necessaryLog(logLevel: LogLevel, message: string, white = false) {
     switch (logLevel) {
-      case LogLevel.Trace:
+      case LogLevel.Verbose:
       case LogLevel.Debug:
         this.outputDetails(message);
         break;
@@ -161,7 +155,6 @@ export class CLILogProvider implements LogProvider {
         this.outputWarning(message);
         break;
       case LogLevel.Error:
-      case LogLevel.Fatal:
         this.outputError(message);
         break;
     }

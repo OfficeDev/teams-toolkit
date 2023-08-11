@@ -69,6 +69,7 @@ export const TelemetryConstants = {
     errorComponent: "error-component", // need classify
     errorMethod: "error-method", // need classify
     errorSource: "error-source", // need classify
+    errorInnerCode: "error-inner-code", // need classify
   },
   values: {
     yes: "yes",

@@ -406,6 +406,9 @@ export function fillInTelemetryPropsForFxError(
   props[TelemetryConstants.properties.errorStage] = globalVars.stage;
   props[TelemetryConstants.properties.errorMethod] = globalVars.method;
   props[TelemetryConstants.properties.errorSource] = globalVars.source;
+  if (error.innerError && error.innerError["code"]) {
+    props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
+  }
 
   if (error.innerError) {
     props[TelemetryConstants.properties.innerError] = JSON.stringify(

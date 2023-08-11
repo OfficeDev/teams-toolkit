@@ -45,7 +45,6 @@ import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
 const componentName = "simplified-message-extension-existing-api";
 const templateName = "simplified-message-extension-existing-api";
-const manifestFileName = ManifestTemplateFileName;
 const apiSpecFolderName = "apiSpecFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
@@ -125,7 +124,11 @@ export class CopilotPluginGenerator {
       }
 
       // generate files
-      const manifestPath = path.join(destinationPath, AppPackageFolderName, manifestFileName);
+      const manifestPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
 
       const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);

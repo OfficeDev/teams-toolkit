@@ -39,7 +39,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "link-unfurling",
       "search-app",
       "collect-form-message-extension",
-      "copilot-plugin-capability",
     ],
     choiceListCommand: "teamsfx list capabilities",
   },

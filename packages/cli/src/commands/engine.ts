@@ -25,7 +25,7 @@ import {
 import { cloneDeep, pick } from "lodash";
 import path from "path";
 import * as uuid from "uuid";
-import { createFxCore } from "../activate";
+import { getFxCore } from "../activate";
 import { TextType, colorize } from "../colorize";
 import { logger } from "../commonlib/logger";
 import Progress from "../console/progress";
@@ -67,12 +67,10 @@ class CLIEngine {
       optionValues: {},
       globalOptionValues: {},
       argumentValues: [],
-      telemetryProperties: {},
+      telemetryProperties: {
+        [TelemetryProperty.CommandName]: foundCommand.fullName,
+      },
     };
-
-    if (context.command.telemetry) {
-      CliTelemetry.sendTelemetryEvent(context.command.telemetry.event);
-    }
 
     // 2. parse args
     const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
@@ -82,6 +80,11 @@ class CLIEngine {
         logger.debug(log);
       }
     }
+
+    if (context.command.telemetry) {
+      CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
+    }
+
     if (parseRes.isErr()) {
       this.processResult(context, parseRes.error);
       return;
@@ -132,7 +135,7 @@ class CLIEngine {
       inputs.ignoreEnvInfo = true;
       const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
       if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
-        const core = createFxCore();
+        const core = getFxCore();
         const res = await core.projectVersionCheck(inputs);
         if (res.isErr()) {
           throw res.error;
@@ -273,11 +276,12 @@ class CLIEngine {
                 // next token is an option, current option value is undefined
               } else {
                 option.value = nextToken;
+                remainingArgs.shift();
               }
             }
           } else {
             // array
-            const nextToken = remainingArgs.shift();
+            const nextToken = remainingArgs[0];
             if (nextToken) {
               const findNextOptionRes = findOption(nextToken);
               if (findNextOptionRes?.option) {
@@ -290,6 +294,7 @@ class CLIEngine {
                 for (const v of values) {
                   option.value.push(v);
                 }
+                remainingArgs.shift();
               }
             }
           }
@@ -375,14 +380,34 @@ class CLIEngine {
       context.optionValues.projectPath = projectPath;
       if (projectPath) {
         CliTelemetry.withRootFolder(projectPath);
+        const core = getFxCore();
       }
     }
 
     UI.interactive = context.globalOptionValues.interactive as boolean;
 
+    // set global option telemetry property
+    context.telemetryProperties[TelemetryProperty.CommandDebug] =
+      context.globalOptionValues.debug + "";
+    context.telemetryProperties[TelemetryProperty.CommandVerbose] =
+      context.globalOptionValues.verbose + "";
+    context.telemetryProperties[TelemetryProperty.CommandHelp] =
+      context.globalOptionValues.help + "";
+    context.telemetryProperties[TelemetryProperty.CommandInteractive] =
+      context.globalOptionValues.interactive + "";
+    context.telemetryProperties[TelemetryProperty.CommandVersion] =
+      context.globalOptionValues.version + "";
+    context.telemetryProperties[TelemetryProperty.CorrelationId] =
+      context.optionValues.correlationId;
+
     debugLogs.push(
       `parsed context: ${JSON.stringify(
-        pick(context, ["optionValues", "globalOptionValues", "argumentValues"]),
+        pick(context, [
+          "optionValues",
+          "globalOptionValues",
+          "argumentValues",
+          "telemetryProperties",
+        ]),
         null,
         2
       )}`

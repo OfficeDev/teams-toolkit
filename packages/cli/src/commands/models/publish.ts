@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { assign } from "lodash";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
@@ -16,7 +16,7 @@ export const publishCommand: CLICommand = {
   },
   handler: async (ctx: CLIContext) => {
     const inputs = ctx.optionValues as InputsWithProjectPath;
-    const core = createFxCore();
+    const core = getFxCore();
     if (!ctx.globalOptionValues.interactive) {
       assign(inputs, ctx.optionValues);
     }

@@ -44,6 +44,8 @@ import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
+import { parse } from "yaml";
+import fs from "fs-extra";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -229,6 +231,25 @@ export class FxCore {
     }
     const projectModel = maybeProjectModel.value as any;
     return ok(projectModel.projectId || "");
+  }
+
+  async getProjectMetadata(
+    projectPath: string
+  ): Promise<Result<{ version?: string; projectId?: string }, FxError>> {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
+    try {
+      if (!ymlPath || !(await fs.pathExists(ymlPath))) {
+        return ok({});
+      }
+      const ymlContent = await fs.readFile(ymlPath, "utf-8");
+      const ymlObject = parse(ymlContent);
+      return ok({
+        projectId: (ymlObject?.projectId as string) ?? undefined,
+        version: (ymlObject?.version as string) ?? undefined,
+      });
+    } catch {
+      return ok({});
+    }
   }
 
   /**

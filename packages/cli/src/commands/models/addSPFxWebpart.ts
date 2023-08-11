@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand } from "@microsoft/teamsfx-api";
 import { SPFxAddWebpartInputs, SPFxAddWebpartOptions } from "@microsoft/teamsfx-core";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
@@ -15,7 +15,7 @@ export const addSPFxWebpartCommand: CLICommand = {
   },
   handler: async (ctx) => {
     const inputs = ctx.optionValues as SPFxAddWebpartInputs;
-    const core = createFxCore();
+    const core = getFxCore();
     const res = await core.addWebpart(inputs);
     return res;
   },

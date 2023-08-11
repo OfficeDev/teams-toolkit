@@ -28,11 +28,12 @@ export default async function activate(
       }
     }
   }
-  const core = createFxCore();
+  const core = getFxCore();
   return ok(core);
 }
-
-export function createFxCore(): FxCore {
+let fxCore: FxCore;
+export function getFxCore(): FxCore {
+  if (fxCore) return fxCore;
   const tools: Tools = {
     logProvider: CLILogProvider,
     tokenProvider: {
@@ -42,6 +43,6 @@ export function createFxCore(): FxCore {
     telemetryReporter: CliTelemetry.reporter,
     ui: CLIUserInteraction,
   };
-  const core = new FxCore(tools);
-  return core;
+  fxCore = new FxCore(tools);
+  return fxCore;
 }

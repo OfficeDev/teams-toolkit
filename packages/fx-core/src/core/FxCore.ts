@@ -44,6 +44,8 @@ import { setTools, TOOLS } from "./globalVars";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { PreProvisionResForVS, VersionCheckRes } from "./types";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
+import { parse } from "yaml";
+import fs from "fs-extra";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -222,13 +224,33 @@ export class FxCore {
    * get projectId
    */
   async getProjectId(projectPath: string): Promise<Result<string, FxError>> {
-    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
-    const maybeProjectModel = await metadataUtil.parse(ymlPath, "dev");
-    if (maybeProjectModel.isErr()) {
-      return err(maybeProjectModel.error);
+    const res = await this.getProjectMetadata(projectPath);
+    if (res.isErr()) {
+      return err(res.error);
     }
-    const projectModel = maybeProjectModel.value as any;
-    return ok(projectModel.projectId || "");
+    return ok(res.value.projectId || "");
+  }
+
+  /**
+   * @description get projectId and version from yml
+   */
+  async getProjectMetadata(
+    projectPath: string
+  ): Promise<Result<{ version?: string; projectId?: string }, FxError>> {
+    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
+    try {
+      if (!ymlPath || !(await fs.pathExists(ymlPath))) {
+        return ok({});
+      }
+      const ymlContent = await fs.readFile(ymlPath, "utf-8");
+      const ymlObject = parse(ymlContent);
+      return ok({
+        projectId: ymlObject?.projectId ? ymlObject.projectId + "" : "",
+        version: ymlObject?.version ? ymlObject.version + "" : "",
+      });
+    } catch {
+      return ok({});
+    }
   }
 
   /**

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, Result, err, ok } from "@microsoft/teamsfx-api";
 import { ValidateTeamsAppInputs, ValidateTeamsAppOptions } from "@microsoft/teamsfx-core";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
@@ -28,7 +28,7 @@ export const validateCommand: CLICommand = {
         return err(res.error);
       }
     }
-    const core = createFxCore();
+    const core = getFxCore();
     const res = await core.validateApplication(inputs);
     if (res.isErr()) {
       return err(res.error);

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { PermissionListInputs, PermissionListOptions } from "@microsoft/teamsfx-core";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { azureMessage, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
@@ -28,7 +28,7 @@ export const permissionStatusCommand: CLICommand = {
   handler: async (ctx) => {
     const inputs = ctx.optionValues as PermissionListInputs & InputsWithProjectPath;
     const listAll = inputs.all || false;
-    const core = createFxCore();
+    const core = getFxCore();
     // print necessary messages
     logger.info(azureMessage);
     logger.info(spfxMessage);

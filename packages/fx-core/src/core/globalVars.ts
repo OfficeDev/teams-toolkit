@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { HookContext, NextFunction } from "@feathersjs/hooks";
 import { Tools } from "@microsoft/teamsfx-api";
 
 export let TOOLS: Tools;
@@ -28,27 +29,21 @@ class GlobalVars {
 }
 export const globalVars = new GlobalVars();
 
-export function ErrorContextMW(option: {
+export interface ErrorContextOption {
   component?: string;
   source?: ExternalSource;
   stage?: string;
   method?: string;
-}) {
-  return function (
-    target: any,
-    propertyName: string,
-    descriptor: PropertyDescriptor
-  ): PropertyDescriptor {
-    option.method = descriptor.value.name;
+}
+
+export function ErrorContextMW(option: ErrorContextOption) {
+  return async (ctx: HookContext, next: NextFunction) => {
+    option.method = ctx.method;
     setErrorContext(option);
-    const originalMethod = descriptor.value;
-    descriptor.value = function (...args: any[]) {
-      const result = originalMethod.apply(this, args);
-      return result;
-    };
-    return descriptor;
+    await next();
   };
 }
+
 export function setErrorContext(option: {
   component?: string;
   source?: ExternalSource;

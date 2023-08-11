@@ -1525,6 +1525,7 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
           );
         },
+        cliOptionDisabled: "self", // Need to remove once copilot plugin is about to ship
         data: copilotPluginDevelopmentQuestion(),
       },
       {
@@ -1532,6 +1533,7 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
         },
+        cliOptionDisabled: "all", // Need to remove once copilot plugin is about to ship
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {

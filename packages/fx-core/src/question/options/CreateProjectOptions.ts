@@ -93,31 +93,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Directory or Path that contains the existing SharePoint Framework solution.",
   },
   {
-    name: "copilot-plugin-option",
-    type: "string",
-    shortName: "cp",
-    description: "Plugin for Copilot",
-    choices: ["copilot-new-api", "copilot-api-spec", "copilot-ai-plugin"],
-  },
-  {
-    name: "api-spec-location",
-    type: "string",
-    shortName: "oapi",
-    description: "OpenAPI specification file location.",
-  },
-  {
-    name: "openai-plugin-manifest-location",
-    type: "string",
-    shortName: "oai",
-    description: "OpenAI plugin website domain.",
-  },
-  {
-    name: "api-operation",
-    type: "array",
-    shortName: "api",
-    description: "Specifies API(s) to be used in Copilot plugin.",
-  },
-  {
     name: "programming-language",
     type: "string",
     shortName: "l",

@@ -33,6 +33,7 @@ import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { SpecParser } from "../common/spec-parser/specParser";
+import { SpecParserError } from "../common/spec-parser/specParserError";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import {
   AadConstants,
@@ -65,6 +66,7 @@ import {
   ErrorResult,
   OpenAIPluginManifestHelper,
   listOperations,
+  convertSpecParserErrorToFxError,
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
@@ -663,10 +665,17 @@ export class FxCoreV3Implement {
   @hooks([ErrorHandlerMW, QuestionMW("copilotPluginAddAPI"), ConcurrentLockerMW])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const operations = inputs[QuestionNames.ApiOperation] as string[];
-    const openapiSpecPath =
-      inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
-    const specParser = new SpecParser(openapiSpecPath);
+
+    // Get API spec file path from manifest
+    const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+    const apiSpecFile = manifestRes.value.composeExtensions![0].apiSpecFile;
+    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecFile!);
+
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
@@ -674,9 +683,15 @@ export class FxCoreV3Implement {
     );
 
     try {
-      await specParser.generate(manifestPath, operations, openapiSpecPath, adaptiveCardFolder);
+      const specParser = new SpecParser(url);
+      await specParser.generate(manifestPath, operations, outputAPISpecPath, adaptiveCardFolder);
     } catch (e) {
-      const error = assembleError(e);
+      let error: FxError;
+      if (e instanceof SpecParserError) {
+        error = convertSpecParserErrorToFxError(e);
+      } else {
+        error = assembleError(e);
+      }
       return err(error);
     }
 

@@ -154,24 +154,10 @@ describe("ExtTelemetry", () => {
           "error-message": error.message,
           "error-stack": error.stack,
           "error-code": "test.UserTestError",
-        },
-        { numericMeasure: 123 },
-        ["errorProps"]
-      );
-
-      chai.expect(reporterSpy.sendTelemetryErrorEvent).to.not.have.been.called.with(
-        "sampleEvent",
-        {
-          stringProp: "some string",
-          component: "extension",
-          success: "no",
-          "is-existing-user": "no",
-          "is-spfx": "false",
-          "error-type": "user",
-          "error-message": `${error.displayMessage}${
-            error.stack ? "\nstack:\n" + error.stack : ""
-          }`,
-          "error-code": "test.UserTestError",
+          "error-component": "",
+          "error-method": "",
+          "error-source": "",
+          "error-stage": "",
         },
         { numericMeasure: 123 },
         ["errorProps"]

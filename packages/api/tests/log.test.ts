@@ -8,12 +8,21 @@ import { LogProvider, LogLevel } from "../src/utils/log";
 
 class TestLogProvider implements LogProvider {
   msg = "";
-  verbose(msg: string): void {}
-  debug(msg: string): void {}
-  info(msg: string | Array<any>): void {}
-  warning(msg: string): void {}
-  error(msg: string): void {}
-  fatal(msg: string): void {}
+  verbose(msg: string): void {
+    this.log(LogLevel.Verbose, msg);
+  }
+  debug(msg: string): void {
+    this.log(LogLevel.Debug, msg);
+  }
+  info(msg: string | Array<any>): void {
+    this.log(LogLevel.Info, msg as string);
+  }
+  warning(msg: string): void {
+    this.log(LogLevel.Warning, msg);
+  }
+  error(msg: string): void {
+    this.log(LogLevel.Error, msg);
+  }
   log(level: LogLevel, msg: string): void {
     this.msg = msg;
   }

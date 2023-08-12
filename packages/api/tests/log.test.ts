@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { LogProvider, LogLevel } from "../src/utils/log";
 
 class TestLogProvider implements LogProvider {
-  msg: string;
+  msg = "";
   verbose(msg: string): void {}
   debug(msg: string): void {}
   info(msg: string | Array<any>): void {}
@@ -37,7 +37,7 @@ describe("log", function () {
       logProvider.warning("5");
       assert.equal(logProvider.msg, "5");
       logProvider.error("6");
-      assert.equal(logProvider.msg, "5");
+      assert.equal(logProvider.msg, "6");
     });
   });
 });

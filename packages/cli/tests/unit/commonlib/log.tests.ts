@@ -24,9 +24,9 @@ describe("CLILogProvider", () => {
     message = "";
   });
 
-  it("Log - Trace", async () => {
-    await logger.trace("trace");
-    expect(message).to.contain("trace");
+  it("Log - verbose", async () => {
+    await logger.verbose("verbose");
+    expect(message).to.contain("verbose");
   });
 
   it("Log - Debug", async () => {
@@ -59,8 +59,8 @@ describe("CLILogProvider", () => {
     expect(message).to.contain("success");
   });
 
-  it("NecessaryLog - Trace", async () => {
-    logger.necessaryLog(LogLevel.Trace, "trace");
+  it("NecessaryLog - Verbose", async () => {
+    logger.necessaryLog(LogLevel.Verbose, "trace");
     expect(message).to.contain("trace");
   });
 

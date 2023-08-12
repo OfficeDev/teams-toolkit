@@ -20,12 +20,12 @@ export default class ServerLogProvider implements LogProvider {
     this.logFileName = `${new Date().toISOString().replace(/-|:|\.\d+Z$/g, "")}.log`;
   }
 
-  async log(logLevel: LogLevel, message: string, logToFile?: boolean): Promise<boolean> {
+  log(logLevel: LogLevel, message: string, logToFile?: boolean): void {
     if (logToFile) {
-      if (!(await fs.pathExists(this.logFolderPath))) {
-        await fs.mkdir(this.logFolderPath);
+      if (!fs.pathExistsSync(this.logFolderPath)) {
+        fs.mkdirSync(this.logFolderPath);
       }
-      await fs.appendFile(this.getLogFilePath(), message + "\n");
+      fs.appendFileSync(this.getLogFilePath(), message + "\n");
     } else {
       this.connection.sendNotification(
         NotificationTypes[Namespaces.Logger].show,
@@ -33,40 +33,36 @@ export default class ServerLogProvider implements LogProvider {
         message
       );
     }
-    return true;
   }
 
-  async trace(message: string): Promise<boolean> {
-    return this.log(LogLevel.Trace, message);
+  verbose(message: string): void {
+    this.log(LogLevel.Verbose, message);
   }
 
-  async debug(message: string): Promise<boolean> {
-    return this.log(LogLevel.Debug, message);
+  debug(message: string): void {
+    this.log(LogLevel.Debug, message);
   }
 
-  async info(message: string, logToFile?: boolean): Promise<boolean>;
-  async info(message: { content: string; color: Colors }[], logToFile?: boolean): Promise<boolean>;
-  async info(message: any, logToFile?: boolean): Promise<boolean> {
+  info(message: string, logToFile?: boolean): void;
+  info(message: { content: string; color: Colors }[], logToFile?: boolean): void;
+  info(message: any, logToFile?: boolean): void {
     if (typeof message === "string") {
-      return this.log(LogLevel.Info, message, logToFile);
+      this.log(LogLevel.Info, message, logToFile);
+    } else {
+      this.log(
+        LogLevel.Info,
+        (message as Array<{ content: string; color: Colors }>).map((item) => item.content).join(""),
+        logToFile
+      );
     }
-    return this.log(
-      LogLevel.Info,
-      (message as Array<{ content: string; color: Colors }>).map((item) => item.content).join(""),
-      logToFile
-    );
   }
 
-  async warning(message: string): Promise<boolean> {
-    return this.log(LogLevel.Warning, message);
+  warning(message: string): void {
+    this.log(LogLevel.Warning, message);
   }
 
-  async error(message: string): Promise<boolean> {
-    return this.log(LogLevel.Error, message);
-  }
-
-  async fatal(message: string): Promise<boolean> {
-    return this.log(LogLevel.Fatal, message);
+  error(message: string): void {
+    this.log(LogLevel.Error, message);
   }
 
   getLogFilePath(): string {

@@ -9,7 +9,7 @@ import ScreenManager from "../../../src/console/screen";
 import { logger } from "../../../src/commonlib/logger";
 
 describe("CLILogger", () => {
-  logger.logLevel = LogLevel.Trace;
+  logger.logLevel = LogLevel.Debug;
   const sandox = sinon.createSandbox();
   let message = "";
 
@@ -22,9 +22,9 @@ describe("CLILogger", () => {
     message = "";
   });
 
-  it("Log - Trace", async () => {
-    await logger.trace("trace");
-    expect(message).to.contain("trace");
+  it("Log - Verbose", async () => {
+    await logger.verbose("verbose");
+    expect(message).to.contain("verbose");
   });
 
   it("Log - Debug", async () => {

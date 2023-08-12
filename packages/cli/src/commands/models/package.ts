@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { SelectTeamsManifestInputs, SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
 
@@ -32,7 +32,7 @@ export const packageCommand: CLICommand = {
     event: TelemetryEvent.Build,
   },
   handler: async (ctx: CLIContext) => {
-    const core = createFxCore();
+    const core = getFxCore();
     const inputs = ctx.optionValues as SelectTeamsManifestInputs & InputsWithProjectPath;
     const res = await core.createAppPackage(inputs);
     return res;

@@ -4,11 +4,11 @@
 
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { CliConfigOptions } from "../userSetttings";
 import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
+import { logger } from "./logger";
 
 /**
  *  CLI telemetry reporter used by fx-core.
@@ -62,6 +62,10 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+
+    logger.debug(
+      `sendTelemetryErrorEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`
+    );
   }
 
   sendTelemetryEvent(
@@ -81,6 +85,8 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+
+    logger.debug(`sendTelemetryEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`);
   }
 
   sendTelemetryException(

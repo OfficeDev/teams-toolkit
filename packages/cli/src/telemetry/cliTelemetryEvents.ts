@@ -151,13 +151,14 @@ export enum TelemetryProperty {
   IsCreatingM365 = "is-creating-m365",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
-  Interactive = "interactive",
 
-  CommandOptions = "options",
-  CommandHead = "head",
-  CommandBody = "body",
-  CommandHelp = "help",
-  CommandLogLevel = "loglevel",
+  // command related property
+  CommandName = "command-name",
+  CommandHelp = "command-help",
+  CommandVersion = "command-version",
+  CommandDebug = "command-debug",
+  CommandVerbose = "command-verbose",
+  CommandInteractive = "command-interactive",
 }
 
 export enum TelemetrySuccess {

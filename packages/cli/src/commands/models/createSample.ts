@@ -10,7 +10,7 @@ import {
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 
@@ -25,7 +25,7 @@ export const createSampleCommand: CLICommand = {
   handler: async (ctx: CLIContext) => {
     const inputs = ctx.optionValues as CreateSampleProjectInputs;
     inputs.projectId = inputs.projectId ?? uuid.v4();
-    const core = createFxCore();
+    const core = getFxCore();
     const res = await core.createSampleProject(inputs);
     assign(ctx.telemetryProperties, {
       [TelemetryProperty.NewProjectId]: inputs.projectId,

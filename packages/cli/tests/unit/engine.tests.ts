@@ -170,7 +170,7 @@ describe("CLI Engine", () => {
       assert.isTrue(error && error instanceof InvalidChoiceError);
     });
     it("should run command with argument success", async () => {
-      sandbox.stub(activate, "createFxCore").returns(new FxCore({} as any));
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
       sandbox
         .stub(process, "argv")
@@ -226,7 +226,6 @@ describe("CLI Engine", () => {
   describe("index.start", async () => {
     it("happy path", async () => {
       sandbox.stub(main, "initTelemetryReporter").returns();
-      sandbox.stub(main, "sendCommandUsageTelemetry").returns();
       sandbox.stub(engine, "start").resolves();
       await start();
       assert.isTrue(true);

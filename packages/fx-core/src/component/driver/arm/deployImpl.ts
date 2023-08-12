@@ -26,6 +26,7 @@ import { ArmErrorHandle, DeployContext } from "./util/handleError";
 import { convertOutputs, getFileExtension, hasBicepTemplate } from "./util/util";
 import { validateArgs } from "./validator";
 import { ErrorContextMW } from "../../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -142,8 +143,7 @@ export class ArmDeployImpl {
       return errRes;
     }
   }
-
-  @ErrorContextMW({ source: "Azure" })
+  @hooks([ErrorContextMW({ source: "Azure", component: "ArmDeployImpl" })])
   async innerExecuteDeployment(
     templateArg: templateArgs,
     deploymentParameters: Deployment

@@ -90,7 +90,7 @@ export class ToolsInstallDriver implements StepDriver {
 export class ToolsInstallDriverImpl {
   constructor(private context: WrapDriverContext) {}
 
-  @ErrorContextMW({ source: "DevTools" })
+  @hooks([ErrorContextMW({ source: "DevTools", component: "ToolsInstallDriverImpl" })])
   async run(
     args: InstallToolArgs,
     outputEnvVarNames?: Map<string, string>

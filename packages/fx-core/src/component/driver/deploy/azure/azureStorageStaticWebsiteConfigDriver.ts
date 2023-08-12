@@ -65,7 +65,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
    * @param args Azure Storage resourceId, index page and error page
    * @param context log provider, progress handler, telemetry reporter
    */
-  @ErrorContextMW({ source: "Azure", component: "AzureStorageStaticWebsiteConfigDriver" })
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureStorageStaticWebsiteConfigDriver" })])
   async config(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const logger = context.logProvider;
     const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(

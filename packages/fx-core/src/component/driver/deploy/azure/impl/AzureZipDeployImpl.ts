@@ -24,6 +24,7 @@ import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
 import { DeployZipPackageError } from "../../../../../error/deploy";
 import { ErrorContextMW } from "../../../../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -153,7 +154,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    * @param logger log provider
    * @protected
    */
-  @ErrorContextMW({ source: "Azure", component: "AzureZipDeployImpl" })
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureZipDeployImpl" })])
   async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,

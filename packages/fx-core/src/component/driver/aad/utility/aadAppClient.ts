@@ -1,20 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
-import axios, { AxiosInstance, AxiosError } from "axios";
-import { IAADDefinition } from "../interface/IAADDefinition";
+import axios, { AxiosError, AxiosInstance } from "axios";
+import axiosRetry from "axios-retry";
+import { AadOwner } from "../../../../common/permissionInterface";
+import { GraphScopes } from "../../../../common/tools";
+import { ErrorContextMW } from "../../../../core/globalVars";
+import { DeleteOrUpdatePermissionFailedError } from "../error/aadManifestError";
 import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
-import { AadManifestHelper } from "./aadManifestHelper";
-import { GraphScopes } from "../../../../common/tools";
-import { constants, aadErrorCode } from "./constants";
-import axiosRetry from "axios-retry";
+import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";
-import { AadOwner } from "../../../../common/permissionInterface";
-import { DeleteOrUpdatePermissionFailedError } from "../error/aadManifestError";
-import { ErrorContextMW } from "../../../../core/globalVars";
-
+import { AadManifestHelper } from "./aadManifestHelper";
+import { aadErrorCode, constants } from "./constants";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
 export class AadAppClient {
@@ -50,7 +50,7 @@ export class AadAppClient {
         axiosRetry.isNetworkError(error) || axiosRetry.isRetryableError(error), // retry when there's network error or 5xx error
     });
   }
-  @ErrorContextMW({ source: "Graph" })
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async createAadApp(
     displayName: string,
     signInAudience = SignInAudience.AzureADMyOrg
@@ -64,7 +64,7 @@ export class AadAppClient {
 
     return <AADApplication>response.data;
   }
-  @ErrorContextMW({ source: "Graph" })
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async generateClientSecret(objectId: string): Promise<string> {
     const requestBody = {
       passwordCredential: {
@@ -86,7 +86,7 @@ export class AadAppClient {
     return response.data.secretText;
   }
 
-  @ErrorContextMW({ source: "Graph", component: "AadAppClient" })
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async updateAadApp(manifest: AADManifest): Promise<void> {
     const objectId = manifest.id!; // You need to ensure the object id exists in manifest
     const requestBody = AadManifestHelper.manifestToApplication(manifest);
@@ -114,7 +114,7 @@ export class AadAppClient {
       throw err;
     }
   }
-
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async getOwners(objectId: string): Promise<AadOwner[] | undefined> {
     const response = await this.axios.get(`applications/${objectId}/owners`, {
       "axios-retry": {
@@ -140,7 +140,7 @@ export class AadAppClient {
 
     return aadOwners;
   }
-
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async addOwner(objectId: string, userObjectId: string): Promise<void> {
     const requestBody = {
       "@odata.id": `${this.axios.defaults.baseURL}/directoryObjects/${userObjectId}`,

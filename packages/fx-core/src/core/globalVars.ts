@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { HookContext, NextFunction } from "@feathersjs/hooks";
+import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import { Tools } from "@microsoft/teamsfx-api";
 
 export let TOOLS: Tools;
@@ -34,22 +34,31 @@ export interface ErrorContextOption {
   source?: ExternalSource;
   stage?: string;
   method?: string;
+  reset?: boolean;
 }
 
-export function ErrorContextMW(option: ErrorContextOption) {
+export function ErrorContextMW(option: ErrorContextOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     option.method = ctx.method;
     setErrorContext(option);
     await next();
+    if (option.reset) {
+      resetErrorContext();
+    }
   };
 }
 
-export function setErrorContext(option: {
-  component?: string;
-  source?: ExternalSource;
-  stage?: string;
-  method?: string;
-}): void {
+export function resetErrorContext(): void {
+  globalVars.stage = "";
+  globalVars.source = "";
+  globalVars.component = "";
+  globalVars.method = "";
+}
+
+export function setErrorContext(option: ErrorContextOption): void {
+  if (option.reset) {
+    resetErrorContext();
+  }
   globalVars.component = option.component || globalVars.component;
   globalVars.source = option.source || globalVars.source;
   globalVars.stage = option.stage || globalVars.stage;

@@ -71,7 +71,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
 
   protected helpLink = "https://aka.ms/teamsfx-actions/azure-storage-deploy";
 
-  @ErrorContextMW({ source: "Azure", component: "AzureStorageDeployDriverImpl" })
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureStorageDeployDriverImpl" })])
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,

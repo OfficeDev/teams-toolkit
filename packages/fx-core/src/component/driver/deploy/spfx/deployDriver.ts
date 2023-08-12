@@ -70,7 +70,7 @@ export class SPFxDeployDriver implements StepDriver {
       summaries: wrapContext.summaries,
     };
   }
-  @ErrorContextMW({ source: "SPFx" })
+  @hooks([ErrorContextMW({ source: "SPFx", component: "SPFxDeployDriver" })])
   public async deploy(
     args: DeploySPFxArgs,
     context: WrapDriverContext

@@ -12,6 +12,7 @@ import { CoreSource } from "../../core/error";
 import { NotExtendedToM365Error } from "./errors";
 import { assembleError } from "../../error/common";
 import { ErrorContextMW } from "../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
 
 // Call m365 service for package CRUD
 export class PackageService {
@@ -26,7 +27,7 @@ export class PackageService {
     this.initEndpoint = endpoint;
     this.logger = logger;
   }
-  @ErrorContextMW({ source: "M365", component: "PackageService" })
+  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
   private async getTitleServiceUrl(token: string): Promise<string> {
     try {
       const envInfo = await this.axiosInstance.get("/config/v1/environment", {
@@ -43,7 +44,7 @@ export class PackageService {
     }
   }
 
-  @ErrorContextMW({ source: "M365", component: "PackageService" })
+  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
   public async sideLoading(token: string, manifestPath: string): Promise<[string, string]> {
     try {
       const data = await fs.readFile(manifestPath);
@@ -113,7 +114,7 @@ export class PackageService {
       throw assembleError(error, CoreSource);
     }
   }
-  @ErrorContextMW({ source: "M365", component: "PackageService" })
+  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
   public async getLaunchInfoByManifestId(token: string, manifestId: string): Promise<any> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
@@ -166,7 +167,7 @@ export class PackageService {
       throw assembleError(error, CoreSource);
     }
   }
-  @ErrorContextMW({ source: "M365", component: "PackageService" })
+  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
   public async retrieveTitleId(token: string, manifestId: string): Promise<string> {
     const launchInfo = await this.getLaunchInfoByManifestId(token, manifestId);
     const titleId =
@@ -182,7 +183,7 @@ export class PackageService {
     this.logger?.debug(`AppId: ${appId}`);
     return appId;
   }
-  @ErrorContextMW({ source: "M365", component: "PackageService" })
+  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
   public async unacquire(token: string, titleId: string): Promise<void> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
@@ -206,7 +207,7 @@ export class PackageService {
       throw assembleError(error, CoreSource);
     }
   }
-  @ErrorContextMW({ source: "M365", component: "PackageService" })
+  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
   public async getLaunchInfoByTitleId(token: string, titleId: string): Promise<unknown> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);

@@ -31,7 +31,7 @@ export const m365SideloadingCommand: CLICommand = {
     event: TelemetryEvent.M365Sigeloading,
   },
   handler: async (ctx) => {
-    logger.warning("This command is in preview.");
+    await logger.warning("This command is in preview.");
     const packageService = new PackageService(sideloadingServiceEndpoint, logger);
     const manifestPath = ctx.optionValues["file-path"] as string;
     const tokenAndUpn = await getTokenAndUpn();

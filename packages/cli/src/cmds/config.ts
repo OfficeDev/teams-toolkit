@@ -43,12 +43,12 @@ export class ConfigGet extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     if (args.option === undefined) {
-      const globalResult = await this.printGlobalConfig();
+      const globalResult = this.printGlobalConfig();
       if (globalResult.isErr()) {
         return globalResult;
       }
     } else {
-      const globalResult = await this.printGlobalConfig(args.option);
+      const globalResult = this.printGlobalConfig(args.option);
       if (globalResult.isErr()) {
         return globalResult;
       }
@@ -59,7 +59,7 @@ export class ConfigGet extends YargsCommand {
     return ok(null);
   }
 
-  private async printGlobalConfig(option?: string): Promise<Result<null, FxError>> {
+  private printGlobalConfig(option?: string): Result<null, FxError> {
     const result = UserSettings.getConfigSync();
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);

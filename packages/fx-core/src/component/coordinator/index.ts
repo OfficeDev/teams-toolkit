@@ -1,41 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
+import {
+  Colors,
+  Context,
+  CreateProjectResult,
+  FxError,
+  Inputs,
+  InputsWithProjectPath,
+  Platform,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
+import { glob } from "glob";
 import * as jsonschema from "jsonschema";
 import { camelCase, merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
-
-import { hooks } from "@feathersjs/hooks/lib";
-import {
-  Colors,
-  Context,
-  CreateProjectResult,
-  err,
-  FxError,
-  Inputs,
-  InputsWithProjectPath,
-  ok,
-  Platform,
-  Result,
-} from "@microsoft/teamsfx-api";
-import { glob } from "glob";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { ObjectIsUndefinedError } from "../../core/error";
-import { globalVars } from "../../core/globalVars";
+import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
-  assembleError,
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  assembleError,
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
@@ -61,10 +60,10 @@ import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
 import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
+import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { envUtil } from "../utils/envUtil";
 import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
-import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 
@@ -145,6 +144,7 @@ const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramewo
 
 class Coordinator {
   @hooks([
+    ErrorContextMW({ component: "Coordinator" }),
     ActionExecutionMW({
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.CreateProject,
@@ -329,6 +329,7 @@ class Coordinator {
     return ok(settings.trackingId);
   }
 
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async preProvisionForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
@@ -397,6 +398,7 @@ class Coordinator {
     return ok(res);
   }
 
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async preCheckYmlAndEnvForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
@@ -423,17 +425,10 @@ class Coordinator {
     return ok(undefined);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.Provision,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async provision(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const folderName = path.parse(ctx.projectPath).name;
@@ -737,17 +732,10 @@ class Coordinator {
     return [output, error];
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.Deploy,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async deploy(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const templatePath =
@@ -817,17 +805,10 @@ class Coordinator {
     return ok(output);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: "publish",
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async publish(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
@@ -885,18 +866,10 @@ class Coordinator {
     return ok(output);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.PublishInDeveloperPortal,
-      telemetryComponentName: "coordinator",
-      errorSource: CoordinatorSource,
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async publishInDeveloperPortal(
     ctx: Context,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     // update teams app
     if (!ctx.tokenProvider) {

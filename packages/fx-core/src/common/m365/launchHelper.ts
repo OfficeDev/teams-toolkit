@@ -10,6 +10,8 @@ import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
 import { assembleError } from "../../error/common";
 import { HubTypes } from "../../question/other";
+import { ErrorContextMW } from "../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -19,7 +21,7 @@ export class LaunchHelper {
     this.m365TokenProvider = m365TokenProvider;
     this.logger = logger;
   }
-
+  @hooks([ErrorContextMW({ component: "LaunchHelper" })])
   public async getLaunchUrl(
     hub: HubTypes,
     teamsAppId: string,

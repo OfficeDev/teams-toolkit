@@ -431,21 +431,19 @@ describe("utils", () => {
       chai.assert.isTrue(res);
     });
 
-    it("contains SME", () => {
+    it("contains activities", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mockAppId",
         tenantId: "mockTenantId",
-        configurableTabs: [
-          {
-            objectId: "81747dd8-0e3c-4a25-beda-604db9699bb8",
-            configurationUrl: "https://www.test.com",
-            canUpdateConfiguration: false,
-            context: ["meetingSidePanel"],
-            scopes: ["groupChat"],
-            sharePointPreviewImage: "",
-            supportedSharePointHosts: [],
-          },
-        ],
+        activities: {
+          activityTypes: [
+            {
+              type: "type",
+              description: "description",
+              templateText: "text",
+            },
+          ],
+        },
       };
 
       const res = containsUnsupportedFeature(appDefinition);

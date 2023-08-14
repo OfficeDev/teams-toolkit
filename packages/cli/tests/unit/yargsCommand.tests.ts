@@ -110,12 +110,29 @@ describe("printError", async () => {
   afterEach(() => {
     sandbox.restore();
   });
-  it("happy path", async () => {
+  it("happy path user error", async () => {
     sandbox.stub(CLILogProvider, "getLogLevel").returns(CLILogLevel.debug);
     const stub = sandbox.stub(CLILogProvider, "outputError").returns();
     printError(new MissingEnvironmentVariablesError("test", "test"));
+    expect(stub.called).to.be.true;
+  });
+  it("happy path system error", async () => {
+    sandbox.stub(CLILogProvider, "getLogLevel").returns(CLILogLevel.debug);
+    const stub = sandbox.stub(CLILogProvider, "outputError").returns();
     const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
-    error.innerError = new Error("test");
+    printError(error);
+    expect(stub.called).to.be.true;
+  });
+  it("happy path inner error", async () => {
+    sandbox.stub(CLILogProvider, "getLogLevel").returns(CLILogLevel.debug);
+    const stub = sandbox.stub(CLILogProvider, "outputError").returns();
+    const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+    const innerError = new Error("test");
+    error.innerError = innerError;
+    error.message = "";
+    error.stack = undefined;
+    printError(error);
+    innerError.stack = undefined;
     printError(error);
     expect(stub.called).to.be.true;
   });

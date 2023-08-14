@@ -91,10 +91,10 @@ export class ConfigSet extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return new Promise((resolve) => {
-      const globalResult = this.setGlobalConfig(args.option, args.value);
-      if (globalResult.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, globalResult.error);
-        resolve(globalResult);
+      const res = this.setGlobalConfig(args.option, args.value);
+      if (res.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, res.error);
+        resolve(err(res.error));
       }
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigSet, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -103,7 +103,7 @@ export class ConfigSet extends YargsCommand {
     });
   }
 
-  private setGlobalConfig(option: string, value: string): Result<null, FxError> {
+  public setGlobalConfig(option: string, value: string): Result<null, FxError> {
     if (GlobalOptionNames().has(option)) {
       const opt = { [option]: value };
       const result = UserSettings.setConfigSync(opt);

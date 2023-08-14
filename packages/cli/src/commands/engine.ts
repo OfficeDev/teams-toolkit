@@ -532,6 +532,7 @@ class CLIEngine {
           colorize(fxError["issueLink"] as string, TextType.Hyperlink)
         );
       }
+      void logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
     }
   }
 }

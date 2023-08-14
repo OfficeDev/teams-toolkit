@@ -158,7 +158,9 @@ export abstract class YargsCommand {
         );
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        CLILogProvider.outputError(`Call stack: ${FxError.stack || "undefined"}`);
+        CLILogProvider.outputError(
+          `Call stack: ${FxError.stack || FxError.innerError?.stack || "undefined"}`
+        );
       }
 
       exit(-1, FxError);

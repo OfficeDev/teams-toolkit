@@ -78,7 +78,7 @@ describe("Azure App Service Deploy Driver test", () => {
       ui: ui,
       telemetryReporter: new MockTelemetryReporter(),
       progressBar: progressHandler,
-    } as DriverContext;
+    } as any;
     const credential = new MyTokenCredential();
     sandbox.stub(credential, "getToken").resolves(undefined);
     sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
@@ -160,7 +160,7 @@ describe("Azure App Service Deploy Driver test", () => {
       ui: ui,
       telemetryReporter: new MockTelemetryReporter(),
       progressBar: progressHandler,
-    } as DriverContext;
+    } as any;
     const credential = new MyTokenCredential();
     sandbox.stub(credential, "getToken").resolves(undefined);
     sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
@@ -213,7 +213,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     // await deploy.run(args, context);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
@@ -228,7 +228,7 @@ describe("Azure App Service Deploy Driver test", () => {
     } as DeployArgs;
     const context = {
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // await deploy.run(args, context);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
@@ -247,7 +247,7 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -293,7 +293,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -335,7 +335,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -382,7 +382,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -429,7 +429,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
   });
@@ -464,7 +464,7 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: ui,
       progressBar: progressHandler,
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -526,7 +526,7 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const credential = new MyTokenCredential();
     credential.getToken = async () => {
       return null;

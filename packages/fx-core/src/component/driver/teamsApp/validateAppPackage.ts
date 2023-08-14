@@ -13,6 +13,7 @@ import {
   TeamsAppManifest,
   Platform,
   Colors,
+  LogLevel,
 } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
@@ -247,7 +248,10 @@ export class ValidateAppPackageDriver implements StepDriver {
           );
         context.logProvider?.info(outputMessage);
         // logs in log file
-        context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
+        context.logProvider.logInFile(
+          LogLevel.Info,
+          `${outputMessage}\n${errors}\n${warnings}\n${notes}`
+        );
 
         const defaultMesage = getDefaultString(
           "driver.teamsApp.validate.result",

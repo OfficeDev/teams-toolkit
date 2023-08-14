@@ -26,6 +26,9 @@ class TestLogProvider implements LogProvider {
   log(level: LogLevel, msg: string): void {
     this.msg = msg;
   }
+  async logInFile(logLevel: LogLevel, message: string): Promise<void> {
+    return Promise.resolve();
+  }
   getLogFilePath(): string {
     return "";
   }

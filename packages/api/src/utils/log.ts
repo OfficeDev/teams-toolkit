@@ -44,23 +44,27 @@ export interface LogProvider {
   /**
    * normal output information
    */
-  info(message: string, logToFile?: boolean): void;
+  info(message: string): void;
 
   /**
    * normal output information, colored version
    */
-  info(message: Array<{ content: string; color: Colors }>, logToFile?: boolean): void;
+  info(message: Array<{ content: string; color: Colors }>): void;
 
   /**
    * warning information
    */
-  warning(message: string, logToFile?: boolean): void;
+  warning(message: string): void;
 
   /**
    * error information
    */
-  error(message: string, logToFile?: boolean): void;
+  error(message: string): void;
 
+  /**
+   * log content into file
+   */
+  logInFile(logLevel: LogLevel, message: string): Promise<void>;
   /**
    * Get log file path
    */

@@ -20,19 +20,14 @@ export default class ServerLogProvider implements LogProvider {
     this.logFileName = `${new Date().toISOString().replace(/-|:|\.\d+Z$/g, "")}.log`;
   }
 
-  log(logLevel: LogLevel, message: string, logToFile?: boolean): void {
-    if (logToFile) {
-      if (!fs.pathExistsSync(this.logFolderPath)) {
-        fs.mkdirSync(this.logFolderPath);
-      }
-      fs.appendFileSync(this.getLogFilePath(), message + "\n");
-    } else {
-      this.connection.sendNotification(
-        NotificationTypes[Namespaces.Logger].show,
-        logLevel,
-        message
-      );
+  log(logLevel: LogLevel, message: string): void {
+    this.connection.sendNotification(NotificationTypes[Namespaces.Logger].show, logLevel, message);
+  }
+  async logInFile(logLevel: LogLevel, message: string): Promise<void> {
+    if (!(await fs.pathExists(this.logFolderPath))) {
+      await fs.mkdir(this.logFolderPath);
     }
+    await fs.appendFile(this.getLogFilePath(), message + "\n");
   }
 
   verbose(message: string): void {
@@ -43,16 +38,15 @@ export default class ServerLogProvider implements LogProvider {
     this.log(LogLevel.Debug, message);
   }
 
-  info(message: string, logToFile?: boolean): void;
-  info(message: { content: string; color: Colors }[], logToFile?: boolean): void;
-  info(message: any, logToFile?: boolean): void {
+  info(message: string): void;
+  info(message: { content: string; color: Colors }[]): void;
+  info(message: string | { content: string; color: Colors }[]): void {
     if (typeof message === "string") {
-      this.log(LogLevel.Info, message, logToFile);
+      this.log(LogLevel.Info, message);
     } else {
       this.log(
         LogLevel.Info,
-        (message as Array<{ content: string; color: Colors }>).map((item) => item.content).join(""),
-        logToFile
+        (message as Array<{ content: string; color: Colors }>).map((item) => item.content).join("")
       );
     }
   }

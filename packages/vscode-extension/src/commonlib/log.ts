@@ -46,24 +46,20 @@ export class VsCodeLogProvider implements LogProvider {
     return `${defaultExtensionLogPath}/${this.logFileName}`;
   }
 
-  verbose(message: string): void {
-    // return this.log(LogLevel.Trace, message);
-  }
+  verbose(message: string): void {}
 
-  debug(message: string): void {
-    // return this.log(LogLevel.Debug, message);
-  }
+  debug(message: string): void {}
 
-  info(message: Array<{ content: string; color: Colors }>, logToFile?: boolean): void;
+  info(message: Array<{ content: string; color: Colors }>): void;
 
-  info(message: string, logToFile?: boolean): void;
+  info(message: string): void;
 
-  info(message: string | Array<{ content: string; color: Colors }>, logToFile?: boolean): void {
+  info(message: string | Array<{ content: string; color: Colors }>): void {
     // VSCode output channel is not TTY, does not support ANSI color
     if (message instanceof Array) {
       message = message.map((x) => x.content).join("");
     }
-    this.log(LogLevel.Info, message, logToFile);
+    this.log(LogLevel.Info, message);
   }
 
   warning(message: string): void {
@@ -77,18 +73,22 @@ export class VsCodeLogProvider implements LogProvider {
   /**
    * @Sample [2021-03-15T03:41:04.961Z] [Info] - [Extension] Initialize successfully.
    */
-  log(logLevel: LogLevel, message: string, logToFile?: boolean): void {
+  log(logLevel: LogLevel, message: string): void {
     try {
       if (logLevel < LogLevel.Info) return;
       if (logLevel >= LogLevel.Warning) this.outputChannel.show();
       const dateString = new Date().toJSON();
       const formattedMessage = `[${dateString}] [${LogLevel[logLevel]}] - ${message}`;
-      if (logToFile) {
-        fs.appendFileSync(this.getLogFilePath(), formattedMessage + "\n");
-      } else {
-        this.outputChannel.appendLine(formattedMessage);
-      }
+      this.outputChannel.appendLine(formattedMessage);
     } catch (e) {}
+  }
+
+  async logInFile(logLevel: LogLevel, message: string): Promise<void> {
+    if (logLevel === LogLevel.Info) {
+      const dateString = new Date().toJSON();
+      const formattedMessage = `[${dateString}] [${LogLevel[logLevel]}] - ${message}`;
+      await fs.appendFile(this.getLogFilePath(), formattedMessage + "\n");
+    }
   }
 }
 

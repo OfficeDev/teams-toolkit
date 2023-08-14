@@ -429,16 +429,17 @@ export enum LogLevel {
 // @public (undocumented)
 export interface LogProvider {
     debug(message: string): void;
-    error(message: string, logToFile?: boolean): void;
+    error(message: string): void;
     getLogFilePath(): string;
-    info(message: string, logToFile?: boolean): void;
+    info(message: string): void;
     info(message: Array<{
         content: string;
         color: Colors;
-    }>, logToFile?: boolean): void;
+    }>): void;
     log(logLevel: LogLevel, message: string): void;
+    logInFile(logLevel: LogLevel, message: string): Promise<void>;
     verbose(message: string): void;
-    warning(message: string, logToFile?: boolean): void;
+    warning(message: string): void;
 }
 
 // @public

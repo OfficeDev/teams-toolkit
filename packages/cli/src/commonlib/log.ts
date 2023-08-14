@@ -109,6 +109,9 @@ export class CLILogProvider implements LogProvider {
         break;
     }
   }
+  async logInFile(logLevel: LogLevel, message: string): Promise<void> {
+    return new Promise((resolve) => resolve());
+  }
 
   outputSuccess(template: string, ...args: string[]): void {
     ScreenManager.writeLine(

@@ -905,7 +905,7 @@ export const getTemplate = (inputs: Inputs): string => {
 
   return foundTemplate ?? "";
 };
-function officeAddinHostingQuestion(): SingleSelectQuestion {
+export function officeAddinHostingQuestion(): SingleSelectQuestion {
   const OfficeHostQuestion: SingleSelectQuestion = {
     type: "singleSelect",
     name: QuestionNames.OfficeAddinHost,

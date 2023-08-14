@@ -68,7 +68,7 @@ describe("Provision Command Tests", function () {
   });
 
   it("Provision with region", async () => {
-    sandbox.stub(UI, "interactive").value(true);
+    sandbox.stub(UI, "interactive").value(false);
     const cmd = new Provision();
     const args = {
       "resource-group": "mockrg",

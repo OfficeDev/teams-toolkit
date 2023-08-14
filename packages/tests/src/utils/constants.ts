@@ -212,6 +212,7 @@ export class Timeout {
   public static readonly testCase: number = 20 * 60 * 1000;
   public static readonly finishAzureTestCase: number = 15 * 60 * 1000;
   public static readonly testAzureCase: number = 45 * 60 * 1000;
+  public static readonly migrationTestCase: number = 40 * 60 * 1000;
 
   // SPFx
   public static readonly spfxProvision: number = 10 * 1000;

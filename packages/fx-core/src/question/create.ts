@@ -320,6 +320,14 @@ export class CapabilityOptions {
     };
   }
 
+  static SearchMe(): OptionItem {
+    return {
+      id: "search-message-extension",
+      label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+      detail: getLocalizedString("core.SearchAppOptionItem.detail"),
+    };
+  }
+
   static collectFormMe(): OptionItem {
     return {
       id: "collect-form-message-extension",
@@ -368,16 +376,22 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
-      ...CapabilityOptions.mes(),
+      ...CapabilityOptions.mes(inputs),
     ];
   }
 
-  static mes(): OptionItem[] {
-    return [
-      CapabilityOptions.linkUnfurling(),
-      CapabilityOptions.m365SearchMe(),
-      CapabilityOptions.collectFormMe(),
-    ];
+  static mes(inputs?: Inputs): OptionItem[] {
+    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
+      ? [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.SearchMe(),
+          CapabilityOptions.collectFormMe(),
+        ]
+      : [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+        ];
   }
 
   static copilotPlugins(): OptionItem[] {
@@ -1312,6 +1326,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
     cliShortName: "oapi",
+    cliDescription: "OpenAPI specification file location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
@@ -1358,6 +1373,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     cliShortName: "oai",
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
+    cliDescription: "OpenAI plugin website domain.",
     forgetLastValue: true,
     validation: {
       validFunc: async (input: string): Promise<string | undefined> => {
@@ -1428,6 +1444,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    cliDescription: "Specifies API(s) to be used in Copilot plugin.",
     cliShortName: "api",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
@@ -1522,6 +1539,7 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
           );
         },
+        cliOptionDisabled: "self", // Need to remove once copilot plugin is about to ship
         data: copilotPluginDevelopmentQuestion(),
       },
       {
@@ -1529,6 +1547,7 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
         },
+        cliOptionDisabled: "all", // Need to remove once copilot plugin is about to ship
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {

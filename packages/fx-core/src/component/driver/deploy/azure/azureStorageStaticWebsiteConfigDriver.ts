@@ -24,6 +24,7 @@ import {
   AzureStorageGetContainerPropertiesError,
   AzureStorageSetContainerPropertiesError,
 } from "../../../../error/deploy";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -64,6 +65,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
    * @param args Azure Storage resourceId, index page and error page
    * @param context log provider, progress handler, telemetry reporter
    */
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureStorageStaticWebsiteConfigDriver" })])
   async config(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const logger = context.logProvider;
     const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(

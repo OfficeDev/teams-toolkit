@@ -1,30 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import fs from "fs-extra";
-import AdmZip from "adm-zip";
-import * as path from "path";
 import { hooks } from "@feathersjs/hooks/lib";
-import { Result, FxError, ok, err, Platform, Colors } from "@microsoft/teamsfx-api";
+import { Colors, FxError, Platform, Result, err, ok } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import fs from "fs-extra";
+import * as path from "path";
 import { Service } from "typedi";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { manifestUtils } from "./utils/ManifestUtils";
-import { Constants } from "./constants";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
 import { isCopilotPluginEnabled } from "../../../common/featureFlags";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { ErrorContextMW } from "../../../core/globalVars";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { updateProgress } from "../middleware/updateProgress";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { Constants } from "./constants";
+import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
+import { manifestUtils } from "./utils/ManifestUtils";
 
 export const actionName = "teamsApp/zipAppPackage";
 
 @Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.createAppPackageDriver");
-
   public async run(
     args: CreateAppPackageArgs,
     context: DriverContext
@@ -33,7 +33,6 @@ export class CreateAppPackageDriver implements StepDriver {
     const res = await this.build(args, wrapContext);
     return res;
   }
-
   public async execute(
     args: CreateAppPackageArgs,
     context: DriverContext
@@ -47,6 +46,7 @@ export class CreateAppPackageDriver implements StepDriver {
   }
 
   @hooks([
+    ErrorContextMW({ source: "Teams", component: "CreateAppPackageDriver" }),
     addStartAndEndTelemetry(actionName, actionName),
     updateProgress(getLocalizedString("plugins.appstudio.createPackage.progressBar.message")),
   ])

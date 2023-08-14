@@ -28,6 +28,7 @@ import { waitSeconds } from "../../../../common/tools";
 import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";
+import { setErrorContext } from "../../../../core/globalVars";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -125,6 +126,7 @@ export namespace AppStudioClient {
     logProvider?: LogProvider,
     overwrite = false
   ): Promise<AppDefinition> {
+    setErrorContext({ source: "Teams" });
     const telemetryProperties: { [key: string]: string } = {
       [TelemetryPropertyKey.OverwriteIfAppAlreadyExists]: String(overwrite),
       // To avoid url be redacted in telemetry, get region from full base url
@@ -201,6 +203,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<AppDefinition> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP);
     let requester: AxiosInstance;
     try {
@@ -258,6 +261,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<boolean> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
@@ -346,6 +350,7 @@ export namespace AppStudioClient {
     file: Buffer,
     appStudioToken: string
   ): Promise<string> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
     try {
       // Get App Definition from Teams App Catalog
@@ -402,6 +407,7 @@ export namespace AppStudioClient {
     teamsAppId: string,
     appStudioToken: string
   ): Promise<IPublishingAppDenition | undefined> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
@@ -531,6 +537,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<any> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
     logProvider?.info("Downloading app package for app " + teamsAppId);
     const requester = createRequesterWithToken(appStudioToken, region);

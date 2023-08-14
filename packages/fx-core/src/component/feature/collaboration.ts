@@ -15,6 +15,7 @@ import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { AppStudioClient } from "../driver/teamsApp/clients/appStudioClient";
 import { AppIdNotExist } from "../../core/error";
+import { ErrorContextMW } from "../../core/globalVars";
 
 const EventName = {
   grantPermission: "grant-permission",
@@ -31,8 +32,10 @@ export class AadCollaboration {
   constructor(m365TokenProvider: M365TokenProvider) {
     this.aadAppClient = new AadAppClient(m365TokenProvider);
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.grantPermission, componentNameAad)])
+  @hooks([
+    ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
+    addStartAndEndTelemetry(EventName.grantPermission, componentNameAad),
+  ])
   public async grantPermission(
     ctx: Context,
     objectId: string,
@@ -54,8 +57,10 @@ export class AadCollaboration {
       return err(this.handleError(error, ctx, objectId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.listCollaborator, componentNameAad)])
+  @hooks([
+    ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
+    addStartAndEndTelemetry(EventName.listCollaborator, componentNameAad),
+  ])
   public async listCollaborator(
     ctx: Context,
     objectId: string
@@ -67,8 +72,10 @@ export class AadCollaboration {
       return err(this.handleError(error, ctx, objectId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.checkPermission, componentNameAad)])
+  @hooks([
+    ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
+    addStartAndEndTelemetry(EventName.checkPermission, componentNameAad),
+  ])
   public async checkPermission(
     ctx: Context,
     objectId: string,
@@ -119,8 +126,10 @@ export class TeamsCollaboration {
     this.tokenProvider = m365TokenProvider;
     TelemetryUtils.init(ctx);
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.grantPermission, componentNameTeams)])
+  @hooks([
+    ErrorContextMW({ source: "Teams", component: "TeamsCollaboration" }),
+    addStartAndEndTelemetry(EventName.grantPermission, componentNameTeams),
+  ])
   public async grantPermission(
     ctx: Context,
     teamsAppId: string,
@@ -146,8 +155,10 @@ export class TeamsCollaboration {
       return err(this.handleError(error, ctx, teamsAppId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.listCollaborator, componentNameTeams)])
+  @hooks([
+    ErrorContextMW({ source: "Teams", component: "TeamsCollaboration" }),
+    addStartAndEndTelemetry(EventName.listCollaborator, componentNameTeams),
+  ])
   public async listCollaborator(
     ctx: Context,
     teamsAppId: string
@@ -181,8 +192,10 @@ export class TeamsCollaboration {
       return err(this.handleError(error, ctx, teamsAppId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.checkPermission, componentNameTeams)])
+  @hooks([
+    ErrorContextMW({ source: "Teams", component: "TeamsCollaboration" }),
+    addStartAndEndTelemetry(EventName.checkPermission, componentNameTeams),
+  ])
   public async checkPermission(
     ctx: Context,
     teamsAppId: string,

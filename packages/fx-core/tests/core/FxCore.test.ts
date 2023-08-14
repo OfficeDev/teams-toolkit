@@ -55,7 +55,6 @@ import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilo
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
-import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 import * as collaborator from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
@@ -405,37 +404,6 @@ describe("Core basic APIs", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("not implement method", async () => {
-    const implement = new FxCoreV3Implement(tools);
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
-    };
-    try {
-      const noImplemtnMethod = async (inputs: Inputs) => {
-        return "";
-      };
-      await implement.dispatch(noImplemtnMethod, inputs);
-      assert.fail("v3 dispatch matched no implemented method");
-    } catch (error) {
-      assert.isNotNull(error);
-    }
-
-    try {
-      const mockFunc = {
-        namespace: "mock namespace",
-        method: "mock func",
-      };
-      const noImplemtnMethod = async (func: Func, inputs: Inputs) => {
-        return "";
-      };
-      await implement.dispatchUserTask(noImplemtnMethod, mockFunc, inputs);
-      assert.fail("v3 dispatchUserTask matched no implemented method");
-    } catch (error) {
-      assert.isNotNull(error);
-    }
-  });
-
   it("buildAadManifest method should exist", async () => {
     const restore = mockedEnv({
       TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
@@ -470,7 +438,7 @@ describe("Core basic APIs", () => {
       const projectPath = inputs.projectPath!;
       assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
-      const implement = new FxCoreV3Implement(tools);
+      const implement = new FxCore(tools);
 
       const mockFunc = {
         namespace: "mock namespace",
@@ -506,7 +474,7 @@ describe("Core basic APIs", () => {
       const projectPath = inputs.projectPath!;
       assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
 
-      const implement = new FxCoreV3Implement(tools);
+      const implement = new FxCore(tools);
 
       const mockFunc = {
         namespace: "mock namespace",
@@ -747,7 +715,7 @@ describe("createEnvCopyV3", async () => {
     sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("./env/.env.dev"));
     sandbox.stub(fs, "pathExists").resolves(true);
     const core = new FxCore(tools);
-    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
+    const res = await core.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isOk());
     assert(
       writeStreamContent[0] === `${sourceEnvContent[0]}${os.EOL}`,
@@ -778,7 +746,7 @@ describe("createEnvCopyV3", async () => {
       .onFirstCall()
       .resolves(err(new UserError({})));
     const core = new FxCore(tools);
-    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
+    const res = await core.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isErr());
   });
 
@@ -790,7 +758,7 @@ describe("createEnvCopyV3", async () => {
       .onSecondCall()
       .resolves(err(new UserError({})));
     const core = new FxCore(tools);
-    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
+    const res = await core.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isErr());
   });
 });

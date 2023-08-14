@@ -1,6 +1,6 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -31,7 +31,7 @@ import { execCommand } from "../../../utils/execCommand";
 import { expect } from "chai";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
   CliHelper.setV3Enable();
 

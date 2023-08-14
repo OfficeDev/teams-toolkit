@@ -135,9 +135,9 @@ export class ManifestUtil {
     ) {
       if ((manifest.composeExtensions[0] as IComposeExtension).supportsConversationalAI) {
         properties.isCopilotPlugin = true;
-      } else {
-        properties.isApiBasedMe = true;
       }
+
+      properties.isApiBasedMe = true;
     }
 
     // If it's SPFx app

@@ -17,6 +17,7 @@ import { default as CLIUIInstance, default as UI } from "../../src/userInteracti
 import { printError, YargsCommand } from "../../src/yargsCommand";
 import { expect, mockLogProvider } from "./utils";
 import CLILogProvider from "../../src/commonlib/log";
+import { CLILogLevel } from "../../src/constants";
 
 class TestCommand extends YargsCommand {
   public commandHead = "test";
@@ -110,9 +111,11 @@ describe("printError", async () => {
     sandbox.restore();
   });
   it("happy path", async () => {
+    sandbox.stub(CLILogProvider, "getLogLevel").returns(CLILogLevel.debug);
     const stub = sandbox.stub(CLILogProvider, "outputError").returns();
     printError(new MissingEnvironmentVariablesError("test", "test"));
     const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+    error.innerError = new Error("test");
     printError(error);
     expect(stub.called).to.be.true;
   });

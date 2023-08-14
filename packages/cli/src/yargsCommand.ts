@@ -18,6 +18,7 @@ import * as constants from "./constants";
 import CliTelemetryInstance from "./telemetry/cliTelemetry";
 import UI from "./userInteraction";
 import { getSystemInputs } from "./utils";
+import { assembleError } from "@microsoft/teamsfx-core";
 
 export abstract class YargsCommand {
   /**
@@ -137,8 +138,7 @@ export abstract class YargsCommand {
     } catch (e: any) {
       Progress.end(false);
 
-      const FxError: UserError | SystemError =
-        "source" in e ? e : new UnhandledError(e, constants.cliSource);
+      const FxError = assembleError(e, constants.cliSource);
 
       printError(FxError);
 

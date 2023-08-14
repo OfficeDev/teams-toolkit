@@ -2,10 +2,12 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { CoreQuestionNames } from "@microsoft/teamsfx-core";
+import { newResourceGroupOption } from "@microsoft/teamsfx-core/build/question/other";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
-import { EnvOptions, ProvisionOptions, RegionOptions, RootFolderOptions } from "../constants";
+import { EnvOptions, ProvisionOptions, RootFolderOptions } from "../constants";
 import { strings } from "../resource";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -13,11 +15,9 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import UI from "../userInteraction";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import UI from "../userInteraction";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { newResourceGroupOption } from "@microsoft/teamsfx-core/build/question/other";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;

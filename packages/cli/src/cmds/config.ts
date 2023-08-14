@@ -44,14 +44,14 @@ export class ConfigGet extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return new Promise((resolve) => {
       if (args.option === undefined) {
-        const globalResult = this.printGlobalConfig();
-        if (globalResult.isErr()) {
-          resolve(globalResult);
+        const res = this.printGlobalConfig();
+        if (res.isErr()) {
+          resolve(err(res.error));
         }
       } else {
-        const globalResult = this.printGlobalConfig(args.option);
-        if (globalResult.isErr()) {
-          resolve(globalResult);
+        const res = this.printGlobalConfig(args.option);
+        if (res.isErr()) {
+          resolve(res);
         }
       }
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.ConfigGet, {

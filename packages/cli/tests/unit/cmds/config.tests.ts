@@ -130,14 +130,19 @@ describe("Config Command Tests", function () {
 
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
+});
 
+describe("Config Command Tests", function () {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
   it("configGet ", async () => {
     const cmd = new ConfigGet();
     sandbox.stub(cmd, "printGlobalConfig").resolves(err(new UserError({})));
     const result = await cmd.runCommand({});
     expect(result.isErr()).equals(true);
   });
-
   it("configGet with option", async () => {
     const cmd = new ConfigGet();
     sandbox.stub(cmd, "printGlobalConfig").resolves(err(new UserError({})));

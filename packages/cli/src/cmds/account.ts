@@ -137,7 +137,7 @@ class AccountShow extends YargsCommand {
   }
 }
 
-class AccountLogin extends YargsCommand {
+export class AccountLogin extends YargsCommand {
   public readonly commandHead = `login`;
   public readonly command = `${this.commandHead} <service>`;
   public readonly description = "Log in to the selected cloud service.";

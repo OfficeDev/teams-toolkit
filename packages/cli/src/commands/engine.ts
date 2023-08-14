@@ -519,10 +519,10 @@ class CLIEngine {
     }
   }
 
-  printError(fxError: FxError): void {
+  async printError(fxError: FxError): Promise<void> {
     if (fxError) {
       if (isUserCancelError(fxError)) {
-        logger.info("User canceled.");
+        await logger.info("User canceled.");
         return;
       }
       logger.outputError(
@@ -540,7 +540,7 @@ class CLIEngine {
           colorize(fxError.issueLink as string, TextType.Hyperlink)
         );
       }
-      void logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
+      await logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
     }
   }
 }

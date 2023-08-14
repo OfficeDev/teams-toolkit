@@ -136,10 +136,7 @@ export abstract class YargsCommand {
       }
     } catch (e: any) {
       Progress.end(false);
-      if (isUserCancelError(e)) {
-        CLILogProvider.necessaryLog(LogLevel.Info, "User canceled.", true);
-        return;
-      }
+
       const FxError: UserError | SystemError =
         "source" in e ? e : new UnhandledError(e, constants.cliSource);
 
@@ -158,6 +155,10 @@ export abstract class YargsCommand {
 }
 
 export function printError(fxError: FxError): void {
+  if (isUserCancelError(fxError)) {
+    CLILogProvider.necessaryLog(LogLevel.Info, "User canceled.", true);
+    return;
+  }
   CLILogProvider.outputError(
     `${fxError.source}.${fxError.name}: ${fxError.message || fxError.innerError?.message}`
   );

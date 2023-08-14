@@ -256,6 +256,11 @@ describe("CLI Engine", () => {
       engine.printError(error);
       assert.isTrue(stub.called);
     });
+    it("canceled", async () => {
+      const stub = sandbox.stub(logger, "info").resolves();
+      engine.printError(new UserCancelError("test"));
+      assert.isTrue(stub.called);
+    });
   });
 
   describe("printError(old)", async () => {
@@ -264,6 +269,11 @@ describe("CLI Engine", () => {
       printError(new MissingEnvironmentVariablesError("test", "test"));
       const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
       printError(error);
+      assert.isTrue(stub.called);
+    });
+    it("canceled", async () => {
+      const stub = sandbox.stub(CLILogProvider, "necessaryLog").returns();
+      engine.printError(new UserCancelError("test"));
       assert.isTrue(stub.called);
     });
   });

@@ -146,6 +146,11 @@ describe("CLI Engine", () => {
     });
   });
   describe("start", async () => {
+    it("command has no handler", async () => {
+      sandbox.stub(process, "argv").value(["node", "cli", "new"]);
+      sandbox.stub(createCommand, "handler").value(undefined);
+      await engine.start(rootCommand);
+    });
     it("should display version", async () => {
       sandbox.stub(process, "argv").value(["node", "cli", "--version"]);
       const loggerStub = sandbox.stub(logger, "info");

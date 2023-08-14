@@ -31,7 +31,7 @@ import { ModalDialog, VSBrowser } from "vscode-extension-tester";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
 
   beforeEach(async function () {

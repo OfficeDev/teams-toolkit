@@ -47,7 +47,10 @@ describe("Config Command Tests", function () {
     const cmd = new Config();
     cmd.builder(yargs);
   });
-
+  it("Config runCommand", () => {
+    const cmd = new Config();
+    cmd.runCommand({});
+  });
   it("get - has configured proper parameters", () => {
     const cmd = new Config();
     expect(cmd.subCommands.length).equals(2);

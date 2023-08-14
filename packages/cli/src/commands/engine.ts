@@ -520,13 +520,13 @@ class CLIEngine {
       logger.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);
       if ("helpLink" in fxError && fxError["helpLink"]) {
         logger.outputError(
-          `Get help from `,
+          `Get help from %s`,
           colorize(fxError["helpLink"] as string, TextType.Hyperlink)
         );
       }
       if ("issueLink" in fxError && fxError["issueLink"]) {
         logger.outputError(
-          `Report this issue at `,
+          `Report this issue at %s`,
           colorize(fxError["issueLink"] as string, TextType.Hyperlink)
         );
       }

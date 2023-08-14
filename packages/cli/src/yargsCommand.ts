@@ -145,13 +145,13 @@ export abstract class YargsCommand {
       CLILogProvider.outputError(`${FxError.source}.${FxError.name}: ${FxError.message}`);
       if ("helpLink" in FxError && FxError.helpLink) {
         CLILogProvider.outputError(
-          `Get help from `,
-          colorize(`${FxError.helpLink}#${FxError.source}${FxError.name}`, TextType.Hyperlink)
+          `Get help from %s`,
+          colorize(FxError.helpLink, TextType.Hyperlink)
         );
       }
       if ("issueLink" in FxError && FxError.issueLink) {
         CLILogProvider.outputError(
-          `Report this issue at `,
+          `Report this issue at %s`,
           colorize(FxError.issueLink, TextType.Hyperlink)
         );
       }

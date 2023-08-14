@@ -6,6 +6,7 @@ import {
   AzureAccountProvider,
   err,
   FxError,
+  InputsWithProjectPath,
   M365TokenProvider,
   ok,
   Result,
@@ -81,6 +82,7 @@ class ProvisionUtils {
   }
 
   async ensureResourceGroup(
+    inputs: InputsWithProjectPath,
     azureAccountProvider: AzureAccountProvider,
     subscriptionId: string,
     givenResourceGroupName?: string,
@@ -110,6 +112,7 @@ class ProvisionUtils {
     } else {
       const defaultRG = defaultResourceGroupName || "teams-app-rg";
       const rgRes = await resourceGroupHelper.askResourceGroupInfoV3(
+        inputs,
         azureAccountProvider,
         rmClient,
         defaultRG

@@ -559,6 +559,7 @@ class Coordinator {
         } else {
           const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
+            inputs,
             ctx.azureAccountProvider,
             resolvedSubscriptionId!,
             undefined,

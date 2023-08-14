@@ -152,8 +152,8 @@ class AccountLogin extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
+  public runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return new Promise((resolve) => resolve(ok(null)));
   }
 }
 
@@ -314,7 +314,7 @@ export default class Account extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
+  public runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return new Promise((resolve) => resolve(ok(null)));
   }
 }

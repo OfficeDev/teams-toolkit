@@ -273,7 +273,7 @@ describe("CLI Engine", () => {
     });
     it("canceled", async () => {
       const stub = sandbox.stub(CLILogProvider, "necessaryLog").returns();
-      engine.printError(new UserCancelError("test"));
+      printError(new UserCancelError("test"));
       assert.isTrue(stub.called);
     });
   });

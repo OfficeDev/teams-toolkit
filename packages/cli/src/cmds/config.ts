@@ -61,7 +61,7 @@ export class ConfigGet extends YargsCommand {
     });
   }
 
-  private printGlobalConfig(option?: string): Result<null, FxError> {
+  public printGlobalConfig(option?: string): Result<null, FxError> {
     const result = UserSettings.getConfigSync();
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);

@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok } from "@microsoft/teamsfx-api";
+import { UserError, err, ok } from "@microsoft/teamsfx-api";
 import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
-import Config from "../../../src/cmds/config";
+import Config, { ConfigGet } from "../../../src/cmds/config";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { UserSettings } from "../../../src/userSetttings";
 import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
@@ -129,5 +129,19 @@ describe("Config Command Tests", function () {
     expect(logs[0]).includes("No user setting test.");
 
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
+  });
+
+  it("configGet ", async () => {
+    const cmd = new ConfigGet();
+    sandbox.stub(cmd, "printGlobalConfig").resolves(err(new UserError({})));
+    const result = await cmd.runCommand({});
+    expect(result.isErr()).equals(true);
+  });
+
+  it("configGet with option", async () => {
+    const cmd = new ConfigGet();
+    sandbox.stub(cmd, "printGlobalConfig").resolves(err(new UserError({})));
+    const result = await cmd.runCommand({ option: "test" });
+    expect(result.isErr()).equals(true);
   });
 });

@@ -911,7 +911,7 @@ function officeAddinHostingQuestion(): SingleSelectQuestion {
     name: QuestionNames.OfficeAddinHost,
     title: "Add-in Host",
     staticOptions: [],
-    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    dynamicOptions: (inputs: Inputs) => {
       const template = getTemplate(inputs);
       const getHostTemplateNames = officeAddinJsonData.getHostTemplateNames(template);
       const options = getHostTemplateNames.map((host) => ({
@@ -920,7 +920,7 @@ function officeAddinHostingQuestion(): SingleSelectQuestion {
       }));
       return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
     },
-    default: async (inputs: Inputs): Promise<string> => {
+    default: (inputs: Inputs) => {
       const template = getTemplate(inputs);
       const options = officeAddinJsonData.getHostTemplateNames(template);
       return options[0] || "No Options";
@@ -1454,7 +1454,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     validation: {
       minItems: 1,
     },
-    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    dynamicOptions: (inputs: Inputs) => {
       if (!inputs.supportedApisFromApiSpec) {
         throw new EmptyOptionError(QuestionNames.ApiOperation, "question");
       }

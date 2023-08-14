@@ -381,7 +381,7 @@ describe("component coordinator test", () => {
       env: "dev",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.getSelectedEnv(inputs);
+    const res = fxCore.getSelectedEnv(inputs);
     assert.isTrue(res.isOk());
   });
 

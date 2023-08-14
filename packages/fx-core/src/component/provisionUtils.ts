@@ -47,18 +47,18 @@ class ProvisionUtils {
     azureAccountProvider: AzureAccountProvider,
     givenSubscriptionId?: string
   ): Promise<Result<SubscriptionInfo, FxError>> {
-    TOOLS.logProvider.info("check whether azure account is signed in.");
+    await TOOLS.logProvider.info("check whether azure account is signed in.");
     // make sure the user is logged in
     await azureAccountProvider.getIdentityCredentialAsync(true);
     if (!givenSubscriptionId) {
-      TOOLS.logProvider.info("subscription is not selected, try to select.");
+      await TOOLS.logProvider.info("subscription is not selected, try to select.");
       try {
         const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
         if (!subscriptionInAccount) {
           // this case will not happen actually
           return err(new SelectSubscriptionError());
         } else {
-          TOOLS.logProvider.info(
+          await TOOLS.logProvider.info(
             `successful to select subscription: ${subscriptionInAccount.subscriptionId}`
           );
           return ok(subscriptionInAccount);
@@ -69,14 +69,14 @@ class ProvisionUtils {
     }
 
     // verify valid subscription (permission)
-    TOOLS.logProvider.info("subscription is given, try to validate");
+    await TOOLS.logProvider.info("subscription is given, try to validate");
     const subscriptions = await azureAccountProvider.listSubscriptions();
     const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
     if (!foundSubscriptionInfo) {
-      TOOLS.logProvider.info("subscription validate fail");
+      await TOOLS.logProvider.info("subscription validate fail");
       return err(new InvalidAzureSubscriptionError(givenSubscriptionId));
     }
-    TOOLS.logProvider.info("subscription validate success");
+    await TOOLS.logProvider.info("subscription validate success");
     return ok(foundSubscriptionInfo);
   }
 
@@ -197,10 +197,10 @@ class ProvisionUtils {
     return ok(undefined);
   }
 
-  async ensureM365TenantMatchesV3(
+  ensureM365TenantMatchesV3(
     actions: string[],
     tenantId: string | undefined
-  ): Promise<Result<undefined, FxError>> {
+  ): Result<undefined, FxError> {
     if (actions.length === 0 || !tenantId) {
       return ok(undefined);
     }

@@ -274,20 +274,19 @@ export class FxCore {
     }
     if (Context.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
-      Context.ui!.showMessage("info", msg, false);
+      void Context.ui!.showMessage("info", msg, false);
     } else {
       const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
-      Context.ui!.showMessage(
+      const result = await Context.ui!.showMessage(
         "info",
         msg,
         false,
         getLocalizedString("core.deploy.aadManifestLearnMore")
-      ).then((result) => {
-        const userSelected = result.isOk() ? result.value : undefined;
-        if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
-          Context.ui!.openUrl(ViewAadAppHelpLinkV5);
-        }
-      });
+      );
+      const userSelected = result.isOk() ? result.value : undefined;
+      if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+        void Context.ui!.openUrl(ViewAadAppHelpLinkV5);
+      }
     }
     return ok(undefined);
   }
@@ -560,11 +559,7 @@ export class FxCore {
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
   @hooks([ErrorHandlerMW])
-  async getQuestions(
-    stage: Stage,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    inputs.stage = Stage.getQuestions;
+  getQuestions(stage: Stage, inputs: Inputs): Result<QTreeNode | undefined, FxError> {
     if (stage === Stage.create) {
       return ok(createProjectCliHelpNode() as QTreeNode);
     }
@@ -799,7 +794,7 @@ export class FxCore {
     ErrorHandlerMW,
     EnvLoaderMW(false),
   ])
-  async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
+  getSelectedEnv(inputs: Inputs): Result<string | undefined, FxError> {
     return ok(inputs.env); //work for both v2 and v3
   }
 
@@ -912,7 +907,7 @@ export class FxCore {
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
-  async innerMigrationV3(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  innerMigrationV3(inputs: Inputs): Result<undefined, FxError> {
     return ok(undefined);
   }
 

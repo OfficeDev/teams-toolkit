@@ -52,12 +52,8 @@ export class MockCore {
     return ok(undefined);
   }
 
-  async getSelectedEnv(inputs: Inputs): Promise<Result<string, FxError>> {
+  getSelectedEnv(inputs: Inputs): Result<string, FxError> {
     return ok("dev");
-  }
-
-  async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(new QTreeNode({ type: "group" }));
   }
 
   async encrypt(plaintext: string, inputs: Inputs): Promise<Result<string, FxError>> {

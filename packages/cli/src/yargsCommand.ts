@@ -142,26 +142,8 @@ export abstract class YargsCommand {
       }
       const FxError: UserError | SystemError =
         "source" in e ? e : new UnhandledError(e, constants.cliSource);
-      CLILogProvider.outputError(
-        `${FxError.source}.${FxError.name}: ${FxError.message || FxError.innerError?.message}`
-      );
-      if ("helpLink" in FxError && FxError.helpLink) {
-        CLILogProvider.outputError(
-          `Get help from %s`,
-          colorize(FxError.helpLink, TextType.Hyperlink)
-        );
-      }
-      if ("issueLink" in FxError && FxError.issueLink) {
-        CLILogProvider.outputError(
-          `Report this issue at %s`,
-          colorize(FxError.issueLink, TextType.Hyperlink)
-        );
-      }
-      if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        CLILogProvider.outputError(
-          `Call stack: ${FxError.stack || FxError.innerError?.stack || "undefined"}`
-        );
-      }
+
+      printError(FxError);
 
       exit(-1, FxError);
     } finally {
@@ -172,5 +154,25 @@ export abstract class YargsCommand {
         process.exit();
       }
     }
+  }
+}
+
+export function printError(fxError: FxError): void {
+  CLILogProvider.outputError(
+    `${fxError.source}.${fxError.name}: ${fxError.message || fxError.innerError?.message}`
+  );
+  if (fxError instanceof UserError && fxError.helpLink) {
+    CLILogProvider.outputError(`Get help from %s`, colorize(fxError.helpLink, TextType.Hyperlink));
+  }
+  if (fxError instanceof SystemError && fxError.issueLink) {
+    CLILogProvider.outputError(
+      `Report this issue at %s`,
+      colorize(fxError.issueLink, TextType.Hyperlink)
+    );
+  }
+  if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
+    CLILogProvider.outputError(
+      `Call stack: ${fxError.stack || fxError.innerError?.stack || "undefined"}`
+    );
   }
 }

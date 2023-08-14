@@ -1,5 +1,17 @@
-import { CLICommandOption, CLIContext, CLIFoundCommand, err, ok } from "@microsoft/teamsfx-api";
-import { FxCore, InputValidationError, UserCancelError } from "@microsoft/teamsfx-core";
+import {
+  CLICommandOption,
+  CLIContext,
+  CLIFoundCommand,
+  SystemError,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import {
+  FxCore,
+  InputValidationError,
+  MissingEnvironmentVariablesError,
+  UserCancelError,
+} from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
@@ -10,10 +22,13 @@ import { createCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 import { logger } from "../../src/commonlib/logger";
+import { InvalidChoiceError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
-import { InvalidChoiceError } from "../../src/error";
+import { printError } from "../../src/yargsCommand";
+import CLILogProvider from "../../src/commonlib/log";
+
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
 
@@ -229,6 +244,27 @@ describe("CLI Engine", () => {
       sandbox.stub(engine, "start").resolves();
       await start();
       assert.isTrue(true);
+    });
+  });
+  describe("printError", async () => {
+    it("happy path", async () => {
+      sandbox.stub(logger, "info").resolves();
+      sandbox.stub(logger, "debug").resolves();
+      const stub = sandbox.stub(logger, "outputError").returns();
+      engine.printError(new MissingEnvironmentVariablesError("test", "test"));
+      const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+      engine.printError(error);
+      assert.isTrue(stub.called);
+    });
+  });
+
+  describe("printError(old)", async () => {
+    it("happy path", async () => {
+      const stub = sandbox.stub(CLILogProvider, "outputError").returns();
+      printError(new MissingEnvironmentVariablesError("test", "test"));
+      const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+      printError(error);
+      assert.isTrue(stub.called);
     });
   });
 });

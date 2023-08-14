@@ -11,6 +11,8 @@ import {
   LogLevel,
   Platform,
   Result,
+  SystemError,
+  UserError,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -513,6 +515,12 @@ class CLIEngine {
       }
     }
     if (fxError) {
+      this.printError(fxError);
+    }
+  }
+
+  printError(fxError: FxError): void {
+    if (fxError) {
       if (isUserCancelError(fxError)) {
         logger.info("User canceled.");
         return;
@@ -520,16 +528,16 @@ class CLIEngine {
       logger.outputError(
         `${fxError.source}.${fxError.name}: ${fxError.message || fxError.innerError?.message}`
       );
-      if ("helpLink" in fxError && fxError["helpLink"]) {
+      if (fxError instanceof UserError && fxError.helpLink) {
         logger.outputError(
           `Get help from %s`,
-          colorize(fxError["helpLink"] as string, TextType.Hyperlink)
+          colorize(fxError.helpLink as string, TextType.Hyperlink)
         );
       }
-      if ("issueLink" in fxError && fxError["issueLink"]) {
+      if (fxError instanceof SystemError && fxError.issueLink) {
         logger.outputError(
           `Report this issue at %s`,
-          colorize(fxError["issueLink"] as string, TextType.Hyperlink)
+          colorize(fxError.issueLink as string, TextType.Hyperlink)
         );
       }
       void logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);

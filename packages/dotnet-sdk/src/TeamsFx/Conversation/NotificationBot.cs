@@ -81,11 +81,54 @@ namespace Microsoft.TeamsFx.Conversation
         }
 
         /// <summary>
+        /// Validate the installation by getting paged memebers.
+        /// </summary>
+        /// <param name="reference">The <see cref="ConversationReference"/> of the bot installation.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Returns false if receives "BotNotInConversationRoster" error, otherwise returns true</returns>
+        public async Task<bool> ValidateInstallationAsync(ConversationReference reference, CancellationToken cancellationToken = default) 
+        {
+            var isValid = true;
+            await _adapter.ContinueConversationAsync
+            (
+                _botAppId,
+                reference,
+                async (context, ct) => {
+                    try
+                    {
+                        // try get member to see if the installation is still valid
+                        await TeamsInfo.GetPagedMembersAsync(context, 1, null, ct).ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is HttpOperationException httpEx)
+                        {
+                            var response = httpEx.Response;
+                            if (response != null)
+                            {
+                                var status = response.StatusCode;
+                                var error = response.Content ?? string.Empty;
+                                if (status == HttpStatusCode.Forbidden && error.Contains("BotNotInConversationRoster"))
+                                {
+                                    // bot is uninstalled
+                                    isValid = false;
+                                }
+                            }
+                        }
+                    }
+                },
+                cancellationToken
+            ).ConfigureAwait(false);
+            return isValid;
+        }
+
+        /// <summary>
         /// Get a pagined list of targets where the bot is installed.
         /// </summary>
         /// <param name="pageSize">Suggested number of entries on a page.</param>
         /// <param name="continuationToken">The continuation token.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="validationEnabled">The parameter to enable or disable installation validation.</param>
         /// <returns>A pagined list of <see cref="TeamsBotInstallation"/>.</returns>
         /// <remarks>
         /// The result is retrieving from the persisted storage.
@@ -93,7 +136,8 @@ namespace Microsoft.TeamsFx.Conversation
         public async Task<PagedData<TeamsBotInstallation>> GetPagedInstallationsAsync(
             int? pageSize = default,
             string continuationToken = default,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            bool validationEnabled = true)
         {
             var pagedData = await _store.List(pageSize, continuationToken, cancellationToken).ConfigureAwait(false);
             var installations = new List<TeamsBotInstallation>();
@@ -101,38 +145,12 @@ namespace Microsoft.TeamsFx.Conversation
             foreach (var reference in pagedData.Data)
             {
                 // validate connection
-                var valid = true;
-                await _adapter.ContinueConversationAsync
-                (
-                    _botAppId,
-                    reference,
-                    async (context, ct) => {
-                        try
-                        {
-                            // try get member to see if the installation is still valid
-                            await TeamsInfo.GetPagedMembersAsync(context, 1, null, ct).ConfigureAwait(false);
-                        }
-                        catch (Exception e)
-                        {
-                            if (e is HttpOperationException httpEx)
-                            {
-                                var response = httpEx.Response;
-                                if (response != null)
-                                {
-                                    var status = response.StatusCode;
-                                    var error = response.Content ?? string.Empty;
-                                    if (status == HttpStatusCode.Forbidden && error.Contains("BotNotInConversationRoster"))
-                                    {
-                                        // bot is uninstalled
-                                        valid = false;
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    cancellationToken
-                ).ConfigureAwait(false);
-                if (valid)
+                bool valid = true;
+                if (validationEnabled)
+                {
+                    valid = await ValidateInstallationAsync(reference, cancellationToken).ConfigureAwait(false);
+                }
+                if (!validationEnabled || (validationEnabled && valid))
                 {
                     installations.Add(new TeamsBotInstallation(_botAppId, _adapter, reference));
                 }

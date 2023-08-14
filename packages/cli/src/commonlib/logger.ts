@@ -59,6 +59,10 @@ export class CLILogger implements LogProvider {
     }
   }
 
+  async logInFile(logLevel: LogLevel, message: string): Promise<void> {
+    return new Promise((resolve) => resolve());
+  }
+
   outputSuccess(template: string, ...args: string[]): void {
     ScreenManager.writeLine(
       SuccessText + colorize(replaceTemplateString(template, ...args), TextType.Info)

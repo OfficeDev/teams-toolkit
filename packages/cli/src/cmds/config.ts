@@ -41,7 +41,7 @@ export class ConfigGet extends YargsCommand {
     return yargs.positional("option", ConfigOptionOptions());
   }
 
-  public runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return new Promise((resolve) => {
       if (args.option === undefined) {
         const globalResult = this.printGlobalConfig();
@@ -142,7 +142,7 @@ export default class Config extends YargsCommand {
       .hide("action");
   }
 
-  public runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return new Promise((resolve) => resolve(ok(null)));
   }
 }

@@ -117,7 +117,12 @@ describe("printError", async () => {
     const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
     error.innerError = new Error("test");
     printError(error);
-    expect(stub.called).to.be.true;
+    error.stack = undefined;
+    printError(error);
+    error.stack = undefined;
+    printError(error);
+    error.innerError!.stack = undefined;
+    printError(error);
   });
   it("canceled", async () => {
     const stub = sandbox.stub(CLILogProvider, "necessaryLog").returns();

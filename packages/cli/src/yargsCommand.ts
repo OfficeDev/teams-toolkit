@@ -8,6 +8,7 @@ import {
   UnhandledError,
   VersionState,
   isUserCancelError,
+  assembleError,
 } from "@microsoft/teamsfx-core";
 import { Argv, Options, exit } from "yargs";
 import activate from "./activate";
@@ -18,7 +19,6 @@ import * as constants from "./constants";
 import CliTelemetryInstance from "./telemetry/cliTelemetry";
 import UI from "./userInteraction";
 import { getSystemInputs } from "./utils";
-import { assembleError } from "@microsoft/teamsfx-core";
 
 export abstract class YargsCommand {
   /**
@@ -172,8 +172,6 @@ export function printError(fxError: FxError): void {
     );
   }
   if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-    CLILogProvider.outputError(
-      `Call stack: ${fxError.stack || fxError.innerError?.stack || "undefined"}`
-    );
+    CLILogProvider.outputError(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
   }
 }

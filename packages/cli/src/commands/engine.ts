@@ -520,28 +520,26 @@ class CLIEngine {
   }
 
   async printError(fxError: FxError): Promise<void> {
-    if (fxError) {
-      if (isUserCancelError(fxError)) {
-        await logger.info("User canceled.");
-        return;
-      }
-      logger.outputError(
-        `${fxError.source}.${fxError.name}: ${fxError.message || fxError.innerError?.message}`
-      );
-      if (fxError instanceof UserError && fxError.helpLink) {
-        logger.outputError(
-          `Get help from %s`,
-          colorize(fxError.helpLink as string, TextType.Hyperlink)
-        );
-      }
-      if (fxError instanceof SystemError && fxError.issueLink) {
-        logger.outputError(
-          `Report this issue at %s`,
-          colorize(fxError.issueLink as string, TextType.Hyperlink)
-        );
-      }
-      await logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
+    if (isUserCancelError(fxError)) {
+      await logger.info("User canceled.");
+      return;
     }
+    logger.outputError(
+      `${fxError.source}.${fxError.name}: ${fxError.message || fxError.innerError?.message}`
+    );
+    if (fxError instanceof UserError && fxError.helpLink) {
+      logger.outputError(
+        `Get help from %s`,
+        colorize(fxError.helpLink as string, TextType.Hyperlink)
+      );
+    }
+    if (fxError instanceof SystemError && fxError.issueLink) {
+      logger.outputError(
+        `Report this issue at %s`,
+        colorize(fxError.issueLink as string, TextType.Hyperlink)
+      );
+    }
+    await logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
   }
 }
 

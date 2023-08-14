@@ -26,8 +26,6 @@ import { InvalidChoiceError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
-import { printError } from "../../src/yargsCommand";
-import CLILogProvider from "../../src/commonlib/log";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -259,21 +257,6 @@ describe("CLI Engine", () => {
     it("canceled", async () => {
       const stub = sandbox.stub(logger, "info").resolves();
       engine.printError(new UserCancelError("test"));
-      assert.isTrue(stub.called);
-    });
-  });
-
-  describe("printError(old)", async () => {
-    it("happy path", async () => {
-      const stub = sandbox.stub(CLILogProvider, "outputError").returns();
-      printError(new MissingEnvironmentVariablesError("test", "test"));
-      const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
-      printError(error);
-      assert.isTrue(stub.called);
-    });
-    it("canceled", async () => {
-      const stub = sandbox.stub(CLILogProvider, "necessaryLog").returns();
-      printError(new UserCancelError("test"));
       assert.isTrue(stub.called);
     });
   });

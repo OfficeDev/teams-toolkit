@@ -4,8 +4,8 @@
 /**
  * @author Alive-Fish <547850391@qq.com>
  */
-import { err, FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { err, FxError, ok, Result, SystemError, Void } from "@microsoft/teamsfx-api";
+import { FxCore, MissingEnvironmentVariablesError, UserCancelError } from "@microsoft/teamsfx-core";
 import { VersionState } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core";
 import "mocha";
@@ -14,8 +14,9 @@ import sinon from "sinon";
 import yargs, { Options } from "yargs";
 import { WorkspaceNotSupported } from "../../src/cmds/preview/errors";
 import { default as CLIUIInstance, default as UI } from "../../src/userInteraction";
-import { YargsCommand } from "../../src/yargsCommand";
+import { printError, YargsCommand } from "../../src/yargsCommand";
 import { expect, mockLogProvider } from "./utils";
+import CLILogProvider from "../../src/commonlib/log";
 
 class TestCommand extends YargsCommand {
   public commandHead = "test";
@@ -100,5 +101,24 @@ describe("Yargs Command Tests", function () {
     sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(err(WorkspaceNotSupported("./")));
     const cmd = new TestCommand();
     await expect(cmd.handler({ folder: "test" })).to.be.rejected;
+  });
+});
+
+describe("printError", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    const stub = sandbox.stub(CLILogProvider, "outputError").returns();
+    printError(new MissingEnvironmentVariablesError("test", "test"));
+    const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+    printError(error);
+    expect(stub.called).to.be.true;
+  });
+  it("canceled", async () => {
+    const stub = sandbox.stub(CLILogProvider, "necessaryLog").returns();
+    printError(new UserCancelError("test"));
+    expect(stub.called).to.be.true;
   });
 });

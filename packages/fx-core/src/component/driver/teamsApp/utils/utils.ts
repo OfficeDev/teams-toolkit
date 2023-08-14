@@ -80,7 +80,7 @@ export function isBotBasedMessageExtension(appDefinition: AppDefinition): boolea
   );
 }
 
-export function isBotAndMessageExtension(appDefinition: AppDefinition): boolean {
+export function isBotAndBotBasedMessageExtension(appDefinition: AppDefinition): boolean {
   return isBot(appDefinition) && isBotBasedMessageExtension(appDefinition);
 }
 

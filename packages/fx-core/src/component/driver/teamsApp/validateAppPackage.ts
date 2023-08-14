@@ -248,7 +248,7 @@ export class ValidateAppPackageDriver implements StepDriver {
           );
         context.logProvider?.info(outputMessage);
         // logs in log file
-        context.logProvider.logInFile(
+        await context.logProvider?.logInFile(
           LogLevel.Info,
           `${outputMessage}\n${errors}\n${warnings}\n${notes}`
         );

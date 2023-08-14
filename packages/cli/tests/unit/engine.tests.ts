@@ -2,6 +2,7 @@ import {
   CLICommandOption,
   CLIContext,
   CLIFoundCommand,
+  LogLevel,
   SystemError,
   err,
   ok,
@@ -245,12 +246,32 @@ describe("CLI Engine", () => {
     });
   });
   describe("printError", async () => {
-    it("happy path", async () => {
+    it("happy path user error", async () => {
       sandbox.stub(logger, "info").resolves();
       sandbox.stub(logger, "debug").resolves();
       const stub = sandbox.stub(logger, "outputError").returns();
       engine.printError(new MissingEnvironmentVariablesError("test", "test"));
+      assert.isTrue(stub.called);
+    });
+    it("happy path system error", async () => {
+      sandbox.stub(logger, "logLevel").value(LogLevel.Debug);
+      const stub = sandbox.stub(logger, "debug").resolves();
+      sandbox.stub(logger, "outputError").returns();
       const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+      engine.printError(error);
+      assert.isTrue(stub.called);
+    });
+    it("happy path inner error", async () => {
+      sandbox.stub(logger, "logLevel").value(LogLevel.Debug);
+      const stub = sandbox.stub(logger, "debug").resolves();
+      sandbox.stub(logger, "outputError").returns();
+      const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+      const innerError = new Error("test");
+      error.innerError = innerError;
+      error.message = "";
+      error.stack = undefined;
+      engine.printError(error);
+      innerError.stack = undefined;
       engine.printError(error);
       assert.isTrue(stub.called);
     });

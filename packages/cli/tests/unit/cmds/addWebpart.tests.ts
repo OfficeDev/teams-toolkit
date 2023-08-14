@@ -45,7 +45,7 @@ describe("Add SPFx Web Part Command Tests", function () {
   it("Add", async () => {
     const cmd = new Add();
     const res = await cmd.runCommand({});
-    expect(res.isErr()).to.be.true;
+    expect(res.isOk()).to.be.true;
   });
   it("Running Check", async () => {
     const addWebpartStub = sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(undefined));

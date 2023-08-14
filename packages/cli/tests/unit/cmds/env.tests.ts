@@ -152,7 +152,7 @@ describe("Env Add Command Tests", function () {
   it("Env", async () => {
     const cmd = new Env();
     const res = await cmd.runCommand({});
-    expect(res.isErr()).to.be.true;
+    expect(res.isOk()).to.be.true;
   });
   it("adds a new env by copying from the active env", async () => {
     // Arrange

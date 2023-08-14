@@ -517,7 +517,9 @@ class CLIEngine {
         logger.info("User canceled.");
         return;
       }
-      logger.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);
+      logger.outputError(
+        `${fxError.source}.${fxError.name}: ${fxError.message || fxError.innerError?.message}`
+      );
       if ("helpLink" in fxError && fxError["helpLink"]) {
         logger.outputError(
           `Get help from %s`,

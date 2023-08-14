@@ -102,19 +102,23 @@ describe("Yargs Command Tests", function () {
     const cmd = new TestCommand();
     await expect(cmd.handler({ folder: "test" })).to.be.rejected;
   });
+});
 
-  describe("printError", async () => {
-    it("happy path", async () => {
-      const stub = sandbox.stub(CLILogProvider, "outputError").returns();
-      printError(new MissingEnvironmentVariablesError("test", "test"));
-      const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
-      printError(error);
-      expect(stub.called).to.be.true;
-    });
-    it("canceled", async () => {
-      const stub = sandbox.stub(CLILogProvider, "necessaryLog").returns();
-      printError(new UserCancelError("test"));
-      expect(stub.called).to.be.true;
-    });
+describe("printError", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    const stub = sandbox.stub(CLILogProvider, "outputError").returns();
+    printError(new MissingEnvironmentVariablesError("test", "test"));
+    const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+    printError(error);
+    expect(stub.called).to.be.true;
+  });
+  it("canceled", async () => {
+    const stub = sandbox.stub(CLILogProvider, "necessaryLog").returns();
+    printError(new UserCancelError("test"));
+    expect(stub.called).to.be.true;
   });
 });

@@ -533,7 +533,8 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
     const codeLenses: vscode.CodeLens[] = [];
 
     const manifest: TeamsAppManifest = JSON.parse(document.getText());
-    if (!ManifestUtil.parseCommonProperties(manifest).isCopilotPlugin) {
+    const manifestProperties = ManifestUtil.parseCommonProperties(manifest);
+    if (!manifestProperties.isCopilotPlugin && !manifestProperties.isApiBasedMe) {
       return codeLenses;
     }
 

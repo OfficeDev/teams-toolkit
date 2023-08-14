@@ -7,7 +7,7 @@ import * as util from "util";
 import * as globalVariables from "../../globalVariables";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, HubOptions } from "@microsoft/teamsfx-core";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { getLocalDebugSession } from "../commonUtils";
 import VsCodeLogInstance from "../../commonlib/log";
@@ -59,7 +59,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
 
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
-    inputs[CoreQuestionNames.M365Host] = Hub.teams;
+    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
     inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
     const result = await core.previewWithManifest(inputs);

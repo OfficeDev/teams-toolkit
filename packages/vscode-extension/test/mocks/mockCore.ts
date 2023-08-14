@@ -52,7 +52,7 @@ export class MockCore {
     return ok(undefined);
   }
 
-  getSelectedEnv(inputs: Inputs): Result<string, FxError> {
+  async getSelectedEnv(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("dev");
   }
 

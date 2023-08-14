@@ -146,7 +146,7 @@ describe("coordinator provision", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
     // getSelectedEnv
-    const selectEnvRes = fxCore.getSelectedEnv(inputs);
+    const selectEnvRes = await fxCore.getSelectedEnv(inputs);
     if (selectEnvRes.isErr()) {
       console.log(selectEnvRes.error);
     }
@@ -1771,7 +1771,7 @@ describe("coordinator provision", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
     // getSelectedEnv
-    const selectEnvRes = fxCore.getSelectedEnv(inputs);
+    const selectEnvRes = await fxCore.getSelectedEnv(inputs);
     if (selectEnvRes.isErr()) {
       console.log(selectEnvRes.error);
     }

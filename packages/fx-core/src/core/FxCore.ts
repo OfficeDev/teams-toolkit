@@ -794,7 +794,7 @@ export class FxCore {
     ErrorHandlerMW,
     EnvLoaderMW(false),
   ])
-  getSelectedEnv(inputs: Inputs): Result<string | undefined, FxError> {
+  async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
     return ok(inputs.env); //work for both v2 and v3
   }
 

@@ -2113,7 +2113,7 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     const inputs = getSystemInputs();
     inputs.ignoreEnvInfo = true;
-    const env = core.getSelectedEnv(inputs);
+    const env = await core.getSelectedEnv(inputs);
     if (env.isErr()) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
       return err(env.error);

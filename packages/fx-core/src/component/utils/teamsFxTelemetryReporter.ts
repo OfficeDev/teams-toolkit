@@ -3,8 +3,8 @@
 
 import { FxError, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
-import { fillInTelemetryPropsForFxError } from "../../error/common";
 import { TelemetryConstants } from "../constants";
+import { fillInTelemetryPropsForFxError } from "../../common/telemetry";
 
 export class TeamsFxTelemetryReporter {
   constructor(

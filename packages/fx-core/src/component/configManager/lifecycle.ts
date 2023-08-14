@@ -6,7 +6,7 @@
  */
 
 import { ok, err, FxError, Result, LogProvider } from "@microsoft/teamsfx-api";
-import _ from "lodash";
+import _, { camelCase } from "lodash";
 import { Container } from "typedi";
 import { InvalidYmlActionNameError } from "../../error/yml";
 import { DriverContext } from "../driver/interface/commonArgs";
@@ -24,6 +24,7 @@ import {
   ExecutionResult,
 } from "./interface";
 import { MissingEnvironmentVariablesError } from "../../error";
+import { setErrorContext } from "../../core/globalVars";
 
 function resolveDriverDef(
   def: DriverDefinition,
@@ -255,6 +256,7 @@ export class Lifecycle implements ILifecycle {
       let result: Result<Map<string, string>, FxError>;
       let summary: string[];
       if (driver.instance.execute) {
+        setErrorContext({ component: camelCase(driver.uses), method: "execute" }); // set driver name as component name for telemetry
         const r = await driver.instance.execute(
           driver.with,
           ctx,

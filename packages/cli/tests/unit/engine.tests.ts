@@ -182,7 +182,7 @@ describe("CLI Engine", () => {
         .stub(process, "argv")
         .value(["node", "cli", "new", "-c", "tab", "-n", "myapp", "-i", "false"]);
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);
@@ -210,7 +210,7 @@ describe("CLI Engine", () => {
       sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
       sandbox.stub(process, "argv").value(["node", "cli", "new", "sample", "d", "-i", "false"]);
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       sandbox.stub(logger, "info");
@@ -221,7 +221,7 @@ describe("CLI Engine", () => {
       sandbox.stub(process, "argv").value(["node", "cli"]);
       rootCommand.handler = async () => err(new UserCancelError());
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);
@@ -235,7 +235,7 @@ describe("CLI Engine", () => {
       };
       sandbox.stub(rootCommand, "handler").rejects(new UserCancelError());
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);

@@ -189,7 +189,7 @@ export class CodeFlowLogin {
     let accessToken = undefined;
     try {
       await this.startServer(server, serverPort);
-      this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
+      void this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
         url += "#";
         if (this.accountName == "azure") {
           CliCodeLogInstance.outputInfo(
@@ -200,7 +200,7 @@ export class CodeFlowLogin {
             m365LoginMessage + colorize(url, TextType.Hyperlink) + os.EOL
           );
         }
-        open(url);
+        void open(url);
       });
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);

@@ -478,7 +478,7 @@ class Coordinator {
       }
       m365tenantInfo = tenantInfoInTokenRes.value;
 
-      const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
+      const checkM365TenatRes = provisionUtils.ensureM365TenantMatchesV3(
         tenantSwitchCheckActions,
         m365tenantInfo?.tenantIdInToken
       );

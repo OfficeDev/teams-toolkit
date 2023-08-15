@@ -30,8 +30,8 @@ export const permissionStatusCommand: CLICommand = {
     const listAll = inputs.all || false;
     const core = getFxCore();
     // print necessary messages
-    logger.info(azureMessage);
-    logger.info(spfxMessage);
+    await logger.info(azureMessage);
+    await logger.info(spfxMessage);
     const result = listAll
       ? await core.listCollaborator(inputs)
       : await core.checkPermission(inputs);

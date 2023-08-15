@@ -104,10 +104,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * singnout from Azure
    */
   async signout(): Promise<boolean> {
-    return new Promise(async (resolve) => {
-      await AzureSpCrypto.clearAzureSP();
-      resolve(true);
-    });
+    await AzureSpCrypto.clearAzureSP();
+    return true;
   }
   async getStatus(): Promise<LoginStatus> {
     await this.load();
@@ -202,7 +200,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  async getSubscriptionInfoPath(): Promise<string | undefined> {
+  getSubscriptionInfoPath(): Promise<string | undefined> {
     if (AzureAccountManager.rootPath) {
       if (isWorkspaceSupported(AzureAccountManager.rootPath)) {
         const subscriptionFile = path.join(
@@ -210,12 +208,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           `.${ConfigFolderName}`,
           subscriptionInfoFile
         );
-        return subscriptionFile;
+        return Promise.resolve(subscriptionFile);
       } else {
-        return undefined;
+        return Promise.resolve(undefined);
       }
     } else {
-      return undefined;
+      return Promise.resolve(undefined);
     }
   }
 
@@ -241,8 +239,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     AzureAccountManager.rootPath = rootPath;
   }
 
-  async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    return undefined;
+  readSubscription(): Promise<SubscriptionInfo | undefined> {
+    return Promise.resolve(undefined);
   }
 }
 

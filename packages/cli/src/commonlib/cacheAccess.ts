@@ -145,7 +145,7 @@ export class CryptoCachePlugin {
           }
         }
       } catch (err) {
-        await VsCodeLogInstance.warning(
+        VsCodeLogInstance.warning(
           "Cannot read token from cache, clean up account cache. " + err.message
         );
       }
@@ -155,7 +155,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        await VsCodeLogInstance.warning(
+        VsCodeLogInstance.warning(
           "Cannot write token to cache, clean up account cache. " + err.message
         );
       }
@@ -171,7 +171,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        await VsCodeLogInstance.warning(
+        VsCodeLogInstance.warning(
           "Cannot save token to cache, clean up account cache. " + err.message
         );
       }
@@ -193,7 +193,7 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
   } catch (err) {
-    await VsCodeLogInstance.warning(
+    VsCodeLogInstance.warning(
       "Cannot save home account id to cache, clean up account cache. " + err.message
     );
   }
@@ -204,7 +204,7 @@ export async function clearCache(accountName: string) {
   try {
     await fs.writeFile(cachePath + accountName + cachePathEnd, "");
   } catch (err) {
-    await VsCodeLogInstance.warning(
+    VsCodeLogInstance.warning(
       "Cannot write token to cache, clean up account cache. " + err.message
     );
   }
@@ -215,7 +215,7 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      await VsCodeLogInstance.warning(
+      VsCodeLogInstance.warning(
         "Cannot read home account id from cache, clean up account cache. " + err.message
       );
     }

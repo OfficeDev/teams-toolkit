@@ -81,7 +81,7 @@ class CLIEngine {
 
     if (debugLogs.length) {
       for (const log of debugLogs) {
-        logger.debug(log);
+        await logger.debug(log);
       }
     }
 
@@ -96,7 +96,7 @@ class CLIEngine {
       }
     }
 
-    logger.debug(
+    await logger.debug(
       `parsed context: ${JSON.stringify(
         pick(context, [
           "optionValues",
@@ -121,7 +121,7 @@ class CLIEngine {
 
     // 3. --version
     if (context.optionValues.version === true || context.globalOptionValues.version === true) {
-      logger.info(rootCmd.version ?? "1.0.0");
+      await logger.info(rootCmd.version ?? "1.0.0");
       this.processResult(context);
       return;
     }
@@ -132,7 +132,7 @@ class CLIEngine {
         context.command,
         context.command.fullName !== root.fullName ? root : undefined
       );
-      logger.info(helpText);
+      await logger.info(helpText);
       this.processResult(context);
       return;
     }
@@ -151,7 +151,7 @@ class CLIEngine {
         "correlationId",
         "platform",
       ]);
-      logger.info(
+      await logger.info(
         `Some arguments/options are useless because the interactive mode is opened.` +
           ` If you want to run the command non-interactively, add '--interactive false' after your command` +
           ` or set the global setting by 'teamsfx config set interactive false'.`
@@ -191,7 +191,7 @@ class CLIEngine {
         }
       } else {
         const helpText = helper.formatHelp(rootCmd);
-        logger.info(helpText);
+        await logger.info(helpText);
       }
     } catch (e) {
       Progress.end(false); // TODO to remove this in the future
@@ -514,7 +514,7 @@ class CLIEngine {
     }
     if (fxError) {
       if (isUserCancelError(fxError)) {
-        logger.info("User canceled.");
+        void logger.info("User canceled.");
         return;
       }
       logger.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);

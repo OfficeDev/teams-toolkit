@@ -43,7 +43,7 @@ export default class New extends YargsCommand {
     }
     const core = result.value;
     {
-      const result = await core.getQuestions(Stage.create, constants.CLIHelpInputs);
+      const result = core.getQuestions(Stage.create, constants.CLIHelpInputs);
       if (result.isErr()) {
         throw result.error;
       }

@@ -703,9 +703,7 @@ describe("CLI read-only commands", () => {
         .stub(AzureTokenProvider, "getStatus")
         .resolves({ status: signedIn, accountInfo: { upn: "xxx" } });
       sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(false);
-      const outputAccountInfoOffline = sandbox
-        .stub(accountUtils, "outputAccountInfoOffline")
-        .resolves();
+      const outputAccountInfoOffline = sandbox.stub(accountUtils, "outputAccountInfoOffline");
       messages = [];
       const ctx: CLIContext = {
         command: { ...accountShowCommand, fullName: "teamsfx account show" },

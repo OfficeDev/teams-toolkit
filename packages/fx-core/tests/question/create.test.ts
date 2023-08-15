@@ -35,6 +35,7 @@ import {
   folderQuestion,
   getLanguageOptions,
   getTemplate,
+  officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
 } from "../../src/question/create";
@@ -1638,5 +1639,15 @@ describe("scaffold question", () => {
       assert.equal(title, "Directory where the project folder will be created in");
       assert.equal(defaultV, "./");
     });
+  });
+
+  describe("officeAddinHostingQuestion", async () => {
+    const q = officeAddinHostingQuestion();
+    const options = await q.dynamicOptions!({ platform: Platform.VSCode });
+    assert.isTrue(options.length > 0);
+    if (typeof q.default === "function") {
+      const defaultV = await q.default({ platform: Platform.VSCode });
+      assert.isDefined(defaultV);
+    }
   });
 });

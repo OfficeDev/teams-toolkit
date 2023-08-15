@@ -3,19 +3,18 @@
 
 "use strict";
 
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
-import "./console/screen";
 import { initializePreviewFeatureFlags, isCliNewUxEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import * as path from "path";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import { registerCommands } from "./cmds";
 import { start as startNewUX } from "./commands/index";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
+import "./console/screen";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
 import cliTelemetry from "./telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/cliTelemetryEvents";
 import { getVersion } from "./utils";
 
 initializePreviewFeatureFlags();
@@ -49,7 +48,7 @@ export async function start(): Promise<void> {
   });
 
   registerCommands(argv);
-  argv
+  void argv
     .options("verbose", {
       description: "Print additional information.",
       boolean: true,

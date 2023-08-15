@@ -35,8 +35,8 @@ export default class Env extends YargsCommand {
     });
     return yargs.hide("interactive").version(false);
   }
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
+  public runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return new Promise((resolve) => resolve(ok(null)));
   }
 }
 

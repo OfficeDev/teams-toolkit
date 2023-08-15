@@ -25,18 +25,18 @@ export const accountShowCommand: CLICommand = {
     if (m365Status.status === signedIn) {
       (await checkIsOnline())
         ? await outputM365Info("show")
-        : await outputAccountInfoOffline("Microsoft 365", (m365Status.accountInfo as any).upn);
+        : outputAccountInfoOffline("Microsoft 365", (m365Status.accountInfo as any).upn);
     }
 
     const azureStatus = await AzureTokenProvider.getStatus();
     if (azureStatus.status === signedIn) {
       (await checkIsOnline())
         ? await outputAzureInfo("show")
-        : await outputAccountInfoOffline("Azure", (azureStatus.accountInfo as any).upn);
+        : outputAccountInfoOffline("Azure", (azureStatus.accountInfo as any).upn);
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
-      logger.info(
+      await logger.info(
         "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
       );
     }

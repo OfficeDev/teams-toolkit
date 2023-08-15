@@ -26,7 +26,7 @@ export const envListCommand: CLICommand = {
       return err(envListRes.error);
     }
     const envList = envListRes.value.join(os.EOL);
-    logger.info(envList);
+    await logger.info(envList);
     return ok(undefined);
   },
 };

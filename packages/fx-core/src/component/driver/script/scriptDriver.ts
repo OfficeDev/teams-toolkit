@@ -79,20 +79,15 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  return new Promise(async (resolve, reject) => {
+  const systemEncoding = await getSystemEncoding();
+  return new Promise((resolve, reject) => {
     const platform = os.platform();
     let workingDir = workingDirectory || ".";
     workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
     if (platform === "win32") {
       workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
     }
-    // const defaultOsToShellMap: any = {
-    //   win32: "powershell",
-    //   darwin: "bash",
-    //   linux: "bash",
-    // };
     let run = command;
-    // shell = shell || defaultOsToShellMap[platform] || "pwsh";
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
@@ -100,9 +95,8 @@ export async function executeCommand(
     if (shell === "cmd") {
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
-    await logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
+    void logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
     const allOutputStrings: string[] = [];
-    const systemEncoding = await getSystemEncoding();
     const stderrStrings: string[] = [];
     process.env.VSLANG = undefined; // Workaroud to disable VS environment variable to void charset encoding issue for non-English characters
     const cp = child_process.exec(
@@ -114,7 +108,7 @@ export async function executeCommand(
         env: { ...process.env, ...env },
         timeout: timeout,
       },
-      async (error) => {
+      (error) => {
         if (error) {
           error.message = stderrStrings.join("").trim() || error.message;
           resolve(err(convertScriptErrorToFxError(error, run)));
@@ -134,12 +128,12 @@ export async function executeCommand(
     };
     cp.stdout?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
+      void logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
       dataHandler(str);
     });
     cp.stderr?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
+      void logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
       dataHandler(str);
       stderrStrings.push(str);
     });

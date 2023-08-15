@@ -325,6 +325,10 @@ export class LocalDebugTaskResult {
   static readonly DebuggerAttached = "Debugger attached";
 }
 
+export enum LocalDebugTaskLabel2 {
+  StartBot2 = "Start Bot",
+}
+
 export class LocalDebugTaskInfo {
   static readonly StartBotAppInfo = "App Started";
   static readonly StartBotInfo = "Bot Started";

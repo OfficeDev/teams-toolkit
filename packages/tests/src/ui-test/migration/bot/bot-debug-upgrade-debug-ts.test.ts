@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -12,10 +13,10 @@ import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import {
-  validateNotification,
   startDebugging,
-  upgradeByTreeView,
   waitForTerminal,
+  validateNotification,
+  upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
@@ -23,7 +24,7 @@ import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.migrationTestCase);
+  this.timeout(Timeout.testAzureCase);
   let mirgationDebugTestContext: MigrationTestContext;
 
   beforeEach(async function () {
@@ -31,8 +32,8 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.CommandBot,
-      "javascript"
+      Capability.Bot,
+      "typescript"
     );
     await mirgationDebugTestContext.before();
   });
@@ -43,9 +44,9 @@ describe("Migration Tests", function () {
   });
 
   it(
-    "[auto] V2 command bot migrate test - js",
+    "[auto] V2 bot migrate test - ts",
     {
-      testPlanCaseId: 17183669,
+      testPlanCaseId: 17184118,
       author: "frankqian@microsoft.com",
     },
     async () => {
@@ -71,16 +72,14 @@ describe("Migration Tests", function () {
           LocalDebugTaskLabel.StartLocalTunnel,
           LocalDebugTaskResult.StartSuccess
         );
-        await waitForTerminal(
-          LocalDebugTaskLabel.StartBot,
-          LocalDebugTaskResult.AppSuccess
-        );
+
+        await waitForTerminal("Start Bot", "Bot started");
       } catch (error) {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("debug"));
         console.log("[Skip Error]: ", error);
         await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
-      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId();
+      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("local");
 
       // UI verify
       const page = await initPage(
@@ -89,10 +88,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, {
-        botCommand: "helloWorld",
-        expected: "Your Hello World Bot is Running",
-      });
+      await validateBot(page);
     }
   );
 });

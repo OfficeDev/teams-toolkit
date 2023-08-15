@@ -41,12 +41,12 @@ describe("ServerLogProvider", () => {
     assert.isTrue(stub.called);
   });
 
-  it("write to file", () => {
+  it("write to file", async () => {
     const logger = new ServerLogProvider(msgConn);
-    sandbox.stub(fs, "pathExistsSync").returns(false);
-    sandbox.stub(fs, "mkdirSync");
-    const stub = sandbox.stub(fs, "appendFileSync");
-    logger.log(LogLevel.Info, "test", true);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "mkdir");
+    const stub = sandbox.stub(fs, "appendFile");
+    await logger.logInFile(LogLevel.Info, "test");
     assert.isTrue(stub.called);
   });
 

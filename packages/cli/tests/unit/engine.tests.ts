@@ -1,5 +1,18 @@
-import { CLICommandOption, CLIContext, CLIFoundCommand, err, ok } from "@microsoft/teamsfx-api";
-import { FxCore, InputValidationError, UserCancelError } from "@microsoft/teamsfx-core";
+import {
+  CLICommandOption,
+  CLIContext,
+  CLIFoundCommand,
+  LogLevel,
+  SystemError,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import {
+  FxCore,
+  InputValidationError,
+  MissingEnvironmentVariablesError,
+  UserCancelError,
+} from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
@@ -10,10 +23,11 @@ import { createCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 import { logger } from "../../src/commonlib/logger";
+import { InvalidChoiceError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
-import { InvalidChoiceError } from "../../src/error";
+
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
 
@@ -141,7 +155,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      engine.processResult(ctx, new InputValidationError("test", "no reason"));
+      await engine.processResult(ctx, new InputValidationError("test", "no reason"));
       assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
   });
@@ -168,7 +182,7 @@ describe("CLI Engine", () => {
         .stub(process, "argv")
         .value(["node", "cli", "new", "-c", "tab", "-n", "myapp", "-i", "false"]);
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);
@@ -196,7 +210,7 @@ describe("CLI Engine", () => {
       sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
       sandbox.stub(process, "argv").value(["node", "cli", "new", "sample", "d", "-i", "false"]);
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       sandbox.stub(logger, "info");
@@ -207,7 +221,7 @@ describe("CLI Engine", () => {
       sandbox.stub(process, "argv").value(["node", "cli"]);
       rootCommand.handler = async () => err(new UserCancelError());
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);
@@ -221,7 +235,7 @@ describe("CLI Engine", () => {
       };
       sandbox.stub(rootCommand, "handler").rejects(new UserCancelError());
       let error: any = {};
-      sandbox.stub(engine, "processResult").callsFake((context, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);
@@ -234,6 +248,42 @@ describe("CLI Engine", () => {
       sandbox.stub(engine, "start").resolves();
       await start();
       assert.isTrue(true);
+    });
+  });
+  describe("printError", async () => {
+    it("happy path user error", async () => {
+      sandbox.stub(logger, "info").resolves();
+      sandbox.stub(logger, "debug").resolves();
+      const stub = sandbox.stub(logger, "outputError").returns();
+      engine.printError(new MissingEnvironmentVariablesError("test", "test"));
+      assert.isTrue(stub.called);
+    });
+    it("happy path system error", async () => {
+      sandbox.stub(logger, "logLevel").value(LogLevel.Debug);
+      const stub = sandbox.stub(logger, "debug").resolves();
+      sandbox.stub(logger, "outputError").returns();
+      const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+      engine.printError(error);
+      assert.isTrue(stub.called);
+    });
+    it("happy path inner error", async () => {
+      sandbox.stub(logger, "logLevel").value(LogLevel.Debug);
+      const stub = sandbox.stub(logger, "debug").resolves();
+      sandbox.stub(logger, "outputError").returns();
+      const error = new SystemError({ issueLink: "http://aka.ms/teamsfx-cli-help" });
+      const innerError = new Error("test");
+      error.innerError = innerError;
+      error.message = "";
+      error.stack = undefined;
+      engine.printError(error);
+      innerError.stack = undefined;
+      engine.printError(error);
+      assert.isTrue(stub.called);
+    });
+    it("canceled", async () => {
+      const stub = sandbox.stub(logger, "info").resolves();
+      engine.printError(new UserCancelError("test"));
+      assert.isTrue(stub.called);
     });
   });
 });

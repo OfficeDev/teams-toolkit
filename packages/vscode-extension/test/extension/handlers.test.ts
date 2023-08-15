@@ -1862,8 +1862,23 @@ describe("handlers", () => {
 
     it("user cancel", async () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
-      const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsTabApp.upgrade")),
+        selectFolder: () => Promise.resolve(ok({ type: "skip" })),
+      });
+
+      const result = await handlers.migrateTeamsTabAppHandler();
+
+      chai.assert.deepEqual(result, ok(null));
+      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+    });
+
+    it("user cancel: skip folder selection", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: () => Promise.resolve(ok("cancel")),
       });
@@ -1872,6 +1887,24 @@ describe("handlers", () => {
 
       chai.assert.deepEqual(result, ok(null));
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+    });
+
+    it("no change in package.json", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsTabApp.upgrade")),
+        selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
+        createProgressBar: () => progressHandler,
+      });
+      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(VsCodeLogInstance, "warning").resolves(true);
+      sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(false));
+
+      const result = await handlers.migrateTeamsTabAppHandler();
+
+      chai.assert.deepEqual(result, ok(null));
     });
   });
 
@@ -1899,6 +1932,7 @@ describe("handlers", () => {
 
     it("error", async () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const progressHandler = new ProgressHandler("title", 1);
       sinon.stub(extension, "VS_CODE_UI").value({
@@ -1912,8 +1946,9 @@ describe("handlers", () => {
         .resolves(err(new UserError("source", "name", "")));
       sinon.stub(handlers, "showError").callsFake(async () => {});
 
-      await handlers.migrateTeamsManifestHandler();
+      const result = await handlers.migrateTeamsManifestHandler();
 
+      chai.assert.isTrue(result.isErr());
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
   });

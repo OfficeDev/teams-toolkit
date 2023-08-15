@@ -932,7 +932,7 @@ async function checkProjectUpgradable(): Promise<boolean> {
 
 async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   const wasTeamsFxProject = isTeamsFxProject;
-  await initializeGlobalVariables(context);
+  initializeGlobalVariables(context);
   if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 

@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-var-requires */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 import * as vscode from "vscode";
 import {
@@ -147,7 +148,7 @@ export class CodeFlowLogin {
                 sendFile(res, resultFilePath, "text/html; charset=utf-8");
               } else {
                 // do not break if result file has issue
-                VsCodeLogInstance.error(
+                void VsCodeLogInstance.error(
                   "[Login] " + localize("teamstoolkit.codeFlowLogin.resultFileNotFound")
                 );
                 res.sendStatus(200);
@@ -159,7 +160,7 @@ export class CodeFlowLogin {
         })
         .catch((error) => {
           this.status = loggedOut;
-          VsCodeLogInstance.error("[Login] " + error.message);
+          void VsCodeLogInstance.error("[Login] " + error.message);
           deferredRedirect.reject(
             new UserError({
               error,
@@ -193,8 +194,8 @@ export class CodeFlowLogin {
     let accessToken = undefined;
     try {
       await this.startServer(server, serverPort);
-      this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
-        vscode.env.openExternal(vscode.Uri.parse(response));
+      void this.pca.getAuthCodeUrl(authCodeUrlParameters).then((response: string) => {
+        void vscode.env.openExternal(vscode.Uri.parse(response));
       });
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
@@ -295,7 +296,7 @@ export class CodeFlowLogin {
       });
       return true;
     } catch (e) {
-      VsCodeLogInstance.error("[Logout " + this.accountName + "] " + e.message);
+      await VsCodeLogInstance.error("[Logout " + this.accountName + "] " + e.message);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
@@ -331,7 +332,7 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            VsCodeLogInstance.error(
+            await VsCodeLogInstance.error(
               "[Login] " +
                 stringUtil.format(
                   localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
@@ -351,7 +352,7 @@ export class CodeFlowLogin {
           });
       }
     } catch (error) {
-      VsCodeLogInstance.error("[Login] " + error.message);
+      await VsCodeLogInstance.error("[Login] " + error.message);
       if (
         error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
         error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
@@ -384,7 +385,7 @@ export class CodeFlowLogin {
           return err(LoginCodeFlowError(new Error("No token response.")));
         }
       } catch (error) {
-        VsCodeLogInstance.error(
+        await VsCodeLogInstance.error(
           "[Login] " +
             stringUtil.format(
               localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
@@ -470,7 +471,7 @@ export class CodeFlowLogin {
 function sendFile(res: http.ServerResponse, filepath: string, contentType: string) {
   fs.readFile(filepath, (err, body) => {
     if (err) {
-      VsCodeLogInstance.error(err.message);
+      void VsCodeLogInstance.error(err.message);
     } else {
       res.writeHead(200, {
         "Content-Length": body.length,

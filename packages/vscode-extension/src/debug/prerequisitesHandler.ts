@@ -465,7 +465,7 @@ function checkM365Account(
         if (accountResult.isErr()) {
           result = ResultStatus.failed;
           error = accountResult.error;
-          await openAccountHelpHandler();
+          openAccountHelpHandler();
         } else {
           loginHint = accountResult.value.loginHint;
         }

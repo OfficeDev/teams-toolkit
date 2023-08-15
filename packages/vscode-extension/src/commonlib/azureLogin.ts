@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/* eslint-disable @typescript-eslint/no-empty-function */
 
 "use strict";
 
@@ -221,7 +222,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         readMore
       );
       if (userSelected === readMore) {
-        vscode.env.openExternal(
+        void vscode.env.openExternal(
           vscode.Uri.parse(
             "https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/create-subscription"
           )
@@ -286,7 +287,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         resolve(true);
       });
     } catch (e) {
-      VsCodeLogInstance.error("[Logout Azure] " + e.message);
+      await VsCodeLogInstance.error("[Logout Azure] " + e.message);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
@@ -387,7 +388,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  async addStatusChangeEvent() {
+  addStatusChangeEvent() {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
@@ -519,7 +520,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const versionDetail = version.split(".");
       return parseInt(versionDetail[0]) === 0 && parseInt(versionDetail[1]) < 10;
     } catch (e) {
-      VsCodeLogInstance.error("[Get Azure extension] " + e.message);
+      void VsCodeLogInstance.error("[Get Azure extension] " + e.message);
       return false;
     }
   }

@@ -23,9 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         package:
-        - fx-core
         - vscode-extension
-        - cli
         - tests
 
     steps:

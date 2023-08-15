@@ -97,8 +97,8 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "copilot-plugin-option",
     type: "string",
     shortName: "cp",
-    description: "Plugin for Copilot",
-    choices: ["copilot-new-api", "copilot-api-spec", "copilot-ai-plugin"],
+    description: "Plugin for Copilot.",
+    choices: ["copilot-plugin-new-api", "copilot-plugin-api-spec", "copilot-plugin-ai-plugin"],
   },
   {
     name: "api-spec-location",

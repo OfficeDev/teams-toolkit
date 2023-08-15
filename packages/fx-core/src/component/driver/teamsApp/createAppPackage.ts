@@ -208,7 +208,7 @@ export class CreateAppPackageDriver implements StepDriver {
       { content: " built successfully!", color: Colors.BRIGHT_WHITE },
     ];
     if (context.platform === Platform.VS || context.platform === Platform.VSCode) {
-      context.logProvider?.info(builtSuccess);
+      context.logProvider.info(builtSuccess);
     } else {
       context.ui?.showMessage("info", builtSuccess, false);
     }

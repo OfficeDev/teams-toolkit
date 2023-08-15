@@ -558,7 +558,6 @@ export class FxCore {
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
-  @hooks([ErrorHandlerMW])
   getQuestions(stage: Stage, inputs: Inputs): Result<QTreeNode | undefined, FxError> {
     if (stage === Stage.create) {
       return ok(createProjectCliHelpNode() as QTreeNode);
@@ -983,7 +982,7 @@ export class FxCore {
     if (lifecycle) {
       return this.runLifecycle(lifecycle, driverContext, env);
     } else {
-      await driverContext.logProvider.warning(`No definition found for ${lifecycleName}`);
+      driverContext.logProvider.warning(`No definition found for ${lifecycleName}`);
       return ok(undefined);
     }
   }
@@ -996,7 +995,7 @@ export class FxCore {
     const r = await lifecycle.execute(driverContext);
     const runResult = r.result;
     if (runResult.isOk()) {
-      await driverContext.logProvider.info(`Lifecycle ${lifecycle.name} succeeded`);
+      driverContext.logProvider.info(`Lifecycle ${lifecycle.name} succeeded`);
       const writeResult = await envUtil.writeEnv(
         driverContext.projectPath,
         env,
@@ -1006,7 +1005,7 @@ export class FxCore {
     } else {
       const error = runResult.error;
       if (error.kind === "Failure") {
-        await driverContext.logProvider.error(
+        driverContext.logProvider.error(
           `Failed to run ${lifecycle.name} due to ${error.error.name}: ${error.error.message}`
         );
         return err(error.error);
@@ -1015,12 +1014,12 @@ export class FxCore {
           const failedDriver = error.reason.failedDriver;
           if (error.reason.kind === "UnresolvedPlaceholders") {
             const unresolved = error.reason.unresolvedPlaceHolders;
-            await driverContext.logProvider.warning(
+            driverContext.logProvider.warning(
               `Unresolved placeholders: ${unresolved.join(",")} for driver ${failedDriver.uses}`
             );
             return ok(undefined);
           } else {
-            await driverContext.logProvider.error(
+            driverContext.logProvider.error(
               `Failed to run ${lifecycle.name} due to ${error.reason.error.name}: ${error.reason.error.message}. Failed driver: ${failedDriver.uses}`
             );
             return err(error.reason.error);

@@ -68,6 +68,7 @@ import { ExtensionSurvey } from "../../src/utils/survey";
 import { MockCore } from "../mocks/mockCore";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
+import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1833,6 +1834,87 @@ describe("handlers", () => {
       const result = await handlers.preDebugCheckHandler();
       chai.assert.equal(result, "1");
       sinon.restore();
+    });
+  });
+
+  describe("migrateTeamsTabAppHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy path", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsTabApp.upgrade")),
+        selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
+        createProgressBar: () => progressHandler,
+      });
+      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(true));
+      sinon.stub(TeamsAppMigrationHandler.prototype, "updateCodes").resolves(ok([]));
+
+      const result = await handlers.migrateTeamsTabAppHandler();
+
+      chai.assert.deepEqual(result, ok(null));
+    });
+
+    it("user cancel", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("cancel")),
+      });
+
+      const result = await handlers.migrateTeamsTabAppHandler();
+
+      chai.assert.deepEqual(result, ok(null));
+      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+    });
+  });
+
+  describe("migrateTeamsManifestHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy path", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsManifest.upgrade")),
+        selectFile: () => Promise.resolve(ok({ type: "success", result: "test" })),
+        createProgressBar: () => progressHandler,
+      });
+      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(TeamsAppMigrationHandler.prototype, "updateManifest").resolves(ok(null));
+
+      const result = await handlers.migrateTeamsManifestHandler();
+
+      chai.assert.deepEqual(result, ok(null));
+    });
+
+    it("error", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsManifest.upgrade")),
+        selectFile: () => Promise.resolve(ok({ type: "success", result: "test" })),
+        createProgressBar: () => progressHandler,
+      });
+      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon
+        .stub(TeamsAppMigrationHandler.prototype, "updateManifest")
+        .resolves(err(new UserError("source", "name", "")));
+      sinon.stub(handlers, "showError").callsFake(async () => {});
+
+      await handlers.migrateTeamsManifestHandler();
+
+      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
   });
 

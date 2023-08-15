@@ -582,4 +582,17 @@ describe("Generate sample using download directory", () => {
     }
     assert.isFalse(await fs.pathExists(path.join(tmpDir, sampleName)));
   });
+
+  it("clean up if downloading failed", async () => {
+    const rmStub = sandbox.stub(fs, "rm").resolves();
+    const existsStub = sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(generatorUtils, "downloadDirectory").rejects();
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+    }
+    assert.isTrue(rmStub.calledOnce);
+    assert.isTrue(existsStub.calledOnce);
+  });
 });

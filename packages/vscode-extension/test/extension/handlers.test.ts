@@ -1851,7 +1851,7 @@ describe("handlers", () => {
         selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
         createProgressBar: () => progressHandler,
       });
-      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(VsCodeLogInstance, "info").returns();
       sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(true));
       sinon.stub(TeamsAppMigrationHandler.prototype, "updateCodes").resolves(ok([]));
 
@@ -1869,7 +1869,7 @@ describe("handlers", () => {
         selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
         createProgressBar: () => progressHandler,
       });
-      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(VsCodeLogInstance, "info").returns();
       const warningStub = sinon.stub(VsCodeLogInstance, "warning");
       sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(true));
       sinon
@@ -1892,7 +1892,7 @@ describe("handlers", () => {
         selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
         createProgressBar: () => progressHandler,
       });
-      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(VsCodeLogInstance, "info").returns();
       sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(true));
       sinon
         .stub(TeamsAppMigrationHandler.prototype, "updateCodes")
@@ -1942,8 +1942,8 @@ describe("handlers", () => {
         selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
         createProgressBar: () => progressHandler,
       });
-      sinon.stub(VsCodeLogInstance, "info").resolves(true);
-      sinon.stub(VsCodeLogInstance, "warning").resolves(true);
+      sinon.stub(VsCodeLogInstance, "info").returns();
+      sinon.stub(VsCodeLogInstance, "warning").returns();
       sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(false));
 
       const result = await handlers.migrateTeamsTabAppHandler();
@@ -1966,7 +1966,7 @@ describe("handlers", () => {
         selectFile: () => Promise.resolve(ok({ type: "success", result: "test" })),
         createProgressBar: () => progressHandler,
       });
-      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(VsCodeLogInstance, "info").returns();
       sinon.stub(TeamsAppMigrationHandler.prototype, "updateManifest").resolves(ok(null));
 
       const result = await handlers.migrateTeamsManifestHandler();
@@ -1984,7 +1984,7 @@ describe("handlers", () => {
         selectFile: () => Promise.resolve(ok({ type: "skip" })),
         createProgressBar: () => progressHandler,
       });
-      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(VsCodeLogInstance, "info").returns();
       sinon.stub(TeamsAppMigrationHandler.prototype, "updateManifest").resolves(ok(null));
 
       const result = await handlers.migrateTeamsManifestHandler();
@@ -2003,7 +2003,7 @@ describe("handlers", () => {
         selectFile: () => Promise.resolve(ok({ type: "success", result: "test" })),
         createProgressBar: () => progressHandler,
       });
-      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(VsCodeLogInstance, "info").returns();
       sinon
         .stub(TeamsAppMigrationHandler.prototype, "updateManifest")
         .resolves(err(new UserError("source", "name", "")));

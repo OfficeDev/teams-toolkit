@@ -201,18 +201,16 @@ export class CreateAppPackageDriver implements StepDriver {
     await fs.writeFile(jsonFileName, JSON.stringify(manifest, null, 4));
     await fs.chmod(jsonFileName, 0o444);
 
-    if (context.platform === Platform.CLI || context.platform === Platform.VS) {
-      const builtSuccess = [
-        { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
-        { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
-        { content: zipFileName, color: Colors.BRIGHT_MAGENTA },
-        { content: " built successfully!", color: Colors.BRIGHT_WHITE },
-      ];
-      if (context.platform === Platform.VS) {
-        context.logProvider?.info(builtSuccess);
-      } else {
-        context.ui?.showMessage("info", builtSuccess, false);
-      }
+    const builtSuccess = [
+      { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+      { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+      { content: zipFileName, color: Colors.BRIGHT_MAGENTA },
+      { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+    ];
+    if (context.platform === Platform.VS || context.platform === Platform.VSCode) {
+      context.logProvider.info(builtSuccess);
+    } else {
+      context.ui!.showMessage("info", builtSuccess, false);
     }
 
     return ok(new Map());

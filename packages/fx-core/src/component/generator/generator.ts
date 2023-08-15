@@ -49,7 +49,7 @@ export class Generator {
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
-      progressTitle: ProgressTitles.generateTemplate,
+      progressTitle: ProgressTitles.create,
       progressSteps: 1,
       componentName: componentName,
       errorSource: errorSource,
@@ -79,7 +79,7 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
     });
-    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate(scenario));
+    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
@@ -90,7 +90,7 @@ export class Generator {
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
-      progressTitle: ProgressTitles.generateSample,
+      progressTitle: ProgressTitles.create,
       progressSteps: 1,
       componentName: componentName,
       errorSource: errorSource,

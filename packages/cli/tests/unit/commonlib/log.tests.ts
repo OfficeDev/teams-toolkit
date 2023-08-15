@@ -49,11 +49,6 @@ describe("CLILogProvider", () => {
     expect(message).to.contain("error");
   });
 
-  it("Log - Fatal", async () => {
-    await logger.debug("fatal");
-    expect(message).to.contain("fatal");
-  });
-
   it("OutputSuccess", async () => {
     logger.outputSuccess("success");
     expect(message).to.contain("success");
@@ -87,10 +82,5 @@ describe("CLILogProvider", () => {
   it("NecessaryLog - Error", async () => {
     logger.necessaryLog(LogLevel.Error, "error");
     expect(message).to.contain("error");
-  });
-
-  it("NecessaryLog - Fatal", async () => {
-    logger.necessaryLog(LogLevel.Fatal, "fatal");
-    expect(message).to.contain("fatal");
   });
 });

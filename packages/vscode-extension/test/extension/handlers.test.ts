@@ -1860,6 +1860,50 @@ describe("handlers", () => {
       chai.assert.deepEqual(result, ok(null));
     });
 
+    it("happy path: failed files", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsTabApp.upgrade")),
+        selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
+        createProgressBar: () => progressHandler,
+      });
+      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      const warningStub = sinon.stub(VsCodeLogInstance, "warning");
+      sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(true));
+      sinon
+        .stub(TeamsAppMigrationHandler.prototype, "updateCodes")
+        .resolves(ok(["test1", "test2"]));
+
+      const result = await handlers.migrateTeamsTabAppHandler();
+
+      chai.assert.deepEqual(result, ok(null));
+      chai.expect(warningStub.calledOnce).to.be.true;
+    });
+
+    it("error", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsTabApp.upgrade")),
+        selectFolder: () => Promise.resolve(ok({ type: "success", result: "test" })),
+        createProgressBar: () => progressHandler,
+      });
+      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(TeamsAppMigrationHandler.prototype, "updatePackageJson").resolves(ok(true));
+      sinon
+        .stub(TeamsAppMigrationHandler.prototype, "updateCodes")
+        .resolves(err({ foo: "bar" } as any));
+
+      const result = await handlers.migrateTeamsTabAppHandler();
+
+      chai.assert.isTrue(result.isErr());
+      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+    });
+
     it("user cancel", async () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
@@ -1928,6 +1972,25 @@ describe("handlers", () => {
       const result = await handlers.migrateTeamsManifestHandler();
 
       chai.assert.deepEqual(result, ok(null));
+    });
+
+    it("user cancel: skip file selection", async () => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").returns();
+      const sendTelemetryErrorEventStub = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => key);
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: () => Promise.resolve(ok("teamstoolkit.migrateTeamsManifest.upgrade")),
+        selectFile: () => Promise.resolve(ok({ type: "skip" })),
+        createProgressBar: () => progressHandler,
+      });
+      sinon.stub(VsCodeLogInstance, "info").resolves(true);
+      sinon.stub(TeamsAppMigrationHandler.prototype, "updateManifest").resolves(ok(null));
+
+      const result = await handlers.migrateTeamsManifestHandler();
+
+      chai.assert.deepEqual(result, ok(null));
+      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
 
     it("error", async () => {

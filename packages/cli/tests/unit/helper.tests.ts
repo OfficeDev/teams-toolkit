@@ -4,7 +4,7 @@ import { cloneDeep } from "lodash";
 import "mocha";
 import * as sinon from "sinon";
 import { helper } from "../../src/commands/helper";
-import { createCommand } from "../../src/commands/models/create";
+import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 
@@ -268,7 +268,7 @@ describe("CLI helper", () => {
       rcommand.header = "Header:";
       rcommand.footer = "Footer:";
       rcommand.sortOptions = true;
-      const res = helper.formatHelp(createCommand, rcommand);
+      const res = helper.formatHelp(getCreateCommand(), rcommand);
       assert.include(res, "Header:");
       assert.include(res, "Footer:");
       assert.include(res, "Usage:");

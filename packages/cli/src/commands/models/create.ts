@@ -16,11 +16,11 @@ export const createCommand: CLICommand = {
   options: [...CreateProjectOptions],
   examples: [
     {
-      command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp",
+      command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp -i false",
       description: "Create a new timer triggered notification bot",
     },
     {
-      command: "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp",
+      command: "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp -i false",
       description: "Import an existing SharePoint Framework solution",
     },
   ],

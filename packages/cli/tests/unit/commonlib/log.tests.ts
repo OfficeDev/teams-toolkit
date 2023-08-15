@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogLevel } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import "mocha";
 import sinon from "sinon";
@@ -25,30 +25,36 @@ describe("CLILogProvider", () => {
   });
 
   it("Log - verbose", async () => {
-    await logger.verbose("verbose");
+    logger.verbose("verbose");
     expect(message).to.contain("verbose");
   });
 
   it("Log - Debug", async () => {
-    await logger.debug("debug");
+    logger.debug("debug");
     expect(message).to.contain("debug");
   });
 
   it("Log - Info", async () => {
-    await logger.debug("info");
+    logger.info("info");
     expect(message).to.contain("info");
   });
-
+  it("Log - Info", async () => {
+    logger.info([{ content: "infocolor", color: Colors.WHITE }]);
+    expect(message).to.contain("infocolor");
+  });
   it("Log - Warning", async () => {
-    await logger.debug("warning");
+    logger.warning("warning");
     expect(message).to.contain("warning");
   });
 
   it("Log - Error", async () => {
-    await logger.debug("error");
+    logger.error("error");
     expect(message).to.contain("error");
   });
-
+  it("logInFile", async () => {
+    await logger.logInFile(LogLevel.Info, "info");
+    expect(message).to.eq("");
+  });
   it("OutputSuccess", async () => {
     logger.outputSuccess("success");
     expect(message).to.contain("success");

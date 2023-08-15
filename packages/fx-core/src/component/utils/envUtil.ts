@@ -91,7 +91,7 @@ class EnvUtil {
         if (key.startsWith("SECRET_")) {
           const raw = parseResultSecret.obj[key];
           if (raw.startsWith("crypto_")) {
-            const decryptRes = await cryptoProvider.decrypt(raw);
+            const decryptRes = cryptoProvider.decrypt(raw);
             if (decryptRes.isErr()) return err(decryptRes.error);
             parseResultSecret.obj[key] = decryptRes.value;
           }
@@ -166,7 +166,7 @@ class EnvUtil {
     for (const key of Object.keys(envs)) {
       let value = envs[key];
       if (value && key.startsWith("SECRET_")) {
-        const res = await cryptoProvider.encrypt(value);
+        const res = cryptoProvider.encrypt(value);
         if (res.isErr()) return err(res.error);
         value = res.value;
         // envs[key] = value;
@@ -209,10 +209,10 @@ class EnvUtil {
       await fs.writeFile(dotEnvSecretFilePath, contentSecret, { encoding: "utf8" });
     }
     if (!envFileExists) {
-      TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
+      await TOOLS.logProvider.info("  Created environment file at " + dotEnvFilePath + EOL + EOL);
     }
     if (!envSecretFileExists && Object.keys(parsedDotenvSecret.obj).length > 0) {
-      TOOLS.logProvider.info(
+      await TOOLS.logProvider.info(
         "  Created environment file (secret) at " + dotEnvSecretFilePath + EOL + EOL
       );
     }

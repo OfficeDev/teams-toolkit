@@ -29,9 +29,9 @@ export const accountLogoutCommand: CLICommand = {
         ctx.telemetryProperties.service = "azure";
         const result = await AzureTokenProvider.signout();
         if (result) {
-          logger.info(`[${cliSource}] Successfully signed out of Azure.`);
+          await logger.info(`[${cliSource}] Successfully signed out of Azure.`);
         } else {
-          logger.error(`[${cliSource}] Failed to sign out of Azure.`);
+          await logger.error(`[${cliSource}] Failed to sign out of Azure.`);
         }
         break;
       }
@@ -39,9 +39,9 @@ export const accountLogoutCommand: CLICommand = {
         ctx.telemetryProperties.service = "m365";
         const result = await M365TokenProvider.signout();
         if (result) {
-          logger.info(`[${cliSource}] Successfully signed out of Microsoft 365.`);
+          await logger.info(`[${cliSource}] Successfully signed out of Microsoft 365.`);
         } else {
-          logger.error(`[${cliSource}] Failed to sign out of Microsoft 365.`);
+          await logger.error(`[${cliSource}] Failed to sign out of Microsoft 365.`);
         }
         break;
       }

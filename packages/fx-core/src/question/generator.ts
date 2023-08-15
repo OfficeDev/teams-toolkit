@@ -411,7 +411,7 @@ function getOptionType(question: UserInputQuestion): CLIOptionType {
 async function updateExports(filePath: string, exportStatement: string) {
   const project = new Project();
   try {
-    const sourceFile = await project.addSourceFileAtPathIfExists(filePath);
+    const sourceFile = project.addSourceFileAtPathIfExists(filePath);
     if (!sourceFile) return;
     const hasExport = sourceFile.getStatements().some((statement) => {
       return (
@@ -463,4 +463,4 @@ async function batchGenerate() {
   await generateInputs(questionNodes.deployAadManifest(), "DeployAadManifest");
 }
 
-batchGenerate();
+void batchGenerate();

@@ -7,7 +7,7 @@ import "mocha";
 import sinon from "sinon";
 import yargs from "yargs";
 import * as activate from "../../../src/activate";
-import { AddWebpart } from "../../../src/cmds/add";
+import Add, { AddWebpart } from "../../../src/cmds/add";
 import * as constants from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockTelemetry, mockYargs } from "../utils";
@@ -42,7 +42,11 @@ describe("Add SPFx Web Part Command Tests", function () {
       "folder",
     ]);
   });
-
+  it("Add", async () => {
+    const cmd = new Add();
+    const res = await cmd.runCommand({});
+    expect(res.isOk()).to.be.true;
+  });
   it("Running Check", async () => {
     const addWebpartStub = sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(undefined));
     const cmd = new AddWebpart();

@@ -2,51 +2,37 @@
 // Licensed under the MIT license.
 
 export interface DepsLogger {
-  debug(message: string): Promise<boolean>;
+  debug(message: string): void;
 
-  info(message: string): Promise<boolean>;
+  info(message: string): void;
 
-  warning(message: string): Promise<boolean>;
+  warning(message: string): void;
 
-  error(message: string): Promise<boolean>;
+  error(message: string): void;
 
-  append(message: string): Promise<boolean>;
+  append(message: string): void;
 
-  appendLine(message: string): Promise<boolean>;
+  appendLine(message: string): void;
 
-  printDetailLog(): Promise<void>;
+  printDetailLog(): void;
 
   cleanup(): void;
 }
 
 export class EmptyLogger implements DepsLogger {
-  append(message: string): Promise<boolean> {
-    return Promise.resolve(false);
-  }
+  append(message: string): void {}
 
-  appendLine(message: string): Promise<boolean> {
-    return Promise.resolve(false);
-  }
+  appendLine(message: string): void {}
 
   cleanup(): void {}
 
-  debug(message: string): Promise<boolean> {
-    return Promise.resolve(false);
-  }
+  debug(message: string): void {}
 
-  error(message: string): Promise<boolean> {
-    return Promise.resolve(false);
-  }
+  error(message: string): void {}
 
-  info(message: string): Promise<boolean> {
-    return Promise.resolve(false);
-  }
+  info(message: string): void {}
 
-  printDetailLog(): Promise<void> {
-    return Promise.resolve(undefined);
-  }
+  printDetailLog(): void {}
 
-  warning(message: string): Promise<boolean> {
-    return Promise.resolve(false);
-  }
+  warning(message: string): void {}
 }

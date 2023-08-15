@@ -41,9 +41,9 @@ export async function setGlobalConfig(
   const opt = { [name]: value };
   const result = UserSettings.setConfigSync(opt);
   if (result.isErr()) {
-    logger.error("Set user configuration failed.");
+    await logger.error("Set user configuration failed.");
     return err(result.error);
   }
-  logger.info(`Successfully set user configuration ${name}.`);
+  await logger.info(`Successfully set user configuration ${name}.`);
   return ok(undefined);
 }

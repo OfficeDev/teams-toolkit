@@ -1,41 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
+import {
+  Colors,
+  Context,
+  CreateProjectResult,
+  FxError,
+  Inputs,
+  InputsWithProjectPath,
+  Platform,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
+import { glob } from "glob";
 import * as jsonschema from "jsonschema";
 import { camelCase, merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
-
-import { hooks } from "@feathersjs/hooks/lib";
-import {
-  Colors,
-  Context,
-  CreateProjectResult,
-  err,
-  FxError,
-  Inputs,
-  InputsWithProjectPath,
-  ok,
-  Platform,
-  Result,
-} from "@microsoft/teamsfx-api";
-import { glob } from "glob";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { ObjectIsUndefinedError } from "../../core/error";
-import { globalVars } from "../../core/globalVars";
+import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
-  assembleError,
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  assembleError,
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
@@ -61,10 +60,10 @@ import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
 import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
+import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { envUtil } from "../utils/envUtil";
 import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
-import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 
@@ -145,6 +144,7 @@ const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramewo
 
 class Coordinator {
   @hooks([
+    ErrorContextMW({ component: "Coordinator" }),
     ActionExecutionMW({
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.CreateProject,
@@ -182,7 +182,7 @@ class Coordinator {
       const res = await Generator.generateSample(context, projectPath, sampleId);
       if (res.isErr()) return err(res.error);
 
-      await downloadSampleHook(sampleId, projectPath);
+      downloadSampleHook(sampleId, projectPath);
     } else if (!scratch || scratch === ScratchOptions.yes().id) {
       // create from new
       const appName = inputs[QuestionNames.AppName] as string;
@@ -329,6 +329,7 @@ class Coordinator {
     return ok(settings.trackingId);
   }
 
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async preProvisionForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
@@ -397,6 +398,7 @@ class Coordinator {
     return ok(res);
   }
 
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async preCheckYmlAndEnvForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
@@ -423,17 +425,10 @@ class Coordinator {
     return ok(undefined);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.Provision,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async provision(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const folderName = path.parse(ctx.projectPath).name;
@@ -483,7 +478,7 @@ class Coordinator {
       }
       m365tenantInfo = tenantInfoInTokenRes.value;
 
-      const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
+      const checkM365TenatRes = provisionUtils.ensureM365TenantMatchesV3(
         tenantSwitchCheckActions,
         m365tenantInfo?.tenantIdInToken
       );
@@ -564,6 +559,7 @@ class Coordinator {
         } else {
           const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
+            inputs,
             ctx.azureAccountProvider,
             resolvedSubscriptionId!,
             undefined,
@@ -632,7 +628,7 @@ class Coordinator {
         hasError = true;
         return err(maybeDescription.error);
       }
-      ctx.logProvider.info(
+      await ctx.logProvider.info(
         `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
       );
       for (const [index, cycle] of cycles.entries()) {
@@ -648,7 +644,7 @@ class Coordinator {
       }
     } finally {
       const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
-      ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+      await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       await ctx.progressBar?.end(!hasError);
     }
 
@@ -690,16 +686,16 @@ class Coordinator {
       }
     } else {
       if (ctx.platform === Platform.VS) {
-        ctx.ui!.showMessage(
+        void ctx.ui!.showMessage(
           "info",
           getLocalizedString("core.common.LifecycleComplete.prepareTeamsApp"),
           false
         );
       } else {
-        ctx.ui!.showMessage("info", msg, false);
+        void ctx.ui!.showMessage("info", msg, false);
       }
     }
-    ctx.logProvider.info(msg);
+    await ctx.logProvider.info(msg);
 
     return ok(output);
   }
@@ -737,17 +733,10 @@ class Coordinator {
     return [output, error];
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.Deploy,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async deploy(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const templatePath =
@@ -787,7 +776,7 @@ class Coordinator {
         if (maybeDescription.isErr()) {
           return err(maybeDescription.error);
         }
-        ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+        await ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
         const execRes = await projectModel.deploy.execute(ctx);
         summaryReporter.updateLifecycleState(0, execRes);
         const result = this.convertExecuteResult(execRes.result, templatePath);
@@ -808,7 +797,7 @@ class Coordinator {
         }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
         await ctx.progressBar?.end(!hasError);
       }
     } else {
@@ -817,17 +806,10 @@ class Coordinator {
     return ok(output);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: "publish",
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async publish(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
@@ -851,7 +833,7 @@ class Coordinator {
           hasError = true;
           return err(maybeDescription.error);
         }
-        ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+        await ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
@@ -867,7 +849,7 @@ class Coordinator {
           if (ctx.platform !== Platform.CLI) {
             ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
               if (value.isOk() && value.value === adminPortal) {
-                ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+                void ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
               }
             });
           } else {
@@ -876,7 +858,7 @@ class Coordinator {
         }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
         await ctx.progressBar?.end(!hasError);
       }
     } else {
@@ -885,18 +867,10 @@ class Coordinator {
     return ok(output);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.PublishInDeveloperPortal,
-      telemetryComponentName: "coordinator",
-      errorSource: CoordinatorSource,
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async publishInDeveloperPortal(
     ctx: Context,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     // update teams app
     if (!ctx.tokenProvider) {
@@ -948,7 +922,7 @@ function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
   } as BotTroubleShootMessage;
 }
 
-async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
+function downloadSampleHook(sampleId: string, sampleAppPath: string): void {
   // A temporary solution to aundefined duplicate componentId
   if (sampleId === "todo-list-SPFx") {
     const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";

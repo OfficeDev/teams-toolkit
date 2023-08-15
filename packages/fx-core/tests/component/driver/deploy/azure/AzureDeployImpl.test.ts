@@ -56,7 +56,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     context.logProvider.info = async (msg: string | Array<any>) => {
       console.log(msg);
       return Promise.resolve(true);
@@ -88,7 +88,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -130,7 +130,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -178,7 +178,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -213,7 +213,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -254,7 +254,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -291,7 +291,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -316,7 +316,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -375,7 +375,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -424,7 +424,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -466,7 +466,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,
@@ -504,7 +504,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     const impl = new AzureZipDeployImpl(
       args,
       context,

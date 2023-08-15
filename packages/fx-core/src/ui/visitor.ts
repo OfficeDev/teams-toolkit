@@ -158,7 +158,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     if (question.default) {
       if (typeof question.default === "function") {
         defaultValue = async () => {
-          return (question as any).default(inputs);
+          return await (question as any).default(inputs);
         };
       } else {
         defaultValue = question.default;

@@ -30,7 +30,10 @@ describe("Update Aad Manifest Command Tests", function () {
     options = [];
     telemetryEvents = [];
   });
-
+  it("update", () => {
+    const cmd = new Update();
+    cmd.runCommand({});
+  });
   it("should pass builder check -- aad", () => {
     const cmd = new UpdateAadApp();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

@@ -196,7 +196,7 @@ export const DefaultEncoding = "utf-8";
 
 export async function getSystemEncoding(): Promise<string> {
   if (os.platform() === "win32") {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       child_process.exec("chcp", { encoding: "utf8" }, (error, stdout) => {
         if (error) {
           resolve(DefaultEncoding);
@@ -209,7 +209,7 @@ export async function getSystemEncoding(): Promise<string> {
       });
     });
   } else if (os.platform() === "linux") {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       child_process.exec("locale charmap", { encoding: "utf8" }, (error, stdout) => {
         if (error) {
           resolve(DefaultEncoding);
@@ -221,7 +221,7 @@ export async function getSystemEncoding(): Promise<string> {
       });
     });
   } else if (os.platform() === "darwin") {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       child_process.exec("defaults read -g AppleLocale", { encoding: "utf8" }, (error, stdout) => {
         if (error) {
           resolve(DefaultEncoding);

@@ -9,11 +9,11 @@ export async function runWithProgressIndicator(
   callback: () => Promise<void>,
   logger: DepsLogger
 ): Promise<void> {
-  const timer = setInterval(async () => await logger.append("."), downloadIndicatorInterval);
+  const timer = setInterval(() => logger.append("."), downloadIndicatorInterval);
   try {
     await callback();
   } finally {
     clearTimeout(timer);
-    await logger.appendLine("");
+    logger.appendLine("");
   }
 }

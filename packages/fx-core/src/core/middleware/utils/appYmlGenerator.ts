@@ -141,7 +141,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.handlebarsContext.isM365 = this.oldProjectSettings.isM365;
   }
 
-  private async generateAzureHandlebarsContext(): Promise<void> {
+  private generateAzureHandlebarsContext(): Promise<void> {
     // isFunctionBot
     const projectSettings: any = convertProjectSettingsV2ToV3(
       this.oldProjectSettings,
@@ -177,6 +177,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.handlebarsContext.botResourceId =
         this.handlebarsContext.placeholderMappings[`${prefix}${outputContents[3]}`];
     }
+    return Promise.resolve();
   }
 
   private setPlaceholderMapping(placeholder: string): void {

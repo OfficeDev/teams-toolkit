@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogLevel } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import "mocha";
 import sinon from "sinon";
@@ -24,43 +24,44 @@ describe("CLILogProvider", () => {
     message = "";
   });
 
-  it("Log - Trace", async () => {
-    await logger.trace("trace");
-    expect(message).to.contain("trace");
+  it("Log - verbose", async () => {
+    logger.verbose("verbose");
+    expect(message).to.contain("verbose");
   });
 
   it("Log - Debug", async () => {
-    await logger.debug("debug");
+    logger.debug("debug");
     expect(message).to.contain("debug");
   });
 
   it("Log - Info", async () => {
-    await logger.debug("info");
+    logger.info("info");
     expect(message).to.contain("info");
   });
-
+  it("Log - Info", async () => {
+    logger.info([{ content: "infocolor", color: Colors.WHITE }]);
+    expect(message).to.contain("infocolor");
+  });
   it("Log - Warning", async () => {
-    await logger.debug("warning");
+    logger.warning("warning");
     expect(message).to.contain("warning");
   });
 
   it("Log - Error", async () => {
-    await logger.debug("error");
+    logger.error("error");
     expect(message).to.contain("error");
   });
-
-  it("Log - Fatal", async () => {
-    await logger.debug("fatal");
-    expect(message).to.contain("fatal");
+  it("logInFile", async () => {
+    await logger.logInFile(LogLevel.Info, "info");
+    expect(message).to.eq("");
   });
-
   it("OutputSuccess", async () => {
     logger.outputSuccess("success");
     expect(message).to.contain("success");
   });
 
-  it("NecessaryLog - Trace", async () => {
-    logger.necessaryLog(LogLevel.Trace, "trace");
+  it("NecessaryLog - Verbose", async () => {
+    logger.necessaryLog(LogLevel.Verbose, "trace");
     expect(message).to.contain("trace");
   });
 
@@ -87,10 +88,5 @@ describe("CLILogProvider", () => {
   it("NecessaryLog - Error", async () => {
     logger.necessaryLog(LogLevel.Error, "error");
     expect(message).to.contain("error");
-  });
-
-  it("NecessaryLog - Fatal", async () => {
-    logger.necessaryLog(LogLevel.Fatal, "fatal");
-    expect(message).to.contain("fatal");
   });
 });

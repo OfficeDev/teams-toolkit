@@ -59,7 +59,7 @@ describe("Azure Storage enable static website Driver test", () => {
         next: async (detail?: string): Promise<void> => {},
         end: async (): Promise<void> => {},
       } as IProgressHandler,
-    } as DriverContext;
+    } as any;
     // fake azure credentials
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -110,7 +110,7 @@ describe("Azure Storage enable static website Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // fake azure credentials
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -148,7 +148,7 @@ describe("Azure Storage enable static website Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // fake azure credentials
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -187,7 +187,7 @@ describe("Azure Storage enable static website Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // fake azure credentials
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -229,7 +229,7 @@ describe("Azure Storage enable static website Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // fake azure credentials
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -272,7 +272,7 @@ describe("Azure Storage enable static website Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // fake azure credentials
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -307,7 +307,7 @@ describe("Azure Storage enable static website Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // fake azure credentials
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")

@@ -47,7 +47,7 @@ describe("Script Driver test", () => {
         end: async (): Promise<void> => {},
       } as IProgressHandler,
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
@@ -69,7 +69,7 @@ describe("Script Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isErr());
   });

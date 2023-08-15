@@ -50,6 +50,7 @@ describe("Permission Command Tests", function () {
   it("Permission - Configs", () => {
     const cmd = new Permission();
     cmd.builder(yargs);
+    cmd.runCommand({});
   });
 
   it("Permission Status - Happy Path", async () => {

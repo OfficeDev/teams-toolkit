@@ -85,10 +85,7 @@ export async function outputAzureInfo(
   return Promise.resolve(result !== undefined);
 }
 
-export async function outputAccountInfoOffline(
-  accountType: string,
-  username: string
-): Promise<boolean> {
+export function outputAccountInfoOffline(accountType: string, username: string): boolean {
   CLILogProvider.outputInfo(
     strings["account.show.info"],
     accountType,
@@ -117,14 +114,14 @@ class AccountShow extends YargsCommand {
     if (m365Status.status === signedIn) {
       (await checkIsOnline())
         ? await outputM365Info("show")
-        : await outputAccountInfoOffline("Microsoft 365", (m365Status.accountInfo as any).upn);
+        : outputAccountInfoOffline("Microsoft 365", (m365Status.accountInfo as any).upn);
     }
 
     const azureStatus = await AzureTokenProvider.getStatus();
     if (azureStatus.status === signedIn) {
       (await checkIsOnline())
         ? await outputAzureInfo("show")
-        : await outputAccountInfoOffline("Azure", (azureStatus.accountInfo as any).upn);
+        : outputAccountInfoOffline("Azure", (azureStatus.accountInfo as any).upn);
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
@@ -140,7 +137,7 @@ class AccountShow extends YargsCommand {
   }
 }
 
-class AccountLogin extends YargsCommand {
+export class AccountLogin extends YargsCommand {
   public readonly commandHead = `login`;
   public readonly command = `${this.commandHead} <service>`;
   public readonly description = "Log in to the selected cloud service.";
@@ -155,8 +152,8 @@ class AccountLogin extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
+  public runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return new Promise((resolve) => resolve(ok(null)));
   }
 }
 
@@ -317,7 +314,7 @@ export default class Account extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
+  public runCommand(_args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return new Promise((resolve) => resolve(ok(null)));
   }
 }

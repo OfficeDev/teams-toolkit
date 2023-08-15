@@ -7,7 +7,7 @@ import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs from "yargs";
-import Account, { AzureLogin, M365Login } from "../../../src/cmds/account";
+import Account, { AccountLogin, AzureLogin, M365Login } from "../../../src/cmds/account";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedOut } from "../../../src/commonlib/common/constant";
 import M365TokenProvider from "../../../src/commonlib/m365Login";
@@ -41,7 +41,10 @@ describe("Account Command Tests", function () {
     const cmd = new Account();
     await cmd.runCommand({});
   });
-
+  it("Account Login ", async () => {
+    const cmd = new AccountLogin();
+    await cmd.runCommand({});
+  });
   it("Account Show Command Running Check - signedOut", async () => {
     sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedOut }));
     sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedOut });

@@ -61,6 +61,7 @@
     "test:adaptiveCardGenerator": "npx mocha \"tests/common/spec-parser/**/adaptiveCardGenerator.test.ts\"",
     "test:error": "nyc mocha \"tests/error/*.test.ts\"",
     "test:cutils": "nyc mocha \"tests/component/utils.test.ts\"",
+    "test:globalVars": "nyc mocha \"tests/core/globalVars.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

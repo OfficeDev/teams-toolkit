@@ -34,7 +34,7 @@ export const createSampleCommand: CLICommand = {
     if (res.isErr()) {
       return err(res.error);
     }
-    logger.info(
+    await logger.info(
       `Sample project '${chalk.white(inputs.samples)}' downloaded at: ${chalk.cyanBright(
         res.value.projectPath
       )}`

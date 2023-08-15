@@ -420,27 +420,26 @@ export type LoginStatus = {
 // @public (undocumented)
 export enum LogLevel {
     Debug = 1,
-    Error = 4,
-    Fatal = 5,
-    Info = 2,
-    Trace = 0,
-    Warning = 3
+    Error = 5,
+    Info = 3,
+    Verbose = 2,
+    Warning = 4
 }
 
 // @public (undocumented)
 export interface LogProvider {
-    debug(message: string): Promise<boolean>;
-    error(message: string, logToFile?: boolean): Promise<boolean>;
-    fatal(message: string): Promise<boolean>;
+    debug(message: string): void;
+    error(message: string): void;
     getLogFilePath(): string;
-    info(message: string, logToFile?: boolean): Promise<boolean>;
+    info(message: string): void;
     info(message: Array<{
         content: string;
         color: Colors;
-    }>, logToFile?: boolean): Promise<boolean>;
-    log(logLevel: LogLevel, message: string): Promise<boolean>;
-    trace(message: string): Promise<boolean>;
-    warning(message: string, logToFile?: boolean): Promise<boolean>;
+    }>): void;
+    log(logLevel: LogLevel, message: string): void;
+    logInFile(logLevel: LogLevel, message: string): Promise<void>;
+    verbose(message: string): void;
+    warning(message: string): void;
 }
 
 // @public

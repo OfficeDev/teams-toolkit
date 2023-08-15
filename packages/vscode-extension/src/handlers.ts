@@ -2258,7 +2258,7 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
         path.join(tabAppPath, "package.json")
       );
       VsCodeLogInstance.warning(warningMessage);
-      VS_CODE_UI.showMessage("warn", warningMessage, false, "OK");
+      void VS_CODE_UI.showMessage("warn", warningMessage, false, "OK");
     } else {
       // Update codes to use @microsoft/teams-js v2
       await progressBar.next(localize("teamstoolkit.migrateTeamsTabApp.updatingCodes"));
@@ -2276,7 +2276,7 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
               failedFiles.value.join(", ")
             )
           );
-          VS_CODE_UI.showMessage(
+          void VS_CODE_UI.showMessage(
             "warn",
             util.format(
               localize("teamstoolkit.migrateTeamsTabApp.updateCodesErrorMessage"),
@@ -2295,12 +2295,12 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
 
   if (result.isErr()) {
     await progressBar.end(false);
-    showError(result.error);
+    void showError(result.error);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, result.error);
   } else {
     await progressBar.end(true);
     if (!packageUpdated.isErr() && packageUpdated.value) {
-      VS_CODE_UI.showMessage(
+      void VS_CODE_UI.showMessage(
         "info",
         util.format(localize("teamstoolkit.migrateTeamsTabApp.success"), tabAppPath),
         false
@@ -2368,11 +2368,11 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
 
   if (result.isErr()) {
     await progressBar.end(false);
-    showError(result.error);
+    void showError(result.error);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, result.error);
   } else {
     await progressBar.end(true);
-    VS_CODE_UI.showMessage(
+    void VS_CODE_UI.showMessage(
       "info",
       util.format(localize("teamstoolkit.migrateTeamsManifest.success"), manifestPath),
       false

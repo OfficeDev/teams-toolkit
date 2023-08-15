@@ -8,11 +8,5 @@ module.exports = {
       files: ["src/**/*.ts"],
       extends: ["../eslint-plugin-teamsfx/config/header.js"],
     },
-    {
-      files: ["src/e2e/**/*.ts", "src/ui-test/**/*.ts"],
-      rules: {
-        "@microsoft/teamsfx/jsdoc-author": ["error"],
-      },
-    },
   ],
 };

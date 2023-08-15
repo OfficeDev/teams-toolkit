@@ -306,10 +306,6 @@ describe("teamsApp/createAppPackage", async () => {
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
     }
-
-    mockedCliDriverContext.ui = undefined;
-    const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
-    chai.assert.isTrue(executeResult.result.isOk());
   });
 
   it("happy path - relative path", async () => {

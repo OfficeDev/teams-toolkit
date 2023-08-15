@@ -210,7 +210,7 @@ export class CreateAppPackageDriver implements StepDriver {
     if (context.platform === Platform.VS || context.platform === Platform.VSCode) {
       context.logProvider.info(builtSuccess);
     } else {
-      context.ui?.showMessage("info", builtSuccess, false);
+      context.ui!.showMessage("info", builtSuccess, false);
     }
 
     return ok(new Map());

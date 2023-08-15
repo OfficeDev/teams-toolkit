@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 /**
  * @author Huajie Zhang <zhjay23@qq.com>
  */

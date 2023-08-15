@@ -65,7 +65,7 @@ function getConfig(tenantId?: string) {
       loggerOptions: {
         loggerCallback(loglevel: any, message: any, containsPii: any) {
           if (this.logLevel <= LogLevel.Error) {
-            CLILogProvider.log(4 - loglevel, message);
+            void CLILogProvider.log(4 - loglevel, message);
           }
         },
         piiLoggingEnabled: false,

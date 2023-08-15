@@ -56,10 +56,6 @@ export class MockCore {
     return ok("dev");
   }
 
-  async getQuestions(task: Stage, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(new QTreeNode({ type: "group" }));
-  }
-
   async encrypt(plaintext: string, inputs: Inputs): Promise<Result<string, FxError>> {
     return ok(plaintext);
   }

@@ -182,7 +182,7 @@ class Coordinator {
       const res = await Generator.generateSample(context, projectPath, sampleId);
       if (res.isErr()) return err(res.error);
 
-      await downloadSampleHook(sampleId, projectPath);
+      downloadSampleHook(sampleId, projectPath);
     } else if (!scratch || scratch === ScratchOptions.yes().id) {
       // create from new
       const appName = inputs[QuestionNames.AppName] as string;
@@ -627,7 +627,7 @@ class Coordinator {
         hasError = true;
         return err(maybeDescription.error);
       }
-      ctx.logProvider.info(
+      await ctx.logProvider.info(
         `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
       );
       for (const [index, cycle] of cycles.entries()) {
@@ -643,7 +643,7 @@ class Coordinator {
       }
     } finally {
       const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
-      ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+      await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       await ctx.progressBar?.end(!hasError);
     }
 
@@ -685,16 +685,16 @@ class Coordinator {
       }
     } else {
       if (ctx.platform === Platform.VS) {
-        ctx.ui!.showMessage(
+        void ctx.ui!.showMessage(
           "info",
           getLocalizedString("core.common.LifecycleComplete.prepareTeamsApp"),
           false
         );
       } else {
-        ctx.ui!.showMessage("info", msg, false);
+        void ctx.ui!.showMessage("info", msg, false);
       }
     }
-    ctx.logProvider.info(msg);
+    await ctx.logProvider.info(msg);
 
     return ok(output);
   }
@@ -775,7 +775,7 @@ class Coordinator {
         if (maybeDescription.isErr()) {
           return err(maybeDescription.error);
         }
-        ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+        await ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
         const execRes = await projectModel.deploy.execute(ctx);
         summaryReporter.updateLifecycleState(0, execRes);
         const result = this.convertExecuteResult(execRes.result, templatePath);
@@ -796,7 +796,7 @@ class Coordinator {
         }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
         await ctx.progressBar?.end(!hasError);
       }
     } else {
@@ -832,7 +832,7 @@ class Coordinator {
           hasError = true;
           return err(maybeDescription.error);
         }
-        ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+        await ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
@@ -848,7 +848,7 @@ class Coordinator {
           if (ctx.platform !== Platform.CLI) {
             ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
               if (value.isOk() && value.value === adminPortal) {
-                ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+                void ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
               }
             });
           } else {
@@ -857,7 +857,7 @@ class Coordinator {
         }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
         await ctx.progressBar?.end(!hasError);
       }
     } else {
@@ -921,7 +921,7 @@ function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
   } as BotTroubleShootMessage;
 }
 
-async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
+function downloadSampleHook(sampleId: string, sampleAppPath: string): void {
   // A temporary solution to aundefined duplicate componentId
   if (sampleId === "todo-list-SPFx") {
     const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";

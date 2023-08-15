@@ -83,7 +83,7 @@ class CLIEngine {
 
     if (debugLogs.length) {
       for (const log of debugLogs) {
-        logger.debug(log);
+        await logger.debug(log);
       }
     }
 
@@ -98,7 +98,7 @@ class CLIEngine {
       }
     }
 
-    logger.debug(
+    await logger.debug(
       `parsed context: ${JSON.stringify(
         pick(context, [
           "optionValues",
@@ -117,14 +117,14 @@ class CLIEngine {
     }
 
     if (parseRes.isErr()) {
-      this.processResult(context, parseRes.error);
+      await this.processResult(context, parseRes.error);
       return;
     }
 
     // 3. --version
     if (context.optionValues.version === true || context.globalOptionValues.version === true) {
-      logger.info(rootCmd.version ?? "1.0.0");
-      this.processResult(context);
+      await logger.info(rootCmd.version ?? "1.0.0");
+      await this.processResult(context);
       return;
     }
 
@@ -134,8 +134,8 @@ class CLIEngine {
         context.command,
         context.command.fullName !== root.fullName ? root : undefined
       );
-      logger.info(helpText);
-      this.processResult(context);
+      await logger.info(helpText);
+      await this.processResult(context);
       return;
     }
 
@@ -143,7 +143,7 @@ class CLIEngine {
     if (!context.globalOptionValues.interactive) {
       const validateRes = this.validateOptionsAndArguments(context.command);
       if (validateRes.isErr()) {
-        this.processResult(context, validateRes.error);
+        await this.processResult(context, validateRes.error);
         return;
       }
     } else {
@@ -153,7 +153,7 @@ class CLIEngine {
         "correlationId",
         "platform",
       ]);
-      logger.info(
+      await logger.info(
         `Some arguments/options are useless because the interactive mode is opened.` +
           ` If you want to run the command non-interactively, add '--interactive false' after your command` +
           ` or set the global setting by 'teamsfx config set interactive false'.`
@@ -187,18 +187,18 @@ class CLIEngine {
         const handleRes = await Correlator.run(context.command.handler, context);
         // const handleRes = await context.command.handler(context);
         if (handleRes.isErr()) {
-          this.processResult(context, handleRes.error);
+          await this.processResult(context, handleRes.error);
         } else {
-          this.processResult(context);
+          await this.processResult(context);
         }
       } else {
         const helpText = helper.formatHelp(rootCmd);
-        logger.info(helpText);
+        await logger.info(helpText);
       }
     } catch (e) {
       Progress.end(false); // TODO to remove this in the future
       const fxError = assembleError(e);
-      this.processResult(context, fxError);
+      await this.processResult(context, fxError);
     } finally {
       await CliTelemetry.flush();
       Progress.end(true); // TODO to remove this in the future
@@ -494,7 +494,7 @@ class CLIEngine {
     }
     return ok(undefined);
   }
-  processResult(context: CLIContext, fxError?: FxError): void {
+  async processResult(context: CLIContext, fxError?: FxError): Promise<void> {
     if (context.command.telemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
@@ -515,7 +515,7 @@ class CLIEngine {
       }
     }
     if (fxError) {
-      this.printError(fxError);
+      await this.printError(fxError);
     }
   }
 

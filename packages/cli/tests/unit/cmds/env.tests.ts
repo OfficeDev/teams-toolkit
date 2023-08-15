@@ -149,7 +149,11 @@ describe("Env Add Command Tests", function () {
     validProject = true;
     envList = ["dev", "test", "staging"];
   });
-
+  it("Env", async () => {
+    const cmd = new Env();
+    const res = await cmd.runCommand({});
+    expect(res.isOk()).to.be.true;
+  });
   it("adds a new env by copying from the active env", async () => {
     // Arrange
     validProject = true;

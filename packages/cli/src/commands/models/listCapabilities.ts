@@ -9,9 +9,9 @@ export const listCapabilitiesCommand: CLICommand = {
   name: "capabilities",
   description: "List all Teams App tempalte capabilities.",
   handler: async (cmd) => {
-    logger.info("The following are Teams App tempalte capabilities:");
+    await logger.info("The following are Teams App tempalte capabilities:");
     const list = CapabilityOptions.all();
-    logger.info(JSON.stringify(list, undefined, 2));
+    await logger.info(JSON.stringify(list, undefined, 2));
     return ok(undefined);
   },
   telemetry: {

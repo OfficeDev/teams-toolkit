@@ -44,7 +44,7 @@ describe("New Command Tests", function () {
   });
 
   it("Builder Check", async () => {
-    sandbox.stub(FxCore.prototype, "getQuestions").resolves(ok(undefined));
+    sandbox.stub(FxCore.prototype, "getQuestions").returns(ok(undefined));
     const cmd = new New();
     await cmd.builder(yargs);
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
@@ -52,7 +52,7 @@ describe("New Command Tests", function () {
 
   it("Builder Check - error", async () => {
     const error = new UserCancelError();
-    sandbox.stub(FxCore.prototype, "getQuestions").resolves(err(error));
+    sandbox.stub(FxCore.prototype, "getQuestions").returns(err(error));
     const cmd = new New();
     await expect(cmd.builder(yargs)).to.be.rejectedWith(error);
   });

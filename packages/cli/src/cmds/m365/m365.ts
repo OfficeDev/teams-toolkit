@@ -46,7 +46,7 @@ export async function getTokenAndUpn(): Promise<[string, string]> {
         throw accountRes.error;
       }
     } catch (error) {
-      CLILogProvider.debug(`Failed to get upn. Error: ${JSON.stringify(error)}`);
+      await CLILogProvider.debug(`Failed to get upn. Error: ${JSON.stringify(error)}`);
     }
     if (upn !== undefined) {
       CLILogProvider.necessaryLog(LogLevel.Info, `Using account ${upn}`);

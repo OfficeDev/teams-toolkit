@@ -33,9 +33,9 @@ export async function printGlobalConfig(option?: string): Promise<Result<undefin
   }
   const config = result.value;
   if (option) {
-    logger.info(JSON.stringify(config[option], null, 2));
+    await logger.info(JSON.stringify(config[option], null, 2));
   } else {
-    logger.info(JSON.stringify(config, null, 2));
+    await logger.info(JSON.stringify(config, null, 2));
   }
   return ok(undefined);
 }

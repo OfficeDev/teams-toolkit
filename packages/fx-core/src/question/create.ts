@@ -43,7 +43,7 @@ import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, assembleError } from "../error";
-import { QuestionNames } from "./questionNames";
+import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
@@ -415,11 +415,9 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
+      CapabilityOptions.copilotPluginCli(),
     ];
 
-    if (isCopilotPluginEnabled()) {
-      capabilityOptions.push(CapabilityOptions.copilotPluginCli());
-    }
     return capabilityOptions;
   }
 
@@ -528,7 +526,7 @@ function capabilityQuestion(): SingleSelectQuestion {
       }
     },
     cliDescription: "Specifies the Teams App capability.",
-    cliName: "capability",
+    cliName: CliQuestionName.Capability,
     cliShortName: "c",
     cliChoiceListCommand: "teamsfx list capabilities",
     type: "singleSelect",
@@ -1541,7 +1539,6 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
           );
         },
-        cliOptionDisabled: "self", // Need to remove once copilot plugin is about to ship
         data: copilotPluginDevelopmentQuestion(),
       },
       {
@@ -1549,7 +1546,6 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
         },
-        cliOptionDisabled: "all", // Need to remove once copilot plugin is about to ship
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {

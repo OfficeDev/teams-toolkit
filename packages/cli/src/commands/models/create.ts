@@ -1,7 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, CLIContext, err, ok } from "@microsoft/teamsfx-api";
-import { CreateProjectInputs, CreateProjectOptions } from "@microsoft/teamsfx-core";
+import {
+  CLICommand,
+  CLICommandOption,
+  CLIContext,
+  CLIStringOption,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import {
+  CreateProjectInputs,
+  CreateProjectOptions,
+  QuestionNames,
+  isCopilotPluginEnabled,
+} from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
@@ -9,11 +21,33 @@ import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { createSampleCommand } from "./createSample";
+import { CliQuestionName } from "@microsoft/teamsfx-core";
 
+function filterOptionsIfNotCopilotPluginFeatureFlag(options: CLICommandOption[]) {
+  if (!isCopilotPluginEnabled()) {
+    // filter out copilot-plugin in capability question
+    const capability = options.find(
+      (c: CLICommandOption) => c.name === CliQuestionName.Capability
+    ) as CLIStringOption;
+    if (capability.choices) {
+      capability.choices = capability.choices.filter((c: string) => c !== "copilot");
+    }
+
+    const copilotPluginQuestionNames = [
+      QuestionNames.CopilotPluginDevelopment.toString(),
+      QuestionNames.ApiSpecLocation.toString(),
+      QuestionNames.OpenAIPluginManifestLocation.toString(),
+      QuestionNames.ApiOperation.toString(),
+    ];
+
+    options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
+  }
+  return options;
+}
 export const createCommand: CLICommand = {
   name: "new",
   description: "Create a new Teams application.",
-  options: [...CreateProjectOptions],
+  options: [...filterOptionsIfNotCopilotPluginFeatureFlag(CreateProjectOptions)],
   examples: [
     {
       command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp -i false",

@@ -155,7 +155,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      engine.processResult(ctx, new InputValidationError("test", "no reason"));
+      await engine.processResult(ctx, new InputValidationError("test", "no reason"));
       assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
   });

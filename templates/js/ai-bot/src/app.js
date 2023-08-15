@@ -10,6 +10,7 @@ const {
 } = require("@microsoft/teams-ai");
 
 // Create AI components
+// Use OpenAI
 const planner = new OpenAIPlanner({
   apiKey: config.openAIKey,
   defaultModel: "gpt-3.5-turbo",

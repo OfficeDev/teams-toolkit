@@ -1746,7 +1746,7 @@ export async function showError(e: UserError | SystemError) {
     const helpLinkUrl = Uri.parse(`${e.helpLink}`);
     const help = {
       title: localize("teamstoolkit.handlers.getHelp"),
-      run: async (): Promise<void> => {
+      run: () => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickGetHelp, {
           [TelemetryProperty.ErrorCode]: errorCode,
           [TelemetryProperty.ErrorMessage]: notificationMessage,
@@ -1771,7 +1771,7 @@ export async function showError(e: UserError | SystemError) {
     const issueLink = Uri.parse(`${path}${param}`);
     const issue = {
       title: localize("teamstoolkit.handlers.reportIssue"),
-      run: async (): Promise<void> => {
+      run: () => {
         commands.executeCommand("vscode.open", issueLink);
       },
     };

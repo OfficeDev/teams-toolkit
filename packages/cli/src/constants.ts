@@ -47,11 +47,13 @@ export const ProvisionOptions: OptionsMap = {
   ["resource-group"]: {
     type: "string",
     global: false,
+    hidden: true,
     description: "Specifies resource group name",
   },
   ["region"]: {
     type: "string",
     global: false,
+    hidden: true,
     description: "Specifies resource group region",
   },
 };

@@ -794,8 +794,8 @@ export class FxCore {
     ErrorHandlerMW,
     EnvLoaderMW(false),
   ])
-  async getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
-    return ok(inputs.env); //work for both v2 and v3
+  getSelectedEnv(inputs: Inputs): Promise<Result<string | undefined, FxError>> {
+    return Promise.resolve(ok(inputs.env)); //work for both v2 and v3
   }
 
   @hooks([ErrorContextMW({ component: "FxCore", stage: "createLocalCrypto" })])
@@ -903,7 +903,7 @@ export class FxCore {
     if (version.source === VersionSource.unknown) {
       return err(new InvalidProjectError());
     }
-    return await this.innerMigrationV3(inputs);
+    return this.innerMigrationV3(inputs);
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3])

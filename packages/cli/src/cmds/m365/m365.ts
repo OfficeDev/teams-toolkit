@@ -231,7 +231,7 @@ export default class M365 extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
+  public runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return Promise.resolve(ok(null));
   }
 }

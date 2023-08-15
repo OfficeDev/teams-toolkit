@@ -796,17 +796,17 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
     },
     default: SPFxVersionOptionIds.installLocally,
     validation: {
-      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      validFunc: (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         if (input === SPFxVersionOptionIds.globalPackage) {
           const hasPackagesInstalled =
             !!previousInputs &&
             !!previousInputs.globalSpfxPackageVersion &&
             !!previousInputs.globalYeomanPackageVersion;
           if (!hasPackagesInstalled) {
-            throw DevEnvironmentSetupError();
+            return Promise.reject(DevEnvironmentSetupError());
           }
         }
-        return undefined;
+        return Promise.resolve(undefined);
       },
     },
     cliShortName: "sp",
@@ -1336,12 +1336,13 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       name: "input-api-spec-url",
       step: 2, // Add "back" button
       validation: {
-        validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
-          return isValidHttpUrl(input)
+        validFunc: (input: string, inputs?: Inputs): Promise<string | undefined> => {
+          const result = isValidHttpUrl(input)
             ? undefined
             : inputs?.platform === Platform.CLI
             ? "Please enter a valid URL or local path of your API Specification"
             : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+          return Promise.resolve(result);
         },
       },
       additionalValidationOnAccept: { validFunc: validationOnAccept },
@@ -1376,13 +1377,14 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     cliDescription: "OpenAI plugin website domain.",
     forgetLastValue: true,
     validation: {
-      validFunc: async (input: string): Promise<string | undefined> => {
+      validFunc: (input: string): Promise<string | undefined> => {
         const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?(\/)?$/i;
         const match = pattern.test(input);
 
-        return match
+        const result = match
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+        return Promise.resolve(result);
       },
     },
     additionalValidationOnAccept: {

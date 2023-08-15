@@ -111,7 +111,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -207,7 +207,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -261,7 +261,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -341,7 +341,7 @@ describe("coordinator provision", () => {
     sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -438,7 +438,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -519,7 +519,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -598,7 +598,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });
@@ -729,7 +729,7 @@ describe("coordinator provision", () => {
       })
     );
 
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
       .resolves(undefined);
@@ -801,7 +801,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -903,7 +903,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1060,7 +1060,7 @@ describe("coordinator provision", () => {
         tenantUserName: "mockM365UserName",
       })
     );
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
@@ -1123,7 +1123,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1190,7 +1190,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1331,7 +1331,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1418,7 +1418,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1596,7 +1596,7 @@ describe("coordinator provision", () => {
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
     sandbox
       .stub(provisionUtils, "ensureM365TenantMatchesV3")
-      .resolves(err(new UserError("coordinator", "checkM365TenantError", "msg", "msg")));
+      .returns(err(new UserError("coordinator", "checkM365TenantError", "msg", "msg")));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1666,7 +1666,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1741,7 +1741,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1814,7 +1814,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "getM365TenantId").resolves(
       ok({
         tenantIdInToken: "mockM365Tenant",

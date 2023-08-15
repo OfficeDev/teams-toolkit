@@ -45,7 +45,10 @@ export default class Provision extends YargsCommand {
     }
     if (!UI.interactive) {
       if (args["region"]) {
-        inputs[CoreQuestionNames.TargetResourceGroupName] = newResourceGroupOption;
+        inputs[CoreQuestionNames.TargetResourceGroupName] = {
+          id: newResourceGroupOption,
+          label: newResourceGroupOption,
+        };
         inputs[CoreQuestionNames.NewResourceGroupName] = args["resource-group"];
         inputs[CoreQuestionNames.NewResourceGroupLocation] = args["region"];
       }

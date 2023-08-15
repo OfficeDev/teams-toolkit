@@ -23,7 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         package:
-        - vscode-extension
         - tests
 
     steps:

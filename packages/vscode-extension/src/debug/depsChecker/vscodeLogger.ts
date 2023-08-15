@@ -17,42 +17,39 @@ export class VSCodeLogger implements DepsLogger {
     this.logger = logger;
   }
 
-  public debug(message: string): Promise<boolean> {
+  public debug(message: string): void {
     this.addToDetailCache(LogLevel.Debug, message);
-    return Promise.resolve(true);
   }
 
-  public async info(message: string): Promise<boolean> {
+  public info(message: string): void {
     this.addToDetailCache(LogLevel.Info, message);
-    return await this.logger.info(message);
+    this.logger.info(message);
   }
 
-  public async warning(message: string): Promise<boolean> {
+  public warning(message: string): void {
     this.addToDetailCache(LogLevel.Warning, message);
-    return await this.logger.warning(message);
+    this.logger.warning(message);
   }
 
-  public async error(message: string): Promise<boolean> {
+  public error(message: string): void {
     this.addToDetailCache(LogLevel.Error, message);
-    return await this.logger.error(message);
+    this.logger.error(message);
   }
 
-  public appendLine(message: string): Promise<boolean> {
+  public appendLine(message: string): void {
     commonlibLogger.outputChannel.appendLine(message);
-    return Promise.resolve(true);
   }
 
-  public async append(message: string): Promise<boolean> {
+  public append(message: string): void {
     commonlibLogger.outputChannel.append(message);
-    return Promise.resolve(true);
   }
 
   public cleanup(): void {
     this.detailLogLines = [];
   }
 
-  public async printDetailLog(): Promise<void> {
-    await this.logger.error(this.detailLogLines.join(os.EOL));
+  public printDetailLog(): void {
+    this.logger.error(this.detailLogLines.join(os.EOL));
   }
 
   private addToDetailCache(level: LogLevel, message: string): void {

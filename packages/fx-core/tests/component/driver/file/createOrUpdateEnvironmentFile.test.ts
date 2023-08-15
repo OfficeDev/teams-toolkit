@@ -22,10 +22,10 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
       logProvider: new MockedLogProvider(),
       projectPath: "/path/to/project",
       ui: new MockedUserInteraction(),
-    } as DriverContext,
+    } as any,
     {
       projectPath: "/path/to/project",
-    } as DriverContext,
+    } as any,
   ];
   const driver = new CreateOrUpdateEnvironmentFileDriver();
 

@@ -91,6 +91,19 @@ catch (ExceptionWithCode e)
 }
 ```
 
+### Using Graph Service with Teams User Credential in Teams Tab app
+
+1. Follow the above `Using Teams User Credential in Teams Tab app` to create `TeamsUserCredential`.
+2. Add `@using Microsoft.Graph` to any page that needs the Graph service.
+3. Initialize a Graph Service Client with credential and scopes.
+
+   ```csharp
+   string _scope = "User.Read";
+   var client = new GraphServiceClient(teamsUserCredential, new string[] { _scope });
+   ```
+
+4. To make requests against the service, you could follow the [guide](https://github.com/microsoftgraph/msgraph-sdk-dotnet/blob/dev/docs/overview.md#requests). For instance, if you wish to get user profile, you could call `graph.Me.GetAsync();`
+
 ### Using Conversation Bot for Command and Response
 
 1. Add your command handler class which implements the `ITeamsCommandHandler` interface.
@@ -145,20 +158,20 @@ catch (ExceptionWithCode e)
        using Microsoft.Bot.Builder;
        using Microsoft.Bot.Builder.Integration.AspNet.Core;
        using Microsoft.TeamsFx.Conversation;
-   
+
        [Route("api/messages")]
        [ApiController]
        public class BotController : ControllerBase
        {
            private readonly ConversationBot _conversation;
            private readonly IBot _bot;
-   
+
            public BotController(ConversationBot conversation, IBot bot)
            {
                _conversation = conversation;
                _bot = bot;
            }
-   
+
            [HttpPost]
            public async Task PostAsync(CancellationToken cancellationToken = default)
            {
@@ -273,7 +286,7 @@ catch (ExceptionWithCode e)
        /// The value should be the same as the `verb` property which you define in your adaptive card JSON.
        /// </summary>
        public string TriggerVerb => "doStuff";
-   
+
        /// <summary>
        /// Indicate how your acrion response card is sent in the conversation.
        /// By default, the response card can only be updated for the interactor who trigger the action.
@@ -285,13 +298,13 @@ catch (ExceptionWithCode e)
        {
            // Send invoke response with text message
            return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
-    
+
            /**
             * If you want to send invoke response with adaptive card, you can:
             *
             * return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(<your-card-json>));
             */
-    
+
            /**
             * If you want to send invoke response with error message, you can:
             *
@@ -333,20 +346,20 @@ catch (ExceptionWithCode e)
        using Microsoft.Bot.Builder;
        using Microsoft.Bot.Builder.Integration.AspNet.Core;
        using Microsoft.TeamsFx.Conversation;
-   
+
        [Route("api/messages")]
        [ApiController]
        public class BotController : ControllerBase
        {
            private readonly ConversationBot _conversation;
            private readonly IBot _bot;
-   
+
            public BotController(ConversationBot conversation, IBot bot)
            {
                _conversation = conversation;
                _bot = bot;
            }
-   
+
            [HttpPost]
            public async Task PostAsync(CancellationToken cancellationToken = default)
            {
@@ -465,7 +478,7 @@ In this release, TeamsFx SDK add supports for Graph SDK v5 and remove `framework
    <PackageReference Include="Microsoft.TeamsFx" Version="2.0.0" />
    ```
 
-2.  If you are using class `User`, add `@using Microsoft.Graph.Models` to the top of the file.
+2. If you are using class `User`, add `@using Microsoft.Graph.Models` to the top of the file.
 
 3. Update requests to Microsoft Graph as follows.
 
@@ -473,7 +486,7 @@ In this release, TeamsFx SDK add supports for Graph SDK v5 and remove `framework
    // Previous
    var Profile = await graph.Me.Request().GetAsync();
    var photoStream = await graph.Me.Photo.Content.Request().GetAsync();
-   
+
    // Now
    var Profile = await graph.Me.GetAsync();
    var photoStream = await graph.Me.Photo.Content.GetAsync();
@@ -530,7 +543,7 @@ In this release, TeamsFx SDK add supports for Graph SDK v5 and remove `framework
        }
      }
    }
-   
+
    // Updated
    resource webApp 'Microsoft.Web/sites@2021-02-01' = {
      kind: 'app'
@@ -544,7 +557,7 @@ In this release, TeamsFx SDK add supports for Graph SDK v5 and remove `framework
        }
      }
    }
-   
+
    resource  webAppConfig  'Microsoft.Web/sites/config@2021-02-01' = {
      name: '${webAppName}/appsettings'
      properties: {
@@ -571,8 +584,6 @@ In this release, TeamsFx SDK add supports for Graph SDK v5 and remove `framework
            InitiateLoginEndpoint: ${{TAB_ENDPOINT}}/auth-start.html # New line
            OAuthAuthority: ${{AAD_APP_OAUTH_AUTHORITY}}
    ```
-
-   
 
 ### Configure Logging
 

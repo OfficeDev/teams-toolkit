@@ -91,8 +91,7 @@
     
     private GraphServiceClient GetGraphServiceClient()
     {
-        var msGraphAuthProvider = new MsGraphAuthProvider(teamsUserCredential, _scope);
-        var client = new GraphServiceClient(msGraphAuthProvider);
+        var client = new GraphServiceClient(teamsUserCredential, new string[] { _scope });
         return client;
     }
 }

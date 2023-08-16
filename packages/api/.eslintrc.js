@@ -9,6 +9,7 @@ module.exports = {
       extends: [
         "../eslint-plugin-teamsfx/config/header.js",
         "../eslint-plugin-teamsfx/config/promise.js",
+        "../eslint-plugin-teamsfx/config/type.js",
       ],
     },
   ],

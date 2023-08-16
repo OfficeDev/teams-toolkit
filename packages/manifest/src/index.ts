@@ -52,7 +52,7 @@ export class ManifestUtil {
    * @param schema - teams-app-manifest schema
    * @returns An empty array if it passes validation, or an array of error string otherwise.
    */
-  static async validateManifestAgainstSchema<T extends Manifest = TeamsAppManifest>(
+  static validateManifestAgainstSchema<T extends Manifest = TeamsAppManifest>(
     manifest: T,
     schema: JSONSchemaType<T>
   ): Promise<string[]> {
@@ -60,9 +60,12 @@ export class ManifestUtil {
     const validate = ajv.compile(schema);
     const valid = validate(manifest);
     if (!valid && validate.errors) {
-      return validate.errors?.map((error) => `${error.instancePath} ${error.message}`);
+      // return validate.errors?.map((error) => `${error.instancePath} ${error.message}`);
+      return Promise.resolve(
+        validate.errors?.map((error) => `${error.instancePath} ${error.message || ""}`)
+      );
     } else {
-      return [];
+      return Promise.resolve([]);
     }
   }
 
@@ -104,13 +107,13 @@ export class ManifestUtil {
     manifest: T
   ): ManifestCommonProperties {
     const capabilities: string[] = [];
-    if (manifest.staticTabs && manifest.staticTabs!.length > 0) {
+    if (manifest.staticTabs && manifest.staticTabs.length > 0) {
       capabilities.push("staticTab");
     }
-    if (manifest.configurableTabs && manifest.configurableTabs!.length > 0) {
+    if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
       capabilities.push("configurableTab");
     }
-    if (manifest.bots && manifest.bots!.length > 0) {
+    if (manifest.bots && manifest.bots.length > 0) {
       capabilities.push("Bot");
     }
     if (manifest.composeExtensions) {

@@ -366,23 +366,24 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("a");
+    events.keypress("i");
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [ ] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
+        [X] title 1  detail 1
+        [X] title 2  detail 2
+        [X] title 3  detail 3
+        [X] title 4  detail 4
+        [X] title 5  detail 5
+        [X] title 6  detail 6
+        [X] title 7  detail 7
         (Move up and down to reveal more choices)`)
     );
 
     events.keypress("a");
     events.keypress("enter");
-    expect(await answer).to.be.deep.equal(choices.map((choice) => choice.id));
+    expect(await answer).to.be.deep.equal([]);
   });
 
   it("allow deselect all", async () => {

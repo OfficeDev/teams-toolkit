@@ -13,7 +13,7 @@ import {
   SingleSelectConfig,
   ok,
 } from "@microsoft/teamsfx-api";
-import { SelectSubscriptionError } from "@microsoft/teamsfx-core";
+import { MissingRequiredInputError, SelectSubscriptionError } from "@microsoft/teamsfx-core";
 import "mocha";
 import sinon from "sinon";
 import LogProvider from "../../src/commonlib/log";
@@ -21,6 +21,7 @@ import * as customizedPrompts from "../../src/prompts";
 import UI from "../../src/userInteraction";
 import { getColorizedString } from "../../src/utils";
 import { expect } from "./utils";
+import { globals } from "../../src/globals";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -69,6 +70,8 @@ describe("User Interaction Tests", function () {
 
   beforeEach(() => {
     UI.clearPresetAnswers();
+    UI.interactive = true;
+    globals.options = [];
     logs = [];
   });
 
@@ -396,6 +399,66 @@ describe("User Interaction Tests", function () {
     });
   });
 
+  it("Multi Select - default value", async () => {
+    const choices = [1, 2, 3].map((x) => ({
+      id: `id${x}`,
+      title: `title ${x}`,
+      detail: `detail ${x}`,
+    }));
+    const result = await UI.multiSelect("test", "Select a string", choices, ["id1", "id2"]);
+    expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
+  });
+
+  it("Multi Select - non interactive and no default value", async () => {
+    UI.interactive = false;
+    const choices = [1, 2, 3].map((x) => ({
+      id: `id${x}`,
+      title: `title ${x}`,
+      detail: `detail ${x}`,
+    }));
+    const result = await UI.multiSelect("test", "Select a string", choices);
+    expect(result.isOk() ? result.value : result.error).to.be.deep.equals([]);
+  });
+
+  it("Multi Select - interactive and no default value", async () => {
+    const choices = [1, 2, 3].map((x) => ({
+      id: `id${x}`,
+      title: `title ${x}`,
+      detail: `detail ${x}`,
+    }));
+    const result = await UI.multiSelect("test", "Select a string", choices);
+    expect(result.isOk() ? result.value : result.error).to.be.deep.equals([]);
+  });
+
+  it("Multi Select - error", async () => {
+    globals.options = ["test"];
+    UI.interactive = false;
+    const choices = [1, 2, 3].map((x) => ({
+      id: `id${x}`,
+      title: `title ${x}`,
+      detail: `detail ${x}`,
+    }));
+    const result = await UI.multiSelect("test", "Select a string", choices);
+    expect(result.isOk() ? result.value : result.error).instanceOf(MissingRequiredInputError);
+  });
+
+  it("Password - non interactive and default value", async () => {
+    UI.interactive = false;
+    const result = await UI.password("test", "Input the password", "default");
+    expect(result.isOk() ? result.value : result.error).equals("default");
+  });
+
+  it("Password - non interactive and no default value", async () => {
+    UI.interactive = false;
+    const result = await UI.password("test", "Input the password");
+    expect(result.isOk() ? result.value : result.error).equals("");
+  });
+
+  it("Password - interactive and no default value", async () => {
+    const result = await UI.password("test", "Input the password");
+    expect(result.isOk() ? result.value : result.error).equals("Password Result");
+  });
+
   it("Single Select File", async () => {
     const config: SelectFileConfig = {
       name: "path",
@@ -423,12 +486,6 @@ describe("User Interaction Tests", function () {
     const result = await UI.selectFolder(config);
     expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
   });
-
-  /// TODO: sinon.stub has some error to mock open.
-  // it("Open Url", async () => {
-  //     const result = await UI.openUrl("123");
-  //     expect(result.isOk() ? result.value : result.error).deep.equals(true);
-  // });
 
   describe("Show Message", () => {
     const levels: ["info" | "warn" | "error", LogLevel][] = [

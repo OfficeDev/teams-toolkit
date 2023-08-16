@@ -150,7 +150,7 @@ export abstract class CaseFactory {
           await onBeforeProvision(sampleName, testFolder, appName, projectPath);
 
           const result = await createResourceGroup(appName + "-rg", "eastus");
-          chai.assert.isTrue(result);
+          expect(result).to.be.true;
           process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
 
           const { success } = await Executor.provision(projectPath);

@@ -10,13 +10,13 @@ import { CaseFactory } from "./sampleCaseFactory";
 import fs from "fs-extra";
 import path from "path";
 
-class AdaptiveCardTestCase extends CaseFactory {
+class IncomingWebhookTestCase extends CaseFactory {
   public override async onAfterCreate(projectPath: string): Promise<void> {
     fs.pathExistsSync(path.resolve(projectPath, "src", "adaptiveCards"));
   }
 }
 
-new AdaptiveCardTestCase(
+new IncomingWebhookTestCase(
   TemplateProjectFolder.IncomingWebhook,
   15277475,
   "v-ivanchen@microsoft.com",

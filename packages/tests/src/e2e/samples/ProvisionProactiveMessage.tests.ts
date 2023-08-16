@@ -7,10 +7,25 @@
 
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
+import { Executor } from "../../utils/executor";
 
-class AdaptiveCardTestCase extends CaseFactory {}
+class ProactiveMessagingTestCase extends CaseFactory {
+  public override async onCreate(
+    appName: string,
+    testFolder: string,
+    sampleName: TemplateProjectFolder
+  ): Promise<void> {
+    await Executor.openTemplateProject(
+      appName,
+      testFolder,
+      sampleName,
+      undefined,
+      "samples"
+    );
+  }
+}
 
-new AdaptiveCardTestCase(
+new ProactiveMessagingTestCase(
   TemplateProjectFolder.ProactiveMessaging,
   15277473,
   "v-ivanchen@microsoft.com"

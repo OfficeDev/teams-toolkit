@@ -8,9 +8,9 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class AdaptiveCardTestCase extends CaseFactory {}
+class GraphConnectorTestCase extends CaseFactory {}
 
-new AdaptiveCardTestCase(
+new GraphConnectorTestCase(
   TemplateProjectFolder.GraphConnector,
   15277460,
   "v-ivanchen@microsoft.com",

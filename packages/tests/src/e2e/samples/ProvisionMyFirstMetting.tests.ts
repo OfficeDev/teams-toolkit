@@ -8,9 +8,9 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class AdaptiveCardTestCase extends CaseFactory {}
+class MyFirstMettingTestCase extends CaseFactory {}
 
-new AdaptiveCardTestCase(
+new MyFirstMettingTestCase(
   TemplateProjectFolder.MyFirstMetting,
   15277468,
   "v-ivanchen@microsoft.com",

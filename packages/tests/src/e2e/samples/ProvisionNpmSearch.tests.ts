@@ -8,9 +8,9 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class AdaptiveCardTestCase extends CaseFactory {}
+class NpmSearchTestCase extends CaseFactory {}
 
-new AdaptiveCardTestCase(
+new NpmSearchTestCase(
   TemplateProjectFolder.NpmSearch,
   15277471,
   "v-ivanchen@microsoft.com",

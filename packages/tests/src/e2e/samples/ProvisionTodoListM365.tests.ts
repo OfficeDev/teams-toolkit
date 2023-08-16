@@ -8,9 +8,9 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class AdaptiveCardTestCase extends CaseFactory {}
+class TodoListM365TestCase extends CaseFactory {}
 
-new AdaptiveCardTestCase(
+new TodoListM365TestCase(
   TemplateProjectFolder.TodoListM365,
   15277470,
   "v-ivanchen@microsoft.com",

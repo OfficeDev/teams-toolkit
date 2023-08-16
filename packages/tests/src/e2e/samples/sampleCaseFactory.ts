@@ -14,6 +14,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   validateTabAndBotProjectProvision,
+  createResourceGroup,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../commonlib/cleaner";
@@ -147,6 +148,10 @@ export abstract class CaseFactory {
           }
 
           await onBeforeProvision(sampleName, testFolder, appName, projectPath);
+
+          const result = await createResourceGroup(appName + "-rg", "eastus");
+          chai.assert.isTrue(result);
+          process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
 
           const { success } = await Executor.provision(projectPath);
           expect(success).to.be.true;

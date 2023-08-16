@@ -7,10 +7,19 @@
 
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
+import { Executor } from "../../utils/executor";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { expect } from "chai";
 
-class AdaptiveCardTestCase extends CaseFactory {}
+class TodoListSpfxTestCase extends CaseFactory {
+  override async onAfterCreate(projectPath: string): Promise<void> {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be
+      .true;
+  }
+}
 
-new AdaptiveCardTestCase(
+new TodoListSpfxTestCase(
   TemplateProjectFolder.TodoListSpfx,
   15277466,
   "v-ivanchen@microsoft.com",

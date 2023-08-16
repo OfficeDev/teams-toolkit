@@ -8,9 +8,9 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class AdaptiveCardTestCase extends CaseFactory {}
+class OutlookTabTestCase extends CaseFactory {}
 
-new AdaptiveCardTestCase(
+new OutlookTabTestCase(
   TemplateProjectFolder.OutlookTab,
   24132142,
   "v-ivanchen@microsoft.com"

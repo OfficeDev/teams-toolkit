@@ -9,7 +9,7 @@
   "types": "types/teamsfx.d.ts",
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "rollup -c",
+    "build": "rollup -c && api-extractor run --local && npm run api-markdown",
     "api-markdown": "api-documenter generate -i temp -o ../../docs/sdk",
     "clean": "rimraf dist dist-* temp types *.tgz *.log",
     "check-format": "prettier --list-different \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\" \"config/*.js\"",
@@ -119,7 +119,7 @@
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
     "tslib": "^2.3.1",
-    "typescript": "^5.0.4",
+    "typescript": "^4.4.4",
     "url-join": "^4.0.1",
     "webpack": "^5.62.1",
     "yargs": "^17.2.1"

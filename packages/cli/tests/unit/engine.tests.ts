@@ -32,7 +32,7 @@ import {
   listCapabilitiesCommand,
   listSamplesCommand,
 } from "../../src/commands/models";
-import { getFxCore } from "../../src/activate";
+import { getFxCore, resetFxCore } from "../../src/activate";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("CLI Engine", () => {
@@ -268,12 +268,14 @@ describe("CLI Engine", () => {
       mockedEnvRestore = mockedEnv({
         TEAMSFX_CLI_NEW_UX: "true",
       });
+      resetFxCore();
       getFxCore();
     });
     it("old logger", async () => {
       mockedEnvRestore = mockedEnv({
         TEAMSFX_CLI_NEW_UX: "false",
       });
+      resetFxCore();
       getFxCore();
     });
   });

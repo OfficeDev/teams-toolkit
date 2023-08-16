@@ -32,7 +32,10 @@ export default async function activate(
   const core = getFxCore();
   return ok(core);
 }
-let fxCore: FxCore;
+let fxCore: FxCore | undefined;
+export function resetFxCore(): void {
+  fxCore = undefined;
+}
 export function getFxCore(): FxCore {
   if (fxCore) return fxCore;
   const tools: Tools = {

@@ -23,6 +23,10 @@ class ProactiveMessagingTestCase extends CaseFactory {
       "samples"
     );
   }
+
+  override async onAfterCreate(projectPath: string): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 new ProactiveMessagingTestCase(

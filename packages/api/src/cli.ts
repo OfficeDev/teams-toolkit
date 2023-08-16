@@ -57,7 +57,7 @@ export interface CLICommand {
   /**
    * @description command handler
    */
-  handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>>;
+  handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>> | Result<undefined, FxError>;
 
   /**
    * @description telemetry will be sent when available

@@ -128,7 +128,7 @@ export interface CLICommand {
     examples?: CLIExample[];
     footer?: string;
     fullName?: string;
-    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>>;
+    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>> | Result<undefined, FxError>;
     header?: string;
     hidden?: boolean;
     name: string;

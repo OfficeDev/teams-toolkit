@@ -625,8 +625,8 @@ export class FxCore {
   async getProjectMetadata(
     projectPath: string
   ): Promise<Result<{ version?: string; projectId?: string }, FxError>> {
-    const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
     try {
+      const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
       if (!ymlPath || !(await fs.pathExists(ymlPath))) {
         return ok({});
       }

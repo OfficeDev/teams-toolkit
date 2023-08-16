@@ -59,21 +59,18 @@ function jsonToTable(samples: Sample[]): string {
     colWidths: [null, 20, null],
     wordWrap: true,
   });
-
-  let maxDescpLength = 0;
-
+  let maxUrlLength = 0;
   samples.forEach((sample) => {
-    if (sample.url && sample.url.length > maxDescpLength) {
-      maxDescpLength = sample.url.length;
+    if (sample.url && sample.url.length > maxUrlLength) {
+      maxUrlLength = sample.url.length;
     }
   });
-
   samples.forEach((sample) => {
     table.push([
-      sample.id,
+      sample.name + "\nid: " + sample.id,
       sample.tags.join(", "),
       wrap(sample.description, {
-        width: maxDescpLength,
+        width: maxUrlLength,
         indent: "",
       }) +
         "\n" +

@@ -136,7 +136,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         "plugins.appstudio.teamsAppUpdatedLog",
         appDefinition.teamsAppId!
       );
-      await context.logProvider.info(message);
+      context.logProvider.info(message);
       context.addSummary(message);
       return ok(
         new Map([

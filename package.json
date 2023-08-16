@@ -21,6 +21,7 @@
     "@types/semver": "^7.3.8",
     "axios": "^0.21.3",
     "codecov": "^3.8.3",
+    "codeowners": "^5.1.1",
     "cz-conventional-changelog": "^3.3.0",
     "dotenv": "^10.0.0",
     "husky": "^6.0.0",

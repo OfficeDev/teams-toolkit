@@ -12,10 +12,34 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Install codeowners
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 5
+        command: |
+          npm install codeowners -D
     
     - name: Search todo comment list
+      id: search
       run: |
-        grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .
+        content=`grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .`
+        delimiter="$(openssl rand -hex 8)"
+        echo "todo<<${delimiter}" >> "${GITHUB_OUTPUT}"
+        echo "$content" >> "${GITHUB_OUTPUT}"
+        echo "${delimiter}" >> "${GITHUB_OUTPUT}"
+
+    - name: Find owner for todo comment file
+      run: |
+        node .github/scripts/todo-comment-check.js
+      env: 
+        TODO_LIST: ${{steps.search.outputs.todo}}
 
   type-checking-promise:
     runs-on: ubuntu-latest

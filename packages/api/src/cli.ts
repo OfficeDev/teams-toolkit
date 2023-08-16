@@ -78,6 +78,11 @@ export interface CLICommand {
    * @description whether to hide this command in "--help"
    */
   hidden?: boolean;
+
+  /**
+   * @description default value of global option "--interactive", default value is true
+   */
+  defaultInteractiveOption?: boolean;
 }
 
 export interface CLIFoundCommand extends CLICommand {

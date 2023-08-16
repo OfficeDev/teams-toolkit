@@ -123,6 +123,7 @@ export interface CLIBooleanOption extends CLICommandOptionBase {
 export interface CLICommand {
     arguments?: CLICommandArgument[];
     commands?: CLICommand[];
+    defaultInteractiveOption?: boolean;
     description: string;
     examples?: CLIExample[];
     footer?: string;

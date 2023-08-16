@@ -83,7 +83,7 @@ class CLIEngine {
 
     if (debugLogs.length) {
       for (const log of debugLogs) {
-        await logger.debug(log);
+        logger.debug(log);
       }
     }
 
@@ -98,7 +98,7 @@ class CLIEngine {
       }
     }
 
-    await logger.debug(
+    logger.debug(
       `parsed context: ${JSON.stringify(
         pick(context, [
           "optionValues",
@@ -117,14 +117,14 @@ class CLIEngine {
     }
 
     if (parseRes.isErr()) {
-      await this.processResult(context, parseRes.error);
+      this.processResult(context, parseRes.error);
       return;
     }
 
     // 3. --version
     if (context.optionValues.version === true || context.globalOptionValues.version === true) {
-      await logger.info(rootCmd.version ?? "1.0.0");
-      await this.processResult(context);
+      logger.info(rootCmd.version ?? "1.0.0");
+      this.processResult(context);
       return;
     }
 
@@ -134,8 +134,8 @@ class CLIEngine {
         context.command,
         context.command.fullName !== root.fullName ? root : undefined
       );
-      await logger.info(helpText);
-      await this.processResult(context);
+      logger.info(helpText);
+      this.processResult(context);
       return;
     }
 
@@ -143,7 +143,7 @@ class CLIEngine {
     if (!context.globalOptionValues.interactive) {
       const validateRes = this.validateOptionsAndArguments(context.command);
       if (validateRes.isErr()) {
-        await this.processResult(context, validateRes.error);
+        this.processResult(context, validateRes.error);
         return;
       }
     } else {
@@ -153,7 +153,7 @@ class CLIEngine {
         "correlationId",
         "platform",
       ]);
-      await logger.info(
+      logger.info(
         `Some arguments/options are useless because the interactive mode is opened.` +
           ` If you want to run the command non-interactively, add '--interactive false' after your command` +
           ` or set the global setting by 'teamsfx config set interactive false'.`
@@ -187,18 +187,18 @@ class CLIEngine {
         const handleRes = await Correlator.run(context.command.handler, context);
         // const handleRes = await context.command.handler(context);
         if (handleRes.isErr()) {
-          await this.processResult(context, handleRes.error);
+          this.processResult(context, handleRes.error);
         } else {
-          await this.processResult(context);
+          this.processResult(context);
         }
       } else {
         const helpText = helper.formatHelp(rootCmd);
-        await logger.info(helpText);
+        logger.info(helpText);
       }
     } catch (e) {
       Progress.end(false); // TODO to remove this in the future
       const fxError = assembleError(e);
-      await this.processResult(context, fxError);
+      this.processResult(context, fxError);
     } finally {
       await CliTelemetry.flush();
       Progress.end(true); // TODO to remove this in the future
@@ -393,8 +393,15 @@ class CLIEngine {
 
     // special process for global options
     // interactive
-    context.globalOptionValues.interactive =
-      context.globalOptionValues.interactive === false ? false : true;
+    // if user not input "--interactive" option value explitly, toolkit will use default value defined by `defaultInteractiveOption`
+    // if `defaultInteractiveOption` is undefined, use default value = true
+    if (context.globalOptionValues.interactive === undefined) {
+      if (context.command.defaultInteractiveOption !== undefined) {
+        context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
+      } else {
+        context.globalOptionValues.interactive = true;
+      }
+    }
 
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
@@ -494,7 +501,7 @@ class CLIEngine {
     }
     return ok(undefined);
   }
-  async processResult(context: CLIContext, fxError?: FxError): Promise<void> {
+  processResult(context: CLIContext, fxError?: FxError): void {
     if (context.command.telemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
@@ -515,13 +522,13 @@ class CLIEngine {
       }
     }
     if (fxError) {
-      await this.printError(fxError);
+      this.printError(fxError);
     }
   }
 
-  async printError(fxError: FxError): Promise<void> {
+  printError(fxError: FxError): void {
     if (isUserCancelError(fxError)) {
-      await logger.info("User canceled.");
+      logger.info("User canceled.");
       return;
     }
     logger.outputError(
@@ -539,7 +546,7 @@ class CLIEngine {
         colorize(fxError.issueLink as string, TextType.Hyperlink)
       );
     }
-    await logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
+    logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
   }
 }
 

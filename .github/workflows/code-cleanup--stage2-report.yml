@@ -17,14 +17,9 @@ jobs:
       id: search
       run: |
         todo=`grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .`
-        if [ -z "$todo" ]; then
-          echo "todo=$todo" >> $GITHUB_OUTPUT
-        else
-          echo "$todo"
-          exit 1
-        fi
+        echo "todo=$todo" >> $GITHUB_OUTPUT
 
-    - name: Search todo comment list
+    - name: Find owner for todo comment file
       run: |
         node .github/scirpts/todo-comment-check.js
       env: 

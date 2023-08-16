@@ -189,7 +189,7 @@ export class CodeFlowLogin {
     let accessToken = undefined;
     try {
       await this.startServer(server, serverPort);
-      void this.pca.getAuthCodeUrl(authCodeUrlParameters).then((url: string) => {
+      void this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
         url += "#";
         if (this.accountName == "azure") {
           CliCodeLogInstance.outputInfo(
@@ -205,7 +205,7 @@ export class CodeFlowLogin {
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
-    } catch (e: any) {
+    } catch (e) {
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
@@ -288,7 +288,7 @@ export class CodeFlowLogin {
             }
           });
       }
-    } catch (error: any) {
+    } catch (error) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
       if (
         error.name !== ErrorMessage.loginTimeoutTitle &&
@@ -320,7 +320,7 @@ export class CodeFlowLogin {
         } else {
           return err(LoginCodeFlowError(new Error("No token response")));
         }
-      } catch (error: any) {
+      } catch (error) {
         CliCodeLogInstance.necessaryLog(
           LogLevel.Error,
           "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `" +
@@ -361,7 +361,7 @@ export class CodeFlowLogin {
         } else {
           return err(LoginCodeFlowError(new Error("No token response")));
         }
-      } catch (error: any) {
+      } catch (error) {
         if (error.message.indexOf(MFACode) >= 0) {
           throw error;
         } else {
@@ -437,7 +437,7 @@ export class CodeFlowLogin {
       } else {
         return undefined;
       }
-    } catch (error: any) {
+    } catch (error) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] getTenantToken : " + error.message);
       throw LoginFailureError(error);
     }
@@ -485,33 +485,31 @@ export class CodeFlowLogin {
   }
 }
 
-function sendFile(
+async function sendFile(
   res: http.ServerResponse,
   filepath: string,
   contentType: string,
   accountName: string
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    void (async () => {
-      let body = await fs.readFile(filepath);
-      let data = body.toString();
-      data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
-      body = Buffer.from(data, UTF8);
-      res.writeHead(200, {
-        "Content-Length": body.length,
-        "Content-Type": contentType,
-      });
+  return new Promise(async (resolve, reject) => {
+    let body = await fs.readFile(filepath);
+    let data = body.toString();
+    data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
+    body = Buffer.from(data, UTF8);
+    res.writeHead(200, {
+      "Content-Length": body.length,
+      "Content-Type": contentType,
+    });
 
-      const timeout = setTimeout(() => {
-        CliCodeLogInstance.necessaryLog(LogLevel.Error, sendFileTimeout);
-        reject();
-      }, 10000);
+    const timeout = setTimeout(() => {
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, sendFileTimeout);
+      reject();
+    }, 10000);
 
-      res.end(body, () => {
-        clearTimeout(timeout);
-        resolve();
-      });
-    })();
+    res.end(body, () => {
+      clearTimeout(timeout);
+      resolve();
+    });
   });
 }
 

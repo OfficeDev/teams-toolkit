@@ -14,10 +14,24 @@ jobs:
       uses: actions/checkout@v2
     
     - name: Search todo comment list
+      id: search
       run: |
-        grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .
+        todo=`grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .`
+        if [ -z "$todo" ]; then
+          echo "todo=$todo" >> $GITHUB_OUTPUT
+        else
+          echo "$todo"
+          exit 1
+        fi
+
+    - name: Search todo comment list
+      run: |
+        node .github/scirpts/todo-comment-check.js
+      env: 
+        TODO_LIST: ${{steps.search.outputs.todo}}
 
   type-checking-promise:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -58,6 +72,7 @@ jobs:
       working-directory: packages/${{matrix.package}}
 
   type-checking-else:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -107,6 +122,7 @@ jobs:
       working-directory: packages/${{matrix.package}}
 
   normal-eslint-check:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

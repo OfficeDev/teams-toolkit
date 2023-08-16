@@ -223,6 +223,9 @@ export class Lifecycle implements ILifecycle {
       await ctx.logProvider.info(
         `Executing action ${this.stringifyDriverDef(driver)} in lifecycle ${this.name}`
       );
+      if (driver.instance.progressTitle) {
+        await ctx.progressBar?.next(driver.instance.progressTitle);
+      }
       resolveDriverDef(driver, resolved, unresolved);
       if (unresolved.length > 0) {
         await ctx.logProvider.info(

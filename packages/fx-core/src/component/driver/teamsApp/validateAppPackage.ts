@@ -36,7 +36,6 @@ import AdmZip from "adm-zip";
 import { Constants } from "./constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { SummaryConstant } from "../../configManager/constant";
-import { updateProgress } from "../middleware/updateProgress";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/validateAppPackage";
@@ -44,6 +43,9 @@ const actionName = "teamsApp/validateAppPackage";
 @Service(actionName)
 export class ValidateAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.validateDriver");
+  readonly progressTitle = getLocalizedString(
+    "plugins.appstudio.validateAppPackage.progressBar.message"
+  );
 
   public async run(
     args: ValidateAppPackageArgs,
@@ -66,10 +68,7 @@ export class ValidateAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("plugins.appstudio.validateAppPackage.progressBar.message")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async validate(
     args: ValidateAppPackageArgs,
     context: WrapDriverContext

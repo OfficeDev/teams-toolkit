@@ -21,7 +21,6 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
 
 export const actionName = "teamsApp/update";
 
@@ -33,6 +32,9 @@ export const internalOutputNames = {
 @Service(actionName)
 export class ConfigureTeamsAppDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.updateDriver");
+  readonly progressTitle = getLocalizedString(
+    "driver.teamsApp.progressBar.updateTeamsAppStepMessage"
+  );
 
   public async run(
     args: ConfigureTeamsAppArgs,
@@ -56,10 +58,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   async update(
     args: ConfigureTeamsAppArgs,
     context: WrapDriverContext,

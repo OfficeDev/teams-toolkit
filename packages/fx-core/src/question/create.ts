@@ -43,7 +43,7 @@ import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, assembleError } from "../error";
-import { QuestionNames } from "./questionNames";
+import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
@@ -410,16 +410,28 @@ export class CapabilityOptions {
     };
   }
 
+  static staticAll(inputs?: Inputs): OptionItem[] {
+    const capabilityOptions = [
+      ...CapabilityOptions.bots(inputs),
+      ...CapabilityOptions.tabs(),
+      ...CapabilityOptions.mes(),
+      CapabilityOptions.copilotPluginCli(),
+    ];
+
+    return capabilityOptions;
+  }
+
   static all(inputs?: Inputs): OptionItem[] {
+    // teamsfx list capabilities
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
     ];
-
     if (isCopilotPluginEnabled()) {
       capabilityOptions.push(CapabilityOptions.copilotPluginCli());
     }
+
     return capabilityOptions;
   }
 
@@ -462,7 +474,7 @@ export class CapabilityOptions {
   // copilot plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: "copilot-new-api",
+      id: "copilot-plugin-new-api",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -528,11 +540,11 @@ function capabilityQuestion(): SingleSelectQuestion {
       }
     },
     cliDescription: "Specifies the Teams App capability.",
-    cliName: "capability",
+    cliName: CliQuestionName.Capability,
     cliShortName: "c",
     cliChoiceListCommand: "teamsfx list capabilities",
     type: "singleSelect",
-    staticOptions: CapabilityOptions.all(),
+    staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {
       // from dev portal
       if (isFromDevPortal(inputs)) {
@@ -718,6 +730,7 @@ function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: CapabilityOptions.copilotPlugins(),
     cliShortName: "cp",
+    cliDescription: "Plugin for Copilot.",
   };
 }
 
@@ -1541,7 +1554,6 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
           );
         },
-        cliOptionDisabled: "self", // Need to remove once copilot plugin is about to ship
         data: copilotPluginDevelopmentQuestion(),
       },
       {
@@ -1549,7 +1561,6 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
         },
-        cliOptionDisabled: "all", // Need to remove once copilot plugin is about to ship
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {

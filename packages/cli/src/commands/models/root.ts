@@ -6,7 +6,7 @@ import { getVersion } from "../../utils";
 import { accountCommand } from "./account";
 import { addCommand } from "./add";
 import { configCommand } from "./config";
-import { createCommand } from "./create";
+import { getCreateCommand } from "./create";
 import { deployCommand } from "./deploy";
 import { envCommand } from "./env";
 import { m365Command } from "./m365";
@@ -28,7 +28,7 @@ export const rootCommand: CLICommand = {
   footer: FooterText,
   commands: [
     accountCommand,
-    createCommand,
+    getCreateCommand(),
     addCommand,
     provisionCommand,
     deployCommand,

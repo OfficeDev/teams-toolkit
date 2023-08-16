@@ -63,3 +63,7 @@ export enum QuestionNames {
 
   collaborationAppType = "collaborationType",
 }
+
+export enum CliQuestionName {
+  Capability = "capability",
+}

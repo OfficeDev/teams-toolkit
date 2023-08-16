@@ -818,7 +818,7 @@ describe("scaffold question", () => {
               type: "success",
               result: CapabilityOptions.copilotPluginOpenAIPlugin().id,
             });
-          } else if (question.name === QuestionNames.OpenAIPluginManifestLocation) {
+          } else if (question.name === QuestionNames.OpenAIPluginDomain) {
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
             return ok({ type: "success", result: ["testOperation1"] });
@@ -838,7 +838,7 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.OpenAIPluginManifestLocation,
+          QuestionNames.OpenAIPluginDomain,
           QuestionNames.ApiOperation,
           QuestionNames.Folder,
           QuestionNames.AppName,
@@ -1150,7 +1150,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1178,7 +1178,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1194,7 +1194,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1220,7 +1220,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1254,7 +1254,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.CLI,
-            [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1286,7 +1286,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
             };
             const input = "test.com";
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
@@ -1299,7 +1299,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1311,7 +1311,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1323,7 +1323,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1335,7 +1335,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1347,7 +1347,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifestLocation]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 

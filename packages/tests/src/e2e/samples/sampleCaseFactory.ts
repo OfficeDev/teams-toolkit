@@ -97,12 +97,7 @@ export abstract class CaseFactory {
     await Executor.openTemplateProject(appName, testFolder, sampleName);
   }
 
-  public async onBeforeProvision(
-    sampleName: TemplateProjectFolder,
-    testFolder: string,
-    appName: string,
-    projectPath: string
-  ): Promise<void> {
+  public async onBeforeProvision(projectPath: string): Promise<void> {
     return Promise.resolve();
   }
 
@@ -147,7 +142,7 @@ export abstract class CaseFactory {
             return;
           }
 
-          await onBeforeProvision(sampleName, testFolder, appName, projectPath);
+          await onBeforeProvision(projectPath);
 
           const result = await createResourceGroup(appName + "-rg", "eastus");
           expect(result).to.be.true;

@@ -2320,6 +2320,7 @@ describe("autoOpenProjectHandler", () => {
       manifestVersion: "",
       isCopilotPlugin: true,
       isSPFx: false,
+      isApiBasedMe: true,
     };
     const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
     VsCodeLogInstance.outputChannel = {

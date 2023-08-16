@@ -392,19 +392,18 @@ describe("utils", () => {
       chai.assert.isTrue(res);
     });
 
-    it("contains activities", () => {
+    it("contains SME", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mockAppId",
         tenantId: "mockTenantId",
-        activities: {
-          activityTypes: [
-            {
-              type: "type",
-              description: "description",
-              templateText: "text",
-            },
-          ],
-        },
+        messagingExtensions: [
+          {
+            type: "apiBased",
+            commands: [],
+            canUpdateConfiguration: false,
+            messageHandlers: [],
+          },
+        ],
       };
 
       const res = containsUnsupportedFeature(appDefinition);
@@ -426,6 +425,25 @@ describe("utils", () => {
             supportedSharePointHosts: [],
           },
         ],
+      };
+
+      const res = containsUnsupportedFeature(appDefinition);
+      chai.assert.isTrue(res);
+    });
+
+    it("contains activities", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        activities: {
+          activityTypes: [
+            {
+              type: "type",
+              description: "description",
+              templateText: "text",
+            },
+          ],
+        },
       };
 
       const res = containsUnsupportedFeature(appDefinition);

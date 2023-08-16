@@ -908,7 +908,7 @@ describe("CLI read-only commands", () => {
       });
       const ctx: CLIContext = {
         command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
-        optionValues: {},
+        optionValues: { format: "table" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},
@@ -925,7 +925,7 @@ describe("CLI read-only commands", () => {
       });
       const ctx: CLIContext = {
         command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
-        optionValues: {},
+        optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},

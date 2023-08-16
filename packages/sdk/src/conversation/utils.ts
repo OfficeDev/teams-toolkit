@@ -17,7 +17,8 @@ export function cloneConversation(
  * @internal
  */
 export function getKey(reference: Partial<ConversationReference>): string {
-  return `_${reference.conversation?.tenantId || ""}_${reference.conversation?.id || ""}`;
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  return `_${reference.conversation?.tenantId}_${reference.conversation?.id}`;
 }
 
 /**

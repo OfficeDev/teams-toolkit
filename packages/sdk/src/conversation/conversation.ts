@@ -140,12 +140,12 @@ export class ConversationBot {
     // the default error handler
     adapter.onTurnError = async (context, error) => {
       // This check writes out errors to console.
-      console.error(`[onTurnError] unhandled error: ${error}`);
+      console.error(`[onTurnError] unhandled error: ${error.toString()}`);
 
       // Send a trace activity, which will be displayed in Bot Framework Emulator
       await context.sendTraceActivity(
         "OnTurnError Trace",
-        `${error}`,
+        `${error.toString()}`,
         "https://www.botframework.com/schemas/error",
         "TurnError"
       );

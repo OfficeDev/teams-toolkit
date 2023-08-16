@@ -17,7 +17,7 @@ export function cloneConversation(
  * @internal
  */
 export function getKey(reference: Partial<ConversationReference>): string {
-  return `_${reference.conversation?.tenantId}_${reference.conversation?.id}`;
+  return `_${reference.conversation?.tenantId || ""}_${reference.conversation?.id || ""}`;
 }
 
 /**

@@ -119,12 +119,12 @@ export class CommandResponseMiddleware implements Middleware {
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {
     if (text) {
       if (typeof pattern === "string") {
-        const regExp = new RegExp(pattern as string, "i");
+        const regExp = new RegExp(pattern, "i");
         return regExp.test(text);
       }
 
       if (pattern instanceof RegExp) {
-        const matches = text.match(pattern as RegExp);
+        const matches = text.match(pattern);
         return matches ?? false;
       }
     }

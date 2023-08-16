@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/ban-types */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/ban-types */
 "use strict";
 
 import {
@@ -148,7 +148,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
         return err(cancelError);
       }
       M365Login.codeFlowInstance.status = loggingIn;
-      this.notifyStatus(tokenRequest);
+      void this.notifyStatus(tokenRequest);
     }
 
     if (loginHint) {
@@ -226,7 +226,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       );
       if (userSelected === createTestingTenant) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSignInJoinM365);
-        vscode.env.openExternal(
+        void vscode.env.openExternal(
           vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
         );
       }
@@ -322,14 +322,16 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     if (!M365Login.codeFlowInstance.account) {
       // If no account in cache file, we will ask to sign in directly.
       tokenRes = await this.signInWhenNoAccountInCache(tokenRequest, loginHint, true);
-      VsCodeLogInstance.info(`Signed in with Microsoft 365 account: ${loginHint}`);
+      await VsCodeLogInstance.info(`Signed in with Microsoft 365 account: ${loginHint}`);
     } else if (
       !!loginHint &&
       M365Login.codeFlowInstance.account.username.toLowerCase() === loginHint.toLowerCase()
     ) {
       // If the account in cache matched with the loginHint, we will try to get access token for the currently cached account
       tokenRes = await this.getAccessToken(tokenRequest, loginHint);
-      VsCodeLogInstance.info(`Already signed in with correct Microsoft 365 account: ${loginHint}`);
+      await VsCodeLogInstance.info(
+        `Already signed in with correct Microsoft 365 account: ${loginHint}`
+      );
     } else {
       // need to switch account
       const userConfirmation = await this.doesUserConfirmSwitchAccount();
@@ -361,7 +363,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       await this.notifyStatus(tokenRequest);
       tokenRes = await M365Login.codeFlowInstance.switchAccount(tokenRequest.scopes, loginHint);
       await this.notifyStatus(tokenRequest);
-      VsCodeLogInstance.info(`Switched to another Microsoft 365 account: ${loginHint}`);
+      await VsCodeLogInstance.info(`Switched to another Microsoft 365 account: ${loginHint}`);
     }
 
     if (tokenRes.isErr()) {

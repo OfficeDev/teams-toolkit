@@ -7,7 +7,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { Hub } from "@microsoft/teamsfx-core";
 
 export async function openHubWebClient(hub: Hub, url: string): Promise<void> {
-  await VsCodeLogInstance.info(constants.sideloadingDisplayMessages.title(hub));
+  VsCodeLogInstance.info(constants.sideloadingDisplayMessages.title(hub));
   VsCodeLogInstance.outputChannel.appendLine("");
   VsCodeLogInstance.outputChannel.appendLine(
     constants.sideloadingDisplayMessages.sideloadingUrlMessage(hub, url)

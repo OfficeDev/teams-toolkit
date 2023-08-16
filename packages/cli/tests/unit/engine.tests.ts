@@ -19,7 +19,7 @@ import * as sinon from "sinon";
 import * as activate from "../../src/activate";
 import { engine } from "../../src/commands/engine";
 import { start } from "../../src/commands/index";
-import { createCommand } from "../../src/commands/models/create";
+import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 import { logger } from "../../src/commonlib/logger";
@@ -27,6 +27,11 @@ import { InvalidChoiceError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
+import {
+  deployCommand,
+  listCapabilitiesCommand,
+  listSamplesCommand,
+} from "../../src/commands/models";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -149,7 +154,7 @@ describe("CLI Engine", () => {
         .returns();
       sandbox.stub(logger, "outputError").returns();
       const ctx: CLIContext = {
-        command: { ...createCommand, fullName: "abc" },
+        command: { ...getCreateCommand(), fullName: "abc" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -161,8 +166,8 @@ describe("CLI Engine", () => {
   });
   describe("start", async () => {
     it("command has no handler", async () => {
-      sandbox.stub(process, "argv").value(["node", "cli", "new"]);
-      sandbox.stub(createCommand, "handler").value(undefined);
+      sandbox.stub(process, "argv").value(["node", "cli", "list", "capabilities"]);
+      sandbox.stub(listCapabilitiesCommand, "handler").value(undefined);
       await engine.start(rootCommand);
     });
     it("should display version", async () => {

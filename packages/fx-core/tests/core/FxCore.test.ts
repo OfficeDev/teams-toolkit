@@ -75,6 +75,7 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
+import { createDriverContext } from "../../src/component/utils";
 
 const tools = new MockTools();
 
@@ -650,6 +651,103 @@ describe("apply yaml template", async () => {
       };
       const res = await core.apply(inputs, "./", "provision");
       assert.isTrue(res.isErr() && res.error.name === "mockedError");
+    });
+  });
+  describe("runLifecycle", async () => {
+    const sandbox = sinon.createSandbox();
+
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+    class MockedProvision implements ILifecycle {
+      name: LifecycleName = "provision";
+      driverDefs: DriverDefinition[] = [];
+      public async run(ctx: DriverContext): Promise<Result<Output, FxError>> {
+        return err(mockedError);
+      }
+
+      public resolvePlaceholders(): UnresolvedPlaceholders {
+        return [];
+      }
+
+      public async execute(ctx: DriverContext): Promise<ExecutionResult> {
+        return {
+          result: ok(new Map()),
+          summaries: [],
+        };
+      }
+
+      public resolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
+        return ok([]);
+      }
+    }
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: "dev",
+      };
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      const context = createDriverContext(inputs);
+      const lifecycle = new MockedProvision();
+      const res = await core.runLifecycle(lifecycle, context, "dev");
+      assert.isTrue(res.isOk());
+    });
+
+    it("partial success", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: "dev",
+      };
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      const lifecycle = new MockedProvision();
+      sandbox.stub(lifecycle, "execute").resolves({
+        result: err({
+          kind: "PartialSuccess",
+          env: new Map(),
+          reason: {
+            kind: "UnresolvedPlaceholders",
+            failedDriver: { uses: "t", with: {} },
+            unresolvedPlaceHolders: ["TEST_VAR"],
+          },
+        }),
+        summaries: [],
+      });
+      const context = createDriverContext(inputs);
+      const res = await core.runLifecycle(lifecycle, context, "dev");
+      assert.isTrue(res.isOk());
+    });
+
+    it("DriverError", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: "dev",
+      };
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      const lifecycle = new MockedProvision();
+      sandbox.stub(lifecycle, "execute").resolves({
+        result: err({
+          kind: "PartialSuccess",
+          env: new Map(),
+          reason: {
+            kind: "DriverError",
+            failedDriver: { uses: "t", with: {} },
+            error: mockedError,
+          },
+        }),
+        summaries: [],
+      });
+      const context = createDriverContext(inputs);
+      const res = await core.runLifecycle(lifecycle, context, "dev");
+      assert.isTrue(res.isErr());
     });
   });
 });

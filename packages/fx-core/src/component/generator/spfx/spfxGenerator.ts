@@ -9,6 +9,7 @@ import {
   FxError,
   Inputs,
   IStaticTab,
+  LogLevel,
   ok,
   Platform,
   Result,
@@ -176,7 +177,7 @@ export class SPFxGenerator {
       importDetails.push(
         getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
       );
-      await context.logProvider.info(importDetails.join(EOL), true);
+      await context.logProvider.logInFile(LogLevel.Info, importDetails.join(EOL));
       void context.logProvider.error(
         getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
       );
@@ -192,7 +193,7 @@ export class SPFxGenerator {
     importDetails.push(
       getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
     );
-    await context.logProvider.info(importDetails.join(EOL), true);
+    await context.logProvider.logInFile(LogLevel.Info, importDetails.join(EOL));
     void context.logProvider.info(
       getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
     );

@@ -40,7 +40,7 @@ describe("NPX Build Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.run(args, context);
     assert.equal(res.isOk(), true);
@@ -58,7 +58,7 @@ describe("NPX Build Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
     const res = await driver.run(args, context);
     assert.equal(res.isErr(), true);

@@ -61,7 +61,7 @@ export abstract class NodeChecker implements DepsChecker {
     try {
       supportedVersions = await this.getSupportedVersions(installOptions?.projectPath);
 
-      await this._logger.debug(
+      this._logger.debug(
         `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
       );
 

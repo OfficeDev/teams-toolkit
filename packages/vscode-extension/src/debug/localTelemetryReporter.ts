@@ -52,7 +52,7 @@ export const localTelemetryReporter = new LocalTelemetryReporter(
   saveEventTime
 );
 
-export async function sendDebugAllStartEvent(additionalProperties: {
+export function sendDebugAllStartEvent(additionalProperties: {
   [key: string]: string;
 }): Promise<void> {
   const session = getLocalDebugSession();
@@ -63,6 +63,7 @@ export async function sendDebugAllStartEvent(additionalProperties: {
     session.properties
   );
   localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAllStart, properties);
+  return Promise.resolve();
 }
 
 export async function sendDebugAllEvent(

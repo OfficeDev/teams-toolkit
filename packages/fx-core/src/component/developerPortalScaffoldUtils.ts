@@ -34,8 +34,8 @@ import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
 import { TelemetryUtils } from "./driver/teamsApp/utils/telemetry";
 import {
   isBot,
-  isBotAndMessageExtension,
-  isMessageExtension,
+  isBotAndBotBasedMessageExtension,
+  isBotBasedMessageExtension,
   needTabAndBotCode,
   needTabCode,
 } from "./driver/teamsApp/utils/utils";
@@ -303,12 +303,12 @@ export function getProjectTypeAndCapability(
   }
 
   // bot and message extension
-  if (isBotAndMessageExtension(teamsApp)) {
+  if (isBotAndBotBasedMessageExtension(teamsApp)) {
     return { projectType: "bot-me-type", templateId: CapabilityOptions.botAndMe().id };
   }
 
-  // message extension
-  if (isMessageExtension(teamsApp)) {
+  // bot based message extension
+  if (isBotBasedMessageExtension(teamsApp)) {
     return { projectType: "me-type", templateId: CapabilityOptions.me().id };
   }
 

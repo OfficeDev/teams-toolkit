@@ -379,7 +379,7 @@ describe("getDeploymentError", () => {
     deploymentName: "mockDeployName",
     resourceGroupName: "mockRG",
     deploymentStartTime: Date.now(),
-  } as DeployContext;
+  } as any;
   beforeEach(() => {});
 
   afterEach(() => {

@@ -46,60 +46,48 @@ export class VsCodeLogProvider implements LogProvider {
     return `${defaultExtensionLogPath}/${this.logFileName}`;
   }
 
-  async trace(message: string): Promise<boolean> {
-    // return this.log(LogLevel.Trace, message);
-    return true;
-  }
+  verbose(message: string): void {}
 
-  async debug(message: string): Promise<boolean> {
-    // return this.log(LogLevel.Debug, message);
-    return true;
-  }
+  debug(message: string): void {}
 
-  info(message: Array<{ content: string; color: Colors }>, logToFile?: boolean): Promise<boolean>;
+  info(message: Array<{ content: string; color: Colors }>): void;
 
-  info(message: string, logToFile?: boolean): Promise<boolean>;
+  info(message: string): void;
 
-  info(
-    message: string | Array<{ content: string; color: Colors }>,
-    logToFile?: boolean
-  ): Promise<boolean> {
+  info(message: string | Array<{ content: string; color: Colors }>): void {
     // VSCode output channel is not TTY, does not support ANSI color
     if (message instanceof Array) {
       message = message.map((x) => x.content).join("");
     }
-    return this.log(LogLevel.Info, message, logToFile);
+    this.log(LogLevel.Info, message);
   }
 
-  warning(message: string): Promise<boolean> {
+  warning(message: string): void {
     return this.log(LogLevel.Warning, message);
   }
 
-  error(message: string): Promise<boolean> {
+  error(message: string): void {
     return this.log(LogLevel.Error, message);
-  }
-
-  fatal(message: string): Promise<boolean> {
-    return this.log(LogLevel.Fatal, message);
   }
 
   /**
    * @Sample [2021-03-15T03:41:04.961Z] [Info] - [Extension] Initialize successfully.
    */
-  async log(logLevel: LogLevel, message: string, logToFile?: boolean): Promise<boolean> {
+  log(logLevel: LogLevel, message: string): void {
     try {
-      if (logLevel < LogLevel.Info) return true;
+      if (logLevel < LogLevel.Info) return;
       if (logLevel >= LogLevel.Warning) this.outputChannel.show();
       const dateString = new Date().toJSON();
       const formattedMessage = `[${dateString}] [${LogLevel[logLevel]}] - ${message}`;
-      if (logToFile) {
-        await fs.appendFile(this.getLogFilePath(), formattedMessage + "\n");
-      } else {
-        this.outputChannel.appendLine(formattedMessage);
-      }
-      return true;
-    } catch (e) {
-      return false;
+      this.outputChannel.appendLine(formattedMessage);
+    } catch (e) {}
+  }
+
+  async logInFile(logLevel: LogLevel, message: string): Promise<void> {
+    if (logLevel === LogLevel.Info) {
+      const dateString = new Date().toJSON();
+      const formattedMessage = `[${dateString}] [${LogLevel[logLevel]}] - ${message}`;
+      await fs.appendFile(this.getLogFilePath(), formattedMessage + "\n");
     }
   }
 }

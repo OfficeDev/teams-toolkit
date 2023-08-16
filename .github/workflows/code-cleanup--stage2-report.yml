@@ -17,6 +17,14 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16
+
+    - name: Setup project
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 5
+        command: |
+          npm run setup
     
     - name: Search todo comment list
       id: search
@@ -29,7 +37,7 @@ jobs:
 
     - name: Find owner for todo comment file
       run: |
-        node .github/scirpts/todo-comment-check.js
+        node .github/scripts/todo-comment-check.js
       env: 
         TODO_LIST: ${{steps.search.outputs.todo}}
 

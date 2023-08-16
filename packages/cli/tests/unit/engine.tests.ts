@@ -129,6 +129,24 @@ describe("CLI Engine", () => {
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
+    it("default interactive option", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        defaultInteractiveOption: false,
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, [], []);
+      assert.isTrue(result.isOk());
+      assert.equal(ctx.globalOptionValues.interactive, false);
+    });
   });
   describe("validateOption", async () => {
     it("InvalidChoiceError", async () => {

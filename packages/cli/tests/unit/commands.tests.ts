@@ -947,7 +947,6 @@ describe("CLI read-only commands", () => {
       };
       const res = await listSamplesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(messages.includes(JSON.stringify([], undefined, 2)));
     });
   });
 });

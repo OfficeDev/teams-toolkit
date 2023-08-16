@@ -41,7 +41,7 @@ function jsonToTable(samples: Sample[]): string {
   const table = new Table({
     head: [chalk.cyanBright("Name"), chalk.cyanBright("Tags"), chalk.cyanBright("Description")],
     colAligns: ["left", "left", "left"],
-    colWidths: [25, 20, null],
+    colWidths: [null, 20, null],
     wordWrap: true,
   });
 
@@ -55,9 +55,12 @@ function jsonToTable(samples: Sample[]): string {
 
   samples.forEach((sample) => {
     table.push([
-      sample.name,
+      sample.id,
       sample.tags.join(", "),
-      wrap(sample.description, { width: maxDescpLength, indent: "" }) +
+      wrap(sample.description, {
+        width: maxDescpLength,
+        indent: "",
+      }) +
         "\n" +
         (sample.url ? chalk.underline.blue(sample.url) : ""),
     ]);

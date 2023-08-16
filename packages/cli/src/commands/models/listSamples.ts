@@ -54,7 +54,7 @@ export const listSamplesCommand: CLICommand = {
 
 function jsonToTable(samples: Sample[]): string {
   const table = new Table({
-    head: [chalk.cyanBright("Name"), chalk.cyanBright("Tags"), chalk.cyanBright("Description")],
+    head: [chalk.cyanBright("Sample"), chalk.cyanBright("Tags"), chalk.cyanBright("Description")],
     colAligns: ["left", "left", "left"],
     colWidths: [null, 20, null],
     wordWrap: true,
@@ -67,9 +67,9 @@ function jsonToTable(samples: Sample[]): string {
   });
   samples.forEach((sample) => {
     table.push([
-      sample.name + "\nid: " + sample.id,
-      sample.tags.join(", "),
-      wrap(sample.description, {
+      sample.name + chalk.gray("\nid: " + sample.id),
+      chalk.gray(sample.tags.join(", ")),
+      wrap(chalk.gray(sample.description), {
         width: maxUrlLength,
         indent: "",
       }) +

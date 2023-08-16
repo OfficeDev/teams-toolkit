@@ -18,13 +18,13 @@ jobs:
       with:
         node-version: 16
 
-    - name: Setup project
+    - name: Install codeowners
       uses: nick-fields/retry@v2
       with:
         timeout_minutes: 10
         max_attempts: 5
         command: |
-          npm run setup
+          npm install codeowners -D
     
     - name: Search todo comment list
       id: search

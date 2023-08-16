@@ -32,6 +32,8 @@ import {
   listCapabilitiesCommand,
   listSamplesCommand,
 } from "../../src/commands/models";
+import { getFxCore } from "../../src/activate";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -253,6 +255,26 @@ describe("CLI Engine", () => {
       sandbox.stub(engine, "start").resolves();
       await start();
       assert.isTrue(true);
+    });
+  });
+  describe("getFxCore", async () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+    it("new logger", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_CLI_NEW_UX: "true",
+      });
+      getFxCore();
+    });
+    it("old logger", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_CLI_NEW_UX: "false",
+      });
+      getFxCore();
     });
   });
   describe("printError", async () => {

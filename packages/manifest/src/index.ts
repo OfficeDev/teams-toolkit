@@ -60,7 +60,6 @@ export class ManifestUtil {
     const validate = ajv.compile(schema);
     const valid = validate(manifest);
     if (!valid && validate.errors) {
-      // return validate.errors?.map((error) => `${error.instancePath} ${error.message}`);
       return Promise.resolve(
         validate.errors?.map((error) => `${error.instancePath} ${error.message || ""}`)
       );

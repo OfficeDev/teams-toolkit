@@ -10,6 +10,7 @@ if (!list) {
 // ./packages/tests/src/utils/playwrightOperation.ts:804:        // TODO validate content
 // ./packages/tests/src/utils/playwrightOperation.ts:1044:      // TODO: add person
 // `;
+let content = '';
 const lines = list.split('\n');
 for (const line of lines) {
     const parts = line.split(':');

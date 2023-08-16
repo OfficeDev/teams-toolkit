@@ -21,10 +21,9 @@ jobs:
     - name: Search todo comment list
       id: search
       run: |
-        todo=`grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .`
-        # echo "todo=$todo" >> $GITHUB_OUTPUT
+        content=`grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .`
         echo "todo<<$EOF" >> $GITHUB_OUTPUT
-        echo "$todo" >> $GITHUB_OUTPUT
+        echo "$content" >> $GITHUB_OUTPUT
         echo "$EOF" >> $GITHUB_OUTPUT
 
     - name: Find owner for todo comment file

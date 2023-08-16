@@ -1383,7 +1383,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
   return {
     type: "text",
-    name: QuestionNames.OpenAIPluginManifestLocation,
+    name: QuestionNames.OpenAIPluginDomain,
     cliShortName: "oai",
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),

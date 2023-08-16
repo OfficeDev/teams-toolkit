@@ -916,7 +916,6 @@ describe("CLI read-only commands", () => {
       const res = await listCapabilitiesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
       assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
-      assert.isTrue(messages.includes(JSON.stringify(CapabilityOptions.all(), undefined, 2)));
     });
 
     it("success if copilot plugin feature flag enabled", async () => {

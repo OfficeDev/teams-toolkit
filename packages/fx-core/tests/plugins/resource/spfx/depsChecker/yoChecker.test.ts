@@ -3,16 +3,13 @@
 
 import "mocha";
 import { expect } from "chai";
-import { stub, restore, assert } from "sinon";
+import { stub, spy, restore, assert } from "sinon";
 import rewire from "rewire";
-
 import fs from "fs-extra";
-
-import { TestHelper } from "../helper";
 
 import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
-import { LogProvider, LogLevel, Colors, UserError } from "@microsoft/teamsfx-api";
+import { LogProvider, LogLevel, UserError } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
@@ -97,6 +94,19 @@ describe("Yo checker", () => {
       await yc.install();
     } catch (e) {
       expect(e.name).equal("NpmInstallFailed");
+    }
+  });
+
+  it("clean up failed when install", async () => {
+    const yc = new YoChecker(new StubLogger());
+    stub(fs, "existsSync").returns(false);
+    stub(fs, "emptyDir").throws("Failed to empty dir");
+    const logErrorSpy = spy(StubLogger.prototype, "error");
+
+    try {
+      await yc.install();
+    } catch {
+      assert.callCount(logErrorSpy, 1);
     }
   });
 

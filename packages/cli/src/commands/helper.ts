@@ -8,6 +8,7 @@ import {
   CLIExample,
 } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
+import wrap from "word-wrap";
 
 class Helper {
   itemIndentWidth = 2;
@@ -114,11 +115,17 @@ class Helper {
   formatItem(term: string, description: string) {
     if (description) {
       const fullText = `${term.padEnd(this.termWidth + this.itemSeparatorWidth)}${description}`;
-      const res = this.prettifyReturnLine(
-        fullText,
-        this.helpWidth - this.itemIndentWidth,
-        this.termWidth + this.itemSeparatorWidth
-      );
+      // const res = this.prettifyReturnLine(
+      //   fullText,
+      //   this.helpWidth - this.itemIndentWidth,
+      //   this.termWidth + this.itemSeparatorWidth
+      // );
+      const res = wrap(fullText, {
+        width: this.helpWidth - this.itemIndentWidth,
+        newline: "\n" + " ".repeat(this.termWidth + this.itemSeparatorWidth),
+        cut: false,
+        indent: "",
+      });
       return res;
     }
     return term;
@@ -180,7 +187,8 @@ class Helper {
     const commandDescription = command.description;
     if (commandDescription.length > 0) {
       output = output.concat([
-        helper.prettifyReturnLine(commandDescription, this.helpWidth, 0),
+        // helper.prettifyReturnLine(commandDescription, this.helpWidth, 0),
+        wrap(commandDescription, { width: this.helpWidth, indent: "" }),
         "",
       ]);
     }

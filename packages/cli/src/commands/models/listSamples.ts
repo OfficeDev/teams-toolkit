@@ -18,18 +18,33 @@ export const listSamplesCommand: CLICommand = {
       description: "Specifies the tag to filter the samples.",
       type: "string",
     },
+    {
+      name: "format",
+      shortName: "f",
+      description: "Specifies the format of the results.",
+      type: "string",
+      choices: ["table", "json"],
+      default: "table",
+      required: true,
+    },
   ],
   defaultInteractiveOption: false,
-  handler: async (cmd) => {
+  handler: async (ctx) => {
     let samples = await getTemplates();
-    const tag = cmd.optionValues.tag as string;
+    const tag = ctx.optionValues.tag as string;
     if (tag) {
       samples = samples.filter((sample) =>
         sample.tags.map((t) => t.toLowerCase()).includes(tag.toLowerCase())
       );
     }
-    const table = jsonToTable(samples);
-    logger.info(table);
+    const format = ctx.optionValues.format;
+    let result;
+    if (format === "table") {
+      result = jsonToTable(samples);
+    } else {
+      result = JSON.stringify(samples, null, 2);
+    }
+    logger.info(result);
     return ok(undefined);
   },
   telemetry: {

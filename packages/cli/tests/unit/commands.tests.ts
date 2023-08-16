@@ -936,11 +936,23 @@ describe("CLI read-only commands", () => {
     });
   });
   describe("listSamplesCommand", async () => {
-    it("success", async () => {
+    it("json", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
         command: { ...listSamplesCommand, fullName: "teamsfx ..." },
         optionValues: {},
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await listSamplesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("table wit filter", async () => {
+      sandbox.stub(utils, "getTemplates").resolves([]);
+      const ctx: CLIContext = {
+        command: { ...listSamplesCommand, fullName: "teamsfx ..." },
+        optionValues: { tag: "tab", format: "table" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},

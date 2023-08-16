@@ -3,6 +3,7 @@
 
 import { Separator } from "@inquirer/prompts";
 import { render } from "@inquirer/testing";
+import figures from "figures";
 import "mocha";
 import { checkbox } from "../../../src/prompts/customizedCheckboxPrompt";
 import { expect } from "../utils";
@@ -22,11 +23,16 @@ const choices = [
   { id: "id12", title: "title 12", detail: "detail 12" },
 ];
 
+const getCheckbox = (checked: boolean) => {
+  if (process.platform === "win32") return checked ? "[X]" : "[ ]";
+  return checked ? figures.checkboxOn : figures.checkboxOff;
+};
+
 const trimOutput = (output: string) =>
   output
     .trim()
     .split("\n")
-    .map((line) => line.trim())
+    .map((line) => line.trim().replace("[ ]", getCheckbox(false)).replace("[X]", getCheckbox(true)))
     .join("\n");
 
 describe("checkbox prompt", () => {

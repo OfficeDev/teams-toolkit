@@ -3,6 +3,7 @@
 
 import { Separator } from "@inquirer/prompts";
 import { render } from "@inquirer/testing";
+import figures from "figures";
 import "mocha";
 import { select } from "../../../src/prompts/customizedListPrompt";
 import { expect } from "../utils";
@@ -22,11 +23,15 @@ const choices = [
   { id: "id12", title: "title 12", detail: "detail 12" },
 ];
 
+const getRadio = (checked: boolean) => {
+  return checked ? figures.radioOn : figures.radioOff;
+};
+
 const trimOutput = (output: string) =>
   output
     .trim()
     .split("\n")
-    .map((line) => line.trim())
+    .map((line) => line.trim().replace("( )", getRadio(false)).replace("(*)", getRadio(true)))
     .join("\n");
 
 describe("select prompt", () => {

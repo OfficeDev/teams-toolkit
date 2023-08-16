@@ -6,12 +6,13 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class AdaptiveCardTestCase extends CaseFactory {}
+
+new AdaptiveCardTestCase(
   TemplateProjectFolder.ContactExporter,
   15277462,
   "v-ivanchen@microsoft.com",
   ["tab", "aad"]
-);
-sampleCase.test();
+).test();

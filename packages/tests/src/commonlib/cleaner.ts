@@ -38,7 +38,9 @@ export class Cleaner {
       Promise.all([
         /// clean up resource group
         azureHelper
-          .deleteResourceGroup(env[ResourceGroupEnvName])
+          .deleteResourceGroup(
+            env[ResourceGroupEnvName] ?? process.env[ResourceGroupEnvName]
+          )
           .then((result) => console.log(result)),
         /// clean up aad apps
         AADAppIdEnvNames.map((name) =>

@@ -6,13 +6,14 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class AdaptiveCardTestCase extends CaseFactory {}
+
+new AdaptiveCardTestCase(
   TemplateProjectFolder.OutlookSignature,
   24132154,
   "v-ivanchen@microsoft.com",
   [],
   { skipDeploy: true }
-);
-sampleCase.test();
+).test();

@@ -22,9 +22,10 @@ jobs:
       id: search
       run: |
         content=`grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .`
-        echo "todo<<$EOF" >> $GITHUB_OUTPUT
-        echo "$content" >> $GITHUB_OUTPUT
-        echo "$EOF" >> $GITHUB_OUTPUT
+        delimiter="$(openssl rand -hex 8)"
+        echo "todo<<${delimiter}" >> "${GITHUB_OUTPUT}"
+        echo "$content" >> "${GITHUB_OUTPUT}"
+        echo "${delimiter}" >> "${GITHUB_OUTPUT}"
 
     - name: Find owner for todo comment file
       run: |

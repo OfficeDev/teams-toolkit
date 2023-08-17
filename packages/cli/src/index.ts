@@ -13,6 +13,7 @@ import { start as startNewUX } from "./commands/index";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import "./console/screen";
 import * as constants from "./constants";
+import { registerPrompts } from "./prompts";
 import cliTelemetry from "./telemetry/cliTelemetry";
 import { getVersion } from "./utils";
 
@@ -37,6 +38,7 @@ export function initTelemetryReporter(): void {
  */
 export async function start(): Promise<void> {
   initTelemetryReporter();
+  registerPrompts();
   if (isCliNewUxEnabled()) {
     return startNewUX();
   }

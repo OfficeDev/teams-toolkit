@@ -600,7 +600,11 @@ class CLIUserInteraction implements UserInteraction {
         return undefined;
       }
     };
-    return this.inputText({ ...config.inputBoxConfig, validation: validationFunc });
+    return this.inputText({
+      ...config.inputBoxConfig,
+      validation: validationFunc,
+      additionalValidationOnAccept: config.validation,
+    });
   }
   public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     const loadRes = await this.loadDefaultValue(config);

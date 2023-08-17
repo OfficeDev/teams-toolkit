@@ -122,8 +122,8 @@ export async function listOperations(
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
   if (manifest) {
     const errors = validateOpenAIPluginManifest(manifest);
+    logValidationResults(errors, [], context, false, shouldLogWarning);
     if (errors.length > 0) {
-      logValidationResults(errors, [], context, false, shouldLogWarning);
       return err(errors);
     }
     apiSpecUrl = manifest.api.url;

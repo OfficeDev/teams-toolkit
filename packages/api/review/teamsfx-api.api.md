@@ -376,7 +376,7 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
-    additionalValidationOnAccept?: ValidateFunc<string>;
+    additionalValidationOnAccept?: (input: string) => string | undefined | Promise<string | undefined>;
     // (undocumented)
     default?: string | (() => Promise<string>);
     password?: boolean;
@@ -675,7 +675,7 @@ export interface SingleFileOrInputConfig extends UIConfig<string> {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: InputTextConfig;
+    inputBoxConfig: UIConfig<string>;
     inputOptionItem: OptionItem;
 }
 

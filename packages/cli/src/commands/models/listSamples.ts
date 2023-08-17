@@ -7,6 +7,7 @@ import { Sample, getTemplates } from "../../utils";
 import Table from "cli-table3";
 import chalk from "chalk";
 import wrap from "word-wrap";
+import { ListFormatOption, ShowDescriptionOption } from "../common";
 
 export const listSamplesCommand: CLICommand = {
   name: "samples",
@@ -18,15 +19,8 @@ export const listSamplesCommand: CLICommand = {
       description: "Specifies the tag to filter the samples.",
       type: "string",
     },
-    {
-      name: "format",
-      shortName: "f",
-      description: "Specifies the format of the results.",
-      type: "string",
-      choices: ["table", "json"],
-      default: "table",
-      required: true,
-    },
+    ListFormatOption,
+    ShowDescriptionOption,
   ],
   defaultInteractiveOption: false,
   handler: async (ctx) => {
@@ -40,7 +34,7 @@ export const listSamplesCommand: CLICommand = {
     const format = ctx.optionValues.format;
     let result;
     if (format === "table") {
-      result = jsonToTable(samples);
+      result = jsonToTable(samples, ctx.optionValues.description as boolean);
     } else {
       result = JSON.stringify(samples, null, 2);
     }
@@ -52,30 +46,54 @@ export const listSamplesCommand: CLICommand = {
   },
 };
 
-function jsonToTable(samples: Sample[]): string {
-  const table = new Table({
-    head: [chalk.cyanBright("Sample"), chalk.cyanBright("Tags"), chalk.cyanBright("Description")],
-    colAligns: ["left", "left", "left"],
-    colWidths: [null, 20, null],
-    wordWrap: true,
-  });
+function jsonToTable(samples: Sample[], showDescription = false): string {
   let maxUrlLength = 0;
+  let maxIdLength = 0;
+  let maxTagLength = 0;
   samples.forEach((sample) => {
     if (sample.url && sample.url.length > maxUrlLength) {
       maxUrlLength = sample.url.length;
     }
+    if (("id: " + sample.id).length > maxIdLength) {
+      maxIdLength = ("id: " + sample.id).length;
+    }
+    const tag = sample.tags.join(", ");
+    if (tag.length > maxTagLength) {
+      maxTagLength = tag.length;
+    }
   });
+  maxUrlLength += 2;
+  maxIdLength += 2;
+  maxTagLength += 2;
+
+  const terminalWidth = process.stdout.isTTY ? process.stdout.columns : 80;
+  const colWidths = showDescription
+    ? [
+        maxIdLength,
+        Math.min(20, maxTagLength),
+        Math.min(maxUrlLength, terminalWidth - maxIdLength - Math.min(20, maxTagLength) - 4),
+      ]
+    : [maxIdLength, Math.min(maxTagLength, terminalWidth - maxIdLength - 3)];
+  const table = new Table({
+    head: showDescription
+      ? [chalk.cyanBright("Sample"), chalk.cyanBright("Tags"), chalk.cyanBright("Description")]
+      : [chalk.cyanBright("Sample"), chalk.cyanBright("Tags")],
+    colAligns: showDescription ? ["left", "left", "left"] : ["left", "left"],
+    colWidths: colWidths,
+    wordWrap: true,
+  });
+
   samples.forEach((sample) => {
-    table.push([
+    const row = [
       sample.name + chalk.gray("\nid: " + sample.id),
       chalk.gray(sample.tags.join(", ")),
-      wrap(chalk.gray(sample.description), {
-        width: maxUrlLength,
-        indent: "",
-      }) +
-        "\n" +
-        (sample.url ? chalk.underline.blue(sample.url) : ""),
-    ]);
+    ];
+    if (showDescription) {
+      row.push(
+        chalk.gray(sample.description) + "\n" + (sample.url ? chalk.underline.blue(sample.url) : "")
+      );
+    }
+    table.push(row);
   });
   return table.toString();
 }

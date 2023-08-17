@@ -7,27 +7,18 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import Table from "cli-table3";
 import chalk from "chalk";
 import wrap from "word-wrap";
+import { ListFormatOption, ShowDescriptionOption } from "../common";
 
 export const listCapabilitiesCommand: CLICommand = {
   name: "capabilities",
   description: "List all Teams App tempalte capabilities.",
-  options: [
-    {
-      name: "format",
-      shortName: "f",
-      description: "Specifies the format of the results.",
-      type: "string",
-      choices: ["table", "json"],
-      default: "table",
-      required: true,
-    },
-  ],
+  options: [ListFormatOption, ShowDescriptionOption],
   defaultInteractiveOption: false,
   handler: (ctx) => {
     const format = ctx.optionValues.format;
     let result;
     if (format === "table") {
-      result = jsonToTable(CapabilityOptions.all());
+      result = jsonToTable(CapabilityOptions.all(), ctx.optionValues.description as boolean);
     } else {
       result = JSON.stringify(CapabilityOptions.all(), null, 2);
     }
@@ -39,24 +30,53 @@ export const listCapabilitiesCommand: CLICommand = {
   },
 };
 
-function jsonToTable(capabilities: OptionItem[]): string {
+function jsonToTable(capabilities: OptionItem[], showDescription = false): string {
+  let maxUrlLength = 0;
+  let maxIdLength = 0;
+  let maxLabelLength = 0;
+  capabilities.forEach((item) => {
+    if (item.data && (item.data as string).length > maxUrlLength) {
+      maxUrlLength = (item.data as string).length;
+    }
+    if (item.id.length > maxIdLength) {
+      maxIdLength = item.id.length;
+    }
+    if (item.label.length > maxLabelLength) {
+      maxLabelLength = item.label.length;
+    }
+  });
+  maxUrlLength += 2;
+  maxIdLength += 2;
+  maxLabelLength += 2;
+
+  maxUrlLength = Math.max(80, maxUrlLength);
+
+  const terminalWidth = process.stdout.isTTY ? process.stdout.columns : 80;
+
   const table = new Table({
-    head: [chalk.cyanBright("ID"), chalk.cyanBright("Label"), chalk.cyanBright("Description")],
-    colAligns: ["left", "left", "left"],
-    colWidths: [null, 20, null],
+    head: showDescription
+      ? [chalk.cyanBright("ID"), chalk.cyanBright("Label"), chalk.cyanBright("Description")]
+      : [chalk.cyanBright("ID"), chalk.cyanBright("Label")],
+    colAligns: showDescription ? ["left", "left", "left"] : ["left", "left"],
+    colWidths: showDescription
+      ? [
+          maxIdLength,
+          Math.min(20, maxLabelLength),
+          Math.min(maxUrlLength, terminalWidth - maxIdLength - Math.min(20, maxLabelLength) - 4),
+        ]
+      : [maxIdLength, Math.min(maxLabelLength, terminalWidth - maxIdLength - 3)],
     wordWrap: true,
   });
   capabilities.forEach((item) => {
-    table.push([
-      item.id,
-      chalk.gray(item.label),
-      wrap(chalk.gray([item.description, item.detail].filter((i) => !!i).join(". ")), {
-        width: 80,
-        indent: "",
-      }) +
-        "\n" +
-        (item.data ? chalk.underline.blue(item.data) : ""),
-    ]);
+    const row = [item.id, chalk.gray(item.label)];
+    if (showDescription) {
+      row.push(
+        chalk.gray([item.description, item.detail].filter((i) => !!i).join(". ")) +
+          "\n" +
+          (item.data ? chalk.underline.blue(item.data) : "")
+      );
+    }
+    table.push(row);
   });
   return table.toString();
 }

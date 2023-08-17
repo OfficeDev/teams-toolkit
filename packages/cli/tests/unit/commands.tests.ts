@@ -902,13 +902,13 @@ describe("CLI read-only commands", () => {
         mockedEnvRestore();
       }
     });
-    it("success", async () => {
+    it("json", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
         command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
-        optionValues: { format: "table" },
+        optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},
@@ -917,8 +917,29 @@ describe("CLI read-only commands", () => {
       assert.isTrue(res.isOk());
       assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
     });
-
-    it("success if copilot plugin feature flag enabled", async () => {
+    it("table with description", async () => {
+      const ctx: CLIContext = {
+        command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
+        optionValues: { format: "table", description: true },
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await listCapabilitiesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("table without description", async () => {
+      const ctx: CLIContext = {
+        command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
+        optionValues: { format: "table", description: false },
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await listCapabilitiesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("json copilot plugin feature flag enabled", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "true",
       });
@@ -939,7 +960,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
         command: { ...listSamplesCommand, fullName: "teamsfx ..." },
-        optionValues: {},
+        optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},
@@ -947,11 +968,23 @@ describe("CLI read-only commands", () => {
       const res = await listSamplesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("table wit filter", async () => {
+    it("table with filter + description", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
         command: { ...listSamplesCommand, fullName: "teamsfx ..." },
-        optionValues: { tag: "tab", format: "table" },
+        optionValues: { tag: "tab", format: "table", description: true },
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await listSamplesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("table without description", async () => {
+      sandbox.stub(utils, "getTemplates").resolves([]);
+      const ctx: CLIContext = {
+        command: { ...listSamplesCommand, fullName: "teamsfx ..." },
+        optionValues: { format: "table", description: false },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},

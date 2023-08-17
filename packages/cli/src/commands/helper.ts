@@ -194,7 +194,7 @@ class Helper {
     }
 
     // Options
-    let options = command.options || [];
+    let options = (command.options || []).filter((o) => !o.hidden);
     if (command.sortOptions) options = options.sort(compareOptions);
     const optionList = options.map((option) => {
       return this.formatItem(
@@ -207,7 +207,7 @@ class Helper {
     }
 
     // Global Options
-    let globalOptions = rootCommand?.options || [];
+    let globalOptions = (rootCommand?.options || []).filter((o) => !o.hidden);
     if (rootCommand?.sortOptions) globalOptions = globalOptions.sort(compareOptions);
     const globalOptionList = globalOptions.map((option) => {
       return this.formatItem(

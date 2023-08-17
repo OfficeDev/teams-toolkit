@@ -35,6 +35,7 @@ import {
   InvalidChoiceError,
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
+  UnknownCommandError,
   UnknownOptionError,
 } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -62,8 +63,25 @@ class CLIEngine {
 
     // 1. find command
     const findRes = this.findCommand(rootCmd, args);
-    const foundCommand = findRes.cmd;
-    const remainingArgs = findRes.remainingArgs;
+    if (findRes.isErr()) {
+      this.printError(findRes.error);
+      const helpText = helper.formatHelp(rootCmd);
+      logger.info(helpText);
+      return;
+    }
+    const foundCommand = findRes.value.cmd;
+    const remainingArgs = findRes.value.remainingArgs;
+
+    // if command has no handler, print help text
+    if (!foundCommand.handler) {
+      if (remainingArgs.length) {
+        const error = new UnknownCommandError(remainingArgs[0]);
+        this.printError(error);
+      }
+      const helpText = helper.formatHelp(foundCommand, rootCmd);
+      logger.info(helpText);
+      return;
+    }
     debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
 
     const context: CLIContext = {
@@ -83,7 +101,7 @@ class CLIEngine {
 
     if (debugLogs.length) {
       for (const log of debugLogs) {
-        await logger.debug(log);
+        logger.debug(log);
       }
     }
 
@@ -98,7 +116,7 @@ class CLIEngine {
       }
     }
 
-    await logger.debug(
+    logger.debug(
       `parsed context: ${JSON.stringify(
         pick(context, [
           "optionValues",
@@ -117,14 +135,14 @@ class CLIEngine {
     }
 
     if (parseRes.isErr()) {
-      await this.processResult(context, parseRes.error);
+      this.processResult(context, parseRes.error);
       return;
     }
 
     // 3. --version
     if (context.optionValues.version === true || context.globalOptionValues.version === true) {
-      await logger.info(rootCmd.version ?? "1.0.0");
-      await this.processResult(context);
+      logger.info(rootCmd.version ?? "1.0.0");
+      this.processResult(context);
       return;
     }
 
@@ -134,8 +152,8 @@ class CLIEngine {
         context.command,
         context.command.fullName !== root.fullName ? root : undefined
       );
-      await logger.info(helpText);
-      await this.processResult(context);
+      logger.info(helpText);
+      this.processResult(context);
       return;
     }
 
@@ -143,7 +161,7 @@ class CLIEngine {
     if (!context.globalOptionValues.interactive) {
       const validateRes = this.validateOptionsAndArguments(context.command);
       if (validateRes.isErr()) {
-        await this.processResult(context, validateRes.error);
+        this.processResult(context, validateRes.error);
         return;
       }
     } else {
@@ -153,7 +171,7 @@ class CLIEngine {
         "correlationId",
         "platform",
       ]);
-      await logger.info(
+      logger.info(
         `Some arguments/options are useless because the interactive mode is opened.` +
           ` If you want to run the command non-interactively, add '--interactive false' after your command` +
           ` or set the global setting by 'teamsfx config set interactive false'.`
@@ -183,22 +201,17 @@ class CLIEngine {
       }
 
       // 7. run handler
-      if (context.command.handler) {
-        const handleRes = await Correlator.run(context.command.handler, context);
-        // const handleRes = await context.command.handler(context);
-        if (handleRes.isErr()) {
-          await this.processResult(context, handleRes.error);
-        } else {
-          await this.processResult(context);
-        }
+      const handleRes = await Correlator.run(context.command.handler!, context);
+      // const handleRes = await context.command.handler(context);
+      if (handleRes.isErr()) {
+        this.processResult(context, handleRes.error);
       } else {
-        const helpText = helper.formatHelp(rootCmd);
-        await logger.info(helpText);
+        this.processResult(context);
       }
     } catch (e) {
       Progress.end(false); // TODO to remove this in the future
       const fxError = assembleError(e);
-      await this.processResult(context, fxError);
+      this.processResult(context, fxError);
     } finally {
       await CliTelemetry.flush();
       Progress.end(true); // TODO to remove this in the future
@@ -212,23 +225,27 @@ class CLIEngine {
   findCommand(
     model: CLICommand,
     args: string[]
-  ): { cmd: CLIFoundCommand; remainingArgs: string[] } {
+  ): Result<{ cmd: CLIFoundCommand; remainingArgs: string[] }, UnknownCommandError> {
     let i = 0;
     let cmd = model;
+    let token: string | undefined;
     for (; i < args.length; i++) {
-      const arg = args[i];
-      const command = cmd.commands?.find((c) => c.name === arg);
+      token = args[i];
+      const command = cmd.commands?.find((c) => c.name === token);
       if (command) {
         cmd = command;
       } else {
         break;
       }
     }
+    if (cmd === model) {
+      return err(new UnknownCommandError(token ?? ""));
+    }
     const command: CLIFoundCommand = {
       fullName: [model.name, ...args.slice(0, i)].join(" "),
       ...cloneDeep(cmd),
     };
-    return { cmd: command, remainingArgs: args.slice(i) };
+    return ok({ cmd: command, remainingArgs: args.slice(i) });
   }
 
   optionInputKey(option: CLICommandOption | CLICommandArgument) {
@@ -494,8 +511,8 @@ class CLIEngine {
     }
     return ok(undefined);
   }
-  async processResult(context: CLIContext, fxError?: FxError): Promise<void> {
-    if (context.command.telemetry) {
+  processResult(context?: CLIContext, fxError?: FxError): void {
+    if (context && context.command.telemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
           context.optionValues.env as string
@@ -515,13 +532,13 @@ class CLIEngine {
       }
     }
     if (fxError) {
-      await this.printError(fxError);
+      this.printError(fxError);
     }
   }
 
-  async printError(fxError: FxError): Promise<void> {
+  printError(fxError: FxError): void {
     if (isUserCancelError(fxError)) {
-      await logger.info("User canceled.");
+      logger.info("User canceled.");
       return;
     }
     logger.outputError(
@@ -539,7 +556,7 @@ class CLIEngine {
         colorize(fxError.issueLink as string, TextType.Hyperlink)
       );
     }
-    await logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
+    logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
   }
 }
 

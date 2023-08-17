@@ -63,6 +63,15 @@ export class ArgumentConflictError extends UserError {
   }
 }
 
+export class UnknownCommandError extends UserError {
+  constructor(name: string) {
+    super({
+      source: constants.cliSource,
+      message: util.format(strings["error.UnknownCommandError"], name),
+    });
+  }
+}
+
 export class UnknownOptionError extends UserError {
   constructor(command: string, name: string) {
     super({

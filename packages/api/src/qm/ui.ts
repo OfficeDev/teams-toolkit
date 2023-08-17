@@ -210,7 +210,7 @@ export interface SingleFileOrInputConfig extends UIConfig<string> {
   /**
    * Config for the input box.
    */
-  inputBoxConfig: InputTextConfig;
+  inputBoxConfig: UIConfig<string>;
 
   /**
    * This will only take effect in VSC.

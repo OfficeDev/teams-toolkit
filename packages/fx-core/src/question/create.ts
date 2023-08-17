@@ -1358,7 +1358,6 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
           return Promise.resolve(result);
         },
       },
-      additionalValidationOnAccept: { validFunc: validationOnAccept },
     },
     inputOptionItem: {
       id: "input",
@@ -1368,13 +1367,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       files: ["json", "yml", "yaml"],
     },
     validation: {
-      validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
-        if (input === "input") {
-          return undefined;
-        }
-
-        return await validationOnAccept(input, inputs);
-      },
+      validFunc: validationOnAccept,
     },
   };
 }

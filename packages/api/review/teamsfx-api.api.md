@@ -675,7 +675,7 @@ export interface SingleFileOrInputConfig extends UIConfig<string> {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: InputTextConfig;
+    inputBoxConfig: UIConfig<string>;
     inputOptionItem: OptionItem;
 }
 

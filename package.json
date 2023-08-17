@@ -26,6 +26,10 @@
     "ts-node": "^10.2.1"
   },
   "keywords": [],
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
   "packageManager": "pnpm@8.6.12",
   "config": {
     "commitizen": {

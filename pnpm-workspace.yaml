@@ -10,4 +10,5 @@ packages:
   -  "packages/tests"
   -  "packages/sdk"
   -  "packages/sdk-react"
+  -  "packages/server"
   -  "templates"

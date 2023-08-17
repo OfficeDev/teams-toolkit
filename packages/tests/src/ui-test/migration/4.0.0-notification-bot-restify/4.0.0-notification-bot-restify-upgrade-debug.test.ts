@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Helly Zhang <v-helzha@microsoft.com>
+ */
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,

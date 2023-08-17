@@ -438,7 +438,7 @@ class CLIEngine {
 
     // special process for global options
     // interactive
-    // if user not input "--interactive" option value explitly, toolkit will use default value defined by `defaultInteractiveOption`
+    // if user not input "--interactive" option value explicitly, toolkit will use default value defined by `defaultInteractiveOption`
     // if `defaultInteractiveOption` is undefined, use default value = true
     if (context.globalOptionValues.interactive === undefined) {
       if (context.command.defaultInteractiveOption !== undefined) {

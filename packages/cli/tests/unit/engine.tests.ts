@@ -12,13 +12,17 @@ import {
   InputValidationError,
   MissingEnvironmentVariablesError,
   UserCancelError,
+  VersionState,
 } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import * as activate from "../../src/activate";
+import { getFxCore, resetFxCore } from "../../src/activate";
 import { engine } from "../../src/commands/engine";
 import { start } from "../../src/commands/index";
+import { listCapabilitiesCommand } from "../../src/commands/models";
 import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
@@ -27,13 +31,6 @@ import { InvalidChoiceError, UnknownOptionError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
-import {
-  deployCommand,
-  listCapabilitiesCommand,
-  listSamplesCommand,
-} from "../../src/commands/models";
-import { getFxCore, resetFxCore } from "../../src/activate";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -74,7 +71,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "a,b,c"], []);
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "a,b,c"]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
@@ -98,12 +95,14 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(
-        ctx,
-        rootCommand,
-        ["--option1", "a", "--option1", "b", "--option1", "c"],
-        []
-      );
+      const result = engine.parseArgs(ctx, rootCommand, [
+        "--option1",
+        "a",
+        "--option1",
+        "b",
+        "--option1",
+        "c",
+      ]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
@@ -127,7 +126,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, ["--option1=a,b,c"], []);
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1=a,b,c"]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
@@ -185,6 +184,12 @@ describe("CLI Engine", () => {
     });
   });
   describe("start", async () => {
+    it("command not found", async () => {
+      sandbox.stub(process, "argv").value(["node", "cli", "abc123"]);
+      const stub = sandbox.stub(engine, "printError").returns();
+      await engine.start(rootCommand);
+      assert.isTrue(stub.called);
+    });
     it("command has no handler", async () => {
       sandbox.stub(process, "argv").value(["node", "cli", "list", "capabilities"]);
       sandbox.stub(listCapabilitiesCommand, "handler").value(undefined);
@@ -251,23 +256,66 @@ describe("CLI Engine", () => {
       await engine.start(rootCommand);
       assert.isTrue(error instanceof InvalidChoiceError);
     });
+    it("should discard useless args and options for interactive mode", async () => {
+      sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
+      sandbox.stub(process, "argv").value(["node", "cli", "new", "sample", "abc"]);
+      const stub = sandbox.stub(logger, "info");
+      await engine.start(rootCommand);
+      assert.isTrue(stub.called);
+    });
     it("should run handler return error", async () => {
       sandbox.stub(process, "argv").value(["node", "cli"]);
-      rootCommand.handler = async () => err(new UserCancelError());
+      const command: CLIFoundCommand = {
+        name: "test",
+        description: "test",
+        fullName: "test",
+        handler: async () => err(new UserCancelError()),
+      };
+      let error: any = {};
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(command);
+      assert.isTrue(error instanceof UserCancelError);
+    });
+    it("should run handler throw error", async () => {
+      sandbox.stub(process, "argv").value(["node", "cli"]);
+      const command: CLIFoundCommand = {
+        name: "test",
+        description: "test",
+        fullName: "test",
+        handler: async () => {
+          throw new UserCancelError();
+        },
+      };
+      let error: any = {};
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(command);
+      assert.isTrue(error instanceof UserCancelError);
+    });
+    it("run version check and return error", async () => {
+      sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(err(new UserCancelError()));
+      sandbox.stub(process, "argv").value(["node", "cli", "provision", "--folder", "abc"]);
       let error: any = {};
       sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);
       assert.isTrue(error instanceof UserCancelError);
-      rootCommand.handler = undefined;
     });
-    it("should run handler throw error", async () => {
-      sandbox.stub(process, "argv").value(["node", "cli"]);
-      rootCommand.handler = async () => {
-        throw new UserCancelError();
-      };
-      sandbox.stub(rootCommand, "handler").rejects(new UserCancelError());
+    it("run version check and return upgradeable and upgrade return error", async () => {
+      sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+        ok({
+          isSupport: VersionState.upgradeable,
+          currentVersion: "1",
+          trackingId: "1",
+          versionSource: "1",
+        })
+      );
+      sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(err(new UserCancelError()));
+      sandbox.stub(process, "argv").value(["node", "cli", "provision", "--folder", "abc"]);
       let error: any = {};
       sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
         error = fxError;

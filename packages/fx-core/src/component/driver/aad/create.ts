@@ -31,7 +31,6 @@ import {
 } from "../../../error/common";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { SignInAudience } from "./interface/signInAudience";
-import { updateProgress } from "../middleware/updateProgress";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
@@ -43,6 +42,7 @@ const driverConstants = {
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.create);
+  readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.createAadAppTitle");
 
   public async run(
     args: CreateAadAppArgs,
@@ -52,10 +52,7 @@ export class CreateAadAppDriver implements StepDriver {
     return result.result;
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.aadApp.progressBar.createAadAppTitle")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateAadAppArgs,
     context: DriverContext,

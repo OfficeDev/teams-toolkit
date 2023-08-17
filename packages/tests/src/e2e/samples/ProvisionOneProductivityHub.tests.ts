@@ -6,12 +6,13 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class OneProductivityHubTestCase extends CaseFactory {}
+
+new OneProductivityHubTestCase(
   TemplateProjectFolder.OneProductivityHub,
   15277463,
   "v-ivanchen@microsoft.com",
   ["aad", "tab"]
-);
-sampleCase.test();
+).test();

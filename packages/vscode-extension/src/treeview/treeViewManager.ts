@@ -64,15 +64,14 @@ class TreeViewManager {
       developmentCommands.splice(3);
       developmentTreeviewProvider.refresh();
     }
+    const utilityTreeviewProvider = this.getTreeView("teamsfx-utility") as CommandsTreeViewProvider;
+    const utilityCommands = utilityTreeviewProvider.getCommands();
+    utilityCommands.splice(0);
+    utilityCommands.push(...this.getUtilityCommands());
+
     if (!isTeamsApp) {
-      const utilityTreeviewProvider = this.getTreeView(
-        "teamsfx-utility"
-      ) as CommandsTreeViewProvider;
-      const utilityCommands = utilityTreeviewProvider.getCommands();
       const validateCommandIndex = utilityCommands.findIndex(
-        (command) =>
-          command.commandId === "fx-extension.openAppManagement" ||
-          command.commandId === "fx-extension.publishInDeveloperPortal"
+        (command) => command.commandId === "fx-extension.publishInDeveloperPortal"
       );
       if (validateCommandIndex >= 0) {
         utilityCommands.splice(validateCommandIndex, 1);
@@ -225,6 +224,34 @@ class TreeViewManager {
     ];
   }
 
+  private getUtilityCommands(): TreeViewCommand[] {
+    const utilityCommands = [
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
+        "fx-extension.build",
+        "buildPackage",
+        { name: "package", custom: false }
+      ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.validateApplicationTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.validateApplicationDescription"),
+        "fx-extension.validateManifest",
+        undefined,
+        { name: "beaker", custom: false }
+      ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription"),
+        "fx-extension.publishInDeveloperPortal",
+        "publish",
+        { name: "teamsfx-developer-portal", custom: false }
+      ),
+    ];
+
+    return utilityCommands;
+  }
+
   private registerDevelopment(disposables: vscode.Disposable[]) {
     const developmentCommands = this.getDevelopmentCommands();
 
@@ -270,47 +297,7 @@ class TreeViewManager {
   }
 
   private registerUtility(disposables: vscode.Disposable[]) {
-    const isTdpIntegration = true;
-    const utilityCommands = [
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
-        "fx-extension.build",
-        "buildPackage",
-        { name: "package", custom: false }
-      ),
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.validateApplicationTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.validateApplicationDescription"),
-        "fx-extension.validateManifest",
-        undefined,
-        { name: "beaker", custom: false }
-      ),
-    ];
-
-    if (!isTdpIntegration) {
-      utilityCommands.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
-          "fx-extension.openAppManagement",
-          undefined,
-          { name: "teamsfx-developer-portal", custom: false }
-        )
-      );
-    }
-
-    if (isTdpIntegration) {
-      utilityCommands.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription"),
-          "fx-extension.publishInDeveloperPortal",
-          "publish",
-          { name: "teamsfx-developer-portal", custom: false }
-        )
-      );
-    }
+    const utilityCommands = this.getUtilityCommands();
 
     const utilityProvider = new CommandsTreeViewProvider(utilityCommands);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-utility", utilityProvider));

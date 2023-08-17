@@ -6,12 +6,13 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class HelloWorldBotSSOTestCase extends CaseFactory {}
+
+new HelloWorldBotSSOTestCase(
   TemplateProjectFolder.HelloWorldBotSSO,
   15277464,
   "v-ivanchen@microsoft.com",
   ["bot"]
-);
-sampleCase.test();
+).test();

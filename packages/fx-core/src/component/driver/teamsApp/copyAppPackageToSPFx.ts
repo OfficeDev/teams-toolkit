@@ -14,7 +14,6 @@ import { asFactory, asString, wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { copyAppPackageToSPFxArgs } from "./interfaces/CopyAppPackageToSPFxArgs";
 
@@ -25,6 +24,9 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
   public readonly description = getLocalizedString(
     "driver.teamsApp.description.copyAppPackageToSPFxDriver"
   );
+  public readonly progressTitle = getLocalizedString(
+    "driver.teamsApp.progressBar.copyAppPackageToSPFxStepMessage"
+  );
 
   private readonly EmptyMap = new Map<string, string>();
 
@@ -33,12 +35,7 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
     spfxFolder: asString,
   });
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(
-      getLocalizedString("driver.teamsApp.progressBar.copyAppPackageToSPFxStepMessage")
-    ),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: copyAppPackageToSPFxArgs,
     context: DriverContext

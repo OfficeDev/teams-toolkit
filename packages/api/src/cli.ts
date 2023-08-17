@@ -105,7 +105,7 @@ export interface CLIContext {
   /**
    * @description parsed argument values
    */
-  argumentValues: string[];
+  argumentValues: OptionValue[];
   /**
    * @description telemetry properties, which cen be accessed in the process of command execution lifecycle
    */

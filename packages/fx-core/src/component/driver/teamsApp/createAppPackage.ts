@@ -14,7 +14,6 @@ import { FileNotFoundError, InvalidActionInputError } from "../../../error/commo
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { Constants } from "./constants";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
@@ -25,6 +24,10 @@ export const actionName = "teamsApp/zipAppPackage";
 @Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.createAppPackageDriver");
+  readonly progressTitle = getLocalizedString(
+    "plugins.appstudio.createPackage.progressBar.message"
+  );
+
   public async run(
     args: CreateAppPackageArgs,
     context: DriverContext
@@ -48,7 +51,6 @@ export class CreateAppPackageDriver implements StepDriver {
   @hooks([
     ErrorContextMW({ source: "Teams", component: "CreateAppPackageDriver" }),
     addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("plugins.appstudio.createPackage.progressBar.message")),
   ])
   public async build(
     args: CreateAppPackageArgs,
@@ -210,7 +212,7 @@ export class CreateAppPackageDriver implements StepDriver {
     if (context.platform === Platform.VS || context.platform === Platform.VSCode) {
       context.logProvider.info(builtSuccess);
     } else {
-      context.ui!.showMessage("info", builtSuccess, false);
+      void context.ui!.showMessage("info", builtSuccess, false);
     }
 
     return ok(new Map());

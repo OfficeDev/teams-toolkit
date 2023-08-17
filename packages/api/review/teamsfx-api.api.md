@@ -149,7 +149,7 @@ export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOpti
 
 // @public (undocumented)
 export interface CLIContext {
-    argumentValues: string[];
+    argumentValues: OptionValue[];
     command: CLIFoundCommand;
     globalOptionValues: Record<string, OptionValue>;
     optionValues: Record<string, OptionValue>;

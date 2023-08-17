@@ -20,7 +20,15 @@ import {
   MockedUserInteraction,
 } from "../../plugins/solution/util";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { Platform, Result, FxError, ok, err, SystemError } from "@microsoft/teamsfx-api";
+import {
+  Platform,
+  Result,
+  FxError,
+  ok,
+  err,
+  SystemError,
+  IProgressHandler,
+} from "@microsoft/teamsfx-api";
 import { ExecutionResult, StepDriver } from "../../../src/component/driver/interface/stepDriver";
 import { SummaryConstant } from "../../../src/component/configManager/constant";
 
@@ -36,6 +44,8 @@ const mockedDriverContext: DriverContext = {
 };
 
 class DriverA implements StepDriver {
+  progressTitle = "mocked progress title";
+
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return ok(new Map([["OUTPUT_A", "VALUE_A"]]));
   }
@@ -51,6 +61,8 @@ class DriverAWithSummary extends DriverA {
 }
 
 class DriverB implements StepDriver {
+  progressTitle = "mocked progress title";
+
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return ok(new Map([["OUTPUT_B", "VALUE_B"]]));
   }
@@ -128,6 +140,8 @@ class DriverThatReturnsErrorWithSummary extends DriverThatReturnsError {
 const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
 class DriverThatUsesEnvField implements StepDriver {
+  progressTitle = "mocked progress title";
+
   async run(
     args: { key: [{ key1: string }] },
     context: DriverContext
@@ -212,6 +226,7 @@ describe("v3 lifecyle", () => {
     });
 
     after(() => {
+      mockedDriverContext.progressBar = undefined;
       sandbox.restore();
     });
 
@@ -229,6 +244,10 @@ describe("v3 lifecyle", () => {
       });
 
       const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
+      const nextStub = sandbox.stub();
+      mockedDriverContext.progressBar = {
+        next: nextStub,
+      } as unknown as IProgressHandler;
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -250,6 +269,8 @@ describe("v3 lifecyle", () => {
         summaries.length === 2 && summaries[0].length === 0 && summaries[1].length === 0,
         "summary list should have 2 empty items, since DriverA and DriverB doesn't implement execute()"
       );
+
+      assert.isTrue(nextStub.calledTwice);
     });
 
     it("should return error if one of the driver returns error", async () => {
@@ -559,6 +580,7 @@ describe("v3 lifecyle", () => {
     });
 
     after(() => {
+      mockedDriverContext.progressBar = undefined;
       sandbox.restore();
     });
 
@@ -682,6 +704,10 @@ describe("v3 lifecyle", () => {
         });
 
         const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
+        const nextStub = sandbox.stub();
+        mockedDriverContext.progressBar = {
+          next: nextStub,
+        } as unknown as IProgressHandler;
         const { result, summaries } = await lifecycle.execute(mockedDriverContext);
         assert(
           result.isErr() &&
@@ -696,6 +722,8 @@ describe("v3 lifecyle", () => {
             summaries[0].length === 1 &&
             summaries[0][0].includes("Unresolved placeholders")
         );
+
+        assert.isTrue(nextStub.calledOnce);
       });
     });
   });

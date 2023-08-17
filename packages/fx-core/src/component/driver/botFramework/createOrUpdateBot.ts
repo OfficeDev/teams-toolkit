@@ -12,7 +12,6 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import {
   CreateOrUpdateBotFrameworkBotArgs,
   MicrosoftTeamsChannelSettings,
@@ -35,11 +34,9 @@ const botUrl = "https://dev.botframework.com/bots?id=";
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
   description = getLocalizedString("driver.botFramework.description");
+  readonly progressTitle = getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot");
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateOrUpdateBotFrameworkBotArgs,
     context: DriverContext
@@ -50,10 +47,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateOrUpdateBotFrameworkBotArgs,
     ctx: DriverContext

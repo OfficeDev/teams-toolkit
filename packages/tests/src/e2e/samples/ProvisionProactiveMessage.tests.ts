@@ -6,11 +6,31 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
+import { Executor } from "../../utils/executor";
 
-const sampleCase = sampleCaseFactory(
+class ProactiveMessagingTestCase extends CaseFactory {
+  public override async onCreate(
+    appName: string,
+    testFolder: string,
+    sampleName: TemplateProjectFolder
+  ): Promise<void> {
+    await Executor.openTemplateProject(
+      appName,
+      testFolder,
+      sampleName,
+      undefined,
+      "samples"
+    );
+  }
+
+  override async onAfterCreate(projectPath: string): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
+new ProactiveMessagingTestCase(
   TemplateProjectFolder.ProactiveMessaging,
   15277473,
   "v-ivanchen@microsoft.com"
-);
-sampleCase.test();
+).test();

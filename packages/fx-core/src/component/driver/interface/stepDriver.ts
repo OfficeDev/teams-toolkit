@@ -12,6 +12,7 @@ export type ExecutionResult = {
 
 export interface StepDriver {
   readonly description?: string;
+  readonly progressTitle?: string;
 
   /**
    * Run the driver.

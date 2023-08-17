@@ -26,24 +26,22 @@ export const configSetCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.CreateNewEnvironment,
   },
-  handler: async (ctx) => {
+  defaultInteractiveOption: false,
+  handler: (ctx) => {
     const configName = ctx.argumentValues[0] as string;
     const configValue = ctx.argumentValues[1] as string;
-    const res = await setGlobalConfig(configName, configValue);
+    const res = setGlobalConfig(configName, configValue);
     return res;
   },
 };
 
-export async function setGlobalConfig(
-  name: string,
-  value: string
-): Promise<Result<undefined, FxError>> {
+export function setGlobalConfig(name: string, value: string): Result<undefined, FxError> {
   const opt = { [name]: value };
   const result = UserSettings.setConfigSync(opt);
   if (result.isErr()) {
-    await logger.error("Set user configuration failed.");
+    logger.error("Set user configuration failed.");
     return err(result.error);
   }
-  await logger.info(`Successfully set user configuration ${name}.`);
+  logger.info(`Successfully set user configuration ${name}.`);
   return ok(undefined);
 }

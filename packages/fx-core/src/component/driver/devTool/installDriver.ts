@@ -29,7 +29,6 @@ import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
 import { InvalidActionInputError } from "../../../error/common";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
@@ -49,6 +48,7 @@ const outputKeys = {
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {
   description = toolsInstallDescription();
+  readonly progressTitle = getLocalizedString("driver.prerequisite.progressBar");
 
   async run(
     args: InstallToolArgs,
@@ -71,10 +71,7 @@ export class ToolsInstallDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME),
-    updateProgress(getLocalizedString("driver.prerequisite.progressBar")),
-  ])
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME)])
   async _run(
     args: InstallToolArgs,
     wrapContext: WrapDriverContext,
@@ -146,7 +143,7 @@ export class ToolsInstallDriverImpl {
     this.setDevCertTelemetry(trustDevCert, localCertResult);
 
     if (typeof localCertResult.isTrusted === "undefined") {
-      await this.context.logProvider.warning(Summaries.devCertSkipped());
+      this.context.logProvider.warning(Summaries.devCertSkipped());
       this.context.addSummary(Summaries.devCertSkipped());
     } else if (localCertResult.isTrusted === false) {
       throw localCertResult.error;
@@ -175,7 +172,7 @@ export class ToolsInstallDriverImpl {
     if (!funcStatus.isInstalled && funcStatus.error) {
       throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error, funcStatus.error.helpLink);
     } else if (funcStatus.error) {
-      await this.context.logProvider.warning(funcStatus.error.message);
+      this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(
         Summaries.funcSuccess(funcStatus.details.binFolders) + funcStatus.error.message
       );
@@ -207,7 +204,7 @@ export class ToolsInstallDriverImpl {
         dotnetStatus.error.helpLink
       );
     } else if (dotnetStatus.error) {
-      await this.context.logProvider.warning(dotnetStatus.error?.message);
+      this.context.logProvider.warning(dotnetStatus.error?.message);
       this.context.addSummary(dotnetStatus.error?.message);
     } else {
       this.context.addSummary(Summaries.dotnetSuccess(dotnetStatus?.details?.binFolders));

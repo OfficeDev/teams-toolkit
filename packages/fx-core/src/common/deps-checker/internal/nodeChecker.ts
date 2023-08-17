@@ -105,10 +105,8 @@ export abstract class NodeChecker implements DepsChecker {
   public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     const installationInfo = await this.getInstallationInfo(installOptions);
     if (installationInfo.error) {
-      await this._logger.printDetailLog();
-      await this._logger.error(
-        `${installationInfo.error.message}, error = '${installationInfo.error}'`
-      );
+      this._logger.printDetailLog();
+      this._logger.error(`${installationInfo.error.message}, error = '${installationInfo.error}'`);
     }
     this._logger.cleanup();
     return installationInfo;

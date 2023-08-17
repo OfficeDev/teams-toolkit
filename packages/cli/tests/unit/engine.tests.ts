@@ -31,6 +31,7 @@ import { InvalidChoiceError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
+import { UserSettings } from "../../src/userSetttings";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -361,6 +362,20 @@ describe("CLI Engine", () => {
       const stub = sandbox.stub(logger, "info").resolves();
       engine.printError(new UserCancelError("test"));
       assert.isTrue(stub.called);
+    });
+  });
+  describe("isUserSettingsTelemetryEnable", async () => {
+    it("error", async () => {
+      sandbox.stub(UserSettings, "getTelemetrySetting").returns(err(new UserCancelError()));
+      const res = engine.isUserSettingsTelemetryEnable();
+      assert.isTrue(res);
+    });
+  });
+  describe("isUserSettingsInteractive", async () => {
+    it("error", async () => {
+      sandbox.stub(UserSettings, "getInteractiveSetting").returns(err(new UserCancelError()));
+      const res = engine.isUserSettingsInteractive();
+      assert.isTrue(res);
     });
   });
 });

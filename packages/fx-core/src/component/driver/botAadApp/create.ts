@@ -15,7 +15,6 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { logMessageKeys, progressBarKeys } from "./utility/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
-import { updateProgress } from "../middleware/updateProgress";
 import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
 import {
   HttpClientError,
@@ -42,6 +41,8 @@ export class CreateBotAadAppDriver implements StepDriver {
   readonly description?: string | undefined = getLocalizedString(
     "driver.botAadApp.create.description"
   );
+  readonly progressTitle = getLocalizedString(progressBarKeys.creatingBotAadApp);
+
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateBotAadAppArgs,
@@ -53,10 +54,7 @@ export class CreateBotAadAppDriver implements StepDriver {
     }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString(progressBarKeys.creatingBotAadApp)),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateBotAadAppArgs,
     ctx: DriverContext,

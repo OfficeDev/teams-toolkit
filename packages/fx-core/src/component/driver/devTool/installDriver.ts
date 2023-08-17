@@ -29,7 +29,6 @@ import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
 import { InvalidActionInputError } from "../../../error/common";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
@@ -49,6 +48,7 @@ const outputKeys = {
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {
   description = toolsInstallDescription();
+  readonly progressTitle = getLocalizedString("driver.prerequisite.progressBar");
 
   async run(
     args: InstallToolArgs,
@@ -71,10 +71,7 @@ export class ToolsInstallDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME),
-    updateProgress(getLocalizedString("driver.prerequisite.progressBar")),
-  ])
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME)])
   async _run(
     args: InstallToolArgs,
     wrapContext: WrapDriverContext,

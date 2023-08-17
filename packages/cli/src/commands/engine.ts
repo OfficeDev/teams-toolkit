@@ -42,7 +42,7 @@ import {
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
-import { CliConfigOptions } from "../userSetttings";
+import { CliConfigOptions, UserSettings } from "../userSetttings";
 import { getSystemInputs } from "../utils";
 import { helper } from "./helper";
 
@@ -52,6 +52,9 @@ class CLIEngine {
       ? true
       : false;
   }
+
+  userSettings: any;
+
   async start(rootCmd: CLICommand): Promise<void> {
     const debugLogs: string[] = [];
 
@@ -98,6 +101,14 @@ class CLIEngine {
     remainingArgs: string[],
     debugLogs: string[]
   ): Promise<Result<undefined, FxError>> {
+    // read user settings
+    const userSettingsRes = UserSettings.getConfigSync();
+    if (userSettingsRes.isErr()) {
+      return err(userSettingsRes.error);
+    }
+
+    this.userSettings = userSettingsRes.value;
+
     // parse args
     const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
 
@@ -131,8 +142,10 @@ class CLIEngine {
       )}`
     );
 
+    const userSettingsTelemetry = this.userSettings.telemetry === "false" ? false : true;
+
     // send start event
-    if (context.command.telemetry) {
+    if (userSettingsTelemetry && context.command.telemetry) {
       CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
     }
 
@@ -367,8 +380,16 @@ class CLIEngine {
         }
       } else {
         if (command.arguments && command.arguments[argumentIndex]) {
-          command.arguments[argumentIndex++].value = args[i];
-          context.argumentValues.push(args[i]);
+          const argument = command.arguments[argumentIndex];
+          if (argument.type === "array") {
+            argument.value = token.split(",");
+          } else if (argument.type === "string") {
+            argument.value = token;
+          } else {
+            argument.value = Boolean(token);
+          }
+          context.argumentValues.push(argument.value);
+          argumentIndex++;
         } else {
           return err(new UnknownArgumentError(command.fullName, token));
         }
@@ -417,8 +438,24 @@ class CLIEngine {
 
     // special process for global options
     // interactive
-    context.globalOptionValues.interactive =
-      context.globalOptionValues.interactive === false ? false : true;
+    // if user not input "--interactive" option value explitly, toolkit will use default value defined by `defaultInteractiveOption`
+    // if `defaultInteractiveOption` is undefined, use default value = true
+    if (context.globalOptionValues.interactive === undefined) {
+      if (context.command.defaultInteractiveOption !== undefined) {
+        debugLogs.push(
+          `set interactive from command.defaultInteractiveOption (value=${context.command.defaultInteractiveOption})`
+        );
+        context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
+      } else {
+        const configValue = this.userSettings.interactive;
+        if (configValue !== undefined) {
+          debugLogs.push(`set interactive from user settings (value=${configValue})`);
+          context.globalOptionValues.interactive = configValue === "false" ? false : true;
+        }
+      }
+    }
+    if (context.globalOptionValues.interactive === undefined)
+      context.globalOptionValues.interactive = true;
 
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
@@ -519,7 +556,8 @@ class CLIEngine {
     return ok(undefined);
   }
   processResult(context?: CLIContext, fxError?: FxError): void {
-    if (context && context.command.telemetry) {
+    const userSettingsTelemetry = (this.userSettings.telemetry as boolean) === false ? false : true;
+    if (context && context.command.telemetry && userSettingsTelemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
           context.optionValues.env as string

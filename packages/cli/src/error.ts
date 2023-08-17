@@ -27,7 +27,7 @@ export class MissingRequiredOptionError extends UserError {
   }
 }
 export class MissingRequiredArgumentError extends UserError {
-  constructor(command: string, argument: string | CLICommandArgument) {
+  constructor(command: string, argument: string | CLICommandArgument | CLICommandOption) {
     super({
       source: constants.cliSource,
       message: util.format(

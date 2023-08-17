@@ -123,11 +123,12 @@ export interface CLIBooleanOption extends CLICommandOptionBase {
 export interface CLICommand {
     arguments?: CLICommandArgument[];
     commands?: CLICommand[];
+    defaultInteractiveOption?: boolean;
     description: string;
     examples?: CLIExample[];
     footer?: string;
     fullName?: string;
-    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>>;
+    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>> | Result<undefined, FxError>;
     header?: string;
     hidden?: boolean;
     name: string;
@@ -148,7 +149,7 @@ export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOpti
 
 // @public (undocumented)
 export interface CLIContext {
-    argumentValues: string[];
+    argumentValues: OptionValue[];
     command: CLIFoundCommand;
     globalOptionValues: Record<string, OptionValue>;
     optionValues: Record<string, OptionValue>;

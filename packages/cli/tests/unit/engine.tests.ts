@@ -12,6 +12,7 @@ import {
   InputValidationError,
   MissingEnvironmentVariablesError,
   UserCancelError,
+  VersionState,
 } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
@@ -263,6 +264,34 @@ describe("CLI Engine", () => {
         error = fxError;
       });
       await engine.start(command);
+      assert.isTrue(error instanceof UserCancelError);
+    });
+    it("run version check and return error", async () => {
+      sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(err(new UserCancelError()));
+      sandbox.stub(process, "argv").value(["node", "cli", "provision", "--folder", "abc"]);
+      let error: any = {};
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isTrue(error instanceof UserCancelError);
+    });
+    it("run version check and return upgradeable and upgrade return error", async () => {
+      sandbox.stub(FxCore.prototype, "projectVersionCheck").resolves(
+        ok({
+          isSupport: VersionState.upgradeable,
+          currentVersion: "1",
+          trackingId: "1",
+          versionSource: "1",
+        })
+      );
+      sandbox.stub(FxCore.prototype, "phantomMigrationV3").resolves(err(new UserCancelError()));
+      sandbox.stub(process, "argv").value(["node", "cli", "provision", "--folder", "abc"]);
+      let error: any = {};
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
       assert.isTrue(error instanceof UserCancelError);
     });
   });

@@ -93,7 +93,7 @@ describe("CLI commands", () => {
       const copilotPluginQuestionNames = [
         QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginManifestLocation.toString(),
+        QuestionNames.OpenAIPluginDomain.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -120,7 +120,7 @@ describe("CLI commands", () => {
       const copilotPluginQuestionNames = [
         QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginManifestLocation.toString(),
+        QuestionNames.OpenAIPluginDomain.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(

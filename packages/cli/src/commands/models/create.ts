@@ -38,7 +38,7 @@ function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
     const copilotPluginQuestionNames = [
       QuestionNames.CopilotPluginDevelopment.toString(),
       QuestionNames.ApiSpecLocation.toString(),
-      QuestionNames.OpenAIPluginManifestLocation.toString(),
+      QuestionNames.OpenAIPluginDomain.toString(),
       QuestionNames.ApiOperation.toString(),
     ];
 

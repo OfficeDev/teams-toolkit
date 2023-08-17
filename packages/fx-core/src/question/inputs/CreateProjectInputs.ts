@@ -51,11 +51,11 @@ export interface CreateProjectInputs extends Inputs {
   "copilot-plugin-option"?:
     | "copilot-plugin-new-api"
     | "copilot-plugin-api-spec"
-    | "copilot-plugin-ai-plugin";
+    | "copilot-plugin-openai-plugin";
   /** @description OpenAPI Spec */
   "api-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */
-  "openai-plugin-manifest-location"?: string;
+  "openai-plugin-domain"?: string;
   /** @description Select an Operation */
   "api-operation"?: string[];
   /** @description Programming Language. */

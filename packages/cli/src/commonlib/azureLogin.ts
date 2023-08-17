@@ -338,7 +338,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
                     });
                   }
                 }
-              } catch (error) {
+              } catch (error: any) {
                 if (error.message.indexOf(MFACode) >= 0) {
                   if (showMFA) {
                     CLILogProvider.necessaryLog(LLevel.Info, changeLoginTenantMessage);

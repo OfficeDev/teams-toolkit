@@ -182,8 +182,10 @@ export class CreateTeamsAppDriver implements StepDriver {
       );
       return ok(
         new Map([
-          [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition.teamsAppId!],
-          [outputEnvVarNames.get("teamsAppTenantId") as string, createdAppDefinition.tenantId!],
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+          [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition!.teamsAppId!],
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+          [outputEnvVarNames.get("teamsAppTenantId") as string, createdAppDefinition!.tenantId!],
         ])
       );
     }

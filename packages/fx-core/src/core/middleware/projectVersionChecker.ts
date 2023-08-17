@@ -47,11 +47,11 @@ function showDialog(ctx: CoreHookContext): Promise<FxError> {
       },
       () => {}
     );
-    return Promise.resolve(new IncompatibleProjectError(messageKey));
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   } else if (inputs.platform === Platform.CLI) {
     const messageKey = "core.projectVersionChecker.cliUseNewVersion";
     TOOLS.logProvider.warning(getLocalizedString(messageKey));
-    return Promise.resolve(new IncompatibleProjectError(messageKey));
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
@@ -63,6 +63,6 @@ function showDialog(ctx: CoreHookContext): Promise<FxError> {
       },
       () => {}
     );
-    return Promise.resolve(new IncompatibleProjectError(messageKey));
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   }
 }

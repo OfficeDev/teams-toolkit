@@ -29,7 +29,7 @@ export class HelperMethods {
         return new Promise<void>((resolve, reject) => {
           response.data
             .pipe(fs.createWriteStream(`${projectFolder}/${zipFile}`))
-            .on("error", function (err: unknown) {
+            .on("error", function (err: any) {
               reject(
                 `Unable to download project zip file for "${projectTemplateZipFile}".\n${
                   err.toString() as string
@@ -57,7 +57,7 @@ export class HelperMethods {
       const readStream = fs.createReadStream(`${projectFolder}/${zipFile}`);
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
-        .on("error", function (err: unknown) {
+        .on("error", function (err: any) {
           reject(
             `Unable to unzip project zip file for "${projectFolder}".\n${err.toString() as string}`
           );

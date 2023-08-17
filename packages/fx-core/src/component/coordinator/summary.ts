@@ -205,7 +205,10 @@ export class SummaryReporter {
     const flattened = _.flatten(summaries);
     return `Summary:${EOL}${
       createdEnvFile
-        ? `  ${getLocalizedString("core.summary.createdEnvFile")} ` + createdEnvFile + EOL + EOL
+        ? `  ${getLocalizedString("core.summary.createdEnvFile")} ` +
+          (createdEnvFile as string) +
+          EOL +
+          EOL
         : ""
     }${flattened.join(EOL)}`;
   }

@@ -88,7 +88,9 @@ export namespace AppStudioClient {
     telemetryProperties?: { [key: string]: string }
   ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-    const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
+    const requestPath = e.request?.path
+      ? `${e.request.method as string} ${e.request.path as string}`
+      : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
 
     const error = AppStudioResultFactory.SystemError(
@@ -105,6 +107,7 @@ export namespace AppStudioClient {
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
       method: e.request?.method,
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       "status-code": `${e?.response?.status}`,
       url: `<${apiName}-url>`,
       ...telemetryProperties,
@@ -237,7 +240,9 @@ export namespace AppStudioClient {
           sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP);
           return app;
         } else {
-          logProvider?.error(`teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`);
+          logProvider?.error(
+            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId || ""}`
+          );
         }
       }
     } catch (e) {
@@ -373,7 +378,9 @@ export namespace AppStudioClient {
         );
       }
 
-      const requestPath = `${response.request?.method} ${response.request?.path}`;
+      const requestPath = `${response.request?.method as string} ${
+        response.request?.path as string
+      }`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           const error = new Error(response.data.error?.message || response.data.errorMessage);
@@ -610,7 +617,7 @@ export namespace AppStudioClient {
 
         if (result !== undefined) {
           sendTelemetryEvent(Component.core, TelemetryEvent.CheckSideloading, {
-            [TelemetryProperty.IsSideloadingAllowed]: result + "",
+            [TelemetryProperty.IsSideloadingAllowed]: result.toString() + "",
           });
         } else {
           sendTelemetryErrorEvent(
@@ -619,7 +626,9 @@ export namespace AppStudioClient {
             new SystemError(
               "M365Account",
               "UnknownValue",
-              `AppStudio response code: ${response.status}, body: ${response.data}`
+              `AppStudio response code: ${response.status}, body: ${
+                response.data.toString() as string
+              }`
             ),
             {
               [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
@@ -646,7 +655,7 @@ export namespace AppStudioClient {
             )[0],
           }),
           {
-            [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status as string}`,
             [TelemetryProperty.CheckSideloadingMethod]: "get",
             [TelemetryProperty.CheckSideloadingUrl]: apiName,
           }

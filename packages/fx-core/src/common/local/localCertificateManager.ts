@@ -106,7 +106,7 @@ export class LocalCertificateManager {
         }
       }
     } catch (error: any) {
-      this.logger?.warning(`Failed to setup certificate. Error: ${error}`);
+      this.logger?.warning(`Failed to setup certificate. Error: ${error.toString() as string}`);
       localCert.isTrusted = false;
       localCert.error = new UserError({
         error,
@@ -293,7 +293,7 @@ export class LocalCertificateManager {
       }
     } catch (error) {
       // treat any error as not verified, to not block the main progress
-      this.logger?.debug(`Certificate unverified. Details: ${error}`);
+      this.logger?.debug(`Certificate unverified. Details: ${error.toString() as string}`);
       return false;
     }
   }
@@ -337,7 +337,7 @@ export class LocalCertificateManager {
       }
     } catch (error: any) {
       // treat any error as install failure, to not block the main progress
-      this.logger?.warning(`Failed to install certificate. Error: ${error}`);
+      this.logger?.warning(`Failed to install certificate. Error: ${error.toString() as string}`);
       localCert.isTrusted = false;
       localCert.error = new UserError({
         error,

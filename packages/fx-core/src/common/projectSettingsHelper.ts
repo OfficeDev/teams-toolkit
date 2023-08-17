@@ -41,7 +41,7 @@ function validateStringArray(arr?: any, enums?: string[]) {
       return "array elements is not string type";
     }
     if (enums && !enums.includes(element)) {
-      return `array elements is out of scope: ${enums}`;
+      return `array elements is out of scope: ${enums.toString()}`;
     }
   }
   return undefined;

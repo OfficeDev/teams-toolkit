@@ -182,8 +182,8 @@ export class CreateTeamsAppDriver implements StepDriver {
       );
       return ok(
         new Map([
-          [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition!.teamsAppId!],
-          [outputEnvVarNames.get("teamsAppTenantId") as string, createdAppDefinition!.tenantId!],
+          [outputEnvVarNames.get("teamsAppId") as string, createdAppDefinition.teamsAppId!],
+          [outputEnvVarNames.get("teamsAppTenantId") as string, createdAppDefinition.tenantId!],
         ])
       );
     }

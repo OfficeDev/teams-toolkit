@@ -45,7 +45,9 @@ export namespace AuthSvcClient {
   }
 
   function wrapException(e: any, apiName: string): Error {
-    const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
+    const requestPath = e.request?.path
+      ? `${e.request.method as string} ${e.request.path as string}`
+      : "";
     const error = AppStudioResultFactory.SystemError(
       AppStudioError.AuthServiceAPIFailedError.name,
       AppStudioError.AuthServiceAPIFailedError.message(e, requestPath, apiName)
@@ -53,7 +55,7 @@ export namespace AuthSvcClient {
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.authSvcApi, error, {
       method: e.request?.method,
-      "status-code": `${e?.response?.status}`,
+      "status-code": `${e?.response?.status as string}`,
       url: `<${apiName}-url>`,
     });
     return error;

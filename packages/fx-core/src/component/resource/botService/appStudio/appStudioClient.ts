@@ -161,7 +161,10 @@ export class AppStudioClient {
 
     try {
       const response = await RetryHandler.Retry(() =>
-        axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework/${botReg.botId}`, botReg)
+        axiosInstance.post(
+          `${AppStudioClient.baseUrl}/api/botframework/${botReg.botId || ""}`,
+          botReg
+        )
       );
       if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);

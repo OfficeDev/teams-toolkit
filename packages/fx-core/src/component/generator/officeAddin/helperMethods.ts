@@ -20,7 +20,7 @@ export class HelperMethods {
     projectRepo: string,
     projectBranch?: string
   ): Promise<void> {
-    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch}.zip`;
+    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
     return axios
       .get(projectTemplateZipFile, {
         responseType: "stream",
@@ -31,7 +31,9 @@ export class HelperMethods {
             .pipe(fs.createWriteStream(`${projectFolder}/${zipFile}`))
             .on("error", function (err: unknown) {
               reject(
-                `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
+                `Unable to download project zip file for "${projectTemplateZipFile}".\n${
+                  err.toString() as string
+                }`
               );
             })
             .on("close", async () => {
@@ -41,7 +43,11 @@ export class HelperMethods {
         });
       })
       .catch((err) => {
-        console.log(`Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`);
+        console.log(
+          `Unable to download project zip file for "${projectTemplateZipFile}".\n${
+            err.toString() as string
+          }`
+        );
       });
   }
 
@@ -52,7 +58,9 @@ export class HelperMethods {
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
         .on("error", function (err: unknown) {
-          reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
+          reject(
+            `Unable to unzip project zip file for "${projectFolder}".\n${err.toString() as string}`
+          );
         })
         .on("close", () => {
           HelperMethods.moveUnzippedFiles(projectFolder);

@@ -227,7 +227,7 @@ export class Lifecycle implements ILifecycle {
       resolveDriverDef(driver, resolved, unresolved);
       if (unresolved.length > 0) {
         ctx.logProvider.info(
-          `Unresolved placeholders(${unresolved}) found for Action ${this.stringifyDriverDef(
+          `Unresolved placeholders(${unresolved.toString()}) found for Action ${this.stringifyDriverDef(
             driver
           )} in lifecycle ${this.name}`
         );

@@ -117,9 +117,9 @@ export class AppStudioError {
   public static readonly GrantPermissionFailedError = {
     name: "GrantPermissionFailed",
     message: (errorMessage: string, id?: string): [string, string] => [
-      `${Constants.PERMISSIONS.name}: ${id}. ` +
+      `${Constants.PERMISSIONS.name}: ${id || ""}. ` +
         getDefaultString("error.appstudio.grantPermissionFailed", errorMessage),
-      `${Constants.PERMISSIONS.name}: ${id}. ` +
+      `${Constants.PERMISSIONS.name}: ${id || ""}. ` +
         getLocalizedString("error.appstudio.grantPermissionFailed", errorMessage),
     ],
   };

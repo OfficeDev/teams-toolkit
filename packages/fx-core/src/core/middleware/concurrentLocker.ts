@@ -53,7 +53,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   const lockFileDir = getLockFolder(inputs.projectPath);
   const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
   await fs.ensureDir(lockFileDir);
-  const taskName = `${ctx.method}${
+  const taskName = `${ctx.method || ""}${
     ctx.method === "executeUserTask" || ctx.method === "executeUserTaskOld"
       ? ` ${(ctx.arguments[0] as Func).method}`
       : ""
@@ -75,7 +75,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
             CoreSource,
             "concurrent-operation",
             new ConcurrentError(CoreSource),
-            { retry: retryNum + "", acquired: "true", doing: doingTask, todo: taskName }
+            { retry: retryNum.toString(), acquired: "true", doing: doingTask, todo: taskName }
           );
         }
         await next();
@@ -101,7 +101,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     TOOLS?.logProvider?.error(log);
     // failed for 10 times and finally failed
     sendTelemetryErrorEvent(CoreSource, "concurrent-operation", new ConcurrentError(CoreSource), {
-      retry: retryNum + "",
+      retry: retryNum.toString(),
       acquired: "false",
       doing: doingTask || "",
       todo: taskName,

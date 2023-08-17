@@ -54,7 +54,7 @@ export abstract class BaseBuildDriver {
     // add path to env if execPath is set
     let env: NodeJS.ProcessEnv | undefined = undefined;
     if (this.execPath) {
-      env = { PATH: `${this.execPath}${path.delimiter}${process.env.PATH}` };
+      env = { PATH: `${this.execPath}${path.delimiter}${process.env.PATH || ""}` };
     }
     await this.progressBar?.next(ProgressMessages.runCommand(command, this.workingDirectory));
     const res = await executeCommand(

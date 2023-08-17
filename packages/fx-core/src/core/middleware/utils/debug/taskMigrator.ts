@@ -265,7 +265,7 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
     }
 
     context.appYmlConfig.provision.bot = {
-      messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
+      messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint || ""}}}/api/messages`,
     };
 
     if (!context.appYmlConfig.deploy) {
@@ -298,7 +298,9 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
           context.appYmlConfig.provision.bot.messagingEndpoint =
             task["args"]["botMessagingEndpoint"];
         } else if (task["args"]["botMessagingEndpoint"].startsWith("/")) {
-          context.appYmlConfig.provision.bot.messagingEndpoint = `$\{{${context.placeholderMapping.botEndpoint}}}${task["args"]["botMessagingEndpoint"]}`;
+          context.appYmlConfig.provision.bot.messagingEndpoint = `$\{{${
+            context.placeholderMapping.botEndpoint || ""
+          }}}${task["args"]["botMessagingEndpoint"]}`;
         }
       }
     }
@@ -801,7 +803,7 @@ export function migratePreDebugCheck(context: DebugMigrationContext): Promise<vo
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
       context.appYmlConfig.provision.bot = {
-        messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
+        messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint || ""}}}/api/messages`,
       };
     }
 

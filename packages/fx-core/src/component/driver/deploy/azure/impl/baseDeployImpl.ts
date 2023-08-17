@@ -126,7 +126,7 @@ export abstract class BaseDeployImpl {
           summaries: [],
         };
       } else {
-        this.context.logProvider.error(`Unknown error: ${e}`);
+        this.context.logProvider.error(`Unknown error: ${e.toString() as string}`);
         return {
           result: err(BaseComponentInnerError.unknownError("Deploy", e).toFxError()),
           summaries: [],

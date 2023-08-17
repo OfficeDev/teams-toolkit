@@ -94,7 +94,9 @@ class BicepChecker {
     try {
       await fs.emptyDir(this.getBicepInstallDir());
     } catch (err) {
-      this._logger?.debug(`Failed to clean up path: ${this.getBicepInstallDir()}, error: ${err}`);
+      this._logger?.debug(
+        `Failed to clean up path: ${this.getBicepInstallDir()}, error: ${err.toString() as string}`
+      );
     }
   }
 
@@ -186,7 +188,9 @@ class BicepChecker {
         err,
         this._telemetry
       );
-      this._logger?.error(`${TelemtryMessages.failedToValidateBicep}, error = ${err}`);
+      this._logger?.error(
+        `${TelemtryMessages.failedToValidateBicep}, error = ${err.toString() as string}`
+      );
     }
 
     if (!isVersionSupported) {
@@ -268,7 +272,9 @@ class BicepChecker {
     if (!match) {
       return "";
     }
-    return `v${match.groups?.major_version}.${match.groups?.minor_version}.${match.groups?.patch_version}`;
+    return `v${match.groups?.major_version || ""}.${match.groups?.minor_version || ""}.${
+      match.groups?.patch_version || ""
+    }`;
   }
 }
 

@@ -87,7 +87,7 @@ export async function updateManifestV3(
     inputs.projectPath,
     AppPackageFolderName,
     BuildFolderName,
-    `manifest.${state.ENV_NAME}.json`
+    `manifest.${state.ENV_NAME!}.json`
   );
 
   // Prepare for driver

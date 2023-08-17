@@ -557,7 +557,9 @@ class Coordinator {
           targetResourceGroupInfo.location = inputLocation;
           targetResourceGroupInfo.createNewResourceGroup = true; // create resource group if not exists
         } else {
-          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
+          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${
+            inputs.env as string
+          }`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             inputs,
             ctx.azureAccountProvider,
@@ -892,7 +894,9 @@ class Coordinator {
       loginHint = accountRes.value.unique_name as string;
     }
     await ctx.userInteraction.openUrl(
-      `https://dev.teams.microsoft.com/apps/${updateRes.value}/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
+      `https://dev.teams.microsoft.com/apps/${
+        updateRes.value as string
+      }/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
     );
     return ok(undefined);
   }

@@ -95,20 +95,24 @@ class CLIEngine {
     }
   }
 
+  getUserSettings(): any {
+    if (this.userSettings) {
+      return this.userSettings;
+    }
+    const userSettingsRes = UserSettings.getConfigSync();
+    if (userSettingsRes.isErr()) {
+      return {};
+    }
+    this.userSettings = userSettingsRes.value;
+    return this.userSettings;
+  }
+
   async execute(
     context: CLIContext,
     root: CLICommand,
     remainingArgs: string[],
     debugLogs: string[]
   ): Promise<Result<undefined, FxError>> {
-    // read user settings
-    const userSettingsRes = UserSettings.getConfigSync();
-    if (userSettingsRes.isErr()) {
-      return err(userSettingsRes.error);
-    }
-
-    this.userSettings = userSettingsRes.value;
-
     // parse args
     const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
 
@@ -447,7 +451,7 @@ class CLIEngine {
         );
         context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
       } else {
-        const configValue = this.userSettings.interactive;
+        const configValue = this.getUserSettings().interactive;
         if (configValue !== undefined) {
           debugLogs.push(`set interactive from user settings (value=${configValue})`);
           context.globalOptionValues.interactive = configValue === "false" ? false : true;

@@ -47,29 +47,38 @@ import { getSystemInputs } from "../utils";
 import { helper } from "./helper";
 
 class CLIEngine {
+  /**
+   * @description cached debug logsd
+   */
+  debugLogs: string[] = [];
+
+  /**
+   * detect whether the process is a bundled electrop app
+   */
   isBundledElectronApp(): boolean {
     return process.versions && process.versions.electron && !(process as any).defaultApp
       ? true
       : false;
   }
 
-  userSettings: any;
-
+  /**
+   * entry point of the CLI engine
+   */
   async start(rootCmd: CLICommand): Promise<void> {
-    const debugLogs: string[] = [];
+    this.debugLogs = [];
 
     const root = cloneDeep(rootCmd);
 
     // get user args
     const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
-    debugLogs.push(`user argument list: ${JSON.stringify(args)}`);
+    this.debugLogs.push(`user argument list: ${JSON.stringify(args)}`);
 
     // find command
     const findRes = this.findCommand(rootCmd, args);
     const foundCommand = findRes.cmd;
     const remainingArgs = findRes.remainingArgs;
 
-    debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
+    this.debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
 
     const context: CLIContext = {
       command: foundCommand,
@@ -83,7 +92,7 @@ class CLIEngine {
       },
     };
 
-    const executeRes = await this.execute(context, root, remainingArgs, debugLogs);
+    const executeRes = await this.execute(context, root, remainingArgs);
     if (executeRes.isErr()) {
       this.processResult(context, executeRes.error);
     } else {
@@ -95,32 +104,25 @@ class CLIEngine {
     }
   }
 
-  getUserSettings(): any {
-    if (this.userSettings) {
-      return this.userSettings;
-    }
-    const userSettingsRes = UserSettings.getConfigSync();
-    if (userSettingsRes.isErr()) {
-      return {};
-    }
-    this.userSettings = userSettingsRes.value;
-    return this.userSettings;
+  isUserSettingsTelemetryEnable(): boolean {
+    const res = UserSettings.getTelemetrySetting();
+    if (res.isOk()) return res.value;
+    return true;
+  }
+
+  isUserSettingsInteractive(): boolean {
+    const res = UserSettings.getInteractiveSetting();
+    if (res.isOk()) return res.value;
+    return true;
   }
 
   async execute(
     context: CLIContext,
     root: CLICommand,
-    remainingArgs: string[],
-    debugLogs: string[]
+    remainingArgs: string[]
   ): Promise<Result<undefined, FxError>> {
     // parse args
-    const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
-
-    if (debugLogs.length) {
-      for (const log of debugLogs) {
-        logger.debug(log);
-      }
-    }
+    const parseRes = this.parseArgs(context, root, remainingArgs);
 
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
@@ -146,10 +148,10 @@ class CLIEngine {
       )}`
     );
 
-    const userSettingsTelemetry = this.userSettings.telemetry === "false" ? false : true;
+    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
 
     // send start event
-    if (userSettingsTelemetry && context.command.telemetry) {
+    if (telemetryEnabled && context.command.telemetry) {
       CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
     }
 
@@ -277,10 +279,8 @@ class CLIEngine {
   parseArgs(
     context: CLIContext,
     rootCommand: CLICommand,
-    args: string[],
-    debugLogs: string[]
+    args: string[]
   ): Result<undefined, UnknownOptionError> {
-    const i = 0;
     let argumentIndex = 0;
     const command = context.command;
     const options = (rootCommand.options || []).concat(command.options || []);
@@ -378,7 +378,7 @@ class CLIEngine {
             isGlobal: !isCommandOption,
           };
           if (option.value !== undefined) inputValues[inputKey] = option.value;
-          debugLogs.push(`find option: ${JSON.stringify(logObject)}`);
+          this.debugLogs.push(`find option: ${JSON.stringify(logObject)}`);
         } else {
           return err(new UnknownOptionError(command.fullName, token));
         }
@@ -406,7 +406,7 @@ class CLIEngine {
           if (option.default !== undefined) {
             option.value = option.default;
             context.optionValues[this.optionInputKey(option)] = option.default;
-            debugLogs.push(
+            this.debugLogs.push(
               `set required option with default value, ${option.name}=${JSON.stringify(
                 option.default
               )}`
@@ -422,7 +422,7 @@ class CLIEngine {
           if (argument.default !== undefined) {
             argument.value = argument.default;
             context.argumentValues[i] = argument.default as string;
-            debugLogs.push(
+            this.debugLogs.push(
               `set required argument with default value, ${argument.name}=${JSON.stringify(
                 argument.default
               )}`
@@ -439,6 +439,10 @@ class CLIEngine {
     // set log level
     const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;
     logger.logLevel = logLevel;
+    for (const log of this.debugLogs) {
+      logger.debug(log);
+    }
+    this.debugLogs = [];
 
     // special process for global options
     // interactive
@@ -446,20 +450,16 @@ class CLIEngine {
     // if `defaultInteractiveOption` is undefined, use default value = true
     if (context.globalOptionValues.interactive === undefined) {
       if (context.command.defaultInteractiveOption !== undefined) {
-        debugLogs.push(
+        logger.debug(
           `set interactive from command.defaultInteractiveOption (value=${context.command.defaultInteractiveOption})`
         );
         context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
       } else {
-        const configValue = this.getUserSettings().interactive;
-        if (configValue !== undefined) {
-          debugLogs.push(`set interactive from user settings (value=${configValue})`);
-          context.globalOptionValues.interactive = configValue === "false" ? false : true;
-        }
+        const configValue = this.isUserSettingsInteractive();
+        logger.debug(`set interactive from user settings (value=${configValue})`);
+        context.globalOptionValues.interactive = configValue;
       }
     }
-    if (context.globalOptionValues.interactive === undefined)
-      context.globalOptionValues.interactive = true;
 
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
@@ -560,8 +560,8 @@ class CLIEngine {
     return ok(undefined);
   }
   processResult(context?: CLIContext, fxError?: FxError): void {
-    const userSettingsTelemetry = (this.userSettings.telemetry as boolean) === false ? false : true;
-    if (context && context.command.telemetry && userSettingsTelemetry) {
+    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
+    if (context && context.command.telemetry && telemetryEnabled) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
           context.optionValues.env as string

@@ -71,7 +71,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "a,b,c"], []);
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "a,b,c"]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
@@ -95,12 +95,14 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(
-        ctx,
-        rootCommand,
-        ["--option1", "a", "--option1", "b", "--option1", "c"],
-        []
-      );
+      const result = engine.parseArgs(ctx, rootCommand, [
+        "--option1",
+        "a",
+        "--option1",
+        "b",
+        "--option1",
+        "c",
+      ]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
@@ -124,7 +126,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, ["--option1=a,b,c"], []);
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1=a,b,c"]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });

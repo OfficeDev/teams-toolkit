@@ -80,3 +80,12 @@ export class UnknownOptionError extends UserError {
     });
   }
 }
+
+export class UnknownArgumentError extends UserError {
+  constructor(command: string, name: string) {
+    super({
+      source: constants.cliSource,
+      message: util.format(strings["error.UnknownArgumentError"], command, name),
+    });
+  }
+}

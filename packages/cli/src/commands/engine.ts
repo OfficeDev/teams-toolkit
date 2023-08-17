@@ -35,6 +35,7 @@ import {
   InvalidChoiceError,
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
+  UnknownArgumentError,
   UnknownCommandError,
   UnknownOptionError,
 } from "../error";
@@ -364,6 +365,8 @@ class CLIEngine {
         if (command.arguments && command.arguments[argumentIndex]) {
           command.arguments[argumentIndex++].value = args[i];
           context.argumentValues.push(args[i]);
+        } else {
+          return err(new UnknownArgumentError(command.fullName, token));
         }
       }
     }

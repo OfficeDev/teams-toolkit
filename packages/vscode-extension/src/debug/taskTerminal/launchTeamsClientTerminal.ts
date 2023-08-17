@@ -22,7 +22,7 @@ import {
 } from "../constants";
 import { core, getSystemInputs } from "../../handlers";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { Hub } from "@microsoft/teamsfx-core";
+import { HubOptions } from "@microsoft/teamsfx-core";
 
 interface LaunchTeamsClientArgs {
   env?: string;
@@ -59,7 +59,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
 
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
-    inputs[CoreQuestionNames.M365Host] = Hub.teams;
+    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
     inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
     const result = await core.previewWithManifest(inputs);
@@ -68,7 +68,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
     }
     const launchUrl = result.value;
 
-    await VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
+    VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
       launchingTeamsClientDisplayMessages.launchUrlMessage(launchUrl)

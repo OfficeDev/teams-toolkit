@@ -29,6 +29,7 @@ import path from "path";
 import * as uuid from "uuid";
 import { getFxCore } from "../activate";
 import { TextType, colorize } from "../colorize";
+import { tryDetectCICDPlatform } from "../commonlib/common/cicdPlatformDetector";
 import { logger } from "../commonlib/logger";
 import Progress from "../console/progress";
 import {
@@ -36,16 +37,14 @@ import {
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
   UnknownArgumentError,
-  UnknownCommandError,
   UnknownOptionError,
 } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
+import { CliConfigOptions } from "../userSetttings";
 import { getSystemInputs } from "../utils";
 import { helper } from "./helper";
-import { tryDetectCICDPlatform } from "../commonlib/common/cicdPlatformDetector";
-import { CliConfigOptions } from "../userSetttings";
 
 class CLIEngine {
   isBundledElectronApp(): boolean {
@@ -58,31 +57,15 @@ class CLIEngine {
 
     const root = cloneDeep(rootCmd);
 
-    // 0. get user args
+    // get user args
     const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
     debugLogs.push(`user argument list: ${JSON.stringify(args)}`);
 
-    // 1. find command
+    // find command
     const findRes = this.findCommand(rootCmd, args);
-    if (findRes.isErr()) {
-      this.printError(findRes.error);
-      const helpText = helper.formatHelp(rootCmd);
-      logger.info(helpText);
-      return;
-    }
-    const foundCommand = findRes.value.cmd;
-    const remainingArgs = findRes.value.remainingArgs;
+    const foundCommand = findRes.cmd;
+    const remainingArgs = findRes.remainingArgs;
 
-    // if command has no handler, print help text
-    if (!foundCommand.handler) {
-      if (remainingArgs.length) {
-        const error = new UnknownCommandError(remainingArgs[0]);
-        this.printError(error);
-      }
-      const helpText = helper.formatHelp(foundCommand, rootCmd);
-      logger.info(helpText);
-      return;
-    }
     debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
 
     const context: CLIContext = {
@@ -97,7 +80,25 @@ class CLIEngine {
       },
     };
 
-    // 2. parse args
+    const executeRes = await this.execute(context, root, remainingArgs, debugLogs);
+    if (executeRes.isErr()) {
+      this.processResult(context, executeRes.error);
+    } else {
+      this.processResult(context);
+    }
+    if (context.command.name !== "preview") {
+      // TODO: consider to remove the hardcode
+      process.exit();
+    }
+  }
+
+  async execute(
+    context: CLIContext,
+    root: CLICommand,
+    remainingArgs: string[],
+    debugLogs: string[]
+  ): Promise<Result<undefined, FxError>> {
+    // parse args
     const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
 
     if (debugLogs.length) {
@@ -136,15 +137,13 @@ class CLIEngine {
     }
 
     if (parseRes.isErr()) {
-      this.processResult(context, parseRes.error);
-      return;
+      return err(parseRes.error);
     }
 
     // 3. --version
     if (context.optionValues.version === true || context.globalOptionValues.version === true) {
-      logger.info(rootCmd.version ?? "1.0.0");
-      this.processResult(context);
-      return;
+      logger.info(root.version ?? "1.0.0");
+      return ok(undefined);
     }
 
     // 4. --help
@@ -154,79 +153,87 @@ class CLIEngine {
         context.command.fullName !== root.fullName ? root : undefined
       );
       logger.info(helpText);
-      this.processResult(context);
-      return;
+      return ok(undefined);
     }
 
     // 5. validate
     if (!context.globalOptionValues.interactive) {
       const validateRes = this.validateOptionsAndArguments(context.command);
       if (validateRes.isErr()) {
-        this.processResult(context, validateRes.error);
-        return;
+        return err(validateRes.error);
       }
     } else {
       // discard other options and args for interactive mode
-      context.optionValues = pick(context.optionValues, [
+      const trimOptionValues = pick(context.optionValues, [
         "projectPath",
         "correlationId",
         "platform",
       ]);
-      logger.info(
-        `Some arguments/options are useless because the interactive mode is opened.` +
-          ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-          ` or set the global setting by 'teamsfx config set interactive false'.`
-      );
+      if (
+        Object.keys(trimOptionValues).length < Object.keys(context.optionValues).length &&
+        context.argumentValues.length
+      ) {
+        logger.info(
+          `Some arguments/options are useless because the interactive mode is opened.` +
+            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
+            ` or set the global setting by 'teamsfx config set interactive false'.`
+        );
+        context.optionValues = trimOptionValues;
+        context.argumentValues = [];
+      }
     }
 
-    try {
-      // 6. version check
-      const inputs = getSystemInputs(context.optionValues.projectPath as string);
-      inputs.ignoreEnvInfo = true;
-      const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
-      if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
-        const core = getFxCore();
-        const res = await core.projectVersionCheck(inputs);
-        if (res.isErr()) {
-          throw res.error;
-        } else {
-          if (res.value.isSupport === VersionState.unsupported) {
-            throw IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion");
-          } else if (res.value.isSupport === VersionState.upgradeable) {
-            const upgrade = await core.phantomMigrationV3(inputs);
-            if (upgrade.isErr()) {
-              throw upgrade.error;
-            }
+    // 6. version check
+    const inputs = getSystemInputs(context.optionValues.projectPath as string);
+    inputs.ignoreEnvInfo = true;
+    const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
+    if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
+      const core = getFxCore();
+      const res = await core.projectVersionCheck(inputs);
+      if (res.isErr()) {
+        return err(res.error);
+      } else {
+        if (res.value.isSupport === VersionState.unsupported) {
+          return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
+        } else if (res.value.isSupport === VersionState.upgradeable) {
+          const upgrade = await core.phantomMigrationV3(inputs);
+          if (upgrade.isErr()) {
+            return err(upgrade.error);
           }
         }
       }
+    }
 
+    try {
       // 7. run handler
-      const handleRes = await Correlator.run(context.command.handler!, context);
-      // const handleRes = await context.command.handler(context);
-      if (handleRes.isErr()) {
-        this.processResult(context, handleRes.error);
+      if (context.command.handler) {
+        const handleRes = await Correlator.run(context.command.handler, context);
+        if (handleRes.isErr()) {
+          return err(handleRes.error);
+        }
       } else {
-        this.processResult(context);
+        const helpText = helper.formatHelp(context.command, root);
+        logger.info(helpText);
       }
     } catch (e) {
-      Progress.end(false); // TODO to remove this in the future
-      const fxError = assembleError(e);
-      this.processResult(context, fxError);
+      Progress.end(false);
+      return err(assembleError(e));
     } finally {
       await CliTelemetry.flush();
-      Progress.end(true); // TODO to remove this in the future
+      Progress.end(true);
       if (context.command.name !== "preview") {
         // TODO: consider to remove the hardcode
         process.exit();
       }
     }
+
+    return ok(undefined);
   }
 
   findCommand(
     model: CLICommand,
     args: string[]
-  ): Result<{ cmd: CLIFoundCommand; remainingArgs: string[] }, UnknownCommandError> {
+  ): { cmd: CLIFoundCommand; remainingArgs: string[] } {
     let i = 0;
     let cmd = model;
     let token: string | undefined;
@@ -239,14 +246,11 @@ class CLIEngine {
         break;
       }
     }
-    if (cmd === model) {
-      return err(new UnknownCommandError(token ?? ""));
-    }
     const command: CLIFoundCommand = {
       fullName: [model.name, ...args.slice(0, i)].join(" "),
       ...cloneDeep(cmd),
     };
-    return ok({ cmd: command, remainingArgs: args.slice(i) });
+    return { cmd: command, remainingArgs: args.slice(i) };
   }
 
   optionInputKey(option: CLICommandOption | CLICommandArgument) {

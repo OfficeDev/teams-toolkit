@@ -323,7 +323,7 @@ export async function getAppPackage(
     const zip = new AdmZip(buffer);
     const zipEntries = zip.getEntries(); // an array of ZipEntry records
 
-    zipEntries?.forEach(async function (zipEntry) {
+    zipEntries?.forEach(function (zipEntry) {
       const data = zipEntry.getData();
       const name = zipEntry.entryName.toLowerCase();
       switch (name) {
@@ -343,9 +343,7 @@ export async function getAppPackage(
           if (supportedLanguageCodes.findIndex((code) => code === base) > -1) {
             set(appPackage, ["languages", base], data);
           } else {
-            await logProvider?.warning(
-              getLocalizedString("plugins.appstudio.unprocessedFile", name)
-            );
+            logProvider?.warning(getLocalizedString("plugins.appstudio.unprocessedFile", name));
           }
       }
     });

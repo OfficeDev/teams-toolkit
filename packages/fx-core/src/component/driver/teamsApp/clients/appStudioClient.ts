@@ -148,7 +148,7 @@ export namespace AppStudioClient {
 
       if (response && response.data) {
         const app = <AppDefinition>response.data;
-        await logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
+        logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
         sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
         return app;
       } else {
@@ -237,9 +237,7 @@ export namespace AppStudioClient {
           sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP);
           return app;
         } else {
-          await logProvider?.error(
-            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
-          );
+          logProvider?.error(`teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`);
         }
       }
     } catch (e) {

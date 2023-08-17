@@ -143,7 +143,7 @@ export class Generator {
   }
 }
 
-export async function templateDefaultOnActionError(
+export function templateDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
@@ -153,19 +153,20 @@ export async function templateDefaultOnActionError(
     case GeneratorActionName.FetchZipFromUrl:
       context.cancelDownloading = true;
       if (!(error instanceof CancelDownloading)) {
-        await context.logProvider.info(error.message);
-        await context.logProvider.info(LogMessages.getTemplateFromLocal);
+        context.logProvider.info(error.message);
+        context.logProvider.info(LogMessages.getTemplateFromLocal);
       }
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
-      await context.logProvider.error(error.message);
-      throw new TemplateZipFallbackError().toFxError();
+      context.logProvider.error(error.message);
+      return Promise.reject(new TemplateZipFallbackError().toFxError());
     case GeneratorActionName.Unzip:
-      await context.logProvider.error(error.message);
-      throw new UnzipError().toFxError();
+      context.logProvider.error(error.message);
+      return Promise.reject(new UnzipError().toFxError());
     default:
-      throw new Error(error.message);
+      return Promise.reject(new Error(error.message));
   }
+  return Promise.resolve();
 }
 
 export async function sampleDefaultOnActionError(
@@ -173,7 +174,7 @@ export async function sampleDefaultOnActionError(
   context: GeneratorContext,
   error: Error
 ): Promise<void> {
-  await context.logProvider.error(error.message);
+  context.logProvider.error(error.message);
   switch (action.name) {
     case GeneratorActionName.DownloadDirectory:
       if (await fs.pathExists(context.destination)) {

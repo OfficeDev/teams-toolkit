@@ -72,7 +72,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       args,
       AzureStorageStaticWebsiteConfigDriver.HELP_LINK
     );
-    await logger.debug(
+    logger.debug(
       `Enabling static website feature for Azure Storage account ${input.storageResourceId}`
     );
     const azureInfo = parseAzureResourceId(
@@ -83,7 +83,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     const azureBlobClient = await createBlobServiceClient(azureInfo, azureTokenCredential);
 
     if (await this.isStorageStatusWebsiteEnabled(azureInfo, azureBlobClient, context)) {
-      await logger.debug(
+      logger.debug(
         `Static website feature is already enabled for Azure Storage account ${input.storageResourceId}.`
       );
       return AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE;
@@ -120,7 +120,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     azureBlobClient: BlobServiceClient,
     context: DriverContext
   ): Promise<boolean> {
-    await context.logProvider.debug(
+    context.logProvider.debug(
       `Checking if static website feature is enabled in Azure Storage account '${azureInfo.instanceId}'.`
     );
     return await wrapAzureOperation(

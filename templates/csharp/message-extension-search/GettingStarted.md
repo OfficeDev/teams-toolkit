@@ -8,7 +8,7 @@
 to install the app to
 4. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 5. In the launched browser, select the Add button to load the app in Teams
-7. You can search nuget package from compose message area, or from the command box.
+6. You can search nuget package from compose message area, or from the command box.
 
 ## Learn more
 

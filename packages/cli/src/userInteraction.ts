@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { confirm, input, password } from "@inquirer/prompts";
+"use stricts";
+
+import chalk from "chalk";
+import fs from "fs-extra";
+import inquirer, { DistinctQuestion } from "inquirer";
+import open from "open";
+import path from "path";
+
 import {
   Colors,
   FxError,
@@ -27,27 +34,25 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+
 import {
   InputValidationError,
   MissingRequiredInputError,
   SelectSubscriptionError,
+  UnhandledError,
   assembleError,
   loadingOptionsPlaceholder,
 } from "@microsoft/teamsfx-core";
-import fs from "fs-extra";
-import open from "open";
-import path from "path";
-import * as util from "util";
 import CLILogProvider from "./commonlib/log";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
 import { cliSource } from "./constants";
-import { globals } from "./globals";
-import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
-import { strings } from "./resource";
+import { ChoiceOptions } from "./prompts";
 import { UserSettings } from "./userSetttings";
 import { getColorizedString, toLocaleLowerCase } from "./utils";
-
+import * as util from "util";
+import { strings } from "./resource";
+import { globals } from "./globals";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
@@ -152,160 +157,128 @@ class CLIUserInteraction implements UserInteraction {
     this.presetAnswers = new Map();
   }
 
-  private async checkIfSkip<T>(
-    name: string,
-    defaultValue?: T,
-    validate?: (value: string) => boolean | string | Promise<string | boolean>
-  ): Promise<Result<T | undefined, FxError>> {
-    if (this.presetAnswers.has(name)) {
-      const answer = this.presetAnswers.get(name);
-      const result = await validate?.(answer);
+  private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
+    const questionName = question.name!;
+    if (this.presetAnswers.has(questionName)) {
+      const answer = this.presetAnswers.get(questionName);
+      if (answer === undefined) {
+        /// TOOD: this is only for APIM
+        return ok(answer);
+      }
+      const result = await question.validate?.(answer);
       if (typeof result === "string") {
-        return err(new InputValidationError(name, result));
+        return err(new InputValidationError(questionName, result));
       }
       return ok(answer);
     }
 
     /// non-interactive.
     if (!this.interactive) {
-      if (defaultValue !== undefined) {
+      if (question.default !== undefined) {
         // if it has a defualt value, return it at first.
-        return ok(defaultValue);
+        return ok(question.default);
       }
-      if (globals.options.includes(name)) {
+      if (globals.options.includes(questionName)) {
         // if the question is the required option, return error if value is missing
-        return err(new MissingRequiredInputError(name, cliSource));
+        return err(new MissingRequiredInputError(questionName, cliSource));
+      }
+      if (
+        question.type === "list" &&
+        Array.isArray(question.choices) &&
+        question.choices.length > 0
+      ) {
+        // if it is a single select, return the first choice.
+        const firstChoice = question.choices[0];
+        if (typeof firstChoice === "string") {
+          // TODO: maybe prevent type casting with compile time type assertions or method overloading?
+          return ok(firstChoice as any);
+        } else {
+          return ok((firstChoice as ChoiceOptions).name as any);
+        }
+      } else if (question.type === "checkbox") {
+        // if it is a multi select, return an empty array.
+        return ok([] as any);
+      } else {
+        return ok(question.default);
       }
     }
-    return ok(undefined);
+    try {
+      ScreenManager.pause();
+      const anwsers = await inquirer.prompt([question]);
+      ScreenManager.continue();
+      return ok(anwsers[question.name!]);
+    } catch (e) {
+      return err(new UnhandledError(e as Error, cliSource));
+    }
+  }
+
+  private toInquirerQuestion<T>(
+    type: "input" | "number" | "password" | "list" | "checkbox" | "confirm",
+    name: string,
+    message: string,
+    choices?: string[] | ChoiceOptions[],
+    defaultValue?: T,
+    validate?: ValidationType<T>
+  ): DistinctQuestion {
+    return {
+      type,
+      name,
+      message: chalk.whiteBright.bold(message),
+      choices,
+      default: defaultValue,
+      validate,
+      prefix: chalk.blueBright("?"),
+      suffix: chalk.whiteBright.bold(":"),
+    };
   }
 
   async singleSelect(
     name: string,
     message: string,
-    choices: SelectChoice[],
-    defaultValue?: string
+    choices: ChoiceOptions[],
+    defaultValue?: string,
+    validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok(choices[0].id);
-    }
-    ScreenManager.pause();
-    const answer = await select({
-      message,
-      choices,
-      defaultValue,
-    });
-    ScreenManager.continue();
-    return ok(answer);
+    return this.runInquirer(
+      this.toInquirerQuestion("list", name, message, choices, defaultValue, validate)
+    );
   }
 
   async multiSelect(
     name: string,
     message: string,
-    choices: CheckboxChoice[],
-    defaultValues?: string[]
+    choices: ChoiceOptions[],
+    defaultValue?: string[],
+    validate?: ValidationType<string[]>
   ): Promise<Result<string[], FxError>> {
-    const check = await this.checkIfSkip(name, defaultValues);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok([]);
-    }
-    ScreenManager.pause();
-    const answer = await checkbox({
-      message,
-      choices,
-      defaultValues,
-    });
-    ScreenManager.continue();
-    return ok(answer);
+    return this.runInquirer(
+      this.toInquirerQuestion("checkbox", name, message, choices, defaultValue, validate)
+    );
   }
 
-  async input(
+  private async input(
     name: string,
+    password: boolean,
     message: string,
     defaultValue?: string,
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue, validate);
-    if (check.isErr()) {
-      return err(check.error);
+    if (!password) {
+      return this.runInquirer(
+        this.toInquirerQuestion("input", name, message, undefined, defaultValue, validate)
+      );
+    } else {
+      return this.runInquirer(
+        this.toInquirerQuestion("password", name, message, undefined, defaultValue, validate)
+      );
     }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok("");
-    }
-    ScreenManager.pause();
-    const answer = await input({
-      message,
-      default: defaultValue,
-      validate,
-    });
-    ScreenManager.continue();
-    return ok(answer);
   }
 
-  async password(
-    name: string,
-    message: string,
-    defaultValue?: string,
-    validate?: ValidationType<string>
-  ): Promise<Result<string, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue, validate);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok("");
-    }
-    ScreenManager.pause();
-    const answer = await password({
-      message,
-      mask: "*",
-      validate,
-    });
-    ScreenManager.continue();
-    return ok(answer);
-  }
-
-  async confirm(
-    name: string,
-    message: string,
-    defaultValue?: boolean
-  ): Promise<Result<boolean, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok(true);
-    }
-    ScreenManager.pause();
-    const answer = await confirm({
-      message,
-      default: defaultValue ?? true,
-    });
-    ScreenManager.continue();
-    return ok(answer);
+  private async confirm(name: string, message: string): Promise<Result<boolean, FxError>> {
+    /// default value is set to true.
+    return this.runInquirer(
+      this.toInquirerQuestion("confirm", name, message, undefined, true, undefined)
+    );
   }
 
   private findIndex(choices: (string | undefined)[], answer?: string): number {
@@ -321,7 +294,7 @@ class CLIUserInteraction implements UserInteraction {
     return indexes.map((index) => array[index]);
   }
 
-  private toChoices<T>(option: StaticOptions, defaultValue?: T): [SelectChoice[], T | undefined] {
+  private toChoices<T>(option: StaticOptions, defaultValue?: T): [ChoiceOptions[], T | undefined] {
     const labelClean = (label: string) => {
       return label
         .replace("$(browser)", "")
@@ -331,37 +304,46 @@ class CLIUserInteraction implements UserInteraction {
     if (typeof option[0] === "string") {
       const choices = (option as string[]).map((op) => {
         return {
-          id: op,
-          title: op,
+          name: op,
+          extra: {
+            title: op,
+          },
         };
       });
       return [choices, defaultValue];
     } else {
       const choices = (option as OptionItem[]).map((op) => {
         return {
-          id: op.id,
-          title: labelClean(op.label),
-          detail: op.detail,
+          name: op.id,
+          extra: {
+            title: labelClean(op.label),
+            description: op.description,
+            detail: op.detail,
+          },
         };
       });
       const ids = (option as OptionItem[]).map((op) => op.id);
       if (typeof defaultValue === "string" || typeof defaultValue === "undefined") {
         const index = this.findIndex(ids, defaultValue);
-        return [choices, choices[index]?.id as any];
+        return [choices, choices[index]?.name as any];
       } else {
         const indexes = this.findIndexes(ids, defaultValue as any);
-        return [choices, this.getSubArray(choices, indexes).map((choice) => choice.id) as any];
+        return [choices, this.getSubArray(choices, indexes).map((choice) => choice.name) as any];
       }
     }
   }
 
-  private toValidationFunc(
-    validate?: (input: string) => string | undefined | Promise<string | undefined>,
+  private toValidationFunc<T>(
+    validate?: (input: T) => string | undefined | Promise<string | undefined>,
     mapping?: { [x: string]: string }
-  ): ValidationType<string> {
-    return async (input: string) => {
+  ): ValidationType<T> {
+    return async (input: T) => {
       if (mapping) {
-        input = mapping[input];
+        if (typeof input === "string") {
+          input = mapping[input] as any;
+        } else if (Array.isArray(input)) {
+          input = input.map((i) => mapping[i]) as any;
+        }
       }
       const result = await validate?.(input);
       if (result === undefined) {
@@ -409,10 +391,16 @@ class CLIUserInteraction implements UserInteraction {
       config.options as StaticOptions,
       config.default as string
     );
-    const result = await this.singleSelect(config.name, config.title, choices, defaultValue);
+    const result = await this.singleSelect(
+      config.name,
+      config.title,
+      choices,
+      defaultValue,
+      this.toValidationFunc(config.validation)
+    );
     if (result.isOk()) {
       const index = this.findIndex(
-        choices.map((choice) => choice.id),
+        choices.map((choice) => choice.name),
         result.value
       );
       if (index < 0) {
@@ -421,7 +409,7 @@ class CLIUserInteraction implements UserInteraction {
           util.format(
             strings["error.InvalidOptionErrorReason"],
             result.value,
-            choices.map((choice) => choice.id).join(",")
+            choices.map((choice) => choice.name).join(",")
           )
         );
         error.source = cliSource;
@@ -512,10 +500,16 @@ class CLIUserInteraction implements UserInteraction {
       config.options as StaticOptions,
       config.default as string[]
     );
-    const result = await this.multiSelect(config.name, config.title, choices, defaultValue);
+    const result = await this.multiSelect(
+      config.name,
+      config.title,
+      choices,
+      defaultValue,
+      this.toValidationFunc(config.validation)
+    );
     if (result.isOk()) {
       const indexes = this.findIndexes(
-        choices.map((choice) => choice.id),
+        choices.map((choice) => choice.name),
         result.value
       );
       if (result.value.length > 0 && indexes.length === 0) {
@@ -525,7 +519,7 @@ class CLIUserInteraction implements UserInteraction {
           util.format(
             strings["error.InvalidOptionErrorReason"],
             result.value.join(","),
-            choices.map((choice) => choice.id).join(",")
+            choices.map((choice) => choice.name).join(",")
           )
         );
         error.source = cliSource;
@@ -574,8 +568,9 @@ class CLIUserInteraction implements UserInteraction {
         return res;
       };
     }
-    const result = await (config.password ? this.password.bind(this) : this.input.bind(this))(
+    const result = await this.input(
       config.name,
+      !!config.password,
       config.title,
       config.default as string,
       this.toValidationFunc(validationFunc)
@@ -708,7 +703,7 @@ class CLIUserInteraction implements UserInteraction {
         }
         return ok(undefined);
       case 1: {
-        const result = await this.confirm("showMessageName", plainText);
+        const result = await this.confirm("MyConfirmQuestion", plainText);
         if (result.isOk()) {
           if (result.value) {
             return ok(items[0]);
@@ -725,7 +720,12 @@ class CLIUserInteraction implements UserInteraction {
           modal ? items.concat("Cancel") : items,
           items[0]
         );
-        const result = await this.singleSelect("showMessageName", plainText, choices, defaultValue);
+        const result = await this.singleSelect(
+          "MySingleSelectQuestion",
+          plainText,
+          choices,
+          defaultValue
+        );
         if (result.isOk()) {
           if (result.value !== "Cancel") {
             return ok(result.value);

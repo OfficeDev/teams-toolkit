@@ -1,202 +1,145 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AsyncPromptConfig,
-  Separator,
-  createPrompt,
-  isDownKey,
-  isEnterKey,
-  isNumberKey,
-  isSpaceKey,
-  isUpKey,
-  useKeypress,
-  usePagination,
-  usePrefix,
-  useState,
-} from "@inquirer/core";
-import type {} from "@inquirer/type";
-import ansiEscapes from "ansi-escapes";
+import _ from "lodash";
 import chalk from "chalk";
 import figures from "figures";
+import inquirer from "inquirer";
+import { Interface as ReadlineInterface } from "readline";
+import CheckboxPrompt from "inquirer/lib/prompts/checkbox";
+
+import ScreenManager from "../console/screen";
 import { addChoiceDetail } from "./utils";
+import Choice from "inquirer/lib/objects/choice";
 
-export type Choice = {
-  id: string;
-  title: string;
-  detail?: string;
-  checked?: boolean;
-  disabled?: boolean | string;
-};
+/**
+ * The question-options for the `ChoicePrompt<T>`.
+ */
+export type Question = inquirer.CheckboxQuestionOptions<inquirer.Answers>;
 
-export type Config = AsyncPromptConfig & {
-  prefix?: string;
-  pageSize?: number;
-  instructions?: string | boolean;
-  choices: ReadonlyArray<Choice | Separator>;
-  defaultValues?: ReadonlyArray<string>;
-};
+export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
+  private selection: string[] = [];
 
-function isSelectableChoice(choice: undefined | Separator | Choice): choice is Choice {
-  return choice != null && !Separator.isSeparator(choice) && !choice.disabled;
+  constructor(questions: Question, rl: ReadlineInterface, answers: inquirer.Answers) {
+    super(questions, rl, answers);
+    (this.paginator as any).isInfinite = false;
+  }
+
+  /**
+   * Render the prompt to screen
+   * @return {CustomizedCheckboxPrompt} self
+   */
+  render(error?: string): void {
+    // Render question
+    let message = this.getQuestion();
+    let bottomContent = "";
+
+    if (this.status !== "answered") {
+      message +=
+        "(Press " +
+        chalk.magentaBright("<space>") +
+        " to select, " +
+        chalk.magentaBright("<a>") +
+        " to toggle all, " +
+        chalk.magentaBright("<i>") +
+        " to invert selection)";
+    }
+
+    // Render choices or answer depending on the state
+    if (this.status === "answered") {
+      const selection = this.selection
+        .map((sel) => this.opt.choices.realChoices.find((ch) => ch.name === sel))
+        .map((ch) => (ch as Choice).extra.title);
+      message += chalk.cyan(selection.join(", "));
+    } else {
+      const [choicesStr, choicesStrs] = renderChoices(this.opt.choices, this.pointer);
+      const indexPosition = this.opt.choices.indexOf(
+        this.opt.choices.getChoice(this.pointer) as any
+      );
+      const realIndexPosition =
+        (this.opt.choices as any).reduce((acc: number, value: any, i: number) => {
+          // Dont count lines past the choice we are looking at
+          if (i > indexPosition) {
+            return acc;
+          }
+          // Add line if it's a separator
+          // if (value.type === "separator") {
+          //   return acc + 1;
+          // }
+
+          const l = choicesStrs[i];
+          // Non-strings take up one line
+          // if (typeof l !== "string") {
+          //   return acc + 1;
+          // }
+
+          // Calculate lines taken up by string
+          return acc + l.split("\n").length;
+        }, 0) - 1;
+      message += "\n" + this.paginator.paginate(choicesStr, realIndexPosition);
+    }
+
+    if (error) {
+      bottomContent = chalk.red(">> ") + error;
+    }
+
+    ScreenManager["moveCursorDown"](0);
+    this.screen.render(message, bottomContent);
+  }
 }
 
-export const checkbox = createPrompt(
-  (config: Config, done: (value: Array<string>) => void): string => {
-    const { prefix = usePrefix(), instructions, defaultValues = [] } = config;
-
-    const [status, setStatus] = useState("pending");
-    const [choices, setChoices] = useState<Array<Separator | Choice>>(() =>
-      config.choices.map((choice) => {
-        if (!Separator.isSeparator(choice)) {
-          return { ...choice, checked: defaultValues.includes(choice.id) };
-        }
-
-        return choice;
-      })
+/**
+ * Function for rendering checkbox choices
+ * @param  {Number} pointer Position of the pointer
+ * @return {String}         Rendered content
+ */
+function renderChoices(choices: any, pointer: number): [string, string[]] {
+  let output = "";
+  let separatorOffset = 0;
+  let prefixWidth = 1;
+  choices.forEach((choice: any) => {
+    prefixWidth = Math.max(
+      prefixWidth,
+      choice.disabled || !choice.extra?.title ? 0 : choice.extra.title.length + 1
     );
-    const [cursorPosition, setCursorPosition] = useState(0);
-    const [showHelpTip, setShowHelpTip] = useState(true);
+  });
 
-    useKeypress((key) => {
-      let newCursorPosition = cursorPosition;
-      if (isEnterKey(key)) {
-        setStatus("done");
-        done(
-          choices
-            .filter((choice) => isSelectableChoice(choice) && choice.checked)
-            .map((choice) => (choice as Choice).id)
-        );
-      } else if (isUpKey(key) || isDownKey(key)) {
-        const offset = isUpKey(key) ? -1 : 1;
-        let selectedOption;
-
-        while (!isSelectableChoice(selectedOption)) {
-          newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
-          selectedOption = choices[newCursorPosition];
-        }
-
-        setCursorPosition(newCursorPosition);
-      } else if (isSpaceKey(key)) {
-        setShowHelpTip(false);
-        setChoices(
-          choices.map((choice, i) => {
-            if (i === cursorPosition && isSelectableChoice(choice)) {
-              return { ...choice, checked: !choice.checked };
-            }
-
-            return choice;
-          })
-        );
-      } else if (key.name === "a") {
-        const selectAll = Boolean(
-          choices.find((choice) => isSelectableChoice(choice) && !choice.checked)
-        );
-        setChoices(
-          choices.map((choice) =>
-            isSelectableChoice(choice) ? { ...choice, checked: selectAll } : choice
-          )
-        );
-      } else if (key.name === "i") {
-        setChoices(
-          choices.map((choice) =>
-            isSelectableChoice(choice) ? { ...choice, checked: !choice.checked } : choice
-          )
-        );
-      } else if (isNumberKey(key)) {
-        // Adjust index to start at 1
-        const position = Number(key.name) - 1;
-
-        // Abort if the choice doesn't exists or if disabled
-        if (!isSelectableChoice(choices[position])) {
-          return;
-        }
-
-        setCursorPosition(position);
-        setChoices(
-          choices.map((choice, i) => {
-            if (i === position && isSelectableChoice(choice)) {
-              return { ...choice, checked: !choice.checked };
-            }
-
-            return choice;
-          })
-        );
-      }
-    });
-
-    const message = chalk.bold(config.message);
-    const allChoices = choices
-      .map((choice, index) => {
-        if (Separator.isSeparator(choice)) {
-          return choice.separator;
-        }
-
-        if (choice.disabled) {
-          const disabledLabel =
-            typeof choice.disabled === "string" ? choice.disabled : "(disabled)";
-          return chalk.dim(`--- ${choice.title} ${disabledLabel}`);
-        }
-
-        let prefixWidth = 1;
-        (choices as Choice[]).forEach((choice) => {
-          prefixWidth = Math.max(
-            prefixWidth,
-            choice.disabled || !choice.title ? 0 : choice.title.length + 1
-          );
-        });
-
-        let output = "";
-        if (index === cursorPosition) {
-          output += `${getCheckbox(!!choice.checked)} ${chalk.blueBright(choice.title)}`;
-        } else {
-          output += `${getCheckbox(!!choice.checked)} ${chalk.whiteBright(choice.title)}`;
-        }
-
-        if (choice.detail) {
-          output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
-        }
-
-        return output;
-      })
-      .join("\n");
-    /// not infinit
-    if (cursorPosition === 0) {
-      usePagination(allChoices, {
-        active: cursorPosition,
-        pageSize: config.pageSize,
-      });
-    }
-    const windowedChoices = usePagination(allChoices, {
-      active: cursorPosition,
-      pageSize: config.pageSize,
-    });
-
-    if (status === "done") {
-      const selection = choices
-        .filter((choice) => isSelectableChoice(choice) && choice.checked)
-        .map((choice) => (choice as Choice).title);
-      return `${prefix} ${message} ${chalk.cyan(selection.join(", "))}`;
+  const outputs: string[] = [];
+  choices.forEach((choice: any, i: number) => {
+    output = "";
+    if (choice.type === "separator") {
+      separatorOffset++;
+      output += " " + choice + "\n";
+      return;
     }
 
-    let helpTip = "";
-    if (showHelpTip && (instructions === undefined || instructions)) {
-      if (typeof instructions === "string") {
-        helpTip = instructions;
+    if (choice.disabled) {
+      separatorOffset++;
+      output += " - " + choice.extra.title;
+      output += " (" + (_.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
+    } else {
+      if (i - separatorOffset === pointer) {
+        output += getCheckbox(choice.checked) + " " + chalk.blueBright(choice.extra.title);
       } else {
-        const keys = [
-          `${chalk.cyan.bold("<space>")} to select`,
-          `${chalk.cyan.bold("<a>")} to toggle all`,
-          `${chalk.cyan.bold("<i>")} to invert selection`,
-          `and ${chalk.cyan.bold("<enter>")} to proceed`,
-        ];
-        helpTip = ` (Press ${keys.join(", ")})`;
+        output += getCheckbox(choice.checked) + " " + chalk.whiteBright(choice.extra.title);
+      }
+
+      if (choice.extra.detail) {
+        output = addChoiceDetail(
+          output,
+          choice.extra.detail,
+          choice.extra.title.length,
+          prefixWidth
+        );
       }
     }
 
-    return `${prefix} ${message}${helpTip}\n${windowedChoices}${ansiEscapes.cursorHide}`;
-  }
-);
+    output += "\n";
+    outputs.push(output.replace(/\n$/, ""));
+  });
+
+  return [outputs.join("\n"), outputs];
+}
 
 /**
  * Get the checkbox

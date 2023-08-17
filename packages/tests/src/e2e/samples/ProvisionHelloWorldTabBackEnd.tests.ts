@@ -6,12 +6,13 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class HelloWorldTabBackEndTestCase extends CaseFactory {}
+
+new HelloWorldTabBackEndTestCase(
   TemplateProjectFolder.HelloWorldTabBackEnd,
   15277459,
   "v-ivanchen@microsoft.com",
   ["tab"]
-);
-sampleCase.test();
+).test();

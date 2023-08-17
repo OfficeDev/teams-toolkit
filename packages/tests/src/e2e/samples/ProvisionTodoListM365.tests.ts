@@ -6,12 +6,13 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class TodoListM365TestCase extends CaseFactory {}
+
+new TodoListM365TestCase(
   TemplateProjectFolder.TodoListM365,
   15277470,
   "v-ivanchen@microsoft.com",
   ["aad", "tab", "function"]
-);
-sampleCase.test();
+).test();

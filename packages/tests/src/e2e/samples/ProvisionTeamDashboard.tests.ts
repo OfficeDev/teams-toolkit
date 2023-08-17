@@ -6,11 +6,12 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class DashboardTestCase extends CaseFactory {}
+
+new DashboardTestCase(
   TemplateProjectFolder.Dashboard,
   24132131,
   "v-ivanchen@microsoft.com"
-);
-sampleCase.test();
+).test();

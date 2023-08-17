@@ -6,12 +6,13 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class NpmSearchTestCase extends CaseFactory {}
+
+new NpmSearchTestCase(
   TemplateProjectFolder.NpmSearch,
   15277471,
   "v-ivanchen@microsoft.com",
   ["bot"]
-);
-sampleCase.test();
+).test();

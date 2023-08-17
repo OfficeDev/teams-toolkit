@@ -6,11 +6,12 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class OutlookTabTestCase extends CaseFactory {}
+
+new OutlookTabTestCase(
   TemplateProjectFolder.OutlookTab,
   24132142,
   "v-ivanchen@microsoft.com"
-);
-sampleCase.test();
+).test();

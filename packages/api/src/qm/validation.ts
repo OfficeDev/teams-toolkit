@@ -221,6 +221,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
       const schema: any = {};
       if (stringValidation.equals && typeof stringValidation.equals === "string") {
         if (strToValidate === undefined) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return `'${strToValidate}' does not meet equals:'${stringValidation.equals}'`;
         }
         schema.const = stringValidation.equals;
@@ -263,6 +264,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
       }
       if (stringValidation.excludesEnum) {
         if (stringValidation.excludesEnum.includes(strToValidate)) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return `'${strToValidate}' does not meet excludesEnum:'${stringValidation.excludesEnum}'`;
         }
       }
@@ -281,6 +283,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
       if (Object.keys(schema).length > 0) {
         const validateResult = jsonschema.validate(arrayToValidate, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return `'${arrayToValidate}' ${validateResult.errors[0].message}`;
         }
       }
@@ -289,23 +292,27 @@ export async function validate<T extends string | string[] | OptionItem | Option
           stringArrayValidation.enum = stringArrayValidation.equals;
           stringArrayValidation.containsAll = stringArrayValidation.equals;
         } else {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return `'${arrayToValidate}' does not equals to:'${stringArrayValidation.equals}'`;
         }
       }
       if (stringArrayValidation.enum && arrayToValidate) {
         for (const item of arrayToValidate) {
           if (!stringArrayValidation.enum.includes(item)) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
           }
         }
       }
       if (stringArrayValidation.excludes) {
         if (arrayToValidate && arrayToValidate.includes(stringArrayValidation.excludes)) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return `'${arrayToValidate}' does not meet with excludes:'${stringArrayValidation.excludes}'`;
         }
       }
       if (stringArrayValidation.contains) {
         if (arrayToValidate && !arrayToValidate.includes(stringArrayValidation.contains)) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           return `'${arrayToValidate}' does not meet with contains:'${stringArrayValidation.contains}'`;
         }
       }
@@ -314,6 +321,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
         if (containsAll.length > 0) {
           for (const i of containsAll) {
             if (arrayToValidate && !arrayToValidate.includes(i)) {
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               return `'${arrayToValidate}' does not meet with containsAll:'${containsAll}'`;
             }
           }
@@ -331,6 +339,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
             }
           }
           if (!found) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             return `'${arrayToValidate}' does not meet containsAny:'${containsAny}'`;
           }
         }

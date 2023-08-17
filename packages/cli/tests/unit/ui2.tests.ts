@@ -1,10 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   InputTextConfig,
   MultiSelectConfig,
   SingleSelectConfig,
   UserError,
   err,
-  ok,
 } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
@@ -12,11 +14,10 @@ import {
   UnhandledError,
 } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
-import inquirer from "inquirer";
+import fs from "fs-extra";
 import "mocha";
 import * as sinon from "sinon";
 import UI from "../../src/userInteraction";
-import fs from "fs-extra";
 
 describe("UserInteraction(CLI)", () => {
   const sandbox = sinon.createSandbox();
@@ -134,7 +135,6 @@ describe("UserInteraction(CLI)", () => {
       assert.isTrue(result.isErr());
     });
     it("SelectSubscriptionError", async () => {
-      sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
       const config: SingleSelectConfig = {
         name: "subscription",
         title: "select subscription",
@@ -175,7 +175,7 @@ describe("UserInteraction(CLI)", () => {
       }
     });
     it("UnhandledError", async () => {
-      sandbox.stub(inquirer, "prompt").rejects(new Error("test"));
+      sandbox.stub(UI, "input").resolves(err(new UnhandledError(new Error("test"))));
       const config: InputTextConfig = {
         name: "testInput",
         title: "input text",

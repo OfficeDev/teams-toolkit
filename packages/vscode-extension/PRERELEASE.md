@@ -2,6 +2,46 @@
 
 ## Changelog
 
+### Aug 15, 2023
+
+New features:
+
+- A new app template `AI Chat Bot` to help you get started with building a GPT-like chat bot with AI capabilities using `Teams AI Library`.
+  ![AI Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/86a90d2a-efc3-4d8b-9e8c-5d34a1e8c081)
+- Onboarded a new sample `One Productivity Hub using Graph Toolkit with SPFx` that shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and SharePoint provider.
+    ![SPFx Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/084ac508-49ea-4b30-854c-8b4d578ff6ee)
+- Added CodeLens to the `teamsapp.yml` file to help you run life-cycle commands easily after editing the file.
+    ![Inline Commands](https://github.com/OfficeDev/TeamsFx/assets/11220663/f6897b26-0e3c-441c-b028-32093e8322a7)
+
+Enhancements:
+
+- Simplified `Collect Form Input and Process Data` template to remove redundant code.
+- Updated `Custom Search Result` template to use Adaptive Card for rendering search results.
+- Added a link to view similar issues when you encounter system errors using Teams Toolkit.
+    ![image](https://github.com/OfficeDev/TeamsFx/assets/11220663/ec48bef2-fc59-4e0b-8f0f-263f4706f394)
+- Added a new property `additionalMetadata` & `sampleTag` in the yml schema for tracking telemetry events when using Teams Toolkit.
+    > Note that the project created starting from this version of Teams Toolkit can operate in older versions.
+- Added progress bar when importing an existing xml-based Outlook add-in project.
+
+Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.2@beta`:
+
+- Updated `teamsfx new` command to start from choosing app templates. You can use `teamsfx new template sample-app-name` to directly create a project from sample apps.
+
+TeamsFx SDK ([`@microsoft/teamsfx`](https://www.npmjs.com/package/@microsoft/teamsfx)) `v2.2.3@beta`:
+
+- Deprecated `TeamsFx` class as it's no longer being used to construct credentials any more.
+- Deprecated `handleMessageExtensionQueryWithToken` API as it has been replaced by `handleMessageExtensionQueryWithSSO`.
+- Deprecated `AuthenticationConfiguration` interface as it has been replaced by `OnBehalfOfCredentialAuthConfig` type.
+- Deprecated `MsGraphAuthProvider` class as `TokenCredentialAuthentication` has been natively supported in [Microsoft Graph Client Library since version 3.0.0](https://github.com/microsoftgraph/msgraph-sdk-javascript/blob/dev/docs/TokenCredentialAuthenticationProvider.md).
+
+Bug fixes:
+
+- Fixed an issue in `teamsfx validate` command where input arguments are ignored when setting `--interactive false`. ([#9546](https://github.com/OfficeDev/TeamsFx/pull/9546))
+- Fixed an issue where `Get Started with Teams Toolkit` did not pop up for new users after installing Teams Toolkit. ([#9526](https://github.com/OfficeDev/TeamsFx/pull/9526))
+- Fixed an issue in `teamsfx new template <sample-name>` command where `Teams Chef Bot` option was missing. ([#9413](https://github.com/OfficeDev/TeamsFx/pull/9413))
+- Fixed an issue where the `Teams: Upgrade Teams Manifest` command did not update the manifest to an expected version.  ([#9320](https://github.com/OfficeDev/TeamsFx/pull/9320))
+- Fixed an issue where severity vulnerability was reported when using Teams Toolkit CLI.  ([#9309](https://github.com/OfficeDev/TeamsFx/pull/9309))
+
 ### July 18, 2023
 
 New features:
@@ -97,7 +137,7 @@ Enhancements:
 
 - Simplified multiple progress notifications into a single one for provision, deploy and publish.
 
-- Sample: enabled [app caching](https://learn.microsoft.com/en-us/microsoftteams/platform/apps-in-teams-meetings/build-tabs-for-meeting?tabs=desktop%2Cmeeting-chat-view-desktop%2Cmeeting-stage-view-desktop%2Cchannel-meeting-desktop#app-caching) in "My First Meeting App" sample that improves subsequent launch time of the apps that are loaded in the meeting side panel.
+- Sample: enabled [app caching](https://learn.microsoft.com/microsoftteams/platform/apps-in-teams-meetings/build-tabs-for-meeting?tabs=desktop%2Cmeeting-chat-view-desktop%2Cmeeting-stage-view-desktop%2Cchannel-meeting-desktop#app-caching) in "My First Meeting App" sample that improves subsequent launch time of the apps that are loaded in the meeting side panel.
 
 - Template: updated templates and samples to use Fluent UI V9 and React 18.
 

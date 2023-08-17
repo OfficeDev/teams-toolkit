@@ -628,7 +628,7 @@ class Coordinator {
         hasError = true;
         return err(maybeDescription.error);
       }
-      await ctx.logProvider.info(
+      ctx.logProvider.info(
         `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
       );
       for (const [index, cycle] of cycles.entries()) {
@@ -644,7 +644,7 @@ class Coordinator {
       }
     } finally {
       const summary = summaryReporter.getLifecycleSummary(inputs.createdEnvFile);
-      await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+      ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       await ctx.progressBar?.end(!hasError);
     }
 
@@ -695,7 +695,7 @@ class Coordinator {
         void ctx.ui!.showMessage("info", msg, false);
       }
     }
-    await ctx.logProvider.info(msg);
+    ctx.logProvider.info(msg);
 
     return ok(output);
   }
@@ -776,7 +776,7 @@ class Coordinator {
         if (maybeDescription.isErr()) {
           return err(maybeDescription.error);
         }
-        await ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+        ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
         const execRes = await projectModel.deploy.execute(ctx);
         summaryReporter.updateLifecycleState(0, execRes);
         const result = this.convertExecuteResult(execRes.result, templatePath);
@@ -797,7 +797,7 @@ class Coordinator {
         }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
         await ctx.progressBar?.end(!hasError);
       }
     } else {
@@ -833,7 +833,7 @@ class Coordinator {
           hasError = true;
           return err(maybeDescription.error);
         }
-        await ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+        ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result, templatePath);
@@ -858,7 +858,7 @@ class Coordinator {
         }
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        await ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
         await ctx.progressBar?.end(!hasError);
       }
     } else {

@@ -94,9 +94,7 @@ class BicepChecker {
     try {
       await fs.emptyDir(this.getBicepInstallDir());
     } catch (err) {
-      await this._logger?.debug(
-        `Failed to clean up path: ${this.getBicepInstallDir()}, error: ${err}`
-      );
+      this._logger?.debug(`Failed to clean up path: ${this.getBicepInstallDir()}, error: ${err}`);
     }
   }
 
@@ -131,7 +129,7 @@ class BicepChecker {
   private async doInstallBicep(): Promise<void> {
     const installDir = this.getBicepExecPath();
 
-    await this._logger?.info(
+    this._logger?.info(
       Messages.downloadBicep()
         .replace("@NameVersion", `Bicep ${this.version}`)
         .replace("@InstallDir", installDir)
@@ -188,7 +186,7 @@ class BicepChecker {
         err,
         this._telemetry
       );
-      await this._logger?.error(`${TelemtryMessages.failedToValidateBicep}, error = ${err}`);
+      this._logger?.error(`${TelemtryMessages.failedToValidateBicep}, error = ${err}`);
     }
 
     if (!isVersionSupported) {
@@ -203,9 +201,10 @@ class BicepChecker {
 
   private async handleInstallCompleted() {
     this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallCompleted);
-    await this._logger?.info(
+    this._logger?.info(
       Messages.finishInstallBicep().replace("@NameVersion", this.getBicepDisplayBicepName())
     );
+    return Promise.resolve();
   }
 
   private async handleInstallFailed(): Promise<void> {

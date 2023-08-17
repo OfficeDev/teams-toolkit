@@ -153,7 +153,7 @@ export class CreateTeamsAppDriver implements StepDriver {
           "plugins.appstudio.teamsAppCreatedNotice",
           createdAppDefinition.teamsAppId!
         );
-        await context.logProvider.info(message);
+        context.logProvider.info(message);
         context.addSummary(message);
         return ok(
           new Map([

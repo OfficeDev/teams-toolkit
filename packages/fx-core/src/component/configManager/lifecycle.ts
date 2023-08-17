@@ -146,7 +146,7 @@ export class Lifecycle implements ILifecycle {
         [TelemetryProperty.Actions]: actions,
       },
     });
-    await ctx.logProvider.info(`Executing lifecycle ${this.name}`);
+    ctx.logProvider.info(`Executing lifecycle ${this.name}`);
     const resolved: ResolvedPlaceholders = [];
     const unresolved: UnresolvedPlaceholders = [];
     const { result, summaries } = await this.executeImpl(ctx, resolved, unresolved);
@@ -154,7 +154,7 @@ export class Lifecycle implements ILifecycle {
     let failedAction: string | undefined;
 
     if (result.isOk()) {
-      await ctx.logProvider.info(
+      ctx.logProvider.info(
         `Finished Executing lifecycle ${this.name}. Result: ${Lifecycle.stringifyOutput(
           result.value
         )}`
@@ -162,15 +162,13 @@ export class Lifecycle implements ILifecycle {
     } else {
       if (result.error.kind === "Failure") {
         e = result.error.error;
-        await ctx.logProvider.info(
-          `Failed to Execute lifecycle ${this.name}. ${e.name}:${e.message}`
-        );
+        ctx.logProvider.info(`Failed to Execute lifecycle ${this.name}. ${e.name}:${e.message}`);
       } else if (result.error.kind === "PartialSuccess") {
         failedAction = this.stringifyDriverDef(result.error.reason.failedDriver);
         const output = Lifecycle.stringifyOutput(result.error.env);
         if (result.error.reason.kind === "DriverError") {
           e = result.error.reason.error;
-          await ctx.logProvider.info(
+          ctx.logProvider.info(
             `Failed to Execute lifecycle ${this.name} due to failed action: ${failedAction}. ${e.name}:${e.message}. Env output: ${output}`
           );
         } else if (result.error.reason.kind === "UnresolvedPlaceholders") {
@@ -179,7 +177,7 @@ export class Lifecycle implements ILifecycle {
             component,
             result.error.reason.unresolvedPlaceHolders.join(",")
           );
-          await ctx.logProvider.info(
+          ctx.logProvider.info(
             `Failed to Execute lifecycle ${
               this.name
             } because there are unresolved placeholders ${JSON.stringify(
@@ -220,12 +218,12 @@ export class Lifecycle implements ILifecycle {
     const envOutput = new Map<string, string>();
     const summaries: string[][] = [];
     for (const driver of drivers) {
-      await ctx.logProvider.info(
+      ctx.logProvider.info(
         `Executing action ${this.stringifyDriverDef(driver)} in lifecycle ${this.name}`
       );
       resolveDriverDef(driver, resolved, unresolved);
       if (unresolved.length > 0) {
-        await ctx.logProvider.info(
+        ctx.logProvider.info(
           `Unresolved placeholders(${unresolved}) found for Action ${this.stringifyDriverDef(
             driver
           )} in lifecycle ${this.name}`
@@ -293,7 +291,7 @@ export class Lifecycle implements ILifecycle {
         envOutput.set(envVar, value);
         process.env[envVar] = value;
       }
-      await ctx.logProvider.info(
+      ctx.logProvider.info(
         `Action ${this.stringifyDriverDef(driver)} in lifecycle ${
           this.name
         } succeeded with output ${Lifecycle.stringifyOutput(result.value)}`

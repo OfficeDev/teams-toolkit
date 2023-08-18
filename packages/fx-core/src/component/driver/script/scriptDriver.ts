@@ -95,7 +95,15 @@ export async function executeCommand(
     if (shell === "cmd") {
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
-    void logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
+    logProvider.verbose(
+      `Start to run command: "${command}" with args: "${JSON.stringify({
+        shell: shell,
+        cwd: workingDir,
+        encoding: "buffer",
+        env: { ...process.env, ...env },
+        timeout: timeout,
+      })}".`
+    );
     const allOutputStrings: string[] = [];
     const stderrStrings: string[] = [];
     process.env.VSLANG = undefined; // Workaroud to disable VS environment variable to void charset encoding issue for non-English characters
@@ -110,12 +118,15 @@ export async function executeCommand(
       },
       (error) => {
         if (error) {
+          logProvider.debug(`script execution error: ${error}`);
           error.message = stderrStrings.join("").trim() || error.message;
           resolve(err(convertScriptErrorToFxError(error, run)));
         } else {
           // handle '::set-output' or '::set-teamsfx-env' pattern
           const outputString = allOutputStrings.join("");
           const outputObject = parseSetOutputCommand(outputString);
+          if (Object.keys(outputObject).length > 0)
+            logProvider.verbose(`script output env variables: ${outputObject}`);
           resolve(ok([outputString, outputObject]));
         }
       }
@@ -128,12 +139,12 @@ export async function executeCommand(
     };
     cp.stdout?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      void logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
+      logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
       dataHandler(str);
     });
     cp.stderr?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      void logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
+      logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
       dataHandler(str);
       stderrStrings.push(str);
     });

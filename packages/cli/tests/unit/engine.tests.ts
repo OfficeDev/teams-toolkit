@@ -144,7 +144,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, [], []);
+      const result = engine.parseArgs(ctx, rootCommand, []);
       assert.isTrue(result.isOk());
       assert.equal(ctx.globalOptionValues.interactive, false);
     });
@@ -168,6 +168,7 @@ describe("CLI Engine", () => {
   });
   describe("processResult", async () => {
     it("sendTelemetryErrorEvent", async () => {
+      sandbox.stub(engine, "isUserSettingsTelemetryEnable").returns(true);
       const sendTelemetryErrorEventStub = sandbox
         .stub(CliTelemetry, "sendTelemetryErrorEvent")
         .returns();

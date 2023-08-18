@@ -350,6 +350,16 @@ export interface Group {
 }
 
 // @public
+export interface InnerTextInputQuestion extends UserInputQuestion {
+    default?: string | LocalFunc<string | undefined>;
+    password?: boolean;
+    // (undocumented)
+    type: "innertext";
+    validation?: StringValidation | FuncValidation<string>;
+    value?: string;
+}
+
+// @public
 export interface InputResult<T> {
     result?: T;
     type: "success" | "skip" | "back";
@@ -684,7 +694,7 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: TextInputQuestion;
+    inputBoxConfig: InnerTextInputQuestion;
     inputOptionItem: OptionItem;
     // (undocumented)
     type: "singleFileOrText";
@@ -1056,7 +1066,7 @@ export interface UserInputQuestion extends BaseQuestion {
     prompt?: string | LocalFunc<string | undefined>;
     required?: boolean;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innertext";
     validation?: ValidationSchema;
     validationHelp?: string;
 }

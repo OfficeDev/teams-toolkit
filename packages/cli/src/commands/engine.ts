@@ -187,6 +187,7 @@ class CLIEngine {
         "projectPath",
         "correlationId",
         "platform",
+        "nonInteractive",
       ]);
       if (
         Object.keys(trimOptionValues).length < Object.keys(context.optionValues).length ||

@@ -265,7 +265,8 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
     }
 
     context.appYmlConfig.provision.bot = {
-      messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint || ""}}}/api/messages`,
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
     };
 
     if (!context.appYmlConfig.deploy) {
@@ -298,9 +299,8 @@ export async function migrateSetUpBot(context: DebugMigrationContext): Promise<v
           context.appYmlConfig.provision.bot.messagingEndpoint =
             task["args"]["botMessagingEndpoint"];
         } else if (task["args"]["botMessagingEndpoint"].startsWith("/")) {
-          context.appYmlConfig.provision.bot.messagingEndpoint = `$\{{${
-            context.placeholderMapping.botEndpoint || ""
-          }}}${task["args"]["botMessagingEndpoint"]}`;
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          context.appYmlConfig.provision.bot.messagingEndpoint = `$\{{${context.placeholderMapping.botEndpoint}}}${task["args"]["botMessagingEndpoint"]}`;
         }
       }
     }
@@ -803,7 +803,8 @@ export function migratePreDebugCheck(context: DebugMigrationContext): Promise<vo
 
     if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
       context.appYmlConfig.provision.bot = {
-        messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint || ""}}}/api/messages`,
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
       };
     }
 

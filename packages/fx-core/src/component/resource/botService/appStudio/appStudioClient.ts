@@ -161,10 +161,8 @@ export class AppStudioClient {
 
     try {
       const response = await RetryHandler.Retry(() =>
-        axiosInstance.post(
-          `${AppStudioClient.baseUrl}/api/botframework/${botReg.botId || ""}`,
-          botReg
-        )
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework/${botReg.botId}`, botReg)
       );
       if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);

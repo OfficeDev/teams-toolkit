@@ -330,6 +330,16 @@ describe("CLI Engine", () => {
       await engine.start(rootCommand);
       assert.isTrue(error instanceof UserCancelError);
     });
+    it("skip options and arguments in interactive mode", async () => {
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({} as any));
+      sandbox.stub(process, "argv").value(["node", "cli", "new", "--folder", "abc"]);
+      let error: any = undefined;
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isUndefined(undefined);
+    });
   });
   describe("index.start", async () => {
     it("happy path", async () => {

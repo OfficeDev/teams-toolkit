@@ -141,13 +141,23 @@ export async function executeCommand(
       logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
       await dataHandler(str);
     });
-    cp.stderr?.on("data", async (data: Buffer) => {
-      const str = bufferToString(data, systemEncoding);
-      logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
-      await dataHandler(str);
-      stderrStrings.push(str);
-    });
+    const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
+    cp.stderr?.on("data", handler);
   });
+}
+
+export function getStderrHandler(
+  logProvider: LogProvider,
+  systemEncoding: string,
+  stderrStrings: string[],
+  dataHandler: (data: string) => Promise<void>
+): (data: Buffer) => Promise<void> {
+  return async (data: Buffer) => {
+    const str = bufferToString(data, systemEncoding);
+    logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
+    await dataHandler(str);
+    stderrStrings.push(str);
+  };
 }
 
 export function bufferToString(data: Buffer, systemEncoding: string): string {

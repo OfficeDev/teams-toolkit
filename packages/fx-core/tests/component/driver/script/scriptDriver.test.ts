@@ -11,13 +11,14 @@ import * as sinon from "sinon";
 import * as tools from "../../../../src/common/tools";
 import {
   convertScriptErrorToFxError,
+  getStderrHandler,
   parseSetOutputCommand,
   scriptDriver,
 } from "../../../../src/component/driver/script/scriptDriver";
 import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
 import { DefaultEncoding, getSystemEncoding } from "../../../../src/component/utils/charsetUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
-import { MockUserInteraction } from "../../../core/utils";
+import { MockLogProvider, MockUserInteraction } from "../../../core/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 
@@ -158,5 +159,26 @@ describe("parseSetOutputCommand", () => {
       TAB_DOMAIN: "localhost:53000",
       TAB_ENDPOINT: "https://localhost:53000",
     });
+  });
+});
+
+describe("getStderrHandler", () => {
+  const sandbox = sinon.createSandbox();
+  beforeEach(() => {});
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    const logProvider = new MockLogProvider();
+    const systemEncoding = "utf-8";
+    const stderrStrings: string[] = [];
+    const handler = getStderrHandler(
+      logProvider,
+      systemEncoding,
+      stderrStrings,
+      async (data: string) => {}
+    );
+    await handler(Buffer.from("test"));
+    assert.deepEqual(stderrStrings, ["test"]);
   });
 });

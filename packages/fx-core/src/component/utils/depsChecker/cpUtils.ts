@@ -74,7 +74,8 @@ export namespace cpUtils {
             );
             reject(
               new Error(
-                `Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout || 0} ms`
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                `Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout} ms`
               )
             );
           }, options.timeout);
@@ -96,7 +97,8 @@ export namespace cpUtils {
 
         childProc.on("error", (error) => {
           logger?.debug(
-            `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error.toString()}`
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`
           );
           if (timer) {
             clearTimeout(timer);

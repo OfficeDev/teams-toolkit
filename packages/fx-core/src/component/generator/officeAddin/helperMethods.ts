@@ -29,11 +29,10 @@ export class HelperMethods {
         return new Promise<void>((resolve, reject) => {
           response.data
             .pipe(fs.createWriteStream(`${projectFolder}/${zipFile}`))
-            .on("error", function (err: any) {
+            .on("error", function (err: unknown) {
               reject(
-                `Unable to download project zip file for "${projectTemplateZipFile}".\n${
-                  err.toString() as string
-                }`
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
               );
             })
             .on("close", async () => {
@@ -43,11 +42,8 @@ export class HelperMethods {
         });
       })
       .catch((err) => {
-        console.log(
-          `Unable to download project zip file for "${projectTemplateZipFile}".\n${
-            err.toString() as string
-          }`
-        );
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.log(`Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`);
       });
   }
 
@@ -57,10 +53,9 @@ export class HelperMethods {
       const readStream = fs.createReadStream(`${projectFolder}/${zipFile}`);
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
-        .on("error", function (err: any) {
-          reject(
-            `Unable to unzip project zip file for "${projectFolder}".\n${err.toString() as string}`
-          );
+        .on("error", function (err: unknown) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
         })
         .on("close", () => {
           HelperMethods.moveUnzippedFiles(projectFolder);

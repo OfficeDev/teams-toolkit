@@ -54,9 +54,8 @@ export class GeneratorChecker implements DependencyChecker {
           ).name,
         }
       );
-      this._logger.error(
-        `Failed to install ${displayName}, error = '${error.toString() as string}'`
-      );
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      this._logger.error(`Failed to install ${displayName}, error = '${error}'`);
       return err(error as UserError | SystemError);
     }
 
@@ -148,11 +147,8 @@ export class GeneratorChecker implements DependencyChecker {
       await fs.emptyDir(this.getDefaultInstallPath());
       await fs.remove(this.getSentinelPath());
     } catch (err) {
-      this._logger.error(
-        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${
-          err.toString() as string
-        }`
-      );
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      this._logger.error(`Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`);
     }
   }
 

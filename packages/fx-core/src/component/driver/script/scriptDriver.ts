@@ -118,7 +118,6 @@ export async function executeCommand(
       },
       (error) => {
         if (error) {
-          logProvider.debug(`script execution error: ${error}`);
           error.message = stderrStrings.join("").trim() || error.message;
           resolve(err(convertScriptErrorToFxError(error, run)));
         } else {

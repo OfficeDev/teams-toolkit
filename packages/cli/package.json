@@ -106,8 +106,7 @@
     "tree-kill": "^1.2.2",
     "underscore": "^1.12.1",
     "yaml": "^2.2.1",
-    "yargs": "^17.4.0",
-    "word-wrap": "^1.2.5"
+    "yargs": "^17.4.0"
   },
   "optionalDependencies": {
     "keytar": "^7.7.0"

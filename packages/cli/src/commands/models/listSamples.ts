@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, ok } from "@microsoft/teamsfx-api";
+import chalk from "chalk";
+import Table from "cli-table3";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { Sample, getTemplates } from "../../utils";
-import Table from "cli-table3";
-import chalk from "chalk";
-import wrap from "word-wrap";
 import { ListFormatOption, ShowDescriptionOption } from "../common";
 
 export const listSamplesCommand: CLICommand = {

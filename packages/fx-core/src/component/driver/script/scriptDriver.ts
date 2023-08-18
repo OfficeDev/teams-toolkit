@@ -130,21 +130,21 @@ export async function executeCommand(
         }
       }
     );
-    const dataHandler = (data: string) => {
+    const dataHandler = async (data: string) => {
       if (appendFile) {
-        fs.appendFileSync(appendFile, data);
+        await fs.appendFile(appendFile, data);
       }
       allOutputStrings.push(data);
     };
-    cp.stdout?.on("data", (data: Buffer) => {
+    cp.stdout?.on("data", async (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
       logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
-      dataHandler(str);
+      await dataHandler(str);
     });
-    cp.stderr?.on("data", (data: Buffer) => {
+    cp.stderr?.on("data", async (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
       logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
-      dataHandler(str);
+      await dataHandler(str);
       stderrStrings.push(str);
     });
   });

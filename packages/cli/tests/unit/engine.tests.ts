@@ -31,6 +31,7 @@ import { InvalidChoiceError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
+import { UserSettings } from "../../src/userSetttings";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -71,7 +72,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "a,b,c"], []);
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "a,b,c"]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
@@ -95,12 +96,14 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(
-        ctx,
-        rootCommand,
-        ["--option1", "a", "--option1", "b", "--option1", "c"],
-        []
-      );
+      const result = engine.parseArgs(ctx, rootCommand, [
+        "--option1",
+        "a",
+        "--option1",
+        "b",
+        "--option1",
+        "c",
+      ]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
@@ -124,9 +127,41 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, ["--option1=a,b,c"], []);
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1=a,b,c"]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
+    });
+    it("array type argument", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        arguments: [
+          {
+            type: "array",
+            name: "arg1",
+            description: "test argument",
+          },
+          {
+            type: "string",
+            name: "arg2",
+            description: "test argument2",
+            required: true,
+            default: "default",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["a,b,c"]);
+      assert.isTrue(result.isOk());
+      assert.deepEqual(ctx.argumentValues[0], ["a", "b", "c"]);
+      assert.equal(ctx.argumentValues[1], "default");
     });
   });
   describe("validateOption", async () => {
@@ -148,6 +183,7 @@ describe("CLI Engine", () => {
   });
   describe("processResult", async () => {
     it("sendTelemetryErrorEvent", async () => {
+      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(true));
       const sendTelemetryErrorEventStub = sandbox
         .stub(CliTelemetry, "sendTelemetryErrorEvent")
         .returns();
@@ -359,6 +395,20 @@ describe("CLI Engine", () => {
       const stub = sandbox.stub(logger, "info").resolves();
       engine.printError(new UserCancelError("test"));
       assert.isTrue(stub.called);
+    });
+  });
+  describe("isUserSettingsTelemetryEnable", async () => {
+    it("error", async () => {
+      sandbox.stub(UserSettings, "getTelemetrySetting").returns(err(new UserCancelError()));
+      const res = engine.isUserSettingsTelemetryEnable();
+      assert.isTrue(res);
+    });
+  });
+  describe("isUserSettingsInteractive", async () => {
+    it("error", async () => {
+      sandbox.stub(UserSettings, "getInteractiveSetting").returns(err(new UserCancelError()));
+      const res = engine.isUserSettingsInteractive();
+      assert.isTrue(res);
     });
   });
 });

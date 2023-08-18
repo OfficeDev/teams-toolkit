@@ -57,7 +57,7 @@ export interface CLICommand {
   /**
    * @description command handler
    */
-  handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>>;
+  handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>> | Result<undefined, FxError>;
 
   /**
    * @description telemetry will be sent when available
@@ -78,6 +78,11 @@ export interface CLICommand {
    * @description whether to hide this command in "--help"
    */
   hidden?: boolean;
+
+  /**
+   * @description default value of global option "--interactive", default value is true
+   */
+  defaultInteractiveOption?: boolean;
 }
 
 export interface CLIFoundCommand extends CLICommand {
@@ -100,7 +105,7 @@ export interface CLIContext {
   /**
    * @description parsed argument values
    */
-  argumentValues: string[];
+  argumentValues: OptionValue[];
   /**
    * @description telemetry properties, which cen be accessed in the process of command execution lifecycle
    */

@@ -1343,7 +1343,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
-      type: "innertext",
+      type: "innerText",
       title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
       placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.placeholder"),
       name: "input-api-spec-url",

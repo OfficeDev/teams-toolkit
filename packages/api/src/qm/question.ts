@@ -109,7 +109,7 @@ export interface UserInputQuestion extends BaseQuestion {
     | "folder"
     | "text"
     | "singleFileOrText"
-    | "innertext";
+    | "innerText";
   /**
    * title is required for human input question
    */
@@ -322,7 +322,7 @@ export interface TextInputQuestion extends UserInputQuestion {
  * Definition of text input question of a sub-question of SingleFileOrInputQuestion
  */
 export interface InnerTextInputQuestion extends UserInputQuestion {
-  type: "innertext";
+  type: "innerText";
   /**
    * If the input value should be hidden. Defaults to false.
    */

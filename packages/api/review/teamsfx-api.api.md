@@ -354,7 +354,7 @@ export interface InnerTextInputQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     password?: boolean;
     // (undocumented)
-    type: "innertext";
+    type: "innerText";
     validation?: StringValidation | FuncValidation<string>;
     value?: string;
 }
@@ -1066,7 +1066,7 @@ export interface UserInputQuestion extends BaseQuestion {
     prompt?: string | LocalFunc<string | undefined>;
     required?: boolean;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innertext";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innerText";
     validation?: ValidationSchema;
     validationHelp?: string;
 }

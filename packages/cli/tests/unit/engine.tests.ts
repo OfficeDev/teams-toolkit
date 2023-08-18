@@ -142,6 +142,13 @@ describe("CLI Engine", () => {
             name: "arg1",
             description: "test argument",
           },
+          {
+            type: "string",
+            name: "arg2",
+            description: "test argument2",
+            required: true,
+            default: "default",
+          },
         ],
       };
       const ctx: CLIContext = {
@@ -154,6 +161,7 @@ describe("CLI Engine", () => {
       const result = engine.parseArgs(ctx, rootCommand, ["a,b,c"]);
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.argumentValues[0], ["a", "b", "c"]);
+      assert.equal(ctx.argumentValues[1], "default");
     });
   });
   describe("validateOption", async () => {

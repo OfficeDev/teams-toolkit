@@ -96,13 +96,13 @@ export async function executeCommand(
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
     logProvider.verbose(
-      `Start to run command: "${command}" with args: "${JSON.stringify({
+      `Start to run command: "${command}" with args: ${JSON.stringify({
         shell: shell,
         cwd: workingDir,
         encoding: "buffer",
         env: { ...process.env, ...env },
         timeout: timeout,
-      })}".`
+      })}.`
     );
     const allOutputStrings: string[] = [];
     const stderrStrings: string[] = [];

@@ -53,7 +53,8 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   const lockFileDir = getLockFolder(inputs.projectPath);
   const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
   await fs.ensureDir(lockFileDir);
-  const taskName = `${ctx.method || ""}${
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  const taskName = `${ctx.method}${
     ctx.method === "executeUserTask" || ctx.method === "executeUserTaskOld"
       ? ` ${(ctx.arguments[0] as Func).method}`
       : ""
@@ -75,7 +76,8 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
             CoreSource,
             "concurrent-operation",
             new ConcurrentError(CoreSource),
-            { retry: retryNum.toString(), acquired: "true", doing: doingTask, todo: taskName }
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+            { retry: retryNum + "", acquired: "true", doing: doingTask, todo: taskName }
           );
         }
         await next();
@@ -101,7 +103,8 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     TOOLS?.logProvider?.error(log);
     // failed for 10 times and finally failed
     sendTelemetryErrorEvent(CoreSource, "concurrent-operation", new ConcurrentError(CoreSource), {
-      retry: retryNum.toString(),
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      retry: retryNum + "",
       acquired: "false",
       doing: doingTask || "",
       todo: taskName,

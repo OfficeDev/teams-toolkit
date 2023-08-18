@@ -19,7 +19,8 @@ export async function loadPackageJson(path: string, logger?: LogProvider): Promi
   try {
     return await rpj(path);
   } catch (error) {
-    logger?.error(`Cannot load package.json from ${path}. Error: ${error.toString() as string}`);
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    logger?.error(`Cannot load package.json from ${path}. Error: ${error}`);
     return undefined;
   }
 }

@@ -131,12 +131,25 @@ describe("CLI Engine", () => {
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.optionValues["option1"], ["a", "b", "c"]);
     });
-    it("default interactive option", async () => {
+    it("array type argument", async () => {
       const command: CLIFoundCommand = {
         name: "test",
         fullName: "test",
         description: "test command",
-        defaultInteractiveOption: false,
+        arguments: [
+          {
+            type: "array",
+            name: "arg1",
+            description: "test argument",
+          },
+          {
+            type: "string",
+            name: "arg2",
+            description: "test argument2",
+            required: true,
+            default: "default",
+          },
+        ],
       };
       const ctx: CLIContext = {
         command: command,
@@ -145,9 +158,10 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, []);
+      const result = engine.parseArgs(ctx, rootCommand, ["a,b,c"]);
       assert.isTrue(result.isOk());
-      assert.equal(ctx.globalOptionValues.interactive, false);
+      assert.deepEqual(ctx.argumentValues[0], ["a", "b", "c"]);
+      assert.equal(ctx.argumentValues[1], "default");
     });
   });
   describe("validateOption", async () => {
@@ -169,7 +183,7 @@ describe("CLI Engine", () => {
   });
   describe("processResult", async () => {
     it("sendTelemetryErrorEvent", async () => {
-      sandbox.stub(engine, "isUserSettingsTelemetryEnable").returns(true);
+      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(true));
       const sendTelemetryErrorEventStub = sandbox
         .stub(CliTelemetry, "sendTelemetryErrorEvent")
         .returns();

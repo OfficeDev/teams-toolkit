@@ -311,7 +311,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         placeholder: innerPlaceholder,
         prompt: innerPrompt,
         validation: inputValidationFunc,
-        additionalValidationOnAccept: additionalValidationOnAcceptFunc,
       },
       filters: question.filters,
       step: step,

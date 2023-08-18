@@ -97,7 +97,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private constructor() {
     super();
-    this.addStatusChangeEvent();
+    void this.addStatusChangeEvent();
   }
 
   /**
@@ -391,7 +391,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  addStatusChangeEvent() {
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async addStatusChangeEvent() {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;

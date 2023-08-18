@@ -331,7 +331,7 @@ describe("CLI Engine", () => {
       assert.isTrue(error instanceof UserCancelError);
     });
     it("skip options and arguments in interactive mode", async () => {
-      sandbox.stub(UserSettings, "");
+      sandbox.stub(UserSettings, "getInteractiveSetting").returns(ok(true));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({} as any));
       sandbox.stub(process, "argv").value(["node", "cli", "new", "--folder", "abc"]);
       let error: any = undefined;
@@ -342,6 +342,7 @@ describe("CLI Engine", () => {
       assert.isUndefined(undefined);
     });
     it("no need to skip options or arguments in interactive mode", async () => {
+      sandbox.stub(UserSettings, "getInteractiveSetting").returns(ok(true));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({} as any));
       sandbox.stub(process, "argv").value(["node", "cli", "new"]);
       let error: any = undefined;

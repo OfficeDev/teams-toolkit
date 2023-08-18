@@ -51,6 +51,7 @@ import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/vali
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
+import * as buildAadManifest from "../../src/component/driver/aad/utility/buildAadManifest";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
@@ -413,41 +414,28 @@ describe("Core basic APIs", () => {
       TAB_DOMAIN: "fake",
       TAB_ENDPOINT: "fake",
     });
+
+    const originFunc = envUtil.readEnv;
     try {
-      sandbox.stub(envUtil, "readEnv").resolves(
-        ok({
+      envUtil.readEnv = async () => {
+        return ok({
           AAD_APP_OBJECT_ID: getUuid(),
           AAD_APP_CLIENT_ID: getUuid(),
           TAB_DOMAIN: "fake",
           TAB_ENDPOINT: "fake",
-        })
-      );
-      const appName = randomAppName();
+        });
+      };
       const core = new FxCore(tools);
+      const appName = await mockV3Project();
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [QuestionNames.AppName]: appName,
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
-        [QuestionNames.Folder]: os.tmpdir(),
-        stage: Stage.create,
-        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+        projectPath: path.join(os.tmpdir(), appName),
       };
-      const res = await core.createProject(inputs);
-      const projectPath = inputs.projectPath!;
-      assert.isTrue(res.isOk() && res.value.projectPath === projectPath);
-
-      const implement = new FxCore(tools);
-
-      const mockFunc = {
-        namespace: "mock namespace",
-        method: "buildAadManifest",
-      };
-
-      const result = await implement.executeUserTask(mockFunc, inputs);
+      sandbox.stub(buildAadManifest, "buildAadManifest").resolves({} as any);
+      const result = await core.buildAadManifest(inputs);
       assert.isTrue(result.isOk());
     } finally {
+      envUtil.readEnv = originFunc;
       restore();
     }
   });

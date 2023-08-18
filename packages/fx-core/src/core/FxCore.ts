@@ -389,7 +389,8 @@ export class FxCore {
     const manifestOutputPath: string = path.join(
       inputs.projectPath!,
       "build",
-      `aad.${inputs.env as string}.json`
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      `aad.${inputs.env}.json`
     );
     const Context: DriverContext = createDriverContext(inputs);
     await buildAadManifest(Context, manifestTemplatePath, manifestOutputPath);
@@ -497,12 +498,14 @@ export class FxCore {
       manifestPath: teamsAppManifestFilePath,
       outputZipPath:
         inputs[QuestionNames.OutputZipPathParamName] ??
-        `${inputs.projectPath || ""}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process
-          .env.TEAMSFX_ENV!}.zip`,
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env
+          .TEAMSFX_ENV!}.zip`,
       outputJsonPath:
         inputs[QuestionNames.OutputManifestParamName] ??
-        `${inputs.projectPath || ""}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process
-          .env.TEAMSFX_ENV!}.json`,
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
+          .TEAMSFX_ENV!}.json`,
     };
     const result = await driver.run(args, context);
     if (context.platform === Platform.VSCode) {

@@ -8,6 +8,7 @@ import fs from "fs-extra";
 import os from "os";
 import "mocha";
 import {
+  convertPathToCamelCase,
   getRelativePath,
   getResponseJson,
   isSupportedApi,
@@ -77,6 +78,36 @@ describe("utils", () => {
         const result = getRelativePath(from, to);
         expect(result).to.equal("subfolder/file.txt");
       }
+    });
+  });
+
+  describe("convertPathToCamelCase", () => {
+    it("should convert a path to camel case", () => {
+      const path = "this/is/a/{test}/path";
+      const expected = "ThisIsATestPath";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
+    it("should convert a path to camel case start with /", () => {
+      const path = "/this/is/a/{test}/path";
+      const expected = "ThisIsATestPath";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
+    it("should return an empty string for an empty path", () => {
+      const path = "";
+      const expected = "";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
+    it("should return the same string for a path with no slashes", () => {
+      const path = "test";
+      const expected = "Test";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
     });
   });
 

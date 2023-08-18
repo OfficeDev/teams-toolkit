@@ -3,7 +3,7 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import { isSupportedApi } from "./utils";
+import { convertPathToCamelCase, isSupportedApi } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ErrorType } from "./interfaces";
 
@@ -46,18 +46,4 @@ export function specFilter(
   } catch (err) {
     throw new SpecParserError((err as Error).toString(), ErrorType.FilterSpecFailed);
   }
-}
-
-function convertPathToCamelCase(path: string): string {
-  const pathSegments = path.split("/");
-  const camelCaseSegments = pathSegments.map((segment) => {
-    if (segment.startsWith("{")) {
-      const name = segment.substring(1, segment.length - 1);
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    } else {
-      return segment;
-    }
-  });
-  const camelCasePath = camelCaseSegments.join("");
-  return camelCasePath.charAt(0).toUpperCase() + camelCasePath.slice(1);
 }

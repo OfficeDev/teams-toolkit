@@ -99,7 +99,7 @@ export function jsonObjectNamesConvertV3(
       if (typeof obj === "string" && obj.includes("#")) {
         stateValue = `"${obj}"`;
       }
-      return res.value + "=" + stateValue + EOL;
+      return res.value + "=" + (stateValue.toString() as string) + EOL;
     }
   } else return "";
   return returnData;

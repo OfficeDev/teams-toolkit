@@ -20,7 +20,7 @@ export class HelperMethods {
     projectRepo: string,
     projectBranch?: string
   ): Promise<void> {
-    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch}.zip`;
+    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
     return axios
       .get(projectTemplateZipFile, {
         responseType: "stream",
@@ -31,6 +31,7 @@ export class HelperMethods {
             .pipe(fs.createWriteStream(`${projectFolder}/${zipFile}`))
             .on("error", function (err: unknown) {
               reject(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
               );
             })
@@ -41,6 +42,7 @@ export class HelperMethods {
         });
       })
       .catch((err) => {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         console.log(`Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`);
       });
   }
@@ -52,6 +54,7 @@ export class HelperMethods {
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
         .on("error", function (err: unknown) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
         })
         .on("close", () => {

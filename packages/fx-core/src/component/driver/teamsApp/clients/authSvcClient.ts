@@ -45,6 +45,7 @@ export namespace AuthSvcClient {
   }
 
   function wrapException(e: any, apiName: string): Error {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const error = AppStudioResultFactory.SystemError(
       AppStudioError.AuthServiceAPIFailedError.name,
@@ -53,6 +54,7 @@ export namespace AuthSvcClient {
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.authSvcApi, error, {
       method: e.request?.method,
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       "status-code": `${e?.response?.status}`,
       url: `<${apiName}-url>`,
     });

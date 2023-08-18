@@ -161,6 +161,7 @@ export class AppStudioClient {
 
     try {
       const response = await RetryHandler.Retry(() =>
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework/${botReg.botId}`, botReg)
       );
       if (!isHappyResponse(response)) {

@@ -34,7 +34,7 @@ async function detectPortListening(port: number, logger?: LogProvider): Promise<
       TelemetryEvent.DetectPort,
       new UserError({ error, source: CoreSource, name: "DetectPortError" })
     );
-    logger?.warning(`Failed to detect port. ${error?.message} `);
+    logger?.warning(`Failed to detect port. ${error?.message as string} `);
     return false;
   }
 }

@@ -88,15 +88,9 @@ jobs:
       matrix:
         package:
         - fx-core
-        - server
         - vscode-extension
-        - manifest
-        - api
         - cli
-        - sdk
-        - sdk-react
         - tests
-        - adaptivecards-tools-sdk
 
     steps:
     - name: Checkout

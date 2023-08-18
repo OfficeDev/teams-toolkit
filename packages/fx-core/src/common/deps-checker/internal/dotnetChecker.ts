@@ -72,7 +72,9 @@ export class DotnetChecker implements DepsChecker {
     const configPath = DotnetChecker.getDotnetConfigPath();
     this._logger.debug(`[start] read dotnet path from '${configPath}'`);
     const dotnetPath = await this.getDotnetExecPathFromConfig();
-    this._logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
+    this._logger.debug(
+      `[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath || ""}'`
+    );
 
     this._logger.debug(`[start] check dotnet version`);
     if (dotnetPath !== null && (await this.isDotnetInstalledCorrectly())) {
@@ -87,7 +89,7 @@ export class DotnetChecker implements DepsChecker {
     if ((await this.tryAcquireGlobalDotnetSdk()) && (await this.validate())) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetAlreadyInstalled);
       this._logger.info(
-        `${Messages.useGlobalDotnet()} '${await this.getDotnetExecPathFromConfig()}'`
+        `${Messages.useGlobalDotnet()} '${(await this.getDotnetExecPathFromConfig()) || ""}'`
       );
       return await this.getDepsInfo(true);
     }
@@ -105,7 +107,7 @@ export class DotnetChecker implements DepsChecker {
       return installationInfo;
     } catch (error) {
       this._logger.printDetailLog();
-      this._logger.error(`${error.message}, error = '${error}'`);
+      this._logger.error(`${error.message as string}, error = '${error.toString() as string}'`);
       if (error instanceof DepsCheckerError) {
         return await this.getDepsInfo(false, error);
       }
@@ -192,7 +194,7 @@ export class DotnetChecker implements DepsChecker {
       }
       this._logger.debug(`invalid dotnet config file format, config: '${JSON.stringify(config)}' `);
     } catch (error) {
-      this._logger.debug(`get dotnet path failed, error: '${error}'`);
+      this._logger.debug(`get dotnet path failed, error: '${error.toString() as string}'`);
     }
     return null;
   }
@@ -218,7 +220,7 @@ export class DotnetChecker implements DepsChecker {
         `${getLocalizedString(
           "error.common.InstallSoftwareError",
           installedNameWithVersion
-        )}, error = '${error}'`
+        )}, error = '${error.toString() as string}'`
       );
     }
   }
@@ -295,7 +297,9 @@ export class DotnetChecker implements DepsChecker {
         )} ${Messages.dotnetInstallErrorCode()}, ` +
         `command = '${command.join(" ")}', options = '${JSON.stringify(
           options
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         )}', error = '${error}', stdout = '${error.stdout}', stderr = '${
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           error.stderr
         }', timecost = '${timecost}s'`;
 
@@ -318,7 +322,9 @@ export class DotnetChecker implements DepsChecker {
         .filter((version) => version !== null) as string[];
       return this.isDotnetVersionsInstalled(installedVersions);
     } catch (error) {
-      const errorMessage = `validate private install failed, error = '${error}'`;
+      const errorMessage = `validate private install failed, error = '${
+        error.toString() as string
+      }'`;
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetValidationError,
         TelemtryMessages.failedToValidateDotnet,
@@ -336,7 +342,9 @@ export class DotnetChecker implements DepsChecker {
       return Promise.resolve(validVersions.length > 0);
     } catch (error) {
       this._logger.error(
-        `failed to check .NET, installedVersions = '${installedVersions}', supportedVersions = '${supportedVersions}', error = '${error}'`
+        `failed to check .NET, installedVersions = '${installedVersions.toString()}', supportedVersions = '${supportedVersions.toString()}', error = '${
+          error.toString() as string
+        }'`
       );
       return Promise.resolve(false);
     }
@@ -392,7 +400,9 @@ export class DotnetChecker implements DepsChecker {
         }
       });
     } catch (error) {
-      const errorMessage = `Failed to search dotnet sdk by dotnetPath = '${dotnetExecPath}', error = '${error}'`;
+      const errorMessage = `Failed to search dotnet sdk by dotnetPath = '${dotnetExecPath}', error = '${
+        error.toString() as string
+      }'`;
       this._logger.debug(errorMessage);
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetSearchDotnetSdks,
@@ -508,7 +518,11 @@ export class DotnetChecker implements DepsChecker {
         TelemtryMessages.failedToValidateDotnet,
         error
       );
-      this._logger.debug(`Failed to run hello world, dotnetPath = ${dotnetPath}, error = ${error}`);
+      this._logger.debug(
+        `Failed to run hello world, dotnetPath = ${dotnetPath}, error = ${
+          error.toString() as string
+        }`
+      );
     } finally {
       await fs.remove(samplePath);
     }
@@ -531,7 +545,9 @@ export class DotnetChecker implements DepsChecker {
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       return true;
     } catch (error) {
-      this._logger.debug(`Failed to acquire global dotnet sdk, error = '${error}'`);
+      this._logger.debug(
+        `Failed to acquire global dotnet sdk, error = '${error.toString() as string}'`
+      );
       return false;
     }
   }
@@ -542,6 +558,6 @@ export class DotnetChecker implements DepsChecker {
     if (!match) {
       return null;
     }
-    return match.groups?.major_version + "." + match.groups?.minor_version;
+    return (match.groups?.major_version || "") + "." + (match.groups?.minor_version || "");
   }
 }

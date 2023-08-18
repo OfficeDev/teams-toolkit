@@ -33,7 +33,7 @@ function needToShowUpdateDialog(versionInfo: VersionInfo) {
   return false;
 }
 
-async function showDialog(ctx: CoreHookContext): Promise<FxError> {
+function showDialog(ctx: CoreHookContext): Promise<FxError> {
   const lastArg = ctx.arguments[ctx.arguments.length - 1];
   const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (inputs.platform === Platform.VSCode) {
@@ -47,11 +47,11 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
       },
       () => {}
     );
-    return IncompatibleProjectError(messageKey);
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   } else if (inputs.platform === Platform.CLI) {
     const messageKey = "core.projectVersionChecker.cliUseNewVersion";
-    await TOOLS.logProvider.warning(getLocalizedString(messageKey));
-    return IncompatibleProjectError(messageKey);
+    TOOLS.logProvider.warning(getLocalizedString(messageKey));
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
@@ -63,6 +63,6 @@ async function showDialog(ctx: CoreHookContext): Promise<FxError> {
       },
       () => {}
     );
-    return IncompatibleProjectError(messageKey);
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   }
 }

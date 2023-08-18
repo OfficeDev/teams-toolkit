@@ -41,6 +41,7 @@ function validateStringArray(arr?: any, enums?: string[]) {
       return "array elements is not string type";
     }
     if (enums && !enums.includes(element)) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       return `array elements is out of scope: ${enums}`;
     }
   }

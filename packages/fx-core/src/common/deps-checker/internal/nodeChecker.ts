@@ -106,7 +106,9 @@ export abstract class NodeChecker implements DepsChecker {
     const installationInfo = await this.getInstallationInfo(installOptions);
     if (installationInfo.error) {
       this._logger.printDetailLog();
-      this._logger.error(`${installationInfo.error.message}, error = '${installationInfo.error}'`);
+      this._logger.error(
+        `${installationInfo.error.message}, error = '${installationInfo.error.toString()}'`
+      );
     }
     this._logger.cleanup();
     return installationInfo;

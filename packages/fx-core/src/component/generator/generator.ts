@@ -49,7 +49,7 @@ export class Generator {
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
-      progressTitle: ProgressTitles.generateTemplate,
+      progressTitle: ProgressTitles.create,
       progressSteps: 1,
       componentName: componentName,
       errorSource: errorSource,
@@ -76,11 +76,15 @@ export class Generator {
         renderTemplateFileData(fileName, fileData, replaceMap),
       onActionError: templateDefaultOnActionError,
     };
+    const templateName = `${scenario}-${generatorContext.name}`;
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
+      [TelemetryProperty.TemplateName]: templateName,
     });
-    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate(scenario));
+
+    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
+    ctx.logProvider.verbose(`Downloading app template "${templateName}" to ${destinationPath}`);
     await this.generate(generatorContext, TemplateActionSeq);
+
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
@@ -90,7 +94,7 @@ export class Generator {
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
-      progressTitle: ProgressTitles.generateSample,
+      progressTitle: ProgressTitles.create,
       progressSteps: 1,
       componentName: componentName,
       errorSource: errorSource,

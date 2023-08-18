@@ -39,7 +39,7 @@ export class PackageService {
       this.logger?.debug(JSON.stringify(envInfo.data));
       return envInfo.data.titlesServiceUrl;
     } catch (error: any) {
-      this.logger?.error(`Get ServiceUrl failed. ${error.message}`);
+      this.logger?.error(`Get ServiceUrl failed. ${error.message as string}`);
       throw error;
     }
   }
@@ -64,7 +64,7 @@ export class PackageService {
       );
 
       const operationId = uploadResponse.data.operationId;
-      this.logger?.debug(`Package uploaded. OperationId: ${operationId}`);
+      this.logger?.debug(`Package uploaded. OperationId: ${operationId as string}`);
 
       this.logger?.info("Acquiring package ...");
       const acquireResponse = await this.axiosInstance.post(
@@ -81,11 +81,11 @@ export class PackageService {
       );
 
       const statusId = acquireResponse.data.statusId;
-      this.logger?.debug(`Acquiring package with statusId: ${statusId} ...`);
+      this.logger?.debug(`Acquiring package with statusId: ${statusId as string} ...`);
 
       do {
         const statusResponse = await this.axiosInstance.get(
-          `/dev/v1/users/packages/status/${statusId}`,
+          `/dev/v1/users/packages/status/${statusId as string}`,
           {
             baseURL: serviceUrl,
             headers: { Authorization: `Bearer ${token}` },
@@ -180,7 +180,7 @@ export class PackageService {
   public async retrieveAppId(token: string, manifestId: string): Promise<string | undefined> {
     const launchInfo = await this.getLaunchInfoByManifestId(token, manifestId);
     const appId = launchInfo.acquisition?.appId;
-    this.logger?.debug(`AppId: ${appId}`);
+    this.logger?.debug(`AppId: ${appId as string}`);
     return appId;
   }
   @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])

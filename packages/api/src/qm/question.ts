@@ -108,7 +108,8 @@ export interface UserInputQuestion extends BaseQuestion {
     | "multiFile"
     | "folder"
     | "text"
-    | "singleFileOrText";
+    | "singleFileOrText"
+    | "innerText";
   /**
    * title is required for human input question
    */
@@ -318,6 +319,30 @@ export interface TextInputQuestion extends UserInputQuestion {
 }
 
 /**
+ * Definition of text input question of a sub-question of SingleFileOrInputQuestion
+ */
+export interface InnerTextInputQuestion extends UserInputQuestion {
+  type: "innerText";
+  /**
+   * If the input value should be hidden. Defaults to false.
+   */
+  password?: boolean;
+  /**
+   * input value.
+   */
+  value?: string;
+  /**
+   * default value
+   *
+   */
+  default?: string | LocalFunc<string | undefined>;
+  /**
+   * validation schema, which can be a dynamic function closure
+   */
+  validation?: StringValidation | FuncValidation<string>;
+}
+
+/**
  * Definition of single file selection
  */
 export interface SingleFileQuestion extends UserInputQuestion {
@@ -391,7 +416,7 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
   /**
    * Config for the input box.
    */
-  inputBoxConfig: TextInputQuestion;
+  inputBoxConfig: InnerTextInputQuestion;
 
   /**
    * This will only take effect in VSC.

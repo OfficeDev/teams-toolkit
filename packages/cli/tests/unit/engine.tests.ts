@@ -22,7 +22,7 @@ import * as activate from "../../src/activate";
 import { getFxCore, resetFxCore } from "../../src/activate";
 import { engine } from "../../src/commands/engine";
 import { start } from "../../src/commands/index";
-import { listCapabilitiesCommand } from "../../src/commands/models";
+import { listCapabilitiesCommand, listSamplesCommand } from "../../src/commands/models";
 import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
@@ -162,6 +162,30 @@ describe("CLI Engine", () => {
       assert.isTrue(result.isOk());
       assert.deepEqual(ctx.argumentValues[0], ["a", "b", "c"]);
       assert.equal(ctx.argumentValues[1], "default");
+    });
+    it("boolean type option", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        options: [
+          {
+            type: "boolean",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["--option1", "true"]);
+      assert.isTrue(result.isOk());
+      assert.equal(ctx.optionValues["option1"], true);
     });
   });
   describe("validateOption", async () => {
@@ -338,6 +362,50 @@ describe("CLI Engine", () => {
       });
       await engine.start(rootCommand);
       assert.isTrue(error instanceof UserCancelError);
+    });
+    it("skip options in interactive mode", async () => {
+      sandbox.stub(UserSettings, "getInteractiveSetting").returns(ok(true));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({} as any));
+      sandbox.stub(process, "argv").value(["node", "cli", "new", "--folder", "abc"]);
+      let error: any = undefined;
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isUndefined(undefined);
+    });
+    it("skip arguments in interactive mode", async () => {
+      sandbox.stub(UserSettings, "getInteractiveSetting").returns(ok(true));
+      sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({} as any));
+      sandbox.stub(process, "argv").value(["node", "cli", "new", "sample", "abc"]);
+      let error: any = undefined;
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isUndefined(undefined);
+    });
+    it("no need to skip options or arguments in interactive mode", async () => {
+      sandbox.stub(UserSettings, "getInteractiveSetting").returns(ok(true));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({} as any));
+      sandbox.stub(process, "argv").value(["node", "cli", "new"]);
+      let error: any = undefined;
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isUndefined(undefined);
+    });
+    it("use defaultInteractiveOption", async () => {
+      const comand = listSamplesCommand;
+      sandbox.stub(comand, "handler").resolves(ok(undefined));
+      sandbox.stub(process, "argv").value(["node", "cli", "list", "samples"]);
+      let error: any = undefined;
+      sandbox.stub(engine, "processResult").callsFake(async (context, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.isUndefined(undefined);
     });
   });
   describe("index.start", async () => {

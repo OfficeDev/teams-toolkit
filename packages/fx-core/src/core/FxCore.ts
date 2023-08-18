@@ -259,7 +259,7 @@ export class FxCore {
       manifestOutputPath = path.join(
         inputs.projectPath!,
         "build",
-        `aad.manifest.${inputs.env}.json`
+        `aad.manifest.${inputs.env as string}.json`
       );
     }
     const inputArgs: UpdateAadAppArgs = {
@@ -389,6 +389,7 @@ export class FxCore {
     const manifestOutputPath: string = path.join(
       inputs.projectPath!,
       "build",
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `aad.${inputs.env}.json`
     );
     const Context: DriverContext = createDriverContext(inputs);
@@ -497,10 +498,14 @@ export class FxCore {
       manifestPath: teamsAppManifestFilePath,
       outputZipPath:
         inputs[QuestionNames.OutputZipPathParamName] ??
-        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env.TEAMSFX_ENV}.zip`,
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env
+          .TEAMSFX_ENV!}.zip`,
       outputJsonPath:
         inputs[QuestionNames.OutputManifestParamName] ??
-        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env.TEAMSFX_ENV}.json`,
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
+          .TEAMSFX_ENV!}.json`,
     };
     const result = await driver.run(args, context);
     if (context.platform === Platform.VSCode) {
@@ -516,7 +521,9 @@ export class FxCore {
         );
         if (isWindows) {
           const folderLink = pathToFileURL(path.dirname(zipFileName));
-          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+          const appPackageLink = `${
+            VSCodeExtensionCommand.openFolder
+          }?%5B%22${folderLink.toString()}%22%5D`;
           builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
         }
         context.ui?.showMessage("info", builtSuccess, false);
@@ -633,8 +640,8 @@ export class FxCore {
       const ymlContent = await fs.readFile(ymlPath, "utf-8");
       const ymlObject = parse(ymlContent);
       return ok({
-        projectId: ymlObject?.projectId ? ymlObject.projectId + "" : "",
-        version: ymlObject?.version ? ymlObject.version + "" : "",
+        projectId: ymlObject?.projectId ? ymlObject.projectId.toString() : "",
+        version: ymlObject?.version ? ymlObject.version.toString() : "",
       });
     } catch {
       return ok({});

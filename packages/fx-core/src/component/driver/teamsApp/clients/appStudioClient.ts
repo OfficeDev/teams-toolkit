@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
  */
@@ -88,6 +89,7 @@ export namespace AppStudioClient {
     telemetryProperties?: { [key: string]: string }
   ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
 
@@ -105,6 +107,7 @@ export namespace AppStudioClient {
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
       method: e.request?.method,
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       "status-code": `${e?.response?.status}`,
       url: `<${apiName}-url>`,
       ...telemetryProperties,
@@ -237,6 +240,7 @@ export namespace AppStudioClient {
           sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP);
           return app;
         } else {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           logProvider?.error(`teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`);
         }
       }
@@ -373,6 +377,7 @@ export namespace AppStudioClient {
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
@@ -610,7 +615,7 @@ export namespace AppStudioClient {
 
         if (result !== undefined) {
           sendTelemetryEvent(Component.core, TelemetryEvent.CheckSideloading, {
-            [TelemetryProperty.IsSideloadingAllowed]: result + "",
+            [TelemetryProperty.IsSideloadingAllowed]: result.toString() + "",
           });
         } else {
           sendTelemetryErrorEvent(
@@ -619,6 +624,7 @@ export namespace AppStudioClient {
             new SystemError(
               "M365Account",
               "UnknownValue",
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               `AppStudio response code: ${response.status}, body: ${response.data}`
             ),
             {
@@ -646,6 +652,7 @@ export namespace AppStudioClient {
             )[0],
           }),
           {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,
             [TelemetryProperty.CheckSideloadingMethod]: "get",
             [TelemetryProperty.CheckSideloadingUrl]: apiName,

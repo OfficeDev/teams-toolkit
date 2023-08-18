@@ -48,18 +48,18 @@ class ProvisionUtils {
     azureAccountProvider: AzureAccountProvider,
     givenSubscriptionId?: string
   ): Promise<Result<SubscriptionInfo, FxError>> {
-    await TOOLS.logProvider.info("check whether azure account is signed in.");
+    TOOLS.logProvider.info("check whether azure account is signed in.");
     // make sure the user is logged in
     await azureAccountProvider.getIdentityCredentialAsync(true);
     if (!givenSubscriptionId) {
-      await TOOLS.logProvider.info("subscription is not selected, try to select.");
+      TOOLS.logProvider.info("subscription is not selected, try to select.");
       try {
         const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
         if (!subscriptionInAccount) {
           // this case will not happen actually
           return err(new SelectSubscriptionError());
         } else {
-          await TOOLS.logProvider.info(
+          TOOLS.logProvider.info(
             `successful to select subscription: ${subscriptionInAccount.subscriptionId}`
           );
           return ok(subscriptionInAccount);
@@ -70,14 +70,14 @@ class ProvisionUtils {
     }
 
     // verify valid subscription (permission)
-    await TOOLS.logProvider.info("subscription is given, try to validate");
+    TOOLS.logProvider.info("subscription is given, try to validate");
     const subscriptions = await azureAccountProvider.listSubscriptions();
     const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
     if (!foundSubscriptionInfo) {
-      await TOOLS.logProvider.info("subscription validate fail");
+      TOOLS.logProvider.info("subscription validate fail");
       return err(new InvalidAzureSubscriptionError(givenSubscriptionId));
     }
-    await TOOLS.logProvider.info("subscription validate success");
+    TOOLS.logProvider.info("subscription validate success");
     return ok(foundSubscriptionInfo);
   }
 

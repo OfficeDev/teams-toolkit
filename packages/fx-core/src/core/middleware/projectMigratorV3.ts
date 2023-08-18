@@ -4,15 +4,7 @@
 /**
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
-import {
-  AppPackageFolderName,
-  err,
-  FxError,
-  ok,
-  SystemError,
-  UserError,
-  Platform,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, err, FxError, ok, Platform } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { backupFolder, MigrationContext } from "./utils/migrationContext";
@@ -24,7 +16,6 @@ import {
   sendTelemetryEvent,
   TelemetryEvent,
 } from "../../common/telemetry";
-import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
@@ -245,7 +236,7 @@ export async function wrapRunMigration(context: MigrationContext, exec: Migratio
 }
 
 export function buildErrorMessage(error: any, step?: string): string {
-  let message = error.message;
+  let message = error.message as string;
   if (error.code === "ENOENT" && error.path) {
     const fileName = path.basename(error.path);
     message = `Missing file: ${fileName}\n${message}`;

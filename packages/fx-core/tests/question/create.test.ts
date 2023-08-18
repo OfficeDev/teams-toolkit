@@ -926,7 +926,41 @@ describe("scaffold question", () => {
       });
 
       describe("apiSpecLocationQuestion", async () => {
+        it("invalid API spec location", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+          };
+          sandbox.stub(fs, "pathExists").resolves(false);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+
+          assert.isNotEmpty(res);
+        });
+
         it("valid API spec selecting from local file", async () => {
+          const question = apiSpecLocationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(fs, "pathExists").resolves(true);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+          assert.deepEqual(inputs.supportedApisFromApiSpec, [
+            { id: "get operation1", label: "get operation1", groupName: "GET" },
+            { id: "get operation2", label: "get operation2", groupName: "GET" },
+          ]);
+          assert.isUndefined(res);
+        });
+
+        it("valid API spec of remote URL", async () => {
           const question = apiSpecLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -938,36 +972,20 @@ describe("scaffold question", () => {
           sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
 
           const validationSchema = question.validation as FuncValidation<string>;
-          const res = await validationSchema.validFunc!("file", inputs);
+          const res = await validationSchema.validFunc!("https://www.test.com", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
             { id: "get operation1", label: "get operation1", groupName: "GET" },
             { id: "get operation2", label: "get operation2", groupName: "GET" },
           ]);
           assert.isUndefined(res);
         });
-
-        it("skip validating on selectFile result if user selects to input URL", async () => {
-          const question = apiSpecLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-          };
-
-          sandbox
-            .stub(SpecParser.prototype, "validate")
-            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
-
-          const validationSchema = question.validation as FuncValidation<string>;
-          const res = await validationSchema.validFunc!("input", inputs);
-          assert.isUndefined(res);
-        });
-
         it("invalid api spec", async () => {
           const question = apiSpecLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
             [QuestionNames.ApiSpecLocation]: "apispec",
           };
+          sandbox.stub(fs, "pathExists").resolves(true);
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
             errors: [
@@ -1005,6 +1023,7 @@ describe("scaffold question", () => {
             ],
             warnings: [],
           });
+          sandbox.stub(fs, "pathExists").resolves(true);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
@@ -1023,6 +1042,7 @@ describe("scaffold question", () => {
             platform: Platform.CLI,
             [QuestionNames.ApiSpecLocation]: "apispec",
           };
+          sandbox.stub(fs, "pathExists").resolves(true);
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
             errors: [
@@ -1044,55 +1064,6 @@ describe("scaffold question", () => {
           assert.equal(res, "error\nerror2");
         });
 
-        it("valid API spec from remote URL", async () => {
-          const question = apiSpecLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-          };
-
-          sandbox
-            .stub(SpecParser.prototype, "validate")
-            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
-
-          const validate = (
-            question.inputBoxConfig.additionalValidationOnAccept! as FuncValidation<string>
-          ).validFunc;
-          const res = await validate("url1", inputs);
-          assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "get operation1", label: "get operation1", groupName: "GET" },
-            { id: "get operation2", label: "get operation2", groupName: "GET" },
-          ]);
-          assert.isUndefined(res);
-        });
-
-        it("valid api spec and list operations error", async () => {
-          const question = apiSpecLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-            [QuestionNames.ApiSpecLocation]: "apispec",
-          };
-          sandbox.stub(SpecParser.prototype, "validate").resolves({
-            status: ValidationStatus.Valid,
-            errors: [],
-            warnings: [{ type: WarningType.AuthNotSupported, content: "" }],
-          });
-          sandbox.stub(SpecParser.prototype, "list").throws(new Error("error1"));
-
-          const validate = (
-            question.inputBoxConfig.additionalValidationOnAccept! as FuncValidation<string>
-          ).validFunc;
-
-          let fxError: FxError;
-          try {
-            await validate("url1", inputs);
-          } catch (e) {
-            fxError = e;
-          }
-
-          assert.isTrue(fxError!.message.includes("error1"));
-        });
-
         it("list operations without existing APIs", async () => {
           const question = apiSpecLocationQuestion(false);
           const inputs: Inputs = {
@@ -1106,6 +1077,7 @@ describe("scaffold question", () => {
           sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["get operation1"]);
+          sandbox.stub(fs, "pathExists").resolves(true);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);

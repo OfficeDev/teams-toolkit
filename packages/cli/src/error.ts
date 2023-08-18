@@ -27,7 +27,7 @@ export class MissingRequiredOptionError extends UserError {
   }
 }
 export class MissingRequiredArgumentError extends UserError {
-  constructor(command: string, argument: string | CLICommandArgument) {
+  constructor(command: string, argument: string | CLICommandArgument | CLICommandOption) {
     super({
       source: constants.cliSource,
       message: util.format(
@@ -68,6 +68,15 @@ export class UnknownOptionError extends UserError {
     super({
       source: constants.cliSource,
       message: util.format(strings["error.UnknownOptionError"], command, name),
+    });
+  }
+}
+
+export class UnknownArgumentError extends UserError {
+  constructor(command: string, name: string) {
+    super({
+      source: constants.cliSource,
+      message: util.format(strings["error.UnknownArgumentError"], command, name),
     });
   }
 }

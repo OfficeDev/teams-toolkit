@@ -123,11 +123,12 @@ export interface CLIBooleanOption extends CLICommandOptionBase {
 export interface CLICommand {
     arguments?: CLICommandArgument[];
     commands?: CLICommand[];
+    defaultInteractiveOption?: boolean;
     description: string;
     examples?: CLIExample[];
     footer?: string;
     fullName?: string;
-    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>>;
+    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>> | Result<undefined, FxError>;
     header?: string;
     hidden?: boolean;
     name: string;
@@ -148,7 +149,7 @@ export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOpti
 
 // @public (undocumented)
 export interface CLIContext {
-    argumentValues: string[];
+    argumentValues: OptionValue[];
     command: CLIFoundCommand;
     globalOptionValues: Record<string, OptionValue>;
     optionValues: Record<string, OptionValue>;
@@ -350,6 +351,16 @@ export interface Group {
 }
 
 // @public
+export interface InnerTextInputQuestion extends UserInputQuestion {
+    default?: string | LocalFunc<string | undefined>;
+    password?: boolean;
+    // (undocumented)
+    type: "innerText";
+    validation?: StringValidation | FuncValidation<string>;
+    value?: string;
+}
+
+// @public
 export interface InputResult<T> {
     result?: T;
     type: "success" | "skip" | "back";
@@ -376,7 +387,7 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
-    additionalValidationOnAccept?: ValidateFunc<string>;
+    additionalValidationOnAccept?: (input: string) => string | undefined | Promise<string | undefined>;
     // (undocumented)
     default?: string | (() => Promise<string>);
     password?: boolean;
@@ -675,7 +686,7 @@ export interface SingleFileOrInputConfig extends UIConfig<string> {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: InputTextConfig;
+    inputBoxConfig: UIConfig<string>;
     inputOptionItem: OptionItem;
 }
 
@@ -684,7 +695,7 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: TextInputQuestion;
+    inputBoxConfig: InnerTextInputQuestion;
     inputOptionItem: OptionItem;
     // (undocumented)
     type: "singleFileOrText";
@@ -1056,7 +1067,7 @@ export interface UserInputQuestion extends BaseQuestion {
     prompt?: string | LocalFunc<string | undefined>;
     required?: boolean;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innerText";
     validation?: ValidationSchema;
     validationHelp?: string;
 }

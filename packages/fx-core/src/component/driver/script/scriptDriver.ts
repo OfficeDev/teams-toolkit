@@ -95,7 +95,15 @@ export async function executeCommand(
     if (shell === "cmd") {
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
-    void logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
+    logProvider.verbose(
+      `Start to run command: "${command}" with args: ${JSON.stringify({
+        shell: shell,
+        cwd: workingDir,
+        encoding: "buffer",
+        env: { ...process.env, ...env },
+        timeout: timeout,
+      })}.`
+    );
     const allOutputStrings: string[] = [];
     const stderrStrings: string[] = [];
     process.env.VSLANG = undefined; // Workaroud to disable VS environment variable to void charset encoding issue for non-English characters
@@ -116,28 +124,40 @@ export async function executeCommand(
           // handle '::set-output' or '::set-teamsfx-env' pattern
           const outputString = allOutputStrings.join("");
           const outputObject = parseSetOutputCommand(outputString);
+          if (Object.keys(outputObject).length > 0)
+            logProvider.verbose(`script output env variables: ${outputObject}`);
           resolve(ok([outputString, outputObject]));
         }
       }
     );
-    const dataHandler = (data: string) => {
+    const dataHandler = async (data: string) => {
       if (appendFile) {
-        fs.appendFileSync(appendFile, data);
+        await fs.appendFile(appendFile, data);
       }
       allOutputStrings.push(data);
     };
-    cp.stdout?.on("data", (data: Buffer) => {
+    cp.stdout?.on("data", async (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      void logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
-      dataHandler(str);
+      logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
+      await dataHandler(str);
     });
-    cp.stderr?.on("data", (data: Buffer) => {
-      const str = bufferToString(data, systemEncoding);
-      void logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
-      dataHandler(str);
-      stderrStrings.push(str);
-    });
+    const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
+    cp.stderr?.on("data", handler);
   });
+}
+
+export function getStderrHandler(
+  logProvider: LogProvider,
+  systemEncoding: string,
+  stderrStrings: string[],
+  dataHandler: (data: string) => Promise<void>
+): (data: Buffer) => Promise<void> {
+  return async (data: Buffer) => {
+    const str = bufferToString(data, systemEncoding);
+    logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
+    await dataHandler(str);
+    stderrStrings.push(str);
+  };
 }
 
 export function bufferToString(data: Buffer, systemEncoding: string): string {

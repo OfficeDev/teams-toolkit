@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Helly Zhang <v-helzha@microsoft.com>
+ */
 import { MigrationTestContext } from "../migrationContext";
 import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
@@ -76,7 +79,7 @@ describe("Migration Tests", function () {
       );
       await validateBot(page, {
         botCommand: "helloWorld",
-        expected: "Your Hello World App is Running",
+        expected: "Your Hello World Bot is Running",
       });
     }
   );

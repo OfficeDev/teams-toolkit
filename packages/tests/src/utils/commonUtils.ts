@@ -251,3 +251,20 @@ function findNextEndLineIndexOfWord(content: string, key: string): number {
   const result = content.indexOf("\n", index);
   return result;
 }
+
+export async function updateDeverloperInManifestFile(
+  projectPath: string
+): Promise<void> {
+  const manifestFile = path.join(projectPath, "appPackage", `manifest.json`);
+  const context = await fs.readJSON(manifestFile);
+  //const context = await fs.readJSON(azureParametersFilePath);
+  try {
+    context["developer"]["websiteUrl"] = "https://www.example.com";
+    context["developer"]["privacyUrl"] = "https://www.example.com/privacy";
+    context["developer"]["termsOfUseUrl"] = "https://www.example.com/termofuse";
+  } catch {
+    console.log("Cannot set the propertie.");
+  }
+  console.log("Replaced the properties of developer in manifest file");
+  await fs.writeJSON(manifestFile, context, { spaces: 4 });
+}

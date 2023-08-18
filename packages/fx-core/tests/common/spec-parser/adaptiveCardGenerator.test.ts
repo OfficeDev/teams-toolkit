@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import * as util from "util";
 import "mocha";
 import sinon from "sinon";
 import {
@@ -8,6 +9,7 @@ import {
 import * as utils from "../../../src/common/spec-parser/utils";
 import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
 import { ErrorType } from "../../../src/common/spec-parser/interfaces";
+import { ConstantString } from "../../../src/common/spec-parser/constants";
 
 describe("adaptiveCardGenerator", () => {
   afterEach(() => {
@@ -535,7 +537,19 @@ describe("adaptiveCardGenerator", () => {
       const parentArrayName = "";
 
       expect(() => generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
-        "'oneOf', 'anyOf', and 'not' schema are not supported"
+        util.format(ConstantString.SchemaNotSupported, JSON.stringify(schema))
+      );
+    });
+
+    it("should throw an error for unknown schema types", () => {
+      const schema = {
+        type: "fake-type",
+      };
+      const name = "person";
+      const parentArrayName = "";
+
+      expect(() => generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
+        util.format(ConstantString.UnknownSchema, JSON.stringify(schema))
       );
     });
 
@@ -564,10 +578,7 @@ describe("adaptiveCardGenerator", () => {
       const actual = generateCardFromResponse(schema as any, name, parentArrayName);
       sinon.assert.calledOnce(warnSpy);
       expect(actual).to.deep.equal(expected);
-      sinon.assert.calledWithExactly(
-        warnSpy,
-        "'additionalProperties' is not supported, and will be ignored."
-      );
+      sinon.assert.calledWithExactly(warnSpy, ConstantString.AdditionalPropertiesNotSupported);
     });
 
     it("should throw a SpecParserError if getResponseJson throws an error", () => {

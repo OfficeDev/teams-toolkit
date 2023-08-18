@@ -119,25 +119,6 @@ class ValidationUtils {
         const res = await vFunc(value as string | string[]);
         if (res) return res;
       }
-      if (question.type === "singleFileOrText" && question.inputBoxConfig.validation) {
-        const vFunc = getValidationFunction<string | string[]>(
-          question.inputBoxConfig.validation as ValidationSchema,
-          inputs
-        );
-        const res = await vFunc(value as string | string[]);
-        if (res) return res;
-      }
-      if (
-        question.type === "singleFileOrText" &&
-        question.inputBoxConfig.additionalValidationOnAccept
-      ) {
-        const vFunc = getValidationFunction<string | string[]>(
-          question.inputBoxConfig.additionalValidationOnAccept as ValidationSchema,
-          inputs
-        );
-        const res = await vFunc(value as string | string[]);
-        if (res) return res;
-      }
       return undefined;
     }
   }

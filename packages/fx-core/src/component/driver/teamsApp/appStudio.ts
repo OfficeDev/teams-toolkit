@@ -198,7 +198,7 @@ export async function updateManifestV3(
       ];
       await ctx.userInteraction.showMessage("info", message, false);
     } else {
-      await ctx.userInteraction
+      void ctx.userInteraction
         .showMessage(
           "info",
           getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),

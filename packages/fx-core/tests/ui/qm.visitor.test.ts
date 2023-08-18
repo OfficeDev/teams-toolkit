@@ -698,7 +698,7 @@ describe("Question Model - Visitor Test", () => {
           label: "input",
         },
         inputBoxConfig: {
-          type: "text",
+          type: "innerText",
           name: "input",
           title: "input",
         },
@@ -724,13 +724,8 @@ describe("Question Model - Visitor Test", () => {
         },
         inputBoxConfig: {
           name: "input",
-          type: "text",
+          type: "innerText",
           title: "input",
-          additionalValidationOnAccept: {
-            validFunc: async (input) => {
-              return undefined;
-            },
-          },
         },
         validation: validation,
       };

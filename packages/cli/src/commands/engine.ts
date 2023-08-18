@@ -29,42 +29,56 @@ import path from "path";
 import * as uuid from "uuid";
 import { getFxCore } from "../activate";
 import { TextType, colorize } from "../colorize";
+import { tryDetectCICDPlatform } from "../commonlib/common/cicdPlatformDetector";
 import { logger } from "../commonlib/logger";
 import Progress from "../console/progress";
 import {
   InvalidChoiceError,
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
+  UnknownArgumentError,
   UnknownOptionError,
 } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
+import { CliConfigOptions, UserSettings } from "../userSetttings";
 import { getSystemInputs } from "../utils";
 import { helper } from "./helper";
-import { tryDetectCICDPlatform } from "../commonlib/common/cicdPlatformDetector";
-import { CliConfigOptions } from "../userSetttings";
 
 class CLIEngine {
+  /**
+   * @description cached debug logsd
+   */
+  debugLogs: string[] = [];
+
+  /**
+   * detect whether the process is a bundled electrop app
+   */
   isBundledElectronApp(): boolean {
     return process.versions && process.versions.electron && !(process as any).defaultApp
       ? true
       : false;
   }
+
+  /**
+   * entry point of the CLI engine
+   */
   async start(rootCmd: CLICommand): Promise<void> {
-    const debugLogs: string[] = [];
+    this.debugLogs = [];
 
     const root = cloneDeep(rootCmd);
 
-    // 0. get user args
+    // get user args
     const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
-    debugLogs.push(`user argument list: ${JSON.stringify(args)}`);
+    this.debugLogs.push(`user argument list: ${JSON.stringify(args)}`);
 
-    // 1. find command
+    // find command
     const findRes = this.findCommand(rootCmd, args);
     const foundCommand = findRes.cmd;
     const remainingArgs = findRes.remainingArgs;
-    debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
+
+    this.debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
 
     const context: CLIContext = {
       command: foundCommand,
@@ -78,14 +92,37 @@ class CLIEngine {
       },
     };
 
-    // 2. parse args
-    const parseRes = this.parseArgs(context, root, remainingArgs, debugLogs);
-
-    if (debugLogs.length) {
-      for (const log of debugLogs) {
-        await logger.debug(log);
-      }
+    const executeRes = await this.execute(context, root, remainingArgs);
+    if (executeRes.isErr()) {
+      this.processResult(context, executeRes.error);
+    } else {
+      this.processResult(context);
     }
+    if (context.command.name !== "preview") {
+      // TODO: consider to remove the hardcode
+      process.exit();
+    }
+  }
+
+  isUserSettingsTelemetryEnable(): boolean {
+    const res = UserSettings.getTelemetrySetting();
+    if (res.isOk()) return res.value;
+    return true;
+  }
+
+  isUserSettingsInteractive(): boolean {
+    const res = UserSettings.getInteractiveSetting();
+    if (res.isOk()) return res.value;
+    return true;
+  }
+
+  async execute(
+    context: CLIContext,
+    root: CLICommand,
+    remainingArgs: string[]
+  ): Promise<Result<undefined, FxError>> {
+    // parse args
+    const parseRes = this.parseArgs(context, root, remainingArgs);
 
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
@@ -98,7 +135,7 @@ class CLIEngine {
       }
     }
 
-    await logger.debug(
+    logger.debug(
       `parsed context: ${JSON.stringify(
         pick(context, [
           "optionValues",
@@ -111,21 +148,21 @@ class CLIEngine {
       )}`
     );
 
+    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
+
     // send start event
-    if (context.command.telemetry) {
+    if (telemetryEnabled && context.command.telemetry) {
       CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
     }
 
     if (parseRes.isErr()) {
-      await this.processResult(context, parseRes.error);
-      return;
+      return err(parseRes.error);
     }
 
     // 3. --version
     if (context.optionValues.version === true || context.globalOptionValues.version === true) {
-      await logger.info(rootCmd.version ?? "1.0.0");
-      await this.processResult(context);
-      return;
+      logger.info(root.version ?? "1.0.0");
+      return ok(undefined);
     }
 
     // 4. --help
@@ -134,79 +171,82 @@ class CLIEngine {
         context.command,
         context.command.fullName !== root.fullName ? root : undefined
       );
-      await logger.info(helpText);
-      await this.processResult(context);
-      return;
+      logger.info(helpText);
+      return ok(undefined);
     }
 
     // 5. validate
     if (!context.globalOptionValues.interactive) {
       const validateRes = this.validateOptionsAndArguments(context.command);
       if (validateRes.isErr()) {
-        await this.processResult(context, validateRes.error);
-        return;
+        return err(validateRes.error);
       }
     } else {
       // discard other options and args for interactive mode
-      context.optionValues = pick(context.optionValues, [
+      const trimOptionValues = pick(context.optionValues, [
         "projectPath",
         "correlationId",
         "platform",
       ]);
-      await logger.info(
-        `Some arguments/options are useless because the interactive mode is opened.` +
-          ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-          ` or set the global setting by 'teamsfx config set interactive false'.`
-      );
+      if (
+        Object.keys(trimOptionValues).length < Object.keys(context.optionValues).length &&
+        context.argumentValues.length
+      ) {
+        logger.info(
+          `Some arguments/options are useless because the interactive mode is opened.` +
+            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
+            ` or set the global setting by 'teamsfx config set interactive false'.`
+        );
+        context.optionValues = trimOptionValues;
+        context.argumentValues = [];
+      }
     }
 
-    try {
-      // 6. version check
-      const inputs = getSystemInputs(context.optionValues.projectPath as string);
-      inputs.ignoreEnvInfo = true;
-      const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
-      if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
-        const core = getFxCore();
-        const res = await core.projectVersionCheck(inputs);
-        if (res.isErr()) {
-          throw res.error;
-        } else {
-          if (res.value.isSupport === VersionState.unsupported) {
-            throw IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion");
-          } else if (res.value.isSupport === VersionState.upgradeable) {
-            const upgrade = await core.phantomMigrationV3(inputs);
-            if (upgrade.isErr()) {
-              throw upgrade.error;
-            }
+    // 6. version check
+    const inputs = getSystemInputs(context.optionValues.projectPath as string);
+    inputs.ignoreEnvInfo = true;
+    const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
+    if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
+      const core = getFxCore();
+      const res = await core.projectVersionCheck(inputs);
+      if (res.isErr()) {
+        return err(res.error);
+      } else {
+        if (res.value.isSupport === VersionState.unsupported) {
+          return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
+        } else if (res.value.isSupport === VersionState.upgradeable) {
+          const upgrade = await core.phantomMigrationV3(inputs);
+          if (upgrade.isErr()) {
+            return err(upgrade.error);
           }
         }
       }
+    }
 
+    try {
       // 7. run handler
       if (context.command.handler) {
         const handleRes = await Correlator.run(context.command.handler, context);
-        // const handleRes = await context.command.handler(context);
         if (handleRes.isErr()) {
-          await this.processResult(context, handleRes.error);
-        } else {
-          await this.processResult(context);
+          return err(handleRes.error);
         }
       } else {
-        const helpText = helper.formatHelp(rootCmd);
-        await logger.info(helpText);
+        const helpText = helper.formatHelp(context.command, root);
+        logger.info(helpText);
       }
     } catch (e) {
-      Progress.end(false); // TODO to remove this in the future
-      const fxError = assembleError(e);
-      await this.processResult(context, fxError);
+      Progress.end(false);
+      return err(assembleError(e));
     } finally {
       await CliTelemetry.flush();
-      Progress.end(true); // TODO to remove this in the future
+      Progress.end(true);
       if (context.command.name !== "preview") {
         // TODO: consider to remove the hardcode
         process.exit();
       }
     }
+
+    return ok(undefined);
   }
 
   findCommand(
@@ -215,9 +255,10 @@ class CLIEngine {
   ): { cmd: CLIFoundCommand; remainingArgs: string[] } {
     let i = 0;
     let cmd = model;
+    let token: string | undefined;
     for (; i < args.length; i++) {
-      const arg = args[i];
-      const command = cmd.commands?.find((c) => c.name === arg);
+      token = args[i];
+      const command = cmd.commands?.find((c) => c.name === token);
       if (command) {
         cmd = command;
       } else {
@@ -238,10 +279,8 @@ class CLIEngine {
   parseArgs(
     context: CLIContext,
     rootCommand: CLICommand,
-    args: string[],
-    debugLogs: string[]
+    args: string[]
   ): Result<undefined, UnknownOptionError> {
-    const i = 0;
     let argumentIndex = 0;
     const command = context.command;
     const options = (rootCommand.options || []).concat(command.options || []);
@@ -339,14 +378,24 @@ class CLIEngine {
             isGlobal: !isCommandOption,
           };
           if (option.value !== undefined) inputValues[inputKey] = option.value;
-          debugLogs.push(`find option: ${JSON.stringify(logObject)}`);
+          this.debugLogs.push(`find option: ${JSON.stringify(logObject)}`);
         } else {
           return err(new UnknownOptionError(command.fullName, token));
         }
       } else {
         if (command.arguments && command.arguments[argumentIndex]) {
-          command.arguments[argumentIndex++].value = args[i];
-          context.argumentValues.push(args[i]);
+          const argument = command.arguments[argumentIndex];
+          if (argument.type === "array") {
+            argument.value = token.split(",");
+          } else if (argument.type === "string") {
+            argument.value = token;
+          } else {
+            argument.value = Boolean(token);
+          }
+          context.argumentValues.push(argument.value);
+          argumentIndex++;
+        } else {
+          return err(new UnknownArgumentError(command.fullName, token));
         }
       }
     }
@@ -357,7 +406,7 @@ class CLIEngine {
           if (option.default !== undefined) {
             option.value = option.default;
             context.optionValues[this.optionInputKey(option)] = option.default;
-            debugLogs.push(
+            this.debugLogs.push(
               `set required option with default value, ${option.name}=${JSON.stringify(
                 option.default
               )}`
@@ -373,7 +422,7 @@ class CLIEngine {
           if (argument.default !== undefined) {
             argument.value = argument.default;
             context.argumentValues[i] = argument.default as string;
-            debugLogs.push(
+            this.debugLogs.push(
               `set required argument with default value, ${argument.name}=${JSON.stringify(
                 argument.default
               )}`
@@ -390,11 +439,27 @@ class CLIEngine {
     // set log level
     const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;
     logger.logLevel = logLevel;
+    for (const log of this.debugLogs) {
+      logger.debug(log);
+    }
+    this.debugLogs = [];
 
     // special process for global options
     // interactive
-    context.globalOptionValues.interactive =
-      context.globalOptionValues.interactive === false ? false : true;
+    // if user not input "--interactive" option value explicitly, toolkit will use default value defined by `defaultInteractiveOption`
+    // if `defaultInteractiveOption` is undefined, use default value = true
+    if (context.globalOptionValues.interactive === undefined) {
+      if (context.command.defaultInteractiveOption !== undefined) {
+        logger.debug(
+          `set interactive from command.defaultInteractiveOption (value=${context.command.defaultInteractiveOption})`
+        );
+        context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
+      } else {
+        const configValue = this.isUserSettingsInteractive();
+        logger.debug(`set interactive from user settings (value=${configValue})`);
+        context.globalOptionValues.interactive = configValue;
+      }
+    }
 
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
@@ -494,8 +559,9 @@ class CLIEngine {
     }
     return ok(undefined);
   }
-  async processResult(context: CLIContext, fxError?: FxError): Promise<void> {
-    if (context.command.telemetry) {
+  processResult(context?: CLIContext, fxError?: FxError): void {
+    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
+    if (context && context.command.telemetry && telemetryEnabled) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
           context.optionValues.env as string
@@ -515,13 +581,13 @@ class CLIEngine {
       }
     }
     if (fxError) {
-      await this.printError(fxError);
+      this.printError(fxError);
     }
   }
 
-  async printError(fxError: FxError): Promise<void> {
+  printError(fxError: FxError): void {
     if (isUserCancelError(fxError)) {
-      await logger.info("User canceled.");
+      logger.info("User canceled.");
       return;
     }
     logger.outputError(
@@ -539,7 +605,7 @@ class CLIEngine {
         colorize(fxError.issueLink as string, TextType.Hyperlink)
       );
     }
-    await logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
+    logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
   }
 }
 

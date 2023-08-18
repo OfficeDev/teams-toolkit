@@ -322,16 +322,14 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     if (!M365Login.codeFlowInstance.account) {
       // If no account in cache file, we will ask to sign in directly.
       tokenRes = await this.signInWhenNoAccountInCache(tokenRequest, loginHint, true);
-      await VsCodeLogInstance.info(`Signed in with Microsoft 365 account: ${loginHint}`);
+      VsCodeLogInstance.info(`Signed in with Microsoft 365 account: ${loginHint}`);
     } else if (
       !!loginHint &&
       M365Login.codeFlowInstance.account.username.toLowerCase() === loginHint.toLowerCase()
     ) {
       // If the account in cache matched with the loginHint, we will try to get access token for the currently cached account
       tokenRes = await this.getAccessToken(tokenRequest, loginHint);
-      await VsCodeLogInstance.info(
-        `Already signed in with correct Microsoft 365 account: ${loginHint}`
-      );
+      VsCodeLogInstance.info(`Already signed in with correct Microsoft 365 account: ${loginHint}`);
     } else {
       // need to switch account
       const userConfirmation = await this.doesUserConfirmSwitchAccount();
@@ -363,7 +361,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       await this.notifyStatus(tokenRequest);
       tokenRes = await M365Login.codeFlowInstance.switchAccount(tokenRequest.scopes, loginHint);
       await this.notifyStatus(tokenRequest);
-      await VsCodeLogInstance.info(`Switched to another Microsoft 365 account: ${loginHint}`);
+      VsCodeLogInstance.info(`Switched to another Microsoft 365 account: ${loginHint}`);
     }
 
     if (tokenRes.isErr()) {

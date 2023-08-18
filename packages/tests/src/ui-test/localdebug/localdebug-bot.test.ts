@@ -1,9 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
- * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
+ * @author wenyt <75360946+wenytang-ms@users.noreply.github.com>
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
-import { initPage, validateBot } from "../../utils/playwrightOperation";
+import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
 import { Env } from "../../utils/env";
@@ -52,7 +55,7 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateBot(page);
+      await validateEchoBot(page);
     }
   );
 });

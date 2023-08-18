@@ -375,6 +375,8 @@ export class CreateProjectQuestion {
 export class ValidationContent {
   static readonly Tab = "Hello, World";
   static readonly Bot = "Your Hello World Bot is Running";
+  static readonly BotWelcomeInstruction =
+    "Hi there! I'm a Teams bot that will echo what you said to me";
 }
 
 export class CliVersion {

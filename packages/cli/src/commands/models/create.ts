@@ -22,6 +22,7 @@ import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { createSampleCommand } from "./createSample";
+import * as path from "path";
 
 function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
   if (!isCopilotPluginEnabled()) {
@@ -78,7 +79,7 @@ export function getCreateCommand(): CLICommand {
       if (res.isErr()) {
         return err(res.error);
       }
-      logger.info(`Project created at: ${chalk.cyanBright(res.value.projectPath)}`);
+      logger.info(`Project created at: ${chalk.cyanBright(path.resolve(res.value.projectPath))}`);
       return ok(undefined);
     },
   };

@@ -187,9 +187,10 @@ class CLIEngine {
         "projectPath",
         "correlationId",
         "platform",
+        "nonInteractive",
       ]);
       if (
-        Object.keys(trimOptionValues).length < Object.keys(context.optionValues).length &&
+        Object.keys(trimOptionValues).length < Object.keys(context.optionValues).length ||
         context.argumentValues.length
       ) {
         logger.info(
@@ -199,6 +200,13 @@ class CLIEngine {
         );
         context.optionValues = trimOptionValues;
         context.argumentValues = [];
+        logger.debug(
+          `trimmed context for interactive mode: ${JSON.stringify(
+            pick(context, ["optionValues", "argumentValues"]),
+            null,
+            2
+          )}`
+        );
       }
     }
 

@@ -90,3 +90,15 @@ export function getResponseJson(
 
   return json;
 }
+
+export function convertPathToCamelCase(path: string): string {
+  const pathSegments = path.split("/");
+  const camelCaseSegments = pathSegments.map((segment) => {
+    if (segment.startsWith("{")) {
+      segment = segment.substring(1, segment.length - 1);
+    }
+    return segment.charAt(0).toUpperCase() + segment.slice(1);
+  });
+  const camelCasePath = camelCaseSegments.join("");
+  return camelCasePath;
+}

@@ -866,8 +866,19 @@ export class VsCodeUI implements UserInteraction {
   async selectFileOrInput(
     config: SingleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>> {
+    const validtionOnSelect = async (input: string) => {
+      if (input === config.inputOptionItem.id) {
+        return undefined;
+      }
+
+      if (config.validation) {
+        return await config.validation(input);
+      }
+    };
+
     const selectFileConfig: SelectFileConfig = {
       ...config,
+      validation: validtionOnSelect,
       possibleFiles: [config.inputOptionItem],
     };
 
@@ -878,7 +889,10 @@ export class VsCodeUI implements UserInteraction {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ContinueToInput, {
             [TelemetryProperty.SelectedOption]: selectFileOrItemRes.value.result,
           });
-          const inputRes = await this.inputText(config.inputBoxConfig);
+          const inputRes = await this.inputText({
+            ...config.inputBoxConfig,
+            additionalValidationOnAccept: config.validation,
+          });
           if (inputRes.isOk()) {
             if (inputRes.value.type === "back") continue;
             ExtTelemetry.sendTelemetryEvent(TelemetryEvent.selectFileOrInputResultType, {

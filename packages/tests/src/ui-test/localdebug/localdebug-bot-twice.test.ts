@@ -10,7 +10,7 @@ import {
   stopDebugging,
   waitForTerminal,
 } from "../../utils/vscodeOperation";
-import { initPage, validateBot } from "../../utils/playwrightOperation";
+import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
@@ -130,7 +130,7 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateBot(page);
+      await validateEchoBot(page);
     }
   );
 });

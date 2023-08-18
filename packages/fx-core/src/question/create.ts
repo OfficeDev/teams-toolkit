@@ -1358,7 +1358,6 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
           return Promise.resolve(result);
         },
       },
-      additionalValidationOnAccept: { validFunc: validationOnAccept },
     },
     inputOptionItem: {
       id: "input",
@@ -1369,8 +1368,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     },
     validation: {
       validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
-        if (input === "input") {
-          return undefined;
+        if (!isValidHttpUrl(input) && !(await fs.pathExists(input))) {
+          return "Please enter a valid URL or local path of your API Specification";
         }
 
         return await validationOnAccept(input, inputs);

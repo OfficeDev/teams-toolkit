@@ -263,8 +263,7 @@ describe("UserInteraction(CLI)", () => {
   });
 
   describe("selectFileOrInput", () => {
-    it("happy path - local file", async () => {
-      sandbox.stub(fs, "pathExists").resolves(true);
+    it("happy path", async () => {
       UI.updatePresetAnswer("test", "path");
       const res = await UI.selectFileOrInput({
         name: "test",
@@ -272,27 +271,7 @@ describe("UserInteraction(CLI)", () => {
         inputBoxConfig: {
           title: "test",
           name: "test",
-        },
-        inputOptionItem: {
-          id: "test",
-          label: "test",
-        },
-      });
-      assert.isTrue(res.isOk());
-    });
-    it("happy path - input url", async () => {
-      sandbox.stub(fs, "pathExists").resolves(false);
-      UI.updatePresetAnswer("test", "https://www.test.com");
-      const res = await UI.selectFileOrInput({
-        name: "test",
-        title: "test",
-        inputBoxConfig: {
-          title: "test",
-          name: "test",
           validation: (input: string) => {
-            return undefined;
-          },
-          additionalValidationOnAccept: (input: string) => {
             return undefined;
           },
         },
@@ -304,26 +283,6 @@ describe("UserInteraction(CLI)", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("invalid local path", async () => {
-      sandbox.stub(fs, "pathExists").resolves(false);
-      UI.updatePresetAnswer("test", "https://www.test.com");
-      const res = await UI.selectFileOrInput({
-        name: "test",
-        title: "test",
-        inputBoxConfig: {
-          title: "test",
-          name: "test",
-          validation: (input: string) => {
-            return "invalid";
-          },
-        },
-        inputOptionItem: {
-          id: "test",
-          label: "test",
-        },
-      });
-      assert.isTrue(res.isErr());
-    });
     it("load default value error", async () => {
       const res = await UI.selectFileOrInput({
         name: "test",

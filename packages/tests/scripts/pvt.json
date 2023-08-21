@@ -61,7 +61,8 @@
       "localdebug-obo-tab",
       "localdebug-command-and-response",
       "localdebug-notification-func",
-      "localdebug-notification-restify"
+      "localdebug-notification-restify",
+      "localdebug-tab-regen-appid"
     ],
     "node-18": [
       "treeview-content",
@@ -86,7 +87,6 @@
       "localdebug-notification-timertrigger-ts",
       "localdebug-dashboard-tab-ts",
       "localdebug-dashboard-tab",
-      "localdebug-tab-regen-appid",
       "localdebug-bot-twice",
       "localdebug-tab-aad-deploy",
       "localdebug-notification-func-timertrigger-ts",

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, LogLevel, ok } from "@microsoft/teamsfx-api";
 import { PackageService, serviceEndpoint } from "@microsoft/teamsfx-core";
 import { getTokenAndUpn } from "../../cmds/m365/m365";
 import { logger } from "../../commonlib/logger";
@@ -31,7 +31,9 @@ export const m365SideloadingCommand: CLICommand = {
     event: TelemetryEvent.M365Sigeloading,
   },
   handler: async (ctx) => {
-    await logger.warning("This command is in preview.");
+    // Command is preview, set log level to verbose
+    logger.logLevel = logger.logLevel > LogLevel.Verbose ? LogLevel.Verbose : logger.logLevel;
+    logger.warning("This command is in preview.");
     const packageService = new PackageService(sideloadingServiceEndpoint, logger);
     const manifestPath = ctx.optionValues["file-path"] as string;
     const tokenAndUpn = await getTokenAndUpn();

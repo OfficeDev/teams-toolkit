@@ -365,6 +365,18 @@ describe("CLI commands", () => {
       const res = await provisionCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
+    it("non interactive mode", async () => {
+      sandbox.stub(FxCore.prototype, "provisionResources").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...provisionCommand, fullName: "teamsfx" },
+        optionValues: { nonInteractive: true, region: "East US" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await provisionCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
   });
   describe("packageCommand", async () => {
     it("success", async () => {

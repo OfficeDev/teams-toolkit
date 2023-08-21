@@ -177,9 +177,9 @@ export class ToolsInstallDriverImpl {
     this.context.logProvider.debug(
       `Func tool result: ${JSON.stringify({
         isInstalled: funcStatus.isInstalled,
-        version: funcStatus.details?.installVersion,
-        bin: funcStatus.details?.binFolders,
-        supportedVersions: funcStatus.details?.supportedVersions,
+        version: funcStatus.details.installVersion,
+        bin: funcStatus.details.binFolders,
+        supportedVersions: funcStatus.details.supportedVersions,
       })}`
     );
 

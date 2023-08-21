@@ -20,6 +20,7 @@ export const validateCommand: CLICommand = {
       description: "Validate the Teams application package.",
     },
   ],
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as ValidateTeamsAppInputs;
     if (!ctx.globalOptionValues.interactive) {

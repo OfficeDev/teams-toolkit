@@ -80,8 +80,16 @@
         IsLoading = true;
         try
         {
-            var graph = await GetGraphServiceClient();
-            Profile = await graph.Me.GetAsync();
+            var config = Configuration.Get<ConfigOptions>();
+            AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
+            var app = ConfidentialClientApplicationBuilder
+                .Create(config.TeamsFx.Authentication.ClientId)
+                .WithClientSecret(config.TeamsFx.Authentication.ClientSecret)
+                .WithAuthority(config.TeamsFx.Authentication.OAuthAuthority)
+                .Build();
+            var assert = new UserAssertion(ssoToken.Token);
+            await app.AcquireTokenOnBehalfOf(new string[] { _scope }, assert).ExecuteAsync();
+
             return true;
         }
         catch (Exception e)

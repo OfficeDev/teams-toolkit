@@ -185,6 +185,7 @@ class CLIEngine {
       // discard other options and args for interactive mode
       const trimOptionValues = pick(context.optionValues, [
         "projectPath",
+        "env",
         "correlationId",
         "platform",
         "nonInteractive",
@@ -248,10 +249,6 @@ class CLIEngine {
     } finally {
       await CliTelemetry.flush();
       Progress.end(true);
-      if (context.command.name !== "preview") {
-        // TODO: consider to remove the hardcode
-        process.exit();
-      }
     }
 
     return ok(undefined);

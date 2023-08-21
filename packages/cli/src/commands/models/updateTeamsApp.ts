@@ -13,6 +13,7 @@ export const updateTeamsAppCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.UpdateTeamsApp,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as InputsWithProjectPath;
     const core = getFxCore();

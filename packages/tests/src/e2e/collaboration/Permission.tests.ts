@@ -10,6 +10,7 @@ import * as fs from "fs-extra";
 import path from "path";
 import {
   cleanUp,
+  createResourceGroup,
   execAsync,
   execAsyncWithRetry,
   getTestFolder,
@@ -48,15 +49,19 @@ describe("Collaboration", function () {
       console.log(`[Successfully] scaffold to ${projectPath}`);
       const filePath = path.join(projectPath, "teamsapp.yml");
       removeTeamsAppExtendToM365(filePath);
-      await setProvisionParameterValueV3(projectPath, "dev", {
-        key: "webAppSku",
-        value: "B1",
-      });
+
+      // provision
+      const resourceGroupName = `${appName}-rg`;
+      const result = await createResourceGroup(resourceGroupName, "eastus");
+      chai.assert.isTrue(result);
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {
         cwd: projectPath,
-        env: process.env,
+        env: {
+          ...process.env,
+          AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+        },
         timeout: 0,
       });
       console.log("[Successfully] provision");

@@ -570,6 +570,7 @@ function selectAppTypeQuestion(): MultiSelectQuestion {
         description: getLocalizedString("core.teamsAppQuestion.description"),
       },
     ],
+    validation: { minItems: 1 },
   };
 }
 

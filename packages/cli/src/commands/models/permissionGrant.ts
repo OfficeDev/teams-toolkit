@@ -7,6 +7,7 @@ import { azureMessage, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
+import { MissingRequiredOptionError } from "../../error";
 
 export const permissionGrantCommand: CLICommand = {
   name: "grant",
@@ -28,6 +29,16 @@ export const permissionGrantCommand: CLICommand = {
     // print necessary messages
     logger.info(azureMessage);
     logger.info(spfxMessage);
+    if (!ctx.globalOptionValues.interactive) {
+      if (!inputs["manifest-file-path"] && !inputs["manifest-path"]) {
+        return err(
+          new MissingRequiredOptionError(
+            "teamsfx permission grant",
+            "--manifest-file-path or --manifest-path"
+          )
+        );
+      }
+    }
     // setAppTypeInputs(inputs);// app type input is unused in FxCore
     const core = getFxCore();
     const result = await core.grantPermission(inputs);

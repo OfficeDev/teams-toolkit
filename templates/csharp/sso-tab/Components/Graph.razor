@@ -52,18 +52,7 @@
     private async Task ShowProfile()
     {
         IsLoading = true;
-
-        var config = Configuration.Get<ConfigOptions>();
-        var tenantId = config.TeamsFx.Authentication.OAuthAuthority.TrimStart("https://login.microsoftonline.com/".ToCharArray());
-        AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
-        var tokenCredential = new OnBehalfOfCredential(
-            tenantId,
-            config.TeamsFx.Authentication.ClientId,
-            config.TeamsFx.Authentication.ClientSecret,
-            ssoToken.Token
-        );
-
-        var graph = GetGraphServiceClient(tokenCredential);
+        var graph = await GetGraphServiceClient();
 
         Profile = await graph.Me.GetAsync();
         UserPhotoUri = await GetPhotoAsync(graph);
@@ -91,12 +80,13 @@
         IsLoading = true;
         try
         {
-            await teamsUserCredential.GetTokenAsync(new TokenRequestContext(new string[] { _scope }), new System.Threading.CancellationToken());
+            var graph = await GetGraphServiceClient();
+            Profile = await graph.Me.GetAsync();
             return true;
         }
-        catch (ExceptionWithCode e)
+        catch (Exception e)
         {
-            if (e.Code == ExceptionCode.UiRequiredError)
+            if (e.Message.Contains("AADSTS65001"))
             {
                 NeedConsent = true;
             }
@@ -110,8 +100,17 @@
         return false;
     }
     
-    private GraphServiceClient GetGraphServiceClient(TokenCredential tokenCredential)
+    private async Task<GraphServiceClient> GetGraphServiceClient()
     {
+        var config = Configuration.Get<ConfigOptions>();
+        var tenantId = config.TeamsFx.Authentication.OAuthAuthority.TrimStart("https://login.microsoftonline.com/".ToCharArray());
+        AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
+        var tokenCredential = new OnBehalfOfCredential(
+            tenantId,
+            config.TeamsFx.Authentication.ClientId,
+            config.TeamsFx.Authentication.ClientSecret,
+            ssoToken.Token
+        );
         var client = new GraphServiceClient(tokenCredential, new string[] { _scope });
         return client;
     }

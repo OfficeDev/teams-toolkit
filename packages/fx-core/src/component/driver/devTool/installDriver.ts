@@ -130,6 +130,14 @@ export class ToolsInstallDriverImpl {
     // Do not print any log in LocalCertificateManager, use the error message returned instead.
     const certManager = new LocalCertificateManager(this.context.ui);
     const localCertResult = await certManager.setupCertificate(trustDevCert);
+    this.context.logProvider.debug(
+      `Dev cert result: ${JSON.stringify({
+        cert: localCertResult.certPath,
+        key: localCertResult.keyPath,
+        alreadyTrusted: localCertResult.alreadyTrusted,
+        isTrusted: localCertResult.isTrusted,
+      })}`
+    );
     if (trustDevCert) {
       let name = outputEnvVarNames?.get(outputKeys.sslCertFile);
       if (name) {
@@ -166,6 +174,14 @@ export class ToolsInstallDriverImpl {
       symlinkDir: symlinkDir,
       projectPath: this.context.projectPath,
     });
+    this.context.logProvider.debug(
+      `Func tool result: ${JSON.stringify({
+        isInstalled: funcStatus.isInstalled,
+        version: funcStatus.details?.installVersion,
+        bin: funcStatus.details?.binFolders,
+        supportedVersions: funcStatus.details?.supportedVersions,
+      })}`
+    );
 
     this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
 
@@ -194,6 +210,14 @@ export class ToolsInstallDriverImpl {
     const res = new Map<string, string>();
     const dotnetChecker = new DotnetChecker(new EmptyLogger(), new EmptyTelemetry());
     const dotnetStatus = await dotnetChecker.resolve();
+    this.context.logProvider.debug(
+      `.NET result: ${JSON.stringify({
+        isInstalled: dotnetStatus.isInstalled,
+        version: dotnetStatus.details?.installVersion,
+        bin: dotnetStatus.details?.binFolders,
+        supportedVersions: dotnetStatus.details?.supportedVersions,
+      })}`
+    );
 
     this.setDepsCheckTelemetry(TelemetryProperties.dotnetStatus, dotnetStatus);
 

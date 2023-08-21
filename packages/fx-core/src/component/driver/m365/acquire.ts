@@ -85,7 +85,7 @@ export class M365TitleAcquireDriver implements StepDriver {
         process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
       const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
 
-      const packageService = new PackageService(sideloadingServiceEndpoint);
+      const packageService = new PackageService(sideloadingServiceEndpoint, context.logProvider);
       const sideloadingTokenRes = await context.m365TokenProvider.getAccessToken({
         scopes: [sideloadingServiceScope],
       });

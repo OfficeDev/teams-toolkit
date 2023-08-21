@@ -1,5 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
- * @author Helly Zhang <v-helzha@microsoft.com>
+ * @author wenyt <75360946+wenytang-ms@users.noreply.github.com>
  */
 import { expect } from "chai";
 import { TreeViewTestContext, checkSectionContent } from "./treeviewContext";
@@ -30,7 +33,7 @@ describe("Check command name in command palette and tree view content Tests", fu
   it(
     "[auto] All treeview items display correctly",
     {
-      testPlanCaseId: 10241837,
+      testPlanCaseId: 16788842,
       author: "v-helzha@microsoft.com",
     },
     async function () {

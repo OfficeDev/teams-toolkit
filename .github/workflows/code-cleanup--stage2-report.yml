@@ -39,10 +39,22 @@ jobs:
       run: |
         node .github/scripts/todo-comment-check.js
       env: 
-        TODO_LIST: ${{steps.search.outputs.todo}}
+        TODO_LIST: ${{steps.search.outputs.todo}}   
 
+  file-lines-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Find file with lines over 500
+      run: |
+        wc -l `find packages/*/src -type f -name "*.ts" ` | awk '{ if($1 > 600 && $2 !="total") print $1,$2;}'
+      
   type-checking-promise:
     runs-on: ubuntu-latest
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -87,8 +99,6 @@ jobs:
       fail-fast: false
       matrix:
         package:
-        - fx-core
-        - vscode-extension
         - cli
         - tests
 

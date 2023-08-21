@@ -34,6 +34,7 @@ import {
 } from "../error";
 import { validationUtils } from "./validationUtils";
 import { isCliNewUxEnabled } from "../common/featureFlags";
+import { TOOLS } from "../core/globalVars";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -100,10 +101,18 @@ export const questionVisitor: QuestionTreeVisitor = async function (
   step?: number,
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
+  TOOLS.logProvider?.debug(`questionVisitor::visit question: ${question.name}`);
   // check and validate preset answer
   if (inputs[question.name] !== undefined) {
     // validate existing answer in inputs object
     const res = await validationUtils.validateInputs(question, inputs[question.name], inputs);
+    TOOLS.logProvider?.debug(
+      `questionVisitor::the answer is preset in inputs, question: ${
+        question.name
+      }, answer: ${JSON.stringify(inputs[question.name])}, validation result: ${
+        res ? res : "success!"
+      }`
+    );
     if (res) return err(new InputValidationError(question.name, res, "questionVisitor"));
     return ok({ type: "skip", result: inputs[question.name] });
   }
@@ -120,6 +129,11 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         if (options.length === 1) {
           const value = getSingleOption(question, options);
           if (value) {
+            TOOLS.logProvider?.debug(
+              `questionVisitor::the answer is automatically selected in a single option selection in non-interactive mode, question: ${
+                question.name
+              }, answer: ${JSON.stringify(value)}`
+            );
             return ok({ type: "skip", result: value });
           }
         }
@@ -134,6 +148,13 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         | OptionItem[];
       if (value) {
         const validateRes = await validationUtils.validateInputs(question, value, inputs);
+        TOOLS.logProvider?.debug(
+          `questionVisitor::the answer is default value in non-interactive mode, question: ${
+            question.name
+          }, answer: ${JSON.stringify(value)}, validation result: ${
+            validateRes ? validateRes : "success!"
+          }`
+        );
         if (validateRes) {
           return err(new InputValidationError(question.name, validateRes, "questionVisitor"));
         } else {
@@ -143,7 +164,12 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     }
     if (question.required)
       return err(new MissingRequiredInputError(question.name, "questionVisitor"));
-    else return ok({ type: "skip", result: undefined });
+    else {
+      TOOLS.logProvider?.debug(
+        `questionVisitor::the answer is undefined for non-required question in non-interactive mode, question: ${question.name}`
+      );
+      return ok({ type: "skip", result: undefined });
+    }
   }
 
   // interactive mode
@@ -201,6 +227,11 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       }
       if (question.skipSingleOption && question.staticOptions.length === 1) {
         const returnResult = getSingleOption(question, question.staticOptions);
+        TOOLS.logProvider?.debug(
+          `questionVisitor::the answer is automatically selected in a single option selection in interactive mode, question: ${
+            question.name
+          }, answer: ${JSON.stringify(returnResult)}`
+        );
         return ok({ type: "skip", result: returnResult });
       }
       options = question.staticOptions;
@@ -209,7 +240,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
-      return await ui.selectOption({
+      const res = await ui.selectOption({
         name: question.name,
         title: title,
         options: options,
@@ -223,11 +254,17 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         validation: validationFunc,
         skipSingleOption: question.skipSingleOption,
       });
+      TOOLS.logProvider?.debug(
+        `questionVisitor::the answer is from user input in interactive mode, question: ${
+          question.name
+        }, answer: ${JSON.stringify(res)}`
+      );
+      return res;
     } else {
       const validationFunc = question.validation
         ? getValidationFunction<string[]>(question.validation, inputs)
         : undefined;
-      return await ui.selectOptions({
+      const res = await ui.selectOptions({
         name: question.name,
         title: title,
         options: options,
@@ -241,12 +278,18 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         validation: validationFunc,
         skipSingleOption: question.skipSingleOption,
       });
+      TOOLS.logProvider?.debug(
+        `questionVisitor::the answer is from user input in interactive mode, question: ${
+          question.name
+        }, answer: ${JSON.stringify(res)}`
+      );
+      return res;
     }
   } else if (question.type === "multiFile") {
     const validationFunc = question.validation
       ? getValidationFunction<string[]>(question.validation, inputs)
       : undefined;
-    return await ui.selectFiles({
+    const res = await ui.selectFiles({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -256,11 +299,17 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
     });
+    TOOLS.logProvider?.debug(
+      `questionVisitor::the answer is from user input in interactive mode, question: ${
+        question.name
+      }, answer: ${JSON.stringify(res)}`
+    );
+    return res;
   } else if (question.type === "singleFile") {
     const validationFunc = question.validation
       ? getValidationFunction<string>(question.validation, inputs)
       : undefined;
-    return await ui.selectFile({
+    const res = await ui.selectFile({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -271,11 +320,17 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       validation: validationFunc,
       filters: question.filters,
     });
+    TOOLS.logProvider?.debug(
+      `questionVisitor::the answer is from user input in interactive mode, question: ${
+        question.name
+      }, answer: ${JSON.stringify(res)}`
+    );
+    return res;
   } else if (question.type === "folder") {
     const validationFunc = question.validation
       ? getValidationFunction<string>(question.validation, inputs)
       : undefined;
-    return await ui.selectFolder({
+    const res = await ui.selectFolder({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -285,6 +340,12 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
     });
+    TOOLS.logProvider?.debug(
+      `questionVisitor::the answer is from user input in interactive mode, question: ${
+        question.name
+      }, answer: ${JSON.stringify(res)}`
+    );
+    return res;
   } else if (question.type === "singleFileOrText" && !!ui.selectFileOrInput) {
     const validationFunc = question.validation
       ? getValidationFunction<string>(question.validation, inputs)
@@ -317,6 +378,11 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
     });
+    TOOLS.logProvider?.debug(
+      `questionVisitor::the answer is from user input in interactive mode, question: ${
+        question.name
+      }, answer: ${JSON.stringify(res)}`
+    );
     return res;
   }
   return err(

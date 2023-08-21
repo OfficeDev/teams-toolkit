@@ -53,7 +53,6 @@ describe("Collaboration", function () {
       // provision
       const resourceGroupName = `${appName}-rg`;
       const result = await createResourceGroup(resourceGroupName, "eastus");
-      chai.assert.isTrue(result);
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {

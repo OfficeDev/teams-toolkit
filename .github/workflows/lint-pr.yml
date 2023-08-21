@@ -1,11 +1,6 @@
 name: "Lint PR"
 
 on:
-  pull_request:
-    types:
-      - opened
-      - edited
-      - synchronize
   schedule:
     - cron: "0 8 * * *"
 

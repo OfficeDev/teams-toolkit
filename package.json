@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "watch": "pnpm --parallel -r run watch",
-    "build": "pnpm -r run build",
+    "build": "pnpm -r run --filter=!@microsoft/teamsfx-react build && pnpm run --filter=@microsoft/teamsfx-react build",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish",

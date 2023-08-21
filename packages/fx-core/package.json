@@ -70,8 +70,7 @@
     "installAll": "npm run install:tabs",
     "checkUnusedStrings": "node ./scripts/find-unused-strings.js ./resource/package.nls.json ./src || exit 1",
     "clean:strings": "node ./scripts/delete-unused-strings.js ./resource/package.nls.json ./src",
-    "gen:cli": "npx ts-node ./src/question/generator.ts && npx prettier --write \"src/question/options/*.ts\" && npx prettier --write \"src/question/inputs/*.ts\"",
-    "preversion": "echo '----------------------------------------'"
+    "gen:cli": "npx ts-node ./src/question/generator.ts && npx prettier --write \"src/question/options/*.ts\" && npx prettier --write \"src/question/inputs/*.ts\""
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",

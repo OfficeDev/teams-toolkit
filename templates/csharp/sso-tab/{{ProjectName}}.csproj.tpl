@@ -20,7 +20,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.6.0" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="1.5.3" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.55.0" />
     <PackageReference Include="Microsoft.TeamsFx" Version="2.1.*" />
   </ItemGroup>
 

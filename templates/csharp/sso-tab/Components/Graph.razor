@@ -52,7 +52,8 @@
     private async Task ShowProfile()
     {
         IsLoading = true;
-        var graph = await GetGraphServiceClient();
+        var tokenCredential = await GetTokenCredential();
+        var graph = GetGraphServiceClient(tokenCredential);
 
         Profile = await graph.Me.GetAsync();
         UserPhotoUri = await GetPhotoAsync(graph);
@@ -80,15 +81,8 @@
         IsLoading = true;
         try
         {
-            var config = Configuration.Get<ConfigOptions>();
-            AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
-            var app = ConfidentialClientApplicationBuilder
-                .Create(config.TeamsFx.Authentication.ClientId)
-                .WithClientSecret(config.TeamsFx.Authentication.ClientSecret)
-                .WithAuthority(config.TeamsFx.Authentication.OAuthAuthority)
-                .Build();
-            var assert = new UserAssertion(ssoToken.Token);
-            await app.AcquireTokenOnBehalfOf(new string[] { _scope }, assert).ExecuteAsync();
+            var tokenCredential = await GetTokenCredential();
+            await tokenCredential.GetTokenAsync(new TokenRequestContext(new string[] { _scope }), new CancellationToken());
 
             return true;
         }
@@ -107,8 +101,8 @@
         IsLoading = false;
         return false;
     }
-    
-    private async Task<GraphServiceClient> GetGraphServiceClient()
+
+    private async Task<OnBehalfOfCredential> GetTokenCredential()
     {
         var config = Configuration.Get<ConfigOptions>();
         var tenantId = config.TeamsFx.Authentication.OAuthAuthority.TrimStart("https://login.microsoftonline.com/".ToCharArray());
@@ -119,6 +113,11 @@
             config.TeamsFx.Authentication.ClientSecret,
             ssoToken.Token
         );
+        return tokenCredential;
+    }
+    
+    private GraphServiceClient GetGraphServiceClient(TokenCredential tokenCredential)
+    {
         var client = new GraphServiceClient(tokenCredential, new string[] { _scope });
         return client;
     }

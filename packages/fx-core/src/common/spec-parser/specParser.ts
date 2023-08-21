@@ -93,7 +93,7 @@ export class SpecParser {
           data: this.spec!.servers,
         });
       } else if (this.spec!.servers.length === 1) {
-        const serverUrl = this.spec!.servers[0]?.url;
+        const serverUrl = this.spec!.servers[0].url;
         if (serverUrl.startsWith("http://")) {
           // Http server url is not supported
           errors.push({

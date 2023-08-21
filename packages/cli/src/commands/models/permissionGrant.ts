@@ -18,12 +18,11 @@ export const permissionGrantCommand: CLICommand = {
   examples: [
     {
       command:
-        "teamsfx permission grant --teams-manifest-file ./appPackage/manifest.json --env dev --email other@email.com",
+        "teamsfx permission grant -i false --teams-manifest-file ./appPackage/manifest.json --env dev --email other@email.com",
       description:
         "Grant permission for another Microsoft 365 account to collaborate on the Teams app.",
     },
   ],
-  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as PermissionGrantInputs & InputsWithProjectPath;
     // print necessary messages

@@ -183,13 +183,10 @@ class CLIEngine {
       }
     } else {
       // discard other options and args for interactive mode
-      const trimOptionValues = pick(context.optionValues, [
-        "projectPath",
-        "env",
-        "correlationId",
-        "platform",
-        "nonInteractive",
-      ]);
+      const reservedOptionNames = (
+        context.command.reservedOptionNamesInInteractiveMode || []
+      ).concat(["projectPath", "env", "correlationId", "platform", "nonInteractive"]);
+      const trimOptionValues = pick(context.optionValues, reservedOptionNames);
       if (
         Object.keys(trimOptionValues).length < Object.keys(context.optionValues).length ||
         context.argumentValues.length

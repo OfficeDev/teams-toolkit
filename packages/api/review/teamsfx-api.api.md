@@ -133,6 +133,7 @@ export interface CLICommand {
     hidden?: boolean;
     name: string;
     options?: CLICommandOption[];
+    reservedOptionNamesInInteractiveMode?: string[];
     sortCommands?: boolean;
     sortOptions?: boolean;
     telemetry?: {

@@ -790,12 +790,13 @@ describe("Question Model - Visitor Test", () => {
     afterEach(() => {
       mockedEnvRestore();
     });
-    it("should return error for non-interactive mode", async () => {
+    it("should return MissingRequiredInputError for non-interactive mode", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: TextInputQuestion = {
         type: "text",
         name: "test",
         title: "test",
+        required: true,
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -804,7 +805,18 @@ describe("Question Model - Visitor Test", () => {
       const res = await questionVisitor(question, new MockUserInteraction(), inputs);
       assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
     });
-
+    it("should return skip for non-interactive mode", async () => {
+      const question: TextInputQuestion = {
+        type: "text",
+        name: "test",
+        title: "test",
+        required: false,
+      };
+      const inputs = createInputs();
+      inputs.nonInteractive = true;
+      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === undefined);
+    });
     it("should return empty option error for non-interactive mode", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: SingleSelectQuestion = {

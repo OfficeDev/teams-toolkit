@@ -36,6 +36,7 @@ export const m365LaunchInfoCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.M365LaunchInfo,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     // Command is preview, set log level to verbose
     logger.logLevel = logger.logLevel > LogLevel.Verbose ? LogLevel.Verbose : logger.logLevel;

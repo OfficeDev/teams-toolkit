@@ -30,6 +30,7 @@ export const m365SideloadingCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.M365Sigeloading,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     // Command is preview, set log level to verbose
     logger.logLevel = logger.logLevel > LogLevel.Verbose ? LogLevel.Verbose : logger.logLevel;

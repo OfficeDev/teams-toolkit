@@ -30,7 +30,7 @@ describe("Action Middleware", () => {
       chai.assert.equal(config.measurements?.[TelemetryConstants.properties.timeCost], 1000);
     });
 
-    await new MockDriver().run(undefined, { telemetryReporter: {} as any } as any);
+    await new MockDriver().execute(undefined, { telemetryReporter: {} as any } as any);
 
     chai.assert.isTrue(sendEndEventStub.called);
   });

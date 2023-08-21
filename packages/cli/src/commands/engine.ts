@@ -185,6 +185,7 @@ class CLIEngine {
       // discard other options and args for interactive mode
       const trimOptionValues = pick(context.optionValues, [
         "projectPath",
+        "env",
         "correlationId",
         "platform",
         "nonInteractive",

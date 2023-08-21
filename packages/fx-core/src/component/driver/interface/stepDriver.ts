@@ -15,13 +15,6 @@ export interface StepDriver {
   readonly progressTitle?: string;
 
   /**
-   * Run the driver.
-   * @param args Arguments from the `with` section in the yaml file.
-   * @param context logger, telemetry, progress bar, etc.
-   */
-  run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>>;
-
-  /**
    * Run the driver and return success summary entries along with the result, no matter the result is success or failure.
    * Because a failed action may still emit some succuessful summaires.
    * The summary is expected to contain human readable information that will be presented to users.
@@ -30,7 +23,7 @@ export interface StepDriver {
    * @param outputEnvVarNames the environment variable names for each output
    * @param schemaVersion schema version of the executed yaml file
    */
-  execute?(
+  execute(
     args: unknown,
     ctx: DriverContext,
     outputEnvVarNames?: Map<string, string>,

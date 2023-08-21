@@ -101,7 +101,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
   step?: number,
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
-  TOOLS.logProvider?.debug(`questionVisitor::visit question: ${question.name}`);
+  TOOLS.logProvider?.debug(`questionVisitor::start visit question: ${question.name}`);
   // check and validate preset answer
   if (inputs[question.name] !== undefined) {
     // validate existing answer in inputs object

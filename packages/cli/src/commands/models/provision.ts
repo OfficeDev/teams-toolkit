@@ -27,7 +27,6 @@ export const provisionCommand: CLICommand = {
       hidden: true,
     },
   ],
-  reservedOptionNamesInInteractiveMode: ["resource-group", "region"],
   telemetry: {
     event: TelemetryEvent.Provision,
   },

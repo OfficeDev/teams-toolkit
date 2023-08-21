@@ -1,9 +1,12 @@
 ﻿@using System.IO
 @using Azure.Core
+@using Azure.Identity;
 @using Microsoft.Graph
 @using Microsoft.Graph.Models;
+@using Microsoft.Extensions.Configuration
 @inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
+@inject IConfiguration Configuration
 
 <div>
     <h2>Get the user's profile photo</h2>
@@ -49,7 +52,18 @@
     private async Task ShowProfile()
     {
         IsLoading = true;
-        var graph = GetGraphServiceClient();
+
+        var config = Configuration.Get<ConfigOptions>();
+        var tenantId = config.TeamsFx.Authentication.OAuthAuthority.TrimStart("https://login.microsoftonline.com/".ToCharArray());
+        AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
+        var tokenCredential = new OnBehalfOfCredential(
+            tenantId,
+            config.TeamsFx.Authentication.ClientId,
+            config.TeamsFx.Authentication.ClientSecret,
+            ssoToken.Token
+        );
+
+        var graph = GetGraphServiceClient(tokenCredential);
 
         Profile = await graph.Me.GetAsync();
         UserPhotoUri = await GetPhotoAsync(graph);
@@ -96,9 +110,9 @@
         return false;
     }
     
-    private GraphServiceClient GetGraphServiceClient()
+    private GraphServiceClient GetGraphServiceClient(TokenCredential tokenCredential)
     {
-        var client = new GraphServiceClient(teamsUserCredential, new string[] { _scope });
+        var client = new GraphServiceClient(tokenCredential, new string[] { _scope });
         return client;
     }
 

@@ -22,6 +22,10 @@ export class ConstantString {
   );
   static readonly SchemaNotSupported = getLocalizedString("core.common.SchemaNotSupported");
   static readonly UnknownSchema = getLocalizedString("core.common.UnknownSchema");
+  // TODO: localization
+  static readonly HttpServerUrlNotSupported =
+    "Http server url is not supported, you should use https instead.";
+  static readonly RelativeServerUrlNotSupported = "Relative server url is not supported.";
   static readonly GetMethod = "get";
   static readonly PostMethod = "post";
   static readonly AdaptiveCardVersion = "1.5";

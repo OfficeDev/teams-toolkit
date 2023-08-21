@@ -89,7 +89,10 @@ describe("SpecParser", () => {
 
     it("should return an error result object if has multiple server information", async function () {
       const specPath = "path/to/spec";
-      const spec = { openapi: "3.0.0", servers: ["server1", "server2"] };
+      const spec = {
+        openapi: "3.0.0",
+        servers: [{ url: "https://server1" }, { url: "https://server2" }],
+      };
 
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
@@ -104,7 +107,57 @@ describe("SpecParser", () => {
           {
             type: ErrorType.MultipleServerInformation,
             content: ConstantString.MultipleServerInformation,
-            data: ["server1", "server2"],
+            data: [{ url: "https://server1" }, { url: "https://server2" }],
+          },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return an error result object if server url is http", async function () {
+      const specPath = "path/to/spec";
+      const spec = { openapi: "3.0.0", servers: [{ url: "http://server1" }] };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.HttpServerUrlNotSupported,
+            content: ConstantString.HttpServerUrlNotSupported,
+            data: [{ url: "http://server1" }],
+          },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return an error result object if server url is relative path", async function () {
+      const specPath = "path/to/spec";
+      const spec = { openapi: "3.0.0", servers: [{ url: "path/to/server1" }] };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.RelativeServerUrlNotSupported,
+            content: ConstantString.RelativeServerUrlNotSupported,
+            data: [{ url: "path/to/server1" }],
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
         ],
@@ -114,7 +167,7 @@ describe("SpecParser", () => {
 
     it("should return an error result object if no supported apis", async function () {
       const specPath = "path/to/spec";
-      const spec = { openapi: "3.0.0", servers: ["server1"] };
+      const spec = { openapi: "3.0.0", servers: [{ url: "https://server1" }] };
 
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
@@ -191,7 +244,7 @@ describe("SpecParser", () => {
         openapi: "3.0.2",
         servers: [
           {
-            url: "/v3",
+            url: "https://servers1",
           },
         ],
         paths: {
@@ -251,7 +304,7 @@ describe("SpecParser", () => {
         openapi: "3.0.2",
         servers: [
           {
-            url: "/v3",
+            url: "https://server1",
           },
         ],
         paths: {
@@ -303,7 +356,7 @@ describe("SpecParser", () => {
         openapi: "3.0.2",
         servers: [
           {
-            url: "/v3",
+            url: "https://server1",
           },
         ],
         paths: {

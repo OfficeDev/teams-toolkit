@@ -92,6 +92,23 @@ export class SpecParser {
           content: ConstantString.MultipleServerInformation,
           data: this.spec!.servers,
         });
+      } else if (this.spec!.servers.length === 1) {
+        const serverUrl = this.spec!.servers[0]?.url;
+        if (serverUrl.startsWith("http://")) {
+          // Http server url is not supported
+          errors.push({
+            type: ErrorType.HttpServerUrlNotSupported,
+            content: ConstantString.HttpServerUrlNotSupported,
+            data: this.spec!.servers,
+          });
+        } else if (!serverUrl.startsWith("https://")) {
+          // Relative server url is not supported
+          errors.push({
+            type: ErrorType.RelativeServerUrlNotSupported,
+            content: ConstantString.RelativeServerUrlNotSupported,
+            data: this.spec!.servers,
+          });
+        }
       }
 
       // Remote reference not supported

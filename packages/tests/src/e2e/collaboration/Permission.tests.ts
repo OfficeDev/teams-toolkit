@@ -16,7 +16,6 @@ import {
   getTestFolder,
   getUniqueAppName,
   removeTeamsAppExtendToM365,
-  setProvisionParameterValueV3,
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";

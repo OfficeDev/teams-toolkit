@@ -16,6 +16,7 @@ export const envAddCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.CreateNewEnvironment,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as CreateEnvInputs & InputsWithProjectPath;
     if (!isWorkspaceSupported(inputs.projectPath)) {

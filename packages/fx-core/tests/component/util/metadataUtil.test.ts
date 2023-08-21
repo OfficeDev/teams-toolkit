@@ -22,6 +22,7 @@ import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { createHash, Hash } from "crypto";
+import { ExecutionResult as DriverResult } from "../../../src/component/driver/interface/stepDriver";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -29,11 +30,8 @@ function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[]
       uses: "arm/deploy",
       with: undefined,
       instance: {
-        run: async (
-          args: unknown,
-          context: DriverContext
-        ): Promise<Result<Map<string, string>, FxError>> => {
-          return ok(new Map());
+        execute: async (args: unknown, context: DriverContext): Promise<DriverResult> => {
+          return { result: ok(new Map<string, string>()), summaries: [] };
         },
       },
     },
@@ -60,12 +58,6 @@ describe("metadata util", () => {
           with: undefined,
         },
       ],
-      run: async (ctx: DriverContext) => {
-        return ok({
-          env: new Map(),
-          unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-        });
-      },
       resolvePlaceholders: () => {
         return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
       },

@@ -23,11 +23,12 @@ export const permissionGrantCommand: CLICommand = {
         "Grant permission for another Microsoft 365 account to collaborate on the Teams app.",
     },
   ],
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as PermissionGrantInputs & InputsWithProjectPath;
     // print necessary messages
-    await logger.info(azureMessage);
-    await logger.info(spfxMessage);
+    logger.info(azureMessage);
+    logger.info(spfxMessage);
     // setAppTypeInputs(inputs);// app type input is unused in FxCore
     const core = getFxCore();
     const result = await core.grantPermission(inputs);

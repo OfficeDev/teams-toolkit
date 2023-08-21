@@ -141,7 +141,9 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         }
       }
     }
-    return err(new MissingRequiredInputError(question.name, "questionVisitor"));
+    if (question.required)
+      return err(new MissingRequiredInputError(question.name, "questionVisitor"));
+    else return ok({ type: "skip", result: undefined });
   }
 
   // interactive mode

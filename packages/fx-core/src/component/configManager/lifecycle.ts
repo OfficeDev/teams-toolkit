@@ -17,7 +17,6 @@ import {
   DriverDefinition,
   LifecycleName,
   ILifecycle,
-  Output,
   DriverInstance,
   UnresolvedPlaceholders,
   ResolvedPlaceholders,
@@ -254,25 +253,17 @@ export class Lifecycle implements ILifecycle {
         }
       }
 
-      let result: Result<Map<string, string>, FxError>;
-      let summary: string[];
-      if (driver.instance.execute) {
-        setErrorContext({ component: camelCase(driver.uses), method: "execute" }); // set driver name as component name for telemetry
-        const r = await driver.instance.execute(
-          driver.with,
-          ctx,
-          driver.writeToEnvironmentFile
-            ? new Map(Object.entries(driver.writeToEnvironmentFile))
-            : undefined,
-          this.version
-        );
-        result = r.result;
-        summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);
-      } else {
-        result = await driver.instance.run(driver.with, ctx);
-        // if execute is not implemented, treat it as if no summaries was returned.
-        summary = [];
-      }
+      setErrorContext({ component: camelCase(driver.uses), method: "execute" }); // set driver name as component name for telemetry
+      const r = await driver.instance.execute(
+        driver.with,
+        ctx,
+        driver.writeToEnvironmentFile
+          ? new Map(Object.entries(driver.writeToEnvironmentFile))
+          : undefined,
+        this.version
+      );
+      const result = r.result;
+      const summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);
       summaries.push(summary);
       if (result.isErr()) {
         summary.push(`${SummaryConstant.Failed} ${result.error.message}`);
@@ -302,40 +293,6 @@ export class Lifecycle implements ILifecycle {
     }
 
     return { result: ok(envOutput), summaries };
-  }
-
-  async run(ctx: DriverContext): Promise<Result<Output, FxError>> {
-    const maybeDrivers = this.resolveDriverInstances(ctx.logProvider);
-    if (maybeDrivers.isErr()) {
-      return err(maybeDrivers.error);
-    }
-    const drivers = maybeDrivers.value;
-
-    return Lifecycle.runDrivers(drivers, ctx);
-  }
-
-  private static async runDrivers(
-    drivers: DriverInstance[],
-    ctx: DriverContext
-  ): Promise<Result<Output, FxError>> {
-    const envOutput = new Map<string, string>();
-    const unresolvedPlaceHolders: string[] = resolvePlaceHolders(drivers)[1];
-    if (unresolvedPlaceHolders.length > 0) {
-      return ok({ env: envOutput, unresolvedPlaceHolders });
-    }
-
-    for (const driver of drivers) {
-      const result = await driver.instance.run(driver.with, ctx);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      for (const [envVar, value] of result.value) {
-        envOutput.set(envVar, value);
-        process.env[envVar] = value;
-      }
-    }
-
-    return ok({ env: envOutput, unresolvedPlaceHolders });
   }
 
   private stringifyDriverDef(def: DriverDefinition): string {

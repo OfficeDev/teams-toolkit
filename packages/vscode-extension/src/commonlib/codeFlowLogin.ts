@@ -160,7 +160,7 @@ export class CodeFlowLogin {
         })
         .catch((error) => {
           this.status = loggedOut;
-          void VsCodeLogInstance.error("[Login] " + error.message);
+          void VsCodeLogInstance.error("[Login] " + (error.message as string));
           deferredRedirect.reject(
             new UserError({
               error,
@@ -208,8 +208,8 @@ export class CodeFlowLogin {
         [TelemetryProperty.Internal]: "false",
         [TelemetryProperty.ErrorType]:
           e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
-        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
-        [TelemetryProperty.ErrorMessage]: `${e.message}`,
+        [TelemetryProperty.ErrorCode]: `${e.source as string}.${e.name as string}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message as string}`,
       });
       throw e;
     } finally {
@@ -296,14 +296,14 @@ export class CodeFlowLogin {
       });
       return true;
     } catch (e) {
-      await VsCodeLogInstance.error("[Logout " + this.accountName + "] " + e.message);
+      VsCodeLogInstance.error("[Logout " + this.accountName + "] " + (e.message as string));
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.ErrorType]:
           e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
-        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
-        [TelemetryProperty.ErrorMessage]: `${e.message}`,
+        [TelemetryProperty.ErrorCode]: `${e.source as string}.${e.name as string}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message as string}`,
       });
       return false;
     }
@@ -332,7 +332,7 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            await VsCodeLogInstance.error(
+            VsCodeLogInstance.error(
               "[Login] " +
                 stringUtil.format(
                   localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
@@ -352,7 +352,7 @@ export class CodeFlowLogin {
           });
       }
     } catch (error) {
-      await VsCodeLogInstance.error("[Login] " + error.message);
+      VsCodeLogInstance.error("[Login] " + (error.message as string));
       if (
         error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
         error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
@@ -385,7 +385,7 @@ export class CodeFlowLogin {
           return err(LoginCodeFlowError(new Error("No token response.")));
         }
       } catch (error) {
-        await VsCodeLogInstance.error(
+        VsCodeLogInstance.error(
           "[Login] " +
             stringUtil.format(
               localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),

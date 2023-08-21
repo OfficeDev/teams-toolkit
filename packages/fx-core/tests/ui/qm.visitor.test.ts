@@ -806,6 +806,7 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
     });
     it("should return skip for non-interactive mode", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: TextInputQuestion = {
         type: "text",
         name: "test",

@@ -52,12 +52,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -115,12 +109,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -174,12 +162,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -214,12 +196,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -254,12 +230,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -313,12 +283,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];

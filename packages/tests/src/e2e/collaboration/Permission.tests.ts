@@ -15,6 +15,7 @@ import {
   getTestFolder,
   getUniqueAppName,
   removeTeamsAppExtendToM365,
+  setProvisionParameterValueV3,
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
@@ -47,6 +48,10 @@ describe("Collaboration", function () {
       console.log(`[Successfully] scaffold to ${projectPath}`);
       const filePath = path.join(projectPath, "teamsapp.yml");
       removeTeamsAppExtendToM365(filePath);
+      await setProvisionParameterValueV3(projectPath, "dev", {
+        key: "webAppSku",
+        value: "B1",
+      });
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {

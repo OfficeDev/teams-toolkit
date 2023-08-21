@@ -91,6 +91,7 @@ export const previewCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.Preview,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx: CLIContext) => {
     const inputs = ctx.optionValues as PreviewTeamsAppInputs & InputsWithProjectPath;
     const workspaceFolder = inputs.projectPath as string;

@@ -36,8 +36,9 @@ export const m365UnacquireCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.M365Unacquire,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
-    await logger.warning("This command is in preview.");
+    logger.warning("This command is in preview.");
     const packageService = new PackageService(sideloadingServiceEndpoint, logger);
     let titleId = ctx.optionValues["title-id"] as string;
     const manifestId = ctx.optionValues["manifest-id"] as string;

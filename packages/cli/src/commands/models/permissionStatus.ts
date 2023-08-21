@@ -25,13 +25,14 @@ export const permissionStatusCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.CheckPermission,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as PermissionListInputs & InputsWithProjectPath;
     const listAll = inputs.all || false;
     const core = getFxCore();
     // print necessary messages
-    await logger.info(azureMessage);
-    await logger.info(spfxMessage);
+    logger.info(azureMessage);
+    logger.info(spfxMessage);
     const result = listAll
       ? await core.listCollaborator(inputs)
       : await core.checkPermission(inputs);

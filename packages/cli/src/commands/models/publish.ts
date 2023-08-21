@@ -17,9 +17,6 @@ export const publishCommand: CLICommand = {
   handler: async (ctx: CLIContext) => {
     const inputs = ctx.optionValues as InputsWithProjectPath;
     const core = getFxCore();
-    if (!ctx.globalOptionValues.interactive) {
-      assign(inputs, ctx.optionValues);
-    }
     const res = await core.publishApplication(inputs);
     return res;
   },

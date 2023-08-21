@@ -13,6 +13,7 @@ export const updateAadAppCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.UpdateAadApp,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as DeployAadManifestInputs & InputsWithProjectPath;
     inputs.ignoreEnvInfo = false;

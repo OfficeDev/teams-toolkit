@@ -52,7 +52,7 @@
     private async Task ShowProfile()
     {
         IsLoading = true;
-        var tokenCredential = await GetTokenCredential();
+        var tokenCredential = await GetOnBehalfOfCredential();
         var graph = GetGraphServiceClient(tokenCredential);
 
         Profile = await graph.Me.GetAsync();
@@ -81,7 +81,7 @@
         IsLoading = true;
         try
         {
-            var tokenCredential = await GetTokenCredential();
+            var tokenCredential = await GetOnBehalfOfCredential();
             await tokenCredential.GetTokenAsync(new TokenRequestContext(new string[] { _scope }), new CancellationToken());
 
             return true;
@@ -102,18 +102,17 @@
         return false;
     }
 
-    private async Task<OnBehalfOfCredential> GetTokenCredential()
+    private async Task<OnBehalfOfCredential> GetOnBehalfOfCredential()
     {
         var config = Configuration.Get<ConfigOptions>();
         var tenantId = config.TeamsFx.Authentication.OAuthAuthority.TrimStart("https://login.microsoftonline.com/".ToCharArray());
         AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
-        var tokenCredential = new OnBehalfOfCredential(
+        return new OnBehalfOfCredential(
             tenantId,
             config.TeamsFx.Authentication.ClientId,
             config.TeamsFx.Authentication.ClientSecret,
             ssoToken.Token
         );
-        return tokenCredential;
     }
     
     private GraphServiceClient GetGraphServiceClient(TokenCredential tokenCredential)

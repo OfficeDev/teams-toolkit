@@ -13,9 +13,9 @@ configuration:
           - payloadType: Issue_Comment
           - and:
             - isOpen
+            - isIssue
             - not:
                 or:
-                  - payloadType: Pull_Request_Comment
                   - hasLabel:
                       label: needs attention
                   - activitySenderHasAssociation:

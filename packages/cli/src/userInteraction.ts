@@ -459,9 +459,9 @@ class CLIUserInteraction implements UserInteraction {
     config: InputTextConfig | SelectFileConfig | SelectFilesConfig
   ): Promise<Result<undefined, FxError>> {
     if (typeof config.default === "function") {
-      const bar = this.createProgressBar(config.title, 1);
-      await bar.start();
-      await bar.next(loadingOptionsPlaceholder());
+      // const bar = this.createProgressBar(config.title, 1);
+      // await bar.start();
+      // await bar.next(loadingOptionsPlaceholder());
       try {
         if (typeof config.default === "function") {
           config.default = await config.default();
@@ -470,7 +470,7 @@ class CLIUserInteraction implements UserInteraction {
       } catch (e) {
         return err(assembleError(e));
       } finally {
-        await bar.end(true, true);
+        // await bar.end(true, true);
       }
     }
     return ok(undefined);

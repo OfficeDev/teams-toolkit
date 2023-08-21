@@ -26,6 +26,7 @@ import {
   ExecutionResult,
   ProjectModel,
 } from "../../../src/component/configManager/interface";
+import { ExecutionResult as DriverExecutionResult } from "../../../src/component/driver/interface/stepDriver";
 import { coordinator } from "../../../src/component/coordinator";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
 import * as appStudio from "../../../src/component/driver/teamsApp/appStudio";
@@ -51,11 +52,8 @@ export function mockedResolveDriverInstances(log: LogProvider): Result<DriverIns
       uses: "arm/deploy",
       with: undefined,
       instance: {
-        run: async (
-          args: unknown,
-          context: DriverContext
-        ): Promise<Result<Map<string, string>, FxError>> => {
-          return ok(new Map());
+        execute: async (args: unknown, context: DriverContext): Promise<DriverExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
       },
     },
@@ -148,12 +146,6 @@ describe("component coordinator test", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -197,12 +189,6 @@ describe("component coordinator test", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -258,12 +244,6 @@ describe("component coordinator test", () => {
             },
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["BotId"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["BotId"];
         },

@@ -70,12 +70,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -174,12 +168,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -242,12 +230,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -320,12 +302,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -419,12 +395,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -500,12 +470,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -572,12 +536,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -634,12 +592,6 @@ describe("coordinator provision", () => {
             },
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -689,12 +641,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -760,12 +706,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -851,12 +791,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -953,12 +887,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1021,12 +949,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1096,12 +1018,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1161,12 +1077,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1228,12 +1138,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1291,12 +1195,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1378,12 +1276,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1461,12 +1353,6 @@ describe("coordinator provision", () => {
       provision: {
         name: "configureApp",
         driverDefs: [],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -1503,12 +1389,6 @@ describe("coordinator provision", () => {
       provision: {
         name: "configureApp",
         driverDefs: [],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -1554,12 +1434,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1640,12 +1514,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -1700,12 +1568,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1795,12 +1657,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },

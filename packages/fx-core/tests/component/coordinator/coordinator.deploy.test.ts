@@ -51,12 +51,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       deploy: {
         name: "deploy",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
         resolvePlaceholders: () => {
           return [];
@@ -96,12 +90,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       deploy: {
         name: "deploy",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
         resolvePlaceholders: () => {
           return [];
@@ -142,12 +130,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       deploy: {
         name: "deploy",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
         resolvePlaceholders: () => {
           return [];
@@ -187,12 +169,6 @@ describe("component coordinator test", () => {
       deploy: {
         name: "configureApp",
         driverDefs: [],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -235,12 +211,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       deploy: {
         name: "deploy",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -296,12 +266,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       deploy: {
         name: "deploy",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
         resolvePlaceholders: () => {
           return [];

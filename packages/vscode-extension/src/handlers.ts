@@ -792,7 +792,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
     if (tmpResult.isErr()) {
       result = err(tmpResult.error);
     } else {
-      const uri = Uri.file((tmpResult.value as CreateProjectResult).projectPath);
+      const uri = Uri.file(tmpResult.value.projectPath);
       result = ok(uri);
     }
   } catch (e) {
@@ -1759,9 +1759,9 @@ export async function showError(e: UserError | SystemError) {
       `code:${e.source}.${e.name}, message: ${e.message}\n Help link: ${e.helpLink}`
     );
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
-    if (button) await button.run();
+    if (button) button.run();
   } else if (e instanceof SystemError) {
-    const sysError = e as SystemError;
+    const sysError = e;
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
@@ -1785,13 +1785,14 @@ export async function showError(e: UserError | SystemError) {
         await commands.executeCommand("vscode.open", similarIssueLink);
       },
     };
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       issue,
       similarIssues
     );
-    if (button) await button.run();
+    if (button) button.run();
   } else {
     if (!(e instanceof ConcurrentError))
       await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`);

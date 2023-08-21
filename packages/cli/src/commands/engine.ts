@@ -250,6 +250,7 @@ class CLIEngine {
       await CliTelemetry.flush();
       Progress.end(true);
     }
+
     return ok(undefined);
   }
 

@@ -1,16 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yukun-dong <yukundong@microsoft.com>
+ */
+
 import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
 
-describe("Provision message extension Dotnet", () => {
+describe("Deploy happy path for echo bot node", () => {
   it(
-    "Provision Resource: message extension dotnet",
-    { testPlanCaseId: 15685646, author: "fanhu@microsoft.com" },
+    "Deploy happy path for echo bot node",
+    { testPlanCaseId: 24907383, author: "yukundong@microsoft.com" },
     async function () {
-      await happyPathTest(Runtime.Dotnet, "collect-form-message-extension");
+      await happyPathTest(Runtime.Node, "bot");
     }
   );
 });

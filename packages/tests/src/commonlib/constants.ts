@@ -37,6 +37,9 @@ export type CliCapabilities =
   | "notification"
   | "command-bot"
   | "tab"
+  | "bot"
+  | "link-unfurling"
+  | "search-message-extension"
   | "collect-form-message-extension";
 export type CliTriggerType =
   | "http-restify"

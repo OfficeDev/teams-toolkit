@@ -240,7 +240,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
-      const res = await ui.selectOption({
+      return await ui.selectOption({
         name: question.name,
         title: title,
         options: options,
@@ -254,17 +254,11 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         validation: validationFunc,
         skipSingleOption: question.skipSingleOption,
       });
-      TOOLS?.logProvider?.debug(
-        `questionVisitor::the answer is from user input in interactive mode, question: ${
-          question.name
-        }, answer: ${JSON.stringify(res)}`
-      );
-      return res;
     } else {
       const validationFunc = question.validation
         ? getValidationFunction<string[]>(question.validation, inputs)
         : undefined;
-      const res = await ui.selectOptions({
+      return await ui.selectOptions({
         name: question.name,
         title: title,
         options: options,
@@ -278,18 +272,12 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         validation: validationFunc,
         skipSingleOption: question.skipSingleOption,
       });
-      TOOLS?.logProvider?.debug(
-        `questionVisitor::the answer is from user input in interactive mode, question: ${
-          question.name
-        }, answer: ${JSON.stringify(res)}`
-      );
-      return res;
     }
   } else if (question.type === "multiFile") {
     const validationFunc = question.validation
       ? getValidationFunction<string[]>(question.validation, inputs)
       : undefined;
-    const res = await ui.selectFiles({
+    return await ui.selectFiles({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -299,17 +287,11 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
     });
-    TOOLS?.logProvider?.debug(
-      `questionVisitor::the answer is from user input in interactive mode, question: ${
-        question.name
-      }, answer: ${JSON.stringify(res)}`
-    );
-    return res;
   } else if (question.type === "singleFile") {
     const validationFunc = question.validation
       ? getValidationFunction<string>(question.validation, inputs)
       : undefined;
-    const res = await ui.selectFile({
+    return await ui.selectFile({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -320,17 +302,11 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       validation: validationFunc,
       filters: question.filters,
     });
-    TOOLS?.logProvider?.debug(
-      `questionVisitor::the answer is from user input in interactive mode, question: ${
-        question.name
-      }, answer: ${JSON.stringify(res)}`
-    );
-    return res;
   } else if (question.type === "folder") {
     const validationFunc = question.validation
       ? getValidationFunction<string>(question.validation, inputs)
       : undefined;
-    const res = await ui.selectFolder({
+    return await ui.selectFolder({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -340,12 +316,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
     });
-    TOOLS?.logProvider?.debug(
-      `questionVisitor::the answer is from user input in interactive mode, question: ${
-        question.name
-      }, answer: ${JSON.stringify(res)}`
-    );
-    return res;
   } else if (question.type === "singleFileOrText" && !!ui.selectFileOrInput) {
     const validationFunc = question.validation
       ? getValidationFunction<string>(question.validation, inputs)
@@ -359,7 +329,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       question.inputBoxConfig.placeholder
     )) as string;
     const innerPrompt = (await getCallFuncValue(inputs, question.inputBoxConfig.prompt)) as string;
-    const res = await ui.selectFileOrInput({
+    return await ui.selectFileOrInput({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -378,12 +348,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
     });
-    TOOLS?.logProvider?.debug(
-      `questionVisitor::the answer is from user input in interactive mode, question: ${
-        question.name
-      }, answer: ${JSON.stringify(res)}`
-    );
-    return res;
   }
   return err(
     new UserError(

@@ -48,6 +48,8 @@ import {
 } from "../../src/error/common";
 import { loadOptions, questionVisitor, traverse } from "../../src/ui/visitor";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { MockTools } from "../core/utils";
+import { setTools } from "../../src/core/globalVars";
 
 function createInputs(): Inputs {
   return {
@@ -888,8 +890,9 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFile", async () => {
-      const ui = new MockUserInteraction();
-      sandbox.stub(ui, "selectFile").resolves(ok({ type: "success", result: "a" }));
+      const tools = new MockTools();
+      setTools(tools);
+      sandbox.stub(tools.ui, "selectFile").resolves(ok({ type: "success", result: "a" }));
       const question: SingleFileQuestion = {
         type: "singleFile",
         name: "test",
@@ -898,12 +901,13 @@ describe("Question Model - Visitor Test", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
-      const res = await questionVisitor(question, ui, inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFolder", async () => {
-      const ui = new MockUserInteraction();
-      sandbox.stub(ui, "selectFolder").resolves(ok({ type: "success", result: "a" }));
+      const tools = new MockTools();
+      setTools(tools);
+      sandbox.stub(tools.ui, "selectFolder").resolves(ok({ type: "success", result: "a" }));
       const question: FolderQuestion = {
         type: "folder",
         name: "test",
@@ -912,12 +916,13 @@ describe("Question Model - Visitor Test", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
-      const res = await questionVisitor(question, ui, inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFileOrInput", async () => {
-      const ui = new MockUserInteraction();
-      sandbox.stub(ui, "selectFileOrInput").resolves(ok({ type: "success", result: "a" }));
+      const tools = new MockTools();
+      setTools(tools);
+      sandbox.stub(tools.ui, "selectFileOrInput").resolves(ok({ type: "success", result: "a" }));
       const question: SingleFileOrInputQuestion = {
         type: "singleFileOrText",
         name: "test",
@@ -932,7 +937,7 @@ describe("Question Model - Visitor Test", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
-      const res = await questionVisitor(question, ui, inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
   });

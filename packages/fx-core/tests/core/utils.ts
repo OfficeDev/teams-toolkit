@@ -7,6 +7,7 @@ import {
   Colors,
   CryptoProvider,
   FxError,
+  InputResult,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
@@ -25,6 +26,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   SubscriptionInfo,
@@ -210,6 +212,12 @@ export class MockUserInteraction implements UserInteraction {
 
   openUrl(link: string): Promise<Result<boolean, FxError>> {
     throw new Error(`Method openUrl not implemented: ${link}`);
+  }
+
+  selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
+    throw new Error(`Method selectFileOrInput not implemented: ${config}`);
   }
 
   async showMessage(

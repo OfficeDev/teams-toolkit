@@ -130,8 +130,8 @@ describe("SpecParser", () => {
         warnings: [],
         errors: [
           {
-            type: ErrorType.HttpServerUrlNotSupported,
-            content: ConstantString.HttpServerUrlNotSupported,
+            type: ErrorType.UrlProtocolNotSupported,
+            content: util.format(ConstantString.UrlProtocolNotSupported, "http:"),
             data: [{ url: "http://server1" }],
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },

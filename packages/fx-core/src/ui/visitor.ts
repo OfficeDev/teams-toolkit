@@ -34,7 +34,6 @@ import {
 } from "../error";
 import { validationUtils } from "./validationUtils";
 import { isCliNewUxEnabled } from "../common/featureFlags";
-import { TOOLS } from "../core/globalVars";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -101,18 +100,10 @@ export const questionVisitor: QuestionTreeVisitor = async function (
   step?: number,
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
-  TOOLS?.logProvider?.debug(`questionVisitor::start visit question: ${question.name}`);
   // check and validate preset answer
   if (inputs[question.name] !== undefined) {
     // validate existing answer in inputs object
     const res = await validationUtils.validateInputs(question, inputs[question.name], inputs);
-    TOOLS?.logProvider?.debug(
-      `questionVisitor::the answer is preset in inputs, question: ${
-        question.name
-      }, answer: ${JSON.stringify(inputs[question.name])}, validation result: ${
-        res ? res : "success!"
-      }`
-    );
     if (res) return err(new InputValidationError(question.name, res, "questionVisitor"));
     return ok({ type: "skip", result: inputs[question.name] });
   }
@@ -129,11 +120,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         if (options.length === 1) {
           const value = getSingleOption(question, options);
           if (value) {
-            TOOLS?.logProvider?.debug(
-              `questionVisitor::the answer is automatically selected in a single option selection in non-interactive mode, question: ${
-                question.name
-              }, answer: ${JSON.stringify(value)}`
-            );
             return ok({ type: "skip", result: value });
           }
         }
@@ -148,13 +134,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         | OptionItem[];
       if (value) {
         const validateRes = await validationUtils.validateInputs(question, value, inputs);
-        TOOLS?.logProvider?.debug(
-          `questionVisitor::the answer is default value in non-interactive mode, question: ${
-            question.name
-          }, answer: ${JSON.stringify(value)}, validation result: ${
-            validateRes ? validateRes : "success!"
-          }`
-        );
         if (validateRes) {
           return err(new InputValidationError(question.name, validateRes, "questionVisitor"));
         } else {
@@ -164,12 +143,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     }
     if (question.required)
       return err(new MissingRequiredInputError(question.name, "questionVisitor"));
-    else {
-      TOOLS?.logProvider?.debug(
-        `questionVisitor::the answer is undefined for non-required question in non-interactive mode, question: ${question.name}`
-      );
-      return ok({ type: "skip", result: undefined });
-    }
+    else return ok({ type: "skip", result: undefined });
   }
 
   // interactive mode
@@ -227,11 +201,6 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       }
       if (question.skipSingleOption && question.staticOptions.length === 1) {
         const returnResult = getSingleOption(question, question.staticOptions);
-        TOOLS?.logProvider?.debug(
-          `questionVisitor::the answer is automatically selected in a single option selection in interactive mode, question: ${
-            question.name
-          }, answer: ${JSON.stringify(returnResult)}`
-        );
         return ok({ type: "skip", result: returnResult });
       }
       options = question.staticOptions;
@@ -329,7 +298,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       question.inputBoxConfig.placeholder
     )) as string;
     const innerPrompt = (await getCallFuncValue(inputs, question.inputBoxConfig.prompt)) as string;
-    return await ui.selectFileOrInput({
+    const res = await ui.selectFileOrInput({
       name: question.name,
       title: title,
       placeholder: placeholder,
@@ -348,6 +317,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
     });
+    return res;
   }
   return err(
     new UserError(

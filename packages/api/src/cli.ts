@@ -83,6 +83,11 @@ export interface CLICommand {
    * @description default value of global option "--interactive", default value is true
    */
   defaultInteractiveOption?: boolean;
+
+  /**
+   * @description reserve option values in interactive mode
+   */
+  reservedOptionNamesInInteractiveMode?: string[];
 }
 
 export interface CLIFoundCommand extends CLICommand {

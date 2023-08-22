@@ -1343,9 +1343,16 @@ export async function validateNotificationBot(
           `[Command "welcome" not executed successfully] ${e.message}`
         );
       }
-      await frame?.waitForSelector(
-        'p:has-text("This is a sample http-triggered notification to Person")'
-      );
+      try {
+        await frame?.waitForSelector(
+          'p:has-text("This is a sample http-triggered notification to Person")'
+        );
+      } catch (e) {
+        console.log("sending any message ", "helloWorld");
+        await frame?.fill('div.ck-content[role="textbox"]', "helloWorld");
+        await frame?.click('button[name="send"]');
+        throw e;
+      }
     }, 2);
     console.log("User received notification");
   } catch (error) {

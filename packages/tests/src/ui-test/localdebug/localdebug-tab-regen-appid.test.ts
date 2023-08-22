@@ -101,7 +101,7 @@ describe("Local Debug Tests", function () {
         } catch (error) {
           console.log(`close port 53000 failed`);
         }
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,

@@ -7,7 +7,6 @@ import fs from "fs-extra";
 import { ConstantString } from "./constants";
 import { OpenAPIV3 } from "openapi-types";
 import path from "path";
-import url from "url";
 
 export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {

@@ -274,14 +274,20 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
   if (!manifest.api?.url) {
     errors.push({
       type: OpenAIPluginManifestErrorType.ApiUrlMissing,
-      content: "Missing url in manifest",
+      content: getLocalizedString(
+        "core.createProjectQuestion.openAiPluginManifest.validationError.missingApiUrl",
+        "api.url"
+      ),
     });
   }
 
   if (manifest.auth?.type !== OpenAIManifestAuthType.None) {
     errors.push({
       type: OpenAIPluginManifestErrorType.AuthNotSupported,
-      content: "Auth type not supported",
+      content: getLocalizedString(
+        "core.createProjectQuestion.openAiPluginManifest.validationError.authNotSupported",
+        "none"
+      ),
     });
   }
   return errors;

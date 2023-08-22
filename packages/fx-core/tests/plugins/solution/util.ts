@@ -7,6 +7,7 @@ import {
   CryptoProvider,
   FxError,
   IProgressHandler,
+  InputResult,
   InputTextConfig,
   InputTextResult,
   LogLevel,
@@ -22,6 +23,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   SubscriptionInfo,
@@ -131,6 +133,12 @@ export class MockedUserInteraction implements UserInteraction {
 
   async openUrl(link: string): Promise<Result<boolean, FxError>> {
     return ok(true);
+  }
+
+  async selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
+    return ok({ type: "success" });
   }
 
   async showMessage(

@@ -102,3 +102,12 @@ export function convertPathToCamelCase(path: string): string {
   const camelCasePath = camelCaseSegments.join("");
   return camelCasePath;
 }
+
+export function getUrlProtocol(urlString: string): string | undefined {
+  try {
+    const url = new URL(urlString);
+    return url.protocol;
+  } catch (err) {
+    return undefined;
+  }
+}

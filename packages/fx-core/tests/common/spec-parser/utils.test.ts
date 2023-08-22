@@ -11,6 +11,7 @@ import {
   convertPathToCamelCase,
   getRelativePath,
   getResponseJson,
+  getUrlProtocol,
   isSupportedApi,
   isYamlSpecFile,
   updateFirstLetter,
@@ -224,6 +225,32 @@ describe("utils", () => {
       };
       const result = isSupportedApi(method, path, spec as any);
       assert.strictEqual(result, true);
+    });
+  });
+
+  describe("getUrlProtocol", () => {
+    it("should return the protocol of a valid URL", () => {
+      const url = "https://example.com/path/to/file";
+      const protocol = getUrlProtocol(url);
+      expect(protocol).to.equal("https:");
+    });
+
+    it("should return undefined for an invalid URL", () => {
+      const url = "not a url";
+      const protocol = getUrlProtocol(url);
+      expect(protocol).to.be.undefined;
+    });
+
+    it("should return undefined for relative url", () => {
+      const url = "/v3";
+      const protocol = getUrlProtocol(url);
+      expect(protocol).to.be.undefined;
+    });
+
+    it("should return the protocol for other protocol", () => {
+      const url = "ftp://v1";
+      const protocol = getUrlProtocol(url);
+      expect(protocol).to.equal("ftp:");
     });
   });
 

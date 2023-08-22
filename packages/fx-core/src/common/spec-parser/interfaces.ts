@@ -71,6 +71,8 @@ export enum ErrorType {
   RemoteRefNotSupported = "remote-ref-not-supported",
   NoServerInformation = "no-server-information",
   MultipleServerInformation = "multiple-server-information",
+  UrlProtocolNotSupported = "http-server-url-not-supported",
+  RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
 
   ListFailed = "list-failed",

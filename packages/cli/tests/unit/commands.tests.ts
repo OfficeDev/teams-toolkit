@@ -419,7 +419,7 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
       const res = await permissionGrantCommand.handler!(ctx);
-      assert.isTrue(res.isErr());
+      assert.isTrue(res.isErr() && res.error instanceof MissingRequiredOptionError);
     });
   });
   describe("permissionStatusCommand", async () => {

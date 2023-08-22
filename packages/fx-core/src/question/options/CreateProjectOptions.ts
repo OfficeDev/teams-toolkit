@@ -98,10 +98,10 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     shortName: "cp",
     description: "Plugin for Copilot.",
-    choices: ["copilot-plugin-new-api", "copilot-plugin-api-spec", "copilot-plugin-openai-plugin"],
+    choices: ["new-api", "api-spec", "openai-plugin"],
   },
   {
-    name: "api-spec-location",
+    name: "openapi-spec-location",
     type: "string",
     shortName: "oapi",
     description: "OpenAPI specification file location.",

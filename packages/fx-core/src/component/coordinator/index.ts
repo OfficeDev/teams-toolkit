@@ -630,9 +630,7 @@ class Coordinator {
         hasError = true;
         return err(maybeDescription.error);
       }
-      ctx.logProvider.info(
-        `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
-      );
+      ctx.logProvider.info(`Executing provision ${EOL}${EOL}${maybeDescription.value}${EOL}`);
       for (const [index, cycle] of cycles.entries()) {
         const execRes = await cycle.execute(ctx);
         summaryReporter.updateLifecycleState(index, execRes);

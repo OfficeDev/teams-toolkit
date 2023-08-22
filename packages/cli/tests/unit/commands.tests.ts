@@ -393,19 +393,47 @@ describe("CLI commands", () => {
     });
   });
   describe("permissionGrantCommand", async () => {
-    it("success", async () => {
+    it("success interactive = false", async () => {
+      sandbox
+        .stub(FxCore.prototype, "grantPermission")
+        .resolves(ok({ state: "OK" } as PermissionsResult));
+      const ctx: CLIContext = {
+        command: { ...permissionGrantCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-file-path": "abc" },
+        globalOptionValues: { interactive: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await permissionGrantCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("success interactive = true", async () => {
       sandbox
         .stub(FxCore.prototype, "grantPermission")
         .resolves(ok({ state: "OK" } as PermissionsResult));
       const ctx: CLIContext = {
         command: { ...permissionGrantCommand, fullName: "teamsfx" },
         optionValues: {},
-        globalOptionValues: {},
+        globalOptionValues: { interactive: true },
         argumentValues: [],
         telemetryProperties: {},
       };
       const res = await permissionGrantCommand.handler!(ctx);
       assert.isTrue(res.isOk());
+    });
+    it("missing option", async () => {
+      sandbox
+        .stub(FxCore.prototype, "grantPermission")
+        .resolves(ok({ state: "OK" } as PermissionsResult));
+      const ctx: CLIContext = {
+        command: { ...permissionGrantCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: { interactive: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await permissionGrantCommand.handler!(ctx);
+      assert.isTrue(res.isErr() && res.error instanceof MissingRequiredOptionError);
     });
   });
   describe("permissionStatusCommand", async () => {

@@ -712,6 +712,27 @@ describe("Tools Install Driver test", () => {
       }
     });
 
+    it("Install dotnet: undefined details", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: undefined as any,
+      });
+      const outputEnvVarNames = new Map([["dotnetPath", "MY_DOTNET_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { dotnet: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.isEmpty(res.result.value);
+      }
+    });
+
     it("Install dotnet: undefined bin folders", async () => {
       sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
         name: ".NET Core SDK",

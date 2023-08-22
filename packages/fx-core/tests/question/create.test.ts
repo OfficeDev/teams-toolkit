@@ -1070,19 +1070,26 @@ describe("scaffold question", () => {
             platform: Platform.VSCode,
             "manifest-path": "fakePath",
           };
+          const operationMap = new Map<string, string>([
+            ["getUserById", "GET /user/{userId}"],
+            ["getStoreOrder", "GET /store/order"],
+          ]);
 
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox
+            .stub(SpecParser.prototype, "list")
+            .resolves(["GET /user/{userId}", "GET /store/order"]);
+          sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
-          sandbox.stub(manifestUtils, "getOperationIds").returns(["get operation1"]);
+          sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById"]);
           sandbox.stub(fs, "pathExists").resolves(true);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "get operation2", label: "get operation2", groupName: "GET" },
+            { id: "GET /store/order", label: "GET /store/order", groupName: "GET" },
           ]);
           assert.isUndefined(res);
         });

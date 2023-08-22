@@ -1355,7 +1355,7 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1367,8 +1367,13 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
+    const operationMap = new Map<string, string>([
+      ["getUserById", "GET /user/{userId}"],
+      ["getStoreOrder", "GET /store/order"],
+    ]);
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves();
+    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);

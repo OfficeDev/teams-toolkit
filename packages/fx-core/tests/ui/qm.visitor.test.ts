@@ -43,6 +43,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   EmptyOptionError,
+  InputValidationError,
   MissingRequiredInputError,
   UserCancelError,
 } from "../../src/error/common";
@@ -791,9 +792,12 @@ describe("Question Model - Visitor Test", () => {
   });
 
   describe("questionVisitor", () => {
+    const tools = new MockTools();
+    setTools(tools);
     let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
       mockedEnvRestore();
+      sandbox.restore();
     });
     it("should return MissingRequiredInputError for non-interactive mode", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
@@ -807,7 +811,7 @@ describe("Question Model - Visitor Test", () => {
         platform: Platform.VSCode,
         nonInteractive: true,
       };
-      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
     });
     it("should return skip for non-interactive mode", async () => {
@@ -820,7 +824,7 @@ describe("Question Model - Visitor Test", () => {
       };
       const inputs = createInputs();
       inputs.nonInteractive = true;
-      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === undefined);
     });
     it("should return empty option error for non-interactive mode", async () => {
@@ -836,7 +840,7 @@ describe("Question Model - Visitor Test", () => {
         platform: Platform.VSCode,
         nonInteractive: true,
       };
-      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isErr() && res.error instanceof EmptyOptionError);
     });
 
@@ -853,7 +857,7 @@ describe("Question Model - Visitor Test", () => {
         platform: Platform.VSCode,
         nonInteractive: true,
       };
-      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === "a");
     });
 
@@ -871,13 +875,28 @@ describe("Question Model - Visitor Test", () => {
         platform: Platform.VSCode,
         nonInteractive: true,
       };
-      const res = await questionVisitor(question, new MockUserInteraction(), inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === "b");
     });
-
+    it("should return default value (validation failed) for non-interactive mode", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
+      const question: SingleSelectQuestion = {
+        type: "singleSelect",
+        name: "test",
+        title: "test",
+        staticOptions: ["a", "b"],
+        default: "c",
+        validation: { validFunc: () => "error" },
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        nonInteractive: true,
+      };
+      const res = await questionVisitor(question, tools.ui, inputs);
+      assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
+    });
     it("selectFiles", async () => {
-      const ui = new MockUserInteraction();
-      sandbox.stub(ui, "selectFiles").resolves(ok({ type: "success", result: ["a"] }));
+      sandbox.stub(tools.ui, "selectFiles").resolves(ok({ type: "success", result: ["a"] }));
       const question: MultiFileQuestion = {
         type: "multiFile",
         name: "test",
@@ -886,12 +905,10 @@ describe("Question Model - Visitor Test", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
-      const res = await questionVisitor(question, ui, inputs);
+      const res = await questionVisitor(question, tools.ui, inputs);
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFile", async () => {
-      const tools = new MockTools();
-      setTools(tools);
       sandbox.stub(tools.ui, "selectFile").resolves(ok({ type: "success", result: "a" }));
       const question: SingleFileQuestion = {
         type: "singleFile",
@@ -905,8 +922,6 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFolder", async () => {
-      const tools = new MockTools();
-      setTools(tools);
       sandbox.stub(tools.ui, "selectFolder").resolves(ok({ type: "success", result: "a" }));
       const question: FolderQuestion = {
         type: "folder",
@@ -920,8 +935,6 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFileOrInput", async () => {
-      const tools = new MockTools();
-      setTools(tools);
       sandbox.stub(tools.ui, "selectFileOrInput").resolves(ok({ type: "success", result: "a" }));
       const question: SingleFileOrInputQuestion = {
         type: "singleFileOrText",

@@ -202,17 +202,14 @@ class CLIUserInteraction implements UserInteraction {
         return ok(question.default);
       }
     }
-
-    return new Promise(async (resolve) => {
-      try {
-        ScreenManager.pause();
-        const anwsers = await inquirer.prompt([question]);
-        ScreenManager.continue();
-        resolve(ok(anwsers[question.name!]));
-      } catch (e) {
-        resolve(err(new UnhandledError(e as Error, cliSource)));
-      }
-    });
+    try {
+      ScreenManager.pause();
+      const anwsers = await inquirer.prompt([question]);
+      ScreenManager.continue();
+      return ok(anwsers[question.name!]);
+    } catch (e) {
+      return err(new UnhandledError(e as Error, cliSource));
+    }
   }
 
   private toInquirerQuestion<T>(
@@ -340,7 +337,7 @@ class CLIUserInteraction implements UserInteraction {
     validate?: (input: T) => string | undefined | Promise<string | undefined>,
     mapping?: { [x: string]: string }
   ): ValidationType<T> {
-    return (input: T) => {
+    return async (input: T) => {
       if (mapping) {
         if (typeof input === "string") {
           input = mapping[input] as any;
@@ -348,14 +345,12 @@ class CLIUserInteraction implements UserInteraction {
           input = input.map((i) => mapping[i]) as any;
         }
       }
-      return new Promise(async (resolve) => {
-        const result = await validate?.(input);
-        if (result === undefined) {
-          resolve(true);
-        } else {
-          resolve(result);
-        }
-      });
+      const result = await validate?.(input);
+      if (result === undefined) {
+        return true;
+      } else {
+        return result;
+      }
     };
   }
 
@@ -392,58 +387,56 @@ class CLIUserInteraction implements UserInteraction {
       }
     }
     this.updatePresetAnswerFromConfig(config);
-    return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(
-        config.options as StaticOptions,
-        config.default as string
+    const [choices, defaultValue] = this.toChoices(
+      config.options as StaticOptions,
+      config.default as string
+    );
+    const result = await this.singleSelect(
+      config.name,
+      config.title,
+      choices,
+      defaultValue,
+      this.toValidationFunc(config.validation)
+    );
+    if (result.isOk()) {
+      const index = this.findIndex(
+        choices.map((choice) => choice.name),
+        result.value
       );
-      const result = await this.singleSelect(
-        config.name,
-        config.title,
-        choices,
-        defaultValue,
-        this.toValidationFunc(config.validation)
-      );
-      if (result.isOk()) {
-        const index = this.findIndex(
-          choices.map((choice) => choice.name),
-          result.value
+      if (index < 0) {
+        const error = new InputValidationError(
+          config.name,
+          util.format(
+            strings["error.InvalidOptionErrorReason"],
+            result.value,
+            choices.map((choice) => choice.name).join(",")
+          )
         );
-        if (index < 0) {
-          const error = new InputValidationError(
-            config.name,
-            util.format(
-              strings["error.InvalidOptionErrorReason"],
-              result.value,
-              choices.map((choice) => choice.name).join(",")
-            )
-          );
-          error.source = cliSource;
-          resolve(err(error));
-        }
-        const answer = (config.options as StaticOptions)[index];
-        if (!answer || config.returnObject) {
-          resolve(ok({ type: "success", result: answer }));
-        } else {
-          if (typeof answer === "string") {
-            resolve(ok({ type: "success", result: answer }));
-          } else {
-            resolve(ok({ type: "success", result: answer.id }));
-          }
-        }
-      } else {
-        resolve(err(result.error));
+        error.source = cliSource;
+        return err(error);
       }
-    });
+      const answer = (config.options as StaticOptions)[index];
+      if (!answer || config.returnObject) {
+        return ok({ type: "success", result: answer });
+      } else {
+        if (typeof answer === "string") {
+          return ok({ type: "success", result: answer });
+        } else {
+          return ok({ type: "success", result: answer.id });
+        }
+      }
+    } else {
+      return err(result.error);
+    }
   }
 
   async loadSelectDynamicData(
     config: MultiSelectConfig | SingleSelectConfig
   ): Promise<Result<undefined, FxError>> {
     if (typeof config.options === "function" || typeof config.default === "function") {
-      const bar = await this.createProgressBar(config.title, 1);
-      await bar.start();
-      await bar.next(loadingOptionsPlaceholder());
+      // const bar = this.createProgressBar(config.title, 1);
+      // await bar.start();
+      // await bar.next(loadingOptionsPlaceholder());
       try {
         if (typeof config.options === "function") {
           const options = await config.options();
@@ -456,7 +449,7 @@ class CLIUserInteraction implements UserInteraction {
       } catch (e) {
         return err(assembleError(e));
       } finally {
-        await bar.end(true, true);
+        // await bar.end(true, true);
       }
     }
     return ok(undefined);
@@ -466,9 +459,9 @@ class CLIUserInteraction implements UserInteraction {
     config: InputTextConfig | SelectFileConfig | SelectFilesConfig
   ): Promise<Result<undefined, FxError>> {
     if (typeof config.default === "function") {
-      const bar = await this.createProgressBar(config.title, 1);
-      await bar.start();
-      await bar.next(loadingOptionsPlaceholder());
+      // const bar = this.createProgressBar(config.title, 1);
+      // await bar.start();
+      // await bar.next(loadingOptionsPlaceholder());
       try {
         if (typeof config.default === "function") {
           config.default = await config.default();
@@ -477,7 +470,7 @@ class CLIUserInteraction implements UserInteraction {
       } catch (e) {
         return err(assembleError(e));
       } finally {
-        await bar.end(true, true);
+        // await bar.end(true, true);
       }
     }
     return ok(undefined);
@@ -503,52 +496,51 @@ class CLIUserInteraction implements UserInteraction {
       }
     }
     this.updatePresetAnswerFromConfig(config);
-    return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(
-        config.options as StaticOptions,
-        config.default as string[]
+    const [choices, defaultValue] = this.toChoices(
+      config.options as StaticOptions,
+      config.default as string[]
+    );
+    const result = await this.multiSelect(
+      config.name,
+      config.title,
+      choices,
+      defaultValue,
+      this.toValidationFunc(config.validation)
+    );
+    if (result.isOk()) {
+      const indexes = this.findIndexes(
+        choices.map((choice) => choice.name),
+        result.value
       );
-      const result = await this.multiSelect(
-        config.name,
-        config.title,
-        choices,
-        defaultValue,
-        this.toValidationFunc(config.validation)
-      );
-      if (result.isOk()) {
-        const indexes = this.findIndexes(
-          choices.map((choice) => choice.name),
-          result.value
+      if (result.value.length > 0 && indexes.length === 0) {
+        // the condition means the user input is invalid, none of the choices is in the provided values
+        const error = new InputValidationError(
+          config.name,
+          util.format(
+            strings["error.InvalidOptionErrorReason"],
+            result.value.join(","),
+            choices.map((choice) => choice.name).join(",")
+          )
         );
-        if (result.value.length > 0 && indexes.length === 0) {
-          // the condition means the user input is invalid, none of the choices is in the provided values
-          const error = new InputValidationError(
-            config.name,
-            util.format(
-              strings["error.InvalidOptionErrorReason"],
-              result.value.join(","),
-              choices.map((choice) => choice.name).join(",")
-            )
-          );
-          error.source = cliSource;
-          resolve(err(error));
-        }
-        const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
-        if (config.returnObject) {
-          resolve(ok({ type: "success", result: anwers }));
-        } else {
-          if (typeof anwers[0] === "string") {
-            resolve(ok({ type: "success", result: anwers }));
-          } else {
-            resolve(
-              ok({ type: "success", result: (anwers as OptionItem[]).map((answer) => answer.id) })
-            );
-          }
-        }
-      } else {
-        resolve(err(result.error));
+        error.source = cliSource;
+        return err(error);
       }
-    });
+      const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
+      if (config.returnObject) {
+        return ok({ type: "success", result: anwers });
+      } else {
+        if (typeof anwers[0] === "string") {
+          return ok({ type: "success", result: anwers });
+        } else {
+          return ok({
+            type: "success",
+            result: (anwers as OptionItem[]).map((answer) => answer.id),
+          });
+        }
+      }
+    } else {
+      return err(result.error);
+    }
   }
 
   public async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
@@ -556,20 +548,38 @@ class CLIUserInteraction implements UserInteraction {
     if (loadRes.isErr()) {
       return err(loadRes.error);
     }
-    return new Promise(async (resolve) => {
-      const result = await this.input(
-        config.name,
-        !!config.password,
-        config.title,
-        config.default as string,
-        this.toValidationFunc(config.validation)
-      );
-      if (result.isOk()) {
-        resolve(ok({ type: "success", result: result.value }));
-      } else {
-        resolve(err(result.error));
-      }
-    });
+
+    let validationFunc: (input: string) => string | undefined | Promise<string | undefined> = (
+      input
+    ) => {
+      return undefined;
+    };
+    if (config.validation || config.additionalValidationOnAccept) {
+      validationFunc = async (input: string) => {
+        let res: string | undefined = undefined;
+        if (config.validation) {
+          res = await config.validation(input);
+        }
+
+        if (!res && !!config.additionalValidationOnAccept) {
+          res = await config.additionalValidationOnAccept(input);
+        }
+
+        return res;
+      };
+    }
+    const result = await this.input(
+      config.name,
+      !!config.password,
+      config.title,
+      config.default as string,
+      this.toValidationFunc(validationFunc)
+    );
+    if (result.isOk()) {
+      return ok({ type: "success", result: result.value });
+    } else {
+      return err(result.error);
+    }
   }
 
   public async selectFileOrInput(
@@ -577,7 +587,10 @@ class CLIUserInteraction implements UserInteraction {
   ): Promise<Result<InputTextResult, FxError>> {
     const loadRes = await this.loadDefaultValue(config.inputBoxConfig);
     if (loadRes.isErr()) return err(loadRes.error);
-    return this.inputText(config.inputBoxConfig);
+    return this.inputText({
+      ...config.inputBoxConfig,
+      validation: config.validation,
+    });
   }
   public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     const loadRes = await this.loadDefaultValue(config);
@@ -617,16 +630,15 @@ class CLIUserInteraction implements UserInteraction {
       default: (config.default as string[])?.join("; "),
       validation,
     };
-    return new Promise(async (resolve) => {
-      const result = await this.inputText(newConfig);
-      if (result.isOk()) {
-        resolve(
-          ok({ type: "success", result: result.value.result?.split(";").map((s) => s.trim()) })
-        );
-      } else {
-        resolve(err(result.error));
-      }
-    });
+    const result = await this.inputText(newConfig);
+    if (result.isOk()) {
+      return ok({
+        type: "success",
+        result: result.value.result?.split(";").map((s) => s.trim()),
+      });
+    } else {
+      return err(result.error);
+    }
   }
 
   public async selectFolder(
@@ -656,73 +668,65 @@ class CLIUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    // if (!this.interactive && items.includes("Upgrade")) {
-    //   throw new NotAllowedMigrationError();
-    // }
     let plainText: string;
     if (message instanceof Array) {
       plainText = message.map((x) => x.content).join("");
     } else {
       plainText = message;
     }
-    return new Promise(async (resolve) => {
-      switch (items.length) {
-        case 0:
-          switch (level) {
-            case "info":
-              if (message instanceof Array) {
-                CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
-              } else {
-                CLILogProvider.necessaryLog(LogLevel.Info, message);
-              }
-              break;
-            case "warn":
-              CLILogProvider.necessaryLog(LogLevel.Warning, plainText);
-              break;
-            case "error":
-              CLILogProvider.necessaryLog(LogLevel.Error, plainText);
-              break;
-          }
-          resolve(ok(undefined));
-          break;
-        case 1: {
-          const result = await this.confirm("MyConfirmQuestion", plainText);
-          if (result.isOk()) {
-            if (result.value) {
-              resolve(ok(items[0]));
+    switch (items.length) {
+      case 0:
+        switch (level) {
+          case "info":
+            if (message instanceof Array) {
+              CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
             } else {
-              resolve(ok(undefined));
+              CLILogProvider.necessaryLog(LogLevel.Info, message);
             }
-          } else {
-            resolve(err(result.error));
-          }
-          break;
+            break;
+          case "warn":
+            CLILogProvider.necessaryLog(LogLevel.Warning, plainText);
+            break;
+          case "error":
+            CLILogProvider.necessaryLog(LogLevel.Error, plainText);
+            break;
         }
-        default: {
-          /// default value is set to the first element of items.
-          const [choices, defaultValue] = this.toChoices(
-            modal ? items.concat("Cancel") : items,
-            items[0]
-          );
-          const result = await this.singleSelect(
-            "MySingleSelectQuestion",
-            plainText,
-            choices,
-            defaultValue
-          );
-          if (result.isOk()) {
-            if (result.value !== "Cancel") {
-              resolve(ok(result.value));
-            } else {
-              resolve(ok(undefined));
-            }
+        return ok(undefined);
+      case 1: {
+        const result = await this.confirm("MyConfirmQuestion", plainText);
+        if (result.isOk()) {
+          if (result.value) {
+            return ok(items[0]);
           } else {
-            resolve(err(result.error));
+            return ok(undefined);
           }
-          break;
+        } else {
+          return err(result.error);
         }
       }
-    });
+      default: {
+        /// default value is set to the first element of items.
+        const [choices, defaultValue] = this.toChoices(
+          modal ? items.concat("Cancel") : items,
+          items[0]
+        );
+        const result = await this.singleSelect(
+          "MySingleSelectQuestion",
+          plainText,
+          choices,
+          defaultValue
+        );
+        if (result.isOk()) {
+          if (result.value !== "Cancel") {
+            return ok(result.value);
+          } else {
+            return ok(undefined);
+          }
+        } else {
+          return err(result.error);
+        }
+      }
+    }
   }
 
   public createProgressBar(title: string, totalSteps: number): IProgressHandler {

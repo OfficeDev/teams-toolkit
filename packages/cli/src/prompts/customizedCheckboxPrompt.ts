@@ -63,15 +63,15 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
             return acc;
           }
           // Add line if it's a separator
-          if (value.type === "separator") {
-            return acc + 1;
-          }
+          // if (value.type === "separator") {
+          //   return acc + 1;
+          // }
 
           const l = choicesStrs[i];
           // Non-strings take up one line
-          if (typeof l !== "string") {
-            return acc + 1;
-          }
+          // if (typeof l !== "string") {
+          //   return acc + 1;
+          // }
 
           // Calculate lines taken up by string
           return acc + l.split("\n").length;

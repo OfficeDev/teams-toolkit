@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/* eslint-disable @typescript-eslint/no-empty-function */
 
 "use strict";
 
@@ -96,7 +97,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private constructor() {
     super();
-    this.addStatusChangeEvent();
+    void this.addStatusChangeEvent();
   }
 
   /**
@@ -183,6 +184,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       // 1. When azure-account-extension has at least one subscription, return the first one credential.
       // 2. When azure-account-extension has no subscription and has at at least one session, return the first session credential.
       // 3. When azure-account-extension has no subscription and no session, return undefined.
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       return new Promise(async (resolve, reject) => {
         await azureAccount.waitForSubscriptions();
         if (azureAccount.subscriptions.length > 0) {
@@ -221,7 +223,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         readMore
       );
       if (userSelected === readMore) {
-        vscode.env.openExternal(
+        void vscode.env.openExternal(
           vscode.Uri.parse(
             "https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/create-subscription"
           )
@@ -286,14 +288,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         resolve(true);
       });
     } catch (e) {
-      VsCodeLogInstance.error("[Logout Azure] " + e.message);
+      VsCodeLogInstance.error("[Logout Azure] " + (e.message as string));
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.ErrorType]:
           e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
-        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
-        [TelemetryProperty.ErrorMessage]: `${e.message}`,
+        [TelemetryProperty.ErrorCode]: `${e.source as string}.${e.name as string}`,
+        [TelemetryProperty.ErrorMessage]: `${e.message as string}`,
       });
       return Promise.resolve(false);
     }
@@ -314,7 +316,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           arr.push({
             subscriptionId: item.subscription.subscriptionId!,
             subscriptionName: item.subscription.displayName!,
-            tenantId: item.session.tenantId!,
+            tenantId: item.session.tenantId,
           });
         }
       }
@@ -325,12 +327,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * set tenantId and subscriptionId
    */
-  async setSubscription(subscriptionId: string): Promise<void> {
+  setSubscription(subscriptionId: string): Promise<void> {
     if (subscriptionId === "") {
       AzureAccountManager.tenantId = undefined;
       AzureAccountManager.subscriptionId = undefined;
       AzureAccountManager.subscriptionName = undefined;
-      return;
+      return Promise.resolve();
     }
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount =
@@ -341,15 +343,17 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
           AzureAccountManager.subscriptionName = item.subscription.displayName;
-          return;
+          return Promise.resolve();
         }
       }
     }
-    throw new UserError(
-      "Login",
-      ExtensionErrors.UnknownSubscription,
-      getDefaultString("teamstoolkit.azureLogin.unknownSubscription"),
-      localize("teamstoolkit.azureLogin.unknownSubscription")
+    return Promise.reject(
+      new UserError(
+        "Login",
+        ExtensionErrors.UnknownSubscription,
+        getDefaultString("teamstoolkit.azureLogin.unknownSubscription"),
+        localize("teamstoolkit.azureLogin.unknownSubscription")
+      )
     );
   }
 
@@ -387,6 +391,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async addStatusChangeEvent() {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
@@ -519,7 +524,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const versionDetail = version.split(".");
       return parseInt(versionDetail[0]) === 0 && parseInt(versionDetail[1]) < 10;
     } catch (e) {
-      VsCodeLogInstance.error("[Get Azure extension] " + e.message);
+      VsCodeLogInstance.error("[Get Azure extension] " + (e.message as string));
       return false;
     }
   }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
  */
@@ -28,6 +29,7 @@ import { waitSeconds } from "../../../../common/tools";
 import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";
+import { setErrorContext } from "../../../../core/globalVars";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -87,6 +89,7 @@ export namespace AppStudioClient {
     telemetryProperties?: { [key: string]: string }
   ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
 
@@ -104,6 +107,7 @@ export namespace AppStudioClient {
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
       method: e.request?.method,
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       "status-code": `${e?.response?.status}`,
       url: `<${apiName}-url>`,
       ...telemetryProperties,
@@ -125,6 +129,7 @@ export namespace AppStudioClient {
     logProvider?: LogProvider,
     overwrite = false
   ): Promise<AppDefinition> {
+    setErrorContext({ source: "Teams" });
     const telemetryProperties: { [key: string]: string } = {
       [TelemetryPropertyKey.OverwriteIfAppAlreadyExists]: String(overwrite),
       // To avoid url be redacted in telemetry, get region from full base url
@@ -146,7 +151,7 @@ export namespace AppStudioClient {
 
       if (response && response.data) {
         const app = <AppDefinition>response.data;
-        await logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
+        logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
         sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
         return app;
       } else {
@@ -201,6 +206,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<AppDefinition> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP);
     let requester: AxiosInstance;
     try {
@@ -234,9 +240,8 @@ export namespace AppStudioClient {
           sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP);
           return app;
         } else {
-          await logProvider?.error(
-            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
-          );
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          logProvider?.error(`teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`);
         }
       }
     } catch (e) {
@@ -258,6 +263,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<boolean> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
@@ -346,6 +352,7 @@ export namespace AppStudioClient {
     file: Buffer,
     appStudioToken: string
   ): Promise<string> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
     try {
       // Get App Definition from Teams App Catalog
@@ -370,6 +377,7 @@ export namespace AppStudioClient {
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
@@ -402,6 +410,7 @@ export namespace AppStudioClient {
     teamsAppId: string,
     appStudioToken: string
   ): Promise<IPublishingAppDenition | undefined> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
@@ -531,6 +540,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<any> {
+    setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
     logProvider?.info("Downloading app package for app " + teamsAppId);
     const requester = createRequesterWithToken(appStudioToken, region);
@@ -605,7 +615,7 @@ export namespace AppStudioClient {
 
         if (result !== undefined) {
           sendTelemetryEvent(Component.core, TelemetryEvent.CheckSideloading, {
-            [TelemetryProperty.IsSideloadingAllowed]: result + "",
+            [TelemetryProperty.IsSideloadingAllowed]: result.toString() + "",
           });
         } else {
           sendTelemetryErrorEvent(
@@ -614,6 +624,7 @@ export namespace AppStudioClient {
             new SystemError(
               "M365Account",
               "UnknownValue",
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               `AppStudio response code: ${response.status}, body: ${response.data}`
             ),
             {
@@ -641,6 +652,7 @@ export namespace AppStudioClient {
             )[0],
           }),
           {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,
             [TelemetryProperty.CheckSideloadingMethod]: "get",
             [TelemetryProperty.CheckSideloadingUrl]: apiName,

@@ -51,7 +51,9 @@ export class YoChecker implements DependencyChecker {
           [TelemetryProperty.EnsureLatestYoReason]: (error as UserError | SystemError).name,
         }
       );
-      await this._logger.error(`Failed to install ${displayName}, error = '${error}'`);
+      this._logger.error(
+        `Failed to install ${displayName}, error = '${error.toString() as string}'`
+      );
       return err(error as UserError | SystemError);
     }
 
@@ -61,7 +63,7 @@ export class YoChecker implements DependencyChecker {
   public async isLatestInstalled(): Promise<boolean> {
     try {
       const yoVersion = await this.queryVersion();
-      const latestYeomanVersion = await this.findLatestVersion(5);
+      const latestYeomanVersion = await this.findLatestVersion(10);
       const hasSentinel = await fs.pathExists(this.getSentinelPath());
       return !!latestYeomanVersion && yoVersion === latestYeomanVersion && hasSentinel;
     } catch (error) {
@@ -151,8 +153,10 @@ export class YoChecker implements DependencyChecker {
         })
       );
     } catch (err) {
-      await this._logger.error(
-        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
+      this._logger.error(
+        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${
+          err.toString() as string
+        }`
       );
     }
   }

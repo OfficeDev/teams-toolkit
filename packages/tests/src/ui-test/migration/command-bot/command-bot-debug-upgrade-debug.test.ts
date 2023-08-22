@@ -1,5 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/**
+ * @author Helly Zhang <v-helzha@microsoft.com>
+ */
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -23,7 +26,7 @@ import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testAzureCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
 
   beforeEach(async function () {
@@ -91,7 +94,7 @@ describe("Migration Tests", function () {
       );
       await validateBot(page, {
         botCommand: "helloWorld",
-        expected: "Your Hello World App is Running",
+        expected: "Your Hello World Bot is Running",
       });
     }
   );

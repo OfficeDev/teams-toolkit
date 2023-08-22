@@ -6,11 +6,12 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class QueryOrgTestCase extends CaseFactory {}
+
+new QueryOrgTestCase(
   TemplateProjectFolder.QueryOrg,
   24132148,
   "v-ivanchen@microsoft.com"
-);
-sampleCase.test();
+).test();

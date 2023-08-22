@@ -1,10 +1,15 @@
 import { expect } from "chai";
+import * as util from "util";
 import "mocha";
 import sinon from "sinon";
 import {
   generateAdaptiveCard,
   generateCardFromResponse,
 } from "../../../src/common/spec-parser/adaptiveCardGenerator";
+import * as utils from "../../../src/common/spec-parser/utils";
+import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
+import { ErrorType } from "../../../src/common/spec-parser/interfaces";
+import { ConstantString } from "../../../src/common/spec-parser/constants";
 
 describe("adaptiveCardGenerator", () => {
   afterEach(() => {
@@ -532,7 +537,19 @@ describe("adaptiveCardGenerator", () => {
       const parentArrayName = "";
 
       expect(() => generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
-        "oneOf, anyOf, and not schema is not supported"
+        util.format(ConstantString.SchemaNotSupported, JSON.stringify(schema))
+      );
+    });
+
+    it("should throw an error for unknown schema types", () => {
+      const schema = {
+        type: "fake-type",
+      };
+      const name = "person";
+      const parentArrayName = "";
+
+      expect(() => generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
+        util.format(ConstantString.UnknownSchema, JSON.stringify(schema))
       );
     });
 
@@ -561,10 +578,25 @@ describe("adaptiveCardGenerator", () => {
       const actual = generateCardFromResponse(schema as any, name, parentArrayName);
       sinon.assert.calledOnce(warnSpy);
       expect(actual).to.deep.equal(expected);
-      sinon.assert.calledWithExactly(
-        warnSpy,
-        "additionalProperties is not supported, and will be ignored."
-      );
+      sinon.assert.calledWithExactly(warnSpy, ConstantString.AdditionalPropertiesNotSupported);
+    });
+
+    it("should throw a SpecParserError if getResponseJson throws an error", () => {
+      const operationItem = {} as any;
+      const getResponseJsonStub = sinon
+        .stub(utils, "getResponseJson")
+        .throws(new Error("getResponseJson error"));
+
+      try {
+        generateAdaptiveCard(operationItem);
+        expect.fail("Expected generateAdaptiveCard to throw a SpecParserError");
+      } catch (err) {
+        expect(err).to.be.instanceOf(SpecParserError);
+        expect(err.errorType).to.equal(ErrorType.GenerateAdaptiveCardFailed);
+        expect(err.message).to.equal("Error: getResponseJson error");
+      }
+
+      getResponseJsonStub.restore();
     });
   });
 });

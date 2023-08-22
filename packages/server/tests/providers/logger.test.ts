@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assert, expect } from "chai";
-import "mocha";
-import { Duplex } from "stream";
-import sinon from "sinon";
-import fs from "fs-extra";
-import { createMessageConnection } from "vscode-jsonrpc";
-import { Namespaces, NotificationTypes } from "../../src/apis";
-import ServerLogProvider from "../../src/providers/logger";
 import { Colors, LogLevel } from "@microsoft/teamsfx-api";
+import { assert } from "chai";
+import fs from "fs-extra";
+import "mocha";
+import sinon from "sinon";
+import { Duplex } from "stream";
+import { createMessageConnection } from "vscode-jsonrpc";
+import ServerLogProvider from "../../src/providers/logger";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -38,82 +37,56 @@ describe("ServerLogProvider", () => {
   it("log", () => {
     const stub = sandbox.stub(msgConn, "sendNotification");
     const logger = new ServerLogProvider(msgConn);
-    const res = logger.log(0, "test");
-    res.then((data) => {
-      assert.isTrue(data);
-      expect(stub).is.called.with(NotificationTypes[Namespaces.Logger].show, 0, "test");
-    });
+    logger.log(LogLevel.Debug, "test");
+    assert.isTrue(stub.called);
   });
 
-  it("write to file", () => {
+  it("write to file", async () => {
     const logger = new ServerLogProvider(msgConn);
     sandbox.stub(fs, "pathExists").resolves(false);
-    sandbox.stub(fs, "mkdir").resolves();
-    sandbox.stub(fs, "appendFile").resolves();
-    const res = logger.log(LogLevel.Info, "test", true);
-    res.then((data) => {
-      assert.isTrue(data);
-    });
+    sandbox.stub(fs, "mkdir");
+    const stub = sandbox.stub(fs, "appendFile");
+    await logger.logInFile(LogLevel.Info, "test");
+    assert.isTrue(stub.called);
   });
 
   describe("methods", () => {
     const logger = new ServerLogProvider(msgConn);
-    const stub = sandbox.stub(logger, "log");
+    let stub: any;
 
-    it("trace", () => {
-      const res = logger.trace("test");
-      res.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Trace, "test");
-      });
+    beforeEach(() => {
+      stub = sandbox.stub(logger, "log");
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("verbose", () => {
+      logger.verbose("test");
+      assert.isTrue(stub.calledWith(LogLevel.Verbose, "test"));
     });
 
     it("debug", () => {
-      const res = logger.debug("test");
-      res.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Debug, "test");
-      });
+      logger.debug("test");
+      assert.isTrue(stub.calledWith(LogLevel.Debug, "test"));
     });
 
     it("info", () => {
-      const res = logger.info("test");
-      res.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Info, "test");
-      });
-
-      const res1 = logger.info([{ content: "test", color: Colors.BRIGHT_CYAN }] as any);
-      res1.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Info, "test");
-      });
+      logger.info("test");
+      logger.info([{ content: "test", color: Colors.BRIGHT_CYAN }]);
+      assert.isTrue(stub.calledTwice);
     });
 
     it("warning", () => {
-      const res = logger.warning("test");
-      res.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Warning, "test");
-      });
+      logger.warning("test");
+      assert.isTrue(stub.calledWith(LogLevel.Warning, "test"));
     });
 
     it("error", () => {
-      const res = logger.error("test");
-      res.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Error, "test");
-      });
+      logger.error("test");
+      assert.isTrue(stub.calledWith(LogLevel.Error, "test"));
     });
-
-    it("fatal", () => {
-      const res = logger.fatal("test");
-      res.then((data) => {
-        assert.isTrue(data);
-        expect(stub).is.called.with(LogLevel.Fatal, "test");
-      });
-    });
-
     it("getLogFilePath", () => {
       const logFolderPath = logger.getLogFilePath();
       assert.isTrue(logFolderPath !== "");

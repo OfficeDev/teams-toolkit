@@ -5,47 +5,52 @@
 import { OpenAPIV3 } from "openapi-types";
 import * as util from "util";
 import { getResponseJson } from "./utils";
-import { AdaptiveCard, ArrayElement, TextBlockElement } from "./interfaces";
+import { AdaptiveCard, ArrayElement, ErrorType, TextBlockElement } from "./interfaces";
 import { ConstantString } from "./constants";
+import { SpecParserError } from "./specParserError";
 
 export function generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): AdaptiveCard {
-  const json = getResponseJson(operationItem);
+  try {
+    const json = getResponseJson(operationItem);
 
-  let cardBody: Array<TextBlockElement | ArrayElement> = [];
-  if (json.schema) {
-    cardBody = generateCardFromResponse(json.schema as OpenAPIV3.SchemaObject, "");
+    let cardBody: Array<TextBlockElement | ArrayElement> = [];
+    if (json.schema) {
+      cardBody = generateCardFromResponse(json.schema as OpenAPIV3.SchemaObject, "");
+    }
+
+    // if no schema, try to use example value
+    if (cardBody.length === 0 && (json.examples || json.example)) {
+      cardBody = [
+        {
+          type: ConstantString.TextBlockType,
+          text: "${jsonStringify($root)}",
+          wrap: true,
+        },
+      ];
+    }
+
+    // if no example value, use default success response
+    if (cardBody.length === 0) {
+      cardBody = [
+        {
+          type: ConstantString.TextBlockType,
+          text: "success",
+          wrap: true,
+        },
+      ];
+    }
+
+    const fullCard: AdaptiveCard = {
+      type: ConstantString.AdaptiveCardType,
+      $schema: ConstantString.AdaptiveCardSchema,
+      version: ConstantString.AdaptiveCardVersion,
+      body: cardBody,
+    };
+
+    return fullCard;
+  } catch (err) {
+    throw new SpecParserError((err as Error).toString(), ErrorType.GenerateAdaptiveCardFailed);
   }
-
-  // if no schema, try to use example value
-  if (cardBody.length === 0 && (json.examples || json.example)) {
-    cardBody = [
-      {
-        type: ConstantString.TextBlockType,
-        text: "${jsonStringify($root)}",
-        wrap: true,
-      },
-    ];
-  }
-
-  // if no example value, use default success response
-  if (cardBody.length === 0) {
-    cardBody = [
-      {
-        type: ConstantString.TextBlockType,
-        text: "success",
-        wrap: true,
-      },
-    ];
-  }
-
-  const fullCard: AdaptiveCard = {
-    type: ConstantString.AdaptiveCardType,
-    $schema: ConstantString.AdaptiveCardSchema,
-    version: ConstantString.AdaptiveCardVersion,
-    body: cardBody,
-  };
-
-  return fullCard;
 }
 
 export function generateCardFromResponse(
@@ -124,10 +129,9 @@ export function generateCardFromResponse(
     ];
   }
 
-  // TODO: better ways to handler errors.
   if (schema.oneOf || schema.anyOf || schema.not || schema.allOf) {
     throw new Error(util.format(ConstantString.SchemaNotSupported, JSON.stringify(schema)));
   }
 
-  throw new Error(util.format(ConstantString, JSON.stringify(schema)));
+  throw new Error(util.format(ConstantString.UnknownSchema, JSON.stringify(schema)));
 }

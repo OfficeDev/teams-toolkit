@@ -5,7 +5,6 @@ import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/te
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
-import { TelemetryConstants } from "../component/constants";
 
 export class FileNotFoundError extends UserError {
   constructor(source: string, filePath: string, helpLink?: string) {
@@ -178,9 +177,9 @@ export class MissingRequiredInputError extends UserError {
 }
 
 export class InputValidationError extends UserError {
-  constructor(name: string, reason: string) {
+  constructor(name: string, reason: string, source?: string) {
     super({
-      source: "coordinator",
+      source: source || "coordinator",
       message: getDefaultString("error.common.InputValidationError", name, reason),
       displayMessage: getLocalizedString("error.common.InputValidationError", name, reason),
     });
@@ -249,8 +248,11 @@ export class UserCancelError extends UserError {
 }
 
 export class EmptyOptionError extends SystemError {
-  constructor(source?: string) {
-    super({ source: source ? camelCase(source) : "UI" });
+  constructor(name: string, source?: string) {
+    super({
+      source: source ? camelCase(source) : "UI",
+      message: `Select option is empty list for question name: ${name}`,
+    });
   }
 }
 
@@ -375,39 +377,3 @@ const errnoCodes: Record<string, string> = {
   EWOULDBLOCK: "Operation would block",
   EXDEV: "Cross-device link",
 };
-
-/**
- * fill in telemetry properties for FxError
- * @param error FxError
- * @param props teletry properties
- */
-export function fillInTelemetryPropsForFxError(
-  props: Record<string, string>,
-  error: FxError
-): void {
-  const errorCode = error.source + "." + error.name;
-  const errorType =
-    error instanceof SystemError
-      ? TelemetryConstants.values.systemError
-      : TelemetryConstants.values.userError;
-  props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
-  props[TelemetryConstants.properties.errorCode] =
-    props[TelemetryConstants.properties.errorCode] || errorCode;
-  props[TelemetryConstants.properties.errorType] = errorType;
-  props[TelemetryConstants.properties.errorMessage] = error.message;
-  props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
-  props[TelemetryConstants.properties.errorName] = error.name;
-
-  if (error.innerError) {
-    props[TelemetryConstants.properties.innerError] = JSON.stringify(
-      error.innerError,
-      Object.getOwnPropertyNames(error.innerError)
-    );
-  }
-
-  if (error.categories) {
-    props[TelemetryConstants.properties.errorCat1] = error.categories[0];
-    props[TelemetryConstants.properties.errorCat2] = error.categories[1];
-    props[TelemetryConstants.properties.errorCat3] = error.categories[2];
-  }
-}

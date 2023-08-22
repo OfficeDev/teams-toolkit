@@ -236,7 +236,7 @@ export async function checkAndInstallForTask(
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
-        await VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
+        VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
         terminateAllRunningTeamsfxTasks();
       }
 
@@ -277,7 +277,7 @@ async function _checkAndInstall(
     );
 
     VsCodeLogInstance.outputChannel.show();
-    await VsCodeLogInstance.info(displayMessages.title);
+    VsCodeLogInstance.info(displayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // Get deps
@@ -465,7 +465,7 @@ function checkM365Account(
         if (accountResult.isErr()) {
           result = ResultStatus.failed;
           error = accountResult.error;
-          await openAccountHelpHandler();
+          openAccountHelpHandler();
         } else {
           loginHint = accountResult.value.loginHint;
         }

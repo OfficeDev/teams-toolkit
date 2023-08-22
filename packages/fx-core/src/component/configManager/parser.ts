@@ -48,7 +48,7 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
   if ("additionalMetadata" in obj) {
     // No validation for additionalMetadata by design. This property is for telemetry related purpose only
     // and should not affect user-observable behavior of TTK.
-    result.additionalMetadata = obj["additionalMetadata"] as unknown as AdditionalMetadata;
+    result.additionalMetadata = obj["additionalMetadata"] as AdditionalMetadata;
   }
 
   for (const name of LifecycleNames) {

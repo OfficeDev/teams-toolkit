@@ -1,4 +1,11 @@
-import { err, ok, SubscriptionInfo, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  ok,
+  Platform,
+  SubscriptionInfo,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import chai from "chai";
 import { assert } from "console";
 import "mocha";
@@ -88,7 +95,11 @@ describe("provisionUtils", () => {
     it("fail: azure token undefined", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();
       mocker.stub(azureAccountProvider, "getIdentityCredentialAsync").resolves(undefined);
-      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
+      const res = await provisionUtils.ensureResourceGroup(
+        { platform: Platform.VSCode, projectPath: "" },
+        azureAccountProvider,
+        "mockSubId"
+      );
       assert(res.isErr());
     });
     it("fail: given invalid resource group 1", async () => {
@@ -99,6 +110,7 @@ describe("provisionUtils", () => {
       mocker.stub(azureAccountProvider, "setSubscription");
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(ok(undefined));
       const res = await provisionUtils.ensureResourceGroup(
+        { platform: Platform.VSCode, projectPath: "" },
         azureAccountProvider,
         "mockSubId",
         "testrg"
@@ -115,6 +127,7 @@ describe("provisionUtils", () => {
         .stub(resourceGroupHelper, "getResourceGroupInfo")
         .resolves(err(new UserError({ source: "src", name: "TestError", message: "test" })));
       const res = await provisionUtils.ensureResourceGroup(
+        { platform: Platform.VSCode, projectPath: "" },
         azureAccountProvider,
         "mockSubId",
         "mockRG"
@@ -135,6 +148,7 @@ describe("provisionUtils", () => {
         })
       );
       const res = await provisionUtils.ensureResourceGroup(
+        { platform: Platform.VSCode, projectPath: "" },
         azureAccountProvider,
         "mockSubId",
         "mockRG"
@@ -149,6 +163,7 @@ describe("provisionUtils", () => {
       mocker.stub(azureAccountProvider, "setSubscription");
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(ok(undefined));
       const res = await provisionUtils.ensureResourceGroup(
+        { platform: Platform.VSCode, projectPath: "" },
         azureAccountProvider,
         "mockSubId",
         "mockRG"
@@ -172,7 +187,11 @@ describe("provisionUtils", () => {
         })
       );
       mocker.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("mockRG"));
-      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
+      const res = await provisionUtils.ensureResourceGroup(
+        { platform: Platform.VSCode, projectPath: "" },
+        azureAccountProvider,
+        "mockSubId"
+      );
       assert(res.isOk());
     });
 
@@ -190,7 +209,11 @@ describe("provisionUtils", () => {
         })
       );
       mocker.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("mockRG"));
-      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
+      const res = await provisionUtils.ensureResourceGroup(
+        { platform: Platform.VSCode, projectPath: "" },
+        azureAccountProvider,
+        "mockSubId"
+      );
       assert(res.isOk());
     });
   });

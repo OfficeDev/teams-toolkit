@@ -102,61 +102,43 @@ export const BuildFolderName = "build";
 //
 // @public (undocumented)
 export interface CLIArrayOption extends CLICommandOptionBase {
-    // (undocumented)
     choiceListCommand?: string;
-    // (undocumented)
     choices?: string[];
-    // (undocumented)
     default?: string[];
+    skipValidation?: boolean;
     // (undocumented)
     type: "array";
-    // (undocumented)
     value?: string[];
 }
 
 // @public (undocumented)
 export interface CLIBooleanOption extends CLICommandOptionBase {
-    // (undocumented)
     default?: boolean;
     // (undocumented)
     type: "boolean";
-    // (undocumented)
     value?: boolean;
 }
 
 // @public (undocumented)
 export interface CLICommand {
-    // (undocumented)
     arguments?: CLICommandArgument[];
-    // (undocumented)
     commands?: CLICommand[];
-    // (undocumented)
+    defaultInteractiveOption?: boolean;
     description: string;
-    // (undocumented)
     examples?: CLIExample[];
-    // (undocumented)
     footer?: string;
-    // (undocumented)
     fullName?: string;
-    // (undocumented)
-    handler?: (cmd: CLIContext) => Promise<Result<undefined, FxError>>;
-    // (undocumented)
+    handler?: (ctx: CLIContext) => Promise<Result<undefined, FxError>> | Result<undefined, FxError>;
     header?: string;
-    // (undocumented)
     hidden?: boolean;
-    // (undocumented)
     name: string;
-    // (undocumented)
     options?: CLICommandOption[];
-    // (undocumented)
+    reservedOptionNamesInInteractiveMode?: string[];
     sortCommands?: boolean;
-    // (undocumented)
     sortOptions?: boolean;
-    // (undocumented)
     telemetry?: {
         event: string;
     };
-    // (undocumented)
     version?: string;
 }
 
@@ -168,24 +150,23 @@ export type CLICommandOption = CLIBooleanOption | CLIStringOption | CLIArrayOpti
 
 // @public (undocumented)
 export interface CLIContext {
-    // (undocumented)
-    argumentValues: string[];
-    // (undocumented)
-    command: CLICommand;
-    // (undocumented)
+    argumentValues: OptionValue[];
+    command: CLIFoundCommand;
     globalOptionValues: Record<string, OptionValue>;
-    // (undocumented)
     optionValues: Record<string, OptionValue>;
-    // (undocumented)
     telemetryProperties: Record<string, string>;
 }
 
 // @public (undocumented)
 export interface CLIExample {
-    // (undocumented)
     command: string;
-    // (undocumented)
     description: string;
+}
+
+// @public (undocumented)
+export interface CLIFoundCommand extends CLICommand {
+    // (undocumented)
+    fullName: string;
 }
 
 // @public (undocumented)
@@ -196,15 +177,12 @@ export const CLIPlatforms: Platform[];
 
 // @public (undocumented)
 export interface CLIStringOption extends CLICommandOptionBase {
-    // (undocumented)
     choiceListCommand?: string;
-    // (undocumented)
     choices?: string[];
-    // (undocumented)
     default?: string;
+    skipValidation?: boolean;
     // (undocumented)
     type: "string";
-    // (undocumented)
     value?: string;
 }
 
@@ -338,13 +316,6 @@ export interface Func extends FunctionRouter {
     params?: any;
 }
 
-// @public
-export interface FuncQuestion extends BaseQuestion {
-    func: LocalFunc<any>;
-    // (undocumented)
-    type: "func";
-}
-
 // @public (undocumented)
 export interface FunctionRouter {
     // (undocumented)
@@ -381,6 +352,16 @@ export interface Group {
 }
 
 // @public
+export interface InnerTextInputQuestion extends UserInputQuestion {
+    default?: string | LocalFunc<string | undefined>;
+    password?: boolean;
+    // (undocumented)
+    type: "innerText";
+    validation?: StringValidation | FuncValidation<string>;
+    value?: string;
+}
+
+// @public
 export interface InputResult<T> {
     result?: T;
     type: "success" | "skip" | "back";
@@ -407,7 +388,7 @@ export type InputsWithProjectPath = Inputs & {
 
 // @public
 export interface InputTextConfig extends UIConfig<string> {
-    additionalValidationOnAccept?: ValidateFunc<string>;
+    additionalValidationOnAccept?: (input: string) => string | undefined | Promise<string | undefined>;
     // (undocumented)
     default?: string | (() => Promise<string>);
     password?: boolean;
@@ -427,11 +408,12 @@ export interface IProgressHandler {
 export interface IQTreeNode {
     // (undocumented)
     children?: IQTreeNode[];
+    cliOptionDisabled?: "self" | "children" | "all";
     // (undocumented)
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
-    interactiveOnly?: "self" | "children" | "all";
+    inputsDisabled?: "self" | "children" | "all";
 }
 
 // @public (undocumented)
@@ -450,27 +432,26 @@ export type LoginStatus = {
 // @public (undocumented)
 export enum LogLevel {
     Debug = 1,
-    Error = 4,
-    Fatal = 5,
-    Info = 2,
-    Trace = 0,
-    Warning = 3
+    Error = 5,
+    Info = 3,
+    Verbose = 2,
+    Warning = 4
 }
 
 // @public (undocumented)
 export interface LogProvider {
-    debug(message: string): Promise<boolean>;
-    error(message: string, logToFile?: boolean): Promise<boolean>;
-    fatal(message: string): Promise<boolean>;
+    debug(message: string): void;
+    error(message: string): void;
     getLogFilePath(): string;
-    info(message: string, logToFile?: boolean): Promise<boolean>;
+    info(message: string): void;
     info(message: Array<{
         content: string;
         color: Colors;
-    }>, logToFile?: boolean): Promise<boolean>;
-    log(logLevel: LogLevel, message: string): Promise<boolean>;
-    trace(message: string): Promise<boolean>;
-    warning(message: string, logToFile?: boolean): Promise<boolean>;
+    }>): void;
+    log(logLevel: LogLevel, message: string): void;
+    logInFile(logLevel: LogLevel, message: string): Promise<void>;
+    verbose(message: string): void;
+    warning(message: string): void;
 }
 
 // @public
@@ -538,6 +519,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
     onDidChangeSelection?: OnSelectionChangeFunc;
     returnObject?: boolean;
     skipSingleOption?: boolean;
+    skipValidation?: boolean;
     staticOptions: StaticOptions;
     // (undocumented)
     type: "multiSelect";
@@ -599,6 +581,7 @@ export interface OptionItem {
         tooltip: string;
         command: string;
     }[];
+    // @deprecated (undocumented)
     cliName?: string;
     data?: unknown;
     description?: string;
@@ -639,18 +622,19 @@ export class QTreeNode implements IQTreeNode {
     addChild(node: QTreeNode): QTreeNode;
     // (undocumented)
     children?: QTreeNode[];
+    cliOptionDisabled?: "self" | "children" | "all";
     // (undocumented)
     condition?: StringValidation | StringArrayValidation | ConditionFunc;
     // (undocumented)
     data: Question | Group;
-    interactiveOnly?: "self" | "children" | "all";
+    inputsDisabled?: "self" | "children" | "all";
     trim(): QTreeNode | undefined;
     // (undocumented)
     validate(): boolean;
 }
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | FuncQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -703,7 +687,7 @@ export interface SingleFileOrInputConfig extends UIConfig<string> {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: InputTextConfig;
+    inputBoxConfig: UIConfig<string>;
     inputOptionItem: OptionItem;
 }
 
@@ -712,7 +696,7 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
     filters?: {
         [name: string]: string[];
     };
-    inputBoxConfig: InputTextConfig;
+    inputBoxConfig: InnerTextInputQuestion;
     inputOptionItem: OptionItem;
     // (undocumented)
     type: "singleFileOrText";
@@ -746,6 +730,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
     dynamicOptions?: DynamicOptions;
     returnObject?: boolean;
     skipSingleOption?: boolean;
+    skipValidation?: boolean;
     staticOptions: StaticOptions;
     // (undocumented)
     type: "singleSelect";
@@ -1073,6 +1058,7 @@ export interface UserInputQuestion extends BaseQuestion {
     alternativeNames?: string[];
     // (undocumented)
     cliDescription?: string;
+    cliHidden?: boolean;
     cliName?: string;
     cliShortName?: string;
     cliType?: "option" | "argument";
@@ -1082,7 +1068,7 @@ export interface UserInputQuestion extends BaseQuestion {
     prompt?: string | LocalFunc<string | undefined>;
     required?: boolean;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innerText";
     validation?: ValidationSchema;
     validationHelp?: string;
 }

@@ -16,7 +16,6 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
 import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 
@@ -26,11 +25,9 @@ const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentF
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
   description = getLocalizedString("driver.file.createOrUpdateEnvironmentFile.description");
+  readonly progressTitle = getLocalizedString("driver.file.progressBar.env");
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.env")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: GenerateEnvArgs,
     context: DriverContext
@@ -41,10 +38,7 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
     }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.env")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(args: GenerateEnvArgs, ctx: DriverContext): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {

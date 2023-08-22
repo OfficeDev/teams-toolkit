@@ -26,6 +26,7 @@ class CliTelemetry {
 
   public withRootFolder(rootFolder: string | undefined): CliTelemetry {
     this.rootFolder = rootFolder;
+    this.reporter?.withRootFolder(rootFolder);
     return this;
   }
 
@@ -37,7 +38,6 @@ class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
@@ -64,7 +64,6 @@ class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
@@ -89,7 +88,6 @@ class CliTelemetry {
     if (!properties) {
       properties = {};
     }
-    properties[TelemetryProperty.Interactive] = CLIUIInstance.interactive + "";
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }

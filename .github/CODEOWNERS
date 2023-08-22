@@ -69,37 +69,37 @@
 
 /templates/* @hund030 @eriolchan @huimiu
 /templates/scripts @hund030 @eriolchan @huimiu
-/templates/constraints @hund030 @eriolchan @huimiu
+/templates/constraints/yml/actions @hund030 @eriolchan @huimiu
 
-/templates/*/copilot-plugin-from-scratch @hund030 @eriolchan @huimiu
-/templates/*/dashboard-tab @hund030 @eriolchan @huimiu
-/templates/*/non-sso-tab @hund030 @eriolchan @huimiu @JerryYangKai
-/templates/*/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
-/templates/*/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/*/default-bot-message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/*/message-extension @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/*/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/*/message-extension-action @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/csharp/message-extension-search @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/**/copilot-plugin-from-scratch @hund030 @eriolchan @huimiu
+/templates/**/dashboard-tab @hund030 @eriolchan @huimiu
+/templates/**/non-sso-tab @hund030 @eriolchan @huimiu @JerryYangKai
+/templates/**/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
+/templates/**/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/**/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/**/message-extension-action @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/**/message-extension-search @JerryYangKai @eriolchan @Siglud @Yukun-dong
 
-/templates/*/non-sso-tab-default-bot @hund030 @yuqizhou77
-/templates/common/office-addin @1yefuwang1 @jayzhang
-/templates/common/simplified-message-extension-existing-api @yuqizhou77 @Alive-Fish @jayzhang
-/templates/ts/office-addin @1yefuwang1 @jayzhang
-/templates/ts/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
+/templates/**/non-sso-tab-default-bot @hund030 @yuqizhou77
+/templates/**/default-bot-message-extension @yuqizhou77
+/templates/**/message-extension @yuqizhou77
+/templates/**/office-addin @1yefuwang1 @jayzhang
+/templates/**/simplified-message-extension-existing-api @yuqizhou77 @Alive-Fish @jayzhang
+/templates/**/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
+/templates/**/spfx-tab-import @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 
-/templates/*/sso-tab-with-obo-flow @KennethBWSong @adashen @SLdragon
+/templates/**/sso-tab-with-obo-flow @KennethBWSong @adashen @SLdragon
 
-/templates/*/command-and-response @kimizhu @dooriya @swatDong
-/templates/*/notification-http-timer-trigger @kimizhu @dooriya @swatDong
-/templates/*/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/*/notification-restify @kimizhu @dooriya @swatDong
-/templates/*/notification-timer-trigger @kimizhu @dooriya @swatDong
-/templates/csharp/notification-webapi @kimizhu @dooriya @swatDong
-/templates/*/workflow @kimizhu @dooriya @swatDong
-/templates/*/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/*/m365-tab @kimizhu @swatDong @kuojianlu
-/templates/*/ai-bot @kimizhu @swatDong @kuojianlu
+/templates/**/command-and-response @kimizhu @dooriya @swatDong
+/templates/**/notification-http-timer-trigger @kimizhu @dooriya @swatDong
+/templates/**/notification-http-trigger @kimizhu @dooriya @swatDong
+/templates/**/notification-restify @kimizhu @dooriya @swatDong
+/templates/**/notification-timer-trigger @kimizhu @dooriya @swatDong
+/templates/**/notification-webapi @kimizhu @dooriya @swatDong
+/templates/**/workflow @kimizhu @dooriya @swatDong
+/templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
+/templates/**/m365-tab @kimizhu @swatDong @kuojianlu
+/templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 
 /packages/fx-core/.eslintignore @LongOddCode @wenytang-ms
 /packages/fx-core/.eslintrc.js @LongOddCode @wenytang-ms

@@ -36,7 +36,7 @@ export interface OptionItem {
    */
   data?: unknown;
   /**
-   * CLI display name. CLI will use `cliName` as display name, and use `id` instead if `cliName` is undefined.
+   * @deprecated CLI display name. CLI will use `cliName` as display name, and use `id` instead if `cliName` is undefined.
    */
   cliName?: string;
   /**

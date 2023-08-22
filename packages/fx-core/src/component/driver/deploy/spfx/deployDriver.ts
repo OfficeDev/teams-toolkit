@@ -15,7 +15,6 @@ import { asBoolean, asFactory, asString, wrapRun } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../../middleware/updateProgress";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import { CreateAppCatalogFailedError } from "./error/createAppCatalogFailedError";
 import { GetGraphTokenFailedError } from "./error/getGraphTokenFailedError";
@@ -29,10 +28,12 @@ import { DeploySPFxArgs } from "./interface/deployArgs";
 import { Constants, DeployProgressMessage } from "./utility/constants";
 import { sleep } from "./utility/sleep";
 import { SPOClient } from "./utility/spoClient";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 @Service(Constants.DeployDriverName)
 export class SPFxDeployDriver implements StepDriver {
   public readonly description = getLocalizedString("driver.spfx.deploy.description");
+  public readonly progressTitle = getLocalizedString("driver.spfx.deploy.progressbar.stepMessage");
 
   private readonly EmptyMap = new Map<string, string>();
 
@@ -43,7 +44,6 @@ export class SPFxDeployDriver implements StepDriver {
 
   @hooks([
     addStartAndEndTelemetry(Constants.TelemetryDeployEventName, Constants.TelemetryComponentName),
-    updateProgress(getLocalizedString("driver.spfx.deploy.progressbar.stepMessage")),
   ])
   public async run(
     args: DeploySPFxArgs,
@@ -69,7 +69,7 @@ export class SPFxDeployDriver implements StepDriver {
       summaries: wrapContext.summaries,
     };
   }
-
+  @hooks([ErrorContextMW({ source: "SPFx", component: "SPFxDeployDriver" })])
   public async deploy(
     args: DeploySPFxArgs,
     context: WrapDriverContext

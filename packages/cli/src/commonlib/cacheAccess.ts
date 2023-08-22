@@ -144,7 +144,7 @@ export class CryptoCachePlugin {
             }
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         VsCodeLogInstance.warning(
           "Cannot read token from cache, clean up account cache. " + err.message
         );
@@ -154,7 +154,7 @@ export class CryptoCachePlugin {
         const data = cacheContext.tokenCache.serialize();
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
-      } catch (err) {
+      } catch (err: any) {
         VsCodeLogInstance.warning(
           "Cannot write token to cache, clean up account cache. " + err.message
         );
@@ -170,7 +170,7 @@ export class CryptoCachePlugin {
         const data = cacheContext.tokenCache.serialize();
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
-      } catch (err) {
+      } catch (err: any) {
         VsCodeLogInstance.warning(
           "Cannot save token to cache, clean up account cache. " + err.message
         );
@@ -192,7 +192,7 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       // this is to remove current account
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
-  } catch (err) {
+  } catch (err: any) {
     VsCodeLogInstance.warning(
       "Cannot save home account id to cache, clean up account cache. " + err.message
     );
@@ -203,7 +203,7 @@ export async function clearCache(accountName: string) {
   await fs.ensureDir(cacheDir);
   try {
     await fs.writeFile(cachePath + accountName + cachePathEnd, "");
-  } catch (err) {
+  } catch (err: any) {
     VsCodeLogInstance.warning(
       "Cannot write token to cache, clean up account cache. " + err.message
     );
@@ -214,7 +214,7 @@ export async function loadAccountId(accountName: string) {
   if (await fs.pathExists(accountPath + accountName)) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
-    } catch (err) {
+    } catch (err: any) {
       VsCodeLogInstance.warning(
         "Cannot read home account id from cache, clean up account cache. " + err.message
       );

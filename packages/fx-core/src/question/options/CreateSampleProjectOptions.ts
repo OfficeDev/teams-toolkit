@@ -10,7 +10,16 @@
 
 import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
-export const CreateSampleProjectOptions: CLICommandOption[] = [];
+export const CreateSampleProjectOptions: CLICommandOption[] = [
+  {
+    name: "folder",
+    type: "string",
+    shortName: "f",
+    description: "Directory where the project folder will be created in.",
+    required: true,
+    default: "./",
+  },
+];
 export const CreateSampleProjectArguments: CLICommandArgument[] = [
   {
     name: "sample-name",
@@ -41,7 +50,9 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
       "developer-assist-dashboard",
       "live-share-dice-roller",
       "teams-chef-bot",
+      "spfx-productivity-dashboard",
     ],
     choiceListCommand: "teamsfx list samples",
+    skipValidation: true,
   },
 ];

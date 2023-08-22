@@ -8,18 +8,24 @@ import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
-import { MockedM365Provider } from "../../../plugins/solution/util";
+import {
+  MockedM365Provider,
+  MockedLogProvider,
+  MockedUserInteraction,
+} from "../../../plugins/solution/util";
 import { FileNotFoundError } from "../../../../src/error/common";
 import { FeatureFlagName } from "../../../../src/common/constants";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { ok, TeamsAppManifest } from "@microsoft/teamsfx-api";
-import AdmZip from "adm-zip";
+import { ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 
 describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
     projectPath: "./",
+    platform: Platform.VSCode,
+    logProvider: new MockedLogProvider(),
+    ui: new MockedUserInteraction(),
   };
   let mockedEnvRestore: RestoreFn;
 
@@ -246,6 +252,60 @@ describe("teamsApp/createAppPackage", async () => {
 
     const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(executeResult.result.isOk());
+  });
+
+  it("happy path - CLI", async () => {
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        type: "apiBased",
+        apiSpecFile: "resources/openai.yml",
+        commands: [
+          {
+            id: "GET /repairs",
+            apiResponseRenderingTemplate: "resources/repairs.json",
+            title: "fake",
+          },
+        ],
+        botId: "",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    manifest.localizationInfo = {
+      defaultLanguageTag: "en",
+      additionalLanguages: [
+        {
+          languageTag: "de",
+          file: "resources/de.json",
+        },
+      ],
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+    sinon.stub(fs, "chmod").callsFake(async () => {});
+    sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
+    chai.assert(result.isOk());
+    if (await fs.pathExists(args.outputZipPath)) {
+      await fs.remove(args.outputZipPath);
+    }
   });
 
   it("happy path - relative path", async () => {

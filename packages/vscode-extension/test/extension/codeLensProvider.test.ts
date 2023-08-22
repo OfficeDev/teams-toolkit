@@ -1,7 +1,7 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import { envUtil } from "@microsoft/teamsfx-core";
-import { ok } from "@microsoft/teamsfx-api";
+import { TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 import {
   AadAppTemplateCodeLensProvider,
   CopilotPluginCodeLensProvider,
@@ -176,10 +176,18 @@ describe("Copilot plugin CodeLensProvider", () => {
   });
 
   it("Add API", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        type: "apiBased",
+        commands: [],
+      },
+    ];
+    const manifestString = JSON.stringify(manifest);
     const document = {
       fileName: "manifest.json",
       getText: () => {
-        return `"composeExtensions": {}`;
+        return manifestString;
       },
       positionAt: () => {
         return new vscode.Position(0, 0);
@@ -187,7 +195,7 @@ describe("Copilot plugin CodeLensProvider", () => {
       lineAt: () => {
         return {
           lineNumber: 0,
-          text: `"composeExtensions": {}`,
+          text: manifestString,
         };
       },
     } as any as vscode.TextDocument;
@@ -203,6 +211,33 @@ describe("Copilot plugin CodeLensProvider", () => {
       command: "fx-extension.copilotPluginAddAPI",
       arguments: [{ fsPath: document.fileName }],
     });
+  });
+
+  it("Do not show codelens for non-copilot plugin project", async () => {
+    const manifest = new TeamsAppManifest();
+    const manifestString = JSON.stringify(manifest);
+    const document = {
+      fileName: "manifest.json",
+      getText: () => {
+        return manifestString;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: manifestString,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    const copilotPluginCodelensProvider = new CopilotPluginCodeLensProvider();
+    const codelens: vscode.CodeLens[] = copilotPluginCodelensProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 0);
   });
 });
 

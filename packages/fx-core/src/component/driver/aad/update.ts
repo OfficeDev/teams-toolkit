@@ -19,7 +19,6 @@ import {
   InvalidActionInputError,
   UnhandledError,
 } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -27,6 +26,7 @@ const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.update);
+  readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle");
 
   public async run(
     args: UpdateAadAppArgs,
@@ -36,10 +36,7 @@ export class UpdateAadAppDriver implements StepDriver {
     return result.result;
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(args: UpdateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
     const summaries: string[] = [];
 

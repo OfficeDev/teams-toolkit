@@ -184,12 +184,12 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
 
   public setRootPath(rootPath: string): void {}
 
-  async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    return undefined;
+  readSubscription(): Promise<SubscriptionInfo | undefined> {
+    return Promise.resolve(undefined);
   }
 
-  async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
-    return undefined;
+  getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
+    return Promise.resolve(undefined);
   }
 }
 

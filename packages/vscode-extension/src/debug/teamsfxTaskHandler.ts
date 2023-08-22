@@ -338,7 +338,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
                 // Do nothing on reject
               }
             );
-          await VsCodeLogInstance.error(
+          VsCodeLogInstance.error(
             util.format(
               localize("teamstoolkit.localDebug.npmInstallFailedHintMessage"),
               task.name,

@@ -108,7 +108,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   protected async outputStartMessage(tunnelDisplayMessages: TunnelDisplayMessages): Promise<void> {
-    await VsCodeLogInstance.info(tunnelDisplayMessages.title());
+    VsCodeLogInstance.info(tunnelDisplayMessages.title());
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
       tunnelDisplayMessages.checkNumber(this.step.totalSteps)
@@ -154,7 +154,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     );
     VsCodeLogInstance.outputChannel.appendLine("");
     if (duration) {
-      await VsCodeLogInstance.info(tunnelDisplayMessages.durationMessage(duration));
+      VsCodeLogInstance.info(tunnelDisplayMessages.durationMessage(duration));
     }
 
     for (const tunnelInfo of tunnelInfoArr) {

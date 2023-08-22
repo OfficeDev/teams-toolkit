@@ -157,7 +157,7 @@ export async function initPage(
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    const addBtn = await frame?.waitForSelector("button span:has-text('Add')");
+    const addBtn = await frame?.waitForSelector("button>span:has-text('Add')");
 
     // dashboard template will have a popup
     if (options?.dashboardFlag) {
@@ -196,7 +196,7 @@ export async function initPage(
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
     // verify add page is closed
-    await frame?.waitForSelector("button span:has-text('Add')", {
+    await frame?.waitForSelector("button>span:has-text('Add')", {
       state: "detached",
     });
     try {
@@ -303,7 +303,7 @@ export async function initTeamsPage(
       }
       // default
       const addBtn = await frame?.waitForSelector(
-        "button span:has-text('Add')"
+        "button>span:has-text('Add')"
       );
       await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -813,6 +813,65 @@ export async function validateOutlookTab(
   }
 }
 
+export async function validateEchoBot(
+  page: Page,
+  options: { botCommand?: string; expected?: ValidationContent } = {
+    botCommand: "helloWorld",
+    expected: ValidationContent.BotWelcomeInstruction,
+  }
+) {
+  try {
+    console.log("start to verify bot");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    try {
+      console.log("dismiss message");
+      await frame?.waitForSelector("div.ui-box");
+      await page
+        .click('button:has-text("Dismiss")', {
+          timeout: Timeout.playwrightDefaultTimeout,
+        })
+        .catch(() => {});
+    } catch (error) {
+      console.log("no message to dismiss");
+    }
+
+    await RetryHandler.retry(async () => {
+      await frame?.waitForSelector(
+        `p:has-text("${
+          options?.expected || ValidationContent.BotWelcomeInstruction
+        }")`
+      );
+      console.log(options?.expected || ValidationContent.BotWelcomeInstruction);
+      console.log("verified bot that it has sent welcome!!!");
+    }, 2);
+
+    await RetryHandler.retry(async () => {
+      console.log("sending message ", options?.botCommand);
+      await frame?.fill(
+        'div.ck-content[role="textbox"]',
+        options?.botCommand || "helloWorld"
+      );
+      await frame?.click('button[name="send"]');
+      const expectedContent = options?.botCommand
+        ? `Echo: ${options?.botCommand}`
+        : `Echo: helloWorld`;
+      await frame?.waitForSelector(`p:has-text("${expectedContent}")`);
+      console.log(`verify bot successfully with content ${expectedContent}!!!`);
+    }, 2);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
 export async function validateBot(
   page: Page,
   options: { botCommand?: string; expected?: ValidationContent } = {
@@ -1284,9 +1343,16 @@ export async function validateNotificationBot(
           `[Command "welcome" not executed successfully] ${e.message}`
         );
       }
-      await frame?.waitForSelector(
-        'p:has-text("This is a sample http-triggered notification to Person")'
-      );
+      try {
+        await frame?.waitForSelector(
+          'p:has-text("This is a sample http-triggered notification to Person")'
+        );
+      } catch (e) {
+        console.log("sending any message ", "helloWorld");
+        await frame?.fill('div.ck-content[role="textbox"]', "helloWorld");
+        await frame?.click('button[name="send"]');
+        throw e;
+      }
     }, 2);
     console.log("User received notification");
   } catch (error) {

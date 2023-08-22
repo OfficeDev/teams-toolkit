@@ -17,10 +17,10 @@ import { SampleConfig, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
-import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 import { CancelDownloading, ParseUrlError } from "./error";
 import { deepCopy } from "../../common/tools";
+import { InvalidInputError } from "../../core/error";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -221,7 +221,7 @@ export function getSampleInfoFromName(sampleName: string): SampleConfig {
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {
-    throw Error(`invalid sample name: '${sampleName}'`);
+    throw InvalidInputError(`sample '${sampleName}' not found`);
   }
   return sample;
 }
@@ -277,7 +277,9 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
   const samplePaths = fileInfoTree
     .filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
     .map((node) => node.path);
-  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo.sha}/`;
+  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${
+    fileInfo.sha as string
+  }/`;
   return { samplePaths, fileUrlPrefix };
 }
 

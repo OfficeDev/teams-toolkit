@@ -1,134 +1,86 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, ok } from "@microsoft/teamsfx-api";
+import {
+  CLICommand,
+  CLICommandOption,
+  CLIContext,
+  CLIStringOption,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import {
+  CreateProjectInputs,
+  CreateProjectOptions,
+  QuestionNames,
+  isCopilotPluginEnabled,
+  CliQuestionName,
+} from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
 import * as uuid from "uuid";
-import { createFxCore } from "../../activate";
+import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../../telemetry/cliTelemetryEvents";
-import { getSystemInputs } from "../../utils";
-import { CLICommand, CLIContext } from "../types";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { createSampleCommand } from "./createSample";
+import * as path from "path";
 
-export const createCommand: CLICommand = {
-  name: "new",
-  description: "Create a new Teams application.",
-  options: [
-    {
-      name: "capability",
-      type: "singleSelect",
-      shortName: "c",
-      description: "Specifies the Teams App capability.",
-      required: true,
-      choices: [
-        "bot",
-        "notification",
-        "command-bot",
-        "workflow-bot",
-        "tab-non-sso",
-        "sso-launch-page",
-        "dashboard-tab",
-        "tab-spfx",
-        "link-unfurling",
-        "search-app",
-      ],
-      choiceListCommand: "teamsfx help --list-capabilities",
-    },
-    {
-      name: "bot-host-type-trigger",
-      type: "singleSelect",
-      shortName: "t",
-      description: "Specifies the trigger for `Chat Notification Message` app template.",
-      choiceListCommand: "teamsfx help --list-notification-triggers",
-    },
-    {
-      name: "spfx-solution",
-      type: "singleSelect",
-      shortName: "ss",
-      description: "Create a new or import an existing SharePoint Framework solution.",
-      choices: ["new", "import"],
-      default: "new",
-    },
-    {
-      name: "spfx-install-latest-package",
-      shortName: "sp",
-      type: "singleSelect",
-      description: "Install latest SharePoint Framework version.",
-      choices: [true, false],
-      default: true,
-    },
-    {
-      name: "spfx-web-part",
-      type: "text",
-      shortName: "sw",
-      description: "Name for SharePoint Framework Web Part.",
-      default: "helllworld",
-    },
-    {
-      name: "spfx-folder",
-      type: "text",
-      shortName: "sf",
-      description: "Directory path that contains the existing SarePoint Framework solutions.",
-    },
-    {
-      name: "programming-language",
-      type: "singleSelect",
-      shortName: "l",
-      description: "Programming Language.",
-      choices: ["javascript", "typescript", "csharp"],
-      default: "javascript",
-    },
-    {
-      name: "folder",
-      shortName: "f",
-      description: "Root folder of the project.",
-      type: "text",
-      required: true,
-      default: "./",
-    },
-    {
-      name: "app-name",
-      shortName: "n",
-      description: "Application name",
-      type: "text",
-      required: true,
-    },
-  ],
-  examples: [
-    `1. Create a new timer triggered notification bot: \n    ${chalk.blueBright(
-      "teamsfx new -c notification -t timer-functions -l typescript -n myapp"
-    )}`,
-    `2. Import an existing SharePoint Framework solution: \n    ${chalk.blueBright(
-      "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp"
-    )}`,
-  ],
-  commands: [createSampleCommand],
-  telemetry: {
-    event: TelemetryEvent.CreateProject,
-  },
-  handler: async (cmd: CLIContext) => {
-    const inputs = getSystemInputs();
-    if (!cmd.globalOptionValues.interactive) {
-      assign(inputs, cmd.optionValues);
-      inputs.capabilities = inputs.capability;
+function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
+  if (!isCopilotPluginEnabled()) {
+    // filter out copilot-plugin in capability question
+    const capability = options.find(
+      (c: CLICommandOption) => c.name === CliQuestionName.Capability
+    ) as CLIStringOption;
+    if (capability.choices) {
+      capability.choices = capability.choices.filter(
+        (c: string) => c !== "copilot-plugin-capability"
+      );
     }
-    inputs.projectId = inputs.projectId ?? uuid.v4();
-    const core = createFxCore();
-    const res = await core.createProject(inputs);
-    assign(cmd.telemetryProperties, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.NewProjectId]: inputs.projectId,
-      [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
-    });
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    logger.info(`Project created at: ${chalk.cyanBright(res.value)}`);
-    return ok(undefined);
-  },
-};
+
+    const copilotPluginQuestionNames = [
+      QuestionNames.CopilotPluginDevelopment.toString(),
+      QuestionNames.ApiSpecLocation.toString(),
+      QuestionNames.OpenAIPluginDomain.toString(),
+      QuestionNames.ApiOperation.toString(),
+    ];
+
+    options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
+  }
+  return options;
+}
+
+export function getCreateCommand(): CLICommand {
+  return {
+    name: "new",
+    description: "Create a new Teams application.",
+    options: [...filterOptionsIfNotCopilotPlugin(CreateProjectOptions)],
+    examples: [
+      {
+        command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp -i false",
+        description: "Create a new timer triggered notification bot",
+      },
+      {
+        command: "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp -i false",
+        description: "Import an existing SharePoint Framework solution",
+      },
+    ],
+    commands: [createSampleCommand],
+    telemetry: {
+      event: TelemetryEvent.CreateProject,
+    },
+    handler: async (ctx: CLIContext) => {
+      const inputs = ctx.optionValues as CreateProjectInputs;
+      inputs.projectId = inputs.projectId ?? uuid.v4();
+      const core = getFxCore();
+      const res = await core.createProject(inputs);
+      assign(ctx.telemetryProperties, {
+        [TelemetryProperty.NewProjectId]: inputs.projectId,
+        [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
+      });
+      if (res.isErr()) {
+        return err(res.error);
+      }
+      logger.info(`Project created at: ${chalk.cyanBright(path.resolve(res.value.projectPath))}`);
+      return ok(undefined);
+    },
+  };
+}

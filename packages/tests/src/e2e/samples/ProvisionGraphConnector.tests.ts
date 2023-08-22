@@ -6,12 +6,13 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class GraphConnectorTestCase extends CaseFactory {}
+
+new GraphConnectorTestCase(
   TemplateProjectFolder.GraphConnector,
   15277460,
   "v-ivanchen@microsoft.com",
   ["tab", "aad"]
-);
-sampleCase.test();
+).test();

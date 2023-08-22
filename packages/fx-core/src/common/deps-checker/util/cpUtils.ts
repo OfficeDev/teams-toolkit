@@ -6,7 +6,7 @@ import * as cp from "child_process";
 import * as os from "os";
 
 export interface DebugLogger {
-  debug(message: string): Promise<boolean>;
+  debug(message: string): void;
 }
 
 export namespace cpUtils {
@@ -27,10 +27,10 @@ export namespace cpUtils {
     if (result.code !== 0) {
       const errorMessage = `Failed to run command: "${command} ${result.formattedArgs}", code: "${result.code}",
                             output: "${result.cmdOutput}", error: "${result.cmdOutputIncludingStderr}"`;
-      await logger?.debug(errorMessage);
+      logger?.debug(errorMessage);
       throw new Error(errorMessage);
     } else {
-      await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
+      logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
     }
 
     return result.cmdOutput;
@@ -69,7 +69,7 @@ export namespace cpUtils {
             );
             reject(
               new Error(
-                `Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout} ms`
+                `Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout || 0} ms`
               )
             );
           }, options.timeout);
@@ -91,7 +91,7 @@ export namespace cpUtils {
 
         childProc.on("error", (error) => {
           logger?.debug(
-            `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`
+            `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error.toString()}`
           );
           if (timer) {
             clearTimeout(timer);

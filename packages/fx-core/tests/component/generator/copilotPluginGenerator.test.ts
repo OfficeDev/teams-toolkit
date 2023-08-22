@@ -7,6 +7,7 @@
 
 import {
   err,
+  IComposeExtension,
   Inputs,
   ok,
   OpenAIManifestAuthType,
@@ -38,6 +39,7 @@ import {
 } from "../../../src/common/spec-parser/interfaces";
 import * as specParserUtils from "../../../src/common/spec-parser/utils";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -349,6 +351,33 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isErr());
   });
+
+  it("throws specParser error", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+    };
+    const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox
+      .stub(SpecParser.prototype, "generate")
+      .throws(new SpecParserError("test", ErrorType.Unknown));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
+
+    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.message, "test");
+    }
+  });
 });
 
 describe("OpenAIManifestHelper", async () => {
@@ -396,17 +425,41 @@ describe("OpenAIManifestHelper", async () => {
 });
 
 describe("generateScaffoldingSummary", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
   it("no warnings", () => {
-    const res = generateScaffoldingSummary([], teamsManifest);
+    sandbox.stub(fs, "existsSync").returns(true);
+    const composeExtension: IComposeExtension = {
+      type: "apiBased",
+      commands: [
+        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+        { id: "command1", type: "action", title: "" },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
     assert.equal(res.length, 0);
   });
 
   it("warnings about missing property", () => {
-    const res = generateScaffoldingSummary([], {
-      ...teamsManifest,
-      name: { short: "", full: "" },
-      description: { short: "", full: "" },
-    });
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        name: { short: "", full: "" },
+        description: { short: "", full: "" },
+      },
+      "path"
+    );
 
     assert.isTrue(
       res.includes(
@@ -422,21 +475,65 @@ describe("generateScaffoldingSummary", () => {
     const invalidFullName = "a".repeat(101);
     const invalidShortDescription = "a".repeat(101);
     const invalidFullDescription = "a".repeat(4001);
-    const res = generateScaffoldingSummary([], {
-      ...teamsManifest,
-      name: { short: invalidShortName, full: invalidFullName },
-      description: { short: invalidShortDescription, full: invalidFullDescription },
-    });
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        name: { short: invalidShortName, full: invalidFullName },
+        description: { short: invalidShortDescription, full: invalidFullDescription },
+      },
+      "path"
+    );
     assert.isTrue(res.includes("name/short"));
   });
 
   it("warnings about API spec", () => {
     const res = generateScaffoldingSummary(
       [{ type: WarningType.OperationIdMissing, content: "content" }],
-      teamsManifest
+      teamsManifest,
+      "path"
     );
 
-    console.log(res);
     assert.isTrue(res.includes("content"));
+  });
+
+  it("warnings about adaptive card template in manifest", () => {
+    const composeExtension: IComposeExtension = {
+      type: "apiBased",
+      commands: [{ id: "command1", type: "query", title: "" }],
+      supportsConversationalAI: true,
+    };
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isTrue(res.includes("apiResponseRenderingTemplate"));
+  });
+
+  it("warnings about missing adaptive card template", () => {
+    const composeExtension: IComposeExtension = {
+      type: "apiBased",
+      supportsConversationalAI: true,
+      commands: [
+        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+      ],
+    };
+    sandbox.stub(fs, "existsSync").returns(false);
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isTrue(!res.includes("apiResponseRenderingTemplate"));
+    assert.isTrue(res.includes("test"));
   });
 });

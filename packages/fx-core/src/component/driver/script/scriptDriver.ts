@@ -33,9 +33,10 @@ interface ScriptDriverArgs {
 
 @Service(ACTION_NAME)
 export class ScriptDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const typedArgs = args as ScriptDriverArgs;
+  async _run(
+    typedArgs: ScriptDriverArgs,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
     await context.progressBar?.next(
       ProgressMessages.runCommand(typedArgs.run, typedArgs.workingDirectory ?? "./")
     );
@@ -58,7 +59,8 @@ export class ScriptDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    const res = await this.run(args, ctx);
+    const typedArgs = args as ScriptDriverArgs;
+    const res = await this._run(typedArgs, ctx);
     const summaries: string[] = res.isOk()
       ? [`Successfully executed command ${maskSecretValues((args as any).run)}`]
       : [];
@@ -79,20 +81,15 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  return new Promise(async (resolve, reject) => {
+  const systemEncoding = await getSystemEncoding();
+  return new Promise((resolve, reject) => {
     const platform = os.platform();
     let workingDir = workingDirectory || ".";
     workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
     if (platform === "win32") {
       workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
     }
-    // const defaultOsToShellMap: any = {
-    //   win32: "powershell",
-    //   darwin: "bash",
-    //   linux: "bash",
-    // };
     let run = command;
-    // shell = shell || defaultOsToShellMap[platform] || "pwsh";
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
@@ -100,9 +97,16 @@ export async function executeCommand(
     if (shell === "cmd") {
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
-    await logProvider.info(`Start to run command: "${command}" on path: "${workingDir}".`);
+    logProvider.verbose(
+      `Start to run command: "${command}" with args: ${JSON.stringify({
+        shell: shell,
+        cwd: workingDir,
+        encoding: "buffer",
+        env: { ...process.env, ...env },
+        timeout: timeout,
+      })}.`
+    );
     const allOutputStrings: string[] = [];
-    const systemEncoding = await getSystemEncoding();
     const stderrStrings: string[] = [];
     process.env.VSLANG = undefined; // Workaroud to disable VS environment variable to void charset encoding issue for non-English characters
     const cp = child_process.exec(
@@ -114,7 +118,7 @@ export async function executeCommand(
         env: { ...process.env, ...env },
         timeout: timeout,
       },
-      async (error) => {
+      (error) => {
         if (error) {
           error.message = stderrStrings.join("").trim() || error.message;
           resolve(err(convertScriptErrorToFxError(error, run)));
@@ -122,28 +126,40 @@ export async function executeCommand(
           // handle '::set-output' or '::set-teamsfx-env' pattern
           const outputString = allOutputStrings.join("");
           const outputObject = parseSetOutputCommand(outputString);
+          if (Object.keys(outputObject).length > 0)
+            logProvider.verbose(`script output env variables: ${JSON.stringify(outputObject)}`);
           resolve(ok([outputString, outputObject]));
         }
       }
     );
-    const dataHandler = (data: string) => {
+    const dataHandler = async (data: string) => {
       if (appendFile) {
-        fs.appendFileSync(appendFile, data);
+        await fs.appendFile(appendFile, data);
       }
       allOutputStrings.push(data);
     };
-    cp.stdout?.on("data", (data: Buffer) => {
+    cp.stdout?.on("data", async (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
       logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
-      dataHandler(str);
+      await dataHandler(str);
     });
-    cp.stderr?.on("data", (data: Buffer) => {
-      const str = bufferToString(data, systemEncoding);
-      logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
-      dataHandler(str);
-      stderrStrings.push(str);
-    });
+    const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
+    cp.stderr?.on("data", handler);
   });
+}
+
+export function getStderrHandler(
+  logProvider: LogProvider,
+  systemEncoding: string,
+  stderrStrings: string[],
+  dataHandler: (data: string) => Promise<void>
+): (data: Buffer) => Promise<void> {
+  return async (data: Buffer) => {
+    const str = bufferToString(data, systemEncoding);
+    logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
+    await dataHandler(str);
+    stderrStrings.push(str);
+  };
 }
 
 export function bufferToString(data: Buffer, systemEncoding: string): string {

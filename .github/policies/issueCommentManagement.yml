@@ -13,15 +13,18 @@ configuration:
           - payloadType: Issue_Comment
           - and:
             - isOpen
+            - isIssue
             - not:
                 or:
-                  - payloadType: Pull_Request_Review_Comment
                   - hasLabel:
                       label: needs attention
                   - activitySenderHasAssociation:
                       association: Member
                   - isActivitySender:
                       user: msftbot[bot]
+                      issueAuthor: False
+                  - isActivitySender:
+                      user: microsoft-github-policy-service[bot]
                       issueAuthor: False
         then:
           - addLabel:

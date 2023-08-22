@@ -10,12 +10,13 @@ import {
   stopDebugging,
   waitForTerminal,
 } from "../../utils/vscodeOperation";
-import { initPage, validateBot } from "../../utils/playwrightOperation";
+import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
   LocalDebugTaskLabel,
   LocalDebugTaskInfo,
+  DebugItemSelect,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -51,7 +52,7 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "index.js");
       const driver = VSBrowser.instance.driver;
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
@@ -67,7 +68,7 @@ describe("Local Debug Tests", function () {
         } catch (error) {
           console.log(`close port 3978 failed`);
         }
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
         await waitForTerminal(
           LocalDebugTaskLabel.StartBotApp,
@@ -96,7 +97,7 @@ describe("Local Debug Tests", function () {
         } catch (error) {
           console.log(`close port 3978 failed`);
         }
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,
@@ -130,7 +131,7 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateBot(page);
+      await validateEchoBot(page);
     }
   );
 });

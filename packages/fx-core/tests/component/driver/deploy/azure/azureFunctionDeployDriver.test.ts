@@ -62,7 +62,7 @@ describe("Azure Function Deploy Driver test", () => {
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -112,7 +112,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -162,7 +162,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: logger,
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -211,7 +211,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -258,7 +258,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -306,7 +306,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -354,7 +354,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -404,7 +404,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());

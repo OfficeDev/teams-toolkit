@@ -26,7 +26,7 @@ describe("Publish Command Tests", function () {
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "publishApplication").callsFake(async (inputs: Inputs) => {
       expect(inputs.platform).equals(Platform.CLI);
-      if (inputs.projectPath?.includes("real")) return ok("");
+      if (inputs.projectPath?.includes("real")) return ok(undefined);
       else return err(new InvalidProjectError());
     });
   });

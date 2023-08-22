@@ -7,6 +7,7 @@ import {
   err,
   FxError,
   Inputs,
+  InputsWithProjectPath,
   ok,
   OptionItem,
   Platform,
@@ -184,6 +185,7 @@ class ResourceGroupHelper {
    * Ask user to create a new resource group or use an existing resource group  V3
    */
   async askResourceGroupInfoV3(
+    inputs: InputsWithProjectPath,
     azureAccountProvider: AzureAccountProvider,
     rmClient: ResourceManagementClient,
     defaultResourceGroupName: string
@@ -193,9 +195,6 @@ class ResourceGroupHelper {
       rmClient.subscriptionId,
       defaultResourceGroupName
     );
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
     if (node) {
       const res = await traverse(node, inputs, TOOLS.ui);
       if (res.isErr()) {

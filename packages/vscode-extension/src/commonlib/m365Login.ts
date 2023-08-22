@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/ban-types */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/ban-types */
 "use strict";
 
 import {
@@ -148,7 +148,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
         return err(cancelError);
       }
       M365Login.codeFlowInstance.status = loggingIn;
-      this.notifyStatus(tokenRequest);
+      void this.notifyStatus(tokenRequest);
     }
 
     if (loginHint) {
@@ -226,7 +226,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       );
       if (userSelected === createTestingTenant) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSignInJoinM365);
-        vscode.env.openExternal(
+        void vscode.env.openExternal(
           vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
         );
       }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, QTreeNode } from "@microsoft/teamsfx-api";
+import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
@@ -22,7 +22,8 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: ["a"] }
+        ["a"],
+        { platform: Platform.VSCode }
       );
       assert.isUndefined(res);
     });
@@ -35,7 +36,8 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: ["d"] }
+        ["d"],
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
@@ -50,7 +52,8 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: "a" }
+        "a",
+        { platform: Platform.VSCode }
       );
       assert.isUndefined(res);
     });
@@ -63,7 +66,8 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: "d" }
+        "d",
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
@@ -78,7 +82,8 @@ describe("ValidationUtils", () => {
           title: "title",
           returnObject: true,
         },
-        { platform: Platform.VSCode, name: "d" }
+        "d",
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
@@ -96,7 +101,8 @@ describe("ValidationUtils", () => {
           title: "title",
           returnObject: true,
         },
-        { platform: Platform.VSCode, name: "a" }
+        "a",
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
@@ -114,7 +120,8 @@ describe("ValidationUtils", () => {
           title: "title",
           returnObject: true,
         },
-        { platform: Platform.VSCode, name: { id: "c", label: "c" } }
+        { id: "c", label: "c" },
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
@@ -129,15 +136,16 @@ describe("ValidationUtils", () => {
           title: "title",
           returnObject: true,
         },
-        { platform: Platform.VSCode, name: { id: "a", label: "a" } }
+        { id: "a", label: "a" },
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
   });
 
-  describe("validateManualInputs", () => {
+  describe("validateInputs", () => {
     it("should return undefined for multiSelect", async () => {
-      const res = await validationUtils.validateManualInputs(
+      const res = await validationUtils.validateInputs(
         {
           type: "multiSelect",
           name: "name",
@@ -145,12 +153,13 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: ["a"] }
+        ["a"],
+        { platform: Platform.VSCode }
       );
       assert.isUndefined(res);
     });
     it("should return error string for multiSelect", async () => {
-      const res = await validationUtils.validateManualInputs(
+      const res = await validationUtils.validateInputs(
         {
           type: "multiSelect",
           name: "name",
@@ -158,12 +167,13 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: ["d"] }
+        ["d"],
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
     it("should return undefined for singleSelect", async () => {
-      const res = await validationUtils.validateManualInputs(
+      const res = await validationUtils.validateInputs(
         {
           type: "singleSelect",
           name: "name",
@@ -171,12 +181,13 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: "a" }
+        "a",
+        { platform: Platform.VSCode }
       );
       assert.isUndefined(res);
     });
     it("should return error string for singleSelect", async () => {
-      const res = await validationUtils.validateManualInputs(
+      const res = await validationUtils.validateInputs(
         {
           type: "singleSelect",
           name: "name",
@@ -184,31 +195,62 @@ describe("ValidationUtils", () => {
           dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
           title: "title",
         },
-        { platform: Platform.VSCode, name: "d" }
+        "d",
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
     it("should return error string for textInput", async () => {
-      const res = await validationUtils.validateManualInputs(
+      const res = await validationUtils.validateInputs(
         {
           type: "text",
           name: "name",
           validation: { pattern: "^[a-z]+$" },
           title: "title",
         },
-        { platform: Platform.VSCode, name: "123" }
+        "123",
+        { platform: Platform.VSCode }
       );
       assert.isDefined(res);
     });
     it("should return undefined for textInput", async () => {
-      const res = await validationUtils.validateManualInputs(
+      const res = await validationUtils.validateInputs(
         {
           type: "text",
           name: "name",
           validation: { pattern: "^[a-z]+$" },
           title: "title",
         },
-        { platform: Platform.VSCode, name: "abc" }
+        "abc",
+        { platform: Platform.VSCode }
+      );
+      assert.isUndefined(res);
+    });
+    it("should return error for textInput with additional validation", async () => {
+      const res = await validationUtils.validateInputs(
+        {
+          type: "text",
+          name: "name",
+          validation: { pattern: "^[a-z]+$" },
+          title: "title",
+          additionalValidationOnAccept: { pattern: "^[a]+$" },
+        },
+        "abc",
+        { platform: Platform.VSCode }
+      );
+      assert.isDefined(res);
+    });
+    it("should return undefined for textInput with additional validation", async () => {
+      const res = await validationUtils.validateInputs(
+        {
+          type: "text",
+          name: "name",
+          validation: { pattern: "^[a-z]+$" },
+          title: "title",
+          additionalValidationOnAccept: { pattern: "^[a-z]+$" },
+        },
+        "abc",
+        { platform: Platform.VSCode }
       );
       assert.isUndefined(res);
     });

@@ -83,8 +83,8 @@ describe("Arm driver deploy", () => {
         ],
       };
 
-      res = await driver.run(deployArgs, mockedDriverContext);
-      assert.isTrue(res.isOk());
+      res = await driver.execute(deployArgs, mockedDriverContext);
+      assert.isTrue(res.result.isOk());
 
       deployArgs = {
         subscriptionId: "00000000-0000-0000-0000-000000000000",
@@ -99,8 +99,8 @@ describe("Arm driver deploy", () => {
         ],
       };
       if (actionMethod === "run") {
-        res = await driver.run(deployArgs, mockedDriverContext);
-        assert.isTrue(res.isOk());
+        res = await driver.execute(deployArgs, mockedDriverContext);
+        assert.isTrue(res.result.isOk());
       } else {
         res = await driver.execute(deployArgs, mockedDriverContext);
         assert.isTrue(res.result.isOk());
@@ -123,8 +123,8 @@ describe("Arm driver deploy", () => {
         },
       ],
     } as any;
-    let res = await driver.run(deployArgs, mockedDriverContext);
-    assert.isTrue(res.isErr());
+    let res = await driver.execute(deployArgs, mockedDriverContext);
+    assert.isTrue(res.result.isErr());
 
     deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",
@@ -132,8 +132,8 @@ describe("Arm driver deploy", () => {
       bicepCliVersion: "",
       templates: [],
     } as any;
-    res = await driver.run(deployArgs, mockedDriverContext);
-    assert.isTrue(res.isErr());
+    res = await driver.execute(deployArgs, mockedDriverContext);
+    assert.isTrue(res.result.isErr());
 
     deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",
@@ -147,8 +147,8 @@ describe("Arm driver deploy", () => {
         },
       ],
     } as any;
-    res = await driver.run(deployArgs, mockedDriverContext);
-    assert.isTrue(res.isErr());
+    res = await driver.execute(deployArgs, mockedDriverContext);
+    assert.isTrue(res.result.isErr());
   });
 
   it("deploy error", async () => {
@@ -176,14 +176,14 @@ describe("Arm driver deploy", () => {
       ],
     };
 
-    const res = await driver.run(deployArgs, mockedDriverContext);
-    assert.isTrue(res.isErr());
+    const res = await driver.execute(deployArgs, mockedDriverContext);
+    assert.isTrue(res.result.isErr());
   });
 
   it("error handle", async () => {
     sandbox.stub(ArmDeployImpl.prototype, "run").throws("mocked deploy error");
 
-    const res = await driver.run({} as any, mockedDriverContext);
-    assert.isTrue(res.isErr());
+    const res = await driver.execute({} as any, mockedDriverContext);
+    assert.isTrue(res.result.isErr());
   });
 });

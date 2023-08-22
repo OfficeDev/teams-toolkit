@@ -37,6 +37,9 @@ import {
   ok,
   SingleFileOrInputConfig,
   IQTreeNode,
+  MultiFileQuestion,
+  SingleFileQuestion,
+  FolderQuestion,
 } from "@microsoft/teamsfx-api";
 import {
   EmptyOptionError,
@@ -868,6 +871,69 @@ describe("Question Model - Visitor Test", () => {
       };
       const res = await questionVisitor(question, new MockUserInteraction(), inputs);
       assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === "b");
+    });
+
+    it("selectFiles", async () => {
+      const ui = new MockUserInteraction();
+      sandbox.stub(ui, "selectFiles").resolves(ok({ type: "success", result: ["a"] }));
+      const question: MultiFileQuestion = {
+        type: "multiFile",
+        name: "test",
+        title: "test",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await questionVisitor(question, ui, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
+    });
+    it("selectFile", async () => {
+      const ui = new MockUserInteraction();
+      sandbox.stub(ui, "selectFile").resolves(ok({ type: "success", result: "a" }));
+      const question: SingleFileQuestion = {
+        type: "singleFile",
+        name: "test",
+        title: "test",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await questionVisitor(question, ui, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
+    });
+    it("selectFolder", async () => {
+      const ui = new MockUserInteraction();
+      sandbox.stub(ui, "selectFolder").resolves(ok({ type: "success", result: "a" }));
+      const question: FolderQuestion = {
+        type: "folder",
+        name: "test",
+        title: "test",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await questionVisitor(question, ui, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
+    });
+    it("selectFileOrInput", async () => {
+      const ui = new MockUserInteraction();
+      sandbox.stub(ui, "selectFileOrInput").resolves(ok({ type: "success", result: "a" }));
+      const question: SingleFileOrInputQuestion = {
+        type: "singleFileOrText",
+        name: "test",
+        title: "test",
+        inputOptionItem: { id: "test", label: "test" },
+        inputBoxConfig: {
+          type: "innerText",
+          name: "test",
+          title: "test",
+        },
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await questionVisitor(question, ui, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
     });
   });
 

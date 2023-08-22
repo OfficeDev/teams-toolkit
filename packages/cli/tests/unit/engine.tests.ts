@@ -27,7 +27,7 @@ import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 import { logger } from "../../src/commonlib/logger";
-import { InvalidChoiceError } from "../../src/error";
+import { InvalidChoiceError, UnknownOptionError } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
@@ -234,6 +234,15 @@ describe("CLI Engine", () => {
       sandbox.stub(process, "argv").value(["node", "cli", "list", "capabilities"]);
       sandbox.stub(listCapabilitiesCommand, "handler").value(undefined);
       await engine.start(rootCommand);
+    });
+    it("parseArg return error", async () => {
+      sandbox.stub(process, "argv").value(["node", "cli", "new", "--xxx"]);
+      let error;
+      sandbox.stub(engine, "processResult").callsFake((ctx, fxError) => {
+        error = fxError;
+      });
+      await engine.start(rootCommand);
+      assert.instanceOf(error, UnknownOptionError);
     });
     it("should display version", async () => {
       sandbox.stub(process, "argv").value(["node", "cli", "--version"]);

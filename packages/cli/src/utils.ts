@@ -191,23 +191,23 @@ export function getVersion(): string {
   return version;
 }
 
-export async function getTemplates(): Promise<
-  {
-    tags: string[];
-    title: string;
-    description: string;
-    sampleAppName: string;
-    sampleAppUrl?: string;
-  }[]
-> {
+export interface Sample {
+  tags: string[];
+  name: string;
+  description: string;
+  id: string;
+  url?: string;
+}
+
+export async function getTemplates(): Promise<Sample[]> {
   await sampleProvider.fetchSampleConfig();
   const samples = sampleProvider.SampleCollection.samples.map((sample) => {
     return {
       tags: sample.tags,
-      title: sample.title,
+      name: sample.title,
       description: sample.shortDescription,
-      sampleAppName: sample.id,
-      sampleAppUrl: sample.downloadUrl,
+      id: sample.id,
+      url: sample.downloadUrl,
     };
   });
   return samples;

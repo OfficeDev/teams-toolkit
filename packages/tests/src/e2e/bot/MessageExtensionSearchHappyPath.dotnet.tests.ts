@@ -9,9 +9,9 @@ import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
 
-describe("Deploy happy path for link unfurling dotnet", () => {
+describe("Remote happy path for message extension search dotnet", () => {
   it(
-    "Deploy happy path for link unfurling dotnet",
+    "Remote happy path for message extension search dotnet",
     { testPlanCaseId: 24916471, author: "yukundong@microsoft.com" },
     async function () {
       await happyPathTest(Runtime.Dotnet, "search-message-extension");

@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 /**
- * @author yukun-dong <yukundong@microsoft.com>
- */
+ * @author Siglud <fanhu@microsoft.com>
+ **/
 import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";

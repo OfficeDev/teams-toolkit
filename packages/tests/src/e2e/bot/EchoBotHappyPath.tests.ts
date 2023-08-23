@@ -9,9 +9,9 @@ import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
 
-describe("Deploy happy path for echo bot node", () => {
+describe("Remote happy path for echo bot node", () => {
   it(
-    "Deploy happy path for echo bot node",
+    "Remote happy path for echo bot node",
     { testPlanCaseId: 24907383, author: "yukundong@microsoft.com" },
     async function () {
       await happyPathTest(Runtime.Node, "bot");

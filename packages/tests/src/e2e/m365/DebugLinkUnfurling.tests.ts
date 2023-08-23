@@ -56,7 +56,7 @@ describe("Debug link unfurling template", () => {
       await CliHelper.createProjectWithCapability(
         appName,
         testFolder,
-        Capability.LinkUnfruling
+        Capability.LinkUnfurling
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

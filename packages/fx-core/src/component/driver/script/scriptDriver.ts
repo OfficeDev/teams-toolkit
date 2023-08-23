@@ -156,7 +156,7 @@ export function getStderrHandler(
 ): (data: Buffer) => Promise<void> {
   return async (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);
-    logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
+    logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
     await dataHandler(str);
     stderrStrings.push(str);
   };

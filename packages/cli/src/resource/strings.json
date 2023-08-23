@@ -12,8 +12,6 @@
   "error.UnknownArgumentError": "The command '%s' can not be executed for unknown argument '%s'.",
   "error.InvalidOptionErrorReason": "'%s' is not in the valid option list: %s.",
   "error.InvalidChoiceError": "The command '%s' can not be executed for invalid choice '%s' for option/argument '%s', allowed values: %s.",
-  "success.prefix": "(✓) Success: ",
-  "warning.prefix": "(!) Warning: ",
   "command": {
     "provision": {
       "description": "Run the provision stage in teamsapp.yml or teamsapp.local.yml."

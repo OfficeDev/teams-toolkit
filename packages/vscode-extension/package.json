@@ -1180,7 +1180,6 @@
           }
         }
       }
-    
   },
   "scripts": {
     "lint:staged": "lint-staged",

@@ -49,7 +49,6 @@ describe("AadAppClient", async () => {
 
     afterEach(() => {
       sinon.restore();
-      nock.cleanAll();
     });
 
     it("should throw error if cannot get token", async () => {
@@ -110,7 +109,6 @@ describe("AadAppClient", async () => {
 
     afterEach(() => {
       sinon.restore();
-      nock.cleanAll();
     });
 
     it("should return app instance when request success", async () => {
@@ -173,7 +171,6 @@ describe("AadAppClient", async () => {
 
     afterEach(() => {
       sinon.restore();
-      nock.cleanAll();
     });
 
     it("should return secret when request success", async () => {
@@ -292,7 +289,6 @@ describe("AadAppClient", async () => {
 
     afterEach(() => {
       sinon.restore();
-      nock.cleanAll();
     });
 
     it("should success when request success", async () => {
@@ -383,7 +379,6 @@ describe("AadAppClient", async () => {
 
     afterEach(() => {
       sinon.restore();
-      nock.cleanAll();
     });
 
     it("should return user info when request success", async () => {
@@ -463,7 +458,6 @@ describe("AadAppClient", async () => {
 
     afterEach(() => {
       sinon.restore();
-      nock.cleanAll();
     });
 
     it("should return user info when request success", async () => {

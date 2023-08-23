@@ -489,12 +489,23 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
 
-    const editTemplateCmd = {
-      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
-      command: "fx-extension.editAadManifestTemplate",
-      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      const workspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      const aadTemplateFileExist = fs.pathExistsSync(
+        `${workspacePath}/${MetadataV3.aadManifestFileName}`
+      );
+
+      if (aadTemplateFileExist) {
+        const editTemplateCmd = {
+          title: "⚠️This file is auto-generated, click here to edit the manifest template file",
+          command: "fx-extension.editAadManifestTemplate",
+          arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
+        };
+        codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+      }
+    }
+
     return codeLenses;
   }
 }

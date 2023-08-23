@@ -8,6 +8,7 @@ import fs from "fs-extra";
 import os from "os";
 import "mocha";
 import {
+  checkRequiredParameters,
   convertPathToCamelCase,
   getRelativePath,
   getResponseJson,
@@ -16,6 +17,7 @@ import {
   isYamlSpecFile,
   updateFirstLetter,
 } from "../../../src/common/spec-parser/utils";
+import { OpenAPIV3 } from "openapi-types";
 
 describe("utils", () => {
   describe("isYamlSpecFile", () => {
@@ -267,6 +269,36 @@ describe("utils", () => {
       const url = "ftp://v1";
       const protocol = getUrlProtocol(url);
       expect(protocol).to.equal("ftp:");
+    });
+  });
+
+  describe("checkRequiredParameters", () => {
+    it("should return true if there is only one required parameter", () => {
+      const paramObject = [
+        { in: "query", required: true },
+        { in: "path", required: false },
+      ];
+      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result, true);
+    });
+
+    it("should return false if there are multiple required parameters", () => {
+      const paramObject = [
+        { in: "query", required: true },
+        { in: "path", required: true },
+      ];
+      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if any required parameter is in header or cookie", () => {
+      const paramObject = [
+        { in: "query", required: true },
+        { in: "path", required: false },
+        { in: "header", required: true },
+      ];
+      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result, false);
     });
   });
 

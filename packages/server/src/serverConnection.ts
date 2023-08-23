@@ -26,6 +26,7 @@ import {
   getSideloadingStatus,
   setRegion,
   listDevTunnels,
+  HubOptions,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
@@ -98,13 +99,13 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const res = await Correlator.runWithId(
+    const res = Correlator.runWithId(
       corrId,
       (stage, inputs) => this.core.getQuestions(stage, inputs),
       stage,
       inputs
     );
-    return standardizeResult(res);
+    return Promise.resolve(standardizeResult(res));
   }
 
   public async createProjectRequest(
@@ -274,7 +275,7 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    inputs[CoreQuestionNames.M365Host] = "Teams";
+    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.previewWithManifest(params),

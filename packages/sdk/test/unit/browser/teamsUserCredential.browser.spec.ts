@@ -12,6 +12,7 @@ import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azu
 chaiUse(chaiPromises);
 
 describe("TeamsUserCredential Tests - Browser", () => {
+  const sandbox = sinon.createSandbox();
   const clientId = "fake_client_id";
   const loginUrl = "https://fake_login_url";
   const authEndpoint = "fake_auth_endpoint";
@@ -84,6 +85,9 @@ describe("TeamsUserCredential Tests - Browser", () => {
     simpleAuthEndpoint: authEndpoint,
     clientId: clientId,
   };
+  afterEach(async () => {
+    sandbox.restore();
+  });
 
   it("getToken and login should throw InvalidParameter error with invalid scope", async function () {
     const invalidScopes: any = [1];
@@ -113,7 +117,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("getUserInfo should throw InternalError when get SSO token failed", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         throw new ErrorWithCode(
@@ -127,12 +131,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
     await expect(credential.getUserInfo())
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.InternalError);
-
-    sinon.restore();
   });
 
   it("getUserInfo should throw InternalError when get empty SSO token", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         throw new ErrorWithCode("SSO token is empty", ErrorCode.InternalError);
@@ -143,12 +145,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
     await expect(credential.getUserInfo())
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.InternalError);
-
-    sinon.restore();
   });
 
   it("getUserInfo should throw InternalError when sso token is invalid", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
@@ -164,12 +164,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
     await expect(credential.getUserInfo())
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.InternalError);
-
-    sinon.restore();
   });
 
   it("getUserInfo should success with valid config", async function () {
-    const TeamsUserCredentialStub_GetToken = sinon.stub(
+    const TeamsUserCredentialStub_GetToken = sandbox.stub(
       TeamsUserCredential.prototype,
       <any>"getSSOToken"
     );
@@ -207,8 +205,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
     assert.strictEqual(userInfo2.objectId, "fake-oid");
     assert.strictEqual(userInfo2.tenantId, "fake-tid");
     assert.strictEqual(userInfo2.preferredUserName, "fake-preferred_username");
-
-    sinon.restore();
   });
 
   it("loadConfiguration should throw InvalidConfiguration when configuration is not valid", async function () {
@@ -222,7 +218,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("get SSO token should success with valid config", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -240,12 +236,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
     if (ssoToken) {
       assert.strictEqual(ssoToken.token, fakeSSOTokenV1);
     }
-
-    sinon.restore();
   });
 
   it("getToken should success with acqureTokenSilent", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -257,13 +251,13 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    sinon
+    sandbox
       .stub(PublicClientApplication.prototype, <any>"getAccountByUsername")
       .callsFake((): AccountInfo | null => {
         return null;
       });
 
-    sinon
+    sandbox
       .stub(PublicClientApplication.prototype, <any>"acquireTokenSilent")
       .callsFake((): Promise<AuthenticationResult> => {
         return new Promise((resolve) => {
@@ -279,12 +273,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
     if (accessToken) {
       assert.strictEqual(accessToken.token, fakeSSOTokenFull);
     }
-
-    sinon.restore();
   });
 
   it("getToken should success with ssoSilent", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -296,13 +288,13 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    sinon
+    sandbox
       .stub(PublicClientApplication.prototype, <any>"getAccountByUsername")
       .callsFake((): AccountInfo | null => {
         throw new Error("Failed to get account.");
       });
 
-    sinon
+    sandbox
       .stub(PublicClientApplication.prototype, <any>"ssoSilent")
       .callsFake((): Promise<AuthenticationResult> => {
         return new Promise((resolve) => {
@@ -319,12 +311,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
     if (accessToken) {
       assert.strictEqual(accessToken.token, fakeSSOTokenFull);
     }
-
-    sinon.restore();
   });
 
   it("getToken should throw UiRequiredError without login", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -336,13 +326,13 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    sinon
+    sandbox
       .stub(PublicClientApplication.prototype, <any>"getAccountByUsername")
       .callsFake((): AccountInfo | null => {
         throw new Error("Failed to get account.");
       });
 
-    sinon
+    sandbox
       .stub(PublicClientApplication.prototype, <any>"ssoSilent")
       .callsFake((): Promise<AuthenticationResult> => {
         return new Promise((resolve) => {
@@ -356,12 +346,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
     await expect(credential.getToken(scopeStr))
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.UiRequiredError);
-
-    sinon.restore();
   });
 
   it("getToken should success with login", async function () {
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -376,7 +364,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     const credential: any = new TeamsUserCredential(authConfig);
     const scopeStr = "user.read";
 
-    sinon
+    sandbox
       .stub(TeamsUserCredential.prototype, <any>"login")
       .callsFake(async (): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
@@ -393,7 +381,5 @@ describe("TeamsUserCredential Tests - Browser", () => {
     if (accessToken) {
       assert.strictEqual(accessToken.token, fakeAccessToken);
     }
-
-    sinon.restore();
   });
 });

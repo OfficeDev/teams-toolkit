@@ -32,19 +32,6 @@ export class PublishAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.publishDriver");
   readonly progressTitle = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
 
-  public async run(
-    args: PublishAppPackageArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.publish(args, wrapContext);
-
-    console.log("Summaries");
-    wrapContext.summaries.forEach((value) => console.log(value));
-
-    return res;
-  }
-
   public async execute(
     args: PublishAppPackageArgs,
     context: DriverContext,

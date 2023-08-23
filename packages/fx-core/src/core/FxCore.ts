@@ -454,8 +454,8 @@ export class FxCore {
       showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-    const result = await driver.run(args, context);
-    return result;
+    const result = await driver.execute(args, context);
+    return result.result;
   }
   /**
    * v3 only none lifecycle command
@@ -474,7 +474,7 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-    return await driver.run(args, context);
+    return (await driver.execute(args, context)).result;
   }
   /**
    * v3 only none lifecycle command
@@ -507,7 +507,7 @@ export class FxCore {
         `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
           .TEAMSFX_ENV!}.json`,
     };
-    const result = await driver.run(args, context);
+    const result = (await driver.execute(args, context)).result;
     if (context.platform === Platform.VSCode) {
       if (result.isOk()) {
         const isWindows = process.platform === "win32";

@@ -1177,7 +1177,6 @@
             "type": "boolean",
             "default": "false",
             "description": "Enable to develop Copilot plugin (Require to reload VSCode)"
-          
           }
         }
       }

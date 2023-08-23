@@ -43,6 +43,7 @@ export function colorize(message: string, type: TextType): string {
 
 export const SuccessText = colorize(`(${figures.tick}) Success: `, TextType.Success);
 export const WarningText = colorize(`(${figures.warning}) Warning: `, TextType.Success);
+export const ErrorPrefix = `(${figures.cross}) Error: `;
 
 export function replaceTemplateString(template: string, ...args: string[]): string {
   let result = template;

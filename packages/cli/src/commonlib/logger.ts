@@ -3,9 +3,15 @@
 
 import { Colors, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
-import { SuccessText, TextType, WarningText, colorize, replaceTemplateString } from "../colorize";
+import {
+  ErrorPrefix,
+  SuccessText,
+  TextType,
+  WarningText,
+  colorize,
+  replaceTemplateString,
+} from "../colorize";
 import ScreenManager from "../console/screen";
-import { strings } from "../resource";
 import { getColorizedString } from "../utils";
 
 export class CLILogger implements LogProvider {
@@ -55,7 +61,7 @@ export class CLILogger implements LogProvider {
     } else if (logLevel === LogLevel.Warning) {
       ScreenManager.writeLine(colorize(message, TextType.Warning));
     } else if (logLevel >= LogLevel.Error) {
-      ScreenManager.writeLine(colorize(strings["error.prefix"] + message, TextType.Error), true);
+      ScreenManager.writeLine(colorize(ErrorPrefix + message, TextType.Error), true);
     }
   }
 
@@ -84,7 +90,7 @@ export class CLILogger implements LogProvider {
   }
   outputError(template: string, ...args: string[]): void {
     ScreenManager.writeLine(
-      colorize(strings["error.prefix"] + replaceTemplateString(template, ...args), TextType.Error),
+      colorize(ErrorPrefix + replaceTemplateString(template, ...args), TextType.Error),
       true
     );
   }

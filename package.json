@@ -12,7 +12,8 @@
     "release": "changeset publish",
     "precommit": "lint-staged",
     "lint:staged": "lerna run lint:staged --stream",
-    "lint": "lerna run lint --stream"
+    "lint": "lerna run lint --stream",
+    "clean": "pnpm -r exec rimraf node_modules"
   },
   "devDependencies": {
     "@changesets/cli": "^2.25.2",
@@ -24,6 +25,7 @@
     "dotenv": "^10.0.0",
     "husky": "^6.0.0",
     "lerna": "^4.0.0",
+    "rimraf": "^5.0.1",
     "ts-node": "^10.2.1"
   },
   "keywords": [],

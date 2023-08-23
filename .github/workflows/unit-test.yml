@@ -24,23 +24,23 @@ jobs:
           ref: ${{ github.head_ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
-      # - name: Checkout
-      #   if: ${{ github.event_name != 'pull_request' }}
-      #   uses: actions/checkout@v2
-      #   with:
-      #     fetch-depth: 0
-      #     ref: ${{ github.ref_name }}
-      #     repository: ${{ github.repository }}
+      - name: Checkout
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+          repository: ${{ github.repository }}
 
-      # - name: Merge Branches
-      #   if: ${{ github.event_name == 'pull_request' }}
-      #   run: |
-      #     git config --global user.email "bot@user.noreply.github.com"
-      #     git config --global user.name "bot"
+      - name: Merge Branches
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          git config --global user.email "bot@user.noreply.github.com"
+          git config --global user.name "bot"
 
-      #     git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.clone_url }}
-      #     git fetch ${{ github.event.pull_request.base.repo.owner.login }}
-      #     git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
+          git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.clone_url }}
+          git fetch ${{ github.event.pull_request.base.repo.owner.login }}
+          git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -50,77 +50,76 @@ jobs:
       - name: Setup project
         run: |
           npm install pnpm -g
-          pnpm install
-          npm run build
+          npm run setup
 
       - name: Unit Test
         run: |
           xvfb-run -a pnpm run -r --stream test:unit
 
-      # - name: CodeCov report attempt 1
-      #   id: codecov1
-      #   continue-on-error: true
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: CodeCov report attempt 1
+        id: codecov1
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
 
-      # - name: delay 10s for attempt 2
-      #   if: steps.codecov1.outcome == 'failure'
-      #   run: |
-      #     sleep 10s
+      - name: delay 10s for attempt 2
+        if: steps.codecov1.outcome == 'failure'
+        run: |
+          sleep 10s
 
-      # - name: CodeCov report attempt 2
-      #   id: codecov2
-      #   if: steps.codecov1.outcome == 'failure'
-      #   continue-on-error: true
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: CodeCov report attempt 2
+        id: codecov2
+        if: steps.codecov1.outcome == 'failure'
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
 
-      # - name: delay 10s for attempt 3
-      #   if: steps.codecov2.outcome == 'failure'
-      #   run: |
-      #     sleep 10s
+      - name: delay 10s for attempt 3
+        if: steps.codecov2.outcome == 'failure'
+        run: |
+          sleep 10s
 
-      # - name: CodeCov report attempt 3
-      #   id: codecov3
-      #   if: steps.codecov2.outcome == 'failure'
-      #   continue-on-error: true
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: CodeCov report attempt 3
+        id: codecov3
+        if: steps.codecov2.outcome == 'failure'
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
 
-      # - name: delay 10s for attempt 4
-      #   if: steps.codecov3.outcome == 'failure'
-      #   run: |
-      #     sleep 10s
+      - name: delay 10s for attempt 4
+        if: steps.codecov3.outcome == 'failure'
+        run: |
+          sleep 10s
 
-      # - name: CodeCov report attempt 4
-      #   id: codecov4
-      #   if: steps.codecov3.outcome == 'failure'
-      #   continue-on-error: true
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: CodeCov report attempt 4
+        id: codecov4
+        if: steps.codecov3.outcome == 'failure'
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
 
-      # - name: delay 10s for attempt 5
-      #   if: steps.codecov4.outcome == 'failure'
-      #   run: |
-      #     sleep 10s
+      - name: delay 10s for attempt 5
+        if: steps.codecov4.outcome == 'failure'
+        run: |
+          sleep 10s
 
-      # - name: CodeCov report attempt 5
-      #   id: codecov5
-      #   if: steps.codecov4.outcome == 'failure'
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: CodeCov report attempt 5
+        id: codecov5
+        if: steps.codecov4.outcome == 'failure'
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true

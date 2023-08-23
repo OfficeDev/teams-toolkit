@@ -43,6 +43,7 @@ import { QuestionNames } from "../../../../src/question";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import * as commonTools from "../../../../src/common/featureFlags";
+import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
 
 describe("appStudio", () => {
   const tools = new MockTools();
@@ -376,8 +377,8 @@ describe("appStudio", () => {
         }
       });
       sandbox
-        .stub(updateDriver, "run")
-        .resolves(err(new UserError("apiError", "apiError", "", "")));
+        .stub(updateDriver, "execute")
+        .resolves({ result: err(new UserError("apiError", "apiError", "", "")), summaries: [] });
 
       const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isErr());
@@ -410,7 +411,7 @@ describe("appStudio", () => {
           throw new Error("not implemented");
         }
       });
-      sandbox.stub(updateDriver, "run").resolves(ok(new Map([])));
+      sandbox.stub(updateDriver, "execute").resolves({ result: ok(new Map([])), summaries: [] });
 
       const res = await updateTeamsAppV3ForPublish(ctx, inputs);
       chai.assert.isTrue(res.isOk());
@@ -434,6 +435,7 @@ describe("App-manifest Component - v3", () => {
     "app-name": appName,
     appPackagePath: "fakePath",
   };
+  const mockDriverRes: ExecutionResult = { result: ok(new Map()), summaries: [] };
   let context: Context;
   setTools(tools);
 
@@ -477,7 +479,7 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
-    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "execute").resolves(mockDriverRes);
 
     await updateManifestV3(context, cliInputs);
   });
@@ -493,7 +495,7 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("View in Developer Portal"));
-    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "execute").resolves();
 
     await updateManifestV3(context, inputs);
   });
@@ -509,8 +511,8 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview and update"));
-    sandbox.stub(ConfigureTeamsAppDriver.prototype, "run").resolves(ok(new Map()));
-    sandbox.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
+    sandbox.stub(ConfigureTeamsAppDriver.prototype, "execute").resolves(mockDriverRes);
+    sandbox.stub(CreateAppPackageDriver.prototype, "execute").resolves(mockDriverRes);
 
     await updateManifestV3(context, inputs);
   });

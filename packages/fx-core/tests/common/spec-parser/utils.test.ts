@@ -126,6 +126,22 @@ describe("utils", () => {
                   schema: { type: "string" },
                 },
               ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },

@@ -62,6 +62,11 @@ export interface ErrorResult {
   data?: any;
 }
 
+export interface GenerateResult {
+  allSuccess: boolean;
+  warnings: WarningResult[];
+}
+
 /**
  * An enum that represents the types of errors that can occur during validation.
  */
@@ -94,6 +99,7 @@ export enum WarningType {
   AuthNotSupported = "auth-not-supported",
   MethodNotSupported = "method-not-supported",
   OperationIdMissing = "operationid-missing",
+  GenerateCardFailed = "generate-card-failed",
   Unknown = "unknown",
 }
 

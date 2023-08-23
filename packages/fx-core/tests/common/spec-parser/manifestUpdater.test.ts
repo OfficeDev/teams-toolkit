@@ -40,7 +40,7 @@ describe("manifestUpdater", () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
-
+    sinon.stub(fs, "pathExists").resolves(true);
     const originalManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "Original Short Description", full: "Original Full Description" },
@@ -82,7 +82,6 @@ describe("manifestUpdater", () => {
     const adaptiveCardFolder = "path/to/adaptiveCardFolder";
     const spec = {} as any;
     const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
-
     try {
       await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec);
       expect.fail("Expected updateManifest to throw a SpecParserError");
@@ -93,10 +92,45 @@ describe("manifestUpdater", () => {
     }
   });
 
+  it("should skip updating commands if adaptive card not exist", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(false);
+
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: "Original Full Description" },
+      composeExtensions: [
+        {
+          type: "apiBased",
+          supportsConversationalAI: true,
+          apiSpecFile: "spec/outputSpec.yaml",
+          commands: [],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const result = await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, {
+      ...spec,
+      info: { title: "My API" },
+    });
+
+    expect(result).to.deep.equal(expectedManifest);
+    readJSONStub.restore();
+  });
+
   it("should skip updating full/description if missing info/description", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
 
     const originalManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
@@ -167,7 +201,13 @@ describe("generateCommands", () => {
     },
   };
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("should generate commands for each GET operation in the spec", async () => {
+    sinon.stub(fs, "pathExists").resolves(true);
+
     const expectedCommands = [
       {
         context: ["compose"],

@@ -10,6 +10,7 @@ import {
   AdaptiveCard,
   ErrorResult,
   ErrorType,
+  GenerateResult,
   ValidateResult,
   ValidationStatus,
   WarningResult,
@@ -224,7 +225,11 @@ export class SpecParser {
     outputSpecPath: string,
     adaptiveCardFolder: string,
     signal?: AbortSignal
-  ): Promise<void> {
+  ): Promise<GenerateResult> {
+    const result: GenerateResult = {
+      allSuccess: true,
+      warnings: [],
+    };
     try {
       if (signal?.aborted) {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
@@ -250,6 +255,27 @@ export class SpecParser {
 
       const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
 
+      for (const url in newSpec.paths) {
+        const getOperation = newSpec.paths[url]?.get;
+
+        try {
+          const card: AdaptiveCard = generateAdaptiveCard(getOperation!);
+          const fileName = path.join(adaptiveCardFolder, `${getOperation!.operationId!}.json`);
+          await fs.outputJSON(fileName, card, { spaces: 2 });
+        } catch (err) {
+          result.allSuccess = false;
+          result.warnings.push({
+            type: WarningType.GenerateCardFailed,
+            content: (err as Error).toString(),
+            data: `GET ${url}`,
+          });
+        }
+      }
+
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
       const updatedManifest = await updateManifest(
         manifestPath,
         outputSpecPath,
@@ -258,23 +284,14 @@ export class SpecParser {
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
-
-      if (signal?.aborted) {
-        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
-      }
-
-      for (const url in newSpec.paths) {
-        const getOperation = newSpec.paths[url]?.get;
-        const card: AdaptiveCard = generateAdaptiveCard(getOperation!);
-        const fileName = path.join(adaptiveCardFolder, `${getOperation!.operationId!}.json`);
-        await fs.outputJSON(fileName, card, { spaces: 2 });
-      }
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;
       }
       throw new SpecParserError((err as Error).toString(), ErrorType.GenerateFailed);
     }
+
+    return result;
   }
 
   private async loadSpec(): Promise<void> {

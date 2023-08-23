@@ -36,20 +36,12 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
   });
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
-  public async run(
-    args: copyAppPackageToSPFxArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    return wrapRun(() => this.copy(args, wrapContext), actionName);
-  }
-
   public async execute(
     args: copyAppPackageToSPFxArgs,
     ctx: DriverContext
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(ctx, actionName, actionName);
-    const result = await this.run(args, wrapContext);
+    const result = await wrapRun(() => this.copy(args, wrapContext), actionName);
     return {
       result,
       summaries: wrapContext.summaries,

@@ -23,11 +23,11 @@
                             "size": "Large",
                             "weight": "Bolder",
                             "text": "Link Unfurling card"
-                          },
-                          {
+                        },
+                        {
                             "type": "TextBlock",
                             "text": "This a sample card for Link Unfurling"
-                          }
+                        }
                     ]
                 }
             ]
@@ -35,11 +35,11 @@
     ],
     "actions": [
         {
-          "type": "Action.OpenUrl",
-          "title": "Link Unfurling Docs",
-          "url": "https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling"
+            "type": "Action.OpenUrl",
+            "title": "Link Unfurling Docs",
+            "url": "https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling"
         }
-      ],
+    ],
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "version": "1.4"
-  }
+}

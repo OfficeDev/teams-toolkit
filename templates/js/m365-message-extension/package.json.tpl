@@ -18,6 +18,8 @@
     "watch": "nodemon ./src/index.js"
   },
   "dependencies": {
+    "adaptive-expressions": "^4.20.0",
+    "adaptivecards-templating": "^2.3.1",
     "botbuilder": "^4.20.0",
     "restify": "^10.0.0"
   },

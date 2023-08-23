@@ -1,9 +1,7 @@
-{
-    "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
+{    
     "manifestVersion": "devPreview",
-    "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
-    "packageName": "com.microsoft.teams.extension",
+    "version": "2.0.0",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -23,8 +21,26 @@
         "full": "Full description of {{appName}}"
     },
     "accentColor": "#FFFFFF",
-    "bots": [],
-    "composeExtensions": [],    
+    "composeExtensions": [
+        {
+            "composeExtensionType": "apiBased",
+            "apiSpecificationFile": "apiSpecFiles/repair-openapi.yaml",
+            "commands": [
+                {
+                    "id": "repair",
+                    "type": "query",
+                    "context": [
+                        "compose",
+                        "commandBox"
+                    ],
+                    "title": "Returns a repair",
+                    "description": "Returns a repair with its details and image",                    
+                    "apiResponseRenderingTemplateFile": "adaptiveCards/repair.json"
+                }
+            ],
+            "supportsConversationalAI": true
+        }
+    ],    
     "permissions": [
         "identity",
         "messageTeamMembers"

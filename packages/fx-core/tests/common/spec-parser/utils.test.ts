@@ -152,6 +152,43 @@ describe("utils", () => {
       assert.strictEqual(result, true);
     });
 
+    it("should return false if method is GET, path is valid, parameter is supported, but response is empty", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                },
+              ],
+              responses: {
+                400: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, false);
+    });
+
     it("should return false if method is not GET", () => {
       const method = "POST";
       const path = "/users";

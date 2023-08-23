@@ -301,7 +301,6 @@ describe("AadAppClient", async () => {
       // nock("https://graph.microsoft.com/v1.0")
       //   .patch(`/applications/${expectedObjectId}`)
       //   .reply(204);
-
       // await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.not.rejected;
     });
 

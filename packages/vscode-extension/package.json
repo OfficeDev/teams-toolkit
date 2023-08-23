@@ -1168,7 +1168,18 @@
           }
         ]
       }
-    ]
+    ],
+    "configuration": 
+      {
+        "title": "Teams Toolkit",
+        "properties": {
+          "fx-extension.developCopilotPlugin": {
+            "type": "boolean",
+            "default": "false",
+            "description": "Enable to develop Copilot plugin (Require to reload VSCode)"
+          }
+        }
+      }
   },
   "scripts": {
     "lint:staged": "lint-staged",

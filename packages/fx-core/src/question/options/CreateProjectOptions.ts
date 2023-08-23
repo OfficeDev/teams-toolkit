@@ -42,6 +42,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "copilot-plugin-new-api",
       "copilot-plugin-existing-api",
       "copilot-plugin-openai-plugin",
+      "search-message-extension",
     ],
     choiceListCommand: "teamsfx list templates",
   },

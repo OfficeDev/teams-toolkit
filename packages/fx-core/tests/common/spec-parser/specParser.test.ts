@@ -668,7 +668,11 @@ describe("SpecParser", () => {
         },
       };
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const cloneSpec = JSON.parse(JSON.stringify(spec));
+      cloneSpec.paths["/hello"].get.operationId = "getHello";
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .resolves(cloneSpec as any);
       const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
       const outputFileStub = sinon.stub(fs, "outputFile").resolves();
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
@@ -694,7 +698,7 @@ describe("SpecParser", () => {
         {
           type: WarningType.GenerateCardFailed,
           content: "Error: generate adaptive card failed",
-          data: "GET /hello",
+          data: "getHello",
         },
       ]);
 

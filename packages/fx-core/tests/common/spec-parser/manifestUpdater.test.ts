@@ -111,7 +111,22 @@ describe("manifestUpdater", () => {
           type: "apiBased",
           supportsConversationalAI: true,
           apiSpecFile: "spec/outputSpec.yaml",
-          commands: [],
+          commands: [
+            {
+              apiResponseRenderingTemplate: "",
+              context: ["compose"],
+              id: "getPets",
+              parameters: [
+                {
+                  description: "Maximum number of pets to return",
+                  name: "limit",
+                  title: "Limit",
+                },
+              ],
+              title: "Get all pets",
+              type: "query",
+            },
+          ],
         },
       ],
     };

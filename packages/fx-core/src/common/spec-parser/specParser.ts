@@ -267,7 +267,7 @@ export class SpecParser {
           result.warnings.push({
             type: WarningType.GenerateCardFailed,
             content: (err as Error).toString(),
-            data: `GET ${url}`,
+            data: getOperation!.operationId!,
           });
         }
       }

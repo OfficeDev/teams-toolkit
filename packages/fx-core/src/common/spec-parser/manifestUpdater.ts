@@ -79,17 +79,17 @@ export async function generateCommands(
             operationItem.operationId! + ".json"
           );
 
-          if (await fs.pathExists(adaptiveCardPath)) {
-            const command: Command = {
-              context: ["compose"],
-              type: "query",
-              title: operationItem.summary ?? "",
-              id: operationItem.operationId!,
-              parameters: parameters,
-              apiResponseRenderingTemplate: getRelativePath(manifestPath, adaptiveCardPath),
-            };
-            commands.push(command);
-          }
+          const command: Command = {
+            context: ["compose"],
+            type: "query",
+            title: operationItem.summary ?? "",
+            id: operationItem.operationId!,
+            parameters: parameters,
+            apiResponseRenderingTemplate: (await fs.pathExists(adaptiveCardPath))
+              ? getRelativePath(manifestPath, adaptiveCardPath)
+              : "",
+          };
+          commands.push(command);
         }
       }
     }

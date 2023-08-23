@@ -69,7 +69,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     uniqueId: "fake-uniqure-id",
     tenantId: "fake-tenant-id",
     scopes: ["user.read"],
-    account: null,
+    account: {} as unknown as AccountInfo,
     idToken: "fake-id-token",
     idTokenClaims: {},
     accessToken: fakeAccessTokenFull,

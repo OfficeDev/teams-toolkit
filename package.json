@@ -11,8 +11,6 @@
     "version": "changeset version",
     "release": "changeset publish",
     "precommit": "lint-staged",
-    "lint:staged": "lerna run lint:staged --stream",
-    "lint": "lerna run lint --stream",
     "clean": "pnpm -r exec rimraf node_modules"
   },
   "devDependencies": {

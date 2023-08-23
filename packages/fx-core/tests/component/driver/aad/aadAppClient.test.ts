@@ -7,9 +7,9 @@ import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAp
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import axios, { AxiosInstance } from "axios";
-import nock from "nock";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
+import MockAdapter from "axios-mock-adapter";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
 import { IAADDefinition } from "../../../../src/component/driver/aad/interface/IAADDefinition";
@@ -101,9 +101,9 @@ describe("AadAppClient", async () => {
 
   describe("createAadApp", async () => {
     let aadAppClient: AadAppClient;
-
+    let axiosInstance: AxiosInstance;
     beforeEach(() => {
-      mockAxiosCreate();
+      axiosInstance = mockAxiosCreate();
       doNotWaitBetweenEachRetry();
       aadAppClient = new AadAppClient(new MockedM365Provider());
     });
@@ -113,55 +113,52 @@ describe("AadAppClient", async () => {
       nock.cleanAll();
     });
 
-    // it("should return app instance when request success", async () => {
-    //   nock("https://graph.microsoft.com/v1.0").post("/applications").reply(201, {
-    //     id: expectedObjectId,
-    //     displayName: expectedDisplayName,
-    //   });
+    it("should return app instance when request success", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply(201, {
+        id: expectedObjectId,
+        displayName: expectedDisplayName,
+      });
 
-    //   const createAadAppResult = await aadAppClient.createAadApp(expectedDisplayName);
+      const createAadAppResult = await aadAppClient.createAadApp(expectedDisplayName);
 
-    //   expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
-    //   expect(createAadAppResult.id).to.equal(expectedObjectId);
-    // });
+      expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
+      expect(createAadAppResult.id).to.equal(expectedObjectId);
+    });
 
-    // it("should throw error when request fail", async () => {
-    //   const expectedError = {
-    //     error: {
-    //       code: "Request_BadRequest",
-    //       message: "Invalid value specified for property 'displayName' of resource 'Application'.",
-    //     },
-    //   };
+    it("should throw error when request fail", async () => {
+      const expectedError = {
+        error: {
+          code: "Request_BadRequest",
+          message: "Invalid value specified for property 'displayName' of resource 'Application'.",
+        },
+      };
+      const mock = new MockAdapter(axiosInstance);
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply(400, expectedError);
 
-    //   nock("https://graph.microsoft.com/v1.0").post("/applications").reply(400, expectedError);
+      await expect(aadAppClient.createAadApp(""))
+        .to.eventually.be.rejectedWith("Request failed with status code 400")
+        .then((error) => {
+          expect(error.response.data).to.deep.equal(expectedError);
+        });
+    });
 
-    //   await expect(aadAppClient.createAadApp(""))
-    //     .to.eventually.be.rejectedWith("Request failed with status code 400")
-    //     .then((error) => {
-    //       expect(error.response.data).to.deep.equal(expectedError);
-    //     });
-    // });
+    it("should use input signInAudience", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply(201, {
+        id: expectedObjectId,
+        displayName: expectedDisplayName,
+        signInAudience: "AzureADMultipleOrgs",
+      });
+      const createAadAppResult = await aadAppClient.createAadApp(
+        expectedDisplayName,
+        SignInAudience.AzureADMultipleOrgs
+      );
 
-    // it("should use input signInAudience", async () => {
-    //   nock("https://graph.microsoft.com/v1.0")
-    //     .post("/applications")
-    //     .reply(201, (uri, body) => {
-    //       return {
-    //         id: expectedObjectId,
-    //         displayName: expectedDisplayName,
-    //         signInAudience: (body as IAADDefinition).signInAudience,
-    //       };
-    //     });
-
-    //   const createAadAppResult = await aadAppClient.createAadApp(
-    //     expectedDisplayName,
-    //     SignInAudience.AzureADMultipleOrgs
-    //   );
-
-    //   expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
-    //   expect(createAadAppResult.id).to.equal(expectedObjectId);
-    //   expect(createAadAppResult.signInAudience).to.equal("AzureADMultipleOrgs");
-    // });
+      expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
+      expect(createAadAppResult.id).to.equal(expectedObjectId);
+      expect(createAadAppResult.signInAudience).to.equal("AzureADMultipleOrgs");
+    });
   });
 
   describe("generateClientSecret", async () => {
@@ -179,17 +176,18 @@ describe("AadAppClient", async () => {
       nock.cleanAll();
     });
 
-    // it("should return secret when request success", async () => {
-    //   nock("https://graph.microsoft.com/v1.0")
-    //     .post(`/applications/${expectedObjectId}/addPassword`)
-    //     .reply(200, {
-    //       secretText: expectedSecretText,
-    //     });
+    it("should return secret when request success", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
+        .reply(200, {
+          secretText: expectedSecretText,
+        });
 
-    //   const result = await aadAppClient.generateClientSecret(expectedObjectId);
+      const result = await aadAppClient.generateClientSecret(expectedObjectId);
 
-    //   expect(result).to.equal(expectedSecretText);
-    // });
+      expect(result).to.equal(expectedSecretText);
+    });
 
     it("should throw error when request fail", async () => {
       const expectedError = {
@@ -298,10 +296,11 @@ describe("AadAppClient", async () => {
     });
 
     it("should success when request success", async () => {
-      // nock("https://graph.microsoft.com/v1.0")
-      //   .patch(`/applications/${expectedObjectId}`)
-      //   .reply(204);
-      // await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.not.rejected;
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPatch(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}`)
+        .reply(204, "success");
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.not.rejected;
     });
 
     it("should throw error when request failed with CannotDeleteOrUpdateEnabledEntitlement", async () => {
@@ -330,25 +329,24 @@ describe("AadAppClient", async () => {
       );
     });
 
-    // it("should throw error when request fail", async () => {
-    //   const expectedError = {
-    //     error: {
-    //       code: "Request_BadRequest",
-    //       message: `Invalid value specified for property 'signInAudience' of resource 'Application'`,
-    //     },
-    //   };
+    it("should throw error when request fail", async () => {
+      const expectedError = {
+        error: {
+          code: "Request_BadRequest",
+          message: `Invalid value specified for property 'signInAudience' of resource 'Application'`,
+        },
+      };
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPatch(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}`)
+        .reply(400, expectedError);
 
-    //   nock("https://graph.microsoft.com/v1.0")
-    //     .patch(`/applications/${expectedObjectId}`)
-    //     .times(6)
-    //     .reply(400, expectedError);
-
-    //   await expect(aadAppClient.updateAadApp(mockedManifest))
-    //     .to.eventually.be.rejectedWith("Request failed with status code 400")
-    //     .then((error) => {
-    //       expect(error.response.data).to.deep.equal(expectedError);
-    //     });
-    // });
+      await expect(aadAppClient.updateAadApp(mockedManifest))
+        .to.eventually.be.rejectedWith("Request failed with status code 400")
+        .then((error) => {
+          expect(error.response.data).to.deep.equal(expectedError);
+        });
+    });
 
     // it("should retry when get 404 response", async () => {
     //   nock("https://graph.microsoft.com/v1.0")
@@ -388,25 +386,25 @@ describe("AadAppClient", async () => {
       nock.cleanAll();
     });
 
-    // it("should return user info when request success", async () => {
-    //   nock("https://graph.microsoft.com/v1.0")
-    //     .get(`/applications/${expectedObjectId}/owners`)
-    //     .reply(200, {
-    //       value: [
-    //         {
-    //           id: "id",
-    //           displayName: "displayName",
-    //           mail: "mail",
-    //         },
-    //       ],
-    //     });
+    it("should return user info when request success", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onGet(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/owners`)
+        .reply(200, {
+          value: [
+            {
+              id: "id",
+              displayName: "displayName",
+              mail: "mail",
+            },
+          ],
+        });
+      const result = await aadAppClient.getOwners(expectedObjectId);
 
-    //   const result = await aadAppClient.getOwners(expectedObjectId);
-
-    //   expect(result).to.be.not.undefined;
-    //   expect(result!.length).to.equal(1);
-    //   expect(result![0].userObjectId).to.equal("id");
-    // });
+      expect(result).to.be.not.undefined;
+      expect(result!.length).to.equal(1);
+      expect(result![0].userObjectId).to.equal("id");
+    });
 
     it("should throw error when request fail", async () => {
       const expectedError = {
@@ -468,14 +466,15 @@ describe("AadAppClient", async () => {
       nock.cleanAll();
     });
 
-    // it("should return user info when request success", async () => {
-    //   nock("https://graph.microsoft.com/v1.0")
-    //     .post(`/applications/${expectedObjectId}/owners/$ref`)
-    //     .reply(200);
+    it("should return user info when request success", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPatch(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/owners/$ref`)
+        .reply(200);
 
-    //   await expect(aadAppClient.addOwner(expectedObjectId, mockedUserObjectId)).to.eventually.be.not
-    //     .rejected;
-    // });
+      await expect(aadAppClient.addOwner(expectedObjectId, mockedUserObjectId)).to.eventually.be.not
+        .rejected;
+    });
 
     it("should throw error when request fail", async () => {
       const expectedError = {

@@ -49,7 +49,7 @@ describe("Deploy Link Unfurling template", () => {
   });
 
   it(
-    "deploy happy path for link unfurling",
+    "Deploy link unfurling",
     { testPlanCaseId: 24916353, author: "yukundong@microsoft.com" },
     async function () {
       // create

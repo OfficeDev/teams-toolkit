@@ -81,10 +81,10 @@
 /templates/**/message-extension-search @JerryYangKai @eriolchan @Siglud @Yukun-dong
 
 /templates/**/non-sso-tab-default-bot @hund030 @yuqizhou77
-/templates/**/default-bot-message-extension @yuqizhou77
-/templates/**/message-extension @yuqizhou77
+/templates/**/default-bot-message-extension @yuqizhou77 @MSFT-yiz
+/templates/**/message-extension @yuqizhou77 @MSFT-yiz
 /templates/**/office-addin @1yefuwang1 @jayzhang
-/templates/**/simplified-message-extension-existing-api @yuqizhou77 @Alive-Fish @jayzhang
+/templates/**/copilot-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /templates/**/spfx-tab-import @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 

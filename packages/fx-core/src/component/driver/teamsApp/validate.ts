@@ -30,15 +30,6 @@ export class ValidateManifestDriver implements StepDriver {
     "plugins.appstudio.validateManifest.progressBar.message"
   );
 
-  public async run(
-    args: ValidateManifestArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.validate(args, wrapContext);
-    return res;
-  }
-
   public async execute(
     args: ValidateManifestArgs,
     context: DriverContext

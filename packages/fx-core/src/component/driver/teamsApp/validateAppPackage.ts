@@ -47,15 +47,6 @@ export class ValidateAppPackageDriver implements StepDriver {
     "plugins.appstudio.validateAppPackage.progressBar.message"
   );
 
-  public async run(
-    args: ValidateAppPackageArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.validate(args, wrapContext);
-    return res;
-  }
-
   public async execute(
     args: ValidateAppPackageArgs,
     context: DriverContext

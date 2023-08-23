@@ -2185,7 +2185,7 @@ describe("editAadManifestTemplate", () => {
 
     sandbox.assert.calledOnceWithExactly(
       openTextDocumentStub as any,
-      `${workspaceUri.fsPath}/templates/appPackage/aad.template.json`
+      `${workspaceUri.fsPath}/aad.manifest.json`
     );
   });
 
@@ -2217,7 +2217,7 @@ describe("editAadManifestTemplate", () => {
 
     sandbox.assert.calledOnceWithExactly(
       openTextDocumentStub as any,
-      `${workspaceUri}/templates/appPackage/aad.template.json`
+      `${workspaceUri}/aad.manifest.json`
     );
   });
 });

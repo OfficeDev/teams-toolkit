@@ -19,6 +19,7 @@ import {
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { AppDefinition } from "./../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { Constants } from "./../../../../src/component/driver/teamsApp/constants";
+import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
 
 describe("teamsApp/create", async () => {
   const teamsAppDriver = new CreateTeamsAppDriver();
@@ -44,7 +45,7 @@ describe("teamsApp/create", async () => {
     const args: CreateTeamsAppArgs = {
       name: "",
     };
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal("InvalidActionInputError", result.error.name);
@@ -59,9 +60,11 @@ describe("teamsApp/create", async () => {
     const zipFileName =
       "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip";
 
-    sinon
-      .stub(CreateAppPackageDriver.prototype, "run")
-      .resolves(ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]])));
+    const stubResult: ExecutionResult = {
+      summaries: [],
+      result: ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]])),
+    };
+    sinon.stub(CreateAppPackageDriver.prototype, "execute").resolves(stubResult);
     sinon.stub(AppStudioClient, "getApp").throws(new Error("404"));
     sinon.stub(AppStudioClient, "importApp").resolves(appDef);
     sinon.stub(fs, "pathExists").resolves(true);
@@ -75,7 +78,7 @@ describe("teamsApp/create", async () => {
       return archivedFile;
     });
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
 
@@ -92,7 +95,7 @@ describe("teamsApp/create", async () => {
     process.env.TEAMS_APP_ID = uuid();
     sinon.stub(AppStudioClient, "getApp").resolves(appDef);
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
 
@@ -107,7 +110,7 @@ describe("teamsApp/create", async () => {
     sinon.stub(AppStudioClient, "importApp").throws(new Error("409"));
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert.isTrue(result.isErr());
   });
 
@@ -116,7 +119,7 @@ describe("teamsApp/create", async () => {
       name: appDef.appName!,
     };
     sinon.stub(MockedM365Provider.prototype, "getAccessToken").resolves(err(new UserError({})));
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert.isTrue(result.isErr());
   });
 });

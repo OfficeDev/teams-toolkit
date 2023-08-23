@@ -117,7 +117,7 @@ export async function updateManifestV3(
     !(await fs.pathExists(manifestFileName)) ||
     !(await fs.pathExists(createAppPackageArgs.outputZipPath))
   ) {
-    const res = await buildDriver.run(createAppPackageArgs, driverContext);
+    const res = (await buildDriver.execute(createAppPackageArgs, driverContext)).result;
     if (res.isErr()) {
       return err(res.error);
     }
@@ -138,9 +138,9 @@ export async function updateManifestV3(
     );
 
     if (res?.isOk() && res.value === previewOnly) {
-      return await buildDriver.run(createAppPackageArgs, driverContext);
+      return (await buildDriver.execute(createAppPackageArgs, driverContext)).result;
     } else if (res?.isOk() && res.value === previewUpdate) {
-      await buildDriver.run(createAppPackageArgs, driverContext);
+      await buildDriver.execute(createAppPackageArgs, driverContext);
     } else {
       return err(new UserCancelError("appStudio"));
     }
@@ -174,7 +174,7 @@ export async function updateManifestV3(
     }
 
     const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
-    const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+    const result = (await configureDriver.execute(updateTeamsAppArgs, driverContext)).result;
     if (result.isErr()) {
       return err(result.error);
     }
@@ -291,7 +291,7 @@ export async function updateTeamsAppV3ForPublish(
   }
 
   const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
-  const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+  const result = (await configureDriver.execute(updateTeamsAppArgs, driverContext)).result;
   if (result.isErr()) {
     return err(result.error);
   }

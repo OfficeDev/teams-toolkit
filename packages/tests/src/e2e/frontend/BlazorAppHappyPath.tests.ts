@@ -25,6 +25,7 @@ import {
 } from "../../commonlib/utilities";
 import {
   cleanUp,
+  createResourceGroup,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -38,6 +39,7 @@ describe("Blazor App", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const envName = environmentManager.getDefaultEnvName();
+  const resourceGroupName = `${appName}-rg`;
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CLI_DOTNET"] = "true";
 
@@ -64,11 +66,17 @@ describe("Blazor App", function () {
     `Provision Resource`,
     { testPlanCaseId: 15686030, author: "zhijie.huang@microsoft.com" },
     async () => {
-      await setProvisionParameterValueV3(projectPath, "dev", {
+      const result = await createResourceGroup(resourceGroupName, "eastus");
+      chai.assert.isTrue(result);
+
+      await setProvisionParameterValueV3(projectPath, envName, {
         key: "webAppSKU",
         value: "B1",
       });
-      await CliHelper.provisionProject(projectPath, "", "dev", env);
+      await CliHelper.provisionProject(projectPath, "", envName as "dev", {
+        ...env,
+        AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+      });
 
       const tokenProvider = MockAzureAccountProvider;
       const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
@@ -102,7 +110,7 @@ describe("Blazor App", function () {
     "Deploy Blazor app to Azure Web APP",
     { testPlanCaseId: 15686031, author: "zhijie.huang@microsoft.com" },
     async () => {
-      await CliHelper.deployAll(projectPath, "", "dev", env);
+      await CliHelper.deployAll(projectPath, "", envName as "dev", env);
 
       const context = await readContextMultiEnvV3(projectPath, envName);
       const endpoint = context[EnvConstants.TAB_ENDPOINT];

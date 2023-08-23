@@ -8,7 +8,7 @@
 import { it } from "@microsoft/extra-shot-mocha";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
-import { expect } from "chai";
+import { assert } from "chai";
 import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
@@ -18,8 +18,8 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import { Cleaner } from "../../commonlib/cleaner";
 import {
+  createResourceGroup,
   execAsyncWithRetry,
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   removeTeamsAppExtendToM365,
@@ -28,9 +28,9 @@ import {
 describe("Create single tab", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
-  const env = environmentManager.getDefaultEnvName();
+  const envName = environmentManager.getDefaultEnvName();
+  const resourceGroupName = `${appName}-rg`;
 
   after(async () => {
     // clean up
@@ -61,17 +61,23 @@ describe("Create single tab", function () {
         // remove teamsApp/extendToM365 in case it fails
         removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
-        await CliHelper.provisionProject(projectPath);
+        const result = await createResourceGroup(resourceGroupName, "eastus");
+        assert.isTrue(result);
+
+        await CliHelper.provisionProject(projectPath, "", envName as "dev", {
+          ...process.env,
+          AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+        });
 
         // Validate provision
         // Get context
-        const envFilePath = path.join(projectPath, "env", `.env.${env}`);
-        expect(fs.pathExistsSync(envFilePath)).to.be.true;
+        const envFilePath = path.join(projectPath, "env", `.env.${envName}`);
+        assert.isTrue(fs.pathExistsSync(envFilePath));
         const parseResult = dotenvUtil.deserialize(
           await fs.readFile(envFilePath, { encoding: "utf8" })
         );
         const context = parseResult.obj;
-        expect(context).to.be.not.null;
+        assert.isNotEmpty(context);
 
         // Validate Aad App
         const aad = AadValidator.init(context, false, M365Login);
@@ -95,8 +101,8 @@ describe("Create single tab", function () {
         });
 
         // Validate deployment
-        const envFilePath = path.join(projectPath, "env", `.env.${env}`);
-        expect(fs.pathExistsSync(envFilePath)).to.be.true;
+        const envFilePath = path.join(projectPath, "env", `.env.${envName}`);
+        assert.isTrue(fs.pathExistsSync(envFilePath));
         const parseResult = dotenvUtil.deserialize(
           await fs.readFile(envFilePath, { encoding: "utf8" })
         );

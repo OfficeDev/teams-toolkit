@@ -16,6 +16,7 @@ import {
   readContextMultiEnvV3,
   setProvisionParameterValueV3,
   removeTeamsAppExtendToM365,
+  createResourceGroup,
 } from "../commonUtils";
 import { EnvConstants } from "../../commonlib/constants";
 import { Capability } from "../../utils/constants";
@@ -33,8 +34,9 @@ describe("Basic Tab", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
+  const resourceGroupName = `${appName}-rg`;
   const projectPath = path.resolve(testFolder, appName);
-  const env = environmentManager.getDefaultEnvName();
+  const envName = environmentManager.getDefaultEnvName();
   afterEach(async () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
@@ -70,14 +72,20 @@ describe("Basic Tab", function () {
         removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
         // Provision
-        await setProvisionParameterValueV3(projectPath, env, {
+        const result = await createResourceGroup(resourceGroupName, "eastus");
+        assert.isTrue(result);
+
+        await setProvisionParameterValueV3(projectPath, envName, {
           key: "webAppSku",
           value: "B1",
         });
-        await CliHelper.provisionProject(projectPath);
+        await CliHelper.provisionProject(projectPath, "", envName as "dev", {
+          ...process.env,
+          AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+        });
 
         // Validate Provision
-        let context = await readContextMultiEnvV3(projectPath, env);
+        let context = await readContextMultiEnvV3(projectPath, envName);
         assert.exists(context);
 
         const resourceId =
@@ -105,7 +113,7 @@ describe("Basic Tab", function () {
         await CliHelper.deployAll(projectPath);
 
         // Validate Deploy
-        context = await readContextMultiEnvV3(projectPath, env);
+        context = await readContextMultiEnvV3(projectPath, envName);
         assert.exists(context);
 
         const endpoint = context[EnvConstants.TAB_ENDPOINT];

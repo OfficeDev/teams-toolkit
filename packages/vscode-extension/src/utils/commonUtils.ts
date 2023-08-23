@@ -210,6 +210,8 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
+  process.env["COPILOT_PLUGIN"] = getConfiguration(ConfigurationKey.CopilotPluginEnable).toString();
+
   initializePreviewFeatureFlags();
 }
 

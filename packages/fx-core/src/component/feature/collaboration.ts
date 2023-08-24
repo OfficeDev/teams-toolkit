@@ -141,7 +141,12 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
+      await AppStudioClient.grantPermission(
+        teamsAppId,
+        appStudioToken as string,
+        userInfo,
+        ctx.logProvider
+      );
       const result: ResourcePermission[] = [
         {
           name: Constants.PERMISSIONS.name,
@@ -169,7 +174,11 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+      const userLists = await AppStudioClient.getUserList(
+        teamsAppId,
+        appStudioToken as string,
+        ctx.logProvider
+      );
       if (!userLists) {
         return ok([]);
       }
@@ -210,7 +219,8 @@ export class TeamsCollaboration {
       const teamsAppRoles = await AppStudioClient.checkPermission(
         teamsAppId,
         appStudioToken as string,
-        userInfo.aadId
+        userInfo.aadId,
+        ctx.logProvider
       );
 
       const result: ResourcePermission[] = [

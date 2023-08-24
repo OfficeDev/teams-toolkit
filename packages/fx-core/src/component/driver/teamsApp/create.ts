@@ -144,7 +144,7 @@ export class CreateTeamsAppDriver implements StepDriver {
           "plugins.appstudio.teamsAppCreatedNotice",
           createdAppDefinition.teamsAppId!
         );
-        context.logProvider.info(message);
+        context.logProvider.verbose(message);
         context.addSummary(message);
         return ok(
           new Map([
@@ -169,6 +169,9 @@ export class CreateTeamsAppDriver implements StepDriver {
       }
     } else {
       context.addSummary(
+        getLocalizedString("driver.teamsApp.summary.createTeamsAppAlreadyExists", teamsAppId)
+      );
+      context.logProvider.verbose(
         getLocalizedString("driver.teamsApp.summary.createTeamsAppAlreadyExists", teamsAppId)
       );
       return ok(

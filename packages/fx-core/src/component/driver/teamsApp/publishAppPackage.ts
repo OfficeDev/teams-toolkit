@@ -134,6 +134,7 @@ export class PublishAppPackageDriver implements StepDriver {
         if (executePublishUpdate) {
           const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
           context.addSummary(message);
+          context.logProvider.debug(message);
           const appId = await AppStudioClient.publishTeamsAppUpdate(
             manifest.id,
             archivedFile,
@@ -153,6 +154,7 @@ export class PublishAppPackageDriver implements StepDriver {
         );
         const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
         context.addSummary(message);
+        context.logProvider.debug(message);
         const appId = await AppStudioClient.publishTeamsApp(
           manifest.id,
           archivedFile,

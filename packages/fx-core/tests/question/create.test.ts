@@ -1610,7 +1610,11 @@ describe("scaffold question", () => {
   });
 
   describe("folderQuestion", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("should find taskpane template", () => {
+      sandbox.stub(process, "cwd").returns("/home/user/abc");
       const inputs: Inputs = {
         platform: Platform.CLI,
       };
@@ -1618,7 +1622,7 @@ describe("scaffold question", () => {
       const title = question.title(inputs);
       const defaultV = question.default(inputs);
       assert.equal(title, "Directory where the project folder will be created in");
-      assert.equal(defaultV, "./");
+      assert.equal(defaultV, path.resolve("/home/user/abc"));
     });
   });
 

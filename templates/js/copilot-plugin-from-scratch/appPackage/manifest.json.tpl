@@ -2,6 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
     "id": "${{TEAMS_APP_ID}}",
+    "packageName": "com.microsoft.teams.extension",
     "version": "1.0.0",
     "developer": {
         "name": "Teams App, Inc.",

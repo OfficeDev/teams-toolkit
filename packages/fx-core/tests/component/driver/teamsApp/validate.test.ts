@@ -42,7 +42,7 @@ describe("teamsApp/validateManifest", async () => {
       manifestPath: "fakepath",
     };
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
@@ -54,7 +54,7 @@ describe("teamsApp/validateManifest", async () => {
       manifestPath: "",
     };
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.isTrue(result.error instanceof InvalidActionInputError);
@@ -69,7 +69,7 @@ describe("teamsApp/validateManifest", async () => {
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
   });
 
@@ -95,7 +95,7 @@ describe("teamsApp/validateManifest", async () => {
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
   });
 
@@ -107,7 +107,7 @@ describe("teamsApp/validateManifest", async () => {
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
@@ -122,7 +122,7 @@ describe("teamsApp/validateManifest", async () => {
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
@@ -142,7 +142,7 @@ describe("teamsApp/validateManifest", async () => {
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
-    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
@@ -160,7 +160,7 @@ describe("teamsApp/validateManifest", async () => {
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
@@ -191,7 +191,7 @@ describe("teamsApp/validateAppPackage", async () => {
       appPackagePath: "fakepath",
     };
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
@@ -254,10 +254,10 @@ describe("teamsApp/validateAppPackage", async () => {
       appPackagePath: "fakePath",
       showMessage: true,
     };
-    let result = await teamsAppDriver.run(args, mockedDriverContext);
+    let result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
 
-    result = await teamsAppDriver.run(args, contextWithoutUI);
+    result = (await teamsAppDriver.execute(args, contextWithoutUI)).result;
     chai.assert(result.isErr());
   });
 
@@ -297,10 +297,10 @@ describe("teamsApp/validateAppPackage", async () => {
       appPackagePath: "fakePath",
       showMessage: true,
     };
-    let result = await teamsAppDriver.run(args, mockedDriverContext);
+    let result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
 
-    result = await teamsAppDriver.run(args, contextWithoutUI);
+    result = (await teamsAppDriver.execute(args, contextWithoutUI)).result;
     chai.assert(result.isOk());
   });
 
@@ -344,10 +344,10 @@ describe("teamsApp/validateAppPackage", async () => {
       appPackagePath: "fakePath",
       showMessage: false,
     };
-    let result = await teamsAppDriver.run(args, mockedDriverContext);
+    let result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
 
-    result = await teamsAppDriver.run(args, contextWithoutUI);
+    result = (await teamsAppDriver.execute(args, contextWithoutUI)).result;
     chai.assert(result.isErr());
   });
 
@@ -412,7 +412,7 @@ describe("teamsApp/validateAppPackage", async () => {
       platform: Platform.CLI,
     };
 
-    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
     chai.assert(result.isErr());
   });
 
@@ -467,7 +467,7 @@ describe("teamsApp/validateAppPackage", async () => {
       platform: Platform.CLI,
     };
 
-    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
     chai.assert(result.isOk());
   });
 });

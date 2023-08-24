@@ -25,7 +25,7 @@ export const permissionStatusCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.CheckPermission,
   },
-  defaultInteractiveOption: false,
+  reservedOptionNamesInInteractiveMode: ["all"],
   handler: async (ctx) => {
     const inputs = ctx.optionValues as PermissionListInputs & InputsWithProjectPath;
     const listAll = inputs.all || false;

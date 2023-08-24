@@ -45,20 +45,16 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 14
-
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
+          node-version: 18
 
       - name: Setup project
         run: |
+          npm install pnpm -g
           npm run setup
 
       - name: Unit Test
         run: |
-          xvfb-run -a npx lerna run test:unit --stream
+          xvfb-run -a pnpm run -r --stream test:unit
 
       - name: CodeCov report attempt 1
         id: codecov1

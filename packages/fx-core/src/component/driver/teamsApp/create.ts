@@ -56,15 +56,6 @@ export class CreateTeamsAppDriver implements StepDriver {
     "driver.teamsApp.progressBar.createTeamsAppStepMessage"
   );
 
-  public async run(
-    args: CreateTeamsAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.create(args, wrapContext);
-    return res;
-  }
-
   public async execute(
     args: CreateTeamsAppArgs,
     context: DriverContext,

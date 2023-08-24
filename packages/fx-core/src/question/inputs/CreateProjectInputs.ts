@@ -48,12 +48,9 @@ export interface CreateProjectInputs extends Inputs {
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
   /** @description Plugin for Copilot */
-  "copilot-plugin-option"?:
-    | "copilot-plugin-new-api"
-    | "copilot-plugin-api-spec"
-    | "copilot-plugin-openai-plugin";
+  "copilot-plugin-option"?: "new-api" | "existing-api" | "openai-plugin";
   /** @description OpenAPI Spec */
-  "api-spec-location"?: string;
+  "openapi-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */
   "openai-plugin-domain"?: string;
   /** @description Select an Operation */

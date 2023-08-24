@@ -43,8 +43,8 @@ import { ConstantString } from "../../../common/spec-parser/constants";
 import * as util from "util";
 import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
-const componentName = "simplified-message-extension-existing-api";
-const templateName = "simplified-message-extension-existing-api";
+const componentName = "copilot-plugin-existing-api";
+const templateName = "copilot-plugin-existing-api";
 const apiSpecFolderName = "apiSpecFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";

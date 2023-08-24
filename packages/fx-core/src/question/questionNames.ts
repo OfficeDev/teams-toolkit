@@ -32,7 +32,7 @@ export enum QuestionNames {
   ValidateMethod = "validate-method",
   AppPackagePath = "appPackagePath",
   CopilotPluginExistingApi = "copilot-plugin-existing-api", // group name for creating a Copilot plugin from existing api
-  ApiSpecLocation = "api-spec-location",
+  ApiSpecLocation = "openapi-spec-location",
   OpenAIPluginDomain = "openai-plugin-domain",
   ApiOperation = "api-operation",
   CopilotPluginDevelopment = "copilot-plugin-option",

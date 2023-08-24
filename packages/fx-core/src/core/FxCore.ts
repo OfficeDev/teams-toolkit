@@ -454,8 +454,8 @@ export class FxCore {
       showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-    const result = await driver.run(args, context);
-    return result;
+    const result = await driver.execute(args, context);
+    return result.result;
   }
   /**
    * v3 only none lifecycle command
@@ -474,7 +474,7 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-    return await driver.run(args, context);
+    return (await driver.execute(args, context)).result;
   }
   /**
    * v3 only none lifecycle command
@@ -507,7 +507,7 @@ export class FxCore {
         `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
           .TEAMSFX_ENV!}.json`,
     };
-    const result = await driver.run(args, context);
+    const result = (await driver.execute(args, context)).result;
     if (context.platform === Platform.VSCode) {
       if (result.isOk()) {
         const isWindows = process.platform === "win32";
@@ -1084,7 +1084,7 @@ export class FxCore {
     ConcurrentLockerMW,
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const operations = inputs[QuestionNames.ApiOperation] as string[];
+    let operations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
 
@@ -1095,6 +1095,15 @@ export class FxCore {
     }
     const apiSpecFile = manifestRes.value.composeExtensions![0].apiSpecFile;
     const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecFile!);
+
+    // Merge exisiting operations in manifest.json
+    const specParser = new SpecParser(url);
+    const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+    const operationMaps = await specParser.listOperationMap();
+    const existingOperations = existingOperationIds.map((key) =>
+      operationMaps.get(key)
+    ) as string[];
+    operations = operations.concat(existingOperations);
 
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,

@@ -897,7 +897,7 @@ describe("Teams app APIs", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "run");
+    const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "execute");
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
@@ -913,7 +913,7 @@ describe("Teams app APIs", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    const runSpy = sinon.spy(ValidateManifestDriver.prototype, "run");
+    const runSpy = sinon.spy(ValidateManifestDriver.prototype, "execute");
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
   });
@@ -930,7 +930,9 @@ describe("Teams app APIs", async () => {
     };
 
     sinon.stub(process, "platform").value("win32");
-    const runStub = sinon.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
+    const runStub = sinon
+      .stub(CreateAppPackageDriver.prototype, "execute")
+      .resolves({ result: ok(new Map()), summaries: [] });
     const showMessageStub = sinon.stub(tools.ui, "showMessage");
     await core.createAppPackage(inputs);
     sinon.assert.calledOnce(runStub);
@@ -1320,7 +1322,7 @@ describe("isEnvFile", async () => {
           "spfx-webpart-name",
           "spfx-folder",
           "copilot-plugin-option",
-          "api-spec-location",
+          "openapi-spec-location",
           "openai-plugin-domain",
           "api-operation",
           "programming-language",
@@ -1355,7 +1357,7 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1367,8 +1369,13 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
+    const operationMap = new Map<string, string>([
+      ["getUserById", "GET /user/{userId}"],
+      ["getStoreOrder", "GET /store/order"],
+    ]);
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves();
+    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);

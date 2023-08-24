@@ -132,6 +132,7 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
+import { MetadataV3 } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -2149,9 +2150,7 @@ export function editAadManifestTemplate(args: any[]) {
   );
   if (args && args.length > 1) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestPath = `${
-      workspacePath as string
-    }/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
+    const manifestPath = `${workspacePath as string}/${MetadataV3.aadManifestFileName}`;
     void workspace.openTextDocument(manifestPath).then((document) => {
       void window.showTextDocument(document);
     });

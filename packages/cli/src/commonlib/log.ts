@@ -5,10 +5,16 @@ import { Colors, ConfigFolderName, LogLevel, LogProvider } from "@microsoft/team
 import chalk from "chalk";
 import * as os from "os";
 import * as path from "path";
-import { SuccessText, TextType, WarningText, colorize, replaceTemplateString } from "../colorize";
+import {
+  ErrorPrefix,
+  SuccessText,
+  TextType,
+  WarningText,
+  colorize,
+  replaceTemplateString,
+} from "../colorize";
 import ScreenManager from "../console/screen";
 import { CLILogLevel } from "../constants";
-import { strings } from "../resource";
 import { getColorizedString } from "../utils";
 
 export class CLILogProvider implements LogProvider {
@@ -136,7 +142,7 @@ export class CLILogProvider implements LogProvider {
 
   outputError(template: string, ...args: string[]): void {
     ScreenManager.writeLine(
-      colorize(strings["error.prefix"] + replaceTemplateString(template, ...args), TextType.Error),
+      colorize(ErrorPrefix + replaceTemplateString(template, ...args), TextType.Error),
       true
     );
   }

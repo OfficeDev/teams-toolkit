@@ -19,7 +19,7 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, isSupportedApi } from "./utils";
+import { convertPathToCamelCase, getUrlProtocol, isSupportedApi } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";
@@ -92,6 +92,25 @@ export class SpecParser {
           content: ConstantString.MultipleServerInformation,
           data: this.spec!.servers,
         });
+      } else if (this.spec!.servers.length === 1) {
+        const serverUrl = this.spec!.servers[0].url;
+
+        const protocol = getUrlProtocol(serverUrl);
+        if (!protocol) {
+          // Relative server url is not supported
+          errors.push({
+            type: ErrorType.RelativeServerUrlNotSupported,
+            content: ConstantString.RelativeServerUrlNotSupported,
+            data: this.spec!.servers,
+          });
+        } else if (protocol !== "https:") {
+          // Http server url is not supported
+          errors.push({
+            type: ErrorType.UrlProtocolNotSupported,
+            content: util.format(ConstantString.UrlProtocolNotSupported, protocol),
+            data: this.spec!.servers,
+          });
+        }
       }
 
       // Remote reference not supported

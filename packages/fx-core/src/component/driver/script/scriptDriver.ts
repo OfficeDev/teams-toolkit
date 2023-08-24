@@ -33,9 +33,10 @@ interface ScriptDriverArgs {
 
 @Service(ACTION_NAME)
 export class ScriptDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const typedArgs = args as ScriptDriverArgs;
+  async _run(
+    typedArgs: ScriptDriverArgs,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
     await context.progressBar?.next(
       ProgressMessages.runCommand(typedArgs.run, typedArgs.workingDirectory ?? "./")
     );
@@ -58,7 +59,8 @@ export class ScriptDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    const res = await this.run(args, ctx);
+    const typedArgs = args as ScriptDriverArgs;
+    const res = await this._run(typedArgs, ctx);
     const summaries: string[] = res.isOk()
       ? [`Successfully executed command ${maskSecretValues((args as any).run)}`]
       : [];
@@ -125,7 +127,7 @@ export async function executeCommand(
           const outputString = allOutputStrings.join("");
           const outputObject = parseSetOutputCommand(outputString);
           if (Object.keys(outputObject).length > 0)
-            logProvider.verbose(`script output env variables: ${outputObject}`);
+            logProvider.verbose(`script output env variables: ${JSON.stringify(outputObject)}`);
           resolve(ok([outputString, outputObject]));
         }
       }
@@ -154,7 +156,7 @@ export function getStderrHandler(
 ): (data: Buffer) => Promise<void> {
   return async (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);
-    logProvider.error(` [script action stderr] ${maskSecretValues(str)}`);
+    logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
     await dataHandler(str);
     stderrStrings.push(str);
   };

@@ -277,9 +277,13 @@ describe("component coordinator test", () => {
     const driver1: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
     const driver2: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
     const driver3: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-    sandbox.stub(driver1, "run").resolves(ok(new Map()));
-    sandbox.stub(driver2, "run").resolves(ok(new Map()));
-    sandbox.stub(driver3, "run").resolves(ok(new Map()));
+    const mockRes: DriverExecutionResult = {
+      summaries: [],
+      result: ok(new Map()),
+    };
+    sandbox.stub(driver1, "execute").resolves(mockRes);
+    sandbox.stub(driver2, "execute").resolves(mockRes);
+    sandbox.stub(driver3, "execute").resolves(mockRes);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",

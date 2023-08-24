@@ -51,7 +51,7 @@ describe("teamsApp/createAppPackage", async () => {
     };
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(fs, "pathExists").onFirstCall().resolves(false);
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.isTrue(result.error instanceof FileNotFoundError);
@@ -65,7 +65,7 @@ describe("teamsApp/createAppPackage", async () => {
     };
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(new TeamsAppManifest()));
     sinon.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.isTrue(result.error instanceof FileNotFoundError);
@@ -91,7 +91,7 @@ describe("teamsApp/createAppPackage", async () => {
       .resolves(true)
       .onThirdCall()
       .resolves(false);
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.isTrue(result.error instanceof FileNotFoundError);
@@ -136,7 +136,7 @@ describe("teamsApp/createAppPackage", async () => {
         return true;
       }
     });
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.isTrue(result.error instanceof FileNotFoundError);
@@ -181,7 +181,7 @@ describe("teamsApp/createAppPackage", async () => {
     };
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.isTrue(result.error instanceof FileNotFoundError);
@@ -194,7 +194,7 @@ describe("teamsApp/createAppPackage", async () => {
       outputZipPath: "",
       outputJsonPath: "",
     };
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal("InvalidActionInputError", result.error.name);
@@ -244,7 +244,7 @@ describe("teamsApp/createAppPackage", async () => {
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
@@ -301,7 +301,7 @@ describe("teamsApp/createAppPackage", async () => {
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});
 
-    const result = await teamsAppDriver.run(args, mockedCliDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
     chai.assert(result.isOk());
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
@@ -351,7 +351,7 @@ describe("teamsApp/createAppPackage", async () => {
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
@@ -403,7 +403,7 @@ describe("teamsApp/createAppPackage", async () => {
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);

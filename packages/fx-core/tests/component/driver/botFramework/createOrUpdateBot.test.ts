@@ -334,4 +334,68 @@ describe("CreateOrUpdateM365BotDriver", () => {
       }
     });
   });
+
+  describe("undefined logger", () => {
+    it("happy path: create", async () => {
+      const contextWithoutLogger: any = {
+        logProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      sinon.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+      let createBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+        createBotRegistrationCalled = true;
+      });
+      let updateBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+        updateBotRegistrationCalled = true;
+      });
+      const args: any = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+      };
+      const executionResult = await driver.execute(args, contextWithoutLogger);
+      chai.assert(executionResult.result.isOk());
+      chai.assert(createBotRegistrationCalled);
+      chai.assert(!updateBotRegistrationCalled);
+    });
+
+    it("happy path: update", async () => {
+      const contextWithoutLogger: any = {
+        logProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      const botRegistration: IBotRegistration = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        description: "",
+        iconUrl: "",
+        callingEndpoint: "",
+      };
+      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (token, botId) => {
+        return botId === botRegistration.botId ? botRegistration : undefined;
+      });
+      let createBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+        createBotRegistrationCalled = true;
+      });
+      let updateBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+        updateBotRegistrationCalled = true;
+      });
+      const args: any = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        description: "test-description",
+        iconUrl: "test-iconUrl",
+      };
+      const executionResult = await driver.execute(args, contextWithoutLogger);
+      chai.assert(executionResult.result.isOk());
+      chai.assert(!createBotRegistrationCalled);
+      chai.assert(updateBotRegistrationCalled);
+    });
+  });
 });

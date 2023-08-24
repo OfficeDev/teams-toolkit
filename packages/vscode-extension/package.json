@@ -1175,7 +1175,7 @@
         "properties": {
           "fx-extension.developCopilotPlugin": {
             "type": "boolean",
-            "default": "false",
+            "default": false,
             "description": "Enable to develop Copilot plugin (Require to reload VSCode)"
           }
         }

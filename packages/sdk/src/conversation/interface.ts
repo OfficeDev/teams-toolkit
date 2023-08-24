@@ -385,7 +385,7 @@ export interface TeamsFxAdaptiveCardActionHandler {
    *     return InvokeResponseFactory.errorResponse(InvokeResponseErrorCode.BadRequest, "Invalid request");
    *     ```
    * 
-   * @remark For more details about the invoke response format, refer to https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#response-format.
+   * @remarks For more details about the invoke response format, refer to https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#response-format.
    */
   handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse>;
 }
@@ -568,7 +568,7 @@ export interface BotSsoExecutionActivityHandler {
    * @param query Signin state (part of signin action auth flow) verification invoke query
    * @returns A promise that represents the work queued.
    *
-   * @remark
+   * @remarks
    * It should trigger {@link BotSsoExecutionDialog} instance to handle signin process
    */
   handleTeamsSigninTokenExchange(

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { InvokeResponse, StatusCodes } from "botbuilder";
 import { InvokeResponseErrorCode } from "./interface";
 
@@ -15,7 +17,7 @@ export enum InvokeResponseType {
  * Provides methods for formatting various invoke responses a bot can send to respond to an invoke request.
  *
  * @remarks
- * All of these functions return an {@link InvokeResponse} object, which can be
+ * All of these functions return an `InvokeResponse` object, which can be
  * passed as input to generate a new `invokeResponse` activity.
  *
  * This example sends an invoke response that contains an adaptive card.

@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.18.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.18.1" />
     <PackageReference Include="AdaptiveCards" Version="2.7.3" />
+    <PackageReference Include="AdaptiveCards.Templating" Version="1.4.0" />
   </ItemGroup>
 
 </Project>

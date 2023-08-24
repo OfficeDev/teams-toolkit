@@ -1,0 +1,35 @@
+name: Checkout project
+description: Checkout project by default installing dependencies and running setup script
+inputs:
+  setup:  # id of input
+    description: 'setup project'
+    required: true
+    default: 'true'
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install pnpm
+      if: ${{ inputs.setup == 'true' }}
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 5
+        command: |
+          npm install pnpm -g
+    
+    - name: Setup project
+      if: ${{ inputs.setup == 'true' }}
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 5
+        command: |
+          npm run setup

@@ -10,22 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+    - name: Checkout and setup project
+      uses: ./github/actions/setup-project
 
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-
-    - name: Install codeowners
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: 5
-        command: |
-          npm install codeowners -D
-    
     - name: Search todo comment list
       id: search
       run: |

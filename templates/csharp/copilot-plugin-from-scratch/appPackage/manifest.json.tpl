@@ -1,4 +1,4 @@
-{    
+{
     "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
     "id": "${{TEAMS_APP_ID}}",

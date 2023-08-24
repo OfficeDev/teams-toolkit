@@ -11,6 +11,17 @@ const karmaConfig = {
 
   files: getTestFiles(argv),
 
+  plugins: [
+    "karma-mocha",
+    "karma-webpack",
+    "karma-sourcemap-loader",
+    "karma-env-preprocessor",
+    "karma-coverage",
+    "karma-junit-reporter",
+    "karma-mocha-reporter",
+    "karma-chrome-launcher",
+  ],
+
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
   frameworks: ["mocha", "webpack"],

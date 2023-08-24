@@ -29,6 +29,8 @@ describe("Manifest manipulation", async () => {
     const fileContent: Map<string, string> = new Map();
 
     before(() => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       mocker.stub(fs, "writeJson").callsFake((file: string, obj: any) => {
         fileContent.set(file, JSON.stringify(obj));
       });

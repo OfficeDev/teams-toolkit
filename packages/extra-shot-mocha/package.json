@@ -15,10 +15,6 @@
     "mocha": "^10.2.0",
     "mochawesome": "^7.0.1"
   },
-  "dependencies": {
-    "mocha": "^10.2.0",
-    "mochawesome": "^7.0.1"
-  },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/chai": "^4.2.14",
@@ -39,7 +35,7 @@
     "source-map-support": "^0.5.21",
     "ts-node": "^9.1.1",
     "tslib": "^2.3.1",
-    "typescript": "^4.5.5"
+    "typescript": "^5.0.4"
   },
   "publishConfig": {
     "access": "public"

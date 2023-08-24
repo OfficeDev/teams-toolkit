@@ -75,6 +75,7 @@
     "@sinonjs/samsam": "^8.0.0",
     "@types/chai": "^4.2.22",
     "@types/chai-as-promised": "^7.1.4",
+    "@types/jsonwebtoken": "^9.0.2",
     "@types/mocha": "^9.0.0",
     "@types/mochawesome": "^6.2.1",
     "@types/node": "^16.11.7",

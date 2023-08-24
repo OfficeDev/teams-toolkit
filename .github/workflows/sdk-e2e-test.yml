@@ -23,16 +23,13 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
 
       - name: Setup project
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            npm run setup
+        run: |
+          npm install -g pnpm
+          pnpm install
+          npm run build
 
       - name: setup python
         uses: actions/setup-python@v3

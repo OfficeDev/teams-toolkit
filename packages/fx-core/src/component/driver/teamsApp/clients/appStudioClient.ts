@@ -126,7 +126,7 @@ export namespace AppStudioClient {
   export async function importApp(
     file: Buffer,
     appStudioToken: string,
-    logProvider?: LogProvider,
+    logProvider: LogProvider,
     overwrite = false
   ): Promise<AppDefinition> {
     setErrorContext({ source: "Teams" });
@@ -140,6 +140,7 @@ export namespace AppStudioClient {
     try {
       const requester = createRequesterWithToken(appStudioToken, region);
 
+      logProvider.debug(`Sent API Request: ${region ?? baseUrl}/api/appdefinitions/v2/import`);
       const response = await RetryHandler.Retry(() =>
         requester.post(`/api/appdefinitions/v2/import`, file, {
           headers: { "Content-Type": "application/zip" },
@@ -151,7 +152,7 @@ export namespace AppStudioClient {
 
       if (response && response.data) {
         const app = <AppDefinition>response.data;
-        logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
+        logProvider.debug(`Received data from Teams Developer Portal: ${JSON.stringify(app)}`);
         sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
         return app;
       } else {
@@ -214,12 +215,14 @@ export namespace AppStudioClient {
       if (region) {
         requester = createRequesterWithToken(appStudioToken, region);
         try {
+          logProvider?.debug(`Sent API Request: ${region}/api/appdefinitions/v2/import`);
           response = await RetryHandler.Retry(() =>
             requester.get(`/api/appdefinitions/${teamsAppId}`)
           );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
           if (e.response?.status == 404) {
+            logProvider?.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
             requester = createRequesterWithToken(appStudioToken);
             response = await RetryHandler.Retry(() =>
               requester.get(`/api/appdefinitions/${teamsAppId}`)
@@ -229,6 +232,7 @@ export namespace AppStudioClient {
           }
         }
       } else {
+        logProvider?.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
         requester = createRequesterWithToken(appStudioToken);
         response = await RetryHandler.Retry(() =>
           requester.get(`/api/appdefinitions/${teamsAppId}`)

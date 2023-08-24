@@ -110,10 +110,10 @@ describe("manifestUpdater", () => {
         {
           type: "apiBased",
           supportsConversationalAI: true,
-          apiSpecFile: "spec/outputSpec.yaml",
+          apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
-              apiResponseRenderingTemplate: "",
+              apiResponseRenderingTemplateFile: "",
               context: ["compose"],
               id: "getPets",
               parameters: [

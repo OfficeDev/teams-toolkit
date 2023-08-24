@@ -31,14 +31,14 @@ export class SearchApp extends TeamsActivityHandler {
     const attachments = [];
     response.data.objects.forEach((obj) => {
       const template = new ACData.Template(helloWorldCard);
-      const adaptiveCard = template.expand({
+      const card = template.expand({
         $root: {
           name: obj.package.name,
           description: obj.package.description,
         },
       });
       const preview = CardFactory.heroCard(obj.package.name);
-      const attachment = { ...adaptiveCard, preview };
+      const attachment = { ...CardFactory.adaptiveCard(card), preview };
       attachments.push(attachment);
     });
 

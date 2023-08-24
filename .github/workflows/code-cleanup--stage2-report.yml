@@ -16,7 +16,7 @@ jobs:
     - name: Setup node
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 18
 
     - name: Install codeowners
       uses: nick-fields/retry@v2
@@ -48,7 +48,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Find file with lines over 500
+    - name: Find file with lines over 600
       run: |
         wc -l `find packages/*/src -type f -name "*.ts" ` | awk '{ if($1 > 600 && $2 !="total") print $1,$2;}'
       

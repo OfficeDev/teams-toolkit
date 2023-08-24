@@ -112,11 +112,11 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "resources/openai.yml",
+        apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
             id: "GET /repairs",
-            apiResponseRenderingTemplate: "resources/repairs.json",
+            apiResponseRenderingTemplateFile: "resources/repairs.json",
             title: "fake",
           },
         ],
@@ -164,11 +164,11 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "resources/openai.yml",
+        apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
             id: "GET /repairs",
-            apiResponseRenderingTemplate: "resources/repairs.json",
+            apiResponseRenderingTemplateFile: "resources/repairs.json",
             title: "fake",
           },
         ],
@@ -215,11 +215,11 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "resources/openai.yml",
+        apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
             id: "GET /repairs",
-            apiResponseRenderingTemplate: "resources/repairs.json",
+            apiResponseRenderingTemplateFile: "resources/repairs.json",
             title: "fake",
           },
         ],
@@ -272,11 +272,11 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "resources/openai.yml",
+        apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
             id: "GET /repairs",
-            apiResponseRenderingTemplate: "resources/repairs.json",
+            apiResponseRenderingTemplateFile: "resources/repairs.json",
             title: "fake",
           },
         ],
@@ -322,11 +322,11 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "manifest.template.json",
+        apiSpecificationFile: "manifest.template.json",
         commands: [
           {
             id: "GET /repairs",
-            apiResponseRenderingTemplate: "manifest.template.json",
+            apiResponseRenderingTemplateFile: "manifest.template.json",
             title: "fake",
           },
         ],
@@ -375,7 +375,7 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "manifest.template.json",
+        apiSpecificationFile: "manifest.template.json",
         commands: [
           {
             id: "GET /repairs",

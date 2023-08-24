@@ -1093,8 +1093,8 @@ export class FxCore {
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    const apiSpecFile = manifestRes.value.composeExtensions![0].apiSpecFile;
-    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecFile!);
+    const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
 
     // Merge exisiting operations in manifest.json
     const specParser = new SpecParser(url);

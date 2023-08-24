@@ -45,7 +45,7 @@ import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
 const componentName = "copilot-plugin-existing-api";
 const templateName = "copilot-plugin-existing-api";
-const apiSpecFolderName = "apiSpecFiles";
+const apiSpecFolderName = "apiSpecificationFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 

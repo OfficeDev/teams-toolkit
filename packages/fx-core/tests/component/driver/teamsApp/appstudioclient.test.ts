@@ -518,4 +518,42 @@ describe("App Studio API Test", () => {
       }
     });
   });
+
+  describe("getUserList", () => {
+    it("happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appDef,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.getUserList(
+        appDef.teamsAppId!,
+        appStudioToken,
+        logProvider
+      );
+    });
+  });
+
+  describe("checkPermission", () => {
+    it("No permission", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appDef,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.checkPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        "fakeUesrId",
+        logProvider
+      );
+      chai.assert.equal(res, Constants.PERMISSIONS.noPermission);
+    });
+  });
 });

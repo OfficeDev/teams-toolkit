@@ -1,5 +1,5 @@
-name: Checkout project
-description: Checkout project by default installing dependencies and running setup script
+name: setup project
+description: setup project by default installing dependencies and running setup script
 inputs:
   setup:  # id of input
     description: 'setup project'
@@ -8,9 +8,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
     - name: Setup node
       uses: actions/setup-node@v3
       with:

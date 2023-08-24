@@ -205,7 +205,7 @@ export namespace AppStudioClient {
   export async function getApp(
     teamsAppId: string,
     appStudioToken: string,
-    logProvider?: LogProvider
+    logProvider: LogProvider
   ): Promise<AppDefinition> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP);
@@ -215,14 +215,14 @@ export namespace AppStudioClient {
       if (region) {
         requester = createRequesterWithToken(appStudioToken, region);
         try {
-          logProvider?.debug(`Sent API Request: ${region}/api/appdefinitions/v2/import`);
+          logProvider.debug(`Sent API Request: ${region}/api/appdefinitions/v2/import`);
           response = await RetryHandler.Retry(() =>
             requester.get(`/api/appdefinitions/${teamsAppId}`)
           );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
           if (e.response?.status == 404) {
-            logProvider?.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
+            logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
             requester = createRequesterWithToken(appStudioToken);
             response = await RetryHandler.Retry(() =>
               requester.get(`/api/appdefinitions/${teamsAppId}`)
@@ -232,7 +232,7 @@ export namespace AppStudioClient {
           }
         }
       } else {
-        logProvider?.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
+        logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
         requester = createRequesterWithToken(appStudioToken);
         response = await RetryHandler.Retry(() =>
           requester.get(`/api/appdefinitions/${teamsAppId}`)
@@ -445,11 +445,12 @@ export namespace AppStudioClient {
 
   export async function getUserList(
     teamsAppId: string,
-    appStudioToken: string
+    appStudioToken: string,
+    logProvider: LogProvider
   ): Promise<AppUser[] | undefined> {
     let app;
     try {
-      app = await getApp(teamsAppId, appStudioToken);
+      app = await getApp(teamsAppId, appStudioToken, logProvider);
     } catch (error) {
       throw error;
     }
@@ -460,11 +461,12 @@ export namespace AppStudioClient {
   export async function checkPermission(
     teamsAppId: string,
     appStudioToken: string,
-    userObjectId: string
+    userObjectId: string,
+    logProvider: LogProvider
   ): Promise<string> {
     let userList;
     try {
-      userList = await getUserList(teamsAppId, appStudioToken);
+      userList = await getUserList(teamsAppId, appStudioToken, logProvider);
     } catch (error) {
       return Constants.PERMISSIONS.noPermission;
     }
@@ -484,12 +486,13 @@ export namespace AppStudioClient {
   export async function grantPermission(
     teamsAppId: string,
     appStudioToken: string,
-    newUser: AppUser
+    newUser: AppUser,
+    logProvider: LogProvider
   ): Promise<void> {
     sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_OWNER);
     let app;
     try {
-      app = await getApp(teamsAppId, appStudioToken);
+      app = await getApp(teamsAppId, appStudioToken, logProvider);
     } catch (error) {
       throw error;
     }

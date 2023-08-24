@@ -353,7 +353,7 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+      const res = await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       chai.assert.equal(res, appDef);
     });
 
@@ -375,7 +375,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       }
@@ -404,7 +404,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       } finally {
@@ -507,7 +507,12 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.grantPermission(appDef.teamsAppId!, appStudioToken, appUser);
+        await AppStudioClient.grantPermission(
+          appDef.teamsAppId!,
+          appStudioToken,
+          appUser,
+          logProvider
+        );
       } catch (e) {
         chai.assert.equal(e.name, error.name);
       }

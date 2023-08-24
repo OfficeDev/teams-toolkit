@@ -152,25 +152,25 @@ export class CreateAppPackageDriver implements StepDriver {
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
       manifest.composeExtensions[0].type == "apiBased" &&
-      manifest.composeExtensions[0].apiSpecFile
+      manifest.composeExtensions[0].apiSpecificationFile
     ) {
-      const apiSpecFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecFile}`;
-      if (!(await fs.pathExists(apiSpecFile))) {
+      const apiSpecificationFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecificationFile}`;
+      if (!(await fs.pathExists(apiSpecificationFile))) {
         return err(
           new FileNotFoundError(
             actionName,
-            apiSpecFile,
+            apiSpecificationFile,
             "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
           )
         );
       }
-      const dir = path.dirname(manifest.composeExtensions[0].apiSpecFile);
-      zip.addLocalFile(apiSpecFile, dir === "." ? "" : dir);
+      const dir = path.dirname(manifest.composeExtensions[0].apiSpecificationFile);
+      zip.addLocalFile(apiSpecificationFile, dir === "." ? "" : dir);
 
       if (manifest.composeExtensions[0].commands.length > 0) {
         for (const command of manifest.composeExtensions[0].commands) {
-          if (command.apiResponseRenderingTemplate) {
-            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplate}`;
+          if (command.apiResponseRenderingTemplateFile) {
+            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplateFile}`;
             if (!(await fs.pathExists(adaptiveCardFile))) {
               return err(
                 new FileNotFoundError(
@@ -180,7 +180,7 @@ export class CreateAppPackageDriver implements StepDriver {
                 )
               );
             }
-            const dir = path.dirname(command.apiResponseRenderingTemplate);
+            const dir = path.dirname(command.apiResponseRenderingTemplateFile);
             zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
         }

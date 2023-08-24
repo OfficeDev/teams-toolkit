@@ -22,7 +22,7 @@ export async function updateManifest(
     const commands = await generateCommands(spec, adaptiveCardFolder, manifestPath);
     const ComposeExtension: ComposeExtension = {
       type: "apiBased",
-      apiSpecFile: getRelativePath(manifestPath, outputSpecPath),
+      apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
       supportsConversationalAI: true,
     };
@@ -85,7 +85,7 @@ export async function generateCommands(
             title: operationItem.summary ?? "",
             id: operationItem.operationId!,
             parameters: parameters,
-            apiResponseRenderingTemplate: (await fs.pathExists(adaptiveCardPath))
+            apiResponseRenderingTemplateFile: (await fs.pathExists(adaptiveCardPath))
               ? getRelativePath(manifestPath, adaptiveCardPath)
               : "",
           };

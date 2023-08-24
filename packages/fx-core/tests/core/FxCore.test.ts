@@ -1365,7 +1365,7 @@ describe("copilotPlugin", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "apiSpecFiles/openapi.json",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
     ];
@@ -1406,7 +1406,7 @@ describe("copilotPlugin", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "apiSpecFiles/openapi.json",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
     ];
@@ -1433,7 +1433,7 @@ describe("copilotPlugin", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "apiSpecFiles/openapi.json",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
     ];

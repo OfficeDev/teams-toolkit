@@ -210,7 +210,7 @@ export interface IComposeExtension {
   /**
    * To support SME, it's the relative path to api spec file in the manifest
    */
-  apiSpecFile?: string;
+  apiSpecificationFile?: string;
   /**
    * To support SME, whether the compose extension will work with biz chat as a plugin
    */
@@ -268,7 +268,7 @@ export interface IMessagingExtensionCommand {
   /**
    * To support SME
    */
-  apiResponseRenderingTemplate?: string;
+  apiResponseRenderingTemplateFile?: string;
 }
 
 export interface IParameter {

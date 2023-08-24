@@ -143,7 +143,7 @@ export interface Description {
 
 export interface ComposeExtension {
   type: string;
-  apiSpecFile: string;
+  apiSpecificationFile: string;
   supportsConversationalAI: boolean;
   commands: Command[];
 }
@@ -155,7 +155,7 @@ export interface Command {
   title: string;
   description?: string;
   parameters: Parameter[];
-  apiResponseRenderingTemplate?: string;
+  apiResponseRenderingTemplateFile?: string;
 }
 
 export interface Parameter {

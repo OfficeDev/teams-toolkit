@@ -53,7 +53,7 @@ describe("manifestUpdater", () => {
         {
           type: "apiBased",
           supportsConversationalAI: true,
-          apiSpecFile: "spec/outputSpec.yaml",
+          apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
               context: ["compose"],
@@ -63,7 +63,7 @@ describe("manifestUpdater", () => {
               parameters: [
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
               ],
-              apiResponseRenderingTemplate: "adaptiveCards/getPets.json",
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
           ],
         },
@@ -159,7 +159,7 @@ describe("manifestUpdater", () => {
         {
           type: "apiBased",
           supportsConversationalAI: true,
-          apiSpecFile: "spec/outputSpec.yaml",
+          apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
               context: ["compose"],
@@ -169,7 +169,7 @@ describe("manifestUpdater", () => {
               parameters: [
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
               ],
-              apiResponseRenderingTemplate: "adaptiveCards/getPets.json",
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
           ],
         },
@@ -232,7 +232,7 @@ describe("generateCommands", () => {
         parameters: [
           { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
         ],
-        apiResponseRenderingTemplate: "adaptiveCards/getPets.json",
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
       {
         context: ["compose"],
@@ -240,7 +240,7 @@ describe("generateCommands", () => {
         title: "Get a pet by ID",
         id: "getPetById",
         parameters: [{ name: "id", title: "Id", description: "ID of the pet to retrieve" }],
-        apiResponseRenderingTemplate: "adaptiveCards/getPetById.json",
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPetById.json",
       },
       {
         context: ["compose"],
@@ -248,7 +248,7 @@ describe("generateCommands", () => {
         title: "Get all pets owned by an owner",
         id: "getOwnerPets",
         parameters: [{ name: "ownerId", title: "OwnerId", description: "ID of the owner" }],
-        apiResponseRenderingTemplate: "adaptiveCards/getOwnerPets.json",
+        apiResponseRenderingTemplateFile: "adaptiveCards/getOwnerPets.json",
       },
     ];
 

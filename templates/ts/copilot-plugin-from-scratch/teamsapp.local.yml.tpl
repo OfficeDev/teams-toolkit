@@ -64,8 +64,6 @@ deploy:
     # Write the information of installed development tool(s) into environment
     # file for the specified environment variable(s).
     writeToEnvironmentFile:
-      sslCertFile: SSL_CRT_FILE
-      sslKeyFile: SSL_KEY_FILE
       dotnetPath: DOTNET_PATH
       funcPath: FUNC_PATH
 

@@ -1,0 +1,16 @@
+{
+    "debug.onTaskErrors": "abort",
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/aad.*.json"
+            ],
+            "schema": {}
+        }
+    ],
+    "files.exclude": {
+        "obj": true,
+        "bin": true
+    },
+    "debug.internalConsoleOptions": "neverOpen"
+}

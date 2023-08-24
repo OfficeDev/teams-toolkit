@@ -86,48 +86,20 @@
             },
             "presentation": {
                 "reveal": "silent"
-            }
+            },
+            "dependsOn": "Watch backend"
         },
         {
-            "type": "func",
-            "label": "func: host start",
-            "command": "host start",
-            "problemMatcher": "$func-node-watch",
+            "label": "Watch backend",
+            "type": "shell",
+            "command": "npm run watch",
             "isBackground": true,
-            "dependsOn": "npm build (functions)",
             "options": {
                 "cwd": "${workspaceFolder}"
-            }
-        },
-        {
-            "type": "shell",
-            "label": "npm build (functions)",
-            "command": "npm run build",
-            "dependsOn": [
-                "func: extensions install",
-                "npm install (functions)"
-            ],
-            "problemMatcher": "$tsc",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            }
-        },
-        {
-            "type": "shell",
-            "label": "npm install (functions)",
-            "command": "npm install",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            }
-        },
-        {
-            "type": "shell",
-            "label": "npm prune (functions)",
-            "command": "npm prune --production",
-            "dependsOn": "npm build (functions)",
-            "problemMatcher": [],
-            "options": {
-                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
             }
         }
     ]

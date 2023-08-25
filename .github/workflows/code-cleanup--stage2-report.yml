@@ -13,19 +13,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
+    - name: setup project
+      uses: ./.github/actions/setup-project
 
-    - name: Install codeowners
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: 5
-        command: |
-          npm install codeowners -D
-    
     - name: Search todo comment list
       id: search
       run: |
@@ -39,10 +29,22 @@ jobs:
       run: |
         node .github/scripts/todo-comment-check.js
       env: 
-        TODO_LIST: ${{steps.search.outputs.todo}}
+        TODO_LIST: ${{steps.search.outputs.todo}}   
 
+  file-lines-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Find file with lines over 600
+      run: |
+        wc -l `find packages/*/src -type f -name "*.ts" ` | awk '{ if($1 > 600 && $2 !="total") print $1,$2;}'
+      
   type-checking-promise:
     runs-on: ubuntu-latest
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -53,22 +55,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
-
-    - name: Setup legacy-peer-deps
-      run: |
-        npm config set legacy-peer-deps true
-
-    - name: Setup project
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: 5
-        command: |
-          npm run setup
+    - name: setup project
+      uses: ./.github/actions/setup-project
 
     - name: Update eslint config
       run: |
@@ -87,8 +75,6 @@ jobs:
       fail-fast: false
       matrix:
         package:
-        - fx-core
-        - vscode-extension
         - cli
         - tests
 
@@ -96,22 +82,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
-
-    - name: Setup legacy-peer-deps
-      run: |
-        npm config set legacy-peer-deps true
-
-    - name: Setup project
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: 5
-        command: |
-          npm run setup
+    - name: setup project
+      uses: ./.github/actions/setup-project
 
     - name: Update eslint config
       run: |
@@ -144,23 +116,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    
-    - name: Setup node
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    
-    - name: Setup legacy-peer-deps
-      run: |
-        npm config set legacy-peer-deps true
 
-    - name: Setup project
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: 5
-        command: |
-          npm run setup
+    - name: setup project
+      uses: ./.github/actions/setup-project
+
     - name: Detect type-checking normal issues
       run: |
         npx eslint src --ext ts --format unix

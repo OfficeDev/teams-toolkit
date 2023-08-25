@@ -239,7 +239,11 @@ export async function updateFunctionAuthorizationPolicy(
   await fs.writeFileSync(functionBicepPath, content);
 }
 
-function updateContent(content: string, key: string, value: string): string {
+export function updateContent(
+  content: string,
+  key: string,
+  value: string
+): string {
   const index = findNextEndLineIndexOfWord(content, key);
   const head = content.substring(0, index);
   const tail = content.substring(index + 1);

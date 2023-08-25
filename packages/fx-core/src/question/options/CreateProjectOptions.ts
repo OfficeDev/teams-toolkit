@@ -41,7 +41,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "collect-form-message-extension",
       "copilot-plugin-capability",
     ],
-    choiceListCommand: "teamsfx list capabilities",
+    choiceListCommand: "teamsfx list templates",
   },
   {
     name: "bot-host-type-trigger",
@@ -132,7 +132,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     shortName: "f",
     description: "Directory where the project folder will be created in.",
     required: true,
-    default: "./",
+    default: "E:\\workspace\\TeamsFx\\packages\\fx-core",
   },
   {
     name: "app-name",

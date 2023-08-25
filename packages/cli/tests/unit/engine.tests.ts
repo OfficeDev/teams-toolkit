@@ -22,7 +22,7 @@ import * as activate from "../../src/activate";
 import { getFxCore, resetFxCore } from "../../src/activate";
 import { engine } from "../../src/commands/engine";
 import { start } from "../../src/commands/index";
-import { listCapabilitiesCommand, listSamplesCommand } from "../../src/commands/models";
+import { listTemplatesCommand, listSamplesCommand } from "../../src/commands/models";
 import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
@@ -231,8 +231,8 @@ describe("CLI Engine", () => {
       assert.isTrue(stub.called);
     });
     it("command has no handler", async () => {
-      sandbox.stub(process, "argv").value(["node", "cli", "list", "capabilities"]);
-      sandbox.stub(listCapabilitiesCommand, "handler").value(undefined);
+      sandbox.stub(process, "argv").value(["node", "cli", "list", "templates"]);
+      sandbox.stub(listTemplatesCommand, "handler").value(undefined);
       await engine.start(rootCommand);
     });
     it("parseArg return error", async () => {

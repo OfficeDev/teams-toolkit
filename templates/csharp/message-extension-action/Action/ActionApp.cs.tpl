@@ -8,43 +8,24 @@ using Newtonsoft.Json.Linq;
 namespace {{SafeProjectName}}.Action;
 
 public class ActionApp : TeamsActivityHandler
-{ 
+{
+    private readonly string _adaptiveCardFilePath = Path.Combine(".", "Resources", "helloWorldCard.json");
     // Action.
-    protected override Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
+    protected override async Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
     {
         // The user has chosen to create a card by choosing the 'Create Card' context menu command.
         var actionData = ((JObject)action.Data).ToObject<CardResponse>();
-        var adaptiveCard = new AdaptiveCard(new AdaptiveSchemaVersion("1.4"))
-        {
-            Body = new List<AdaptiveElement>
-            {
-                new AdaptiveTextBlock
-                {
-                    Text = actionData.Title,
-                    Size = AdaptiveTextSize.Large,
-                    Wrap = true
-                },
-                new AdaptiveTextBlock
-                {
-                    Text = actionData.SubTitle,
-                    Size = AdaptiveTextSize.Medium,
-                    Wrap = true
-                },
-                new AdaptiveTextBlock
-                {
-                    Text = actionData.Text,
-                    Size = AdaptiveTextSize.Small,
-                    Wrap = true
-                }
-            }
-        };
+        var templateJson = await System.IO.File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);
+        var template = new AdaptiveCards.Templating.AdaptiveCardTemplate(templateJson);
+        var adaptiveCardJson = template.Expand(new {title=actionData.Title, subTitle=actionData.SubTitle, text=actionData.Text});
+        var adaptiveCard = AdaptiveCard.FromJson(adaptiveCardJson).Card;
         var attachments = new MessagingExtensionAttachment() 
         { 
             ContentType = AdaptiveCard.ContentType,
             Content = adaptiveCard
         };
 
-        return Task.FromResult(new MessagingExtensionActionResponse
+        return new MessagingExtensionActionResponse
         {
             ComposeExtension = new MessagingExtensionResult
             {
@@ -52,7 +33,7 @@ public class ActionApp : TeamsActivityHandler
                 AttachmentLayout = "list",
                 Attachments = new[] { attachments }
             }
-        });
+        };
     }
 }
 

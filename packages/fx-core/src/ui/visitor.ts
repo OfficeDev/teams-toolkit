@@ -8,7 +8,6 @@ import {
   Inputs,
   MultiSelectQuestion,
   OptionItem,
-  QTreeNode,
   Question,
   Result,
   SingleSelectQuestion,
@@ -23,6 +22,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
+import { isCliNewUxEnabled } from "../common/featureFlags";
 import {
   EmptyOptionError,
   InputValidationError,
@@ -31,7 +31,6 @@ import {
   assembleError,
 } from "../error";
 import { getValidationFunction, validate, validationUtils } from "./validationUtils";
-import { isCliNewUxEnabled } from "../common/featureFlags";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -453,10 +452,7 @@ export async function traverse(
   return ok(Void);
 }
 
-function findValue(
-  curr: QTreeNode | IQTreeNode,
-  parentMap: Map<QTreeNode | IQTreeNode, QTreeNode | IQTreeNode>
-): any {
+function findValue(curr: IQTreeNode, parentMap: Map<IQTreeNode, IQTreeNode>): any {
   if (curr.data.type !== "group") {
     // need to convert OptionItem value into id for validation
     if (curr.data.type === "singleSelect") {

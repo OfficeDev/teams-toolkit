@@ -401,7 +401,7 @@ export interface IProgressHandler {
     start: (detail?: string) => Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export interface IQTreeNode {
     // (undocumented)
     children?: IQTreeNode[];
@@ -611,24 +611,6 @@ export enum Platform {
 
 // @public (undocumented)
 export const ProductName = "teamsfx";
-
-// @public
-export class QTreeNode implements IQTreeNode {
-    constructor(data: Question | Group);
-    // (undocumented)
-    addChild(node: QTreeNode): QTreeNode;
-    // (undocumented)
-    children?: QTreeNode[];
-    cliOptionDisabled?: "self" | "children" | "all";
-    // (undocumented)
-    condition?: StringValidation | StringArrayValidation | ConditionFunc;
-    // (undocumented)
-    data: Question | Group;
-    inputsDisabled?: "self" | "children" | "all";
-    trim(): QTreeNode | undefined;
-    // (undocumented)
-    validate(): boolean;
-}
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;

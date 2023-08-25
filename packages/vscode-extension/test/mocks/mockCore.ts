@@ -4,9 +4,7 @@ import {
   Func,
   FxError,
   Inputs,
-  QTreeNode,
   Result,
-  Stage,
   ok,
 } from "@microsoft/teamsfx-api";
 import { CoreCallbackFunc } from "@microsoft/teamsfx-core";

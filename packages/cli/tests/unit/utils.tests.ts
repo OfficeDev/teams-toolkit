@@ -2,11 +2,14 @@
 // Licensed under the MIT license.
 
 import * as apis from "@microsoft/teamsfx-api";
+import { Colors, IQTreeNode, Platform } from "@microsoft/teamsfx-api";
 import * as core from "@microsoft/teamsfx-core";
-import { Colors, Platform, QTreeNode } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import "mocha";
 import sinon from "sinon";
+import activate from "../../src/activate";
+import AzureAccountManager from "../../src/commonlib/azureLogin";
+import { UserSettings } from "../../src/userSetttings";
 import {
   flattenNodes,
   getColorizedString,
@@ -19,9 +22,6 @@ import {
   toYargsOptions,
 } from "../../src/utils";
 import { expect } from "./utils";
-import { UserSettings } from "../../src/userSetttings";
-import AzureAccountManager from "../../src/commonlib/azureLogin";
-import activate from "../../src/activate";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -158,13 +158,19 @@ describe("Utils Tests", function () {
   });
 
   it("flattenNodes", () => {
-    const root = new QTreeNode({
-      type: "group",
-    });
-    root.children = [
-      new QTreeNode({ type: "folder", name: "a", title: "aa" }),
-      new QTreeNode({ type: "folder", name: "b", title: "bb" }),
-    ];
+    const root: IQTreeNode = {
+      data: {
+        type: "group",
+      },
+      children: [
+        {
+          data: { type: "folder", name: "a", title: "aa" },
+        },
+        {
+          data: { type: "folder", name: "b", title: "bb" },
+        },
+      ],
+    };
     const answers = flattenNodes(root);
     expect(answers.map((a) => a.data)).deep.equals([
       { type: "group" },

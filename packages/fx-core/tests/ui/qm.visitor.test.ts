@@ -1,31 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assert } from "chai";
-import "mocha";
-import sinon from "sinon";
 import {
   Colors,
+  FolderQuestion,
   FxError,
   IProgressHandler,
+  IQTreeNode,
   InputResult,
   InputTextConfig,
   InputTextResult,
   Inputs,
+  MultiFileQuestion,
   MultiSelectConfig,
   MultiSelectQuestion,
   MultiSelectResult,
   OptionItem,
   Platform,
-  QTreeNode,
   Result,
   SelectFileConfig,
-  SingleFileOrInputQuestion,
   SelectFileResult,
   SelectFilesConfig,
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
+  SingleFileOrInputQuestion,
+  SingleFileQuestion,
   SingleSelectConfig,
   SingleSelectQuestion,
   SingleSelectResult,
@@ -35,12 +36,12 @@ import {
   UserInteraction,
   err,
   ok,
-  SingleFileOrInputConfig,
-  IQTreeNode,
-  MultiFileQuestion,
-  SingleFileQuestion,
-  FolderQuestion,
 } from "@microsoft/teamsfx-api";
+import { assert } from "chai";
+import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import sinon from "sinon";
+import { setTools } from "../../src/core/globalVars";
 import {
   EmptyOptionError,
   InputValidationError,
@@ -48,9 +49,7 @@ import {
   UserCancelError,
 } from "../../src/error/common";
 import { loadOptions, questionVisitor, traverse } from "../../src/ui/visitor";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import { MockTools } from "../core/utils";
-import { setTools } from "../../src/core/globalVars";
 
 function createInputs(): Inputs {
   return {
@@ -147,99 +146,6 @@ describe("Question Model - Visitor Test", () => {
   afterEach(() => {
     sandbox.restore();
   });
-  describe("question", () => {
-    it("trim() case 1", async () => {
-      const node1 = new QTreeNode({ type: "group" });
-      const node2 = new QTreeNode({ type: "group" });
-      const node3 = new QTreeNode({ type: "group" });
-      node1.addChild(node2);
-      node1.addChild(node3);
-      const trimed = node1.trim();
-      assert.isTrue(trimed === undefined);
-    });
-
-    it("trim() case 2", async () => {
-      const node1 = new QTreeNode({ type: "group" });
-      const node2 = new QTreeNode({ type: "group" });
-      const node3 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
-      node3.condition = { equals: "1" };
-      node1.addChild(node2);
-      node2.addChild(node3);
-      const trimed = node1.trim();
-      assert.isTrue(trimed && trimed.data.name === "t1" && trimed.validate());
-    });
-
-    it("trim() case 3 - parent node has condition, and child node has no condition.", async () => {
-      const condition: StringValidation = {
-        equals: "test",
-      };
-
-      // Arrange
-      // input
-      const node1 = new QTreeNode({ type: "group" });
-      node1.condition = condition;
-      const node2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
-      node1.addChild(node2);
-
-      // expected
-      const expected1 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
-      expected1.condition = condition;
-
-      // Act
-      const trimmed = node1.trim();
-
-      // Assert
-      assert.deepEqual(trimmed, expected1);
-    });
-    it("trim() case 4 - parent node has no condition, and child node has condition.", async () => {
-      const condition: StringValidation = {
-        equals: "test",
-      };
-
-      // Arrange
-      // input
-      const node1 = new QTreeNode({ type: "group" });
-      const node2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
-      node2.condition = condition;
-      node1.addChild(node2);
-
-      // expected
-      const expected1 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
-      expected1.condition = condition;
-
-      // Act
-      const trimmed = node1.trim();
-
-      // Assert
-      assert.deepEqual(trimmed, expected1);
-    });
-    it("trim() case 5 - parent node has condition, and child node has condition.", async () => {
-      const condition: StringValidation = {
-        equals: "test",
-      };
-
-      // Arrange
-      // input
-      const node1 = new QTreeNode({ type: "group" });
-      node1.condition = condition;
-      const node2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
-      node2.condition = condition;
-      node1.addChild(node2);
-
-      // expected
-      const expected1 = new QTreeNode({ type: "group" });
-      expected1.condition = condition;
-      const expected2 = new QTreeNode({ type: "text", name: "t1", title: "t1" });
-      expected2.condition = condition;
-      expected1.addChild(expected2);
-
-      // Act
-      const trimmed = node1.trim();
-
-      // Assert
-      assert.deepEqual(trimmed, expected1);
-    });
-  });
   describe("traverse()", () => {
     beforeEach(() => {});
 
@@ -260,11 +166,14 @@ describe("Question Model - Visitor Test", () => {
         assert(config.step === actualStep);
         return ok({ type: "success", result: `mocked value of ${config.name}` });
       });
-      const root = new QTreeNode({ type: "group" });
+      const root: IQTreeNode = {
+        data: { type: "group" },
+        children: [],
+      };
 
       const expectedSequence: string[] = [];
       for (let i = 1; i <= num; ++i) {
-        root.addChild(new QTreeNode(createTextQuestion(`${i}`)));
+        root.children!.push({ data: createTextQuestion(`${i}`) });
         if (i < cancelNum) expectedSequence.push(`${i}`);
       }
       const inputs = createInputs();
@@ -284,11 +193,14 @@ describe("Question Model - Visitor Test", () => {
         assert(config.step === actualStep);
         return ok({ type: "success", result: `mocked value of ${config.name}` });
       });
-      const root = new QTreeNode({ type: "group" });
+      const root: IQTreeNode = {
+        data: { type: "group" },
+        children: [],
+      };
       const num = 10;
       const expectedSequence: string[] = [];
       for (let i = 1; i <= num; ++i) {
-        root.addChild(new QTreeNode(createTextQuestion(`${i}`)));
+        root.children!.push({ data: createTextQuestion(`${i}`) });
         expectedSequence.push(`${i}`);
       }
       const inputs = createInputs();
@@ -306,7 +218,10 @@ describe("Question Model - Visitor Test", () => {
         actualSequence.push(config.name);
         return ok({ type: "success", result: `mocked value of ${config.name}` });
       });
-      const root = new QTreeNode({ type: "group" });
+      const root: IQTreeNode = {
+        data: { type: "group" },
+        children: [],
+      };
       const num = 10;
       const expectedSequence: string[] = [];
       for (let i = 1; i <= num; ++i) {
@@ -318,8 +233,7 @@ describe("Question Model - Visitor Test", () => {
           expectedSequence.push(name);
         }
         question.skipSingleOption = true;
-        const current = new QTreeNode(question);
-        root.addChild(current);
+        root.children!.push({ data: question });
       }
       const inputs = createInputs();
       const res = await traverse(root, inputs, mockUI);
@@ -425,28 +339,31 @@ describe("Question Model - Visitor Test", () => {
             });
           }
         );
-      const root = new QTreeNode({ type: "group" });
+      const root: IQTreeNode = {
+        data: { type: "group" },
+        children: [],
+      };
       const expectedSequence: string[] = ["1", "4"];
 
       const question1 = createSingleSelectQuestion("1");
       question1.staticOptions = [{ id: `mocked value of 1`, label: `mocked value of 1` }];
       question1.returnObject = true;
-      root.addChild(new QTreeNode(question1));
+      root.children!.push({ data: question1 });
 
       const question2 = createSingleSelectQuestion("2");
       question2.staticOptions = [{ id: `mocked value of 2`, label: `mocked value of 2` }];
       question2.skipSingleOption = true;
-      root.addChild(new QTreeNode(question2));
+      root.children!.push({ data: question2 });
 
       const question3 = createMultiSelectQuestion("3");
       question3.staticOptions = [{ id: `mocked value of 3`, label: `mocked value of 3` }];
       question3.skipSingleOption = true;
       question3.returnObject = true;
-      root.addChild(new QTreeNode(question3));
+      root.children!.push({ data: question3 });
 
       const question4 = createMultiSelectQuestion("4");
       question4.staticOptions = [{ id: `mocked value of 4`, label: `mocked value of 4` }];
-      root.addChild(new QTreeNode(question4));
+      root.children!.push({ data: question4 });
 
       const res = await traverse(root, inputs, mockUI);
       assert.isTrue(res.isOk());
@@ -496,21 +413,18 @@ describe("Question Model - Visitor Test", () => {
       const question1 = createSingleSelectQuestion("1");
       question1.staticOptions = ["2", "3"];
       question1.returnObject = true;
-      const node1 = new QTreeNode(question1);
 
       const question2 = createSingleSelectQuestion("2");
       question2.staticOptions = [{ id: `mocked value of 2`, label: `mocked value of 2` }];
       question2.skipSingleOption = true;
-      const node2 = new QTreeNode(question2);
-      node2.condition = { equals: "2" };
-      node1.addChild(node2);
+      const node2: IQTreeNode = { data: question2, condition: { equals: "2" } };
 
       const question3 = createMultiSelectQuestion("3");
       question3.staticOptions = [{ id: `mocked value of 3`, label: `mocked value of 3` }];
       question3.skipSingleOption = true;
-      const node3 = new QTreeNode(question3);
-      node3.condition = { equals: "3" };
-      node1.addChild(node3);
+      const node3: IQTreeNode = { data: question3, condition: { equals: "3" } };
+
+      const node1: IQTreeNode = { data: question1, children: [node2, node3] };
 
       const res = await traverse(node1, inputs, mockUI);
       assert.isTrue(res.isOk());
@@ -553,21 +467,17 @@ describe("Question Model - Visitor Test", () => {
         { id: "3", label: "3" },
       ];
       question1.returnObject = true;
-      const node1 = new QTreeNode(question1);
-
       const question2 = createSingleSelectQuestion("2");
       question2.staticOptions = [{ id: `mocked value of 2`, label: `mocked value of 2` }];
       question2.skipSingleOption = true;
-      const node2 = new QTreeNode(question2);
-      node2.condition = { equals: "2" };
-      node1.addChild(node2);
+      const node2: IQTreeNode = { data: question2, condition: { equals: "2" } };
 
       const question3 = createMultiSelectQuestion("3");
       question3.staticOptions = [{ id: `mocked value of 3`, label: `mocked value of 3` }];
       question3.skipSingleOption = true;
-      const node3 = new QTreeNode(question3);
-      node3.condition = { equals: "3" };
-      node1.addChild(node3);
+      const node3: IQTreeNode = { data: question3, condition: { equals: "3" } };
+
+      const node1: IQTreeNode = { data: question1, children: [node2, node3] };
 
       const res = await traverse(node1, inputs, mockUI);
       assert.isTrue(res.isOk());
@@ -599,15 +509,12 @@ describe("Question Model - Visitor Test", () => {
           }
         );
 
-      const root = new QTreeNode({ type: "group" });
-
       const question1 = createSingleSelectQuestion("1");
       question1.staticOptions = [
         { id: `mocked value of 1`, label: `mocked value of 1` },
         { id: `mocked value of 2`, label: `mocked value of 2` },
       ];
       question1.returnObject = true;
-      root.addChild(new QTreeNode(question1));
       inputs["1"] = { id: `mocked value of 1`, label: `mocked value of 1` };
 
       const question3 = createMultiSelectQuestion("3");
@@ -617,8 +524,11 @@ describe("Question Model - Visitor Test", () => {
       ];
       question3.skipSingleOption = true;
       question3.returnObject = true;
-      root.addChild(new QTreeNode(question3));
 
+      const root: IQTreeNode = {
+        data: { type: "group" },
+        children: [{ data: question1 }, { data: question3 }],
+      };
       const res = await traverse(root, inputs, mockUI);
       assert.isTrue(res.isOk());
       assert.equal((multiSelect.lastCall.args[0] as MultiSelectConfig).step, 1);
@@ -640,19 +550,19 @@ describe("Question Model - Visitor Test", () => {
       const expectedSequence: string[] = ["1", "2", "3", "2", "3", "4"];
 
       const question1 = createTextQuestion("1");
-      const node1 = new QTreeNode(question1);
-
       const question2 = createTextQuestion("2");
-      const node2 = new QTreeNode(question2);
-      node1.addChild(node2);
-
       const question3 = createTextQuestion("3");
-      const node3 = new QTreeNode(question3);
-      node2.addChild(node3);
-
       const question4 = createTextQuestion("4");
-      const node4 = new QTreeNode(question4);
-      node2.addChild(node4);
+
+      const node1: IQTreeNode = {
+        data: question1,
+        children: [
+          {
+            data: question2,
+            children: [{ data: question3 }, { data: question4 }],
+          },
+        ],
+      };
 
       const res = await traverse(node1, inputs, mockUI);
       assert.isTrue(res.isOk());
@@ -672,7 +582,7 @@ describe("Question Model - Visitor Test", () => {
         dynamicOptions: () => Promise.resolve([{ id: "1", label: "1" }]),
       };
       const inputs = createInputs();
-      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      const res = await traverse({ data: question }, inputs, mockUI);
       assert.isTrue(res.isOk());
       assert.isTrue(inputs["test"] === "1");
     });
@@ -686,7 +596,7 @@ describe("Question Model - Visitor Test", () => {
         staticOptions: [],
       };
       const inputs = createInputs();
-      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      const res = await traverse({ data: question }, inputs, mockUI);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
         assert.isTrue(res.error instanceof EmptyOptionError);
@@ -710,7 +620,7 @@ describe("Question Model - Visitor Test", () => {
         },
       };
       const inputs = createInputs();
-      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      const res = await traverse({ data: question }, inputs, mockUI);
       assert.isTrue(res.isOk());
       assert.isTrue(inputs["test"] === "file");
     });
@@ -736,7 +646,7 @@ describe("Question Model - Visitor Test", () => {
         validation: validation,
       };
       const inputs = createInputs();
-      const res = await traverse(new QTreeNode(question), inputs, mockUI);
+      const res = await traverse({ data: question }, inputs, mockUI);
       assert.isTrue(res.isOk());
       assert.isTrue(inputs["test"] === "file");
     });

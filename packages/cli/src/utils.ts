@@ -8,7 +8,6 @@ import {
   MultiSelectQuestion,
   OptionItem,
   Platform,
-  QTreeNode,
   Question,
   SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";

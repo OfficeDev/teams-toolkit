@@ -8,9 +8,9 @@ import {
   CreateProjectResult,
   Func,
   FxError,
+  IQTreeNode,
   Inputs,
   OpenAIPluginManifest,
-  QTreeNode,
   Result,
   Stage,
   Tools,
@@ -92,13 +92,13 @@ export default class ServerConnection implements IServerConnection {
     this.connection.listen();
   }
 
-  public async getQuestionsRequest(
+  public getQuestionsRequest(
     stage: Stage,
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
+  ): Result<IQTreeNode | undefined, FxError> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const res = await Correlator.runWithId(
+    const res = Correlator.runWithId(
       corrId,
       (stage, inputs) => this.core.getQuestions(stage, inputs),
       stage,

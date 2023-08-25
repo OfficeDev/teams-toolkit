@@ -44,15 +44,16 @@ describe("serverConnections", () => {
 
   it("getQuestionsRequest", () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns(undefined);
+    const fake = sandbox.fake.returns(ok(undefined));
     sandbox.replace(connection["core"], "getQuestions", fake);
     const stage = Stage.create;
     const inputs = { platform: Platform.VS };
     const token = {};
     const res = connection.getQuestionsRequest(stage, inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok(undefined));
-    });
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isUndefined(res.value);
+    }
   });
 
   it("createProjectRequest", () => {

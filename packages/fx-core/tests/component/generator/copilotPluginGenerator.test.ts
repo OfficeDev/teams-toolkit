@@ -107,7 +107,9 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
@@ -119,7 +121,7 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 
-  it("success with api spec warning", async function () {
+  it("success with api spec warning and generate warnings", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
@@ -142,7 +144,10 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(SpecParser.prototype, "generate").resolves({
+      allSuccess: true,
+      warnings: [{ type: WarningType.GenerateCardFailed, content: "test", data: "getPets" }],
+    });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
@@ -150,8 +155,10 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      assert.isTrue(result.value.warnings!.length === 1);
+      assert.isTrue(result.value.warnings!.length === 2);
       assert.isFalse(result.value.warnings![0].content.includes("operation2"));
+      assert.isUndefined(result.value.warnings![0].data);
+      assert.equal(result.value.warnings![1].type, WarningType.GenerateCardFailed);
     }
   });
 
@@ -174,7 +181,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
@@ -204,7 +211,7 @@ describe("copilotPluginGenerator", function () {
       .stub(manifestUtils, "_readAppManifest")
       .resolves(ok({ ...teamsManifest, name: { short: "", full: "" } }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
@@ -226,7 +233,9 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(true);
-    const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
@@ -254,7 +263,9 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").throws(new Error("test"));
-    const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
@@ -326,7 +337,7 @@ describe("copilotPluginGenerator", function () {
       .stub(manifestUtils, "_readAppManifest")
       .resolves(err(new SystemError("readManifest", "name", "", "")));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
@@ -520,12 +531,12 @@ describe("generateScaffoldingSummary", () => {
       type: "apiBased",
       supportsConversationalAI: true,
       commands: [
-        { id: "command1", type: "query", apiResponseRenderingTemplateFile: "test", title: "" },
+        { id: "command1", type: "query", apiResponseRenderingTemplateFile: "", title: "" },
       ],
     };
     sandbox.stub(fs, "existsSync").returns(false);
     const res = generateScaffoldingSummary(
-      [],
+      [{ type: WarningType.GenerateCardFailed, content: "test", data: "command1" }],
       {
         ...teamsManifest,
         composeExtensions: [composeExtension],
@@ -533,7 +544,7 @@ describe("generateScaffoldingSummary", () => {
       "path"
     );
 
-    assert.isTrue(!res.includes("apiResponseRenderingTemplateFile"));
+    assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
     assert.isTrue(res.includes("test"));
   });
 });

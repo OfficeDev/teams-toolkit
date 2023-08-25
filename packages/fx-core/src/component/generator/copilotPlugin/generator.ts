@@ -101,6 +101,7 @@ export class CopilotPluginGenerator {
             ConstantString.MissingOperationId,
             apisMissingOperationId.join(", ")
           );
+          delete operationIdWarning.data;
         } else {
           warnings.splice(warnings.indexOf(operationIdWarning), 1);
         }
@@ -190,6 +191,7 @@ export class CopilotPluginGenerator {
             return {
               type: warning.type,
               content: warning.content,
+              data: warning.data,
             };
           }),
         });

@@ -157,10 +157,11 @@ class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<CreateProjectResult, FxError>> {
-    const folder = path.resolve(inputs["folder"] as string);
+    let folder = inputs["folder"] as string;
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));
     }
+    folder = path.resolve(folder);
     const scratch = inputs[QuestionNames.Scratch] as string;
     let projectPath = "";
     let warnings = undefined;

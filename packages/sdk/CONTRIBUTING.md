@@ -33,8 +33,8 @@ npm install ../microsoft-teamsfx-x.x.x.tgz  # install the local built package
 ```
 
 Run `npm run build` and `npm pack` under `packages/sdk` after any updates of SDK.
-## Add or remove dependecy for SDK
-run `pnpm install XXX` to add dependecy, run `pnpm remove XXX` to remove dependency.
+## Add or remove dependency for SDK
+run `pnpm install XXX` to add dependency, run `pnpm remove XXX` to remove dependency.
 # Running test cases
 
 All tests are under `test/` folder. The filename ends with ".spec.ts". 

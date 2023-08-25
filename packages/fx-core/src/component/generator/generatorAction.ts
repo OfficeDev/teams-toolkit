@@ -66,6 +66,7 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
       return Promise.resolve();
     }
 
+    context.logProvider.debug(`Fetching template zip from source code: ${JSON.stringify(context)}`);
     //! This path only works in debug mode
     const templateSourceCodePath = path.resolve(
       __dirname,
@@ -82,9 +83,11 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
 export const downloadDirectoryAction: GeneratorAction = {
   name: GeneratorActionName.DownloadDirectory,
   run: async (context: GeneratorContext) => {
+    context.logProvider.debug(`Downloading sample by directory: ${JSON.stringify(context)}`);
     if (!context.url) {
       throw new MissKeyError("url");
     }
+
     await downloadDirectory(context.url, context.destination);
   },
 };
@@ -96,6 +99,7 @@ export const fetchTemplateUrlWithTagAction: GeneratorAction = {
       return;
     }
 
+    context.logProvider.debug(`Fetching template url with tag: ${JSON.stringify(context)}`);
     context.url = await fetchTemplateZipUrl(context.name, context.tryLimits, context.timeoutInMs);
   },
 };
@@ -107,6 +111,7 @@ export const fetchZipFromUrlAction: GeneratorAction = {
       return;
     }
 
+    context.logProvider.debug(`Fetching zip from url: ${JSON.stringify(context)}`);
     if (!context.url) {
       throw new MissKeyError("url");
     }
@@ -120,6 +125,7 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
     if (context.zip) {
       return;
     }
+    context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
     context.fallback = true;
     const fallbackPath = path.join(getTemplatesFolder(), "fallback");
     const fileName = `${context.name}.zip`;
@@ -133,6 +139,7 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
 export const unzipAction: GeneratorAction = {
   name: GeneratorActionName.Unzip,
   run: async (context: GeneratorContext) => {
+    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
     if (!context.zip) {
       throw new MissKeyError("zip");
     }

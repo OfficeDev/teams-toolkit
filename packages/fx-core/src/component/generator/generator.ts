@@ -128,8 +128,8 @@ export class Generator {
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
-    const actionSeq = DownloadDirectoryActionSeq;
-    await this.generate(generatorContext, actionSeq);
+    ctx.logProvider.verbose(`Downloading sample "${sampleName}" to ${destinationPath}`);
+    await this.generate(generatorContext, DownloadDirectoryActionSeq);
     if (!generatorContext.zipped?.length) {
       return err(new SampleNotFoundError(sampleName).toFxError());
     }

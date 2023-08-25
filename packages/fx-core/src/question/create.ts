@@ -542,7 +542,7 @@ function capabilityQuestion(): SingleSelectQuestion {
     cliDescription: "Specifies the Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx list capabilities",
+    cliChoiceListCommand: "teamsfx list templates",
     type: "singleSelect",
     staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {

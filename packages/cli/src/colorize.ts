@@ -28,7 +28,7 @@ export function colorize(message: string, type: TextType): string {
     case TextType.Warning:
       return chalk.yellowBright(message);
     case TextType.Info:
-      return chalk.whiteBright(message);
+      return message;
     case TextType.Hyperlink:
       return chalk.cyanBright(message);
     case TextType.Email:

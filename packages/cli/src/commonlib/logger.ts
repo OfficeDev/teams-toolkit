@@ -36,8 +36,6 @@ export class CLILogger implements LogProvider {
   info(message: string | Array<{ content: string; color: Colors }>): void {
     if (message instanceof Array) {
       message = getColorizedString(message);
-    } else {
-      message = chalk.whiteBright(message);
     }
     this.log(LogLevel.Info, message);
   }

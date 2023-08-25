@@ -231,7 +231,7 @@ describe("Generator utils", () => {
       (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
       (fileName: string, fileData: Buffer) =>
         renderTemplateFileData(fileName, fileData, { appName: "test" }),
-      "test1"
+      (fileName: string) => fileName.startsWith("test1")
     );
     assert.isFalse(await fs.pathExists(path.join(outputDir, "test.txt")));
   });
@@ -325,9 +325,9 @@ describe("Generator error", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").rejects();
     const generatorContext: GeneratorContext = {
       name: "test",
-      relativePath: "/",
       destination: "test",
       logProvider: tools.logProvider,
+      filterFn: (filename) => filename.startsWith("/"),
       onActionError: templateDefaultOnActionError,
     };
     try {

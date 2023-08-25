@@ -16,10 +16,10 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
+  IQTreeNode,
   ok,
   OpenAIPluginManifest,
   Platform,
-  QTreeNode,
   Result,
   Stage,
   Tools,
@@ -565,9 +565,9 @@ export class FxCore {
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
-  getQuestions(stage: Stage, inputs: Inputs): Result<QTreeNode | undefined, FxError> {
+  getQuestions(stage: Stage, inputs: Inputs): Result<IQTreeNode | undefined, FxError> {
     if (stage === Stage.create) {
-      return ok(createProjectCliHelpNode() as QTreeNode);
+      return ok(createProjectCliHelpNode());
     }
     return ok(undefined);
   }

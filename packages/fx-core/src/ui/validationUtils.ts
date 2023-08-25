@@ -2,16 +2,21 @@
 // Licensed under the MIT license.
 
 import {
+  ConditionFunc,
+  FuncValidation,
   Inputs,
   MultiSelectQuestion,
   OptionItem,
   Question,
   SingleSelectQuestion,
   StaticOptions,
+  StaticValidation,
+  StringArrayValidation,
+  StringValidation,
   ValidationSchema,
-  getValidationFunction,
 } from "@microsoft/teamsfx-api";
 import { EmptyOptionError } from "../error/common";
+import * as jsonschema from "jsonschema";
 
 class ValidationUtils {
   async validateInputForSingleSelectQuestion(
@@ -125,3 +130,212 @@ class ValidationUtils {
 }
 
 export const validationUtils = new ValidationUtils();
+
+/**
+ * A function to return a validation function according the validation schema
+ * @param validation validation schema
+ * @param inputs object to carry all user inputs
+ * @returns a validation function
+ */
+export function getValidationFunction<T extends string | string[] | undefined>(
+  validation: ValidationSchema,
+  inputs: Inputs
+): (input: T) => string | undefined | Promise<string | undefined> {
+  return function (input: T): string | undefined | Promise<string | undefined> {
+    return validate(validation, input, inputs);
+  };
+}
+/**
+ * Implementation of validation function
+ * @param validSchema validation schema
+ * @param value value to validate
+ * @param inputs user inputs object, which works as the context of the validation
+ * @returns A human-readable string which is presented as diagnostic message.
+ * Return `undefined` when 'value' is valid.
+ */
+export async function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(
+  validSchema: ValidationSchema | ConditionFunc,
+  value: T,
+  inputs?: Inputs
+): Promise<string | undefined> {
+  {
+    //FuncValidation
+    const funcValidation: FuncValidation<T> = validSchema as FuncValidation<T>;
+    if (funcValidation.validFunc) {
+      const res = await funcValidation.validFunc(value, inputs);
+      return res as string;
+    } else if (typeof funcValidation === "function") {
+      const res = await (funcValidation as ConditionFunc)(inputs!);
+      if (res) return undefined;
+      return "condition function is not met.";
+    }
+  }
+
+  if (!value) {
+    if ((validSchema as StaticValidation).required === true) return `input value is required.`;
+  }
+
+  const noneEmptyKeyNum = Object.keys(validSchema).filter(
+    (key) => (validSchema as any)[key] !== undefined
+  ).length;
+
+  if (noneEmptyKeyNum === 0) {
+    return undefined;
+  }
+
+  if (
+    value === undefined &&
+    ((validSchema as any).required ||
+      (validSchema as any).equals ||
+      (validSchema as any).maxLength ||
+      (validSchema as any).minLength ||
+      (validSchema as any).pattern ||
+      (validSchema as any).enum ||
+      (validSchema as any).startsWith ||
+      (validSchema as any).endsWith ||
+      (validSchema as any).includes ||
+      (validSchema as any).maxItems ||
+      (validSchema as any).minItems ||
+      (validSchema as any).uniqueItems ||
+      (validSchema as any).contains ||
+      (validSchema as any).containsAll ||
+      (validSchema as any).containsAny)
+  ) {
+    return `'undefined' does not meet condition:'${JSON.stringify(validSchema)}'`;
+  }
+  const jsonValue = JSON.stringify(value);
+  {
+    // StringValidation
+    const stringValidation: StringValidation = validSchema as StringValidation;
+    const strToValidate = value as string;
+    if (strToValidate === undefined || typeof strToValidate === "string") {
+      const schema: any = {};
+      if (stringValidation.equals && typeof stringValidation.equals === "string") {
+        if (strToValidate === undefined) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          return `${jsonValue} does not meet equals:'${stringValidation.equals}'`;
+        }
+        schema.const = stringValidation.equals;
+      }
+      if (
+        stringValidation.enum &&
+        stringValidation.enum.length > 0 &&
+        typeof stringValidation.enum[0] === "string"
+      )
+        schema.enum = stringValidation.enum;
+      if (stringValidation.minLength) schema.minLength = stringValidation.minLength;
+      if (stringValidation.maxLength) schema.maxLength = stringValidation.maxLength;
+      if (stringValidation.pattern) schema.pattern = stringValidation.pattern;
+      if (Object.keys(schema).length > 0) {
+        const validateResult = jsonschema.validate(strToValidate, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+          return `${jsonValue} ${validateResult.errors[0].message}`;
+        }
+      }
+
+      if (stringValidation.startsWith) {
+        if (!strToValidate.startsWith(stringValidation.startsWith)) {
+          return `${jsonValue} does not meet startsWith:'${stringValidation.startsWith}'`;
+        }
+      }
+      if (stringValidation.endsWith) {
+        if (!strToValidate.endsWith(stringValidation.endsWith)) {
+          return `${jsonValue} does not meet endsWith:'${stringValidation.endsWith}'`;
+        }
+      }
+      if (stringValidation.includes) {
+        if (!strToValidate.includes(stringValidation.includes)) {
+          return `${jsonValue} does not meet includes:'${stringValidation.includes}'`;
+        }
+      }
+      if (stringValidation.notEquals) {
+        if (strToValidate === stringValidation.notEquals) {
+          return `${jsonValue} does not meet notEquals:'${stringValidation.notEquals}'`;
+        }
+      }
+      if (stringValidation.excludesEnum) {
+        if (stringValidation.excludesEnum.includes(strToValidate)) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          return `${jsonValue} does not meet excludesEnum:'${stringValidation.excludesEnum}'`;
+        }
+      }
+    }
+  }
+
+  //StringArrayValidation
+  {
+    const stringArrayValidation: StringArrayValidation = validSchema as StringArrayValidation;
+    const arrayToValidate = value as string[];
+    if (arrayToValidate === undefined || arrayToValidate instanceof Array) {
+      const schema: any = {};
+      if (stringArrayValidation.maxItems) schema.maxItems = stringArrayValidation.maxItems;
+      if (stringArrayValidation.minItems) schema.minItems = stringArrayValidation.minItems;
+      if (stringArrayValidation.uniqueItems) schema.uniqueItems = stringArrayValidation.uniqueItems;
+      if (Object.keys(schema).length > 0) {
+        const validateResult = jsonschema.validate(arrayToValidate, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          return `${jsonValue} ${validateResult.errors[0].message}`;
+        }
+      }
+      if (stringArrayValidation.equals) {
+        if (stringArrayValidation.equals instanceof Array) {
+          stringArrayValidation.enum = stringArrayValidation.equals;
+          stringArrayValidation.containsAll = stringArrayValidation.equals;
+        } else {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          return `${jsonValue} does not equals to:'${stringArrayValidation.equals}'`;
+        }
+      }
+      if (stringArrayValidation.enum && arrayToValidate) {
+        for (const item of arrayToValidate) {
+          if (!stringArrayValidation.enum.includes(item)) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            return `${jsonValue} does not meet with enum:'${stringArrayValidation.enum}'`;
+          }
+        }
+      }
+      if (stringArrayValidation.excludes) {
+        if (arrayToValidate && arrayToValidate.includes(stringArrayValidation.excludes)) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          return `${jsonValue} does not meet with excludes:'${stringArrayValidation.excludes}'`;
+        }
+      }
+      if (stringArrayValidation.contains) {
+        if (arrayToValidate && !arrayToValidate.includes(stringArrayValidation.contains)) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          return `${jsonValue} does not meet with contains:'${stringArrayValidation.contains}'`;
+        }
+      }
+      if (stringArrayValidation.containsAll) {
+        const containsAll: string[] = stringArrayValidation.containsAll;
+        if (containsAll.length > 0) {
+          for (const i of containsAll) {
+            if (arrayToValidate && !arrayToValidate.includes(i)) {
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+              return `${jsonValue} does not meet with containsAll:'${containsAll}'`;
+            }
+          }
+        }
+      }
+      if (stringArrayValidation.containsAny) {
+        const containsAny: string[] = stringArrayValidation.containsAny;
+        if (containsAny.length > 0) {
+          // let array = valueToValidate as string[];
+          let found = false;
+          for (const i of containsAny) {
+            if (arrayToValidate && arrayToValidate.includes(i)) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            return `${jsonValue} does not meet containsAny:'${containsAny}'`;
+          }
+        }
+      }
+    }
+  }
+  return undefined;
+}

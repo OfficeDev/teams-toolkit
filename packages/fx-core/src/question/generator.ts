@@ -12,7 +12,6 @@ import {
   Platform,
   SingleSelectQuestion,
   UserInputQuestion,
-  validate,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import {
@@ -24,6 +23,7 @@ import {
   VariableDeclarationKind,
 } from "ts-morph";
 import { questionNodes } from ".";
+import { validate } from "../ui/validationUtils";
 
 async function collectNodesForCliOptions(node: IQTreeNode, nodeList: IQTreeNode[]) {
   if (node.cliOptionDisabled === "all") return;

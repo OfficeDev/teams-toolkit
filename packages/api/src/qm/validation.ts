@@ -212,7 +212,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
   ) {
     return `'undefined' does not meet condition:'${JSON.stringify(validSchema)}'`;
   }
-
+  const jsonValue = JSON.stringify(value);
   {
     // StringValidation
     const stringValidation: StringValidation = validSchema as StringValidation;
@@ -222,7 +222,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
       if (stringValidation.equals && typeof stringValidation.equals === "string") {
         if (strToValidate === undefined) {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return `'${strToValidate}' does not meet equals:'${stringValidation.equals}'`;
+          return `${jsonValue} does not meet equals:'${stringValidation.equals}'`;
         }
         schema.const = stringValidation.equals;
       }
@@ -238,34 +238,34 @@ export async function validate<T extends string | string[] | OptionItem | Option
       if (Object.keys(schema).length > 0) {
         const validateResult = jsonschema.validate(strToValidate, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
-          return `'${strToValidate}' ${validateResult.errors[0].message}`;
+          return `${jsonValue} ${validateResult.errors[0].message}`;
         }
       }
 
       if (stringValidation.startsWith) {
         if (!strToValidate.startsWith(stringValidation.startsWith)) {
-          return `'${strToValidate}' does not meet startsWith:'${stringValidation.startsWith}'`;
+          return `${jsonValue} does not meet startsWith:'${stringValidation.startsWith}'`;
         }
       }
       if (stringValidation.endsWith) {
         if (!strToValidate.endsWith(stringValidation.endsWith)) {
-          return `'${strToValidate}' does not meet endsWith:'${stringValidation.endsWith}'`;
+          return `${jsonValue} does not meet endsWith:'${stringValidation.endsWith}'`;
         }
       }
       if (stringValidation.includes) {
         if (!strToValidate.includes(stringValidation.includes)) {
-          return `'${strToValidate}' does not meet includes:'${stringValidation.includes}'`;
+          return `${jsonValue} does not meet includes:'${stringValidation.includes}'`;
         }
       }
       if (stringValidation.notEquals) {
         if (strToValidate === stringValidation.notEquals) {
-          return `'${strToValidate}' does not meet notEquals:'${stringValidation.notEquals}'`;
+          return `${jsonValue} does not meet notEquals:'${stringValidation.notEquals}'`;
         }
       }
       if (stringValidation.excludesEnum) {
         if (stringValidation.excludesEnum.includes(strToValidate)) {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return `'${strToValidate}' does not meet excludesEnum:'${stringValidation.excludesEnum}'`;
+          return `${jsonValue} does not meet excludesEnum:'${stringValidation.excludesEnum}'`;
         }
       }
     }
@@ -284,7 +284,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
         const validateResult = jsonschema.validate(arrayToValidate, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return `'${arrayToValidate}' ${validateResult.errors[0].message}`;
+          return `${jsonValue} ${validateResult.errors[0].message}`;
         }
       }
       if (stringArrayValidation.equals) {
@@ -293,27 +293,27 @@ export async function validate<T extends string | string[] | OptionItem | Option
           stringArrayValidation.containsAll = stringArrayValidation.equals;
         } else {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return `'${arrayToValidate}' does not equals to:'${stringArrayValidation.equals}'`;
+          return `${jsonValue} does not equals to:'${stringArrayValidation.equals}'`;
         }
       }
       if (stringArrayValidation.enum && arrayToValidate) {
         for (const item of arrayToValidate) {
           if (!stringArrayValidation.enum.includes(item)) {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
+            return `${jsonValue} does not meet with enum:'${stringArrayValidation.enum}'`;
           }
         }
       }
       if (stringArrayValidation.excludes) {
         if (arrayToValidate && arrayToValidate.includes(stringArrayValidation.excludes)) {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return `'${arrayToValidate}' does not meet with excludes:'${stringArrayValidation.excludes}'`;
+          return `${jsonValue} does not meet with excludes:'${stringArrayValidation.excludes}'`;
         }
       }
       if (stringArrayValidation.contains) {
         if (arrayToValidate && !arrayToValidate.includes(stringArrayValidation.contains)) {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return `'${arrayToValidate}' does not meet with contains:'${stringArrayValidation.contains}'`;
+          return `${jsonValue} does not meet with contains:'${stringArrayValidation.contains}'`;
         }
       }
       if (stringArrayValidation.containsAll) {
@@ -322,7 +322,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
           for (const i of containsAll) {
             if (arrayToValidate && !arrayToValidate.includes(i)) {
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-              return `'${arrayToValidate}' does not meet with containsAll:'${containsAll}'`;
+              return `${jsonValue} does not meet with containsAll:'${containsAll}'`;
             }
           }
         }
@@ -340,7 +340,7 @@ export async function validate<T extends string | string[] | OptionItem | Option
           }
           if (!found) {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            return `'${arrayToValidate}' does not meet containsAny:'${containsAny}'`;
+            return `${jsonValue} does not meet containsAny:'${containsAny}'`;
           }
         }
       }

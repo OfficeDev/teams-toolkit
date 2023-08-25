@@ -571,6 +571,7 @@ function selectAppTypeQuestion(): MultiSelectQuestion {
       },
     ],
     validation: { minItems: 1 },
+    validationHelp: "Please select at least one app type.",
   };
 }
 

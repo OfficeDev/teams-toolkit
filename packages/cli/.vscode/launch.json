@@ -10,7 +10,7 @@
       "name": "Launch new command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["config", "set", "interactive", "false"],
+      "args": ["permission", "grant", "--folder", "C:\\Users\\zhjay\\TeamsApps\\huajie082101"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

@@ -5,7 +5,7 @@
             "name": "Preview in Copilot (Edge)",
             "type": "msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com?${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 1
@@ -16,7 +16,7 @@
             "name": "Preview in Copilot (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com?${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 2

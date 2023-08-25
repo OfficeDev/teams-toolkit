@@ -400,10 +400,7 @@ function validateTeamsManifestLength(
                 `composeExtensions/commands/${command.id}/apiResponseRenderingTemplateFile`,
                 path.join(AppPackageFolderName, ManifestTemplateFileName)
               ) +
-              getLocalizedString(
-                "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate.detailError",
-                errorDetail
-              )
+              (errorDetail ? EOL + errorDetail : "")
           );
         }
       }

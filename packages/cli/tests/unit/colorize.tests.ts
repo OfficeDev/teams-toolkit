@@ -12,6 +12,7 @@ describe("colorize", () => {
   let message = "";
 
   beforeEach(() => {
+    sandox.stub(process.stdout, "isTTY").value(true);
     sandox.stub(ScreenManager, "writeLine").callsFake((msg: string) => (message += msg));
   });
 

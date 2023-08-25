@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
@@ -21,6 +21,8 @@ import {
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
   FetchZipFromUrlError,
+  SampleNotFoundError,
+  TemplateNotFoundError,
   TemplateZipFallbackError,
   UnzipError,
 } from "./error";
@@ -67,13 +69,13 @@ export class Generator {
     const replaceMap = ctx.templateVariables ?? {};
     const generatorContext: GeneratorContext = {
       name: language ?? commonTemplateName,
-      relativePath: `${scenario}/`,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
-        renderTemplateFileName(fileName, fileData, replaceMap),
+        renderTemplateFileName(fileName, fileData, replaceMap).replace(`${scenario}/`, ""),
       fileDataReplaceFn: (fileName, fileData) =>
         renderTemplateFileData(fileName, fileData, replaceMap),
+      filterFn: (fileName) => fileName.startsWith(`${scenario}/`),
       onActionError: templateDefaultOnActionError,
     };
     const templateName = `${scenario}-${generatorContext.name}`;
@@ -88,6 +90,9 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
+    if (!generatorContext.zipped?.length) {
+      return err(new TemplateNotFoundError(scenario).toFxError());
+    }
     return ok(undefined);
   }
 
@@ -125,6 +130,9 @@ export class Generator {
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
     const actionSeq = DownloadDirectoryActionSeq;
     await this.generate(generatorContext, actionSeq);
+    if (!generatorContext.zipped?.length) {
+      return err(new SampleNotFoundError(sampleName).toFxError());
+    }
     return ok(undefined);
   }
 

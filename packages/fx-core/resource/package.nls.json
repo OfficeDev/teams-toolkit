@@ -197,6 +197,8 @@
   "error.appstudio.BotProvisionReturnsConflictResult": "Botframework provisioning returns conflict result from attempting to create bot registration.",
   "_error.appstudio.BotProvisionReturnsConflictResult.comment": "This is to describe API call, no need to translate 'Botframework'.",
   "error.generator.TemplateZipFallbackError": "Unable to download zip package and open local zip package.",
+  "error.generator.TemplateNotFoundError": "Unable to find template: %s.",
+  "error.generator.SampleNotFoundError": "Unable to find sample: %s.",
   "error.generator.FetchZipFromUrlError": "Unable to download zip package from %s.",
   "error.generator.UnzipError": "Unable to unzip templates and write to disk.",
   "error.generator.MissKeyError": "Unable to find key %s",

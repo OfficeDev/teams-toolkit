@@ -16,12 +16,13 @@ export interface GeneratorContext {
   logProvider: LogProvider;
   tryLimits?: number;
   timeoutInMs?: number;
-  relativePath?: string;
   url?: string;
   zip?: AdmZip;
+  zipped?: AdmZip.IZipEntry[];
   fallback?: boolean;
   cancelDownloading?: boolean;
 
+  filterFn?: (name: string) => boolean;
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
   fileDataReplaceFn?: (name: string, data: Buffer) => Buffer | string;
 
@@ -135,12 +136,12 @@ export const unzipAction: GeneratorAction = {
     if (!context.zip) {
       throw new MissKeyError("zip");
     }
-    await unzip(
+    context.zipped = await unzip(
       context.zip,
       context.destination,
       context.fileNameReplaceFn,
       context.fileDataReplaceFn,
-      context.relativePath
+      context.filterFn
     );
   },
 };

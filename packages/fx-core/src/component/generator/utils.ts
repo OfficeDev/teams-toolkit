@@ -140,21 +140,19 @@ export async function unzip(
   dstPath: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
-  relativePath?: string
-): Promise<void> {
-  let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
-  if (relativePath) {
-    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
-  }
-
+  filterFn?: (filePath: string, data: Buffer) => boolean
+): Promise<AdmZip.IZipEntry[]> {
+  const entries = zip
+    .getEntries()
+    .filter((entry) => !entry.isDirectory)
+    .filter((entry) => {
+      return filterFn ? filterFn(entry.entryName, entry.getData()) : true;
+    });
   for (const entry of entries) {
     const rawEntryData: Buffer = entry.getData();
-    let entryName: string = nameReplaceFn
+    const entryName: string = nameReplaceFn
       ? nameReplaceFn(entry.entryName, rawEntryData)
       : entry.entryName;
-    if (relativePath) {
-      entryName = entryName.replace(relativePath, "");
-    }
     const entryData: string | Buffer = dataReplaceFn
       ? dataReplaceFn(entry.name, rawEntryData)
       : rawEntryData;
@@ -163,6 +161,7 @@ export async function unzip(
     await fs.ensureDir(dirPath);
     await fs.writeFile(filePath, entryData);
   }
+  return entries;
 }
 
 export function renderTemplateFileData(
@@ -271,7 +270,7 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
     await sendRequestWithRetry(async () => {
       return await axios.get(fileInfoUrl);
     }, retryLimits)
-  ).data as unknown as any;
+  ).data as any;
 
   const fileInfoTree = fileInfo.tree as any[];
   const samplePaths = fileInfoTree

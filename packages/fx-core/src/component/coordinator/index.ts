@@ -157,7 +157,7 @@ class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<CreateProjectResult, FxError>> {
-    const folder = inputs["folder"] as string;
+    const folder = path.resolve(inputs["folder"] as string);
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));
     }

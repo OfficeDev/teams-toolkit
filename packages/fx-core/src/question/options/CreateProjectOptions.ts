@@ -132,7 +132,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     shortName: "f",
     description: "Directory where the project folder will be created in.",
     required: true,
-    default: "E:\\workspace\\TeamsFx\\packages\\fx-core",
+    default: "./",
   },
   {
     name: "app-name",

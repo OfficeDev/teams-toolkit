@@ -13,14 +13,9 @@ runs:
       with:
         node-version: 18
 
-    - name: Install pnpm
-      if: ${{ inputs.setup == 'true' }}
-      uses: nick-fields/retry@v2
+    - uses: pnpm/action-setup@v2
       with:
-        timeout_minutes: 10
-        max_attempts: 5
-        command: |
-          npm install pnpm -g
+        version: 8
     
     - name: Setup project
       if: ${{ inputs.setup == 'true' }}

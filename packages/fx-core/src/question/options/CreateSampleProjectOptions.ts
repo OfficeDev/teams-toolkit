@@ -17,7 +17,7 @@ export const CreateSampleProjectOptions: CLICommandOption[] = [
     shortName: "f",
     description: "Directory where the project folder will be created in.",
     required: true,
-    default: "./",
+    default: "E:\\workspace\\TeamsFx\\packages\\fx-core",
   },
 ];
 export const CreateSampleProjectArguments: CLICommandArgument[] = [

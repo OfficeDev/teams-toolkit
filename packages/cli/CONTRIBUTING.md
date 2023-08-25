@@ -32,14 +32,7 @@ The TeamsFx CLI may require an Azure account and subscription to deploy the Azur
 2. `cd TeamsFx`
 3. `npm run setup`
 
-This will run "lerna bootstrap" to link packages in monorepo locally. 
-
-### Build CLI package alone
-1. `cd packages/cli/`
-2. `npm install`
-2. `npm run build`
-
-This will install the dependent packages from public registry and build CLI package alone.
+This will run "pnpm install && npm run build" to link packages in monorepo locally. 
 
 
 ## Debug the project

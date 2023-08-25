@@ -16,8 +16,7 @@ Follow the official documents to install the required softwares:
 
 1. Clone this repo locally. (`git clone https://github.com/OfficeDev/TeamsFx.git`)
 2. Open a terminal and move into your local copy. (`cd TeamsFx`)
-3. Because the monorepo is managed by PNPM, you need to setup at the first time in root folder. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed and linked locally.
-4. Build the `fx-core` package. (`cd packages/fx-core && npm run build`)
+3. Because the monorepo is managed by PNPM, you need to setup at the first time in root folder. (`npm run setup` or `pnpm install && npm run build`) All dependencies will be installed and linked locally.
 
 ## Add or remove dependency in FxCore
 run `pnpm install XXX` to add dependency, run `pnpm remove XXX` to remove dependecy.
@@ -27,7 +26,7 @@ run `pnpm install XXX` to add dependency, run `pnpm remove XXX` to remove depend
 Add tests under tests/ folder. The filename should end with .test.ts.
 
 Because other packages depends on `fx-core`, the change may break functionalities of other packages.
-Please also run `npx lerna run test:unit --since origin/main` in the root folder of TeamsFx project, it will run all unit tests.
+Please also run `pnpm -r run test:unit` in the root folder of TeamsFx project, it will run all unit tests.
 
 ## Style Guidelines
 

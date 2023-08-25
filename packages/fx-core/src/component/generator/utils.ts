@@ -141,7 +141,8 @@ export async function unzip(
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
   filterFn?: (filePath: string, data: Buffer) => boolean
-): Promise<AdmZip.IZipEntry[]> {
+): Promise<string[]> {
+  const output = [];
   const entries = zip
     .getEntries()
     .filter((entry) => !entry.isDirectory)
@@ -160,8 +161,9 @@ export async function unzip(
     const dirPath: string = path.dirname(filePath);
     await fs.ensureDir(dirPath);
     await fs.writeFile(filePath, entryData);
+    output.push(entryName);
   }
-  return entries;
+  return output;
 }
 
 export function renderTemplateFileData(
@@ -236,7 +238,7 @@ export async function downloadDirectory(
   dstPath: string,
   concurrencyLimits = sampleConcurrencyLimits,
   retryLimits = sampleDefaultRetryLimits
-): Promise<void> {
+): Promise<string[]> {
   const urlInfo = parseSampleUrl(sampleUrl);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(urlInfo, retryLimits);
   await downloadSampleFiles(
@@ -247,6 +249,7 @@ export async function downloadDirectory(
     retryLimits,
     concurrencyLimits
   );
+  return samplePaths;
 }
 
 type SampleUrlInfo = {
@@ -254,6 +257,14 @@ type SampleUrlInfo = {
   repository: string;
   ref: string;
   dir: string;
+};
+
+type SampleFileInfo = {
+  tree: {
+    path: string;
+    type: string;
+  }[];
+  sha: string;
 };
 
 export function parseSampleUrl(url: string): SampleUrlInfo {
@@ -270,15 +281,12 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
     await sendRequestWithRetry(async () => {
       return await axios.get(fileInfoUrl);
     }, retryLimits)
-  ).data as any;
+  ).data as SampleFileInfo;
 
-  const fileInfoTree = fileInfo.tree as any[];
-  const samplePaths = fileInfoTree
-    .filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
+  const samplePaths = fileInfo?.tree
+    ?.filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
     .map((node) => node.path);
-  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${
-    fileInfo.sha as string
-  }/`;
+  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo?.sha}/`;
   return { samplePaths, fileUrlPrefix };
 }
 

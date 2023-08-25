@@ -90,7 +90,7 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
-    if (!generatorContext.zipped?.length) {
+    if (!generatorContext.outputs?.length) {
       return err(new TemplateNotFoundError(scenario).toFxError());
     }
     return ok(undefined);
@@ -130,7 +130,7 @@ export class Generator {
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
     ctx.logProvider.verbose(`Downloading sample "${sampleName}" to ${destinationPath}`);
     await this.generate(generatorContext, DownloadDirectoryActionSeq);
-    if (!generatorContext.zipped?.length) {
+    if (!generatorContext.outputs?.length) {
       return err(new SampleNotFoundError(sampleName).toFxError());
     }
     return ok(undefined);

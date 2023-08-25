@@ -18,9 +18,9 @@ export interface GeneratorContext {
   timeoutInMs?: number;
   url?: string;
   zip?: AdmZip;
-  zipped?: AdmZip.IZipEntry[];
   fallback?: boolean;
   cancelDownloading?: boolean;
+  outputs?: string[];
 
   filterFn?: (name: string) => boolean;
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
@@ -88,7 +88,7 @@ export const downloadDirectoryAction: GeneratorAction = {
       throw new MissKeyError("url");
     }
 
-    await downloadDirectory(context.url, context.destination);
+    context.outputs = await downloadDirectory(context.url, context.destination);
   },
 };
 
@@ -143,7 +143,7 @@ export const unzipAction: GeneratorAction = {
     if (!context.zip) {
       throw new MissKeyError("zip");
     }
-    context.zipped = await unzip(
+    context.outputs = await unzip(
       context.zip,
       context.destination,
       context.fileNameReplaceFn,

@@ -20,9 +20,7 @@ import {
   UserInteraction,
   Void,
   err,
-  getValidationFunction,
   ok,
-  validate,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
 import {
@@ -32,7 +30,7 @@ import {
   UserCancelError,
   assembleError,
 } from "../error";
-import { validationUtils } from "./validationUtils";
+import { getValidationFunction, validate, validationUtils } from "./validationUtils";
 import { isCliNewUxEnabled } from "../common/featureFlags";
 
 export function isAutoSkipSelect(q: Question): boolean {

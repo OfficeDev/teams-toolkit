@@ -10,8 +10,8 @@ import {
   StringArrayValidation,
   StringValidation,
   VsCodeEnv,
-} from "../src/index";
-import { FuncValidation, validate } from "../src/qm/validation";
+} from "@microsoft/teamsfx-api";
+import { validate } from "../../src/ui/validationUtils";
 
 describe("Question Model - Validation Test", () => {
   const inputs: Inputs = {

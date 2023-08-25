@@ -15,12 +15,12 @@ import {
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
-  getValidationFunction,
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import * as path from "path";
 import fs from "fs-extra";
 import { Utils } from "../../src/component/generator/spfx/utils/utils";
+import { getValidationFunction } from "../../src/ui/validationUtils";
 describe("SPFx question-helpers", () => {
   describe("SPFxWebpartNameQuestion", () => {
     let mockedEnvRestore: RestoreFn;

@@ -9,12 +9,12 @@ import {
   Question,
   SingleSelectQuestion,
   StaticOptions,
-  validate,
 } from "@microsoft/teamsfx-api";
 import { isAutoSkipSelect } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
 import { getSingleOptionString, toYargsOptions } from "./utils";
 import { globals } from "./globals";
+import { validate } from "@microsoft/teamsfx-core";
 
 export async function filterQTreeNode(
   root: QTreeNode,

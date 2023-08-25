@@ -1135,6 +1135,8 @@ export interface Warning {
     // (undocumented)
     content: string;
     // (undocumented)
+    data?: any;
+    // (undocumented)
     type: string;
 }
 

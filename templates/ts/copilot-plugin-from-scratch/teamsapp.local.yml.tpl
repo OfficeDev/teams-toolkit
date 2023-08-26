@@ -57,7 +57,7 @@ provision:
 deploy:
   # Install development tool(s)
   - uses: devTool/install
-    with:      
+    with:
       func:
         version: ~4.0.4670
         symlinkDir: ./devTools/func

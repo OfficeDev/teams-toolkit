@@ -121,7 +121,7 @@ function renderChoices(choices: any, pointer: number): [string, string[]] {
       if (i - separatorOffset === pointer) {
         output += getCheckbox(choice.checked) + " " + chalk.blueBright(choice.extra.title);
       } else {
-        output += getCheckbox(choice.checked) + " " + chalk.whiteBright(choice.extra.title);
+        output += getCheckbox(choice.checked) + " " + choice.extra.title;
       }
 
       if (choice.extra.detail) {

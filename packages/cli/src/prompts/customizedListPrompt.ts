@@ -109,7 +109,7 @@ function listRender(choices: any, pointer: number): [string, string[]] {
     if (isSelected) {
       output += chalk.blueBright(figures.radioOn + " " + choice.extra.title);
     } else {
-      output += chalk.blueBright(figures.radioOff) + " " + chalk.whiteBright(choice.extra.title);
+      output += chalk.blueBright(figures.radioOff) + " " + choice.extra.title;
     }
 
     if (choice.extra?.detail) {

@@ -31,7 +31,7 @@ import {
   CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
   GetPublishingCredentialsError,
-} from "../../../../../error/deploy";
+} from "../../../../../error";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -112,8 +112,19 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     let res: AxiosDeployQueryResult;
     for (let i = 0; i < DeployConstant.DEPLOY_CHECK_RETRY_TIMES; ++i) {
       try {
+        this.logger.verbose(`Check deploy status with location: ${location}`);
         res = await AzureDeployImpl.AXIOS_INSTANCE.get(location, config);
+        this.logger.verbose(
+          `Check deploy status response: ${JSON.stringify(res, Object.getOwnPropertyNames(res))}`
+        );
       } catch (e) {
+        this.logger.verbose(
+          `Check deploy status failed with error: ${JSON.stringify(
+            e,
+            Object.getOwnPropertyNames(e),
+            2
+          )}`
+        );
         if (axios.isAxiosError(e)) {
           logger.error(
             `Check deploy status failed with response status code: ${
@@ -205,7 +216,8 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       });
       this.logger.info(
         `Get AAD token failed with error: ${JSON.stringify(
-          e
+          e,
+          Object.getOwnPropertyNames(e)
         )}. Upload zip package through basic auth mode.`
       );
     }

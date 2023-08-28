@@ -223,12 +223,12 @@ class CLIUserInteraction implements UserInteraction {
     return {
       type,
       name,
-      message: chalk.whiteBright.bold(message),
+      message: chalk.bold(message),
       choices,
       default: defaultValue,
       validate,
       prefix: chalk.blueBright("?"),
-      suffix: chalk.whiteBright.bold(":"),
+      suffix: chalk.bold(":"),
     };
   }
 

@@ -107,7 +107,7 @@ function listRender(choices: any, pointer: number): [string, string[]] {
 
     const isSelected = i - separatorOffset === pointer;
     if (isSelected) {
-      output += chalk.blueBright(figures.radioOn + " " + choice.extra.title);
+      output += chalk.cyan(figures.radioOn + " " + choice.extra.title);
     } else {
       output += chalk.blueBright(figures.radioOff) + " " + choice.extra.title;
     }

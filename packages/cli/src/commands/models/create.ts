@@ -9,20 +9,20 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import {
+  CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
   QuestionNames,
   isCopilotPluginEnabled,
-  CliQuestionName,
 } from "@microsoft/teamsfx-core";
-import chalk from "chalk";
 import { assign } from "lodash";
+import * as path from "path";
 import * as uuid from "uuid";
 import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { createSampleCommand } from "./createSample";
-import * as path from "path";
+import chalk from "chalk";
 
 function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
   if (!isCopilotPluginEnabled()) {
@@ -79,7 +79,7 @@ export function getCreateCommand(): CLICommand {
       if (res.isErr()) {
         return err(res.error);
       }
-      logger.info(`Project created at: ${chalk.cyanBright(path.resolve(res.value.projectPath))}`);
+      logger.info(`Project created at: ${chalk.cyan(path.resolve(res.value.projectPath))}`);
       return ok(undefined);
     },
   };

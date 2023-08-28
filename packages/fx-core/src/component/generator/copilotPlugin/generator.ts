@@ -43,8 +43,10 @@ import { ConstantString } from "../../../common/spec-parser/constants";
 import * as util from "util";
 import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
-const componentName = "copilot-plugin-existing-api";
-const templateName = "copilot-plugin-existing-api";
+const fromApiSpeccomponentName = "copilot-plugin-existing-api";
+const fromApiSpecTemplateName = "copilot-plugin-existing-api";
+const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
+const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
 const apiSpecFolderName = "apiSpecificationFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
@@ -59,15 +61,53 @@ export class CopilotPluginGenerator {
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
-      telemetryComponentName: componentName,
+      telemetryComponentName: fromApiSpeccomponentName,
       telemetryEventName: TelemetryEvents.Generate,
-      errorSource: componentName,
+      errorSource: fromApiSpeccomponentName,
     }),
   ])
-  public static async generate(
+  public static async generateFromApiSpec(
     context: Context,
     inputs: Inputs,
     destinationPath: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    return await this.generateForME(
+      context,
+      inputs,
+      destinationPath,
+      fromApiSpecTemplateName,
+      fromApiSpeccomponentName
+    );
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: fromOpenAIPlugincomponentName,
+      telemetryEventName: TelemetryEvents.Generate,
+      errorSource: fromOpenAIPlugincomponentName,
+    }),
+  ])
+  public static async generateFromOpenAIPlugin(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    return await this.generateForME(
+      context,
+      inputs,
+      destinationPath,
+      fromOpenAIPluginTemplateName,
+      fromOpenAIPlugincomponentName
+    );
+  }
+
+  private static async generateForME(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    templateName: string,
+    componentName: string
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];

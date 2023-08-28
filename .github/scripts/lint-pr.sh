@@ -3,5 +3,5 @@ VAR=$(git diff --diff-filter=MARC $1...HEAD --name-only --relative -- .| grep -E
 echo $VAR
 if [ ! -z "$VAR" ]
 then 
-    npx eslint --quiet --fix $VAR
+    pnpm dlx eslint --quiet --fix $VAR
 fi

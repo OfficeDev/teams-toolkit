@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-
 export function white(content: string): string {
   return content;
-  // if (process.platform === "win32") return chalk.grey(content);
-  // return chalk.white(content);
 }
 
 export function space(num: number): string {

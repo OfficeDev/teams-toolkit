@@ -43,20 +43,27 @@ provision:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
+  # Extend your Teams app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365
+    with:
+      # Relative path to the build app package.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      titleId: M365_TITLE_ID
+      appId: M365_APP_ID
+
 deploy:
   # Install development tool(s)
   - uses: devTool/install
     with:
-      devCert:
-        trust: true
       func:
         version: ~4.0.4670
         symlinkDir: ./devTools/func
     # Write the information of installed development tool(s) into environment
     # file for the specified environment variable(s).
     writeToEnvironmentFile:
-      sslCertFile: SSL_CRT_FILE
-      sslKeyFile: SSL_KEY_FILE
       dotnetPath: DOTNET_PATH
       funcPath: FUNC_PATH
 

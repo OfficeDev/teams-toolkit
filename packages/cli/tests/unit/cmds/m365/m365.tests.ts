@@ -31,7 +31,7 @@ describe("M365", () => {
     sandbox.stub(process, "exit");
     sandbox
       .stub<any, any>(yargs, "command")
-      .callsFake((command: string, description: string, builder: any, handler: any) => {
+      .callsFake((command: any, description: any, builder: any, handler: any) => {
         registeredCommands.push(command);
         builder(yargs);
       });

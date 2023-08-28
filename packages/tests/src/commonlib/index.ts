@@ -3,9 +3,10 @@
 
 "use strict";
 
-export * as cfg from "@microsoft/teamsfx-cli/src/commonlib/common/userPasswordConfig"; // eslint-disable-line
+export * as cfg from "@microsoft/teamsfx-cli/src/commonlib/common/userPasswordConfig";
 export * from "./aadValidate";
 export * from "./simpleAuthValidator";
+export * from "./sqlValidator";
 export * from "./aadManager";
 export * from "./resourceGroupManager";
 export * from "./functionValidator";

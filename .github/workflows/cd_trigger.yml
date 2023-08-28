@@ -7,9 +7,9 @@ on:
     types: ["completed"]
 
 jobs:
-  TeamsFxCICDTestTriggers:
+  TeamsFxCICDTestMainTriggers:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && !startsWith(github.event.workflow_run.head_branch, 'hotfix') }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     steps:
       - name: Trigger TeamsFx-CICD-Test
         run: |
@@ -17,7 +17,20 @@ jobs:
               -u :${{ secrets.GHEC_BOT_PAT }} \
               -X POST \
               -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/repos/devdiv-azure-service-dmitryr/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
+              https://api.github.com/repos/devdiv-azure-service-dmitryr/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_main.yml/dispatches \
+              -d "{\"ref\":\"main\"}"
+
+  TeamsFxCICDTestDevTriggers:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev' }}
+    steps:
+      - name: Trigger TeamsFx-CICD-Test
+        run: |
+          curl \
+              -u :${{ secrets.GHEC_BOT_PAT }} \
+              -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/devdiv-azure-service-dmitryr/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_dev.yml/dispatches \
               -d "{\"ref\":\"main\"}"
 
   DownloadAndOutput:

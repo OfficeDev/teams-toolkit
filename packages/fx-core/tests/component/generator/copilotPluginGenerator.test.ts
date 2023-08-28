@@ -31,7 +31,6 @@ import {
 } from "../../../src/component/generator/copilotPlugin/helper";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
-import path from "path";
 import {
   ErrorType,
   ValidationStatus,

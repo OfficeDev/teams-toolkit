@@ -257,6 +257,9 @@ describe("OfficeAddinGenerator", function () {
   afterEach(async () => {
     sinon.restore();
     mockedEnvRestore();
+    if (await fse.pathExists(testFolder)) {
+      await fse.rm(testFolder, { recursive: true });
+    }
   });
 });
 

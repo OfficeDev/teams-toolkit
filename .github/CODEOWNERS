@@ -21,7 +21,7 @@
 /packages/vscode-extension/WHATISNEW.md @therealjohn @sffamily
 /packages/vscode-extension/PRERELEASE.md @therealjohn @sffamily
 
-/packages/cli @chagong @Alive-Fish @LongOddCode
+/packages/cli @chagong @Alive-Fish @LongOddCode @jayzhang
 /packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
@@ -30,6 +30,35 @@
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish
 /packages/cli/src/cmds/m365 @swatDong @kuojianlu @kimizhu
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
+/packages/cli/src/commands @jayzhang @Alive-Fish @MSFT-yiz
+
+/packages/cli/src/commands/models/account.ts @swatDong @xiaolang124 @kimizhu
+/packages/cli/src/commands/models/accountLogin.ts @swatDong @xiaolang124 @kimizhu
+/packages/cli/src/commands/models/accountLoginAzure.ts @swatDong @xiaolang124 @kimizhu
+/packages/cli/src/commands/models/accountLoginM365.ts @swatDong @xiaolang124 @kimizhu
+/packages/cli/src/commands/models/accountLogout.ts @swatDong @xiaolang124 @kimizhu
+/packages/cli/src/commands/models/accountShow.ts @swatDong @xiaolang124 @kimizhu
+
+/packages/cli/src/commands/models/add.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang @MSFT-yiz
+/packages/cli/src/commands/models/addSPFxWebpart.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang @MSFT-yiz
+
+/packages/cli/src/commands/models/m365.ts @swatDong @kuojianlu @kimizhu
+/packages/cli/src/commands/models/m365LaunchInfo.ts @swatDong @kuojianlu @kimizhu
+/packages/cli/src/commands/models/m365Sideloading.ts @swatDong @kuojianlu @kimizhu
+/packages/cli/src/commands/models/m365Unacquire.ts @swatDong @kuojianlu @kimizhu
+/packages/cli/src/commands/models/preview.ts @swatDong @kuojianlu @kimizhu
+
+/packages/cli/src/commands/models/package.ts @nliu-ms @jayzhang @MSFT-yiz
+/packages/cli/src/commands/models/publish.ts @nliu-ms @jayzhang @MSFT-yiz
+/packages/cli/src/commands/models/updateTeamsApp.ts @nliu-ms @jayzhang @MSFT-yiz
+/packages/cli/src/commands/models/validate.ts @nliu-ms @jayzhang @MSFT-yiz
+
+/packages/cli/src/commands/models/permission.ts @KennethBWSong @SLdragon @adashen
+/packages/cli/src/commands/models/permissionGrant.ts @KennethBWSong @SLdragon @adashen
+/packages/cli/src/commands/models/permissionStatus.ts @KennethBWSong @SLdragon @adashen
+/packages/cli/src/commands/models/updateAadApp.ts @KennethBWSong @xzf0587 @blackchoey @adashen
+/packages/cli/src/commands/models/upgrade.ts @xzf0587 @blackchoey @adashen
+
 /packages/tests/src/e2e/collaboration @KennethBWSong @adashen @SLdragon
 /packages/tests/src/e2e/frontend @hund030 @eriolchan @huimiu
 /packages/tests/src/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
@@ -41,6 +70,7 @@
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
 /packages/cli/tests/unit/cmds/m365 @swatDong @kuojianlu @kimizhu
+
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode @nliu-ms
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu

@@ -7,10 +7,5 @@
             ],
             "schema": {}
         }
-    ],
-    "files.exclude": {
-        "obj": true,
-        "bin": true
-    },
-    "debug.internalConsoleOptions": "neverOpen"
+    ]
 }

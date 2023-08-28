@@ -1031,7 +1031,7 @@ export function folderQuestion(): FolderQuestion {
     placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
     default: (inputs: Inputs) =>
       CLIPlatforms.includes(inputs.platform)
-        ? path.resolve(process.cwd())
+        ? "./"
         : path.join(os.homedir(), ConstantString.RootFolder),
   };
 }

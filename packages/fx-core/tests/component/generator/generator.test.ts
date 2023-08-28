@@ -315,6 +315,9 @@ describe("Generator error", async () => {
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {
+    if (await fs.pathExists(tmpDir)) {
+      await fs.rm(tmpDir, { recursive: true });
+    }
     sandbox.restore();
   });
 

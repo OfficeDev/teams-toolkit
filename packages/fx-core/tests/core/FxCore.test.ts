@@ -897,7 +897,7 @@ describe("Teams app APIs", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "run");
+    const runSpy = sinon.spy(ValidateAppPackageDriver.prototype, "execute");
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
@@ -913,7 +913,7 @@ describe("Teams app APIs", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    const runSpy = sinon.spy(ValidateManifestDriver.prototype, "run");
+    const runSpy = sinon.spy(ValidateManifestDriver.prototype, "execute");
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
   });
@@ -930,7 +930,9 @@ describe("Teams app APIs", async () => {
     };
 
     sinon.stub(process, "platform").value("win32");
-    const runStub = sinon.stub(CreateAppPackageDriver.prototype, "run").resolves(ok(new Map()));
+    const runStub = sinon
+      .stub(CreateAppPackageDriver.prototype, "execute")
+      .resolves({ result: ok(new Map()), summaries: [] });
     const showMessageStub = sinon.stub(tools.ui, "showMessage");
     await core.createAppPackage(inputs);
     sinon.assert.calledOnce(runStub);
@@ -1363,7 +1365,7 @@ describe("copilotPlugin", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "apiSpecFiles/openapi.json",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
     ];
@@ -1404,7 +1406,7 @@ describe("copilotPlugin", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "apiSpecFiles/openapi.json",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
     ];
@@ -1431,7 +1433,7 @@ describe("copilotPlugin", async () => {
     manifest.composeExtensions = [
       {
         type: "apiBased",
-        apiSpecFile: "apiSpecFiles/openapi.json",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
     ];

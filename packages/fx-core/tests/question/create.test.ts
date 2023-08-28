@@ -1610,6 +1610,9 @@ describe("scaffold question", () => {
   });
 
   describe("folderQuestion", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("should find taskpane template", () => {
       const inputs: Inputs = {
         platform: Platform.CLI,

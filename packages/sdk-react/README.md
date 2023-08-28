@@ -20,7 +20,8 @@ Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/package
 
 ### Prerequisites
 
-- Node.js version 10.x.x or higher
+- Node.js version 18.x.x or higher
+- PNPM version 8.x.x or higher
 - TeamsFx SDK version 0.6.0 or higher 
 - A project created by the Teams Toolkit VS Code extension or `teamsfx` CLI tool.
 

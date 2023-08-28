@@ -36,15 +36,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     "driver.teamsApp.progressBar.updateTeamsAppStepMessage"
   );
 
-  public async run(
-    args: ConfigureTeamsAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.update(args, wrapContext);
-    return res;
-  }
-
   public async execute(
     args: ConfigureTeamsAppArgs,
     context: DriverContext,
@@ -136,7 +127,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         "plugins.appstudio.teamsAppUpdatedLog",
         appDefinition.teamsAppId!
       );
-      context.logProvider.info(message);
+      context.logProvider.verbose(message);
       context.addSummary(message);
       return ok(
         new Map([

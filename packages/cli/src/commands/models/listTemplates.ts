@@ -8,9 +8,9 @@ import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ListFormatOption, ShowDescriptionOption } from "../common";
 
-export const listCapabilitiesCommand: CLICommand = {
-  name: "capabilities",
-  description: "List all Teams App tempalte capabilities.",
+export const listTemplatesCommand: CLICommand = {
+  name: "templates",
+  description: "List all Teams App tempaltes.",
   options: [ListFormatOption, ShowDescriptionOption],
   defaultInteractiveOption: false,
   handler: (ctx) => {

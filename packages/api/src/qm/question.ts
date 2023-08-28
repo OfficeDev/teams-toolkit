@@ -451,73 +451,11 @@ export type Question =
   | SingleFileOrInputQuestion;
 
 /**
- * QTreeNode is the tree node data structure, which have three main properties:
+ * IQTreeNode is the tree node data structure, which have three main properties:
  * - data: data is either a group or question. Questions can be organized into a group, which has the same trigger condition.
  * - condition: trigger condition for this node to be activated;
  * - children: child questions that will be activated according their trigger condition.
  */
-export class QTreeNode implements IQTreeNode {
-  data: Question | Group;
-  condition?: StringValidation | StringArrayValidation | ConditionFunc;
-  children?: QTreeNode[];
-  /**
-   * @description the question node will be ignored as CLI option in non-interactive mode
-   * "self" - only ignore the question itself
-   * "children" - ignore all nodes in sub-tree
-   * "all" - ignore self and all nodes in sub-tree
-   */
-  cliOptionDisabled?: "self" | "children" | "all";
-  /**
-   * @description the question node will be ignored as an Inputs property
-   * "self" - only ignore the question itself
-   * "children" - ignore all nodes in sub-tree
-   * "all" - ignore self and all nodes in sub-tree
-   */
-  inputsDisabled?: "self" | "children" | "all";
-  addChild(node: QTreeNode): QTreeNode {
-    if (!this.children) {
-      this.children = [];
-    }
-    this.children.push(node);
-    return this;
-  }
-  validate(): boolean {
-    //1. validate the cycle dependency
-    //2. validate the name uniqueness
-    //3. validate the params of RPC
-    // if (this.data.type === NodeType.group && (!this.children || this.children.length === 0)) return false;
-    return true;
-  }
-
-  /**
-   * trim the tree
-   */
-  trim(): QTreeNode | undefined {
-    if (this.children) {
-      const newChildren: QTreeNode[] = [];
-      for (const node of this.children) {
-        const trimmed = node.trim();
-        if (trimmed) newChildren.push(trimmed);
-      }
-      this.children = newChildren;
-    }
-    if (this.data.type === "group") {
-      if (!this.children || this.children.length === 0) return undefined;
-      if (this.children.length === 1) {
-        const child = this.children[0];
-        if (!(this.condition && child.condition)) {
-          child.condition ||= this.condition;
-          return child;
-        }
-      }
-    }
-    return this;
-  }
-  constructor(data: Question | Group) {
-    this.data = data;
-  }
-}
-
 export interface IQTreeNode {
   data: Question | Group;
   condition?: StringValidation | StringArrayValidation | ConditionFunc;

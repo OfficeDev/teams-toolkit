@@ -341,9 +341,6 @@ export interface FxError extends Error {
 }
 
 // @public
-export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
-
-// @public
 export interface Group {
     // (undocumented)
     name?: string;
@@ -404,7 +401,7 @@ export interface IProgressHandler {
     start: (detail?: string) => Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export interface IQTreeNode {
     // (undocumented)
     children?: IQTreeNode[];
@@ -614,24 +611,6 @@ export enum Platform {
 
 // @public (undocumented)
 export const ProductName = "teamsfx";
-
-// @public
-export class QTreeNode implements IQTreeNode {
-    constructor(data: Question | Group);
-    // (undocumented)
-    addChild(node: QTreeNode): QTreeNode;
-    // (undocumented)
-    children?: QTreeNode[];
-    cliOptionDisabled?: "self" | "children" | "all";
-    // (undocumented)
-    condition?: StringValidation | StringArrayValidation | ConditionFunc;
-    // (undocumented)
-    data: Question | Group;
-    inputsDisabled?: "self" | "children" | "all";
-    trim(): QTreeNode | undefined;
-    // (undocumented)
-    validate(): boolean;
-}
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
@@ -1102,9 +1081,6 @@ export interface UserInteraction {
         color: Colors;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
-
-// @public
-export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema | ConditionFunc, value: T, inputs?: Inputs): Promise<string | undefined>;
 
 // @public (undocumented)
 export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;

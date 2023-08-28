@@ -27,31 +27,57 @@ export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   }
 }
 
+export function checkRequiredParameters(paramObject: OpenAPIV3.ParameterObject[]): boolean {
+  let requiredParamCount = 0;
+  for (let i = 0; i < paramObject.length; i++) {
+    const param = paramObject[i];
+    if (param.in === "header" || param.in === "cookie") {
+      return false;
+    }
+
+    if (param.required && (param.in === "query" || param.in === "path")) {
+      requiredParamCount++;
+    }
+  }
+
+  if (requiredParamCount <= 1) {
+    return true;
+  }
+
+  return false;
+}
+
 export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Document): boolean {
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
   if (pathObj) {
     if (method === ConstantString.GetMethod && pathObj[method] && !pathObj[method]?.security) {
       const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
-      const paramObject = operationObject.parameters;
+      const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
 
       if (!paramObject || paramObject.length === 0) {
         return true;
       }
 
-      if (paramObject && paramObject.length === 1) {
+      const valid = checkRequiredParameters(paramObject);
+
+      if (valid) {
         for (let i = 0; i < paramObject.length; i++) {
-          const param = paramObject[i] as OpenAPIV3.ParameterObject;
-          if (param.in === "query" || param.in === "path") {
-            const schema = param.schema as OpenAPIV3.SchemaObject;
-            if (
-              schema.type === "boolean" ||
-              schema.type === "integer" ||
-              schema.type === "number" ||
-              schema.type === "string"
-            ) {
-              return true;
+          const param = paramObject[i];
+
+          const schema = param.schema as OpenAPIV3.SchemaObject;
+          if (
+            schema.type === "boolean" ||
+            schema.type === "integer" ||
+            schema.type === "number" ||
+            schema.type === "string"
+          ) {
+            const responseJson = getResponseJson(operationObject);
+            if (Object.keys(responseJson).length === 0) {
+              return false;
             }
+
+            return true;
           }
         }
       }
@@ -73,19 +99,14 @@ export function getRelativePath(from: string, to: string): string {
 export function getResponseJson(
   operationObject: OpenAPIV3.OperationObject | undefined
 ): OpenAPIV3.MediaTypeObject {
-  let json =
-    (operationObject?.responses?.["200"] as OpenAPIV3.ResponseObject)?.content?.[
-      "application/json"
-    ] ??
-    (operationObject?.responses?.["201"] as OpenAPIV3.ResponseObject)?.content?.[
-      "application/json"
-    ] ??
-    (operationObject?.responses?.default as OpenAPIV3.ResponseObject)?.content?.[
-      "application/json"
-    ];
+  let json: OpenAPIV3.MediaTypeObject = {};
 
-  if (!json) {
-    json = {};
+  for (const code of ConstantString.ResponseCodeFor20X) {
+    const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
+    if (responseObject?.content?.["application/json"]) {
+      json = responseObject.content["application/json"];
+      break;
+    }
   }
 
   return json;

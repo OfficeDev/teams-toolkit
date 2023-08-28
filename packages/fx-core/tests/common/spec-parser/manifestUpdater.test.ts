@@ -40,7 +40,7 @@ describe("manifestUpdater", () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
-
+    sinon.stub(fs, "pathExists").resolves(true);
     const originalManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "Original Short Description", full: "Original Full Description" },
@@ -53,7 +53,7 @@ describe("manifestUpdater", () => {
         {
           type: "apiBased",
           supportsConversationalAI: true,
-          apiSpecFile: "spec/outputSpec.yaml",
+          apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
               context: ["compose"],
@@ -63,7 +63,7 @@ describe("manifestUpdater", () => {
               parameters: [
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
               ],
-              apiResponseRenderingTemplate: "adaptiveCards/getPets.json",
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
           ],
         },
@@ -82,7 +82,6 @@ describe("manifestUpdater", () => {
     const adaptiveCardFolder = "path/to/adaptiveCardFolder";
     const spec = {} as any;
     const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
-
     try {
       await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec);
       expect.fail("Expected updateManifest to throw a SpecParserError");
@@ -93,10 +92,11 @@ describe("manifestUpdater", () => {
     }
   });
 
-  it("should skip updating full/description if missing info/description", async () => {
+  it("should skip updating commands if adaptive card not exist", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(false);
 
     const originalManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
@@ -110,7 +110,56 @@ describe("manifestUpdater", () => {
         {
           type: "apiBased",
           supportsConversationalAI: true,
-          apiSpecFile: "spec/outputSpec.yaml",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          commands: [
+            {
+              apiResponseRenderingTemplateFile: "",
+              context: ["compose"],
+              id: "getPets",
+              parameters: [
+                {
+                  description: "Maximum number of pets to return",
+                  name: "limit",
+                  title: "Limit",
+                },
+              ],
+              title: "Get all pets",
+              type: "query",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const result = await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, {
+      ...spec,
+      info: { title: "My API" },
+    });
+
+    expect(result).to.deep.equal(expectedManifest);
+    readJSONStub.restore();
+  });
+
+  it("should skip updating full/description if missing info/description", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: "Original Full Description" },
+      composeExtensions: [
+        {
+          type: "apiBased",
+          supportsConversationalAI: true,
+          apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
               context: ["compose"],
@@ -120,7 +169,7 @@ describe("manifestUpdater", () => {
               parameters: [
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
               ],
-              apiResponseRenderingTemplate: "adaptiveCards/getPets.json",
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
           ],
         },
@@ -167,7 +216,13 @@ describe("generateCommands", () => {
     },
   };
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("should generate commands for each GET operation in the spec", async () => {
+    sinon.stub(fs, "pathExists").resolves(true);
+
     const expectedCommands = [
       {
         context: ["compose"],
@@ -177,7 +232,7 @@ describe("generateCommands", () => {
         parameters: [
           { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
         ],
-        apiResponseRenderingTemplate: "adaptiveCards/getPets.json",
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
       {
         context: ["compose"],
@@ -185,7 +240,7 @@ describe("generateCommands", () => {
         title: "Get a pet by ID",
         id: "getPetById",
         parameters: [{ name: "id", title: "Id", description: "ID of the pet to retrieve" }],
-        apiResponseRenderingTemplate: "adaptiveCards/getPetById.json",
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPetById.json",
       },
       {
         context: ["compose"],
@@ -193,7 +248,7 @@ describe("generateCommands", () => {
         title: "Get all pets owned by an owner",
         id: "getOwnerPets",
         parameters: [{ name: "ownerId", title: "OwnerId", description: "ID of the owner" }],
-        apiResponseRenderingTemplate: "adaptiveCards/getOwnerPets.json",
+        apiResponseRenderingTemplateFile: "adaptiveCards/getOwnerPets.json",
       },
     ];
 

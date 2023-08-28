@@ -30,7 +30,7 @@ import {
   deployCommand,
   envAddCommand,
   envListCommand,
-  listCapabilitiesCommand,
+  listTemplatesCommand,
   listSamplesCommand,
   m365LaunchInfoCommand,
   m365SideloadingCommand,
@@ -182,19 +182,6 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
       const res = await listSamplesCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-  });
-  describe("listCapabilitiesCommand", async () => {
-    it("happy path", async () => {
-      const ctx: CLIContext = {
-        command: { ...listCapabilitiesCommand, fullName: "teamsfx list capabilities" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await listCapabilitiesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });
@@ -934,49 +921,59 @@ describe("CLI read-only commands", () => {
     });
   });
 
-  describe("listCapabilitiesCommand", async () => {
+  describe("listTemplatesCommand", async () => {
     let mockedEnvRestore: RestoreFn;
-
     afterEach(() => {
       if (mockedEnvRestore) {
         mockedEnvRestore();
       }
+    });
+    it("happy path", async () => {
+      const ctx: CLIContext = {
+        command: { ...listTemplatesCommand, fullName: "teamsfx list" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await listTemplatesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
     });
     it("json", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
-        command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
         optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},
       };
-      const res = await listCapabilitiesCommand.handler!(ctx);
+      const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
       assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
-        command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
         optionValues: { format: "table", description: true },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},
       };
-      const res = await listCapabilitiesCommand.handler!(ctx);
+      const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
     it("table without description", async () => {
       const ctx: CLIContext = {
-        command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
         optionValues: { format: "table", description: false },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},
       };
-      const res = await listCapabilitiesCommand.handler!(ctx);
+      const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
     it("json copilot plugin feature flag enabled", async () => {
@@ -984,13 +981,13 @@ describe("CLI read-only commands", () => {
         COPILOT_PLUGIN: "true",
       });
       const ctx: CLIContext = {
-        command: { ...listCapabilitiesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
         optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
         telemetryProperties: {},
       };
-      const res = await listCapabilitiesCommand.handler!(ctx);
+      const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
       assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
     });

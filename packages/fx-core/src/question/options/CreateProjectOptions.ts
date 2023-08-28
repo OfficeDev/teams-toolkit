@@ -41,7 +41,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "collect-form-message-extension",
       "copilot-plugin-capability",
     ],
-    choiceListCommand: "teamsfx list capabilities",
+    choiceListCommand: "teamsfx list templates",
   },
   {
     name: "bot-host-type-trigger",

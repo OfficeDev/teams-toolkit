@@ -62,6 +62,11 @@ export interface ErrorResult {
   data?: any;
 }
 
+export interface GenerateResult {
+  allSuccess: boolean;
+  warnings: WarningResult[];
+}
+
 /**
  * An enum that represents the types of errors that can occur during validation.
  */
@@ -94,6 +99,7 @@ export enum WarningType {
   AuthNotSupported = "auth-not-supported",
   MethodNotSupported = "method-not-supported",
   OperationIdMissing = "operationid-missing",
+  GenerateCardFailed = "generate-card-failed",
   Unknown = "unknown",
 }
 
@@ -137,7 +143,7 @@ export interface Description {
 
 export interface ComposeExtension {
   type: string;
-  apiSpecFile: string;
+  apiSpecificationFile: string;
   supportsConversationalAI: boolean;
   commands: Command[];
 }
@@ -149,7 +155,7 @@ export interface Command {
   title: string;
   description?: string;
   parameters: Parameter[];
-  apiResponseRenderingTemplate?: string;
+  apiResponseRenderingTemplateFile?: string;
 }
 
 export interface Parameter {

@@ -6,14 +6,15 @@ A UI Test Project based on [Vscode Extension Tester](https://github.com/redhat-d
 
 ### Prerequisites
 
-- node >= 16
+- node >= 18
+- NPM >= 8
 - m365 account
 - azure account
 
 ### Setup
 
 - (**Required**) Run `npm install @microsoft/teamsfx-cli@alpha` to download latest CLI
-- (**Required**) Run `npm install`
+- (**Required**) Run `pnpm install`
 - (**Required**) Run `npm run build`
 - (**Required**) Login your m365 account via TeamsFx extension
 - (**Required**) Login your azure account via TeamsFx extension

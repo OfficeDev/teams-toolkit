@@ -76,23 +76,36 @@ export class SPFxDeployDriver implements StepDriver {
   ): Promise<Map<string, string>> {
     const deployArgs = this.asDeployArgs(args);
 
+    context.logProvider.debug(`Getting user tenant...`);
     const tenant = await this.getTenant(context.m365TokenProvider);
     SPOClient.setBaseUrl(tenant);
+    context.logProvider.debug(`Succeeded to get user tenant: ${tenant}.`);
 
     const spoToken = await getSPFxToken(context.m365TokenProvider);
     if (!spoToken) {
       throw new GetSPOTokenFailedError();
     }
 
+    context.logProvider.verbose(`Getting SharePoint app catalog site...`);
     let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
     if (appCatalogSite) {
+      context.logProvider.verbose(
+        `Succeeded to get SharePoint app catalog site: ${appCatalogSite}.`
+      );
       SPOClient.setBaseUrl(appCatalogSite);
       context.addSummary(DeployProgressMessage.SkipCreateSPAppCatalog());
     } else {
+      context.logProvider.verbose(
+        `Failed to get valid SharePoint app catalog site under current tenant.`
+      );
       if (deployArgs.createAppCatalogIfNotExist) {
+        context.logProvider.verbose(
+          `Creating app catalog for user since there's no existing one...`
+        );
         try {
           await SPOClient.createAppCatalog(spoToken);
           context.addSummary(DeployProgressMessage.CreateSPAppCatalog());
+          context.logProvider.verbose(`Succeeded to create app catalog.`);
         } catch (e) {
           throw new CreateAppCatalogFailedError(e as Error);
         }
@@ -100,6 +113,7 @@ export class SPFxDeployDriver implements StepDriver {
         throw new NoValidAppCatelog();
       }
       let retry = 0;
+      context.logProvider.verbose(`Getting newly created app catalog site...`);
       appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
       while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
         void context.logProvider.warning(
@@ -110,6 +124,9 @@ export class SPFxDeployDriver implements StepDriver {
         retry += 1;
       }
       if (appCatalogSite) {
+        context.logProvider.verbose(
+          `Succeeded to get newly created app catalog site: ${appCatalogSite}.`
+        );
         SPOClient.setBaseUrl(appCatalogSite);
         void context.logProvider.info(
           getLocalizedString("driver.spfx.info.tenantAppCatalogCreated", appCatalogSite)
@@ -125,16 +142,22 @@ export class SPFxDeployDriver implements StepDriver {
     const packageSolutionPath = path.isAbsolute(deployArgs.packageSolutionPath)
       ? deployArgs.packageSolutionPath
       : path.join(context.projectPath, deployArgs.packageSolutionPath);
+    context.logProvider.debug(
+      `Getting zipped package path from package-solution.json file under ${packageSolutionPath}...`
+    );
     const appPackage = await this.getPackagePath(packageSolutionPath);
     if (!(await fs.pathExists(appPackage))) {
       throw new NoSPPackageError(appPackage);
     }
+    context.logProvider.debug(`Succeeded to get zipped package path: ${appPackage}.`);
 
     const fileName = path.parse(appPackage).base;
     const bytes = await fs.readFile(appPackage);
     try {
+      context.logProvider.verbose(`Uploading SharePoint app package ${fileName}...`);
       await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
       context.addSummary(DeployProgressMessage.Upload());
+      context.logProvider.verbose(`Succeeded to upload SharePoint app package.`);
     } catch (e: any) {
       if (e.response?.status === 403) {
         throw new InsufficientPermissionError(appCatalogSite);
@@ -143,9 +166,14 @@ export class SPFxDeployDriver implements StepDriver {
       }
     }
 
+    context.logProvider.debug(
+      `Getting app id from package-solution.json file under ${packageSolutionPath}...`
+    );
     const appID = await this.getAppID(packageSolutionPath);
+    context.logProvider.verbose(`Deploying SharePoint app package with app id: ${appID}...`);
     await SPOClient.deployAppPackage(spoToken, appID);
     context.addSummary(DeployProgressMessage.Deploy());
+    context.logProvider.verbose(`Succeeded to deploy SharePoint app package.`);
     const guidance = getLocalizedString(
       "plugins.spfx.deployNotice",
       appPackage,

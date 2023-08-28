@@ -16,10 +16,10 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
+  IQTreeNode,
   ok,
   OpenAIPluginManifest,
   Platform,
-  QTreeNode,
   Result,
   Stage,
   Tools,
@@ -454,8 +454,8 @@ export class FxCore {
       showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-    const result = await driver.run(args, context);
-    return result;
+    const result = await driver.execute(args, context);
+    return result.result;
   }
   /**
    * v3 only none lifecycle command
@@ -474,7 +474,7 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-    return await driver.run(args, context);
+    return (await driver.execute(args, context)).result;
   }
   /**
    * v3 only none lifecycle command
@@ -507,7 +507,7 @@ export class FxCore {
         `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
           .TEAMSFX_ENV!}.json`,
     };
-    const result = await driver.run(args, context);
+    const result = (await driver.execute(args, context)).result;
     if (context.platform === Platform.VSCode) {
       if (result.isOk()) {
         const isWindows = process.platform === "win32";
@@ -565,9 +565,9 @@ export class FxCore {
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
-  getQuestions(stage: Stage, inputs: Inputs): Result<QTreeNode | undefined, FxError> {
+  getQuestions(stage: Stage, inputs: Inputs): Result<IQTreeNode | undefined, FxError> {
     if (stage === Stage.create) {
-      return ok(createProjectCliHelpNode() as QTreeNode);
+      return ok(createProjectCliHelpNode());
     }
     return ok(undefined);
   }
@@ -1093,8 +1093,8 @@ export class FxCore {
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    const apiSpecFile = manifestRes.value.composeExtensions![0].apiSpecFile;
-    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecFile!);
+    const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
 
     // Merge exisiting operations in manifest.json
     const specParser = new SpecParser(url);

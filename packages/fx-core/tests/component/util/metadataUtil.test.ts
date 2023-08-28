@@ -225,11 +225,17 @@ describe("metadata util", () => {
       extensions: [{}],
     };
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const hashSpy = sandbox.spy(Hash.prototype);
 
     manifest.extensions = [{}];
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.update.called);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
@@ -253,7 +259,11 @@ describe("metadata util", () => {
     // If extensions is empty, it should report false in telemetry event
     manifest.extensions = [];
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.update.called);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledWith(TelemetryEvent.MetaData, {
@@ -277,7 +287,11 @@ describe("metadata util", () => {
     // If extensions is undefined, it should report false in telemetry event
     manifest.extensions = undefined;
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.update.called);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledWith(TelemetryEvent.MetaData, {
@@ -311,10 +325,16 @@ describe("metadata util", () => {
       webApplicationInfo: { id: "web-app-id" },
     };
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const hashSpy = sandbox.spy(Hash.prototype);
 
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.update.notCalled);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     assert.isTrue(hashSpy.digest.notCalled);
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {

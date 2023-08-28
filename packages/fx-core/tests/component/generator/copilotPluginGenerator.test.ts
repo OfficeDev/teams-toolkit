@@ -435,7 +435,7 @@ describe("generateScaffoldingSummary", () => {
     const composeExtension: IComposeExtension = {
       type: "apiBased",
       commands: [
-        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+        { id: "command1", type: "query", apiResponseRenderingTemplateFile: "test", title: "" },
         { id: "command1", type: "action", title: "" },
       ],
     };
@@ -512,7 +512,7 @@ describe("generateScaffoldingSummary", () => {
       "path"
     );
 
-    assert.isTrue(res.includes("apiResponseRenderingTemplate"));
+    assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
   });
 
   it("warnings about missing adaptive card template", () => {
@@ -520,7 +520,7 @@ describe("generateScaffoldingSummary", () => {
       type: "apiBased",
       supportsConversationalAI: true,
       commands: [
-        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+        { id: "command1", type: "query", apiResponseRenderingTemplateFile: "test", title: "" },
       ],
     };
     sandbox.stub(fs, "existsSync").returns(false);
@@ -533,7 +533,7 @@ describe("generateScaffoldingSummary", () => {
       "path"
     );
 
-    assert.isTrue(!res.includes("apiResponseRenderingTemplate"));
+    assert.isTrue(!res.includes("apiResponseRenderingTemplateFile"));
     assert.isTrue(res.includes("test"));
   });
 });

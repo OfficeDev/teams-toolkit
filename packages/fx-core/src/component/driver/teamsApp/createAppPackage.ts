@@ -28,14 +28,6 @@ export class CreateAppPackageDriver implements StepDriver {
     "plugins.appstudio.createPackage.progressBar.message"
   );
 
-  public async run(
-    args: CreateAppPackageArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.build(args, wrapContext);
-    return res;
-  }
   public async execute(
     args: CreateAppPackageArgs,
     context: DriverContext
@@ -160,25 +152,25 @@ export class CreateAppPackageDriver implements StepDriver {
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
       manifest.composeExtensions[0].type == "apiBased" &&
-      manifest.composeExtensions[0].apiSpecFile
+      manifest.composeExtensions[0].apiSpecificationFile
     ) {
-      const apiSpecFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecFile}`;
-      if (!(await fs.pathExists(apiSpecFile))) {
+      const apiSpecificationFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecificationFile}`;
+      if (!(await fs.pathExists(apiSpecificationFile))) {
         return err(
           new FileNotFoundError(
             actionName,
-            apiSpecFile,
+            apiSpecificationFile,
             "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
           )
         );
       }
-      const dir = path.dirname(manifest.composeExtensions[0].apiSpecFile);
-      zip.addLocalFile(apiSpecFile, dir === "." ? "" : dir);
+      const dir = path.dirname(manifest.composeExtensions[0].apiSpecificationFile);
+      zip.addLocalFile(apiSpecificationFile, dir === "." ? "" : dir);
 
       if (manifest.composeExtensions[0].commands.length > 0) {
         for (const command of manifest.composeExtensions[0].commands) {
-          if (command.apiResponseRenderingTemplate) {
-            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplate}`;
+          if (command.apiResponseRenderingTemplateFile) {
+            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplateFile}`;
             if (!(await fs.pathExists(adaptiveCardFile))) {
               return err(
                 new FileNotFoundError(
@@ -188,7 +180,7 @@ export class CreateAppPackageDriver implements StepDriver {
                 )
               );
             }
-            const dir = path.dirname(command.apiResponseRenderingTemplate);
+            const dir = path.dirname(command.apiResponseRenderingTemplateFile);
             zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
         }
@@ -209,12 +201,7 @@ export class CreateAppPackageDriver implements StepDriver {
       { content: zipFileName, color: Colors.BRIGHT_MAGENTA },
       { content: " built successfully!", color: Colors.BRIGHT_WHITE },
     ];
-    if (context.platform === Platform.VS || context.platform === Platform.VSCode) {
-      context.logProvider.info(builtSuccess);
-    } else {
-      void context.ui!.showMessage("info", builtSuccess, false);
-    }
-
+    context.logProvider.info(builtSuccess);
     return ok(new Map());
   }
 

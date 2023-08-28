@@ -48,7 +48,7 @@ class Helper {
     return items.join(" ");
   }
   formatExample(example: CLIExample) {
-    return `  '${chalk.blueBright(example.command)}': ${example.description}`;
+    return `  ${example.description}.\n    ${chalk.bold(example.command)}\n`;
   }
   formatCommandName(command: CLICommand) {
     const items: string[] = [command.fullName || command.name];

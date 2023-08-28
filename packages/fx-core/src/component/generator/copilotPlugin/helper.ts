@@ -379,7 +379,7 @@ function validateTeamsManifestLength(
     const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
     for (const command of commands) {
       if (command.type === "query") {
-        if (!command.apiResponseRenderingTemplate) {
+        if (!command.apiResponseRenderingTemplateFile) {
           warnings.push(
             getLocalizedString(
               "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate",
@@ -397,18 +397,18 @@ function validateTeamsManifestLength(
           const cardPath = path.join(
             projectPath,
             AppPackageFolderName,
-            command.apiResponseRenderingTemplate
+            command.apiResponseRenderingTemplateFile
           );
           if (!fs.existsSync(cardPath)) {
             warnings.push(
               getLocalizedString(
                 "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard",
-                command.apiResponseRenderingTemplate,
+                command.apiResponseRenderingTemplateFile,
                 AppPackageFolderName
               ) +
                 getLocalizedString(
                   "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard.mitigation",
-                  command.apiResponseRenderingTemplate,
+                  command.apiResponseRenderingTemplateFile,
                   AppPackageFolderName
                 )
             );

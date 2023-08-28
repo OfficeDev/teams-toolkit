@@ -7,6 +7,8 @@ import {
   MessagingExtensionQuery,
   MessagingExtensionResponse,
 } from "botbuilder";
+import * as ACData from "adaptivecards-templating";
+import helloWorldCard from "./adaptiveCards/helloWorldCard.json";
 
 export class SearchApp extends TeamsActivityHandler {
   constructor() {
@@ -28,27 +30,15 @@ export class SearchApp extends TeamsActivityHandler {
 
     const attachments = [];
     response.data.objects.forEach((obj) => {
-      const adaptiveCard = CardFactory.adaptiveCard({
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-        type: "AdaptiveCard",
-        version: "1.4",
-        body: [
-          {
-            type: "TextBlock",
-            text: `${obj.package.name}`,
-            wrap: true,
-            size: "Large",
-          },
-          {
-            type: "TextBlock",
-            text: `${obj.package.description}`,
-            wrap: true,
-            size: "medium",
-          },
-        ],
+      const template = new ACData.Template(helloWorldCard);
+      const card = template.expand({
+        $root: {
+          name: obj.package.name,
+          description: obj.package.description,
+        },
       });
       const preview = CardFactory.heroCard(obj.package.name);
-      const attachment = { ...adaptiveCard, preview };
+      const attachment = { ...CardFactory.adaptiveCard(card), preview };
       attachments.push(attachment);
     });
 

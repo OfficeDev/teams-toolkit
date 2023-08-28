@@ -265,7 +265,7 @@ describe("SpecParser", () => {
               responses: {
                 "200": {
                   content: {
-                    "application/xml": {
+                    "application/json": {
                       schema: {
                         $ref: "#/components/schemas/Pet",
                       },
@@ -326,7 +326,7 @@ describe("SpecParser", () => {
               responses: {
                 "200": {
                   content: {
-                    "application/xml": {
+                    "application/json": {
                       schema: {
                         $ref: "#/components/schemas/Pet",
                       },
@@ -487,10 +487,34 @@ describe("SpecParser", () => {
       }
     });
 
-    it("should throw an error if the signal is aborted after updateManifest", async () => {
+    it("should throw an error if the signal is aborted after generateAdaptiveCard", async () => {
       try {
         const specParser = new SpecParser("path/to/spec.yaml");
-        const spec = { openapi: "3.0.0", paths: {} };
+        const spec = {
+          openapi: "3.0.0",
+          paths: {
+            "/hello": {
+              get: {
+                responses: {
+                  200: {
+                    content: {
+                      "application/json": {
+                        schema: {
+                          type: "object",
+                          properties: {
+                            name: {
+                              type: "string",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        };
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
@@ -501,20 +525,14 @@ describe("SpecParser", () => {
 
         const manifestUpdaterStub = sinon
           .stub(ManifestUpdater, "updateManifest")
-          .callsFake(
-            (
-              manifestPath: string,
-              outputSpecPath: string,
-              adaptiveCardFolder: string,
-              spec: OpenAPIV3.Document
-            ) => {
-              signal.aborted = true;
-              return {} as any;
-            }
-          );
+          .resolves({} as any);
+
         const generateAdaptiveCardStub = sinon
           .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
-          .returns({} as any);
+          .callsFake((operationItem: OpenAPIV3.OperationObject) => {
+            signal.aborted = true;
+            return {} as any;
+          });
 
         const filter = ["get /hello"];
 
@@ -526,13 +544,14 @@ describe("SpecParser", () => {
           "path/to/adaptiveCardFolder",
           signal
         );
+        expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
         expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
       }
     });
 
-    it("should generate a new spec and write it to a yaml file", async () => {
+    it("should generate a new spec and write it to a yaml file if spec is empty", async () => {
       const specParser = new SpecParser("path/to/spec.yaml");
       const spec = { openapi: "3.0.0", paths: {} };
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
@@ -556,6 +575,132 @@ describe("SpecParser", () => {
         outputSpecPath,
         "path/to/adaptiveCardFolder"
       );
+
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+    });
+
+    it("should generate a new spec and write it to a yaml file if spec contains api", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = {
+        openapi: "3.0.0",
+        paths: {
+          "/hello": {
+            get: {
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns({} as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const result = await specParser.generate(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        "path/to/adaptiveCardFolder"
+      );
+
+      expect(result.allSuccess).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+    });
+
+    it("should contain warnings if generate adaptive card failed", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = {
+        openapi: "3.0.0",
+        paths: {
+          "/hello": {
+            get: {
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const cloneSpec = JSON.parse(JSON.stringify(spec));
+      cloneSpec.paths["/hello"].get.operationId = "getHello";
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .resolves(cloneSpec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .throws(new Error("generate adaptive card failed"));
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const result = await specParser.generate(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        "path/to/adaptiveCardFolder"
+      );
+
+      expect(result.allSuccess).to.be.false;
+      expect(result.warnings).to.deep.equal([
+        {
+          type: WarningType.GenerateCardFailed,
+          content: "Error: generate adaptive card failed",
+          data: "getHello",
+        },
+      ]);
 
       expect(JsyamlSpy.calledOnce).to.be.true;
       expect(specFilterStub.calledOnce).to.be.true;
@@ -659,6 +804,22 @@ describe("SpecParser", () => {
                   },
                 },
               ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
             post: {
               operationId: "createUser",
@@ -676,6 +837,15 @@ describe("SpecParser", () => {
                   },
                 },
               ],
+              responses: {
+                201: {
+                  content: {
+                    "application/json": {
+                      schema: {},
+                    },
+                  },
+                },
+              },
             },
             post: {
               operationId: "placeOrder",
@@ -738,6 +908,22 @@ describe("SpecParser", () => {
                   },
                 },
               ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
             post: {
               operationId: "createUser",

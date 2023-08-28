@@ -136,12 +136,12 @@ describe("error", function () {
             chai.assert.fail("Should not reach here");
           } catch (e) {
             const fxError = new SystemError({
-              error: e,
+              error: e as SystemError,
               source: mySource,
               name: "ReadFileError",
             });
             chai.assert.isTrue(fxError instanceof SystemError);
-            chai.assert.isTrue(fxError.message === e.message);
+            chai.assert.isTrue(fxError.message === (e as SystemError).message);
             chai.assert.isTrue(fxError.name === "ReadFileError");
             chai.assert.isTrue(fxError.source === mySource);
           }

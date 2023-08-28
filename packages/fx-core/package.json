@@ -115,7 +115,7 @@
     "md5": "^2.3.0",
     "mime": "^2.5.2",
     "mustache": "^4.2.0",
-    "node-forge": "^1.0.0",
+    "node-forge": "^1.3.1",
     "node-ts-uuid": "^1.0.8",
     "office-addin-manifest": "^1.12.4",
     "office-addin-project": "^0.7.0",

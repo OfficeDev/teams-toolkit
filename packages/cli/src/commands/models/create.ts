@@ -9,20 +9,20 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import {
-  CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
   QuestionNames,
   isCopilotPluginEnabled,
+  CliQuestionName,
 } from "@microsoft/teamsfx-core";
+import chalk from "chalk";
 import { assign } from "lodash";
-import * as path from "path";
 import * as uuid from "uuid";
 import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { createSampleCommand } from "./createSample";
-import chalk from "chalk";
+import * as path from "path";
 
 function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
   if (!isCopilotPluginEnabled()) {

@@ -103,7 +103,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     this.context.logProvider.debug("Check Azure deploy status complete");
     const cost = Date.now() - startTime;
-    this.context.telemetryReporter.sendTelemetryEvent("deployResponse", {
+    const telemetryData = {
       time_cost: cost.toString(),
       status: deployRes?.status?.toString() ?? "",
       message: deployRes?.message ?? "",
@@ -117,7 +117,9 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       site_name_hash: deployRes?.site_name
         ? createHash("sha256").update(deployRes.site_name).digest("hex")
         : "",
-    });
+    };
+    this.context.logProvider.verbose(`Start send telemetry data ${JSON.stringify(telemetryData)}`);
+    this.context.telemetryReporter.sendTelemetryEvent("deployResponse", telemetryData);
     return cost;
   }
 
@@ -164,10 +166,24 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     let res: AxiosZipDeployResult;
     let retryCount = 0;
     while (true) {
+      this.context.logProvider.verbose(`Start to upload zip file to ${zipDeployEndpoint}`);
       try {
         res = await AzureDeployImpl.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
+        this.context.logProvider.verbose(
+          `Upload zip file to ${zipDeployEndpoint} complete, response: ${JSON.stringify(
+            res,
+            Object.getOwnPropertyNames(res)
+          )}.`
+        );
         break;
       } catch (e) {
+        this.context.logProvider.verbose(
+          `Upload zip file failed with error: ${JSON.stringify(
+            e,
+            Object.getOwnPropertyNames(e),
+            2
+          )}`
+        );
         if (axios.isAxiosError(e)) {
           // if the error is remote server error, retry
           if ((e.response?.status ?? HttpStatusCode.OK) >= HttpStatusCode.INTERNAL_SERVER_ERROR) {

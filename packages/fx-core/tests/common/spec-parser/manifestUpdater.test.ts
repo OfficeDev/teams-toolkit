@@ -52,7 +52,6 @@ describe("manifestUpdater", () => {
       composeExtensions: [
         {
           type: "apiBased",
-          supportsConversationalAI: true,
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
@@ -109,7 +108,6 @@ describe("manifestUpdater", () => {
       composeExtensions: [
         {
           type: "apiBased",
-          supportsConversationalAI: true,
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
@@ -158,7 +156,6 @@ describe("manifestUpdater", () => {
       composeExtensions: [
         {
           type: "apiBased",
-          supportsConversationalAI: true,
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {

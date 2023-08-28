@@ -7,7 +7,5 @@
             ],
             "schema": {}
         }
-    ],
-    "azureFunctions.stopFuncTaskPostDebug": false,
-    "azureFunctions.showProjectWarning": false,
+    ]
 }

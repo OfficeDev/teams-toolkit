@@ -170,6 +170,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
     }
 
     const responses = await Promise.all(deleteJobs);
+    logProvider.verbose(`Delete all blobs responses: ${JSON.stringify(responses)}`);
     const errorResponse = responses.find((res) => res.errorCode);
     if (errorResponse) {
       throw new AzureStorageClearBlobsError(storageName, errorResponse);

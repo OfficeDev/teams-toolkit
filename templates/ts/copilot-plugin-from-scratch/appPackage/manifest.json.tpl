@@ -1,9 +1,9 @@
 {
     "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
-    "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
     "packageName": "com.microsoft.teams.extension",
+    "version": "1.0.0",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -19,12 +19,28 @@
         "full": "Full name for {{appName}}"
     },
     "description": {
-        "short": "Short description of {{appName}}",
-        "full": "Full description of {{appName}}"
+        "short": "Easily track and monitor car repair records for stress-free maintenance management.",
+        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your vehicle repair records a breeze. With the power of Copilot, you can effortlessly stay informed about your car's maintenance timeline."
     },
     "accentColor": "#FFFFFF",
-    "bots": [],
-    "composeExtensions": [],    
+    "composeExtensions": [
+        {
+            "type": "apiBased",
+            "apiSpecificationFile": "apiSpecFiles/repair.yaml",
+            "commands": [
+                {
+                    "id": "repair",
+                    "type": "query",
+                    "title": "Returns a repair",
+                    "context": [
+                        "compose",
+                        "commandBox"
+                    ],
+                    "apiResponseRenderingTemplateFile": "adaptiveCards/repair.json"
+                }
+            ]
+        }
+    ],    
     "permissions": [
         "identity",
         "messageTeamMembers"

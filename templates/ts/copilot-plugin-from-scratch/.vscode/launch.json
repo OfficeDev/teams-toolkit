@@ -2,10 +2,38 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Remote (Edge)",
+            "name": "Launch App in Teams (Edge)",
             "type": "msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com?${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch App in Teams (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://teams.microsoft.com?${account-hint}",
+            "cascadeTerminateToConfigurations": [
+                "Attach to Local Service"
+            ],
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Preview in Copilot (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://teams.microsoft.com?${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 1
@@ -13,35 +41,13 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Remote (Chrome)",
+            "name": "Preview in Copilot (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com?${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 2
-            },
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "Attach to Frontend (Edge)",
-            "type": "msedge",
-            "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
-            "presentation": {
-                "group": "all",
-                "hidden": true
-            },
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "Attach to Frontend (Chrome)",
-            "type": "chrome",
-            "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
-            "presentation": {
-                "group": "all",
-                "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
         },
@@ -56,19 +62,13 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "Attach to Node Functions",
-            "type": "node",
-            "request": "attach",
-            "port": 9229,
-            "preLaunchTask": "func: host start"
         }
     ],
     "compounds": [
         {
-            "name": "Debug (Edge)",
+            "name": "Debug in Copilot (Edge)",
             "configurations": [
+                "Launch App in Teams (Edge)",
                 "Attach to Backend"
             ],
             "preLaunchTask": "Start Teams App Locally",
@@ -79,10 +79,10 @@
             "stopAll": true
         },
         {
-            "name": "Debug (Chrome)",
+            "name": "Debug in Copilot (Chrome)",
             "configurations": [
-                "Attach to Frontend (Chrome)",
-                 "Attach to Backend"
+                "Launch App in Teams (Chrome)",
+                "Attach to Backend"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {

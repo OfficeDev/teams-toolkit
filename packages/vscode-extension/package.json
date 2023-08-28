@@ -1176,7 +1176,7 @@
           "fx-extension.developCopilotPlugin": {
             "type": "boolean",
             "default": false,
-            "description": "Enable to develop Copilot plugin (Require to reload VSCode)"
+            "markdownDescription": "Enable to develop Copilot plugin (Require to reload VSCode). Visit [How to Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot) to learn more."
           }
         }
       }

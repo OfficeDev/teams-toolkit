@@ -79,7 +79,7 @@ export function getCreateCommand(): CLICommand {
       if (res.isErr()) {
         return err(res.error);
       }
-      logger.info(`Project created at: ${chalk.cyanBright(path.resolve(res.value.projectPath))}`);
+      logger.info(`Project created at: ${chalk.cyan(path.resolve(res.value.projectPath))}`);
       return ok(undefined);
     },
   };

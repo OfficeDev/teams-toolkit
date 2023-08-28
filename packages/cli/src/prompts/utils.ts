@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import chalk from "chalk";
-
 export function white(content: string): string {
   return content;
 }

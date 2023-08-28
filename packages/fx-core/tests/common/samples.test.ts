@@ -5,8 +5,9 @@ import * as sinon from "sinon";
 import { err } from "@microsoft/teamsfx-api";
 
 import {
+  SampleConfigBranchForPrerelease,
   SampleConfigTag,
-  SampleConfigTagForPrerelease,
+  SampleConfigTagForRc,
   sampleProvider,
 } from "../../src/common/samples";
 import sampleConfigV3 from "../../src/common/samples-config-v3.json";
@@ -70,12 +71,12 @@ describe("Samples", () => {
         );
     });
 
-    it("download sample config of prerelease tag in rc version", async () => {
-      packageJson.version = "2.0.3-rc.1";
+    it("download sample config of prerelease branch in prerelease(beta) version", async () => {
+      packageJson.version = "2.0.4-beta.0";
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
-          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTagForPrerelease}/.config/samples-config-v3.json`
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigBranchForPrerelease}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
         } else {
@@ -89,7 +90,30 @@ describe("Samples", () => {
       chai
         .expect(samples[0].downloadUrl)
         .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTagForPrerelease}/hello-world-tab-with-backend`
+          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigBranchForPrerelease}/hello-world-tab-with-backend`
+        );
+    });
+
+    it("download sample config of rc tag in rc version", async () => {
+      packageJson.version = "2.0.3-rc.1";
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+        if (
+          url ===
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTagForRc}/.config/samples-config-v3.json`
+        ) {
+          return { data: fakedSampleConfig, status: 200 };
+        } else {
+          throw err(undefined);
+        }
+      });
+
+      await sampleProvider.fetchSampleConfig();
+      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
+      const samples = sampleProvider.SampleCollection.samples;
+      chai
+        .expect(samples[0].downloadUrl)
+        .equal(
+          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTagForRc}/hello-world-tab-with-backend`
         );
     });
 

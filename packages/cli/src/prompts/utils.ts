@@ -4,8 +4,7 @@
 import chalk from "chalk";
 
 export function white(content: string): string {
-  if (process.platform === "win32") return chalk.grey(content);
-  return chalk.white(content);
+  return content;
 }
 
 export function space(num: number): string {

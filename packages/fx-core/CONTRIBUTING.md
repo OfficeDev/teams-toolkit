@@ -7,24 +7,26 @@ Welcome and thank you for your interest in contributing to **fx-core**! Before c
 Follow the official documents to install the required softwares:
 
 1. [Git](https://git-scm.com/)
-2. [Node.js and NPM](https://nodejs.org/), **x64**, Node version >= 10.x, <= 14.x
-3. [Visual Studio Code](https://code.visualstudio.com/)
+2. [Node.js and NPM](https://nodejs.org/), **x64**, Node version >= 18
+3. [PNPM](https://pnpm.io/), PNPM version >=8
+4. [Visual Studio Code](https://code.visualstudio.com/)
+
 
 ## Built the project
 
 1. Clone this repo locally. (`git clone https://github.com/OfficeDev/TeamsFx.git`)
 2. Open a terminal and move into your local copy. (`cd TeamsFx`)
-3. Because the monorepo is managed by Lerna, you need to bootstrap at the first time. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed and linked locally.
-4. Build the `fx-core` package. (`cd packages/fx-core && npm run build`)
+3. Because the monorepo is managed by PNPM, you need to setup at the first time in root folder. (`npm run setup` or `pnpm install && npm run build`) All dependencies will be installed and linked locally.
 
-**_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
+## Add or remove dependency in FxCore
+run `pnpm install XXX` to add dependency, run `pnpm remove XXX` to remove dependecy.
 
 ## Test the project
 
 Add tests under tests/ folder. The filename should end with .test.ts.
 
 Because other packages depends on `fx-core`, the change may break functionalities of other packages.
-Please also run `npx lerna run test:unit --since origin/main` in the root folder of TeamsFx project, it will run all unit tests.
+Please also run `pnpm -r run test:unit` in the root folder of TeamsFx project, it will run all unit tests.
 
 ## Style Guidelines
 
@@ -35,7 +37,7 @@ After running `npm run setup` in the root folder of the monorepo, a [Precommit G
 
 ## Pull Request Process
 
-1. Checkout your local branch from the latest `main` branch and make your changes to your local branch.
+1. Checkout your local branch from the latest `dev` branch and make your changes to your local branch.
 2. Before creating a pull request, make sure:
    - Use eslint plugin to check whether there is any error or warning that breaks the rule. (`npm run lint`)
    - Make sure modified functions are covered by unit tests. (`npm run test`)

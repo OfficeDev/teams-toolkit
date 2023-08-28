@@ -366,6 +366,18 @@ describe("Generator error", async () => {
       assert.equal(result.error.innerError.name, "UnzipError");
     }
   });
+
+  it("sample not found error", async () => {
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
+    sandbox.stub(generatorUtils, "downloadDirectory").resolves([] as string[]);
+
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    if (result.isErr()) {
+      assert.equal(result.error.name, "SampleNotFoundError");
+    } else {
+      assert.fail("Sample not found error should be thrown.");
+    }
+  });
 });
 
 describe("render template", () => {

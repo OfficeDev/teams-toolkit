@@ -441,6 +441,26 @@
             "configuration": "Ready for debug",
             "gifPath": "src/assets/screenshot.png",
             "suggested": false
+        },
+        {
+            "id": "react-retail-dashboard",
+            "shortId": "retail-dashboard",
+            "onboardDate": "2023-09-15",
+            "title": "Contoso Retail Dashboard",
+            "shortDescription": "Microsoft Teams tab powered by SharePoint Framework to show a Contoso retail dashboard based on demo sample data.",
+            "fullDescription": "Contoso Retail Dashboard sample shows you how to build a dashboard for viewing different control layouts. It also shows you how to create a Microsoft Teams personal app with SharePoint Framework, hosting the solution also in Outlook.com and in the Microsoft 365 Portal as a Microsoft 365 app.",
+            "types": [
+                "Tab"
+            ],
+            "tags": [
+                "Tab",
+                "TS",
+                "SPFx"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "gifPath": "assets/teams-hosted.png",
+            "suggested": false
         }
     ]
 }

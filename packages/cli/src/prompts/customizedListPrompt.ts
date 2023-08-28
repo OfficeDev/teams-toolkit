@@ -115,9 +115,9 @@ export const select = createPrompt((config: Config, done: (value: string) => voi
 
       let output = "";
       if (index === cursorPosition) {
-        output += chalk.blueBright(`${figures.radioOn} ${choice.title}`);
+        output += chalk.cyan(`${figures.radioOn} ${choice.title}`);
       } else {
-        output += `${chalk.blueBright(figures.radioOff)} ${chalk.whiteBright(choice.title)}`;
+        output += `${chalk.blueBright(figures.radioOff)} ${choice.title}`;
       }
 
       if (choice.detail) {

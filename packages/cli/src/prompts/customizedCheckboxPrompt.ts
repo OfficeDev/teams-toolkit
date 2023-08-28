@@ -150,7 +150,7 @@ export const checkbox = createPrompt(
         if (index === cursorPosition) {
           output += `${getCheckbox(!!choice.checked)} ${chalk.blueBright(choice.title)}`;
         } else {
-          output += `${getCheckbox(!!choice.checked)} ${chalk.whiteBright(choice.title)}`;
+          output += `${getCheckbox(!!choice.checked)} ${choice.title}`;
         }
 
         if (choice.detail) {

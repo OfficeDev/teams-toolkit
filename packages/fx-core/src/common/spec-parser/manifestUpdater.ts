@@ -24,7 +24,6 @@ export async function updateManifest(
       type: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
-      supportsConversationalAI: true,
     };
 
     const updatedPart: PartialManifest = {

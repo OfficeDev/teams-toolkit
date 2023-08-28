@@ -126,7 +126,6 @@ export class ManifestUtil {
       manifestVersion: manifest.manifestVersion,
       isCopilotPlugin: false,
       isSPFx: false,
-      isApiBasedMe: false,
     };
 
     // If it's copilot plugin app
@@ -135,11 +134,7 @@ export class ManifestUtil {
       manifest.composeExtensions.length > 0 &&
       (manifest.composeExtensions[0] as IComposeExtension).type == "apiBased"
     ) {
-      if ((manifest.composeExtensions[0] as IComposeExtension).supportsConversationalAI) {
-        properties.isCopilotPlugin = true;
-      }
-
-      properties.isApiBasedMe = true;
+      properties.isCopilotPlugin = true;
     }
 
     // If it's SPFx app

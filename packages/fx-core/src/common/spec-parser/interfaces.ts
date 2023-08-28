@@ -144,7 +144,6 @@ export interface Description {
 export interface ComposeExtension {
   type: string;
   apiSpecificationFile: string;
-  supportsConversationalAI: boolean;
   commands: Command[];
 }
 

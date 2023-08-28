@@ -105,7 +105,7 @@ export default class ServerConnection implements IServerConnection {
       stage,
       inputs
     );
-    return Promise.resolve(standardizeResult(res));
+    return standardizeResult(res);
   }
 
   public async createProjectRequest(

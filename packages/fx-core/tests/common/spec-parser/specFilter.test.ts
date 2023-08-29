@@ -29,7 +29,7 @@ describe("specFilter", () => {
             "200": {
               description: "A greeting message",
               content: {
-                "text/plain": {
+                "application/json": {
                   schema: {
                     type: "string",
                   },
@@ -45,7 +45,7 @@ describe("specFilter", () => {
             "201": {
               description: "A greeting message",
               content: {
-                "text/plain": {
+                "application/json": {
                   schema: {
                     type: "string",
                   },
@@ -61,7 +61,7 @@ describe("specFilter", () => {
             "200": {
               description: "A greeting message",
               content: {
-                "text/plain": {
+                "application/json": {
                   schema: {
                     type: "string",
                   },
@@ -91,7 +91,7 @@ describe("specFilter", () => {
               "200": {
                 description: "A greeting message",
                 content: {
-                  "text/plain": {
+                  "application/json": {
                     schema: {
                       type: "string",
                     },
@@ -100,11 +100,27 @@ describe("specFilter", () => {
               },
             },
           },
+          post: {
+            operationId: "postHello",
+            responses: {
+              "201": {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+                description: "A greeting message",
+              },
+            },
+            summary: "Creates a greeting",
+          },
         },
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -125,7 +141,7 @@ describe("specFilter", () => {
               "200": {
                 description: "A greeting message",
                 content: {
-                  "text/plain": {
+                  "application/json": {
                     schema: {
                       type: "string",
                     },
@@ -138,7 +154,7 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -151,6 +167,18 @@ describe("specFilter", () => {
           get: {
             responses: {
               "200": {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
                 description: "OK",
               },
             },
@@ -166,6 +194,18 @@ describe("specFilter", () => {
             responses: {
               "200": {
                 description: "OK",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
             operationId: "getHelloId",
@@ -174,7 +214,7 @@ describe("specFilter", () => {
       },
     };
 
-    const result = specFilter(filter, unResolvedSpec as any);
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any);
 
     expect(result).to.deep.equal(expectedSpec);
   });
@@ -182,7 +222,7 @@ describe("specFilter", () => {
   it("should not filter anything if filter item not exist", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec);
+    specFilter(filter, unResolveSpec, unResolveSpec);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -208,7 +248,7 @@ describe("specFilter", () => {
       paths: {},
     };
 
-    const result = specFilter(filter, unResolvedSpec as any);
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any);
 
     expect(result).to.deep.equal(expectedSpec);
   });
@@ -216,7 +256,7 @@ describe("specFilter", () => {
   it("should not modify the original OpenAPI spec", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec);
+    specFilter(filter, unResolveSpec, unResolveSpec);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -228,7 +268,7 @@ describe("specFilter", () => {
       .throws(new Error("isSupportedApi error"));
 
     try {
-      specFilter(filter, unResolveSpec);
+      specFilter(filter, unResolveSpec, unResolveSpec);
       expect.fail("Expected specFilter to throw a SpecParserError");
     } catch (err) {
       expect(err).to.be.instanceOf(SpecParserError);

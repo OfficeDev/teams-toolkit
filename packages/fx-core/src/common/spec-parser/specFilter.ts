@@ -6,12 +6,12 @@ import { OpenAPIV3 } from "openapi-types";
 import { convertPathToCamelCase, isSupportedApi } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ErrorType } from "./interfaces";
-
-const allMethodNames = ["get", "post", "put", "delete", "patch", "head", "options", "trace"];
+import { ConstantString } from "./constants";
 
 export function specFilter(
   filter: string[],
-  unResolveSpec: OpenAPIV3.Document
+  unResolveSpec: OpenAPIV3.Document,
+  resolvedSpec: OpenAPIV3.Document
 ): OpenAPIV3.Document {
   try {
     const newSpec = { ...unResolveSpec };
@@ -20,13 +20,13 @@ export function specFilter(
       const [method, path] = filterItem.split(" ");
       const methodName = method.toLowerCase();
 
-      if (!isSupportedApi(methodName, path, unResolveSpec)) {
+      if (!isSupportedApi(methodName, path, resolvedSpec)) {
         continue;
       }
 
       if (!newPaths[path]) {
         newPaths[path] = { ...unResolveSpec.paths[path] };
-        for (const m of allMethodNames) {
+        for (const m of ConstantString.AllOperationMethods) {
           delete (newPaths[path] as any)[m];
         }
       }

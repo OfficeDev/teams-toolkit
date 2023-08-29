@@ -20,7 +20,7 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, getUrlProtocol, isSupportedApi } from "./utils";
+import { convertPathToCamelCase, getUrlProtocol, isSupportedApi, validateServer } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";
@@ -67,7 +67,7 @@ export class SpecParser {
         };
       }
 
-      // Spec version not supported
+      // TODO: we will support swagger 2.0
       if (!this.spec!.openapi || this.spec!.openapi < "3.0.0") {
         errors.push({
           type: ErrorType.VersionNotSupported,
@@ -81,38 +81,9 @@ export class SpecParser {
         };
       }
 
-      // Server information invalid
-      if (!this.spec!.servers || this.spec!.servers.length === 0) {
-        errors.push({
-          type: ErrorType.NoServerInformation,
-          content: ConstantString.NoServerInformation,
-        });
-      } else if (this.spec!.servers.length > 1) {
-        errors.push({
-          type: ErrorType.MultipleServerInformation,
-          content: ConstantString.MultipleServerInformation,
-          data: this.spec!.servers,
-        });
-      } else if (this.spec!.servers.length === 1) {
-        const serverUrl = this.spec!.servers[0].url;
-
-        const protocol = getUrlProtocol(serverUrl);
-        if (!protocol) {
-          // Relative server url is not supported
-          errors.push({
-            type: ErrorType.RelativeServerUrlNotSupported,
-            content: ConstantString.RelativeServerUrlNotSupported,
-            data: this.spec!.servers,
-          });
-        } else if (protocol !== "https:") {
-          // Http server url is not supported
-          errors.push({
-            type: ErrorType.UrlProtocolNotSupported,
-            content: util.format(ConstantString.UrlProtocolNotSupported, protocol),
-            data: this.spec!.servers,
-          });
-        }
-      }
+      // Server validation
+      const serverErrors = validateServer(this.spec!);
+      errors.push(...serverErrors);
 
       // Remote reference not supported
       const refPaths = this.parser.$refs.paths();
@@ -240,7 +211,7 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!);
+      const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!, this.spec!);
       let resultStr;
       if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
         resultStr = jsyaml.dump(newUnResolvedSpec);
@@ -256,19 +227,22 @@ export class SpecParser {
       const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
 
       for (const url in newSpec.paths) {
-        const getOperation = newSpec.paths[url]?.get;
-
-        try {
-          const card: AdaptiveCard = generateAdaptiveCard(getOperation!);
-          const fileName = path.join(adaptiveCardFolder, `${getOperation!.operationId!}.json`);
-          await fs.outputJSON(fileName, card, { spaces: 2 });
-        } catch (err) {
-          result.allSuccess = false;
-          result.warnings.push({
-            type: WarningType.GenerateCardFailed,
-            content: (err as Error).toString(),
-            data: getOperation!.operationId!,
-          });
+        for (const method in newSpec.paths[url]) {
+          if (method === ConstantString.GetMethod || method === ConstantString.PostMethod) {
+            const operation = newSpec.paths[url]![method] as OpenAPIV3.OperationObject;
+            try {
+              const card: AdaptiveCard = generateAdaptiveCard(operation);
+              const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
+              await fs.outputJSON(fileName, card, { spaces: 2 });
+            } catch (err) {
+              result.allSuccess = false;
+              result.warnings.push({
+                type: WarningType.GenerateCardFailed,
+                content: (err as Error).toString(),
+                data: operation.operationId!,
+              });
+            }
+          }
         }
       }
 

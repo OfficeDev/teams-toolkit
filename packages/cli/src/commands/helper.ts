@@ -8,6 +8,7 @@ import {
   CLIExample,
 } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
+import { cloneDeep } from "lodash";
 
 class Helper {
   itemIndentWidth = 2;
@@ -208,6 +209,12 @@ class Helper {
 
     // Global Options
     let globalOptions = (rootCommand?.options || []).filter((o) => !o.hidden);
+    if (command.defaultInteractiveOption !== undefined) {
+      globalOptions = cloneDeep(globalOptions);
+      globalOptions.forEach((o) => {
+        if (o.name === "interactive") o.default = command.defaultInteractiveOption;
+      });
+    }
     if (rootCommand?.sortOptions) globalOptions = globalOptions.sort(compareOptions);
     const globalOptionList = globalOptions.map((option) => {
       return this.formatItem(

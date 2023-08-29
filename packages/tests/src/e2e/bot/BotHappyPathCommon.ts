@@ -10,8 +10,11 @@ import { BotValidator } from "../../commonlib";
 import {
   cleanUp,
   execAsync,
+  execAsyncWithRetry,
+  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
+  readContextMultiEnv,
   readContextMultiEnvV3,
   createResourceGroup
 } from "../commonUtils";
@@ -22,7 +25,6 @@ import {
   CliTriggerType,
 } from "../../commonlib/constants";
 import { expect } from "chai";
-import { Executor } from "../../utils/executor";
 
 export async function happyPathTest(
   runtime: Runtime,
@@ -31,6 +33,7 @@ export async function happyPathTest(
 ): Promise<void> {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
+  const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const envName = environmentManager.getDefaultEnvName();
 
@@ -56,15 +59,22 @@ export async function happyPathTest(
   });
   console.log(`[Successfully] scaffold to ${projectPath}`);
 
-  {
-    // provision
-    const result = await createResourceGroup(appName + "-rg", "eastus");
-    expect(result).to.be.true;
-    process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
-    const { success } = await Executor.provision(projectPath, envName);
-    expect(success).to.be.true;
-    console.log(`[Successfully] provision for ${projectPath}`);
-  }
+  // set subscription
+  // await CliHelper.setSubscription(subscription, projectPath, env);
+
+  console.log(`[Successfully] set subscription for ${projectPath}`);
+
+  // provision
+  const result = await createResourceGroup(appName + "-rg", "eastus");
+  expect(result).to.be.true;
+  process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+  await execAsyncWithRetry(`teamsfx provision`, {
+    cwd: projectPath,
+    env: env,
+    timeout: 0,
+  });
+
+  console.log(`[Successfully] provision for ${projectPath}`);
 
   {
     // Validate provision
@@ -76,12 +86,14 @@ export async function happyPathTest(
     await bot.validateProvisionV3(false);
   }
 
-  {
-    // deploy
-    const { success } = await Executor.deploy(projectPath, envName);
-    expect(success).to.be.true;
-    console.log(`[Successfully] deploy for ${projectPath}`);
-  }
+  // deploy
+  const cmdStr = "teamsfx deploy";
+  await execAsyncWithRetry(cmdStr, {
+    cwd: projectPath,
+    env: env,
+    timeout: 0,
+  });
+  console.log(`[Successfully] deploy for ${projectPath}`);
 
   {
     // Validate deployment
@@ -94,17 +106,19 @@ export async function happyPathTest(
     await bot.validateDeploy();
   }
 
-  {
-    // test (validate)
-    const { success } = await Executor.validate(projectPath);
-    expect(success).to.be.true;
-  }
+  // test (validate)
+  await execAsyncWithRetry(`teamsfx validate --env ${envName}`, {
+    cwd: projectPath,
+    env: env,
+    timeout: 0,
+  });
 
-  {
-    // package
-    const { success } = await Executor.package(projectPath);
-    expect(success).to.be.true;
-  }
+  // package
+  await execAsyncWithRetry(`teamsfx package --env ${envName}`, {
+    cwd: projectPath,
+    env: env,
+    timeout: 0,
+  });
 
   console.log(`[Successfully] start to clean up for ${projectPath}`);
   await cleanUp(appName, projectPath, false, true, false);

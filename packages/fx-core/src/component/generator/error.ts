@@ -6,6 +6,30 @@ import { errorSource } from "./constant";
 
 export class CancelDownloading extends Error {}
 
+export class SampleNotFoundError extends BaseComponentInnerError {
+  constructor(templateName: string) {
+    super(
+      errorSource,
+      "SystemError",
+      "SampleNotFoundError",
+      "error.generator.SampleNotFoundError",
+      [templateName]
+    );
+  }
+}
+
+export class TemplateNotFoundError extends BaseComponentInnerError {
+  constructor(templateName: string) {
+    super(
+      errorSource,
+      "SystemError",
+      "TemplateNotFoundError",
+      "error.generator.TemplateNotFoundError",
+      [templateName]
+    );
+  }
+}
+
 export class TemplateZipFallbackError extends BaseComponentInnerError {
   constructor() {
     super(

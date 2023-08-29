@@ -90,10 +90,8 @@ export class CopilotPluginGenerator {
       // validate API spec
       const specParser = new SpecParser(url);
       const validationRes = await specParser.validate();
-      const specWarnings = validationRes.warnings;
-      const operationIdWarning = specWarnings.find(
-        (w) => w.type === WarningType.OperationIdMissing
-      );
+      const warnings = validationRes.warnings;
+      const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
       if (operationIdWarning && operationIdWarning.data) {
         const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
           filters.includes(api)
@@ -103,13 +101,14 @@ export class CopilotPluginGenerator {
             ConstantString.MissingOperationId,
             apisMissingOperationId.join(", ")
           );
+          delete operationIdWarning.data;
         } else {
-          specWarnings.splice(specWarnings.indexOf(operationIdWarning), 1);
+          warnings.splice(warnings.indexOf(operationIdWarning), 1);
         }
       }
 
       if (validationRes.status === ValidationStatus.Error) {
-        logValidationResults(validationRes.errors, specWarnings, context, true, false, true);
+        logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =
           inputs.platform === Platform.VSCode
             ? getLocalizedString(
@@ -149,7 +148,16 @@ export class CopilotPluginGenerator {
         AppPackageFolderName,
         AdaptiveFolderName
       );
-      await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveCardFolder);
+      const generateResult = await specParser.generate(
+        manifestPath,
+        filters,
+        openapiSpecPath,
+        adaptiveCardFolder
+      );
+
+      if (generateResult.warnings.length > 0) {
+        warnings.push(...generateResult.warnings);
+      }
 
       // update manifest based on openAI plugin manifest
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);
@@ -170,11 +178,7 @@ export class CopilotPluginGenerator {
 
       // log warnings
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
-        const warnSummary = generateScaffoldingSummary(
-          specWarnings,
-          teamsManifest,
-          destinationPath
-        );
+        const warnSummary = generateScaffoldingSummary(warnings, teamsManifest, destinationPath);
 
         if (warnSummary) {
           void context.logProvider.info(warnSummary);
@@ -183,10 +187,11 @@ export class CopilotPluginGenerator {
 
       if (inputs.platform === Platform.VSCode) {
         return ok({
-          warnings: specWarnings.map((specWarning) => {
+          warnings: warnings.map((warning) => {
             return {
-              type: specWarning.type,
-              content: specWarning.content,
+              type: warning.type,
+              content: warning.content,
+              data: warning.data,
             };
           }),
         });

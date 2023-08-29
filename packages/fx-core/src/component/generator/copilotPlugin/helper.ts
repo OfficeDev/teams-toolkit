@@ -294,12 +294,12 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
 }
 
 export function generateScaffoldingSummary(
-  specWarnings: Warning[],
+  warnings: Warning[],
   teamsManifest: TeamsAppManifest,
   projectPath: string
 ): string {
-  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(specWarnings);
-  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath);
+  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(warnings);
+  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath, warnings);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
@@ -337,29 +337,32 @@ function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string 
 
 function validateTeamsManifestLength(
   teamsManifest: TeamsAppManifest,
-  projectPath: string
+  projectPath: string,
+  warnings: Warning[]
 ): string[] {
   const nameShortLimit = 30;
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
   const descriptionFullLimit = 4000;
-  const warnings = [];
+  const resultWarnings = [];
 
   // validate name
   if (teamsManifest.name.short.length > nameShortLimit) {
-    warnings.push(formatLengthExceedingErrorMessage("/name/short", nameShortLimit));
+    resultWarnings.push(formatLengthExceedingErrorMessage("/name/short", nameShortLimit));
   }
 
   if (!!teamsManifest.name.full && teamsManifest.name.full?.length > nameFullLimit) {
-    warnings.push(formatLengthExceedingErrorMessage("/name/full", nameFullLimit));
+    resultWarnings.push(formatLengthExceedingErrorMessage("/name/full", nameFullLimit));
   }
 
   // validate description
   if (teamsManifest.description.short.length > descriptionShortLimit) {
-    warnings.push(formatLengthExceedingErrorMessage("/description/short", descriptionShortLimit));
+    resultWarnings.push(
+      formatLengthExceedingErrorMessage("/description/short", descriptionShortLimit)
+    );
   }
   if (!teamsManifest.description.full?.length) {
-    warnings.push(
+    resultWarnings.push(
       getLocalizedString(
         "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingFullDescription"
       ) +
@@ -371,7 +374,9 @@ function validateTeamsManifestLength(
     );
   }
   if (teamsManifest.description.full!.length > descriptionFullLimit) {
-    warnings.push(formatLengthExceedingErrorMessage("/description/full", descriptionFullLimit));
+    resultWarnings.push(
+      formatLengthExceedingErrorMessage("/description/full", descriptionFullLimit)
+    );
   }
 
   // validate card
@@ -380,7 +385,10 @@ function validateTeamsManifestLength(
     for (const command of commands) {
       if (command.type === "query") {
         if (!command.apiResponseRenderingTemplateFile) {
-          warnings.push(
+          const errorDetail = warnings.find(
+            (w) => w.type === WarningType.GenerateCardFailed && w.data === command.id
+          )?.content;
+          resultWarnings.push(
             getLocalizedString(
               "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate",
               "apiResponseRenderingTemplateFile",
@@ -391,34 +399,15 @@ function validateTeamsManifestLength(
                 AppPackageFolderName,
                 `composeExtensions/commands/${command.id}/apiResponseRenderingTemplateFile`,
                 path.join(AppPackageFolderName, ManifestTemplateFileName)
-              )
-          );
-        } else {
-          const cardPath = path.join(
-            projectPath,
-            AppPackageFolderName,
-            command.apiResponseRenderingTemplateFile
-          );
-          if (!fs.existsSync(cardPath)) {
-            warnings.push(
-              getLocalizedString(
-                "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard",
-                command.apiResponseRenderingTemplateFile,
-                AppPackageFolderName
               ) +
-                getLocalizedString(
-                  "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard.mitigation",
-                  command.apiResponseRenderingTemplateFile,
-                  AppPackageFolderName
-                )
-            );
-          }
+              (errorDetail ? EOL + errorDetail : "")
+          );
         }
       }
     }
   }
 
-  return warnings;
+  return resultWarnings;
 }
 
 function formatLengthExceedingErrorMessage(field: string, limit: number): string {

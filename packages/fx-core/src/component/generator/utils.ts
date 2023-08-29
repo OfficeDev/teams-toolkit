@@ -140,15 +140,14 @@ export async function unzip(
   dstPath: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
-  filterFn?: (filePath: string, data: Buffer) => boolean
+  filterFn?: (filePath: string) => boolean
 ): Promise<string[]> {
   const output = [];
-  const entries = zip
-    .getEntries()
-    .filter((entry) => !entry.isDirectory)
-    .filter((entry) => {
-      return filterFn ? filterFn(entry.entryName, entry.getData()) : true;
-    });
+  let entries = zip.getEntries().filter((entry) => !entry.isDirectory);
+  if (filterFn) {
+    entries = entries.filter((entry) => filterFn(entry.entryName));
+  }
+
   for (const entry of entries) {
     const rawEntryData: Buffer = entry.getData();
     const entryName: string = nameReplaceFn

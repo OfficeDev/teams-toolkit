@@ -10,9 +10,6 @@ module.exports = {
         "../eslint-plugin-teamsfx/config/header.js",
         "../eslint-plugin-teamsfx/config/promise.js",
       ],
-      rules: {
-        "@typescript-eslint/no-namespace": "off",
-      },
     },
   ],
 };

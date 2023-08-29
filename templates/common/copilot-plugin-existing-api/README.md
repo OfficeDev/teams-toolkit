@@ -15,14 +15,17 @@ The plugin allows Copilot to interact directly with third-party data, apps, and 
 > To run the copilot plugin app template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts). Access to Microsoft 365 Copilot is also required.
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - Join Microsoft 365 Copilot Plugin development early access program.
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
-1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
-1. Create Teams app by clicking `Provision` in "Lifecycle" section.
-1. Select `Preivew in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
-1. When Teams launches in the browser, open the Copilot app to test your plugin.
+2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+3. Create Teams app by clicking `Provision` in "Lifecycle" section.
+4. Select `Preivew in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
+5. When Teams launches in the browser, open the Copilot app to test your plugin.
+6. Click the `Apps` icon from Teams client left rail to open Teams app store and search for `Copilot`.
+7. Open the `Copilot` app and send a prompt to trigger your plugin.
 
 ## What's included in the template
 

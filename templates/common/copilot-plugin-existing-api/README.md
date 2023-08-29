@@ -23,9 +23,8 @@ The plugin allows Copilot to interact directly with third-party data, apps, and 
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preivew in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
-5. When Teams launches in the browser, open the Copilot app to test your plugin.
-6. Click the `Apps` icon from Teams client left rail to open Teams app store and search for `Copilot`.
-7. Open the `Copilot` app and send a prompt to trigger your plugin.
+5. When Teams launches in the browser, click the `Apps` icon from Teams client left rail to open Teams app store and search for `Copilot`.
+6. Open the `Copilot` app and send a prompt to trigger your plugin.
 
 ## What's included in the template
 

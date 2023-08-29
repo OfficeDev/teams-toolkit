@@ -21,7 +21,7 @@ export async function updateManifest(
 
     const commands = await generateCommands(spec, adaptiveCardFolder, manifestPath);
     const ComposeExtension: ComposeExtension = {
-      type: "apiBased",
+      composeExtensionType: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
     };

@@ -142,7 +142,7 @@ export interface Description {
 }
 
 export interface ComposeExtension {
-  type: string;
+  composeExtensionType: string;
   apiSpecificationFile: string;
   commands: Command[];
 }

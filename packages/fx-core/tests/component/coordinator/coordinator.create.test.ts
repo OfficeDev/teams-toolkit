@@ -26,6 +26,7 @@ import { QuestionNames } from "../../../src/question/questionNames";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
+import { glob } from "glob";
 
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator create", () => {
@@ -55,6 +56,27 @@ describe("coordinator create", () => {
     const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isOk());
   });
+
+  it("create project from sample: todo-list-SPFx", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(glob, "glob").resolves();
+    sandbox.stub(fs, "readFile").resolves("test" as any);
+    sandbox.stub(fs, "writeFile").resolves("");
+    const inputs: CreateSampleProjectInputs = {
+      platform: Platform.CLI,
+      folder: ".",
+      samples: "todo-list-SPFx",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createSampleProject(inputs);
+    assert.isTrue(res.isOk());
+  });
+
   it("fail to create project from sample", async () => {
     sandbox.stub(Generator, "generateSample").resolves(err(new UserError({})));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));

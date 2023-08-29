@@ -940,15 +940,23 @@ function downloadSampleHook(sampleId: string, sampleAppPath: string): void {
     const componentId = uuid.v4();
     glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, (err, files) => {
       void (async () => {
-        await Promise.all(
-          files.map(async (file) => {
-            let content = (await fs.readFile(file)).toString();
-            const reg = new RegExp(originalId, "g");
-            content = content.replace(reg, componentId);
-            await fs.writeFile(file, content);
-          })
-        );
+        await updateFilesInSample(files, componentId, originalId);
       })();
     });
   }
+}
+
+export async function updateFilesInSample(
+  files: string[],
+  componentId: string,
+  originalId: string
+): Promise<void> {
+  await Promise.all(
+    files.map(async (file) => {
+      let content = (await fs.readFile(file)).toString();
+      const reg = new RegExp(originalId, "g");
+      content = content.replace(reg, componentId);
+      await fs.writeFile(file, content);
+    })
+  );
 }

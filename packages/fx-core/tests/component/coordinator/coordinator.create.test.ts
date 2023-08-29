@@ -6,7 +6,11 @@ import fs from "fs-extra";
 import * as sinon from "sinon";
 import { CreateSampleProjectInputs } from "../../../src";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
-import { coordinator, TemplateNames } from "../../../src/component/coordinator";
+import {
+  coordinator,
+  TemplateNames,
+  updateFilesInSample,
+} from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { Generator } from "../../../src/component/generator/generator";
@@ -75,6 +79,18 @@ describe("coordinator create", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isOk());
+  });
+
+  it("update files in sample", async () => {
+    const read = sandbox.stub(fs, "readFile").resolves("test" as any);
+    sandbox.stub(fs, "writeFile").resolves("");
+    const inputs: CreateSampleProjectInputs = {
+      platform: Platform.CLI,
+      folder: ".",
+      samples: "todo-list-SPFx",
+    };
+    await updateFilesInSample(["test"], "id", "id");
+    assert.isTrue(read.calledOnce);
   });
 
   it("fail to create project from sample", async () => {

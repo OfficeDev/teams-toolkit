@@ -107,6 +107,7 @@ export function isSupportedSchema(schema: OpenAPIV3.SchemaObject): boolean {
  * 3. parameter inside post body only support string, number, boolean, integer and object
  * 4. request body + required parameters <= 1
  * 5. response body should be “application/json” and not empty, and response code should be 20X
+ * 6. only support request body with “application/json” content type
  */
 export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Document): boolean {
   const pathObj = spec.paths[path];

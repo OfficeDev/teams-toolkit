@@ -17,6 +17,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   IQTreeNode,
+  ManifestUtil,
   ok,
   OpenAIPluginManifest,
   Platform,
@@ -557,10 +558,16 @@ export class FxCore {
     }
 
     const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils.getCapabilities(manifestRes.value);
+    const properties = ManifestUtil.parseCommonProperties(manifestRes.value);
 
     const launchHelper = new LaunchHelper(TOOLS.tokenProvider.m365TokenProvider, TOOLS.logProvider);
-    const result = await launchHelper.getLaunchUrl(hub, teamsAppId, capabilities);
+    const result = await launchHelper.getLaunchUrl(
+      hub,
+      teamsAppId,
+      properties.capabilities,
+      true,
+      properties.isCopilotPlugin
+    );
     return result;
   }
   /**

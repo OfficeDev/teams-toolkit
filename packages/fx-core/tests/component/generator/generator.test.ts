@@ -33,9 +33,10 @@ import {
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { SampleConfig } from "../../../src/common/samples";
+import { sampleProvider, SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
+import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
 
 const mockedSampleInfo: SampleConfig = {
@@ -440,6 +441,11 @@ describe("Generator happy path", async () => {
   const context = createContextV3();
   const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
+
+  beforeEach(async () => {
+    sampleProvider["samplesConfig"] = sampleConfigV3;
+  });
+
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {

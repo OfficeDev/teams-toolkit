@@ -51,7 +51,7 @@ describe("manifestUpdater", () => {
       description: { short: spec.info.title, full: spec.info.description },
       composeExtensions: [
         {
-          type: "apiBased",
+          composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
@@ -107,7 +107,7 @@ describe("manifestUpdater", () => {
       description: { short: spec.info.title, full: "Original Full Description" },
       composeExtensions: [
         {
-          type: "apiBased",
+          composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
@@ -155,7 +155,7 @@ describe("manifestUpdater", () => {
       description: { short: spec.info.title, full: "Original Full Description" },
       composeExtensions: [
         {
-          type: "apiBased",
+          composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {

@@ -132,7 +132,7 @@ export class ManifestUtil {
     if (
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
-      (manifest.composeExtensions[0] as IComposeExtension).type == "apiBased"
+      (manifest.composeExtensions[0] as IComposeExtension).composeExtensionType == "apiBased"
     ) {
       properties.isCopilotPlugin = true;
     }

@@ -9,7 +9,6 @@ export interface MessagingExtension {
   botId?: string;
   type?: string;
   apiSpecificationUri?: string;
-  supportsConversationalAI?: boolean;
   canUpdateConfiguration: boolean;
   commands: MessagingExtensionCommand[];
   messageHandlers: MessagingExtensionMessageHandler[];

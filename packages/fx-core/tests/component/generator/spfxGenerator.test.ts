@@ -77,6 +77,9 @@ describe("SPFxGenerator", function () {
     if (mockedEnvRestore) {
       mockedEnvRestore();
     }
+    if (await fs.pathExists(testFolder)) {
+      await fs.rm(testFolder, { recursive: true });
+    }
   });
 
   it("Both yeoman generator and template generator is called when scaffold SPFx project", async function () {

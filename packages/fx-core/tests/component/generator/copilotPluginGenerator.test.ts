@@ -31,7 +31,6 @@ import {
 } from "../../../src/component/generator/copilotPlugin/helper";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
-import path from "path";
 import {
   ErrorType,
   ValidationStatus,
@@ -501,7 +500,6 @@ describe("generateScaffoldingSummary", () => {
     const composeExtension: IComposeExtension = {
       type: "apiBased",
       commands: [{ id: "command1", type: "query", title: "" }],
-      supportsConversationalAI: true,
     };
     const res = generateScaffoldingSummary(
       [],
@@ -518,7 +516,6 @@ describe("generateScaffoldingSummary", () => {
   it("warnings about missing adaptive card template", () => {
     const composeExtension: IComposeExtension = {
       type: "apiBased",
-      supportsConversationalAI: true,
       commands: [
         { id: "command1", type: "query", apiResponseRenderingTemplateFile: "test", title: "" },
       ],

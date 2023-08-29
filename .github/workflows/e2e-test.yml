@@ -150,6 +150,12 @@ jobs:
         with:
           node-version: 18
 
+      - name: Setup node for SPFx project
+        if: contains(matrix.cases, 'SPFx')
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
       - name: Setup Azure Functions Core Tools For Linux
         run: |
           curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg

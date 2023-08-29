@@ -7,6 +7,7 @@ import { helper } from "../../src/commands/helper";
 import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
+import { envAddCommand } from "../../src/commands/models/envAdd";
 
 describe("CLI helper", () => {
   const sandbox = sinon.createSandbox();
@@ -263,7 +264,7 @@ describe("CLI helper", () => {
     });
   });
   describe("formatHelp", async () => {
-    it("happy path for 'teamsfx new'", async () => {
+    it("happy path for 'teamsfx new -h'", async () => {
       const rcommand = cloneDeep(rootCommand);
       rcommand.header = "Header:";
       rcommand.footer = "Footer:";
@@ -277,10 +278,15 @@ describe("CLI helper", () => {
       assert.include(res, "Commands:");
       assert.include(res, "Examples:");
     });
-    it("happy path for 'teamsfx new template'", async () => {
+    it("happy path for 'teamsfx new template -h'", async () => {
       const command = createSampleCommand;
       const res = helper.formatHelp(command, rootCommand);
       assert.include(res, "<sample-name>");
+    });
+    it("happy path for 'teamsfx env add -h'", async () => {
+      const command = envAddCommand;
+      const res = helper.formatHelp(command, rootCommand);
+      assert.include(res, "Run the command in interactive mode. Default value: false.");
     });
   });
 });

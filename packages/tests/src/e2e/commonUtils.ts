@@ -472,6 +472,7 @@ export async function readContextMultiEnvV3(
   const parseResult = dotenvUtil.deserialize(
     await fs.readFile(envFilePath, { encoding: "utf8" })
   );
+  console.log(parseResult.obj)
   return parseResult.obj;
 }
 

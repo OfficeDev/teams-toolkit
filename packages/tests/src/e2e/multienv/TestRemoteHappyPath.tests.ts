@@ -74,7 +74,7 @@ describe("Multi Env Happy Path for Azure", function () {
           const result = await createResourceGroup(appName + "-rg", "eastus");
           expect(result).to.be.true;
           process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
-          const { success } = await Executor.provision(projectPath);
+          const { success } = await Executor.provision(projectPath, env);
           expect(success).to.be.true;
           console.log(`[Successfully] provision for ${projectPath}`);
         }

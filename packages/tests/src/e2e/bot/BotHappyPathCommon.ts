@@ -61,7 +61,7 @@ export async function happyPathTest(
     const result = await createResourceGroup(appName + "-rg", "eastus");
     expect(result).to.be.true;
     process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
-    const { success } = await Executor.provision(projectPath);
+    const { success } = await Executor.provision(projectPath, envName);
     expect(success).to.be.true;
     console.log(`[Successfully] provision for ${projectPath}`);
   }
@@ -78,7 +78,7 @@ export async function happyPathTest(
 
   {
     // deploy
-    const { success } = await Executor.deploy(projectPath);
+    const { success } = await Executor.deploy(projectPath, envName);
     expect(success).to.be.true;
     console.log(`[Successfully] deploy for ${projectPath}`);
   }

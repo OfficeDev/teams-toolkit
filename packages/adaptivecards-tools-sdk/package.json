@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/adaptivecards-tools",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Microsoft sdk for Adaptive Cards",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
@@ -28,7 +28,7 @@
     "@types/markdown-it": "^12.2.1",
     "@types/react": "^17.0.14",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^4.13.0",
+    "@typescript-eslint/parser": "^4.19.0",
     "eslint": "^8.1.0",
     "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-import": "^2.25.2",
@@ -44,7 +44,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "adaptive-expressions": "^4.15.0",
+    "adaptive-expressions": "^4.20.0",
     "adaptivecards": "~2.10.0",
     "adaptivecards-templating": "^2.1.0",
     "markdown-it": "^12.2.0",

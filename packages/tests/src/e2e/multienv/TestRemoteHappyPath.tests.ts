@@ -21,8 +21,10 @@ import {
   getUniqueAppName,
   mockTeamsfxMultiEnvFeatureFlag,
   readContextMultiEnvV3,
+  createResourceGroup
 } from "../commonUtils";
-
+import { expect } from "chai";
+import { Executor } from "../../utils/executor";
 import { it } from "@microsoft/extra-shot-mocha";
 import { EnvConstants } from "../../commonlib/constants";
 
@@ -67,15 +69,15 @@ describe("Multi Env Happy Path for Azure", function () {
           `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
         );
 
-        // provision
-        result = await execAsyncWithRetry(`teamsfx provision --env ${env}`, {
-          cwd: projectPath,
-          env: processEnv,
-          timeout: 0,
-        });
-        console.log(
-          `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
-        );
+        {
+          // provision
+          const result = await createResourceGroup(appName + "-rg", "eastus");
+          expect(result).to.be.true;
+          process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+          const { success } = await Executor.provision(projectPath);
+          expect(success).to.be.true;
+          console.log(`[Successfully] provision for ${projectPath}`);
+        }
 
         {
           // Validate provision

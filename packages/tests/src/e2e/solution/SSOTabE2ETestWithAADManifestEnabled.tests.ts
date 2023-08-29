@@ -19,7 +19,9 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   setAadManifestIdentifierUrisV3,
+  createResourceGroup
 } from "../commonUtils";
+import { Executor } from "../../utils/executor";
 
 describe("SSO Tab with aad manifest enabled", () => {
   const testFolder = getTestFolder();
@@ -58,7 +60,15 @@ describe("SSO Tab with aad manifest enabled", () => {
       expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.json"))).to
         .be.true;
 
-      await CliHelper.provisionProject(projectPath, "", "dev", env);
+      {
+        // provision
+        const result = await createResourceGroup(appName + "-rg", "eastus");
+        expect(result).to.be.true;
+        process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+        const { success } = await Executor.provision(projectPath);
+        expect(success).to.be.true;
+        console.log(`[Successfully] provision for ${projectPath}`);
+      }
 
       const context = await readContextMultiEnvV3(projectPath, "dev");
 

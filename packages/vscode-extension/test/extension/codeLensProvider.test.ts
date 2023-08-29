@@ -228,7 +228,7 @@ describe("Copilot plugin CodeLensProvider", () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        type: "apiBased",
+        composeExtensionType: "apiBased",
         commands: [],
       },
     ];

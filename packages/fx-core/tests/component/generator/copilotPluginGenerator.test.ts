@@ -443,7 +443,7 @@ describe("generateScaffoldingSummary", () => {
   it("no warnings", () => {
     sandbox.stub(fs, "existsSync").returns(true);
     const composeExtension: IComposeExtension = {
-      type: "apiBased",
+      composeExtenstionType: "apiBased",
       commands: [
         { id: "command1", type: "query", apiResponseRenderingTemplateFile: "test", title: "" },
         { id: "command1", type: "action", title: "" },
@@ -509,7 +509,7 @@ describe("generateScaffoldingSummary", () => {
 
   it("warnings about adaptive card template in manifest", () => {
     const composeExtension: IComposeExtension = {
-      type: "apiBased",
+      composeExtenstionType: "apiBased",
       commands: [{ id: "command1", type: "query", title: "" }],
     };
     const res = generateScaffoldingSummary(
@@ -526,7 +526,7 @@ describe("generateScaffoldingSummary", () => {
 
   it("warnings about missing adaptive card template", () => {
     const composeExtension: IComposeExtension = {
-      type: "apiBased",
+      composeExtenstionType: "apiBased",
       commands: [
         { id: "command1", type: "query", apiResponseRenderingTemplateFile: "", title: "" },
       ],

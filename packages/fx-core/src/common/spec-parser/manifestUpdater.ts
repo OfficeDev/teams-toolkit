@@ -98,7 +98,6 @@ export async function generateCommands(
 
               if (paramObject) {
                 paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
-                  param = param;
                   parameters.push({
                     name: param.name,
                     title: updateFirstLetter(param.name),

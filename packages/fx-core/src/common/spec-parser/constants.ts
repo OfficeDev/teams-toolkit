@@ -10,7 +10,10 @@ export class ConstantString {
     "core.common.SpecVersionNotSupported"
   );
   static readonly NoServerInformation = getLocalizedString("core.common.NoServerInformation");
-  // TODO: remove core.common.MultipleServerInformation message in localization file
+  // TODO: remove core.common.MultipleServerInformation message which is not used
+  static readonly MultipleServerInformation = getLocalizedString(
+    "core.common.MultipleServerInformation"
+  );
   static readonly RemoteRefNotSupported = getLocalizedString("core.common.RemoteRefNotSupported");
 
   static readonly MissingOperationId = getLocalizedString("core.common.MissingOperationId");

@@ -20,7 +20,7 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, getUrlProtocol, isSupportedApi, validateServer } from "./utils";
+import { convertPathToCamelCase, isSupportedApi, validateServer } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";

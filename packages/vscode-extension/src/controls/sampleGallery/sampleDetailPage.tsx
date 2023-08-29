@@ -2,14 +2,14 @@ import { ActionButton, Image } from "@fluentui/react";
 import * as React from "react";
 import "./sampleDetailPage.scss";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
-import { Watch, Setting } from "./resources";
-import { Commands } from "./Commands";
+import { Watch, Setting } from "../resources";
+import { Commands } from "../Commands";
 import { SampleDetailProps } from "./ISamples";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
-} from "../telemetry/extTelemetryEvents";
+} from "../../telemetry/extTelemetryEvents";
 
 export default class SampleDetailPage extends React.Component<SampleDetailProps, any> {
   constructor(props: SampleDetailProps) {
@@ -57,7 +57,7 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
   }
 
   onBack = () => {
-    this.props.highlightSample("");
+    this.props.selectSample("");
   };
 
   onCreate = () => {

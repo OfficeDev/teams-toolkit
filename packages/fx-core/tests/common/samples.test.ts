@@ -10,7 +10,7 @@ import {
   SampleConfigTagForRc,
   sampleProvider,
 } from "../../src/common/samples";
-import sampleConfigV3 from "../../src/common/samples-config-v3.json";
+import sampleConfigV3 from "./samples-config-v3.json";
 
 const packageJson = require("../../package.json");
 
@@ -32,7 +32,6 @@ describe("Samples", () => {
       },
     ],
   };
-  const baseUrl = `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/`;
 
   afterEach(() => {
     sandbox.restore();
@@ -187,15 +186,17 @@ describe("Samples", () => {
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
         );
     });
-  });
 
-  it("Get v3 samples - default sample config", () => {
-    const samples = sampleProvider.SampleCollection.samples;
-    for (const sample of samples) {
-      chai.expect(sampleConfigV3.samples.find((sampleInConfig) => sampleInConfig.id === sample.id))
-        .exist;
-    }
-    (sampleProvider as any).sampleCollection = undefined;
+    it("has empty sample collection if network in disconnected", async () => {
+      packageJson.version = "2.0.3";
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+        throw err(undefined);
+      });
+
+      await sampleProvider.fetchSampleConfig();
+      const samples = sampleProvider.SampleCollection.samples;
+      chai.expect(samples.length).equal(0);
+    });
   });
 
   it("Get v3 samples - online sample config", () => {
@@ -223,6 +224,7 @@ describe("Samples", () => {
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
+    sampleProvider["samplesConfig"] = sampleConfigV3;
     const samples = sampleProvider.SampleCollection.samples;
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;

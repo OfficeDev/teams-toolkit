@@ -14,13 +14,11 @@
             }
         },
         "cases": [
-            "sample-localdebug-npm-search",
             "sample-localdebug-query-org",
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
             "sample-localdebug-proactive-message",
-            "sample-localdebug-assistant-dashboard",
-            "sample-localdebug-hello-world-tab-outlook"
+            "sample-localdebug-assistant-dashboard"
         ]
     },
     {
@@ -55,10 +53,10 @@
             "sample-localdebug-contact-exporter",
             "sample-localdebug-todo-list-with-m365",
             "sample-localdebug-one-productivity-hub",
-            "sample-localdebug-share-now",
-            "sample-localdebug-dashboard",
             "sample-localdebug-todo-list-sql",
-            "sample-localdebug-hello-world-tab-with-backend"
+            "sample-localdebug-hello-world-tab-with-backend",
+            "sample-localdebug-npm-search",
+            "sample-localdebug-hello-world-tab-outlook"
         ]
     },
     {
@@ -107,7 +105,9 @@
         },
         "cases": [
             "sample-localdebug-adaptive-card",
-            "sample-localdebug-graph-connector"
+            "sample-localdebug-graph-connector",
+            "sample-localdebug-share-now",
+            "sample-localdebug-dashboard"
         ]
     }
 ]

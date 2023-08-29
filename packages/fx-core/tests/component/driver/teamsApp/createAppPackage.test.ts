@@ -111,7 +111,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
@@ -163,7 +163,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
@@ -214,7 +214,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
@@ -271,7 +271,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "resources/openai.yml",
         commands: [
           {
@@ -321,7 +321,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "manifest.template.json",
         commands: [
           {
@@ -374,7 +374,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "manifest.template.json",
         commands: [
           {

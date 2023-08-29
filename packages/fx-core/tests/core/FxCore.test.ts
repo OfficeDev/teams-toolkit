@@ -1364,7 +1364,7 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
@@ -1405,7 +1405,7 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },
@@ -1432,7 +1432,7 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.composeExtensions = [
       {
-        composeExtenstionType: "apiBased",
+        composeExtensionType: "apiBased",
         apiSpecificationFile: "apiSpecificationFiles/openapi.json",
         commands: [],
       },

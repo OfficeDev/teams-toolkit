@@ -25,7 +25,7 @@ export default class SampleGallery extends React.Component<
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     window.addEventListener("message", this.receiveMessage, false);
     this.loadSampleCollection();
   }
@@ -37,10 +37,6 @@ export default class SampleGallery extends React.Component<
   }
 
   render() {
-    const samples = this.state.samples as Array<SampleInfo>;
-    const selectedSample = samples.filter(
-      (sample: SampleInfo) => sample.id == this.state.selectedSampleId
-    )[0];
     const titleSection = (
       <div className="section" id="title">
         <div className="logo">
@@ -58,19 +54,10 @@ export default class SampleGallery extends React.Component<
     if (this.state.loading) {
       return <div className="sample-gallery">{titleSection}</div>;
     } else if (this.state.selectedSampleId) {
-      return (
-        <SampleDetailPage
-          url={selectedSample.downloadUrl}
-          image={selectedSample.gifUrl}
-          tags={selectedSample.tags}
-          time={selectedSample.time}
-          configuration={selectedSample.configuration}
-          title={selectedSample.title}
-          description={selectedSample.fullDescription}
-          sampleAppFolder={selectedSample.id}
-          selectSample={this.selectSample}
-        />
-      );
+      const selectedSample = this.state.samples.filter(
+        (sample: SampleInfo) => sample.id == this.state.selectedSampleId
+      )[0];
+      return <SampleDetailPage sample={selectedSample} selectSample={this.selectSample} />;
     } else {
       return (
         <div className="sample-gallery">
@@ -78,23 +65,10 @@ export default class SampleGallery extends React.Component<
           {this.state.samples.length === 0 ? (
             <OfflinePage />
           ) : (
-            // <SampleAppCardList samples={this.state.samples} selectSample={this.selectSample} />
             <div className="sample-stack">
               {this.state.samples.map((sample, index) => {
                 return (
-                  <SampleCard
-                    url={sample.downloadUrl}
-                    image={sample.gifUrl}
-                    tags={sample.tags}
-                    time={sample.time}
-                    configuration={sample.configuration}
-                    title={sample.title}
-                    description={sample.fullDescription}
-                    sampleAppFolder={sample.id}
-                    suggested={sample.suggested}
-                    order={index + 1}
-                    selectSample={this.selectSample}
-                  />
+                  <SampleCard key={sample.id} sample={sample} selectSample={this.selectSample} />
                 );
               })}
             </div>
@@ -102,23 +76,6 @@ export default class SampleGallery extends React.Component<
         </div>
       );
     }
-  }
-
-  titleSection() {
-    return (
-      <div className="section" id="title">
-        <div className="logo">
-          <Icon iconName="Library" className="logo" />
-        </div>
-        <div className="title">
-          <h1>Samples</h1>
-          <h3>
-            Explore our samples to help you quickly get started with the basic Teams app concepts
-            and code structures.
-          </h3>
-        </div>
-      </div>
-    );
   }
 
   private receiveMessage = (event: any) => {

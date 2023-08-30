@@ -18,19 +18,7 @@ export interface SampleCollection {
   samples: SampleInfo[];
 }
 
-export type SampleCardProps = SampleDetailProps & {
-  suggested: boolean;
-  order: number;
-};
-
-export type SampleDetailProps = {
-  url: string;
-  image: any;
-  tags: string[];
-  time: string;
-  configuration: string;
-  title: string;
-  description: string;
-  sampleAppFolder: string;
+export type SampleProps = {
+  sample: SampleInfo;
   selectSample: (id: string) => void;
 };

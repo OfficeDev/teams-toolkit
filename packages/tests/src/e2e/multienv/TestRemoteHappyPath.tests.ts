@@ -89,12 +89,11 @@ describe("Multi Env Happy Path for Azure", function () {
           await bot.validateProvisionV3(false);
         }
 
-        // deploy
-        await execAsyncWithRetry(`teamsfx deploy --env ${env}`, {
-          cwd: projectPath,
-          env: processEnv,
-          timeout: 0,
-        });
+        {        
+          // deploy
+          const { success } = await Executor.deploy(projectPath, env);
+          expect(success).to.be.true;
+        }
 
         {
           // Validate deployment

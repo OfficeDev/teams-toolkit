@@ -84,8 +84,11 @@ describe("SSO Tab with aad manifest enabled", () => {
         "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
       await setAadManifestIdentifierUrisV3(projectPath, firstIdentifierUri);
 
-      // Deploy all resources without aad manifest
-      await CliHelper.deployAll(projectPath, "", "dev", env);
+      {
+        // Deploy all resources without aad manifest
+        const { success } = await Executor.provision(projectPath);
+        expect(success).to.be.true;
+      }
       await AadValidator.validate(aad);
 
       // Deploy all resources include aad manifest

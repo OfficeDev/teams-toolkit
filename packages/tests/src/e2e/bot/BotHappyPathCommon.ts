@@ -24,7 +24,9 @@ import {
   CliCapabilities,
   CliTriggerType,
 } from "../../commonlib/constants";
+import { Executor } from "../../utils/executor";
 import { expect } from "chai";
+import exp from "constants";
 
 export async function happyPathTest(
   runtime: Runtime,
@@ -64,17 +66,15 @@ export async function happyPathTest(
 
   console.log(`[Successfully] set subscription for ${projectPath}`);
 
-  // provision
-  const result = await createResourceGroup(appName + "-rg", "eastus");
-  expect(result).to.be.true;
-  process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
-  await execAsyncWithRetry(`teamsfx provision`, {
-    cwd: projectPath,
-    env: env,
-    timeout: 0,
-  });
-
-  console.log(`[Successfully] provision for ${projectPath}`);
+  {
+    // provision
+    const result = await createResourceGroup(appName + "-rg", "eastus");
+    expect(result).to.be.true;
+    process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+    const { success } = await Executor.provision(projectPath, envName);
+    expect(success).to.be.true;
+    console.log(`[Successfully] provision for ${projectPath}`);
+  }
 
   {
     // Validate provision

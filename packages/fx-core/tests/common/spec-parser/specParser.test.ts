@@ -87,34 +87,6 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
-    it("should return an error result object if has multiple server information", async function () {
-      const specPath = "path/to/spec";
-      const spec = {
-        openapi: "3.0.0",
-        servers: [{ url: "https://server1" }, { url: "https://server2" }],
-      };
-
-      const specParser = new SpecParser(specPath);
-      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-      const result = await specParser.validate();
-
-      expect(result).to.deep.equal({
-        status: ValidationStatus.Error,
-        warnings: [],
-        errors: [
-          {
-            type: ErrorType.MultipleServerInformation,
-            content: ConstantString.MultipleServerInformation,
-            data: [{ url: "https://server1" }, { url: "https://server2" }],
-          },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
-        ],
-      });
-      sinon.assert.calledOnce(dereferenceStub);
-    });
-
     it("should return an error result object if server url is http", async function () {
       const specPath = "path/to/spec";
       const spec = { openapi: "3.0.0", servers: [{ url: "http://server1" }] };
@@ -791,6 +763,25 @@ describe("SpecParser", () => {
               operationId: "getPetById",
               security: [{ api_key: [] }],
             },
+            post: {
+              operationId: "createPet",
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "/user/{userId}": {
             get: {
@@ -858,6 +849,7 @@ describe("SpecParser", () => {
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
 
       const expected = new Map<string, string>([
+        ["createPet", "POST /pets"],
         ["getUserById", "GET /user/{userId}"],
         ["getStoreOrder", "GET /store/order"],
       ]);

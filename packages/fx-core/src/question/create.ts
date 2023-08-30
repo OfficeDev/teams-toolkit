@@ -21,7 +21,11 @@ import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
-import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
+import {
+  isCLIDotNetEnabled,
+  isCopilotPluginEnabled,
+  isMECopilotPluginEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
@@ -320,6 +324,17 @@ export class CapabilityOptions {
     };
   }
 
+  static copilotM365SearchMe(): OptionItem {
+    return {
+      id: "search-me-copilot",
+      label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+      detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.worksInOutlookCopilot"
+      ),
+    };
+  }
+
   static SearchMe(): OptionItem {
     return {
       id: "search-message-extension",
@@ -389,7 +404,9 @@ export class CapabilityOptions {
         ]
       : [
           CapabilityOptions.linkUnfurling(),
-          CapabilityOptions.m365SearchMe(),
+          isMECopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.m365SearchMe(),
           CapabilityOptions.collectFormMe(),
         ];
   }

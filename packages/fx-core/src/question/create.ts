@@ -729,7 +729,7 @@ function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
     title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
     type: "singleSelect",
     staticOptions: CapabilityOptions.copilotPlugins(),
-    cliShortName: "cp",
+    cliShortName: "p",
     cliDescription: "Plugin for Copilot.",
   };
 }
@@ -740,7 +740,7 @@ function SPFxSolutionQuestion(): SingleSelectQuestion {
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
     cliDescription: "Create a new or import an existing SharePoint Framework solution.",
-    cliShortName: "ss",
+    cliShortName: "s",
     staticOptions: [
       {
         id: "new",
@@ -822,7 +822,7 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
         return Promise.resolve(undefined);
       },
     },
-    cliShortName: "sp",
+    cliShortName: "i",
     isBoolean: true,
   };
 }
@@ -831,7 +831,7 @@ function SPFxFrameworkQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxFramework,
-    cliShortName: "sfk",
+    cliShortName: "k",
     title: getLocalizedString("plugins.spfx.questions.framework.title"),
     staticOptions: [
       { id: "react", label: "React" },
@@ -847,7 +847,7 @@ export function SPFxWebpartNameQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.SPFxWebpartName,
-    cliShortName: "sw",
+    cliShortName: "w",
     title: "Name for SharePoint Framework Web Part.",
     default: Constants.DEFAULT_WEBPART_NAME,
     validation: {
@@ -897,7 +897,6 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
   return {
     type: "folder",
     name: QuestionNames.SPFxFolder,
-    cliShortName: "sf",
     title: getLocalizedString("core.spfxFolder.title"),
     cliDescription: "Directory or Path that contains the existing SharePoint Framework solution.",
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
@@ -1338,7 +1337,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
-    cliShortName: "oapi",
+    cliShortName: "a",
     cliDescription: "OpenAPI specification file location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
@@ -1383,7 +1382,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginDomain,
-    cliShortName: "oai",
+    cliShortName: "d",
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
     cliDescription: "OpenAI plugin website domain.",
@@ -1459,7 +1458,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
     cliDescription: "Specifies API(s) to be used in Copilot plugin.",
-    cliShortName: "api",
+    cliShortName: "o",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
       : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),

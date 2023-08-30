@@ -14,7 +14,7 @@ export const PreviewTeamsAppOptions: CLICommandOption[] = [
   {
     name: "m365-host",
     type: "string",
-    shortName: "mh",
+    shortName: "h",
     description: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     required: true,
     default: "teams",
@@ -24,7 +24,7 @@ export const PreviewTeamsAppOptions: CLICommandOption[] = [
     name: "teams-manifest-file",
     questionName: "manifest-path",
     type: "string",
-    shortName: "tm",
+    shortName: "t",
     description:
       "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
     required: true,

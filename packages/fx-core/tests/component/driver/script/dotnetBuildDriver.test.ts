@@ -46,8 +46,8 @@ describe("Dotnet Build Driver test", () => {
       progressBar: progressHandler,
     } as any;
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
-    const res = await driver.run(args, context);
-    chai.expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
+    const res = await driver.execute(args, context);
+    chai.expect(res.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
     assert.equal(progressNextCaller.callCount, 1);
   });
 
@@ -81,7 +81,7 @@ describe("Dotnet Build Driver test", () => {
       projectPath: "./",
     } as any;
     sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
-    const res = await driver.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await driver.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 });

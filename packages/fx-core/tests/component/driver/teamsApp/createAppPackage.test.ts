@@ -17,6 +17,7 @@ import { FileNotFoundError } from "../../../../src/error/common";
 import { FeatureFlagName } from "../../../../src/common/constants";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
 
 describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();
@@ -28,11 +29,13 @@ describe("teamsApp/createAppPackage", async () => {
     ui: new MockedUserInteraction(),
   };
   let mockedEnvRestore: RestoreFn;
-
+  const fakeUrl = "https://fake.com";
+  const openapiServerPlaceholder = "TEAMSFX_TEST_API_URL";
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
       [FeatureFlagName.CopilotPlugin]: "true",
       ["CONFIG_TEAMS_APP_NAME"]: "fakeName",
+      [openapiServerPlaceholder]: fakeUrl,
     });
   });
 
@@ -247,11 +250,16 @@ describe("teamsApp/createAppPackage", async () => {
     const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
     if (await fs.pathExists(args.outputZipPath)) {
+      const zip = new AdmZip(args.outputZipPath);
+      const openapiContent = zip.getEntry("resources/openai.yml")?.getData().toString("utf8");
+      chai.assert(
+        openapiContent != undefined &&
+          openapiContent.length > 0 &&
+          openapiContent.search(fakeUrl) >= 0 &&
+          openapiContent.search(openapiServerPlaceholder) < 0
+      );
       await fs.remove(args.outputZipPath);
     }
-
-    const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
-    chai.assert.isTrue(executeResult.result.isOk());
   });
 
   it("happy path - CLI", async () => {

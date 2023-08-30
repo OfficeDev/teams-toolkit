@@ -20,16 +20,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Setup project
-        run: |
-          npm install -g pnpm
-          pnpm install
-          npm run build
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: setup python
         uses: actions/setup-python@v3

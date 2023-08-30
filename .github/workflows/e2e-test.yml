@@ -46,19 +46,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: install pnpm
-        run: |
-          npm install -g pnpm
-
-      - name: Setup project
-        run: |
-          pnpm install
-          npm run build
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: List cases for schedule
         id: schedule-cases
@@ -171,11 +160,13 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Setup project
         run: |
-          npm install pnpm -g
-          pnpm install
-          npm run build
+          npm run setup
 
       - name: Link CLI
         if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
@@ -286,16 +277,8 @@ jobs:
       - name: Checkout (dev)
         uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Setup project
-        run: |
-          npm install -g pnpm
-          pnpm install
-          npm run build
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: E2E Test clean
         working-directory: packages/tests

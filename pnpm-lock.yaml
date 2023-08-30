@@ -1640,6 +1640,9 @@ importers:
       pkg:
         specifier: ^5.5.1
         version: 5.5.1
+      pkg-fetch:
+        specifier: 3.4.2
+        version: 3.4.2
       prettier:
         specifier: ^2.4.1
         version: 2.5.1
@@ -21640,6 +21643,23 @@ packages:
 
   /pkg-fetch@3.2.5:
     resolution: {integrity: sha512-jPtyX2VTbG+9yaeGsJEBT+3qVN8qfxxfn7n2lmcx1FDSPsr8jwXDRf6BeCNBV+M5aEQmmtpMeKs7ZILQ9YlSPA==}
+    hasBin: true
+    dependencies:
+      chalk: 4.1.2
+      fs-extra: 9.1.0
+      https-proxy-agent: 5.0.1(supports-color@9.4.0)
+      node-fetch: 2.6.12
+      progress: 2.0.3
+      semver: 7.5.4
+      tar-fs: 2.1.1
+      yargs: 16.2.0
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: true
+
+  /pkg-fetch@3.4.2:
+    resolution: {integrity: sha512-0+uijmzYcnhC0hStDjm/cl2VYdrmVVBpe7Q8k9YBojxmR5tG8mvR9/nooQq3QSXiQqORDVOTY3XqMEqJVIzkHA==}
     hasBin: true
     dependencies:
       chalk: 4.1.2

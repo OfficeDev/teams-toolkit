@@ -43,6 +43,8 @@ import {
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
+import { DriverContext } from "../../interface/commonArgs";
+import { WrapDriverContext } from "../../util/wrapUtil";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -273,6 +275,7 @@ export class ManifestUtils {
 
   async getManifestV3(
     manifestTemplatePath: string,
+    context?: WrapDriverContext,
     generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -293,7 +296,10 @@ export class ManifestUtils {
     // Add environment variable keys to telemetry
     const customizedKeys = getEnvironmentVariables(manifestTemplateString);
     const telemetryProps: { [key: string]: string } = {};
-    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
+    telemetryProps[TelemetryPropertyKey.customizedKeys] = customizedKeys.join(";");
+    if (context) {
+      context.addTelemetryProperties(telemetryProps);
+    }
 
     const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
 

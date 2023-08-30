@@ -7,9 +7,6 @@
     "setup": "pnpm install && npm run build",
     "watch": "pnpm --parallel -r run watch",
     "build": "pnpm -r run --filter=!@microsoft/teamsfx-react build && pnpm run --filter=@microsoft/teamsfx-react build",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "changeset publish",
     "precommit": "lint-staged",
     "clean": "pnpm -r exec rimraf node_modules"
   },

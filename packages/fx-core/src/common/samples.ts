@@ -6,7 +6,6 @@ import axios from "axios";
 import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
 import { FeatureFlagName } from "./constants";
 import { isVideoFilterEnabled } from "./featureFlags";
-import sampleConfigV3 from "./samples-config-v3.json";
 
 const packageJson = require("../../package.json");
 
@@ -76,8 +75,8 @@ class SampleProvider {
   }
 
   public get SampleCollection(): SampleCollection {
-    const samples = (this.samplesConfig ? this.samplesConfig.samples : sampleConfigV3.samples).map(
-      (sample) => {
+    const samples =
+      this.samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrl"] ? true : false;
         let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
           this.branchOrTag
@@ -98,8 +97,7 @@ class SampleProvider {
               }/${sample["id"] as string}`,
           gifUrl: gifUrl,
         } as SampleConfig;
-      }
-    );
+      }) || [];
 
     // remove video filter sample app if feature flag is disabled.
     if (!isVideoFilterEnabled()) {

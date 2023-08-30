@@ -1,21 +1,5 @@
 {
   "version": "independent",
-  "packages": [
-    "packages/api",
-    "packages/fx-core",
-    "packages/sdk",
-    "packages/sdk-react",
-    "packages/cli",
-    "packages/server",
-    "packages/vscode-extension",
-    "packages/failpoint-ts",
-    "packages/metrics-ts",
-    "packages/adaptivecards-tools-sdk",
-    "packages/manifest",
-    "packages/eslint-plugin-teamsfx",
-    "packages/tests",
-    "templates"
-  ],
   "command": {
     "version": {
       "message": "build(release): publish detail",
@@ -24,5 +8,7 @@
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
-  }
+  },
+  "npmClient": "pnpm",
+  "useWorkspaces": true
 }

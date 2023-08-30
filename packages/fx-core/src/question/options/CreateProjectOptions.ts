@@ -68,7 +68,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "spfx-install-latest-package",
     type: "boolean",
-    shortName: "i",
     description: "Install the latest version of SharePoint Framework.",
     default: true,
   },

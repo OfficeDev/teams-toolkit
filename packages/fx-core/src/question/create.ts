@@ -822,7 +822,6 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
         return Promise.resolve(undefined);
       },
     },
-    cliShortName: "i",
     isBoolean: true,
   };
 }

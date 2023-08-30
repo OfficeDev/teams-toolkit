@@ -58,7 +58,7 @@ export class CreateAppPackageDriver implements StepDriver {
       manifestPath = path.join(context.projectPath, manifestPath);
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath);
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath, context);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

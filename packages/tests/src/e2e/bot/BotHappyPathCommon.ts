@@ -11,12 +11,10 @@ import {
   cleanUp,
   execAsync,
   execAsyncWithRetry,
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  readContextMultiEnv,
   readContextMultiEnvV3,
-  createResourceGroup
+  createResourceGroup,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import {
@@ -26,7 +24,6 @@ import {
 } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
-import exp from "constants";
 
 export async function happyPathTest(
   runtime: Runtime,
@@ -35,7 +32,6 @@ export async function happyPathTest(
 ): Promise<void> {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const envName = environmentManager.getDefaultEnvName();
 

@@ -21,7 +21,7 @@ import {
   getUniqueAppName,
   mockTeamsfxMultiEnvFeatureFlag,
   readContextMultiEnvV3,
-  createResourceGroup
+  createResourceGroup,
 } from "../commonUtils";
 import { expect } from "chai";
 import { Executor } from "../../utils/executor";
@@ -89,7 +89,7 @@ describe("Multi Env Happy Path for Azure", function () {
           await bot.validateProvisionV3(false);
         }
 
-        {        
+        {
           // deploy
           const { success } = await Executor.deploy(projectPath, env);
           expect(success).to.be.true;

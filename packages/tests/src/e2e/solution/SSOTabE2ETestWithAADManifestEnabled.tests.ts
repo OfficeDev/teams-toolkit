@@ -19,7 +19,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   setAadManifestIdentifierUrisV3,
-  createResourceGroup
+  createResourceGroup,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
 

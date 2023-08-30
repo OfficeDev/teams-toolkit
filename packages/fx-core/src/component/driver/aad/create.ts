@@ -44,14 +44,6 @@ export class CreateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.create);
   readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.createAadAppTitle");
 
-  public async run(
-    args: CreateAadAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const result = await this.execute(args, context);
-    return result.result;
-  }
-
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateAadAppArgs,

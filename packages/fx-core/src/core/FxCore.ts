@@ -270,9 +270,9 @@ export class FxCore {
     };
     const Context: DriverContext = createDriverContext(inputs);
     setErrorContext({ component: "aadAppUpdate" });
-    const res = await updateAadClient.run(inputArgs, Context);
-    if (res.isErr()) {
-      return err(res.error);
+    const res = await updateAadClient.execute(inputArgs, Context);
+    if (res.result.isErr()) {
+      return err(res.result.error);
     }
     if (Context.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");

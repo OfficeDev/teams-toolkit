@@ -33,7 +33,7 @@ import {
   AzureStorageClearBlobsError,
   AzureStorageGetContainerError,
   AzureStorageUploadFilesError,
-} from "../../../../error/deploy";
+} from "../../../../error";
 import { ProgressMessages } from "../../../messages";
 import { ErrorContextMW } from "../../../../core/globalVars";
 
@@ -44,11 +44,6 @@ export class AzureStorageDeployDriver implements StepDriver {
   readonly description: string = getLocalizedString(
     "driver.deploy.deployToAzureStorageDescription"
   );
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const impl = new AzureStorageDeployDriverImpl(args, context);
-    return (await impl.run()).result;
-  }
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {

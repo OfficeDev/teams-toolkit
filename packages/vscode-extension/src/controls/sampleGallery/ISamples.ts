@@ -23,11 +23,6 @@ export type SampleCardProps = SampleDetailProps & {
   order: number;
 };
 
-export type SampleListProps = {
-  samples: Array<SampleInfo>;
-  highlightSample: (id: string) => void;
-};
-
 export type SampleDetailProps = {
   url: string;
   image: any;
@@ -37,5 +32,5 @@ export type SampleDetailProps = {
   title: string;
   description: string;
   sampleAppFolder: string;
-  highlightSample: (id: string) => void;
+  selectSample: (id: string) => void;
 };

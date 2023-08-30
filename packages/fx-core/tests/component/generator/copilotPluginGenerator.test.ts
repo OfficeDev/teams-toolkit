@@ -112,7 +112,7 @@ describe("copilotPluginGenerator", function () {
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
     assert.isTrue(getDefaultVariables.calledOnce);
@@ -150,7 +150,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -184,7 +184,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -214,7 +214,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
   });
@@ -240,7 +240,11 @@ describe("copilotPluginGenerator", function () {
     const updateManifestBasedOnOpenAIPlugin = sandbox
       .stub(OpenAIPluginManifestHelper, "updateManifest")
       .resolves(ok(undefined));
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromOpenAIPlugin(
+      context,
+      inputs,
+      "projectPath"
+    );
 
     assert.isTrue(result.isOk());
     assert.isTrue(getDefaultVariables.calledOnce);
@@ -270,7 +274,11 @@ describe("copilotPluginGenerator", function () {
     const updateManifestBasedOnOpenAIPlugin = sandbox
       .stub(OpenAIPluginManifestHelper, "updateManifest")
       .resolves(err(new SystemError("source", "name", "", "")));
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromOpenAIPlugin(
+      context,
+      inputs,
+      "projectPath"
+    );
 
     assert.isTrue(result.isErr());
     assert.isTrue(getDefaultVariables.calledOnce);
@@ -291,7 +299,7 @@ describe("copilotPluginGenerator", function () {
       .stub(Generator, "generateTemplate")
       .resolves(err(new SystemError("source", "name", "", "")));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
   });
@@ -313,7 +321,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -340,7 +348,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -357,7 +365,7 @@ describe("copilotPluginGenerator", function () {
     const context = createContextV3();
     sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
   });
@@ -381,7 +389,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
     if (result.isErr()) {

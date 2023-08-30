@@ -1169,17 +1169,16 @@
         ]
       }
     ],
-    "configuration": 
-      {
-        "title": "Teams Toolkit",
-        "properties": {
-          "fx-extension.developCopilotPlugin": {
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Enable to develop Copilot plugin (Require to reload VSCode). Visit [How to Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot) to learn more."
-          }
+    "configuration": {
+      "title": "Teams Toolkit",
+      "properties": {
+        "fx-extension.developCopilotPlugin": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable to develop Copilot plugin (Require to reload VSCode). Visit [How to Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot) to learn more."
         }
       }
+    }
   },
   "scripts": {
     "lint:staged": "lint-staged",
@@ -1214,6 +1213,7 @@
     "@azure/ms-rest-azure-env": "^2.0.0",
     "@fluentui/react": "^8.5.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@svgr/webpack": "^8.1.0",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
@@ -1271,7 +1271,7 @@
     "sinon": "^9.2.2",
     "style-loader": "^2.0.0",
     "svgtofont": "^3.23.1",
-    "terser-webpack-plugin": "^4.2.3",
+    "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^8.0.3",
     "ts-node": "^9.1.1",
     "ts-sinon": "^2.0.2",
@@ -1282,8 +1282,8 @@
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "verdaccio": "^5.25.0",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.2"
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "@azure/identity": "^3.1.3",

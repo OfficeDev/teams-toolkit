@@ -1017,7 +1017,7 @@ describe("scaffold question", () => {
                 content: "error",
               },
               {
-                type: ErrorType.MultipleServerInformation,
+                type: ErrorType.RelativeServerUrlNotSupported,
                 content: "error2",
               },
             ],
@@ -1051,7 +1051,7 @@ describe("scaffold question", () => {
                 content: "error",
               },
               {
-                type: ErrorType.MultipleServerInformation,
+                type: ErrorType.RelativeServerUrlNotSupported,
                 content: "error2",
               },
             ],
@@ -1214,7 +1214,7 @@ describe("scaffold question", () => {
             status: ValidationStatus.Error,
             errors: [
               { content: "error", type: ErrorType.NoSupportedApi },
-              { content: "error2", type: ErrorType.MultipleServerInformation },
+              { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
             ],
             warnings: [],
           });
@@ -1248,7 +1248,7 @@ describe("scaffold question", () => {
             status: ValidationStatus.Error,
             errors: [
               { content: "error", type: ErrorType.NoSupportedApi },
-              { content: "error2", type: ErrorType.MultipleServerInformation },
+              { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
             ],
             warnings: [],
           });

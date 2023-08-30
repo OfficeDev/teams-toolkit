@@ -122,12 +122,10 @@ describe("Azure App Service Deploy Driver test", () => {
       },
     });
     sandbox.stub(client.webApps, "restart").resolves();
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
-    // progress bar have 6 steps
-    expect(progressNextCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    // progress bar have 6 steps
+    expect(progressNextCaller.callCount).to.equal(1);
   });
 
   it("deploy happy path with response data is empty", async () => {
@@ -193,12 +191,10 @@ describe("Azure App Service Deploy Driver test", () => {
       data: {},
     });
     sandbox.stub(client.webApps, "restart").resolves();
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
-    // progress bar have 6 steps
-    expect(progressNextCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    // progress bar have 6 steps
+    expect(progressNextCaller.callCount).to.equal(1);
   });
 
   it("resource id error", async () => {
@@ -215,8 +211,8 @@ describe("Azure App Service Deploy Driver test", () => {
       ui: new MockUserInteraction(),
     } as any;
     // await deploy.run(args, context);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("missing resource id", async () => {
@@ -230,8 +226,8 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
     } as any;
     // await deploy.run(args, context);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("deploy with ignore file not exists", async () => {
@@ -277,8 +273,8 @@ describe("Azure App Service Deploy Driver test", () => {
       .throws(new Error("test"));
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
+    const res = await deploy.execute(args, context);
+    expect(res.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
 
   it("zip deploy to azure error", async () => {
@@ -319,8 +315,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("should thrown when deploy remote 500 error", async () => {
@@ -366,8 +362,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("should thrown when deploy remote 400 error", async () => {
@@ -413,8 +409,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("working dir not exists", async () => {
@@ -430,8 +426,8 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("test dry run", async () => {

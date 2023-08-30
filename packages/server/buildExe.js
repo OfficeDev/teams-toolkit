@@ -14,7 +14,10 @@ const target = "node14-win-x64";
 const [nodeRange, platform, arch] = target.split("-");
 
 (async () => {
+  console.log(process.env.PKG_CACHE_PATH);
   const fetched = await pkg_fetch.need({ nodeRange, platform, arch });
+  console.log(fetched);
+  await new Promise((resolve) => setTimeout(resolve, 5000));
   if (fetched) {
     const dirname = path.dirname(fetched);
     const filename = path.basename(fetched);

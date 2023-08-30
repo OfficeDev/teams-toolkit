@@ -10,6 +10,7 @@ export class ConstantString {
     "core.common.SpecVersionNotSupported"
   );
   static readonly NoServerInformation = getLocalizedString("core.common.NoServerInformation");
+  // TODO: remove core.common.MultipleServerInformation message which is not used
   static readonly MultipleServerInformation = getLocalizedString(
     "core.common.MultipleServerInformation"
   );
@@ -45,5 +46,15 @@ export class ConstantString {
     "208",
     "226",
     "default",
+  ];
+  static readonly AllOperationMethods = [
+    "get",
+    "post",
+    "put",
+    "delete",
+    "patch",
+    "head",
+    "options",
+    "trace",
   ];
 }

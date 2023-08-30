@@ -246,6 +246,8 @@ function selectTeamsAppManifestQuestion(): SingleFileQuestion {
 function selectLocalTeamsAppManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.LocalTeamsAppManifestFilePath,
+    cliName: "local-teams-manifest-file",
+    cliShortName: "l",
     title: getLocalizedString("core.selectLocalTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {

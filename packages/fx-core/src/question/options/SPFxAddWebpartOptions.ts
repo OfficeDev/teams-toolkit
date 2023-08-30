@@ -35,8 +35,10 @@ export const SPFxAddWebpartOptions: CLICommandOption[] = [
     required: true,
   },
   {
-    name: "local-manifest-path",
+    name: "local-teams-manifest-file",
+    questionName: "local-manifest-path",
     type: "string",
+    shortName: "l",
     description: "Select local Teams manifest.json file",
     required: true,
   },

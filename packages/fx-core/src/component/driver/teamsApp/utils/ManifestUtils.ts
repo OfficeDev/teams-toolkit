@@ -43,7 +43,6 @@ import {
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
-import { DriverContext } from "../../interface/commonArgs";
 import { WrapDriverContext } from "../../util/wrapUtil";
 
 export class ManifestUtils {

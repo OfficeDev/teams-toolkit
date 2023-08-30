@@ -291,7 +291,8 @@ jobs:
           command: |
             sleep 20
             cd ./packages/vscode-extension
-            pnpm -F ms-teams-vscode-extension -P install
+            rm -rf node_modules
+            npm install
             if [ "$PREID" == "beta" ]; then
               npx vsce package --pre-release
             else

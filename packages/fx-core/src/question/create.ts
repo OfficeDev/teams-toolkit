@@ -700,7 +700,7 @@ function botTriggerQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.BotTrigger,
     title: getLocalizedString("plugins.bot.questionHostTypeTrigger.title"),
-    cliDescription: 'Specifies the trigger for "Chat Notification Message" app template.',
+    cliDescription: "Specifies the trigger for `Chat Notification Message` app template.",
     cliShortName: "t",
     type: "singleSelect",
     staticOptions: NotificationTriggerOptions.all(),

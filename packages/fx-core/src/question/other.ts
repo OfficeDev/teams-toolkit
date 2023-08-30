@@ -419,7 +419,7 @@ export class HubOptions {
 function selectM365HostQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.M365Host,
-    cliShortName: "h",
+    cliShortName: "m",
     cliDescription: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     title: getLocalizedString("core.M365HostQuestion.title"),
     default: HubOptions.teams().id,

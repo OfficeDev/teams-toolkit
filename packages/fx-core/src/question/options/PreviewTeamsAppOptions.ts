@@ -14,7 +14,7 @@ export const PreviewTeamsAppOptions: CLICommandOption[] = [
   {
     name: "m365-host",
     type: "string",
-    shortName: "h",
+    shortName: "m",
     description: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     required: true,
     default: "teams",

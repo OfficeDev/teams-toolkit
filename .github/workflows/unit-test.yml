@@ -42,15 +42,8 @@ jobs:
           git fetch ${{ github.event.pull_request.base.repo.owner.login }}
           git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Setup project
-        run: |
-          npm install pnpm -g
-          npm run setup
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: Unit Test
         run: |

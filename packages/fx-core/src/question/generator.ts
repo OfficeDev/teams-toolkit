@@ -24,6 +24,7 @@ import {
 } from "ts-morph";
 import { questionNodes } from ".";
 import { validate } from "../ui/validationUtils";
+import { sampleProvider } from "../common/samples";
 
 async function collectNodesForCliOptions(node: IQTreeNode, nodeList: IQTreeNode[]) {
   if (node.cliOptionDisabled === "all") return;
@@ -186,9 +187,6 @@ export async function generateCliOptions(
     if (questionNames.has(questionName)) {
       continue;
     }
-
-    let type = "string";
-
     const title = data.title
       ? typeof data.title !== "function"
         ? data.title
@@ -221,17 +219,9 @@ export async function generateCliOptions(
 
       const options = selection.staticOptions;
       if (data.isBoolean) {
-        type = "boolean";
       } else if (options.length > 0) {
-        const optionStrings = options.map((o) => (typeof o === "string" ? o : o.id));
-        type = selection.skipValidation ? "string" : optionStrings.map((i) => `"${i}"`).join(" | ");
-        (option as CLIStringOption | CLIArrayOption).choices = optionStrings;
-      } else {
-        type = "string";
-      }
-
-      if (data.type === "multiSelect") {
-        type += "[]";
+        const choices = options.map((o) => (typeof o === "string" ? o : o.id));
+        (option as CLIStringOption | CLIArrayOption).choices = choices;
       }
 
       (option as CLIStringOption | CLIArrayOption).choiceListCommand =
@@ -435,6 +425,7 @@ async function batchGenerate() {
   await generateCliOptions(questionNodes.createProject(), "CreateProject");
   await generateInputs(questionNodes.createProject(), "CreateProject");
 
+  await sampleProvider.fetchSampleConfig();
   await generateCliOptions(questionNodes.createSampleProject(), "CreateSampleProject");
   await generateInputs(questionNodes.createSampleProject(), "CreateSampleProject");
 

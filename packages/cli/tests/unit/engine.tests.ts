@@ -525,18 +525,4 @@ describe("CLI Engine", () => {
       assert.isTrue(stub.called);
     });
   });
-  describe("isUserSettingsTelemetryEnable", async () => {
-    it("error", async () => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(err(new UserCancelError()));
-      const res = engine.isUserSettingsTelemetryEnable();
-      assert.isTrue(res);
-    });
-  });
-  describe("isUserSettingsInteractive", async () => {
-    it("error", async () => {
-      sandbox.stub(UserSettings, "getInteractiveSetting").returns(err(new UserCancelError()));
-      const res = engine.isUserSettingsInteractive();
-      assert.isTrue(res);
-    });
-  });
 });

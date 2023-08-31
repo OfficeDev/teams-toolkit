@@ -19,7 +19,6 @@ deploy:
 {{#cliRunNpmCommand}} install, args: install --production {{/cliRunNpmCommand}}
 {{#azureAppServiceZipDeploy}} resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}, ignoreFile: .webappignore {{/azureAppServiceZipDeploy}}
 
-
 # Triggered when 'teamsfx publish' is executed
 publish:
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}

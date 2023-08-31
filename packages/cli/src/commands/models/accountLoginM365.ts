@@ -7,7 +7,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountLoginM365Command: CLICommand = {
   name: "m365",
-  description: "Log in to Microsoft 365.",
+  description: "Log in to Microsoft 365 account.",
   telemetry: {
     event: TelemetryEvent.AccountLoginM365,
   },

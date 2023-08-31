@@ -25,12 +25,13 @@ export async function addJsonFileAndParamtersFile(
 export async function updateYml(projectPath: string): Promise<void> {
   const key = "deploymentName: Create-resources-for-tab";
   const replace = `
-      - path: ./infra/azure.json 
-        parameters: ./infra/azure.parameters.test.json
-        deploymentName: test-json-format
+        - path: ./infra/azure.json 
+          parameters: ./infra/azure.parameters.test.json
+          deploymentName: test-json-format
     `;
   const ymlPath = path.join(projectPath, "teamsapp.yml");
   let content = await fs.readFile(ymlPath, "utf-8");
   content = updateContent(content, key, replace);
+  console.log("the yaml content is: \n" + content);
   await fs.writeFileSync(ymlPath, content);
 }

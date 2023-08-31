@@ -66,10 +66,9 @@ export function checkRequiredParameters(
   return false;
 }
 
-export function isSupportedSchema(schema: OpenAPIV3.SchemaObject): boolean {
-  // we support schema: {}
+export function checkPostBodyRequiredParameters(schema: OpenAPIV3.SchemaObject): number {
   if (Object.keys(schema).length === 0) {
-    return true;
+    return 0;
   }
 
   if (
@@ -78,20 +77,19 @@ export function isSupportedSchema(schema: OpenAPIV3.SchemaObject): boolean {
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    return true;
-  } else if (schema.type === "array") {
-    return false;
+    return schema.required ? 1 : 0;
   } else if (schema.type === "object") {
     const { properties } = schema;
+    let count = 0;
     for (const property in properties) {
-      const result = isSupportedSchema(properties[property] as OpenAPIV3.SchemaObject);
-      if (!result) {
-        return false;
-      }
+      const result = checkPostBodyRequiredParameters(
+        properties[property] as OpenAPIV3.SchemaObject
+      );
+      count += result;
     }
-    return true;
+    return count;
   } else {
-    return false;
+    return NaN;
   }
 }
 
@@ -123,24 +121,29 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
 
       const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
       const requestJsonBody = requestBody?.content["application/json"];
-      const parameterLimit = requestJsonBody ? 0 : 1;
+
+      let requestBodyRequiredParamCount = 0;
+      if (requestJsonBody) {
+        const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+        requestBodyRequiredParamCount = checkPostBodyRequiredParameters(requestBodySchema);
+      }
+
+      if (isNaN(requestBodyRequiredParamCount) || requestBodyRequiredParamCount > 1) {
+        return false;
+      }
+
+      const parameterLimit = requestBodyRequiredParamCount === 0 ? 1 : 0;
 
       const responseJson = getResponseJson(operationObject);
       if (Object.keys(responseJson).length === 0) {
         return false;
       }
 
-      if ((!paramObject || paramObject.length === 0) && !requestBody) {
-        return true;
-      }
-
-      const valid = checkRequiredParameters(paramObject, parameterLimit);
-      if (valid) {
-        if (requestBody) {
-          const schema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-          const requestJsonBodySupported = isSupportedSchema(schema);
-          return requestJsonBodySupported;
-        }
+      if (
+        !paramObject ||
+        paramObject.length === 0 ||
+        checkRequiredParameters(paramObject, parameterLimit)
+      ) {
         return true;
       }
     }

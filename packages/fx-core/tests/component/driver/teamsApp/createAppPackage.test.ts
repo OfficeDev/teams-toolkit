@@ -262,6 +262,58 @@ describe("teamsApp/createAppPackage", async () => {
     }
   });
 
+  it("should return error when placeholder is not resolved in openapi.yml", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        type: "apiBased",
+        apiSpecificationFile: "resources/openai.yml",
+        commands: [
+          {
+            id: "GET /repairs",
+            apiResponseRenderingTemplateFile: "resources/repairs.json",
+            title: "fake",
+          },
+        ],
+        botId: "",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    manifest.localizationInfo = {
+      defaultLanguageTag: "en",
+      additionalLanguages: [
+        {
+          languageTag: "de",
+          file: "resources/de.json",
+        },
+      ],
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+    sinon.stub(fs, "chmod").callsFake(async () => {});
+    sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+    delete process.env[openapiServerPlaceholder];
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(
+      result.isErr() &&
+        result.error.name === "MissingEnvironmentVariablesError" &&
+        result.error.message.includes(openapiServerPlaceholder)
+    );
+  });
+
   it("happy path - CLI", async () => {
     const mockedCliDriverContext = {
       ...mockedDriverContext,

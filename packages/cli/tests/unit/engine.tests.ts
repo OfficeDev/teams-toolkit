@@ -27,7 +27,12 @@ import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 import { logger } from "../../src/commonlib/logger";
-import { InvalidChoiceError, UnknownOptionError } from "../../src/error";
+import {
+  InvalidChoiceError,
+  UnknownArgumentError,
+  UnknownCommandError,
+  UnknownOptionError,
+} from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
@@ -186,6 +191,52 @@ describe("CLI Engine", () => {
       const result = engine.parseArgs(ctx, rootCommand, ["--option1", "true"]);
       assert.isTrue(result.isOk());
       assert.equal(ctx.optionValues["option1"], true);
+    });
+    it("UnknownCommandError", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        options: [
+          {
+            type: "boolean",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["abc"]);
+      assert.isTrue(result.isErr() && result.error instanceof UnknownCommandError);
+    });
+    it("UnknownArgumentError", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        arguments: [
+          {
+            type: "boolean",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["abc", "def"]);
+      assert.isTrue(result.isErr() && result.error instanceof UnknownArgumentError);
     });
   });
   describe("validateOption", async () => {

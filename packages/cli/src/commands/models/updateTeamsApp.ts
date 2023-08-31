@@ -8,7 +8,7 @@ import { EnvOption, ProjectFolderOption } from "../common";
 
 export const updateTeamsAppCommand: CLICommand = {
   name: "teams-app",
-  description: "Update the Teams App manifest to Teams Developer Portal.",
+  description: "Update the Microsoft Teams App manifest to Teams Developer Portal.",
   options: [...SelectTeamsManifestOptions, EnvOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.UpdateTeamsApp,

@@ -80,3 +80,12 @@ export class UnknownArgumentError extends UserError {
     });
   }
 }
+
+export class UnknownCommandError extends UserError {
+  constructor(name: string) {
+    super({
+      source: constants.cliSource,
+      message: `'${name}' is misspelled or not recognized by the system.`,
+    });
+  }
+}

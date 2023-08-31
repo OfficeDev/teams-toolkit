@@ -59,7 +59,7 @@ export const previewCommand: CLICommand = {
       name: "browser",
       type: "string",
       shortName: "b",
-      description: "Select browser to open Teams web client.",
+      description: "Select browser to open Microsoft Teams web client.",
       choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
       default: constants.Browser.default,
       required: true,

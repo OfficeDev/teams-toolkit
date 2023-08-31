@@ -6,6 +6,7 @@ import { permissionStatusCommand } from "./permissionStatus";
 
 export const permissionCommand: CLICommand = {
   name: "permission",
-  description: "Check, grant and list user permission.",
+  description:
+    "Check, grant and list permissions for who can access and manage Microsoft Teams application and Azure Active Directory application.",
   commands: [permissionStatusCommand, permissionGrantCommand],
 };

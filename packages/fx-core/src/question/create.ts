@@ -539,7 +539,7 @@ function capabilityQuestion(): SingleSelectQuestion {
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
     },
-    cliDescription: "Specifies the Teams App capability.",
+    cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
     cliChoiceListCommand: "teamsfx list templates",
@@ -1094,7 +1094,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.Samples,
     cliName: "sample-name",
-    cliDescription: "Specifies the Teams App sample name.",
+    cliDescription: "Specifies the Microsoft Teams App sample name.",
     cliChoiceListCommand: "teamsfx list samples",
     skipValidation: true,
     cliType: "argument",

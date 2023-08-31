@@ -10,7 +10,7 @@ import { ListFormatOption, ShowDescriptionOption } from "../common";
 
 export const listSamplesCommand: CLICommand = {
   name: "samples",
-  description: "List all Teams App samples.",
+  description: "List available Microsoft Teams App samples.",
   options: [
     {
       name: "tag",

@@ -228,7 +228,7 @@ function selectTeamsAppManifestQuestion(): SingleFileQuestion {
     cliName: "teams-manifest-file",
     cliShortName: "t",
     cliDescription:
-      "Specifies the Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -248,6 +248,8 @@ function selectLocalTeamsAppManifestQuestion(): SingleFileQuestion {
     name: QuestionNames.LocalTeamsAppManifestFilePath,
     cliName: "local-teams-manifest-file",
     cliShortName: "l",
+    cliDescription:
+      "Specifies the Microsoft Teams app manifest template file path for local environment, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.local.json'",
     title: getLocalizedString("core.selectLocalTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -361,7 +363,7 @@ function selectTeamsAppPackageQuestion(): SingleFileQuestion {
     name: QuestionNames.TeamsAppPackageFilePath,
     title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
     cliDescription:
-      "Specifies the zipped Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
+      "Specifies the zipped Microsoft Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
     cliName: "app-package-file",
     cliShortName: "p",
     type: "singleFile",

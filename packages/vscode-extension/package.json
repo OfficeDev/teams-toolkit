@@ -1204,7 +1204,8 @@
     "precommit": "npm run check-sensitive && lint-staged",
     "updateFont": "node ./scripts/updateFont.js",
     "previewFont": "start ./media/font/teamstoolkit.html",
-    "version": "bash ../../.github/scripts/vsc-version.sh"
+    "version": "bash ../../.github/scripts/vsc-version.sh",
+    "pack-local": "pnpm dlx vsce package --no-dependencies"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^5.0.0",

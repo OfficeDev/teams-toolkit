@@ -66,6 +66,7 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
+import { convertToAlphanumericOnly } from "../../common/utils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -566,9 +567,9 @@ class Coordinator {
           targetResourceGroupInfo.location = inputLocation;
           targetResourceGroupInfo.createNewResourceGroup = true; // create resource group if not exists
         } else {
-          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${
-            inputs.env as string
-          }`;
+          const defaultRg = `rg-${convertToAlphanumericOnly(folderName)}${
+            process.env.RESOURCE_SUFFIX
+          }-${inputs.env as string}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             inputs,
             ctx.azureAccountProvider,

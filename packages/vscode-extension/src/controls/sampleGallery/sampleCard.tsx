@@ -40,7 +40,32 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
             <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
           </div>
         )}
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+        >
+          sample app card
+        </label>
         <Image src={sample.gifUrl} />
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+          id="tagLabel"
+        >
+          sample app tags:
+        </label>
         <div className="section" aria-labelledby="tagLabel">
           {sample.tags &&
             sample.tags.map((value: string) => {
@@ -51,6 +76,19 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
               );
             })}
         </div>
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+          id="titleLabel"
+        >
+          sample app title:
+        </label>
         <h3>{sample.title}</h3>
         <div className="estimation-time">
           <div className="watch">

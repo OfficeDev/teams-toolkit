@@ -847,7 +847,8 @@ export function SPFxWebpartNameQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.SPFxWebpartName,
     cliShortName: "w",
-    title: "Name for SharePoint Framework Web Part.",
+    cliDescription: "Name for SharePoint Framework Web Part.",
+    title: getLocalizedString("plugins.spfx.questions.webpartName"),
     default: Constants.DEFAULT_WEBPART_NAME,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {

@@ -1931,8 +1931,8 @@ importers:
         specifier: ^0.6.2
         version: 0.6.2(tslib@2.6.1)
       '@vscode/webview-ui-toolkit':
-        specifier: ^0.9.3
-        version: 0.9.3(react@17.0.2)
+        specifier: ^1.2.2
+        version: 1.2.2(react@17.0.2)
       async-mutex:
         specifier: ^0.3.1
         version: 0.3.1
@@ -1942,6 +1942,9 @@ importers:
       express:
         specifier: ^4.18.2
         version: 4.18.2
+      fuse.js:
+        specifier: ^6.6.2
+        version: 6.6.2
       jscodeshift:
         specifier: ^0.14.0
         version: 0.14.0(@babel/preset-env@7.22.10)
@@ -10338,8 +10341,8 @@ packages:
       keytar: 7.9.0
     dev: true
 
-  /@vscode/webview-ui-toolkit@0.9.3(react@17.0.2):
-    resolution: {integrity: sha512-uEEpTVA21zkHtWMR8TPT7vbIZ1+tvfhQPThEdmmDjh0PulKPvaAVNqnGbQitU3F9GVqpq2AdIKAq6N1jFeBoXg==}
+  /@vscode/webview-ui-toolkit@1.2.2(react@17.0.2):
+    resolution: {integrity: sha512-xIQoF4FC3Xh6d7KNKIoIezSiFWYFuf6gQMdDyKueKBFGeKwaHWEn+dY2g3makvvEsNMEDji/woEwvg9QSbuUsw==}
     peerDependencies:
       react: '>=16.9.0'
     dependencies:
@@ -16136,6 +16139,11 @@ packages:
 
   /functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+
+  /fuse.js@6.6.2:
+    resolution: {integrity: sha512-cJaJkxCCxC8qIIcPBF9yGxY0W/tVZS3uEISDxhYIdtk8OL93pe+6Zj7LjCqVV4dzbqcriOZ+kQ/NE4RXZHsIGA==}
+    engines: {node: '>=10'}
+    dev: false
 
   /gauge@4.0.4:
     resolution: {integrity: sha512-f9m+BEN5jkg6a0fZjleidjN51VE1X+mPFQ2DJ0uv1V39oCLCbsGe6yjbBnp7eK7z/+GAon99a3nHuqbuuthyPg==}

@@ -18,19 +18,12 @@ export interface SampleCollection {
   samples: SampleInfo[];
 }
 
-export type SampleCardProps = SampleDetailProps & {
-  suggested: boolean;
-  order: number;
+export type SampleProps = {
+  sample: SampleInfo;
+  selectSample: (id: string) => void;
 };
 
-export type SampleDetailProps = {
-  url: string;
-  image: any;
-  tags: string[];
-  time: string;
-  configuration: string;
-  title: string;
-  description: string;
-  sampleAppFolder: string;
-  selectSample: (id: string) => void;
+export type SampleFilterProps = {
+  query: string;
+  onQueryChange: (query: string) => void;
 };

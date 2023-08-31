@@ -1,22 +1,29 @@
-import { ActionButton, Image } from "@fluentui/react";
-import * as React from "react";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import "./sampleDetailPage.scss";
+
+import * as React from "react";
+
+import { ActionButton, Image } from "@fluentui/react";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
-import { Watch, Setting } from "../resources";
-import { Commands } from "../Commands";
-import { SampleDetailProps } from "./ISamples";
+
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
+import { Commands } from "../Commands";
+import { Setting, Watch } from "../resources";
+import { SampleProps } from "./ISamples";
 
-export default class SampleDetailPage extends React.Component<SampleDetailProps, any> {
-  constructor(props: SampleDetailProps) {
+export default class SampleDetailPage extends React.Component<SampleProps, any> {
+  constructor(props: SampleProps) {
     super(props);
   }
 
   render() {
+    const sample = this.props.sample;
     return (
       <div className="sampleDetail">
         <ActionButton iconProps={{ iconName: "ChevronLeft" }} onClick={this.onBack}>
@@ -24,10 +31,14 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
         </ActionButton>
         <div className="header">
           <div className="contents">
-            <h2>{this.props.title}</h2>
+            <h2>{sample.title}</h2>
             <div className="tags">
-              {this.props.tags.map((value: string) => {
-                return <VSCodeTag className="tag">{value}</VSCodeTag>;
+              {sample.tags.map((value: string) => {
+                return (
+                  <VSCodeTag className="tag" key={value}>
+                    {value}
+                  </VSCodeTag>
+                );
               })}
             </div>
           </div>
@@ -42,16 +53,16 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
           <div className="watch">
             <Watch></Watch>
           </div>
-          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
+          <label style={{ paddingLeft: 4 }}>{sample.time}</label>
         </div>
         <div className="configuration info">
           <div className="setting">
             <Setting></Setting>
           </div>
-          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
+          <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
         </div>
-        <Image src={this.props.image} />
-        <div className="description">{this.props.description}</div>
+        <Image src={sample.gifUrl} />
+        <div className="description">{sample.fullDescription}</div>
       </div>
     );
   }
@@ -64,8 +75,8 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
     vscode.postMessage({
       command: Commands.CloneSampleApp,
       data: {
-        appName: this.props.title,
-        appFolder: this.props.sampleAppFolder,
+        appName: this.props.sample.title,
+        appFolder: this.props.sample.id,
       },
     });
   };
@@ -77,13 +88,13 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
         eventName: TelemetryEvent.ViewSampleInGitHub,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sampleAppFolder,
+          [TelemetryProperty.SampleAppName]: this.props.sample.id,
         },
       },
     });
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: this.props.url,
+      data: this.props.sample.downloadUrl,
     });
   };
 }

@@ -292,9 +292,9 @@ jobs:
             sleep 20
             cd ./packages/vscode-extension
             if [ "$PREID" == "beta" ]; then
-              pnpm vsce dlx package --no-dependencies --pre-release
+              pnpm dlx vsce package --no-dependencies --pre-release
             else
-              pnpm vsce dlx package --no-dependencies
+              pnpm dlx vsce package --no-dependencies
             fi
 
       - name: release stable VSCode extension to github

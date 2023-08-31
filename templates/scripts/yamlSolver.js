@@ -4,6 +4,7 @@ const utils = require("./utils");
 const { Ext, Path, RegExp } = require("./constants");
 const yaml = require("js-yaml");
 const os = require("os");
+const { exit } = require("node:process");
 
 // The solver is called by the following command:
 // > node yamlSolver.js <command> <constraintFilePath>
@@ -221,6 +222,7 @@ class YamlSolver {
         1. Execute "npm run apply" in the ./templates folder to apply the constraints to the solution.
         2. Refer to the [contribution guides](https://github.com/OfficeDev/TeamsFx/blob/dev/templates/CONTRIBUTING.md#what-is-template-constraints) to update your constraints.`
       );
+      exit(1);
     }
   }
 

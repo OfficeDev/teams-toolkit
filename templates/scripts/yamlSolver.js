@@ -214,6 +214,13 @@ class YamlSolver {
 
     if (SAT) {
       console.log("All constraints are satisfied");
+    } else {
+      console.log(
+        // eslint-disable-next-line no-secrets/no-secrets
+        `To resolve the problem, you have two options to consider:
+        1. Execute "npm run apply" in the ./templates folder to apply the constraints to the solution.
+        2. Refer to the [contribution guides](https://github.com/OfficeDev/TeamsFx/blob/dev/templates/CONTRIBUTING.md#what-is-template-constraints) to update your constraints.`
+      );
     }
   }
 

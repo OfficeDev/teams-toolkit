@@ -170,14 +170,14 @@ export class CreateAppPackageDriver implements StepDriver {
           )
         );
       }
-      const expendEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
+      const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
         apiSpecificationFile,
         context
       );
-      if (expendEnvVarResult.isErr()) {
-        return err(expendEnvVarResult.error);
+      if (expandedEnvVarResult.isErr()) {
+        return err(expandedEnvVarResult.error);
       }
-      const openAPIContent = expendEnvVarResult.value;
+      const openAPIContent = expandedEnvVarResult.value;
       const attr = await fs.stat(apiSpecificationFile);
       zip.addFile(
         manifest.composeExtensions[0].apiSpecificationFile,
@@ -232,7 +232,7 @@ export class CreateAppPackageDriver implements StepDriver {
     const content = await fs.readFile(openAPISpecPath, "utf8");
     const vars = getEnvironmentVariables(content);
     ctx.addTelemetryProperties({
-      [TelemetryPropertyKey.customizedOpenAPIKeys]: JSON.stringify(vars),
+      [TelemetryPropertyKey.customizedOpenAPIKeys]: vars.join(";"),
     });
     const result = expandEnvironmentVariable(content);
     const notExpandedVars = getEnvironmentVariables(result);

@@ -20,7 +20,7 @@
     "@microsoft/dev-tunnels-management": "~1.0.7360",
     "@microsoft/dev-tunnels-ssh": "~3.11.1",
     "@microsoft/extra-shot-mocha": "0.0.1",
-    "@microsoft/teamsfx-core": "^2.0.2",
+    "@microsoft/teamsfx-core": "workspace:*",
     "@types/chai": "^4.2.19",
     "@types/fs-extra": "^7.0.0",
     "@types/glob": "^7.1.3",

@@ -59,7 +59,7 @@ export function getCreateCommand(): CLICommand {
         description: "Create a new timer triggered notification bot",
       },
       {
-        command: "teamsfx new -c tab-spfx -ss import --sf <folder-path> -n myapp -i false",
+        command: "teamsfx new -c tab-spfx -s import --spfx-folder <folder-path> -n myapp -i false",
         description: "Import an existing SharePoint Framework solution",
       },
     ],

@@ -228,7 +228,7 @@ function selectTeamsAppManifestQuestion(): SingleFileQuestion {
     cliName: "teams-manifest-file",
     cliShortName: "t",
     cliDescription:
-      "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specifies the Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -540,7 +540,7 @@ export function selectAadManifestQuestion(): SingleFileQuestion {
     cliName: "aad-manifest-file",
     cliShortName: "a",
     cliDescription:
-      "Specifies the Azure AD app manifest file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
+      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder, defaults to './aad.manifest.json'",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {

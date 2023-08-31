@@ -43,7 +43,7 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-install-latest-package"?: boolean;
   /** @description Framework */
   "spfx-framework-type"?: "react" | "minimal" | "none";
-  /** @description Name for SharePoint Framework Web Part. */
+  /** @description Name for SharePoint Framework Web Part */
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;

@@ -93,8 +93,6 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
@@ -143,8 +141,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(false);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(false);
   });
 
   it("deploy restart throws", async () => {
@@ -193,8 +191,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(false);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(false);
     // log warning will print
     sinon.assert.calledOnce(caller);
   });
@@ -242,8 +240,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(true);
   });
 
   it("Check deploy status error", async () => {
@@ -289,8 +287,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 403,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(true);
   });
 
   it("Check deploy status ok but cannot start", async () => {
@@ -338,8 +336,8 @@ describe("Azure Function Deploy Driver test", () => {
       status: 200,
       data: { status: 3 },
     });
-    const res = await deploy.run(args, context);
-    expect(res.isOk()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isOk()).to.equal(true);
   });
 
   it("Check deploy throws", async () => {
@@ -386,8 +384,8 @@ describe("Azure Function Deploy Driver test", () => {
       .stub(AzureDeployImpl.AXIOS_INSTANCE, "get")
       .throws({ isAxiosError: true } as AxiosError);
 
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(true);
   });
 
   it("deploy dry run", async () => {

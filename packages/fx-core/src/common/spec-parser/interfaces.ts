@@ -75,8 +75,7 @@ export enum ErrorType {
   VersionNotSupported = "version-not-supported",
   RemoteRefNotSupported = "remote-ref-not-supported",
   NoServerInformation = "no-server-information",
-  MultipleServerInformation = "multiple-server-information",
-  UrlProtocolNotSupported = "http-server-url-not-supported",
+  UrlProtocolNotSupported = "url-protocol-not-supported",
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
 
@@ -142,7 +141,7 @@ export interface Description {
 }
 
 export interface ComposeExtension {
-  type: string;
+  composeExtensionType: string;
   apiSpecificationFile: string;
   commands: Command[];
 }

@@ -206,7 +206,7 @@ export interface IComposeExtension {
   /**
    * To support SME, denotes what powers the compose extension
    */
-  type?: "apiBased" | "botBased";
+  composeExtensionType?: "apiBased" | "botBased";
   /**
    * To support SME, it's the relative path to api spec file in the manifest
    */

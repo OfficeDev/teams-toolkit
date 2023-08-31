@@ -140,21 +140,19 @@ export async function unzip(
   dstPath: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
-  relativePath?: string
-): Promise<void> {
-  let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
-  if (relativePath) {
-    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
+  filterFn?: (filePath: string) => boolean
+): Promise<string[]> {
+  const output = [];
+  let entries = zip.getEntries().filter((entry) => !entry.isDirectory);
+  if (filterFn) {
+    entries = entries.filter((entry) => filterFn(entry.entryName));
   }
 
   for (const entry of entries) {
     const rawEntryData: Buffer = entry.getData();
-    let entryName: string = nameReplaceFn
+    const entryName: string = nameReplaceFn
       ? nameReplaceFn(entry.entryName, rawEntryData)
       : entry.entryName;
-    if (relativePath) {
-      entryName = entryName.replace(relativePath, "");
-    }
     const entryData: string | Buffer = dataReplaceFn
       ? dataReplaceFn(entry.name, rawEntryData)
       : rawEntryData;
@@ -162,7 +160,9 @@ export async function unzip(
     const dirPath: string = path.dirname(filePath);
     await fs.ensureDir(dirPath);
     await fs.writeFile(filePath, entryData);
+    output.push(entryName);
   }
+  return output;
 }
 
 export function renderTemplateFileData(
@@ -237,7 +237,7 @@ export async function downloadDirectory(
   dstPath: string,
   concurrencyLimits = sampleConcurrencyLimits,
   retryLimits = sampleDefaultRetryLimits
-): Promise<void> {
+): Promise<string[]> {
   const urlInfo = parseSampleUrl(sampleUrl);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(urlInfo, retryLimits);
   await downloadSampleFiles(
@@ -248,6 +248,7 @@ export async function downloadDirectory(
     retryLimits,
     concurrencyLimits
   );
+  return samplePaths;
 }
 
 type SampleUrlInfo = {
@@ -255,6 +256,14 @@ type SampleUrlInfo = {
   repository: string;
   ref: string;
   dir: string;
+};
+
+type SampleFileInfo = {
+  tree: {
+    path: string;
+    type: string;
+  }[];
+  sha: string;
 };
 
 export function parseSampleUrl(url: string): SampleUrlInfo {
@@ -271,15 +280,12 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
     await sendRequestWithRetry(async () => {
       return await axios.get(fileInfoUrl);
     }, retryLimits)
-  ).data as unknown as any;
+  ).data as SampleFileInfo;
 
-  const fileInfoTree = fileInfo.tree as any[];
-  const samplePaths = fileInfoTree
-    .filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
+  const samplePaths = fileInfo?.tree
+    ?.filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
     .map((node) => node.path);
-  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${
-    fileInfo.sha as string
-  }/`;
+  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo?.sha}/`;
   return { samplePaths, fileUrlPrefix };
 }
 

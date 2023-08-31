@@ -17,6 +17,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   IQTreeNode,
+  ManifestUtil,
   ok,
   OpenAIPluginManifest,
   Platform,
@@ -551,16 +552,22 @@ export class FxCore {
     const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, undefined, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
 
     const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils.getCapabilities(manifestRes.value);
+    const properties = ManifestUtil.parseCommonProperties(manifestRes.value);
 
     const launchHelper = new LaunchHelper(TOOLS.tokenProvider.m365TokenProvider, TOOLS.logProvider);
-    const result = await launchHelper.getLaunchUrl(hub, teamsAppId, capabilities);
+    const result = await launchHelper.getLaunchUrl(
+      hub,
+      teamsAppId,
+      properties.capabilities,
+      true,
+      properties.isCopilotPlugin
+    );
     return result;
   }
   /**

@@ -6,18 +6,24 @@ import sinon from "sinon";
 import axios from "axios";
 import fs from "fs-extra";
 import os from "os";
+import * as util from "util";
 import "mocha";
 import {
   checkRequiredParameters,
+  checkServerUrl,
   convertPathToCamelCase,
   getRelativePath,
   getResponseJson,
   getUrlProtocol,
   isSupportedApi,
+  isSupportedSchema,
   isYamlSpecFile,
   updateFirstLetter,
+  validateServer,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
+import { ConstantString } from "../../../src/common/spec-parser/constants";
+import { ErrorType } from "../../../src/common/spec-parser/interfaces";
 
 describe("utils", () => {
   describe("isYamlSpecFile", () => {
@@ -152,6 +158,58 @@ describe("utils", () => {
       assert.strictEqual(result, true);
     });
 
+    it("should return true if method is POST, path is valid, and parameter is supported", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, true);
+    });
+
     it("should return false if method is GET, path is valid, parameter is supported, but response is empty", () => {
       const method = "GET";
       const path = "/users";
@@ -189,8 +247,8 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
-    it("should return false if method is not GET", () => {
-      const method = "POST";
+    it("should return false if method is not GET or POST", () => {
+      const method = "PUT";
       const path = "/users";
       const spec = {
         paths: {
@@ -260,6 +318,17 @@ describe("utils", () => {
           "/users": {
             get: {
               parameters: [],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -274,12 +343,50 @@ describe("utils", () => {
       const spec = {
         paths: {
           "/users": {
-            get: {},
+            get: {
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       };
       const result = isSupportedApi(method, path, spec as any);
       assert.strictEqual(result, true);
+    });
+
+    it("should return false if parameter is null but no 20X response", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              responses: {
+                404: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, false);
     });
   });
 
@@ -312,8 +419,8 @@ describe("utils", () => {
   describe("checkRequiredParameters", () => {
     it("should return true if there is only one required parameter", () => {
       const paramObject = [
-        { in: "query", required: true },
-        { in: "path", required: false },
+        { in: "query", required: true, schema: { type: "string" } },
+        { in: "path", required: false, schema: { type: "string" } },
       ];
       const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result, true);
@@ -321,8 +428,8 @@ describe("utils", () => {
 
     it("should return false if there are multiple required parameters", () => {
       const paramObject = [
-        { in: "query", required: true },
-        { in: "path", required: true },
+        { in: "query", required: true, schema: { type: "string" } },
+        { in: "path", required: true, schema: { type: "string" } },
       ];
       const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result, false);
@@ -330,12 +437,284 @@ describe("utils", () => {
 
     it("should return false if any required parameter is in header or cookie", () => {
       const paramObject = [
-        { in: "query", required: true },
-        { in: "path", required: false },
-        { in: "header", required: true },
+        { in: "query", required: true, schema: { type: "string" } },
+        { in: "path", required: false, schema: { type: "string" } },
+        { in: "header", required: true, schema: { type: "string" } },
       ];
       const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result, false);
+    });
+
+    it("should return false if any schema is array", () => {
+      const paramObject = [
+        { in: "query", required: true, schema: { type: "string" } },
+        { in: "path", required: false, schema: { type: "array" } },
+      ];
+      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if any schema is object", () => {
+      const paramObject = [
+        { in: "query", required: false, schema: { type: "string" } },
+        { in: "path", required: true, schema: { type: "object" } },
+      ];
+      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result, false);
+    });
+  });
+
+  describe("isSupportedSchema", () => {
+    it("should return true for an empty schema", () => {
+      const schema = {};
+      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
+    });
+
+    it("should return true for supported schema types", () => {
+      const schema = { type: "string" };
+      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
+    });
+
+    it("should return false for unsupported schema types", () => {
+      const schema = { type: "array" };
+      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.false;
+    });
+
+    it("should return false for nested unsupported schema types", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          prop1: { type: "string" },
+          prop2: { type: "array" },
+        },
+      };
+      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.false;
+    });
+
+    it("should return true for nested supported schema types", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          prop1: { type: "string" },
+          prop2: { type: "integer" },
+        },
+      };
+      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
+    });
+
+    it("should return false for complicated unsupported schema types", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          prop1: { type: "string" },
+          prop2: {
+            type: "object",
+            properties: {
+              prop3: { type: "array" },
+            },
+          },
+        },
+      };
+      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.false;
+    });
+
+    it("should return false for complicated unsupported schema types", () => {
+      const schema = {
+        type: "object",
+        properties: {
+          prop1: { type: "string" },
+          prop2: {
+            type: "object",
+            properties: {
+              prop3: { type: "string" },
+            },
+          },
+        },
+      };
+      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
+    });
+  });
+
+  describe("checkServerUrl", () => {
+    it("should return an empty array if the server URL is valid", () => {
+      const servers = [{ url: "https://example.com" }];
+      const errors = checkServerUrl(servers);
+      assert.deepStrictEqual(errors, []);
+    });
+
+    it("should return an error if the server URL is relative", () => {
+      const servers = [{ url: "/api" }];
+      const errors = checkServerUrl(servers);
+      assert.deepStrictEqual(errors, [
+        {
+          type: ErrorType.RelativeServerUrlNotSupported,
+          content: ConstantString.RelativeServerUrlNotSupported,
+          data: servers,
+        },
+      ]);
+    });
+
+    it("should return an error if the server URL protocol is not HTTPS", () => {
+      const servers = [{ url: "http://example.com" }];
+      const errors = checkServerUrl(servers);
+      assert.deepStrictEqual(errors, [
+        {
+          type: ErrorType.UrlProtocolNotSupported,
+          content: util.format(ConstantString.UrlProtocolNotSupported, "http:"),
+          data: servers,
+        },
+      ]);
+    });
+  });
+
+  describe("validateServer", () => {
+    it("should return an error if there is no server information", () => {
+      const spec = { paths: {} };
+      const errors = validateServer(spec as OpenAPIV3.Document);
+      assert.deepStrictEqual(errors, [
+        {
+          type: ErrorType.NoServerInformation,
+          content: ConstantString.NoServerInformation,
+        },
+      ]);
+    });
+
+    it("should return an error if there is no server information in supported apis", () => {
+      const spec = {
+        paths: {
+          "/api": {
+            get: {
+              servers: [{ url: "ftp://example.com" }],
+            },
+          },
+        },
+      };
+      const errors = validateServer(spec as any);
+      assert.deepStrictEqual(errors, [
+        {
+          type: ErrorType.NoServerInformation,
+          content: ConstantString.NoServerInformation,
+        },
+      ]);
+    });
+
+    it("should validate top-level servers", () => {
+      const spec = {
+        servers: [{ url: "https://example.com" }],
+        paths: {},
+      };
+      const errors = validateServer(spec as OpenAPIV3.Document);
+      assert.deepStrictEqual(errors, []);
+    });
+
+    it("should validate path-level servers", () => {
+      const spec = {
+        paths: {
+          "/api": {
+            servers: [{ url: "https://example.com" }],
+          },
+        },
+      };
+      const errors = validateServer(spec as any);
+      assert.deepStrictEqual(errors, []);
+    });
+
+    it("should validate operation-level servers", () => {
+      const spec = {
+        paths: {
+          "/api": {
+            get: {
+              servers: [{ url: "https://example.com" }],
+              responses: {
+                200: {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const errors = validateServer(spec as any);
+      assert.deepStrictEqual(errors, []);
+    });
+
+    it("should validate all levels of servers", () => {
+      const spec = {
+        servers: [{ url: "https://example.com" }],
+        paths: {
+          "/api": {
+            servers: [{ url: "https://example.com" }],
+            get: {
+              servers: [{ url: "https://example.com" }],
+              responses: {
+                200: {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const errors = validateServer(spec as any);
+      assert.deepStrictEqual(errors, []);
+    });
+
+    it("should validate invalid server URLs", () => {
+      const spec = {
+        servers: [{ url: "/api" }],
+        paths: {
+          "/api": {
+            servers: [{ url: "http://example.com" }],
+            get: {
+              servers: [{ url: "ftp://example.com" }],
+              responses: {
+                200: {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const errors = validateServer(spec as any);
+      assert.deepStrictEqual(errors, [
+        {
+          type: ErrorType.RelativeServerUrlNotSupported,
+          content: ConstantString.RelativeServerUrlNotSupported,
+          data: spec.servers,
+        },
+        {
+          type: ErrorType.UrlProtocolNotSupported,
+          content: util.format(ConstantString.UrlProtocolNotSupported, "http:"),
+          data: spec.paths["/api"].servers,
+        },
+        {
+          type: ErrorType.UrlProtocolNotSupported,
+          content: util.format(ConstantString.UrlProtocolNotSupported, "ftp:"),
+          data: spec.paths["/api"].get.servers,
+        },
+      ]);
     });
   });
 

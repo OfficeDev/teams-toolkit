@@ -226,11 +226,19 @@ class Coordinator {
         if (res.isErr()) {
           return err(res.error);
         }
-      } else if (
-        capability === CapabilityOptions.copilotPluginApiSpec().id ||
-        capability === CapabilityOptions.copilotPluginOpenAIPlugin().id
-      ) {
-        const res = await CopilotPluginGenerator.generate(context, inputs, projectPath);
+      } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+        const res = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, projectPath);
+        if (res.isErr()) {
+          return err(res.error);
+        } else {
+          warnings = res.value.warnings;
+        }
+      } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
+        const res = await CopilotPluginGenerator.generateFromOpenAIPlugin(
+          context,
+          inputs,
+          projectPath
+        );
         if (res.isErr()) {
           return err(res.error);
         } else {
@@ -930,8 +938,8 @@ function downloadSampleHook(sampleId: string, sampleAppPath: string): void {
   if (sampleId === "todo-list-SPFx") {
     const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
     const componentId = uuid.v4();
-    glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
-      await Promise.all(
+    glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, (err, files) => {
+      void Promise.all(
         files.map(async (file) => {
           let content = (await fs.readFile(file)).toString();
           const reg = new RegExp(originalId, "g");

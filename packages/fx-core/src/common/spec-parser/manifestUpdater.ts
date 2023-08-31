@@ -8,6 +8,7 @@ import fs from "fs-extra";
 import path from "path";
 import { getRelativePath, updateFirstLetter } from "./utils";
 import { SpecParserError } from "./specParserError";
+import { ConstantString } from "./constants";
 
 export async function updateManifest(
   manifestPath: string,
@@ -21,7 +22,7 @@ export async function updateManifest(
 
     const commands = await generateCommands(spec, adaptiveCardFolder, manifestPath);
     const ComposeExtension: ComposeExtension = {
-      type: "apiBased",
+      composeExtensionType: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
     };
@@ -42,6 +43,38 @@ export async function updateManifest(
   }
 }
 
+export function generateParametersFromSchema(
+  schema: OpenAPIV3.SchemaObject,
+  name: string
+): Parameter[] {
+  const parameters: Parameter[] = [];
+
+  if (
+    schema.type === "string" ||
+    schema.type === "integer" ||
+    schema.type === "boolean" ||
+    schema.type === "number"
+  ) {
+    parameters.push({
+      name: name,
+      title: updateFirstLetter(name),
+      description: schema.description ?? "",
+    });
+  } else if (schema.type === "object") {
+    const { properties } = schema;
+    for (const property in properties) {
+      const result = generateParametersFromSchema(
+        properties[property] as OpenAPIV3.SchemaObject,
+        property
+      );
+
+      parameters.push(...result);
+    }
+  }
+
+  return parameters;
+}
+
 export async function generateCommands(
   spec: OpenAPIV3.Document,
   adaptiveCardFolder: string,
@@ -55,40 +88,51 @@ export async function generateCommands(
       if (pathItem) {
         const operations = pathItem;
 
-        // Currently only support GET method
-        const operationItem = operations.get;
+        // Currently only support GET and POST method
+        for (const method in operations) {
+          if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
+            const operationItem = operations[method];
+            if (operationItem) {
+              const parameters: Parameter[] = [];
+              const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
 
-        if (operationItem) {
-          const parameters: Parameter[] = [];
-          const paramObject = operationItem.parameters;
+              if (paramObject) {
+                paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
+                  parameters.push({
+                    name: param.name,
+                    title: updateFirstLetter(param.name),
+                    description: param.description ?? "",
+                  });
+                });
+              }
 
-          if (paramObject) {
-            paramObject.forEach((param: OpenAPIV3.ParameterObject | OpenAPIV3.ReferenceObject) => {
-              param = param as OpenAPIV3.ParameterObject;
-              parameters.push({
-                name: param.name,
-                title: updateFirstLetter(param.name),
-                description: param.description ?? "",
-              });
-            });
+              if (operationItem.requestBody) {
+                const requestJson = (operationItem.requestBody as OpenAPIV3.RequestBodyObject)
+                  .content["application/json"];
+                if (Object.keys(requestJson).length !== 0) {
+                  const schema = requestJson.schema as OpenAPIV3.SchemaObject;
+                  const result = generateParametersFromSchema(schema, "requestBody");
+                  parameters.push(...result);
+                }
+              }
+
+              const operationId = operationItem.operationId!;
+
+              const adaptiveCardPath = path.join(adaptiveCardFolder, operationId + ".json");
+
+              const command: Command = {
+                context: ["compose"],
+                type: "query",
+                title: operationItem.summary ?? "",
+                id: operationId,
+                parameters: parameters,
+                apiResponseRenderingTemplateFile: (await fs.pathExists(adaptiveCardPath))
+                  ? getRelativePath(manifestPath, adaptiveCardPath)
+                  : "",
+              };
+              commands.push(command);
+            }
           }
-
-          const adaptiveCardPath = path.join(
-            adaptiveCardFolder,
-            operationItem.operationId! + ".json"
-          );
-
-          const command: Command = {
-            context: ["compose"],
-            type: "query",
-            title: operationItem.summary ?? "",
-            id: operationItem.operationId!,
-            parameters: parameters,
-            apiResponseRenderingTemplateFile: (await fs.pathExists(adaptiveCardPath))
-              ? getRelativePath(manifestPath, adaptiveCardPath)
-              : "",
-          };
-          commands.push(command);
         }
       }
     }

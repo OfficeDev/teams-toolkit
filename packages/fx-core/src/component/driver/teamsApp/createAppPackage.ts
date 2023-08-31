@@ -64,7 +64,7 @@ export class CreateAppPackageDriver implements StepDriver {
       manifestPath = path.join(context.projectPath, manifestPath);
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath);
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath, context);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -157,7 +157,7 @@ export class CreateAppPackageDriver implements StepDriver {
       isCopilotPluginEnabled() &&
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
-      manifest.composeExtensions[0].type == "apiBased" &&
+      manifest.composeExtensions[0].composeExtensionType == "apiBased" &&
       manifest.composeExtensions[0].apiSpecificationFile
     ) {
       const apiSpecificationFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecificationFile}`;

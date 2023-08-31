@@ -28,6 +28,25 @@ describe("manifestUpdater", () => {
           summary: "Get all pets",
           parameters: [{ name: "limit", description: "Maximum number of pets to return" }],
         },
+        post: {
+          operationId: "createPet",
+          summary: "Create a pet",
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      type: "string",
+                      description: "Name of the pet",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
   };
@@ -51,7 +70,7 @@ describe("manifestUpdater", () => {
       description: { short: spec.info.title, full: spec.info.description },
       composeExtensions: [
         {
-          type: "apiBased",
+          composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
@@ -63,6 +82,14 @@ describe("manifestUpdater", () => {
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Create a pet",
+              id: "createPet",
+              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
             },
           ],
         },
@@ -107,7 +134,7 @@ describe("manifestUpdater", () => {
       description: { short: spec.info.title, full: "Original Full Description" },
       composeExtensions: [
         {
-          type: "apiBased",
+          composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
@@ -122,6 +149,20 @@ describe("manifestUpdater", () => {
                 },
               ],
               title: "Get all pets",
+              type: "query",
+            },
+            {
+              apiResponseRenderingTemplateFile: "",
+              context: ["compose"],
+              id: "createPet",
+              parameters: [
+                {
+                  description: "Name of the pet",
+                  name: "name",
+                  title: "Name",
+                },
+              ],
+              title: "Create a pet",
               type: "query",
             },
           ],
@@ -155,7 +196,7 @@ describe("manifestUpdater", () => {
       description: { short: spec.info.title, full: "Original Full Description" },
       composeExtensions: [
         {
-          type: "apiBased",
+          composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           commands: [
             {
@@ -167,6 +208,20 @@ describe("manifestUpdater", () => {
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+            {
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+              context: ["compose"],
+              id: "createPet",
+              parameters: [
+                {
+                  description: "Name of the pet",
+                  name: "name",
+                  title: "Name",
+                },
+              ],
+              title: "Create a pet",
+              type: "query",
             },
           ],
         },
@@ -187,37 +242,57 @@ describe("manifestUpdater", () => {
 describe("generateCommands", () => {
   const adaptiveCardFolder = "/path/to/your/adaptiveCards";
   const manifestPath = "/path/to/your/manifest.json";
-  const spec: any = {
-    paths: {
-      "/pets": {
-        get: {
-          operationId: "getPets",
-          summary: "Get all pets",
-          parameters: [{ name: "limit", description: "Maximum number of pets to return" }],
-        },
-      },
-      "/pets/{id}": {
-        get: {
-          operationId: "getPetById",
-          summary: "Get a pet by ID",
-          parameters: [{ name: "id", description: "ID of the pet to retrieve" }],
-        },
-      },
-      "/owners/{ownerId}/pets": {
-        get: {
-          operationId: "getOwnerPets",
-          summary: "Get all pets owned by an owner",
-          parameters: [{ name: "ownerId", description: "ID of the owner" }],
-        },
-      },
-    },
-  };
 
   afterEach(() => {
     sinon.restore();
   });
 
-  it("should generate commands for each GET operation in the spec", async () => {
+  it("should generate commands for each GET/POST operation in the spec", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            parameters: [{ name: "limit", description: "Maximum number of pets to return" }],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            parameters: [{ name: "id", description: "ID of the pet", required: false }],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/pets/{id}": {
+          get: {
+            operationId: "getPetById",
+            summary: "Get a pet by ID",
+            parameters: [{ name: "id", description: "ID of the pet to retrieve" }],
+          },
+        },
+        "/owners/{ownerId}/pets": {
+          get: {
+            operationId: "getOwnerPets",
+            summary: "Get all pets owned by an owner",
+            parameters: [{ name: "ownerId", description: "ID of the owner" }],
+          },
+        },
+      },
+    };
     sinon.stub(fs, "pathExists").resolves(true);
 
     const expectedCommands = [
@@ -234,6 +309,25 @@ describe("generateCommands", () => {
       {
         context: ["compose"],
         type: "query",
+        title: "Create a pet",
+        id: "createPet",
+        parameters: [
+          {
+            description: "ID of the pet",
+            name: "id",
+            title: "Id",
+          },
+          {
+            description: "Name of the pet",
+            name: "name",
+            title: "Name",
+          },
+        ],
+        apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+      },
+      {
+        context: ["compose"],
+        type: "query",
         title: "Get a pet by ID",
         id: "getPetById",
         parameters: [{ name: "id", title: "Id", description: "ID of the pet to retrieve" }],
@@ -246,6 +340,51 @@ describe("generateCommands", () => {
         id: "getOwnerPets",
         parameters: [{ name: "ownerId", title: "OwnerId", description: "ID of the owner" }],
         apiResponseRenderingTemplateFile: "adaptiveCards/getOwnerPets.json",
+      },
+    ];
+
+    const result = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+
+    expect(result).to.deep.equal(expectedCommands);
+  });
+
+  it("should generate commands for POST operation with string schema", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "string",
+                    description: "Name of the pet",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const expectedCommands = [
+      {
+        context: ["compose"],
+        type: "query",
+        title: "Create a pet",
+        id: "createPet",
+        parameters: [
+          {
+            description: "Name of the pet",
+            name: "requestBody",
+            title: "RequestBody",
+          },
+        ],
+        apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
       },
     ];
 

@@ -266,9 +266,9 @@ describe("aadAppUpdate", async () => {
         outputFilePath: path.join(outputRoot, "manifest.output.json"),
       };
 
-      const result = await updateAadAppDriver.run(args, mockedDriverContext);
+      const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-      expect(result.isOk()).to.be.true;
+      expect(result.result.isOk()).to.be.true;
     } finally {
       process.chdir(".."); // restore cwd
     }

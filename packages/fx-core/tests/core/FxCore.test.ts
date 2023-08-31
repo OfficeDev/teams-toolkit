@@ -107,7 +107,7 @@ describe("Core basic APIs", () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "run");
+    const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "execute");
     await core.deployAadManifest(inputs);
     sandbox.assert.calledOnce(runSpy);
     assert.isNotNull(runSpy.getCall(0).args[0]);
@@ -152,7 +152,9 @@ describe("Core basic APIs", () => {
     >;
     const openUrl = sandbox.spy(tools.ui, "openUrl");
     const appName = await mockV3Project();
-    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "execute")
+      .resolves({ result: new Ok(new Map()), summaries: [] });
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.AppName]: appName,
@@ -181,7 +183,9 @@ describe("Core basic APIs", () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Learn more"));
     sandbox.stub(tools.ui, "openUrl").resolves(ok(true));
     const appName = await mockV3Project();
-    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "execute")
+      .resolves({ result: new Ok(new Map()), summaries: [] });
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.AppName]: appName,
@@ -207,7 +211,9 @@ describe("Core basic APIs", () => {
       Promise<Result<string | undefined, FxError>>
     >;
     const appName = await mockV3Project();
-    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "execute")
+      .resolves({ result: new Ok(new Map()), summaries: [] });
     const inputs: Inputs = {
       platform: Platform.CLI,
       [QuestionNames.AppName]: appName,
@@ -250,7 +256,7 @@ describe("Core basic APIs", () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     sandbox
-      .stub(UpdateAadAppDriver.prototype, "run")
+      .stub(UpdateAadAppDriver.prototype, "execute")
       .throws(new UserError("error name", "fake_error", "fake_err_msg"));
     const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
     const res = await core.deployAadManifest(inputs);
@@ -277,18 +283,17 @@ describe("Core basic APIs", () => {
       stage: Stage.deployAad,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    sandbox
-      .stub(UpdateAadAppDriver.prototype, "run")
-      .resolves(
-        err(
-          new MissingEnvironmentVariablesError(
-            "aadApp/update",
-            "AAD_APP_OBJECT_ID",
-            "fake path",
-            "https://fake-help-link"
-          )
+    sandbox.stub(UpdateAadAppDriver.prototype, "execute").resolves({
+      result: err(
+        new MissingEnvironmentVariablesError(
+          "aadApp/update",
+          "AAD_APP_OBJECT_ID",
+          "fake path",
+          "https://fake-help-link"
         )
-      );
+      ),
+      summaries: [],
+    });
     const res = await core.deployAadManifest(inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {

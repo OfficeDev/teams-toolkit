@@ -274,6 +274,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
   });
 
   describe("setRegion", async () => {
+    let mockedEnvRestore: RestoreFn;
     afterEach(() => {
       sinon.restore();
     });
@@ -281,6 +282,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("set region", async () => {
       sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
       await setRegion("fakeToken");
+    });
+
+    it("INT env", async () => {
+      mockedEnvRestore = mockedEnv({ APP_STUDIO_ENV: "int" }, { clear: true });
+      sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
+      await setRegion("fakeToken");
+      mockedEnvRestore();
     });
   });
 

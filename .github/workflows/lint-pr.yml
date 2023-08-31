@@ -72,16 +72,9 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Setup Project
-        run: |
-          npm i -g pnpm
-          npm run setup
+      
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: prettier check files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}

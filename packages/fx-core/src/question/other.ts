@@ -226,7 +226,7 @@ function selectTeamsAppManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.TeamsAppManifestFilePath,
     cliName: "teams-manifest-file",
-    cliShortName: "tm",
+    cliShortName: "t",
     cliDescription:
       "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
@@ -361,7 +361,7 @@ function selectTeamsAppPackageQuestion(): SingleFileQuestion {
     cliDescription:
       "Specifies the zipped Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
     cliName: "app-package-file",
-    cliShortName: "pf",
+    cliShortName: "p",
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
       if (!inputs.projectPath) return undefined;
@@ -419,7 +419,7 @@ export class HubOptions {
 function selectM365HostQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.M365Host,
-    cliShortName: "mh",
+    cliShortName: "m",
     cliDescription: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     title: getLocalizedString("core.M365HostQuestion.title"),
     default: HubOptions.teams().id,
@@ -536,7 +536,7 @@ export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.AadAppManifestFilePath,
     cliName: "aad-manifest-file",
-    cliShortName: "am",
+    cliShortName: "a",
     cliDescription:
       "Specifies the Azure AD app manifest file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),

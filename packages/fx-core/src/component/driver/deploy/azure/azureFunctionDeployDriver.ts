@@ -27,19 +27,6 @@ export class AzureFunctionDeployDriver implements StepDriver {
   private static readonly SUMMARY_PREPARE = ["driver.deploy.notice.deployDryRunComplete"];
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const impl = new AzureZipDeployImpl(
-      args,
-      context,
-      AzureFunctionDeployDriver.SERVICE_NAME,
-      "https://aka.ms/teamsfx-actions/azure-functions-deploy",
-      AzureFunctionDeployDriver.SUMMARY,
-      AzureFunctionDeployDriver.SUMMARY_PREPARE
-    );
-    return (await impl.run()).result;
-  }
-
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const impl = new AzureZipDeployImpl(
       args,

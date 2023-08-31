@@ -31,9 +31,12 @@ jobs:
         with:
           node-version: 18
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Setup project
         run: |
-          npm install -g pnpm
           pnpm --filter=templates install
 
       - name: Verify

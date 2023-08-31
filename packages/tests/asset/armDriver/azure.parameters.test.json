@@ -4,6 +4,9 @@
     "parameters": {
       "resourceBaseName": {
         "value": "tab${{RESOURCE_SUFFIX}}"
+      },
+      "webAppSku": {
+        "value": "F1"
       }
     }
   }

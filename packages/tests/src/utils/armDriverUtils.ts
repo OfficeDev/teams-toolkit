@@ -32,6 +32,5 @@ export async function updateYml(projectPath: string): Promise<void> {
   const ymlPath = path.join(projectPath, "teamsapp.yml");
   let content = await fs.readFile(ymlPath, "utf-8");
   content = updateContent(content, key, replace);
-  console.log("the yaml content is: \n" + content);
   await fs.writeFileSync(ymlPath, content);
 }

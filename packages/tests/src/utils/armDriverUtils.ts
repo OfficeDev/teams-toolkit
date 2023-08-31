@@ -7,7 +7,9 @@ import { updateContent } from "./commonUtils";
 const jsonFileName = "azure.json";
 const jsonParametersName = "azure.parameters.test.json";
 
-export async function addJsonFileAndParamtersFile(projectPath: string) {
+export async function addJsonFileAndParamtersFile(
+  projectPath: string
+): Promise<void> {
   const srcFolder = path.join(__dirname, "../../asset/armDriver");
   const destFolder = path.join(projectPath, "infra");
   await fs.copyFile(
@@ -20,12 +22,12 @@ export async function addJsonFileAndParamtersFile(projectPath: string) {
   );
 }
 
-export async function updateYml(projectPath: string) {
+export async function updateYml(projectPath: string): Promise<void> {
   const key = "deploymentName: Create-resources-for-tab";
-  const replace = `deploymentName: Create-resources-for-tab
-        - path: ./infra/azure.json 
-          parameters: ./infra/azure.parameters.test.json
-          deploymentName: test-json-format
+  const replace = `
+      - path: ./infra/azure.json 
+        parameters: ./infra/azure.parameters.test.json
+        deploymentName: test-json-format
     `;
   const ymlPath = path.join(projectPath, "teamsapp.yml");
   let content = await fs.readFile(ymlPath, "utf-8");

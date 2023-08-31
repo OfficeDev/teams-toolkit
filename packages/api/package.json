@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "@azure/core-auth": "^1.4.0",
-    "@microsoft/teams-manifest": "^0.1.0",
+    "@microsoft/teams-manifest": "workspace:*",
     "axios": "^0.21.2",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",

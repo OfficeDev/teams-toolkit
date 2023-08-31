@@ -88,7 +88,7 @@
     "@feathersjs/hooks": "^0.6.5",
     "@microsoft/dev-tunnels-contracts": "~1.0.7360",
     "@microsoft/dev-tunnels-management": "~1.0.7360",
-    "@microsoft/teamsfx-api": "^0.22.3",
+    "@microsoft/teamsfx-api": "workspace:*",
     "@npmcli/arborist": "^4.2.0",
     "@types/proper-lockfile": "^4.1.1",
     "adm-zip": "^0.5.5",

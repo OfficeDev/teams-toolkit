@@ -6,22 +6,32 @@ import "./SampleGallery.scss";
 import * as React from "react";
 
 import { Icon } from "@fluentui/react";
+import Fuse from "fuse.js";
 
 import { Commands } from "../Commands";
 import { SampleCollection, SampleInfo } from "./ISamples";
 import OfflinePage from "./offlinePage";
 import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
+import SampleFilter from "./sampleFilter";
 
 export default class SampleGallery extends React.Component<
   unknown,
-  { samples: Array<SampleInfo>; loading: boolean; selectedSampleId?: string }
+  {
+    samples: Array<SampleInfo>;
+    loading: boolean;
+    query: string;
+    fuse: Fuse<SampleInfo>;
+    selectedSampleId?: string;
+  }
 > {
   constructor(props: unknown) {
     super(props);
     this.state = {
       samples: [],
       loading: true,
+      query: "",
+      fuse: new Fuse([]),
     };
   }
 
@@ -59,19 +69,32 @@ export default class SampleGallery extends React.Component<
       )[0];
       return <SampleDetailPage sample={selectedSample} selectSample={this.selectSample} />;
     } else {
+      const query = this.state.query.trim();
+      const filteredSamples =
+        query === ""
+          ? this.state.samples
+          : this.state.fuse.search(query).map((result) => result.item);
       return (
         <div className="sample-gallery">
           {titleSection}
           {this.state.samples.length === 0 ? (
             <OfflinePage />
           ) : (
-            <div className="sample-stack">
-              {this.state.samples.map((sample, index) => {
-                return (
-                  <SampleCard key={sample.id} sample={sample} selectSample={this.selectSample} />
-                );
-              })}
-            </div>
+            <>
+              <SampleFilter
+                query={this.state.query}
+                onQueryChange={(newQuery: string) => {
+                  this.setState({ query: newQuery });
+                }}
+              ></SampleFilter>
+              <div className="sample-stack">
+                {filteredSamples.map((sample) => {
+                  return (
+                    <SampleCard key={sample.id} sample={sample} selectSample={this.selectSample} />
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       );
@@ -85,6 +108,9 @@ export default class SampleGallery extends React.Component<
         const sampleCollection = event.data.data as SampleCollection;
         this.setState({
           samples: sampleCollection.samples,
+          fuse: new Fuse(sampleCollection.samples, {
+            keys: ["title", "shortDescription", "fullDescription", "tags"],
+          }),
           loading: false,
         });
         break;

@@ -22,3 +22,8 @@ export type SampleProps = {
   sample: SampleInfo;
   selectSample: (id: string) => void;
 };
+
+export type SampleFilterProps = {
+  query: string;
+  onQueryChange: (query: string) => void;
+};

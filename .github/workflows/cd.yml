@@ -291,12 +291,10 @@ jobs:
           command: |
             sleep 20
             cd ./packages/vscode-extension
-            rm -rf node_modules
-            npm install
             if [ "$PREID" == "beta" ]; then
-              npx vsce package --pre-release
+              pnpm vsce dlx package --no-dependencies --pre-release
             else
-              npx vsce package
+              pnpm vsce dlx package --no-dependencies
             fi
 
       - name: release stable VSCode extension to github

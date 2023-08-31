@@ -10,7 +10,7 @@ import { ListFormatOption, ShowDescriptionOption } from "../common";
 
 export const listTemplatesCommand: CLICommand = {
   name: "templates",
-  description: "List available Microsoft Teams App tempaltes.",
+  description: "List available Microsoft Teams application tempaltes.",
   options: [ListFormatOption, ShowDescriptionOption],
   defaultInteractiveOption: false,
   handler: (ctx) => {

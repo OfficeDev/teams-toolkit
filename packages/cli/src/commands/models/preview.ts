@@ -44,7 +44,6 @@ export const previewCommand: CLICommand = {
       shortName: "p",
       type: "string",
       description: `The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("${constants.defaultRunningPattern.source}"). If empty, teamsfx treats process start as ready signal.`,
-      required: true,
     },
     {
       name: "open-only",

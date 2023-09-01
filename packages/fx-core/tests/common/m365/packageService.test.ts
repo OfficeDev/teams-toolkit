@@ -497,4 +497,61 @@ describe("Package Service", () => {
     chai.assert.isDefined(actualError);
     chai.assert.isTrue(actualError?.message.includes("test-service-url-error"));
   });
+
+  it("getActiveExperiences happy path", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
+    axiosGetResponses["/catalog/v1/users/experiences"] = {
+      data: {
+        activeExperiences: ["foo", "bar"],
+      },
+    };
+
+    let packageService = new PackageService("test-endpoint");
+    let actualError: Error | undefined;
+    let result: string[] | undefined;
+    try {
+      result = await packageService.getActiveExperiences("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.deepEqual(result, ["foo", "bar"]);
+
+    packageService = new PackageService("test-endpoint", logger);
+    actualError = undefined;
+    try {
+      result = await packageService.getActiveExperiences("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.deepEqual(result, ["foo", "bar"]);
+  });
+
+  it("getActiveExperiences returns undefined on error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
+    axiosGetResponses["/catalog/v1/users/experiences"] = new Error("test-get");
+
+    const packageService = new PackageService("test-endpoint");
+    let actualError: Error | undefined;
+    let result: string[] | undefined;
+    try {
+      result = await packageService.getActiveExperiences("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.isUndefined(result);
+  });
 });

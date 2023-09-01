@@ -242,6 +242,34 @@ export class PackageService {
     }
   }
 
+  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
+  public async getActiveExperiences(token: string): Promise<string[] | undefined> {
+    try {
+      const serviceUrl = await this.getTitleServiceUrl(token);
+      this.logger?.debug(`Get active experiences from service URL ${serviceUrl} ...`);
+      const response = await this.axiosInstance.get("/catalog/v1/users/experiences", {
+        baseURL: serviceUrl,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const status = response.status;
+      const activeExperiences = response.data?.activeExperiences as string[];
+      this.logger?.debug(`(${status}) Active experiences: ${JSON.stringify(activeExperiences)}`);
+      return activeExperiences;
+    } catch (error: any) {
+      this.logger?.error("Fail to get active experiences.");
+      if (error.response) {
+        this.logger?.error(JSON.stringify(error.response.data));
+        this.traceError(error);
+      } else {
+        this.logger?.error(error.message);
+      }
+
+      return undefined;
+    }
+  }
+
   private traceError(error: any) {
     // add error details and trace to message
     const detail = JSON.stringify(error.response.data ?? {});

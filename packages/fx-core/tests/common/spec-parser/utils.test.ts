@@ -9,6 +9,7 @@ import os from "os";
 import * as util from "util";
 import "mocha";
 import {
+  checkPostBodyRequiredParameters,
   checkRequiredParameters,
   checkServerUrl,
   convertPathToCamelCase,
@@ -16,14 +17,15 @@ import {
   getResponseJson,
   getUrlProtocol,
   isSupportedApi,
-  isSupportedSchema,
   isYamlSpecFile,
   updateFirstLetter,
   validateServer,
+  resolveServerUrl,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { ErrorType } from "../../../src/common/spec-parser/interfaces";
+import { format } from "util";
 
 describe("utils", () => {
   describe("isYamlSpecFile", () => {
@@ -132,6 +134,7 @@ describe("utils", () => {
                 {
                   in: "query",
                   schema: { type: "string" },
+                  required: true,
                 },
               ],
               responses: {
@@ -158,7 +161,7 @@ describe("utils", () => {
       assert.strictEqual(result, true);
     });
 
-    it("should return true if method is POST, path is valid, and parameter is supported", () => {
+    it("should return true if method is POST, path is valid, and no required parameters", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -210,6 +213,205 @@ describe("utils", () => {
       assert.strictEqual(result, true);
     });
 
+    it("should return true if method is POST, path is valid, parameter is supported and only one required param in parameters", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                          required: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, true);
+    });
+
+    it("should return false if method is POST, path is valid, parameter is supported and both postBody and parameters contains required param", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                          required: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if method is POST, but requestBody contains unsupported parameter", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "array",
+                          items: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return true if method is POST, path is valid, parameter is supported and only one required param in postBody", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, true);
+    });
+
     it("should return false if method is GET, path is valid, parameter is supported, but response is empty", () => {
       const method = "GET";
       const path = "/users";
@@ -221,6 +423,7 @@ describe("utils", () => {
                 {
                   in: "query",
                   schema: { type: "string" },
+                  required: true,
                 },
               ],
               responses: {
@@ -464,74 +667,78 @@ describe("utils", () => {
     });
   });
 
-  describe("isSupportedSchema", () => {
-    it("should return true for an empty schema", () => {
+  describe("checkPostBodyRequiredParameters", () => {
+    it("should return 0 for an empty schema", () => {
       const schema = {};
-      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
+      const result = checkPostBodyRequiredParameters(schema as any);
+      assert.strictEqual(result, 0);
     });
 
-    it("should return true for supported schema types", () => {
-      const schema = { type: "string" };
-      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
-    });
-
-    it("should return false for unsupported schema types", () => {
-      const schema = { type: "array" };
-      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.false;
-    });
-
-    it("should return false for nested unsupported schema types", () => {
+    it("should return 1 if the schema has a required string property", () => {
       const schema = {
         type: "object",
         properties: {
-          prop1: { type: "string" },
-          prop2: { type: "array" },
+          name: {
+            type: "string",
+            required: true,
+          },
         },
       };
-      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.false;
+      const result = checkPostBodyRequiredParameters(schema as any);
+      assert.strictEqual(result, 1);
     });
 
-    it("should return true for nested supported schema types", () => {
+    it("should return 0 if the schema has an optional string property", () => {
       const schema = {
         type: "object",
         properties: {
-          prop1: { type: "string" },
-          prop2: { type: "integer" },
+          name: {
+            type: "string",
+            required: false,
+          },
         },
       };
-      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
+      const result = checkPostBodyRequiredParameters(schema as any);
+      assert.strictEqual(result, 0);
     });
 
-    it("should return false for complicated unsupported schema types", () => {
+    it("should return the correct count for a nested schema", () => {
       const schema = {
         type: "object",
         properties: {
-          prop1: { type: "string" },
-          prop2: {
+          name: {
+            type: "string",
+            required: true,
+          },
+          address: {
             type: "object",
             properties: {
-              prop3: { type: "array" },
+              street: {
+                type: "string",
+                required: true,
+              },
+              city: {
+                type: "string",
+                required: false,
+              },
             },
           },
         },
       };
-      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.false;
+      const result = checkPostBodyRequiredParameters(schema as any);
+      assert.strictEqual(result, 2);
     });
 
-    it("should return false for complicated unsupported schema types", () => {
+    it("should return NaN for an unsupported schema type", () => {
       const schema = {
-        type: "object",
-        properties: {
-          prop1: { type: "string" },
-          prop2: {
-            type: "object",
-            properties: {
-              prop3: { type: "string" },
-            },
-          },
+        type: "array",
+        items: {
+          type: "string",
+          required: true,
         },
       };
-      expect(isSupportedSchema(schema as OpenAPIV3.SchemaObject)).to.be.true;
+      const result = checkPostBodyRequiredParameters(schema as any);
+      assert.isNaN(result);
     });
   });
 
@@ -880,6 +1087,47 @@ describe("utils", () => {
       } as any;
       const json = getResponseJson(operationObject);
       expect(json).to.deep.equal({});
+    });
+  });
+
+  describe("resolveServerUrl", () => {
+    it("should replace one environment variables in the URL", () => {
+      process.env.OPENAPI_SERVER_URL = "https://localhost:3000/api";
+      const url = "${{OPENAPI_SERVER_URL}}";
+      const expectedUrl = "https://localhost:3000/api";
+      const resolvedUrl = resolveServerUrl(url);
+      assert.strictEqual(resolvedUrl, expectedUrl);
+    });
+
+    it("should throw an error if environment variable is not defined", () => {
+      delete process.env.OPENAPI_SERVER_URL;
+      const url = "${{OPENAPI_SERVER_URL}}";
+      const expectedUrl = "https://localhost:3000/api";
+      assert.throws(
+        () => resolveServerUrl(url),
+        Error,
+        format(ConstantString.ResolveServerUrlFailed, "OPENAPI_SERVER_URL")
+      );
+    });
+
+    it("should replace multiple environment variables in the URL", () => {
+      process.env.API_HOST = "localhost";
+      process.env.API_PORT = "3000";
+      const url = "http://${{API_HOST}}:${{API_PORT}}/api";
+      const expectedUrl = "http://localhost:3000/api";
+      const resolvedUrl = resolveServerUrl(url);
+      assert.strictEqual(resolvedUrl, expectedUrl);
+    });
+
+    it("should throw an error if one environment variable is not defined", () => {
+      delete process.env.API_PORT;
+      process.env.API_HOST = "localhost";
+      const url = "http://${{API_HOST}}:${{API_PORT}}/api";
+      assert.throws(
+        () => resolveServerUrl(url),
+        Error,
+        format(ConstantString.ResolveServerUrlFailed, "API_PORT")
+      );
     });
   });
 });

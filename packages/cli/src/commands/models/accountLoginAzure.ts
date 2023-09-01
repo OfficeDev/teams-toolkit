@@ -13,7 +13,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",
-  description: "Log in to Azure.",
+  description: "Log in to Azure account.",
   options: [
     {
       name: "tenant",

@@ -13,7 +13,7 @@ import { Inputs } from "@microsoft/teamsfx-api";
 export interface SPFxAddWebpartInputs extends Inputs {
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
-  /** @description Name for SharePoint Framework Web Part. */
+  /** @description Name for SharePoint Framework Web Part */
   "spfx-webpart-name"?: string;
   /** @description Select Teams manifest.json file */
   "manifest-path"?: string;

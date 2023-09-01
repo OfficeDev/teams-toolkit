@@ -46,6 +46,7 @@ import {
   updateTeamsAppCommand,
   upgradeCommand,
   validateCommand,
+  helpCommand,
 } from "../../src/commands/models";
 import AzureTokenProvider from "../../src/commonlib/azureLogin";
 import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
@@ -1027,6 +1028,19 @@ describe("CLI read-only commands", () => {
         telemetryProperties: {},
       };
       const res = await listSamplesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("helpCommand", async () => {
+    it("happy", async () => {
+      const ctx: CLIContext = {
+        command: { ...helpCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await helpCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

@@ -9,7 +9,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountLogoutCommand: CLICommand = {
   name: "logout",
-  description: "Log out of the selected cloud service.",
+  description: "Log out of Microsoft 365 or Azure account.",
   arguments: [
     {
       type: "string",

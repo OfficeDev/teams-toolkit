@@ -270,9 +270,9 @@ export class FxCore {
     };
     const Context: DriverContext = createDriverContext(inputs);
     setErrorContext({ component: "aadAppUpdate" });
-    const res = await updateAadClient.run(inputArgs, Context);
-    if (res.isErr()) {
-      return err(res.error);
+    const res = await updateAadClient.execute(inputArgs, Context);
+    if (res.result.isErr()) {
+      return err(res.result.error);
     }
     if (Context.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
@@ -552,7 +552,7 @@ export class FxCore {
     const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, undefined, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

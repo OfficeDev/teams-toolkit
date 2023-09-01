@@ -8,7 +8,7 @@ import { EnvOption, ProjectFolderOption } from "../common";
 
 export const packageCommand: CLICommand = {
   name: "package",
-  description: "Build your Teams app into a package for publishing.",
+  description: "Build your Microsoft Teams app into a package for publishing.",
   options: [
     ...SelectTeamsManifestOptions,
     {

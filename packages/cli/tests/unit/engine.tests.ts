@@ -27,7 +27,12 @@ import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 import { logger } from "../../src/commonlib/logger";
-import { InvalidChoiceError, UnknownOptionError } from "../../src/error";
+import {
+  InvalidChoiceError,
+  UnknownArgumentError,
+  UnknownCommandError,
+  UnknownOptionError,
+} from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
@@ -187,6 +192,52 @@ describe("CLI Engine", () => {
       assert.isTrue(result.isOk());
       assert.equal(ctx.optionValues["option1"], true);
     });
+    it("UnknownCommandError", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        options: [
+          {
+            type: "boolean",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["abc"]);
+      assert.isTrue(result.isErr() && result.error instanceof UnknownCommandError);
+    });
+    it("UnknownArgumentError", async () => {
+      const command: CLIFoundCommand = {
+        name: "test",
+        fullName: "test",
+        description: "test command",
+        arguments: [
+          {
+            type: "boolean",
+            name: "option1",
+            description: "test option",
+          },
+        ],
+      };
+      const ctx: CLIContext = {
+        command: command,
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const result = engine.parseArgs(ctx, rootCommand, ["abc", "def"]);
+      assert.isTrue(result.isErr() && result.error instanceof UnknownArgumentError);
+    });
   });
   describe("validateOption", async () => {
     it("InvalidChoiceError", async () => {
@@ -205,9 +256,36 @@ describe("CLI Engine", () => {
       assert.isTrue(result.isErr() && result.error instanceof InvalidChoiceError);
     });
   });
+  describe("isTelemetryEnabled", async () => {
+    it("true", async () => {
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = engine.isTelemetryEnabled(ctx);
+      assert.isTrue(res);
+    });
+    it("true", async () => {
+      const res = engine.isTelemetryEnabled();
+      assert.isTrue(res);
+    });
+    it("false", async () => {
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: {},
+        globalOptionValues: { telemetry: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = engine.isTelemetryEnabled(ctx);
+      assert.isFalse(res);
+    });
+  });
   describe("processResult", async () => {
     it("sendTelemetryErrorEvent", async () => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(true));
       const sendTelemetryErrorEventStub = sandbox
         .stub(CliTelemetry, "sendTelemetryErrorEvent")
         .returns();
@@ -219,8 +297,32 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      await engine.processResult(ctx, new InputValidationError("test", "no reason"));
+      engine.processResult(ctx, new InputValidationError("test", "no reason"));
       assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
+    });
+    it("sendTelemetryEvent", async () => {
+      const sendTelemetryEventStub = sandbox.stub(CliTelemetry, "sendTelemetryEvent").returns();
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: { env: "dev" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      engine.processResult(ctx, undefined);
+      assert.isTrue(sendTelemetryEventStub.calledOnce);
+    });
+    it("skip telemetry", async () => {
+      const sendTelemetryEventStub = sandbox.stub(CliTelemetry, "sendTelemetryEvent").returns();
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: {},
+        globalOptionValues: { telemetry: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      engine.processResult(ctx, undefined);
+      assert.isTrue(sendTelemetryEventStub.callCount === 0);
     });
   });
   describe("start", async () => {
@@ -472,20 +574,6 @@ describe("CLI Engine", () => {
       const stub = sandbox.stub(logger, "info").resolves();
       engine.printError(new UserCancelError("test"));
       assert.isTrue(stub.called);
-    });
-  });
-  describe("isUserSettingsTelemetryEnable", async () => {
-    it("error", async () => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(err(new UserCancelError()));
-      const res = engine.isUserSettingsTelemetryEnable();
-      assert.isTrue(res);
-    });
-  });
-  describe("isUserSettingsInteractive", async () => {
-    it("error", async () => {
-      sandbox.stub(UserSettings, "getInteractiveSetting").returns(err(new UserCancelError()));
-      const res = engine.isUserSettingsInteractive();
-      assert.isTrue(res);
     });
   });
 });

@@ -26,7 +26,9 @@ describe("manifestUpdater", () => {
         get: {
           operationId: "getPets",
           summary: "Get all pets",
-          parameters: [{ name: "limit", description: "Maximum number of pets to return" }],
+          parameters: [
+            { name: "limit", description: "Maximum number of pets to return", required: true },
+          ],
         },
         post: {
           operationId: "createPet",
@@ -40,6 +42,7 @@ describe("manifestUpdater", () => {
                     name: {
                       type: "string",
                       description: "Name of the pet",
+                      required: true,
                     },
                   },
                 },
@@ -254,7 +257,9 @@ describe("generateCommands", () => {
           get: {
             operationId: "getPets",
             summary: "Get all pets",
-            parameters: [{ name: "limit", description: "Maximum number of pets to return" }],
+            parameters: [
+              { name: "limit", description: "Maximum number of pets to return", required: true },
+            ],
           },
           post: {
             operationId: "createPet",
@@ -269,6 +274,7 @@ describe("generateCommands", () => {
                       name: {
                         type: "string",
                         description: "Name of the pet",
+                        required: true,
                       },
                     },
                   },
@@ -281,14 +287,14 @@ describe("generateCommands", () => {
           get: {
             operationId: "getPetById",
             summary: "Get a pet by ID",
-            parameters: [{ name: "id", description: "ID of the pet to retrieve" }],
+            parameters: [{ name: "id", description: "ID of the pet to retrieve", required: true }],
           },
         },
         "/owners/{ownerId}/pets": {
           get: {
             operationId: "getOwnerPets",
             summary: "Get all pets owned by an owner",
-            parameters: [{ name: "ownerId", description: "ID of the owner" }],
+            parameters: [{ name: "ownerId", description: "ID of the owner", required: true }],
           },
         },
       },
@@ -312,11 +318,6 @@ describe("generateCommands", () => {
         title: "Create a pet",
         id: "createPet",
         parameters: [
-          {
-            description: "ID of the pet",
-            name: "id",
-            title: "Id",
-          },
           {
             description: "Name of the pet",
             name: "name",
@@ -348,6 +349,101 @@ describe("generateCommands", () => {
     expect(result).to.deep.equal(expectedCommands);
   });
 
+  it("should not generate commands for each GET/POST operation in the spec if parameter is not required", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            parameters: [
+              { name: "limit", description: "Maximum number of pets to return", required: false },
+              { name: "id", description: "ID of the pet", required: false },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            parameters: [{ name: "id", description: "ID of the pet", required: false }],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                        required: false,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const expectedCommands = [
+      {
+        context: ["compose"],
+        type: "query",
+        title: "Get all pets",
+        id: "getPets",
+        parameters: [],
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+      },
+      {
+        context: ["compose"],
+        type: "query",
+        title: "Create a pet",
+        id: "createPet",
+        parameters: [],
+        apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+      },
+    ];
+
+    const result = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+
+    expect(result).to.deep.equal(expectedCommands);
+  });
+
+  it("should only generate commands for GET operation with required parameter", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            parameters: [
+              { name: "limit", description: "Maximum number of pets to return", required: false },
+              { name: "id", description: "ID of the pet", required: true },
+            ],
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const expectedCommands = [
+      {
+        context: ["compose"],
+        type: "query",
+        title: "Get all pets",
+        id: "getPets",
+        parameters: [{ name: "id", title: "Id", description: "ID of the pet" }],
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+      },
+    ];
+
+    const result = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+
+    expect(result).to.deep.equal(expectedCommands);
+  });
+
   it("should generate commands for POST operation with string schema", async () => {
     const spec: any = {
       paths: {
@@ -361,6 +457,7 @@ describe("generateCommands", () => {
                   schema: {
                     type: "string",
                     description: "Name of the pet",
+                    required: true,
                   },
                 },
               },

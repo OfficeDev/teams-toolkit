@@ -72,44 +72,50 @@ export class ScratchOptions {
 }
 
 export class ProjectTypeOptions {
-  static tab(): OptionItem {
+  static tab(platform?: Platform): OptionItem {
     return {
       id: "tab-type",
-      label: `$(browser) ${getLocalizedString("core.TabOption.label")}`,
+      label: `${platform === Platform.VSCode ? "$(browser) " : ""}${getLocalizedString(
+        "core.TabOption.label"
+      )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.tab.detail"),
     };
   }
 
-  static bot(): OptionItem {
+  static bot(platform?: Platform): OptionItem {
     return {
       id: "bot-type",
-      label: `$(hubot) ${getLocalizedString("core.createProjectQuestion.projectType.bot.label")}`,
+      label: `${platform === Platform.VSCode ? "$(hubot) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.bot.label"
+      )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.bot.detail"),
     };
   }
 
-  static me(): OptionItem {
+  static me(platform?: Platform): OptionItem {
     return {
       id: "me-type",
-      label: `$(symbol-keyword) ${getLocalizedString("core.MessageExtensionOption.label")}`,
+      label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
+        "core.MessageExtensionOption.label"
+      )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
     };
   }
 
-  static outlookAddin(): OptionItem {
+  static outlookAddin(platform?: Platform): OptionItem {
     return {
       id: "outlook-addin-type",
-      label: `$(mail) ${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(mail) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.outlookAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
     };
   }
 
-  static copilotPlugin(): OptionItem {
+  static copilotPlugin(platform?: Platform): OptionItem {
     return {
       id: "copilot-plugin-type",
-      label: `$(sparkle) ${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.copilotPlugin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
@@ -119,10 +125,10 @@ export class ProjectTypeOptions {
 
 function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
-    ProjectTypeOptions.bot(),
-    ProjectTypeOptions.tab(),
-    ProjectTypeOptions.me(),
-    ProjectTypeOptions.outlookAddin(),
+    ProjectTypeOptions.bot(Platform.CLI),
+    ProjectTypeOptions.tab(Platform.CLI),
+    ProjectTypeOptions.me(Platform.CLI),
+    ProjectTypeOptions.outlookAddin(Platform.CLI),
   ];
   return {
     name: QuestionNames.ProjectType,
@@ -134,16 +140,16 @@ function projectTypeQuestion(): SingleSelectQuestion {
 
       if (isCopilotPluginEnabled()) {
         staticOptions = [
-          ProjectTypeOptions.copilotPlugin(),
-          ProjectTypeOptions.bot(),
-          ProjectTypeOptions.tab(),
-          ProjectTypeOptions.me(),
+          ProjectTypeOptions.copilotPlugin(inputs.platform),
+          ProjectTypeOptions.bot(inputs.platform),
+          ProjectTypeOptions.tab(inputs.platform),
+          ProjectTypeOptions.me(inputs.platform),
         ];
       } else {
         staticOptions = [
-          ProjectTypeOptions.bot(),
-          ProjectTypeOptions.tab(),
-          ProjectTypeOptions.me(),
+          ProjectTypeOptions.bot(inputs.platform),
+          ProjectTypeOptions.tab(inputs.platform),
+          ProjectTypeOptions.me(inputs.platform),
         ];
       }
 
@@ -153,7 +159,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        staticOptions.push(ProjectTypeOptions.outlookAddin());
+        staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
       }
       return staticOptions;
     },
@@ -539,7 +545,7 @@ function capabilityQuestion(): SingleSelectQuestion {
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
     },
-    cliDescription: "Specifies the Teams App capability.",
+    cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
     cliChoiceListCommand: "teamsfx list templates",
@@ -847,7 +853,8 @@ export function SPFxWebpartNameQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.SPFxWebpartName,
     cliShortName: "w",
-    title: "Name for SharePoint Framework Web Part.",
+    cliDescription: "Name for SharePoint Framework Web Part.",
+    title: getLocalizedString("plugins.spfx.questions.webpartName"),
     default: Constants.DEFAULT_WEBPART_NAME,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
@@ -1093,7 +1100,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.Samples,
     cliName: "sample-name",
-    cliDescription: "Specifies the Teams App sample name.",
+    cliDescription: "Specifies the Microsoft Teams App sample name.",
     cliChoiceListCommand: "teamsfx list samples",
     skipValidation: true,
     cliType: "argument",
@@ -1465,6 +1472,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     staticOptions: [],
     validation: {
       minItems: 1,
+      maxItems: 10,
     },
     dynamicOptions: (inputs: Inputs) => {
       if (!inputs.supportedApisFromApiSpec) {
@@ -1617,7 +1625,8 @@ export function createProjectQuestionNode(): IQTreeNode {
         data: runtimeQuestion(),
       },
       {
-        condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
+        condition: (inputs: Inputs) =>
+          inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI,
         data: projectTypeQuestion(),
         cliOptionDisabled: "self",
       },

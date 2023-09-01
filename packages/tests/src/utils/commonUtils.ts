@@ -28,15 +28,9 @@ export async function execAsyncWithRetry(
   while (retries > 0) {
     retries--;
     try {
-      const result = await Executor.execute(
-        command,
-        options.cwd ? options.cwd : "",
-        options.env
-      );
+      const result = await Executor.execute(command, options.cwd ? options.cwd : "", options.env);
     } catch (e: any) {
-      console.log(
-        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-      );
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
       if (e.killed && e.signal == "SIGTERM") {
         console.log(`Command ${command} killed due to timeout`);
       }
@@ -64,10 +58,7 @@ export function isInsiderPreviewEnabled(): boolean {
   }
 }
 
-export async function updateProjectAppName(
-  projectPath: string,
-  appName: string
-) {
+export async function updateProjectAppName(projectPath: string, appName: string) {
   const projectDataFile = path.join(".fx", "configs", "projectSettings.json");
   const configFilePath = path.resolve(projectPath, projectDataFile);
   const context = await fs.readJSON(configFilePath);
@@ -80,11 +71,7 @@ export async function updateAppShortName(
   appName: string,
   envName: "local" | "dev"
 ) {
-  const manifestDataFile = path.join(
-    ".fx",
-    "configs",
-    `config.${envName}.json`
-  );
+  const manifestDataFile = path.join(".fx", "configs", `config.${envName}.json`);
   const configFilePath = path.resolve(projectPath, manifestDataFile);
   const context = await fs.readJSON(configFilePath);
   context["manifest"]["appName"]["short"] = appName;
@@ -96,18 +83,11 @@ export async function getBotSiteEndpoint(
   envName = "dev",
   endpoint = "BOT_DOMAIN"
 ): Promise<string | undefined> {
-  const userDataFile = path.join(
-    TestFilePath.configurationFolder,
-    `.env.${envName}`
-  );
+  const userDataFile = path.join(TestFilePath.configurationFolder, `.env.${envName}`);
   const configFilePath = path.resolve(projectPath, userDataFile);
-  const context = dotenvUtil.deserialize(
-    await fs.readFile(configFilePath, { encoding: "utf8" })
-  );
+  const context = dotenvUtil.deserialize(await fs.readFile(configFilePath, { encoding: "utf8" }));
   const endpointUrl = context.obj[`${endpoint}`];
-  const result = endpointUrl.includes("https://")
-    ? endpointUrl
-    : "https://" + endpointUrl;
+  const result = endpointUrl.includes("https://") ? endpointUrl : "https://" + endpointUrl;
   console.log(`BotSiteEndpoint: ${result}`);
   return typeof result === "string" ? result : undefined;
 }
@@ -117,10 +97,7 @@ export function validateFileExist(projectPath: string, relativePath: string) {
   chai.expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
 }
 
-export async function updateAadTemplate(
-  projectPath: string,
-  displayNameSuffix = "-updated"
-) {
+export async function updateAadTemplate(projectPath: string, displayNameSuffix = "-updated") {
   const filePath = path.resolve(projectPath, "aad.manifest.json");
   const context = await fs.readJSON(filePath);
   const updatedAppName = context["name"] + displayNameSuffix;
@@ -162,11 +139,7 @@ export function killNgrok(): Promise<any> {
   return execAsync(command);
 }
 
-export function editDotEnvFile(
-  filePath: string,
-  key: string,
-  value: string
-): void {
+export function editDotEnvFile(filePath: string, key: string, value: string): void {
   try {
     const envFileContent: string = fs.readFileSync(filePath, "utf-8");
     const envVars: { [key: string]: string } = envFileContent
@@ -218,28 +191,16 @@ export async function updateFunctionAuthorizationPolicy(
   version: "4.2.5" | "4.0.0" | "3.2.0",
   projectPath: string
 ): Promise<void> {
-  const fileName =
-    version == "4.2.5" ? "azureFunctionApiConfig.bicep" : "function.bicep";
-  const locationValue1 =
-    version == "3.2.0" ? locationValue1_320 : policySnippets.locationValue1;
-  const functionBicepPath = path.join(
-    projectPath,
-    "templates",
-    "azure",
-    "teamsFx",
-    fileName
-  );
+  const fileName = version == "4.2.5" ? "azureFunctionApiConfig.bicep" : "function.bicep";
+  const locationValue1 = version == "3.2.0" ? locationValue1_320 : policySnippets.locationValue1;
+  const functionBicepPath = path.join(projectPath, "templates", "azure", "teamsFx", fileName);
   let content = await fs.readFile(functionBicepPath, "utf-8");
   content = updateContent(content, policySnippets.locationKey1, locationValue1);
-  content = updateContent(
-    content,
-    policySnippets.locationKey2,
-    policySnippets.locationValue2
-  );
+  content = updateContent(content, policySnippets.locationKey2, policySnippets.locationValue2);
   await fs.writeFileSync(functionBicepPath, content);
 }
 
-function updateContent(content: string, key: string, value: string): string {
+export function updateContent(content: string, key: string, value: string): string {
   const index = findNextEndLineIndexOfWord(content, key);
   const head = content.substring(0, index);
   const tail = content.substring(index + 1);
@@ -252,9 +213,7 @@ function findNextEndLineIndexOfWord(content: string, key: string): number {
   return result;
 }
 
-export async function updateDeverloperInManifestFile(
-  projectPath: string
-): Promise<void> {
+export async function updateDeverloperInManifestFile(projectPath: string): Promise<void> {
   const manifestFile = path.join(projectPath, "appPackage", `manifest.json`);
   const context = await fs.readJSON(manifestFile);
   //const context = await fs.readJSON(azureParametersFilePath);

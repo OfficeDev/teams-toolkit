@@ -398,7 +398,7 @@ describe("utils", () => {
         tenantId: "mockTenantId",
         messagingExtensions: [
           {
-            type: "apiBased",
+            messagingExtensionServiceType: "ApiBased",
             commands: [],
             canUpdateConfiguration: false,
             messageHandlers: [],

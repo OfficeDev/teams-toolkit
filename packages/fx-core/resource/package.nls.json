@@ -65,6 +65,7 @@
   "core.collaboration.Permission": ", Permission: ",
   "core.developerPortal.scaffold.CannotFindManifest": "Could not find manifest from the downloaded package for teams app %s.",
   "plugins.spfx.questions.framework.title": "Framework",
+  "plugins.spfx.questions.webpartName": "Name for SharePoint Framework Web Part",
   "plugins.spfx.questions.webpartName.error.duplicate": "The folder %s already exists. Choose a different name for your component.",
   "plugins.spfx.questions.webpartName.error.notMatch": "%s doesn't match pattern: %s",
   "plugins.spfx.questions.packageSelect.title": "SharePoint Framework",

@@ -566,7 +566,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
 
       if (inputs.nonInteractive && inputs.platform === Platform.CLI) {
         //cli non-interactive mode the choice list is the same as staticOptions
-        return CapabilityOptions.staticAll();
+        return CapabilityOptions.all(inputs);
       }
 
       // nodejs capabilities
@@ -582,16 +582,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
         return CapabilityOptions.copilotPlugins();
       } else {
-        const capabilityOptions = [
-          ...CapabilityOptions.bots(inputs),
-          ...CapabilityOptions.tabs(),
-          ...CapabilityOptions.mes(),
-        ];
-
-        if (isCopilotPluginEnabled()) {
-          capabilityOptions.push(CapabilityOptions.copilotPluginCli());
-        }
-        return capabilityOptions;
+        return CapabilityOptions.all(inputs);
       }
     },
     placeholder: (inputs: Inputs) => {

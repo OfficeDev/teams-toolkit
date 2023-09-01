@@ -1530,7 +1530,10 @@ describe("scaffold question", () => {
     it("cli non-interactive", () => {
       const question = capabilityQuestion();
       const options = question.dynamicOptions!({ platform: Platform.CLI, nonInteractive: true });
-      assert.deepEqual(options, question.staticOptions);
+      assert.deepEqual(
+        options,
+        CapabilityOptions.all({ platform: Platform.CLI, nonInteractive: true })
+      );
     });
   });
   describe("programmingLanguageQuestion", () => {

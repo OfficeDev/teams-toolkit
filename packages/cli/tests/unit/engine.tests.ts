@@ -268,6 +268,10 @@ describe("CLI Engine", () => {
       const res = engine.isTelemetryEnabled(ctx);
       assert.isTrue(res);
     });
+    it("true", async () => {
+      const res = engine.isTelemetryEnabled();
+      assert.isTrue(res);
+    });
     it("false", async () => {
       const ctx: CLIContext = {
         command: { ...getCreateCommand(), fullName: "abc" },

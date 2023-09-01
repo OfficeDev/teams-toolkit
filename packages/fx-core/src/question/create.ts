@@ -523,7 +523,7 @@ export class CapabilityOptions {
   }
 }
 
-function capabilityQuestion(): SingleSelectQuestion {
+export function capabilityQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.Capabilities,
     title: (inputs: Inputs) => {
@@ -563,6 +563,12 @@ function capabilityQuestion(): SingleSelectQuestion {
       if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
         return CapabilityOptions.dotnetCaps(inputs);
       }
+
+      if (inputs.nonInteractive && inputs.platform === Platform.CLI) {
+        //cli non-interactive mode the choice list is the same as staticOptions
+        return CapabilityOptions.staticAll();
+      }
+
       // nodejs capabilities
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.bot().id) {

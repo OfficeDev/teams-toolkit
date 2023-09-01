@@ -36,6 +36,7 @@ import {
   apiOperationQuestion,
   apiSpecLocationQuestion,
   appNameQuestion,
+  capabilityQuestion,
   createProjectQuestionNode,
   createSampleProjectQuestionNode,
   folderQuestion,
@@ -1526,8 +1527,12 @@ describe("scaffold question", () => {
         CapabilityOptions.collectFormMe(),
       ]);
     });
+    it("cli non-interactive", () => {
+      const question = capabilityQuestion();
+      const options = question.dynamicOptions!({ platform: Platform.CLI, nonInteractive: true });
+      assert.deepEqual(options, question.staticOptions);
+    });
   });
-
   describe("programmingLanguageQuestion", () => {
     const question = programmingLanguageQuestion();
     it("office addin: should have typescript as options", async () => {

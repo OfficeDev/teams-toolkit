@@ -219,7 +219,7 @@ export function resolveServerUrl(url: string): string {
 export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[] {
   const errors: ErrorResult[] = [];
 
-  let serverUrl = servers[0].url;
+  let serverUrl;
   try {
     serverUrl = resolveServerUrl(servers[0].url);
   } catch (err) {

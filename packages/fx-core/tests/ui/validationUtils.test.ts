@@ -48,6 +48,20 @@ describe("ValidationUtils", () => {
       );
       assert.isDefined(res);
     });
+    it("non-interactive", async () => {
+      const res = await validationUtils.validateInputForMultipleSelectQuestion(
+        {
+          type: "multiSelect",
+          name: "name",
+          staticOptions: ["a", "b", "c"],
+          dynamicOptions: (inputs: Inputs) => ["a", "b", "c"],
+          title: "title",
+        },
+        ["d"],
+        { platform: Platform.VSCode, nonInteractive: true }
+      );
+      assert.isDefined(res);
+    });
   });
   describe("validateInputForSingleSelectQuestion", () => {
     it("should return undefined", async () => {
@@ -145,6 +159,21 @@ describe("ValidationUtils", () => {
         },
         { id: "a", label: "a" },
         { platform: Platform.VSCode }
+      );
+      assert.isDefined(res);
+    });
+    it("non-interactive", async () => {
+      const res = await validationUtils.validateInputForSingleSelectQuestion(
+        {
+          type: "singleSelect",
+          name: "name",
+          staticOptions: [],
+          dynamicOptions: (inputs: Inputs) => [],
+          title: "title",
+          returnObject: true,
+        },
+        { id: "a", label: "a" },
+        { platform: Platform.VSCode, nonInteractive: true }
       );
       assert.isDefined(res);
     });

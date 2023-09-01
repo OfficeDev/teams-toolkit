@@ -25,7 +25,7 @@ class ValidationUtils {
     inputs: Inputs
   ): Promise<string | undefined> {
     let options = question.staticOptions;
-    if (question.dynamicOptions) {
+    if (!inputs.nonInteractive && question.dynamicOptions) {
       options = await question.dynamicOptions(inputs);
     }
     return this.isAllowedValue(question.name, value, options, question.returnObject);
@@ -37,7 +37,7 @@ class ValidationUtils {
     inputs: Inputs
   ): Promise<string | undefined> {
     let options = question.staticOptions;
-    if (question.dynamicOptions) {
+    if (!inputs.nonInteractive && question.dynamicOptions) {
       options = await question.dynamicOptions(inputs);
     }
     for (const item of value) {

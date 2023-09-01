@@ -110,7 +110,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     // first priority: use single option as value
     if (question.type === "singleSelect" || question.type === "multiSelect") {
       if (question.skipSingleOption) {
-        const options = await loadOptions(question, inputs);
+        const options = question.staticOptions;
         if (options.length === 0) {
           return err(new EmptyOptionError(question.name, "questionVisitor"));
         }

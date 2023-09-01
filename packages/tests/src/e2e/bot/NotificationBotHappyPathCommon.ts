@@ -1,4 +1,6 @@
-import * as fs from "fs-extra";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 
 import { BotValidator } from "../../commonlib";

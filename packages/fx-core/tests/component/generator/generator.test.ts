@@ -54,6 +54,26 @@ const mockedSampleInfo: SampleConfig = {
   downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
 };
 
+// The sample prefix is present in the downloadurl of the external sample
+const mockedExternalSampleConfig = {
+  samples: [
+    {
+      id: "test",
+      onboardDate: new Date(),
+      title: "test-title",
+      shortDescription: "test-sd",
+      fullDescription: "test-fd",
+      types: [],
+      tags: [],
+      time: "",
+      configuration: "test-configuration",
+      suggested: false,
+      gifUrl: "",
+      downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/main/sample/test",
+    },
+  ],
+};
+
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
   const sandbox = createSandbox();
@@ -456,20 +476,31 @@ describe("Generator happy path", async () => {
     }
   });
 
-  /*
-  TODO: fix the wrong test
+  // TODO: fix the wrong test
   it("external sample", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    const sampleName = "bot-proactive-messaging-teamsfx";
+    sandbox.stub(sampleProvider, "SampleCollection").value(mockedExternalSampleConfig);
+
+    const sampleName = "test";
     const mockFileName = "test.txt";
     const mockFileData = "test data";
-    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
-    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    const foobarName = "foobar";
+    const foobarFileName = "foobar.txt";
+    const fileInfo = [
+      { type: "file", path: `sample/${sampleName}/${mockFileName}` },
+      { type: "file", path: `sample/${foobarName}/${mockFileName}` },
+    ];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } })
     axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const result = await Generator.generateSample(context, tmpDir, sampleName);
+    if (!fs.existsSync(tmpDir + "/" + mockFileName)) {
+      assert.fail("file creation failure");
+    }
+    if (fs.existsSync(tmpDir + "/" + foobarFileName)) {
+      assert.fail("file should not be created");
+    }
     assert.isTrue(result.isOk());
   });
-  */
 
   it("template", async () => {
     const templateName = "command-and-response";

@@ -15,7 +15,7 @@ export const errorIcon = new vscode.ThemeIcon(
   "error",
   new vscode.ThemeColor("notificationsErrorIcon.foreground")
 );
-export const infoInco = new vscode.ThemeIcon(
+export const infoIcon = new vscode.ThemeIcon(
   "info",
   new vscode.ThemeColor("notificationsInfoIcon.foreground")
 );

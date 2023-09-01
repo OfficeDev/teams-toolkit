@@ -9,7 +9,7 @@ import { checkSideloadingCallback } from "../../handlers";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
-import { errorIcon, infoInco, passIcon } from "./common";
+import { errorIcon, infoIcon, passIcon } from "./common";
 
 enum ContextValues {
   Normal = "checkSideloading",
@@ -39,7 +39,7 @@ export class SideloadingNode extends DynamicNode {
     }
     if (isSideloadingAllowed === undefined) {
       this.label = localize("teamstoolkit.accountTree.sideloadingStatusUnknown");
-      this.iconPath = infoInco;
+      this.iconPath = infoIcon;
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingStatusUnknownTooltip");
       this.contextValue = ContextValues.Normal;
       this.command = undefined;

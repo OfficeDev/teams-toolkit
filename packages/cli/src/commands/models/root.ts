@@ -5,7 +5,6 @@ import { FooterText } from "../../constants";
 import { getVersion } from "../../utils";
 import { accountCommand } from "./account";
 import { addCommand } from "./add";
-import { configCommand } from "./config";
 import { getCreateCommand } from "./create";
 import { deployCommand } from "./deploy";
 import { envCommand } from "./env";
@@ -46,7 +45,6 @@ export const rootCommand: CLICommand = {
     packageCommand,
     validateCommand,
     publishCommand,
-    configCommand,
     previewCommand,
     envCommand,
     permissionCommand,
@@ -88,6 +86,12 @@ export const rootCommand: CLICommand = {
       name: "verbose",
       description: "Print diagnostic information.",
       default: false,
+    },
+    {
+      type: "boolean",
+      name: "telemetry",
+      description: "Whether to enable telemetry.",
+      default: true,
     },
   ],
 };

@@ -46,7 +46,7 @@
                         "protocol": "http",
                         "access": "public",
                         "writeToEnvironmentFile": {
-                            "endpoint": "OPENAPI_SERVER_URL",
+                            "endpoint": "OPENAPI_SERVER_URL", // output tunnel endpoint as OPENAPI_SERVER_URL
                         }
                     }
                 ],

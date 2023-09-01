@@ -37,6 +37,7 @@ import {
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
   UnknownArgumentError,
+  UnknownCommandError,
   UnknownOptionError,
 } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -397,7 +398,11 @@ class CLIEngine {
           context.argumentValues.push(argument.value);
           argumentIndex++;
         } else {
-          return err(new UnknownArgumentError(command.fullName, token));
+          if (!command.arguments || command.arguments.length === 0) {
+            return err(new UnknownCommandError(token));
+          } else {
+            return err(new UnknownArgumentError(command.fullName, token));
+          }
         }
       }
     }

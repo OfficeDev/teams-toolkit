@@ -51,7 +51,7 @@ function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
 export function getCreateCommand(): CLICommand {
   return {
     name: "new",
-    description: "Create a new Teams application.",
+    description: "Create a new Microsoft Teams application.",
     options: [...filterOptionsIfNotCopilotPlugin(CreateProjectOptions)],
     examples: [
       {

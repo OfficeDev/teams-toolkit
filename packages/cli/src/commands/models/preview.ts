@@ -44,7 +44,6 @@ export const previewCommand: CLICommand = {
       shortName: "p",
       type: "string",
       description: `The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("${constants.defaultRunningPattern.source}"). If empty, teamsfx treats process start as ready signal.`,
-      required: true,
     },
     {
       name: "open-only",
@@ -59,7 +58,7 @@ export const previewCommand: CLICommand = {
       name: "browser",
       type: "string",
       shortName: "b",
-      description: "Select browser to open Teams web client.",
+      description: "Select browser to open Microsoft Teams web client.",
       choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
       default: constants.Browser.default,
       required: true,

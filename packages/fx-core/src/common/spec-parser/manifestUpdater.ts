@@ -55,11 +55,13 @@ export function generateParametersFromSchema(
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    parameters.push({
-      name: name,
-      title: updateFirstLetter(name),
-      description: schema.description ?? "",
-    });
+    if (schema.required) {
+      parameters.push({
+        name: name,
+        title: updateFirstLetter(name),
+        description: schema.description ?? "",
+      });
+    }
   } else if (schema.type === "object") {
     const { properties } = schema;
     for (const property in properties) {
@@ -98,11 +100,13 @@ export async function generateCommands(
 
               if (paramObject) {
                 paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
-                  parameters.push({
-                    name: param.name,
-                    title: updateFirstLetter(param.name),
-                    description: param.description ?? "",
-                  });
+                  if (param.required) {
+                    parameters.push({
+                      name: param.name,
+                      title: updateFirstLetter(param.name),
+                      description: param.description ?? "",
+                    });
+                  }
                 });
               }
 

@@ -9,6 +9,7 @@ import { OpenAPIV3 } from "openapi-types";
 import path from "path";
 import * as util from "util";
 import { ErrorResult, ErrorType } from "./interfaces";
+import { format } from "util";
 
 export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
@@ -66,10 +67,9 @@ export function checkRequiredParameters(
   return false;
 }
 
-export function isSupportedSchema(schema: OpenAPIV3.SchemaObject): boolean {
-  // we support schema: {}
+export function checkPostBodyRequiredParameters(schema: OpenAPIV3.SchemaObject): number {
   if (Object.keys(schema).length === 0) {
-    return true;
+    return 0;
   }
 
   if (
@@ -78,20 +78,19 @@ export function isSupportedSchema(schema: OpenAPIV3.SchemaObject): boolean {
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    return true;
-  } else if (schema.type === "array") {
-    return false;
+    return schema.required ? 1 : 0;
   } else if (schema.type === "object") {
     const { properties } = schema;
+    let count = 0;
     for (const property in properties) {
-      const result = isSupportedSchema(properties[property] as OpenAPIV3.SchemaObject);
-      if (!result) {
-        return false;
-      }
+      const result = checkPostBodyRequiredParameters(
+        properties[property] as OpenAPIV3.SchemaObject
+      );
+      count += result;
     }
-    return true;
+    return count;
   } else {
-    return false;
+    return NaN;
   }
 }
 
@@ -123,24 +122,29 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
 
       const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
       const requestJsonBody = requestBody?.content["application/json"];
-      const parameterLimit = requestJsonBody ? 0 : 1;
+
+      let requestBodyRequiredParamCount = 0;
+      if (requestJsonBody) {
+        const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+        requestBodyRequiredParamCount = checkPostBodyRequiredParameters(requestBodySchema);
+      }
+
+      if (isNaN(requestBodyRequiredParamCount) || requestBodyRequiredParamCount > 1) {
+        return false;
+      }
+
+      const parameterLimit = requestBodyRequiredParamCount === 0 ? 1 : 0;
 
       const responseJson = getResponseJson(operationObject);
       if (Object.keys(responseJson).length === 0) {
         return false;
       }
 
-      if ((!paramObject || paramObject.length === 0) && !requestBody) {
-        return true;
-      }
-
-      const valid = checkRequiredParameters(paramObject, parameterLimit);
-      if (valid) {
-        if (requestBody) {
-          const schema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-          const requestJsonBodySupported = isSupportedSchema(schema);
-          return requestJsonBodySupported;
-        }
+      if (
+        !paramObject ||
+        paramObject.length === 0 ||
+        checkRequiredParameters(paramObject, parameterLimit)
+      ) {
         return true;
       }
     }
@@ -195,9 +199,39 @@ export function getUrlProtocol(urlString: string): string | undefined {
   }
 }
 
+export function resolveServerUrl(url: string): string {
+  const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
+  let matches = placeHolderReg.exec(url);
+  let newUrl = url;
+  while (matches != null) {
+    const envVar = matches[1];
+    const envVal = process.env[envVar];
+    if (!envVal) {
+      throw new Error(format(ConstantString.ResolveServerUrlFailed, envVar));
+    } else {
+      newUrl = newUrl.replace(matches[0], envVal);
+    }
+    matches = placeHolderReg.exec(url);
+  }
+  return newUrl;
+}
+
 export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[] {
   const errors: ErrorResult[] = [];
-  const protocol = getUrlProtocol(servers[0].url);
+
+  let serverUrl;
+  try {
+    serverUrl = resolveServerUrl(servers[0].url);
+  } catch (err) {
+    errors.push({
+      type: ErrorType.ResolveServerUrlFailed,
+      content: (err as Error).message,
+      data: servers,
+    });
+    return errors;
+  }
+
+  const protocol = getUrlProtocol(serverUrl);
   if (!protocol) {
     // Relative server url is not supported
     errors.push({

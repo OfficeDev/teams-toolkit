@@ -19,8 +19,8 @@
         "full": "full name for {{appName}}"
     },
     "description": {
-        "short": "Easily search npm packages by name with our app.",
-        "full": "Effortlessly search and discover npm packages by name using our app. Streamline your package exploration process with ease."
+        "short": "Find npm package by name.",
+        "full": "Find npm package according to the npm package name."
     },
     "accentColor": "#FFFFFF",
     "bots": [],
@@ -29,19 +29,19 @@
             "botId": "${{BOT_ID}}",
             "commands": [
                 {
-                    "id": "searchQuery",
+                    "id": "findNpmPackage",
                     "context": [
                         "compose",
                         "commandBox"
                     ],
-                    "description": "Search for npm packages by name",
-                    "title": "Search",
+                    "description": "Find Npm package according to the Npm package name",
+                    "title": "Find Npm Package",
                     "type": "query",
                     "parameters": [
                         {
-                            "name": "npmPackageName",
-                            "title": "Npm package name for search",
-                            "description": "Name of the npm package to be searched",
+                            "name": "NpmPackageName",
+                            "title": "Npm Package Name",
+                            "description": "The Name of the npm package to be searched",
                             "inputType": "text"
                         }
                     ]

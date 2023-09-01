@@ -258,7 +258,6 @@ describe("CLI Engine", () => {
   });
   describe("processResult", async () => {
     it("sendTelemetryErrorEvent", async () => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(true));
       const sendTelemetryErrorEventStub = sandbox
         .stub(CliTelemetry, "sendTelemetryErrorEvent")
         .returns();
@@ -270,8 +269,21 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      await engine.processResult(ctx, new InputValidationError("test", "no reason"));
+      engine.processResult(ctx, new InputValidationError("test", "no reason"));
       assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
+    });
+    it("sendTelemetryEvent", async () => {
+      const sendTelemetryEventStub = sandbox.stub(CliTelemetry, "sendTelemetryEvent").returns();
+      sandbox.stub(logger, "outputError").returns();
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: { env: "dev" },
+        globalOptionValues: { telemetry: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      engine.processResult(ctx, undefined);
+      assert.isTrue(sendTelemetryEventStub.calledOnce);
     });
   });
   describe("start", async () => {

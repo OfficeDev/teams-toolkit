@@ -4,7 +4,7 @@ info:
   description: A simple service to manage repairs
   version: 1.0.0
 servers:
-  - url: {{OPENAPI_SERVER_URL}}
+  - url: ${{OPENAPI_SERVER_URL}}/api
     description: The repair api server
 paths:
   /repair:

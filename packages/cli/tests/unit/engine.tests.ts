@@ -256,6 +256,30 @@ describe("CLI Engine", () => {
       assert.isTrue(result.isErr() && result.error instanceof InvalidChoiceError);
     });
   });
+  describe("isTelemetryEnabled", async () => {
+    it("true", async () => {
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = engine.isTelemetryEnabled(ctx);
+      assert.isTrue(res);
+    });
+    it("false", async () => {
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: {},
+        globalOptionValues: { telemetry: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = engine.isTelemetryEnabled(ctx);
+      assert.isFalse(res);
+    });
+  });
   describe("processResult", async () => {
     it("sendTelemetryErrorEvent", async () => {
       const sendTelemetryErrorEventStub = sandbox

@@ -105,6 +105,10 @@ class CLIEngine {
     }
   }
 
+  isTelemetryEnabled(context?: CLIContext) {
+    return context?.globalOptionValues.telemetry === false ? false : true;
+  }
+
   async execute(
     context: CLIContext,
     root: CLICommand,
@@ -137,7 +141,7 @@ class CLIEngine {
       )}`
     );
 
-    const telemetryEnabled = context.globalOptionValues.telemetry === false ? false : true;
+    const telemetryEnabled = this.isTelemetryEnabled(context);
 
     // send start event
     if (telemetryEnabled && context.command.telemetry) {
@@ -555,7 +559,7 @@ class CLIEngine {
     return ok(undefined);
   }
   processResult(context?: CLIContext, fxError?: FxError): void {
-    const telemetryEnabled = context?.globalOptionValues.telemetry === false ? false : true;
+    const telemetryEnabled = this.isTelemetryEnabled(context);
     if (context && context.command.telemetry && telemetryEnabled) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(

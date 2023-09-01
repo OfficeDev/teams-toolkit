@@ -274,10 +274,21 @@ describe("CLI Engine", () => {
     });
     it("sendTelemetryEvent", async () => {
       const sendTelemetryEventStub = sandbox.stub(CliTelemetry, "sendTelemetryEvent").returns();
-      sandbox.stub(logger, "outputError").returns();
       const ctx: CLIContext = {
         command: { ...getCreateCommand(), fullName: "abc" },
         optionValues: { env: "dev" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      engine.processResult(ctx, undefined);
+      assert.isTrue(sendTelemetryEventStub.calledOnce);
+    });
+    it("skip telemetry", async () => {
+      const sendTelemetryEventStub = sandbox.stub(CliTelemetry, "sendTelemetryEvent").returns();
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: {},
         globalOptionValues: { telemetry: false },
         argumentValues: [],
         telemetryProperties: {},

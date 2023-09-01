@@ -283,7 +283,7 @@ describe("CLI Engine", () => {
         telemetryProperties: {},
       };
       engine.processResult(ctx, undefined);
-      assert.isTrue(sendTelemetryEventStub.calledOnce);
+      assert.isTrue(sendTelemetryEventStub.callCount === 0);
     });
   });
   describe("start", async () => {

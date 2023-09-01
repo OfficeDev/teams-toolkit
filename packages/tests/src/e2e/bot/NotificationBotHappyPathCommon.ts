@@ -1,8 +1,9 @@
-import * as fs from "fs-extra";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 
 import { BotValidator } from "../../commonlib";
-
 import {
   execAsync,
   execAsyncWithRetry,
@@ -11,11 +12,13 @@ import {
   getUniqueAppName,
   cleanUp,
   readContextMultiEnvV3,
+  createResourceGroup,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
-
 import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime } from "../../commonlib/constants";
+import { Executor } from "../../utils/executor";
+import { expect } from "chai";
 
 export function happyPathTest(runtime: Runtime): void {
   describe(`Provision for ${runtime}`, function () {
@@ -51,12 +54,11 @@ export function happyPathTest(runtime: Runtime): void {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       // provision
-      await execAsyncWithRetry(`teamsfx provision`, {
-        cwd: projectPath,
-        env: env,
-        timeout: 0,
-      });
-
+      const result = await createResourceGroup(appName + "-rg", "eastus");
+      expect(result).to.be.true;
+      process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+      const { success } = await Executor.provision(projectPath, envName);
+      expect(success).to.be.true;
       console.log(`[Successfully] provision for ${projectPath}`);
 
       {

@@ -20,10 +20,12 @@ import {
   isYamlSpecFile,
   updateFirstLetter,
   validateServer,
+  resolveServerUrl,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { ErrorType } from "../../../src/common/spec-parser/interfaces";
+import { format } from "util";
 
 describe("utils", () => {
   describe("isYamlSpecFile", () => {
@@ -1085,6 +1087,47 @@ describe("utils", () => {
       } as any;
       const json = getResponseJson(operationObject);
       expect(json).to.deep.equal({});
+    });
+  });
+
+  describe("resolveServerUrl", () => {
+    it("should replace one environment variables in the URL", () => {
+      process.env.OPENAPI_SERVER_URL = "https://localhost:3000/api";
+      const url = "${{OPENAPI_SERVER_URL}}";
+      const expectedUrl = "https://localhost:3000/api";
+      const resolvedUrl = resolveServerUrl(url);
+      assert.strictEqual(resolvedUrl, expectedUrl);
+    });
+
+    it("should throw an error if environment variable is not defined", () => {
+      delete process.env.OPENAPI_SERVER_URL;
+      const url = "${{OPENAPI_SERVER_URL}}";
+      const expectedUrl = "https://localhost:3000/api";
+      assert.throws(
+        () => resolveServerUrl(url),
+        Error,
+        format(ConstantString.ResolveServerUrlFailed, "OPENAPI_SERVER_URL")
+      );
+    });
+
+    it("should replace multiple environment variables in the URL", () => {
+      process.env.API_HOST = "localhost";
+      process.env.API_PORT = "3000";
+      const url = "http://${{API_HOST}}:${{API_PORT}}/api";
+      const expectedUrl = "http://localhost:3000/api";
+      const resolvedUrl = resolveServerUrl(url);
+      assert.strictEqual(resolvedUrl, expectedUrl);
+    });
+
+    it("should throw an error if one environment variable is not defined", () => {
+      delete process.env.API_PORT;
+      process.env.API_HOST = "localhost";
+      const url = "http://${{API_HOST}}:${{API_PORT}}/api";
+      assert.throws(
+        () => resolveServerUrl(url),
+        Error,
+        format(ConstantString.ResolveServerUrlFailed, "API_PORT")
+      );
     });
   });
 });

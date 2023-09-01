@@ -9,6 +9,7 @@ import { OpenAPIV3 } from "openapi-types";
 import path from "path";
 import * as util from "util";
 import { ErrorResult, ErrorType } from "./interfaces";
+import { format } from "util";
 
 export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
@@ -198,9 +199,39 @@ export function getUrlProtocol(urlString: string): string | undefined {
   }
 }
 
+export function resolveServerUrl(url: string): string {
+  const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
+  let matches = placeHolderReg.exec(url);
+  let newUrl = url;
+  while (matches != null) {
+    const envVar = matches[1];
+    const envVal = process.env[envVar];
+    if (!envVal) {
+      throw new Error(format(ConstantString.ResolveServerUrlFailed, envVar));
+    } else {
+      newUrl = newUrl.replace(matches[0], envVal);
+    }
+    matches = placeHolderReg.exec(url);
+  }
+  return newUrl;
+}
+
 export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[] {
   const errors: ErrorResult[] = [];
-  const protocol = getUrlProtocol(servers[0].url);
+
+  let serverUrl = servers[0].url;
+  try {
+    serverUrl = resolveServerUrl(servers[0].url);
+  } catch (err) {
+    errors.push({
+      type: ErrorType.ResolveServerUrlFailed,
+      content: (err as Error).message,
+      data: servers,
+    });
+    return errors;
+  }
+
+  const protocol = getUrlProtocol(serverUrl);
   if (!protocol) {
     // Relative server url is not supported
     errors.push({

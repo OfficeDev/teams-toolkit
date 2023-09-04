@@ -151,6 +151,7 @@ export class UnhandledUserError extends UserError {
       ),
       helpLink: helpLink,
       error: e,
+      categories: ["unhandled"],
     });
   }
 }

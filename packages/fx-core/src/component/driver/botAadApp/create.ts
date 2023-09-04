@@ -166,7 +166,7 @@ export class CreateBotAadAppDriver implements StepDriver {
     }
   }
 
-  private validateArgs(args: CreateBotAadAppArgs): void {
+  public validateArgs(args: CreateBotAadAppArgs): void {
     const invalidParameters: string[] = [];
     if (typeof args.name !== "string" || !args.name) {
       invalidParameters.push("name");

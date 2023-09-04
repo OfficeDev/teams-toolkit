@@ -523,6 +523,22 @@ describe("CLI commands", () => {
       const res = await updateTeamsAppCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
+
+    it("MissingRequiredOptionError", async () => {
+      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-path": "fakePath" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await updateTeamsAppCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.equal(res.error.name, MissingRequiredOptionError.name);
+      }
+    });
   });
   describe("upgradeCommand", async () => {
     it("success", async () => {

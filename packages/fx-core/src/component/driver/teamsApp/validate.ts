@@ -160,7 +160,20 @@ export class ValidateManifestDriver implements StepDriver {
         context.logProvider.info(validationSuccess);
       }
       if (args.showMessage) {
-        context.ui?.showMessage("info", validationSuccess, false);
+        if (context.platform === Platform.CLI) {
+          const outputMessage: Array<{ content: string; color: Colors }> = [
+            {
+              content:
+                "Teams Toolkit has completed checking your app package against validation rules. " +
+                summaryStr +
+                ".",
+              color: Colors.BRIGHT_GREEN,
+            },
+          ];
+          context.logProvider.info(outputMessage);
+        } else {
+          context.ui?.showMessage("info", validationSuccess, false);
+        }
       }
       return ok(new Map());
     }

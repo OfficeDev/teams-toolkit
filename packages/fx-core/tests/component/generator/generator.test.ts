@@ -476,11 +476,9 @@ describe("Generator happy path", async () => {
     }
   });
 
-  // TODO: fix the wrong test
   it("external sample", async () => {
     const axiosStub = sandbox.stub(axios, "get");
     sandbox.stub(sampleProvider, "SampleCollection").value(mockedExternalSampleConfig);
-
     const sampleName = "test";
     const mockFileName = "test.txt";
     const mockFileData = "test data";
@@ -488,7 +486,7 @@ describe("Generator happy path", async () => {
     const foobarFileName = "foobar.txt";
     const fileInfo = [
       { type: "file", path: `sample/${sampleName}/${mockFileName}` },
-      { type: "file", path: `sample/${foobarName}/${mockFileName}` },
+      { type: "file", path: `sample/${foobarName}/${foobarFileName}` },
     ];
     axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } })
     axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });

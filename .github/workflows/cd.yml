@@ -290,6 +290,7 @@ jobs:
           retry_on: error
           command: |
             sleep 20
+            npm run build
             cd ./packages/vscode-extension
             if [ "$PREID" == "beta" ]; then
               pnpm dlx vsce package --no-dependencies --pre-release

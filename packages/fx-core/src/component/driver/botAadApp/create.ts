@@ -148,14 +148,14 @@ export class CreateBotAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new HttpClientError(actionName, message, helpLink);
+          throw new HttpClientError(error, actionName, message, helpLink);
         } else {
-          throw new HttpServerError(actionName, message);
+          throw new HttpServerError(error, actionName, message);
         }
       }
 
       if (error.name === "AadCreateAppError") {
-        throw new UnhandledUserError(new Error(error.details[0]), actionName);
+        throw new UnhandledUserError(error, actionName);
       }
 
       const message = JSON.stringify(error);

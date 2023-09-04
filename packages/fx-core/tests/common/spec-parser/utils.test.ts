@@ -9,8 +9,8 @@ import os from "os";
 import * as util from "util";
 import "mocha";
 import {
-  checkPostBodyRequiredParameters,
-  checkRequiredParameters,
+  checkPostBody,
+  checkParameters,
   checkServerUrl,
   convertPathToCamelCase,
   getRelativePath,
@@ -319,7 +319,7 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
-    it("should return false if method is POST, but requestBody contains unsupported parameter", () => {
+    it("should return false if method is POST, but requestBody contains unsupported parameter and required", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -341,6 +341,7 @@ describe("utils", () => {
                       properties: {
                         name: {
                           type: "array",
+                          required: true,
                           items: {
                             type: "string",
                           },
@@ -513,7 +514,7 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
-    it("should return true if parameter length is 0", () => {
+    it("should return false if there is no parameters", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
@@ -537,10 +538,10 @@ describe("utils", () => {
         },
       };
       const result = isSupportedApi(method, path, spec as any);
-      assert.strictEqual(result, true);
+      assert.strictEqual(result, false);
     });
 
-    it("should return true if parameter is null", () => {
+    it("should return false if parameters is null", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
@@ -563,16 +564,22 @@ describe("utils", () => {
         },
       };
       const result = isSupportedApi(method, path, spec as any);
-      assert.strictEqual(result, true);
+      assert.strictEqual(result, false);
     });
 
-    it("should return false if parameter is null but no 20X response", () => {
+    it("should return false if has parameters but no 20X response", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
         paths: {
           "/users": {
             get: {
+              parameters: [
+                {
+                  in: "query",
+                  schema: { type: "object" },
+                },
+              ],
               responses: {
                 404: {
                   content: {
@@ -620,58 +627,84 @@ describe("utils", () => {
   });
 
   describe("checkRequiredParameters", () => {
-    it("should return true if there is only one required parameter", () => {
+    it("should valid if there is only one required parameter", () => {
       const paramObject = [
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "string" } },
       ];
-      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
-      assert.strictEqual(result, true);
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, true);
     });
 
-    it("should return false if there are multiple required parameters", () => {
+    it("should valid if there are multiple required parameters", () => {
       const paramObject = [
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "string" } },
       ];
-      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
-      assert.strictEqual(result, false);
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, true);
+      assert.strictEqual(result.requiredNum, 2);
+      assert.strictEqual(result.optionalNum, 0);
     });
 
-    it("should return false if any required parameter is in header or cookie", () => {
+    it("should not valid if any required parameter is in header or cookie and is required", () => {
       const paramObject = [
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: true, schema: { type: "string" } },
       ];
-      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
-      assert.strictEqual(result, false);
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, false);
     });
 
-    it("should return false if any schema is array", () => {
+    it("should ignore in header or cookie if is not required", () => {
       const paramObject = [
         { in: "query", required: true, schema: { type: "string" } },
-        { in: "path", required: false, schema: { type: "array" } },
+        { in: "path", required: false, schema: { type: "string" } },
+        { in: "header", required: false, schema: { type: "string" } },
       ];
-      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
-      assert.strictEqual(result, false);
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, true);
+      assert.strictEqual(result.requiredNum, 1);
+      assert.strictEqual(result.optionalNum, 1);
     });
 
-    it("should return false if any schema is object", () => {
+    it("should return false if any schema is array and required", () => {
+      const paramObject = [
+        { in: "query", required: true, schema: { type: "string" } },
+        { in: "path", required: true, schema: { type: "array" } },
+      ];
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, false);
+    });
+
+    it("should return false if any schema is object and required", () => {
       const paramObject = [
         { in: "query", required: false, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "object" } },
       ];
-      const result = checkRequiredParameters(paramObject as OpenAPIV3.ParameterObject[]);
-      assert.strictEqual(result, false);
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, false);
+    });
+
+    it("should return valid if any schema is object but optional", () => {
+      const paramObject = [
+        { in: "query", required: false, schema: { type: "string" } },
+        { in: "path", required: false, schema: { type: "object" } },
+      ];
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, true);
+      assert.strictEqual(result.requiredNum, 0);
+      assert.strictEqual(result.optionalNum, 1);
     });
   });
 
   describe("checkPostBodyRequiredParameters", () => {
     it("should return 0 for an empty schema", () => {
       const schema = {};
-      const result = checkPostBodyRequiredParameters(schema as any);
-      assert.strictEqual(result, 0);
+      const result = checkPostBody(schema as any);
+      assert.strictEqual(result.requiredNum, 0);
+      assert.strictEqual(result.optionalNum, 0);
     });
 
     it("should return 1 if the schema has a required string property", () => {
@@ -684,8 +717,10 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBodyRequiredParameters(schema as any);
-      assert.strictEqual(result, 1);
+      const result = checkPostBody(schema as any);
+      assert.strictEqual(result.requiredNum, 1);
+      assert.strictEqual(result.optionalNum, 0);
+      assert.strictEqual(result.isValid, true);
     });
 
     it("should return 0 if the schema has an optional string property", () => {
@@ -698,8 +733,10 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBodyRequiredParameters(schema as any);
-      assert.strictEqual(result, 0);
+      const result = checkPostBody(schema as any);
+      assert.strictEqual(result.requiredNum, 0);
+      assert.strictEqual(result.optionalNum, 1);
+      assert.strictEqual(result.isValid, true);
     });
 
     it("should return the correct count for a nested schema", () => {
@@ -725,20 +762,22 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBodyRequiredParameters(schema as any);
-      assert.strictEqual(result, 2);
+      const result = checkPostBody(schema as any);
+      assert.strictEqual(result.requiredNum, 2);
+      assert.strictEqual(result.optionalNum, 1);
+      assert.strictEqual(result.isValid, true);
     });
 
     it("should return NaN for an unsupported schema type", () => {
       const schema = {
         type: "array",
+        required: true,
         items: {
           type: "string",
-          required: true,
         },
       };
-      const result = checkPostBodyRequiredParameters(schema as any);
-      assert.isNaN(result);
+      const result = checkPostBody(schema as any);
+      assert.strictEqual(result.isValid, false);
     });
   });
 
@@ -832,6 +871,12 @@ describe("utils", () => {
           "/api": {
             get: {
               servers: [{ url: "https://example.com" }],
+              parameters: [
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                },
+              ],
               responses: {
                 200: {
                   description: "OK",
@@ -859,6 +904,12 @@ describe("utils", () => {
           "/api": {
             servers: [{ url: "https://example.com" }],
             get: {
+              parameters: [
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                },
+              ],
               servers: [{ url: "https://example.com" }],
               responses: {
                 200: {
@@ -887,6 +938,12 @@ describe("utils", () => {
           "/api": {
             servers: [{ url: "http://example.com" }],
             get: {
+              parameters: [
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                },
+              ],
               servers: [{ url: "ftp://example.com" }],
               responses: {
                 200: {

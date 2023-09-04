@@ -7,7 +7,9 @@ import fs from "fs-extra";
 import "mocha";
 import { updateManifest, generateCommands } from "../../../src/common/spec-parser/manifestUpdater";
 import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
-import { ErrorType } from "../../../src/common/spec-parser/interfaces";
+import { ErrorType, WarningType } from "../../../src/common/spec-parser/interfaces";
+import { ConstantString } from "../../../src/common/spec-parser/constants";
+import { format } from "util";
 
 describe("manifestUpdater", () => {
   const spec: any = {
@@ -100,9 +102,96 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const result = await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec);
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec
+    );
 
     expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should return warnings if api only contain optional parameters", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                        required: false,
+                      },
+                      id: {
+                        type: "string",
+                        description: "Id of the pet",
+                        required: false,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          commands: [],
+          composeExtensionType: "apiBased",
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([
+      {
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: format(ConstantString.OperationOnlyContainsOptionalParam, "POST", "/pets"),
+        data: "POST /pets",
+      },
+    ]);
   });
 
   it("should throw a SpecParserError if fs.readJSON throws an error", async () => {
@@ -174,12 +263,18 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const result = await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, {
-      ...spec,
-      info: { title: "My API" },
-    });
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      {
+        ...spec,
+        info: { title: "My API" },
+      }
+    );
 
     expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
     readJSONStub.restore();
   });
 
@@ -232,12 +327,18 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const result = await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, {
-      ...spec,
-      info: { title: "My API" },
-    });
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      {
+        ...spec,
+        info: { title: "My API" },
+      }
+    );
 
     expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
     readJSONStub.restore();
   });
 });
@@ -344,12 +445,13 @@ describe("generateCommands", () => {
       },
     ];
 
-    const result = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
 
     expect(result).to.deep.equal(expectedCommands);
+    expect(warnings).to.deep.equal([]);
   });
 
-  it("should not generate commands for each GET/POST operation in the spec if parameter is not required", async () => {
+  it("should throw error for each GET/POST operation in the spec if only contains optional parameters", async () => {
     const spec: any = {
       paths: {
         "/pets": {
@@ -387,28 +489,20 @@ describe("generateCommands", () => {
     };
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const expectedCommands = [
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    expect(result).to.deep.equal([]);
+    expect(warnings).to.deep.equal([
       {
-        context: ["compose"],
-        type: "query",
-        title: "Get all pets",
-        id: "getPets",
-        parameters: [],
-        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: format(ConstantString.OperationOnlyContainsOptionalParam, "GET", "/pets"),
+        data: "GET /pets",
       },
       {
-        context: ["compose"],
-        type: "query",
-        title: "Create a pet",
-        id: "createPet",
-        parameters: [],
-        apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: format(ConstantString.OperationOnlyContainsOptionalParam, "POST", "/pets"),
+        data: "POST /pets",
       },
-    ];
-
-    const result = await generateCommands(spec, adaptiveCardFolder, manifestPath);
-
-    expect(result).to.deep.equal(expectedCommands);
+    ]);
   });
 
   it("should only generate commands for GET operation with required parameter", async () => {
@@ -439,9 +533,10 @@ describe("generateCommands", () => {
       },
     ];
 
-    const result = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
 
     expect(result).to.deep.equal(expectedCommands);
+    expect(warnings).to.deep.equal([]);
   });
 
   it("should generate commands for POST operation with string schema", async () => {
@@ -485,8 +580,9 @@ describe("generateCommands", () => {
       },
     ];
 
-    const result = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
 
     expect(result).to.deep.equal(expectedCommands);
+    expect(warnings).to.deep.equal([]);
   });
 });

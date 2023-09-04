@@ -250,7 +250,7 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const updatedManifest = await updateManifest(
+      const [updatedManifest, warnings] = await updateManifest(
         manifestPath,
         outputSpecPath,
         adaptiveCardFolder,
@@ -258,6 +258,8 @@ export class SpecParser {
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
+
+      result.warnings.push(...warnings);
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;

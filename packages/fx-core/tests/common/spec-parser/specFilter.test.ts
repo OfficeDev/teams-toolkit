@@ -25,6 +25,13 @@ describe("specFilter", () => {
         get: {
           operationId: "getHello",
           summary: "Returns a greeting",
+          parameters: [
+            {
+              name: "query",
+              in: "query",
+              schema: { type: "string" },
+            },
+          ],
           responses: {
             "200": {
               description: "A greeting message",
@@ -40,6 +47,13 @@ describe("specFilter", () => {
         },
         post: {
           operationId: "postHello",
+          parameters: [
+            {
+              name: "query",
+              in: "query",
+              schema: { type: "string" },
+            },
+          ],
           summary: "Creates a greeting",
           responses: {
             "201": {
@@ -87,6 +101,13 @@ describe("specFilter", () => {
           get: {
             operationId: "getHello",
             summary: "Returns a greeting",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+              },
+            ],
             responses: {
               "200": {
                 description: "A greeting message",
@@ -102,6 +123,13 @@ describe("specFilter", () => {
           },
           post: {
             operationId: "postHello",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+              },
+            ],
             responses: {
               "201": {
                 content: {
@@ -136,6 +164,13 @@ describe("specFilter", () => {
         "/hello": {
           get: {
             operationId: "getHello",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+              },
+            ],
             summary: "Returns a greeting",
             responses: {
               "200": {
@@ -165,6 +200,13 @@ describe("specFilter", () => {
       paths: {
         "/hello/{id}": {
           get: {
+            parameters: [
+              {
+                in: "query",
+                schema: { type: "string" },
+                required: true,
+              },
+            ],
             responses: {
               "200": {
                 content: {
@@ -191,6 +233,13 @@ describe("specFilter", () => {
       paths: {
         "/hello/{id}": {
           get: {
+            parameters: [
+              {
+                in: "query",
+                schema: { type: "string" },
+                required: true,
+              },
+            ],
             responses: {
               "200": {
                 description: "OK",

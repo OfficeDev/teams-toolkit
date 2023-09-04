@@ -137,12 +137,8 @@ export async function generateCommands(
               if (parameters.length === 0) {
                 warnings.push({
                   type: WarningType.OperationOnlyContainsOptionalParam,
-                  content: format(
-                    ConstantString.OperationOnlyContainsOptionalParam,
-                    method.toUpperCase(),
-                    pathUrl
-                  ),
-                  data: method.toUpperCase() + " " + pathUrl,
+                  content: format(ConstantString.OperationOnlyContainsOptionalParam, operationId),
+                  data: operationId,
                 });
                 continue;
               }

@@ -95,12 +95,12 @@ export class UpdateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new HttpClientError(actionName, message, helpLink)),
+            result: err(new HttpClientError(error, actionName, message, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new HttpServerError(actionName, message)),
+            result: err(new HttpServerError(error, actionName, message)),
             summaries: summaries,
           };
         }

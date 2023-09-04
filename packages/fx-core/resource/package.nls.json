@@ -536,7 +536,7 @@
   "driver.deploy.azureFunctionsDeployDetailSummary": "Successfully deployed `%s` to Azure Functions.",
   "driver.deploy.azureStorageDeployDetailSummary": "Successfully deployed `%s` to Azure Storage.",
   "driver.deploy.enableStaticWebsiteSummary": "Azure Storage enable static website successfully.",
-  "driver.deploy.deployToAzureAppServiceDescription": "deploy the project to the Azure APP Service.",
+  "driver.deploy.deployToAzureAppServiceDescription": "deploy the project to the Azure App Service.",
   "driver.deploy.deployToAzureFunctionsDescription": "deploy the project to the Azure Functions.",
   "driver.deploy.deployToAzureStorageDescription": "deploy the project to the Azure Storage.",
   "driver.deploy.enableStaticWebsiteInAzureStorageDescription": "enable static website setting in Azure Storage.",

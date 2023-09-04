@@ -54,7 +54,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1' // Run Azure APP Service from a package file
+          value: '1' // Run Azure App Service from a package file
         }
       ]
       ftpsState: 'FtpsOnly'

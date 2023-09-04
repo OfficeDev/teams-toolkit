@@ -188,8 +188,8 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: format(ConstantString.OperationOnlyContainsOptionalParam, "POST", "/pets"),
-        data: "POST /pets",
+        content: format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
+        data: "createPet",
       },
     ]);
   });
@@ -494,13 +494,13 @@ describe("generateCommands", () => {
     expect(warnings).to.deep.equal([
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: format(ConstantString.OperationOnlyContainsOptionalParam, "GET", "/pets"),
-        data: "GET /pets",
+        content: format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
+        data: "getPets",
       },
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: format(ConstantString.OperationOnlyContainsOptionalParam, "POST", "/pets"),
-        data: "POST /pets",
+        content: format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
+        data: "createPet",
       },
     ]);
   });

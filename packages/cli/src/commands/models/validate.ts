@@ -16,8 +16,12 @@ export const validateCommand: CLICommand = {
   },
   examples: [
     {
-      command: "teamsfx validate --app-package-file ./appPackage/build/appPackage.zip",
+      command: "teamsfx validate --app-package-file ./appPackage/build/appPackage.dev.zip",
       description: "Validate the Microsoft Teams application package.",
+    },
+    {
+      command: "teamsfx validate --teams-manifest-file ./appPackage/manifest.json --env dev",
+      description: "Validate the Microsoft Teams manifest using its schema.",
     },
   ],
   defaultInteractiveOption: false,

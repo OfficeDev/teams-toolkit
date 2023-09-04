@@ -69,7 +69,7 @@ const mockedExternalSampleConfig = {
       configuration: "test-configuration",
       suggested: false,
       gifUrl: "",
-      downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/main/sample/test",
+      downloadUrl: "https://github.com/Org/Repo/tree/main/sample/test",
     },
   ],
 };
@@ -488,16 +488,16 @@ describe("Generator happy path", async () => {
       { type: "file", path: `sample/${sampleName}/${mockFileName}` },
       { type: "file", path: `sample/${foobarName}/${foobarFileName}` },
     ];
-    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } })
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
     axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const result = await Generator.generateSample(context, tmpDir, sampleName);
-    if (!fs.existsSync(tmpDir + "/" + mockFileName)) {
+    assert.isTrue(result.isOk());
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
       assert.fail("file creation failure");
     }
-    if (fs.existsSync(tmpDir + "/" + foobarFileName)) {
+    if (fs.existsSync(path.join(tmpDir, foobarFileName))) {
       assert.fail("file should not be created");
     }
-    assert.isTrue(result.isOk());
   });
 
   it("template", async () => {

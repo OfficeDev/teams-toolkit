@@ -283,6 +283,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -290,6 +291,7 @@ jobs:
           retry_on: error
           command: |
             sleep 20
+            npm run build
             cd ./packages/vscode-extension
             if [ "$PREID" == "beta" ]; then
               pnpm dlx vsce package --no-dependencies --pre-release

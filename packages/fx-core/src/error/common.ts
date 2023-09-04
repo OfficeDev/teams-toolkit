@@ -151,6 +151,7 @@ export class UnhandledUserError extends UserError {
       ),
       helpLink: helpLink,
       error: e,
+      categories: ["unhandled"],
     });
   }
 }
@@ -213,7 +214,7 @@ export class MissingRequiredFileError extends UserError {
 }
 
 export class HttpClientError extends UserError {
-  constructor(actionName: string, responseBody: string, helpLink?: string) {
+  constructor(error: any, actionName: string, responseBody: string, helpLink?: string) {
     const messageKey = "error.common.HttpClientError";
     super({
       source: camelCase(actionName),
@@ -221,18 +222,20 @@ export class HttpClientError extends UserError {
       message: getDefaultString(messageKey, actionName, responseBody),
       displayMessage: getLocalizedString(messageKey, actionName, responseBody),
       helpLink: helpLink,
+      error: error,
     });
   }
 }
 
 export class HttpServerError extends SystemError {
-  constructor(actionName: string, responseBody: string) {
+  constructor(error: any, actionName: string, responseBody: string) {
     const messageKey = "error.common.HttpServerError";
     super({
       source: camelCase(actionName),
       name: "HttpServerError",
       message: getDefaultString(messageKey, actionName, responseBody),
       displayMessage: getLocalizedString(messageKey, actionName, responseBody),
+      error: error,
     });
   }
 }

@@ -28,6 +28,7 @@ export const packageCommand: CLICommand = {
     EnvOption,
     ProjectFolderOption,
   ],
+  defaultInteractiveOption: false,
   telemetry: {
     event: TelemetryEvent.Build,
   },

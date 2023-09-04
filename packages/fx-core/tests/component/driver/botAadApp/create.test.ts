@@ -18,6 +18,7 @@ import {
   HttpServerError,
   InvalidActionInputError,
   UnhandledError,
+  UnhandledUserError,
 } from "../../../../src";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
@@ -271,5 +272,33 @@ describe("botAadAppCreate", async () => {
       outputEnvVarNames
     );
     expect(result.result.isOk()).to.be.true;
+  });
+
+  it("handler", async () => {
+    const args: any = {
+      name: expectedDisplayName,
+    };
+    const progressBar = {
+      next: sinon.stub(),
+    };
+    const mockedDriverContextWithNoLogProvider: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+    };
+
+    sinon.stub(createBotAadAppDriver, "validateArgs").throws({ name: "AadCreateAppError" });
+
+    mockedDriverContextWithNoLogProvider.progressBar = progressBar;
+
+    try {
+      await createBotAadAppDriver.handler(
+        args,
+        mockedDriverContextWithNoLogProvider,
+        outputEnvVarNames
+      );
+      expect.fail();
+    } catch (e) {
+      expect(e instanceof UnhandledUserError).to.be.true;
+    }
   });
 });

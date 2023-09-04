@@ -99,6 +99,21 @@ describe("teamsApp/validateManifest", async () => {
     chai.assert(result.isOk());
   });
 
+  it("happy path- CLI", async () => {
+    const args: ValidateManifestArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      showMessage: true,
+    };
+
+    mockedDriverContext.platform = Platform.CLI;
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
   it("validation error - no schema", async () => {
     const args: ValidateManifestArgs = {
       manifestPath:

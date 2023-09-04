@@ -60,6 +60,8 @@ enum OpenAIPluginManifestErrorType {
   ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
+export const specParserGenerateWarningTelemetryEvent = "spec-parser-generate-warning";
+
 export interface ErrorResult {
   /**
    * The type of error.
@@ -379,8 +381,32 @@ function validateTeamsManifestLength(
     );
   }
 
-  // validate card
+  // validate command
   if (ManifestUtil.parseCommonProperties(teamsManifest).isCopilotPlugin) {
+    const optionalParamsOnlyWarnings = warnings.filter(
+      (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
+    );
+
+    if (optionalParamsOnlyWarnings) {
+      for (const optionalParamsOnlyWarning of optionalParamsOnlyWarnings) {
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters",
+            optionalParamsOnlyWarning.data
+          ) +
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation",
+              optionalParamsOnlyWarning.data,
+              path.join(AppPackageFolderName, ManifestTemplateFileName),
+              path.join(
+                AppPackageFolderName,
+                teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
+              )
+            )
+        );
+      }
+    }
+
     const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
     for (const command of commands) {
       if (command.type === "query") {

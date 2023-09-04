@@ -145,7 +145,10 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
     sandbox.stub(SpecParser.prototype, "generate").resolves({
       allSuccess: true,
-      warnings: [{ type: WarningType.GenerateCardFailed, content: "test", data: "getPets" }],
+      warnings: [
+        { type: WarningType.GenerateCardFailed, content: "test", data: "getPets" },
+        { type: WarningType.OperationOnlyContainsOptionalParam, content: "test", data: "getPets" },
+      ],
     });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -154,10 +157,12 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      assert.isTrue(result.value.warnings!.length === 2);
+      assert.isTrue(result.value.warnings!.length === 3);
       assert.isFalse(result.value.warnings![0].content.includes("operation2"));
       assert.isUndefined(result.value.warnings![0].data);
       assert.equal(result.value.warnings![1].type, WarningType.GenerateCardFailed);
+      assert.equal(result.value.warnings![2].type, WarningType.OperationOnlyContainsOptionalParam);
+      assert.equal(result.value.warnings![2].content, "");
     }
   });
 

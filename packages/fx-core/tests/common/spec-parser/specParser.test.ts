@@ -533,10 +533,12 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
-        .returns({} as any);
+        .returns([] as any);
 
       const filter = ["get /hello"];
 
@@ -589,10 +591,12 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
-        .returns({} as any);
+        .returns([] as any);
 
       const filter = ["get /hello"];
 
@@ -650,7 +654,9 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
         .throws(new Error("generate adaptive card failed"));
@@ -691,7 +697,7 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JSONStringifySpy = sinon.spy(JSON, "stringify");
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves([] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
         .returns({} as any);
@@ -765,6 +771,21 @@ describe("SpecParser", () => {
             },
             post: {
               operationId: "createPet",
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                          required: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
               responses: {
                 200: {
                   content: {

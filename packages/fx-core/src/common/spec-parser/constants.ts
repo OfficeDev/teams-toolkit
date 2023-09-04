@@ -30,6 +30,8 @@ export class ConstantString {
     "Server url is not correct: relative server url is not supported.";
   static readonly ResolveServerUrlFailed =
     "Resolve server Url failed: environment variable %s is not defined";
+  static readonly OperationOnlyContainsOptionalParam =
+    "Operation %s only contains optional parameters which is not supported";
 
   static readonly GetMethod = "get";
   static readonly PostMethod = "post";

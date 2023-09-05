@@ -32,8 +32,8 @@ function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
       (c: CLICommandOption) => c.name === CliQuestionName.Capability
     ) as CLIStringOption;
     if (capability.choices) {
-      capability.choices = capability.choices.filter((c: string) =>
-        copilotPluginOptionIds.includes(c)
+      capability.choices = capability.choices.filter(
+        (c: string) => !copilotPluginOptionIds.includes(c)
       );
     }
 

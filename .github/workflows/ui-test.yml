@@ -324,6 +324,26 @@ jobs:
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
           npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
 
+      - name: Extract VSCode & chromedriver(unix)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
+          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
+
+      - name: Extract VSCode & chromedriver(mac)
+        if: matrix.os == 'macos-latest' 
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+
+      - name: Extract VSCode & chromedriver(win)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
+          7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
+
       - name: M365 Login
         working-directory: packages/tests
         run: | # rm -r -f ~/.fx/account

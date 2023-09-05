@@ -40,6 +40,7 @@ import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { SpecParserError } from "../../../common/spec-parser/specParserError";
+import { ConstantString } from "../../../common/spec-parser/constants";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -159,6 +160,12 @@ export async function listOperations(
         operations = operations.filter(
           (operation: string) => !existingOperations.includes(operation)
         );
+        // No extra API can be added
+        if (operations.length == 0) {
+          return err([
+            { type: ApiSpecErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          ]);
+        }
       } else {
         throw manifest.error;
       }

@@ -834,6 +834,7 @@ function SPFxFrameworkQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.SPFxFramework,
     cliShortName: "k",
+    cliDescription: "Framework.",
     title: getLocalizedString("plugins.spfx.questions.framework.title"),
     staticOptions: [
       { id: "react", label: "React" },

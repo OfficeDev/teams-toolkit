@@ -170,7 +170,16 @@ describe("manifestUpdater", () => {
       composeExtensions: [
         {
           apiSpecificationFile: "spec/outputSpec.yaml",
-          commands: [],
+          commands: [
+            {
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+              context: ["compose"],
+              id: "createPet",
+              parameters: [],
+              title: "Create a pet",
+              type: "query",
+            },
+          ],
           composeExtensionType: "apiBased",
         },
       ],
@@ -490,7 +499,24 @@ describe("generateCommands", () => {
     sinon.stub(fs, "pathExists").resolves(true);
 
     const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
-    expect(result).to.deep.equal([]);
+    expect(result).to.deep.equal([
+      {
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+        context: ["compose"],
+        id: "getPets",
+        parameters: [],
+        title: "Get all pets",
+        type: "query",
+      },
+      {
+        apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+        context: ["compose"],
+        id: "createPet",
+        parameters: [],
+        title: "Create a pet",
+        type: "query",
+      },
+    ]);
     expect(warnings).to.deep.equal([
       {
         type: WarningType.OperationOnlyContainsOptionalParam,

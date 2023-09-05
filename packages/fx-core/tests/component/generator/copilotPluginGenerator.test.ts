@@ -557,4 +557,29 @@ describe("generateScaffoldingSummary", () => {
     assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
     assert.isTrue(res.includes("test"));
   });
+
+  it("warnings about command parameters", () => {
+    const composeExtension: IComposeExtension = {
+      composeExtensionType: "apiBased",
+      apiSpecificationFile: "testApiFile",
+      commands: [
+        {
+          id: "command1",
+          type: "query",
+          title: "",
+          apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+        },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isTrue(res.includes("testApiFile"));
+  });
 });

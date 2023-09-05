@@ -60,7 +60,9 @@ enum OpenAIPluginManifestErrorType {
   ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
-export const specParserGenerateWarningTelemetryEvent = "spec-parser-generate-warning";
+export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
+export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
+export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 
 export interface ErrorResult {
   /**

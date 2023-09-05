@@ -31,7 +31,9 @@ import {
   generateScaffoldingSummary,
   logValidationResults,
   OpenAIPluginManifestHelper,
-  specParserGenerateWarningTelemetryEvent,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
 } from "./helper";
 import { ValidationStatus, WarningType } from "../../../common/spec-parser/interfaces";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -202,10 +204,14 @@ export class CopilotPluginGenerator {
         adaptiveCardFolder
       );
 
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString())
+          .join(","),
+      });
+
       if (generateResult.warnings.length > 0) {
-        context.telemetryReporter.sendTelemetryEvent(specParserGenerateWarningTelemetryEvent, {
-          warnings: generateResult.warnings.map((w) => w.type.toString()).join(","),
-        });
         generateResult.warnings.find((o) => {
           if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
             o.content = ""; // We don't care content of this warning

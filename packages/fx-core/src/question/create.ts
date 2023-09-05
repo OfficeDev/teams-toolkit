@@ -421,7 +421,7 @@ export class CapabilityOptions {
   }
 
   static all(inputs?: Inputs): OptionItem[] {
-    // teamsfx list capabilities
+    // teamsfx list templates
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),

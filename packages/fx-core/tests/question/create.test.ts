@@ -865,12 +865,8 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 13);
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginCli().id });
-          } else if (question.name === QuestionNames.CopilotPluginDevelopment) {
+            assert.isTrue(options.length === 15);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
-          } else if (question.name === QuestionNames.CopilotPluginDevelopment) {
-            return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.AppName) {
@@ -884,7 +880,6 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.CopilotPluginDevelopment,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,

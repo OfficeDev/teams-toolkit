@@ -14,6 +14,7 @@ import {
   QuestionNames,
   isCopilotPluginEnabled,
   CliQuestionName,
+  copilotPluginOptionIds,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -31,13 +32,12 @@ function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
       (c: CLICommandOption) => c.name === CliQuestionName.Capability
     ) as CLIStringOption;
     if (capability.choices) {
-      capability.choices = capability.choices.filter(
-        (c: string) => c !== "copilot-plugin-capability"
+      capability.choices = capability.choices.filter((c: string) =>
+        copilotPluginOptionIds.includes(c)
       );
     }
 
     const copilotPluginQuestionNames = [
-      QuestionNames.CopilotPluginDevelopment.toString(),
       QuestionNames.ApiSpecLocation.toString(),
       QuestionNames.OpenAIPluginDomain.toString(),
       QuestionNames.ApiOperation.toString(),

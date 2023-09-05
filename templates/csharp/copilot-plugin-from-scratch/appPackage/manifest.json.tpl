@@ -26,7 +26,7 @@
     "composeExtensions": [
         {
             "type": "apiBased",
-            "apiSpecificationFile": "apiSpecFiles/repair.yaml",
+            "apiSpecificationFile": "apiSpecFiles/repair.yml",
             "commands": [
                 {
                     "id": "repair",

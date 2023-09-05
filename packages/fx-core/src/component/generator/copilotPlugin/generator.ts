@@ -148,7 +148,7 @@ export class CopilotPluginGenerator {
         if (apisMissingOperationId.length > 0) {
           operationIdWarning.content = util.format(
             ConstantString.MissingOperationId,
-            apisMissingOperationId.join(", ")
+            apisMissingOperationId.join("; ")
           );
           delete operationIdWarning.data;
         } else {
@@ -208,7 +208,7 @@ export class CopilotPluginGenerator {
         [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString())
-          .join(","),
+          .join("; "),
       });
 
       if (generateResult.warnings.length > 0) {

@@ -57,7 +57,12 @@ provision:
       target: ./Properties/launchSettings.json
       content:
         profiles:
-          Microsoft Teams (browser):
-            commandName: "Project"
-            commandLineArgs: "--port 7071"
-            launchBrowser: false
+          Copilot (browser):
+            "commandName": "Project",
+            "commandLineArgs": "host start --port 5130 --pause-on-error",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "launchUrl": "https://teams.microsoft.com?login_hint=%USERNAME%",
+            "environmentVariables": {
+              "ASPNETCORE_ENVIRONMENT": "Development"
+            }

@@ -161,7 +161,7 @@ describe("Utils Tests", function () {
   });
 
   it("flattenNodes", () => {
-    const root: IQTreeNode = {
+    const root: apis.IQTreeNode = {
       data: {
         type: "group",
       },
@@ -247,13 +247,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
   it("getSystemInputs", async () => {
     const inputs = getSystemInputs("real");
-    expect(inputs.platform).equals(Platform.CLI);
+    expect(inputs.platform).equals(apis.Platform.CLI);
     expect(inputs.projectPath).equals("real");
   });
 
   it("getColorizedString", async () => {
     /// TODO: mock chalk and test
-    const arr = Object.keys(Colors)
+    const arr = Object.keys(apis.Colors)
       .filter((v) => isNaN(Number(v)))
       .map((v, i) => i);
     getColorizedString(
@@ -286,8 +286,8 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
 
     it("filters samples have maximum cli verion", async () => {
-      sandbox.stub(sampleProvider, "fetchSampleConfig").callsFake(async () => {
-        sampleProvider["samplesConfig"] = {
+      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
+        core.sampleProvider["samplesConfig"] = {
           samples: [
             {
               id: "test1",
@@ -324,8 +324,8 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
 
     it("filters samples have minimum cli verion", async () => {
-      sandbox.stub(sampleProvider, "fetchSampleConfig").callsFake(async () => {
-        sampleProvider["samplesConfig"] = {
+      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
+        core.sampleProvider["samplesConfig"] = {
           samples: [
             {
               id: "test1",

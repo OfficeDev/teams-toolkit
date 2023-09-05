@@ -4,6 +4,13 @@ This template showcases a bot app that responds to user questions like an AI ass
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
+- [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
+  - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
+    - [Use Azure OpenAI](#use-azure-openai)
+  - [What's included in the template](#whats-included-in-the-template)
+  - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
+  - [Additional information and references](#additional-information-and-references)
+
 ## Get started with the AI Chat Bot template
 
 > **Prerequisites**
@@ -35,19 +42,6 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
-1. In `teamsapp.local.yml`, comment out `OPENAI_API_KEY` from `file/createOrUpdateEnvironmentFile` action, and uncomment `AZURE_OPENAI_API_KEY` and `AZURE_OPENAI_ENDPOINT`, e.g.
-    ```yaml
-    # Generate runtime environment variables
-    - uses: file/createOrUpdateEnvironmentFile
-      with:
-        target: ./.localConfigs
-        envs:
-          BOT_ID: ${{BOT_ID}}
-          BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
-          # OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
-          AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
-          AZURE_OPENAI_ENDPOINT: ${{SECRET_AZURE_OPENAI_ENDPOINT}}
-    ```
 1. In `src/app.ts`, comment out *"Use OpenAI"* part and uncomment *"use Azure OpenAI"* part, e.g.
     ```typescript
     // Use OpenAI
@@ -68,6 +62,7 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
       logRequests: true,
     });
     ```
+1. In `src/app.ts`, update `defaultModel` to your own model deployment name.
 
 ## What's included in the template
 

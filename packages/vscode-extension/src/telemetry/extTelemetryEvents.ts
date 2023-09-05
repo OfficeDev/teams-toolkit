@@ -174,6 +174,7 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
+  OpenCopilotEnroll = "open-copilot-enroll",
   OpenSideloadingLearnMore = "open-sideloading-learn-more",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 

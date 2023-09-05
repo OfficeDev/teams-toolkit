@@ -281,7 +281,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.stub(fs, "readJsonSync").returns({ version: "2.0.0" });
     });
 
-    after(() => {
+    this.afterEach(() => {
       sandbox.restore();
     });
 

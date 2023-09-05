@@ -75,7 +75,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "spfx-framework-type",
     type: "string",
     shortName: "k",
-    description: "Framework",
+    description: "Framework.",
     default: "react",
     choices: ["react", "minimal", "none"],
   },

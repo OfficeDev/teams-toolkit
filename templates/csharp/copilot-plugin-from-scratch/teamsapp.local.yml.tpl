@@ -58,11 +58,11 @@ provision:
       content:
         profiles:
           Copilot (browser):
-            "commandName": "Project",
-            "commandLineArgs": "host start --port 5130 --pause-on-error",
-            "dotnetRunMessages": true,
-            "launchBrowser": true,
-            "launchUrl": "https://teams.microsoft.com?login_hint=%USERNAME%",
-            "environmentVariables": {
+            commandName: "Project"
+            commandLineArgs: "host start --port 5130 --pause-on-error"
+            dotnetRunMessages: true
+            launchBrowser: true
+            launchUrl: "https://teams.microsoft.com?login_hint=%USERNAME%"
+            environmentVariables:
               "ASPNETCORE_ENVIRONMENT": "Development"
-            }
+            hotReloadProfile: "aspnetcore"

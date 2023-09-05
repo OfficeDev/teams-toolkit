@@ -153,3 +153,16 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Send E-mail to the whole team
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.list-akas.outputs.to }}
+          BODY: ${{ steps.list-akas.outputs.body }}
+          SUBJECT: ${{ steps.list-akas.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

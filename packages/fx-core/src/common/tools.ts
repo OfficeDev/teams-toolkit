@@ -33,6 +33,7 @@ import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { PackageService } from "./m365/packageService";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -226,6 +227,10 @@ export function getAllowedAppMaps(): Record<string, string> {
     [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
     [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
   };
+}
+
+export function getCopilotStatus(token: string): Promise<boolean | undefined> {
+  return PackageService.GetSharedInstance().getCopilotStatus(token);
 }
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {

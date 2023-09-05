@@ -3,11 +3,11 @@
 
 import * as vscode from "vscode";
 
-import { serviceScope } from "@microsoft/teamsfx-core";
+import { serviceScope, getCopilotStatus } from "@microsoft/teamsfx-core";
 
-import { signedIn } from "../../commonlib/common/constant";
-import { tools } from "../../handlers";
-//import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
+import M365TokenInstance from "../../commonlib/m365Login";
+import { checkCopilotCallback, tools } from "../../handlers";
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
 import { errorIcon, infoIcon, passIcon } from "./common";
@@ -30,19 +30,14 @@ export class CopilotNode extends DynamicNode {
 
   private async checkCopilot(): Promise<boolean | undefined> {
     try {
-      const m365TokenStatus = await tools.tokenProvider.m365TokenProvider.getStatus({
+      const m365TokenStatus = await M365TokenInstance.getAccessToken({
         scopes: [copilotCheckServiceScope],
         showDialog: false,
       });
       if (m365TokenStatus.isOk()) {
         const m365TokenResult = m365TokenStatus.value;
-        if (
-          m365TokenResult.status === signedIn &&
-          m365TokenResult.token !== undefined &&
-          m365TokenResult.token !== ""
-        ) {
-          // TD: call check
-          return true;
+        if (m365TokenResult !== undefined && m365TokenResult !== "") {
+          return await getCopilotStatus(m365TokenResult);
         }
       }
     } catch (error) {
@@ -61,7 +56,7 @@ export class CopilotNode extends DynamicNode {
     if (this.token != "") {
       isCopilotAllowed = await this.checkCopilot();
       if (isCopilotAllowed === false) {
-        // TD: await checkSideloadingCallback();
+        await checkCopilotCallback();
       }
     }
     if (isCopilotAllowed === undefined) {
@@ -82,7 +77,11 @@ export class CopilotNode extends DynamicNode {
       this.tooltip = localize("teamstoolkit.accountTree.copilotWarningTooltip");
       this.contextValue = ContextValues.ShowInfo;
       // TD: callback command
-      this.command = undefined;
+      this.command = {
+        title: this.label,
+        command: "fx-extension.checkCopilotCallback",
+        arguments: [TelemetryTriggerFrom.TreeView, this],
+      };
     }
     return this;
   }

@@ -5,22 +5,42 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "fs-extra";
 
-import { LogProvider } from "@microsoft/teamsfx-api";
+import { LogProvider, SystemError } from "@microsoft/teamsfx-api";
 
 import { waitSeconds } from "../tools";
 import { NotExtendedToM365Error } from "./errors";
+import { serviceEndpoint } from "./serviceConstant";
 import { assembleError } from "../../error/common";
-import { ErrorContextMW } from "../../core/globalVars";
+import { ErrorContextMW, TOOLS } from "../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
+import {
+  Component,
+  TelemetryEvent,
+  TelemetryProperty,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+} from "../telemetry";
 
 const M365ErrorSource = "M365";
 const M365ErrorComponent = "PackageService";
 
 // Call m365 service for package CRUD
 export class PackageService {
+  private static sharedInstance: PackageService;
+
   private readonly axiosInstance;
   private readonly initEndpoint;
   private readonly logger: LogProvider | undefined;
+
+  public static GetSharedInstance(): PackageService {
+    if (!PackageService.sharedInstance) {
+      PackageService.sharedInstance = new PackageService(
+        process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint,
+        TOOLS.logProvider
+      );
+    }
+    return PackageService.sharedInstance;
+  }
 
   public constructor(endpoint: string, logger?: LogProvider) {
     this.axiosInstance = axios.create({
@@ -275,6 +295,37 @@ export class PackageService {
         this.logger?.error(error.message);
       }
 
+      throw assembleError(error, M365ErrorSource);
+    }
+  }
+
+  public async getCopilotStatus(token: string): Promise<boolean | undefined> {
+    try {
+      const activeExperiences = await this.getActiveExperiences(token);
+      const copilotAllowed =
+        activeExperiences == undefined ? undefined : activeExperiences.includes("CopilotTeams");
+      sendTelemetryEvent(Component.core, TelemetryEvent.CheckCopilot, {
+        [TelemetryProperty.IsCopilotAllowed]: copilotAllowed?.toString() ?? "undefined",
+      });
+      return copilotAllowed;
+    } catch (error: any) {
+      sendTelemetryErrorEvent(
+        Component.core,
+        TelemetryEvent.CheckCopilot,
+        new SystemError({
+          error,
+          source: M365ErrorSource,
+          message: error.message ?? "Failed to get copilot status.",
+        }),
+        {
+          [TelemetryProperty.CheckCopilotTracingId]: `${
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            error.response?.headers?.traceresponse ??
+            error.innerError?.response?.headers?.traceresponse ??
+            ""
+          }`,
+        }
+      );
       return undefined;
     }
   }

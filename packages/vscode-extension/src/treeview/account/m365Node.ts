@@ -68,13 +68,25 @@ export class M365AccountNode extends DynamicNode {
   }
 
   public updateChecks(token: string, sideloading: boolean, copilot: boolean) {
+    let refreshSideloading = false;
+    let refreshCopilot = false;
     if (sideloading) {
       this.sideloadingNode.token = token;
+      refreshSideloading = true;
     }
     if (isCopilotPluginEnabled() && copilot && this.copilotNode !== undefined) {
       this.copilotNode.token = token;
+      refreshCopilot = true;
     }
-    this.eventEmitter.fire(this);
+
+    // partial refresh
+    if (refreshSideloading && refreshCopilot) {
+      this.eventEmitter.fire(this);
+    } else if (refreshSideloading && !refreshCopilot) {
+      this.eventEmitter.fire(this.sideloadingNode);
+    } else if (!refreshSideloading && refreshCopilot) {
+      this.eventEmitter.fire(this.copilotNode);
+    }
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {

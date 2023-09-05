@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as apis from "@microsoft/teamsfx-api";
-import { Colors, IQTreeNode, Platform } from "@microsoft/teamsfx-api";
-import * as core from "@microsoft/teamsfx-core";
-import fs from "fs-extra";
 import "mocha";
+
+import fs from "fs-extra";
 import sinon from "sinon";
+
+import * as apis from "@microsoft/teamsfx-api";
+import * as core from "@microsoft/teamsfx-core";
+
 import activate from "../../src/activate";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { UserSettings } from "../../src/userSetttings";
@@ -16,6 +18,7 @@ import {
   getSettingsVersion,
   getSingleOptionString,
   getSystemInputs,
+  getTemplates,
   getVersion,
   isWorkspaceSupported,
   toLocaleLowerCase,
@@ -268,6 +271,94 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("should work for input of type string and array of string", () => {
       expect(toLocaleLowerCase("AB")).equals("ab");
       expect(toLocaleLowerCase(["Ab", "BB"])).deep.equals(["ab", "bb"]);
+    });
+  });
+
+  describe("getTemplates", async () => {
+    const sandbox = sinon.createSandbox();
+
+    before(() => {
+      sandbox.stub(fs, "readJsonSync").returns({ version: "2.0.0" });
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("filters samples have maximum cli verion", async () => {
+      sandbox.stub(sampleProvider, "fetchSampleConfig").callsFake(async () => {
+        sampleProvider["samplesConfig"] = {
+          samples: [
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+            },
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+              maximumCliVersion: "1.0.0",
+            },
+          ],
+        };
+      });
+      const templates = await getTemplates();
+      expect(templates.length).equals(1);
+    });
+
+    it("filters samples have minimum cli verion", async () => {
+      sandbox.stub(sampleProvider, "fetchSampleConfig").callsFake(async () => {
+        sampleProvider["samplesConfig"] = {
+          samples: [
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+            },
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+              minimumCliVersion: "1.0.0",
+            },
+          ],
+        };
+      });
+      const templates = await getTemplates();
+      expect(templates.length).equals(1);
     });
   });
 });

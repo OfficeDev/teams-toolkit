@@ -103,7 +103,7 @@ jobs:
         if: ${{ github.event.schedule == '0 18 * * *' }} || ${{ github.event.inputs.test-case }} == ''
         working-directory: ./packages/tests
         run: |
-          npm install
+          pnpm --filter=@microsoft/teamsfx-test install
           npx ts-node ./scripts/createRandomPVT.ts
 
       - name: setup matrix

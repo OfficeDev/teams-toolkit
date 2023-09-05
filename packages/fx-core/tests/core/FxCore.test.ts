@@ -1326,7 +1326,6 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "copilot-plugin-option",
           "openapi-spec-location",
           "openai-plugin-domain",
           "api-operation",

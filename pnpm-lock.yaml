@@ -1368,7 +1368,7 @@ importers:
         specifier: ^2.13.0
         version: 2.13.0(supports-color@9.4.0)
       '@microsoft/teamsfx':
-        specifier: workspace:*
+        specifier: ^2.2.2
         version: link:../sdk
       react:
         specifier: '>=16.8.0 <19.0.0'
@@ -14377,7 +14377,7 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 4.28.1(eslint@7.29.0)(typescript@4.3.5)
+      '@typescript-eslint/parser': 4.28.1(eslint@7.29.0)(typescript@5.0.4)
       debug: 3.2.7(supports-color@9.4.0)
       eslint: 7.29.0
       eslint-import-resolver-node: 0.3.9(supports-color@9.4.0)
@@ -14623,7 +14623,7 @@ packages:
       '@typescript-eslint/parser':
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 4.28.1(eslint@7.29.0)(typescript@4.3.5)
+      '@typescript-eslint/parser': 4.28.1(eslint@7.29.0)(typescript@5.0.4)
       array-includes: 3.1.6
       array.prototype.flat: 1.3.1
       debug: 2.6.9(supports-color@9.4.0)

@@ -6,16 +6,13 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, Correlator, sampleProvider } from "@microsoft/teamsfx-core";
+import { Correlator, sampleProvider } from "@microsoft/teamsfx-core";
 
-import AzureAccountManager from "../commonlib/azureLogin";
-import M365TokenInstance from "../commonlib/m365Login";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs, openFolder } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
-  AccountType,
   InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
@@ -212,6 +209,9 @@ export class WebviewPanel {
       path.join(globalVariables.context.extensionPath, "out/src", "client.js")
     );
     const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
+    const codiconsUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "codicon.css")
+    );
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
@@ -222,6 +222,7 @@ export class WebviewPanel {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ms-teams</title>
             <base href='${scriptBaseUri.toString()}' />
+            <link href="${codiconsUri.toString()}" rel="stylesheet" />
           </head>
           <body>
             <div id="root"></div>

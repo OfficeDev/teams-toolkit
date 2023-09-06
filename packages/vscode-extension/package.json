@@ -251,8 +251,13 @@
         },
         {
           "command": "fx-extension.refreshSideloading",
-          "when": "view == teamsfx-accounts && viewItem == checkSideloading",
-          "group": "inline"
+          "when": "view == teamsfx-accounts && viewItem =~ /^checkSideloading$|^checkSideloading-info$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.checkSideloading",
+          "when": "view == teamsfx-accounts && viewItem == checkSideloading-info",
+          "group": "inline@2"
         },
         {
           "command": "fx-extension.azureAccountSettings",
@@ -422,6 +427,10 @@
         },
         {
           "command": "fx-extension.refreshSideloading",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.checkSideloading",
           "when": "false"
         },
         {
@@ -705,6 +714,11 @@
         "command": "fx-extension.refreshSideloading",
         "title": "%teamstoolkit.commands.refresh.title%",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "fx-extension.checkSideloading",
+        "title": "%teamstoolkit.accountTree.sideloadingWarningTooltip%",
+        "icon": "$(info)"
       },
       {
         "command": "fx-extension.signOut",
@@ -1204,7 +1218,8 @@
     "precommit": "npm run check-sensitive && lint-staged",
     "updateFont": "node ./scripts/updateFont.js",
     "previewFont": "start ./media/font/teamstoolkit.html",
-    "version": "bash ../../.github/scripts/vsc-version.sh"
+    "version": "bash ../../.github/scripts/vsc-version.sh",
+    "pack-local": "pnpm dlx vsce package --no-dependencies"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^5.0.0",
@@ -1297,10 +1312,11 @@
     "@microsoft/teamsfx-core": "^2.0.2",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
-    "@vscode/webview-ui-toolkit": "^0.9.3",
+    "@vscode/webview-ui-toolkit": "^1.2.2",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.18.2",
+    "fuse.js": "^6.6.2",
     "jscodeshift": "^0.14.0",
     "jsonc-parser": "^3.0.0",
     "log4js": "^6.3.0",

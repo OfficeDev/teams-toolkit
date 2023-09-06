@@ -6,6 +6,7 @@ import { getLocalizedString } from "../localizeUtils";
 
 export class ConstantString {
   static readonly CancelledMessage = getLocalizedString("core.common.CancelledMessage");
+  // TODO: remove core.common.SpecVersionNotSupported message which is not used
   static readonly SpecVersionNotSupported = getLocalizedString(
     "core.common.SpecVersionNotSupported"
   );
@@ -25,8 +26,15 @@ export class ConstantString {
   static readonly UnknownSchema = getLocalizedString("core.common.UnknownSchema");
   // TODO: localization
   static readonly UrlProtocolNotSupported =
-    "Protocol %s is not supported, you should use https protocol instead.";
-  static readonly RelativeServerUrlNotSupported = "Relative server url is not supported.";
+    "Sever url is not correct: protocol %s is not supported, you should use https protocol instead.";
+  static readonly RelativeServerUrlNotSupported =
+    "Server url is not correct: relative server url is not supported.";
+  static readonly ResolveServerUrlFailed =
+    "Resolve server Url failed: environment variable %s is not defined";
+  static readonly OperationOnlyContainsOptionalParam =
+    "Operation %s only contains optional parameters which is not supported";
+  static readonly ConvertSwaggerToOpenAPI = "Swagger 2.0 file has been converted to OpenAPI 3.0";
+
   static readonly GetMethod = "get";
   static readonly PostMethod = "post";
   static readonly AdaptiveCardVersion = "1.5";

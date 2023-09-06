@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author wenyt <75360946+wenytang-ms@users.noreply.github.com>
+ * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";

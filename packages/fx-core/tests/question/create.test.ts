@@ -13,23 +13,30 @@ import {
   UserInteraction,
   ok,
 } from "@microsoft/teamsfx-api";
+import axios from "axios";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import * as path from "path";
 import sinon from "sinon";
+import { FeatureFlagName } from "../../src/common/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
+import { SpecParser } from "../../src/common/spec-parser/specParser";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { setTools } from "../../src/core/globalVars";
 import {
   CapabilityOptions,
   NotificationTriggerOptions,
   ProjectTypeOptions,
   RuntimeOptions,
   SPFxVersionOptionIds,
-  ScratchOptions,
   apiOperationQuestion,
   apiSpecLocationQuestion,
   appNameQuestion,
+  capabilityQuestion,
   createProjectQuestionNode,
   createSampleProjectQuestionNode,
   folderQuestion,
@@ -42,13 +49,6 @@ import {
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
-import * as path from "path";
-import { FeatureFlagName } from "../../src/common/constants";
-import { SpecParser } from "../../src/common/spec-parser/specParser";
-import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
-import { setTools } from "../../src/core/globalVars";
-import axios from "axios";
-import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -590,11 +590,6 @@ describe("scaffold question", () => {
         questions.push(question.name);
         await callFuncs(question, inputs);
         if (question.name === QuestionNames.Capabilities) {
-          const select = question as SingleSelectQuestion;
-          const staticOptions = select.staticOptions;
-          assert.isTrue(staticOptions.length === 13);
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 12);
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
           return ok({ type: "success", result: NotificationTriggerOptions.appService().id });
@@ -609,6 +604,7 @@ describe("scaffold question", () => {
       };
       await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
         QuestionNames.Capabilities,
         QuestionNames.BotTrigger,
         QuestionNames.ProgrammingLanguage,
@@ -635,17 +631,8 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.Runtime) {
           return ok({ type: "success", result: RuntimeOptions.DotNet().id });
         } else if (question.name === QuestionNames.Capabilities) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 12);
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.deepEqual(options, [
-            NotificationTriggerOptions.appServiceForVS(),
-            ...NotificationTriggerOptions.functionsTriggers(),
-          ]);
           return ok({ type: "success", result: NotificationTriggerOptions.appServiceForVS().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
@@ -659,6 +646,7 @@ describe("scaffold question", () => {
       await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
       assert.deepEqual(questions, [
         QuestionNames.Runtime,
+        QuestionNames.ProjectType,
         QuestionNames.Capabilities,
         QuestionNames.BotTrigger,
         QuestionNames.ProgrammingLanguage,
@@ -861,14 +849,7 @@ describe("scaffold question", () => {
           questions.push(question.name);
           await callFuncs(question, inputs);
           if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 13);
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginCli().id });
-          } else if (question.name === QuestionNames.CopilotPluginDevelopment) {
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
-          } else if (question.name === QuestionNames.CopilotPluginDevelopment) {
-            return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.AppName) {
@@ -880,8 +861,8 @@ describe("scaffold question", () => {
         };
         await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
         assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.CopilotPluginDevelopment,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,
@@ -1092,6 +1073,33 @@ describe("scaffold question", () => {
             { id: "GET /store/order", label: "GET /store/order", groupName: "GET" },
           ]);
           assert.isUndefined(res);
+        });
+
+        it("No extra API found", async () => {
+          const question = apiSpecLocationQuestion(false);
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            "manifest-path": "fakePath",
+          };
+          const operationMap = new Map<string, string>([
+            ["getUserById", "GET /user/{userId}"],
+            ["getStoreOrder", "GET /store/order"],
+          ]);
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox
+            .stub(SpecParser.prototype, "list")
+            .resolves(["GET /user/{userId}", "GET /store/order"]);
+          sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+          sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById", "getStoreOrder"]);
+          sandbox.stub(fs, "pathExists").resolves(true);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+          assert.isNotNull(res);
         });
       });
 
@@ -1524,8 +1532,15 @@ describe("scaffold question", () => {
         CapabilityOptions.collectFormMe(),
       ]);
     });
+    it("cli non-interactive", () => {
+      const question = capabilityQuestion();
+      const options = question.dynamicOptions!({ platform: Platform.CLI, nonInteractive: true });
+      assert.deepEqual(
+        options,
+        CapabilityOptions.all({ platform: Platform.CLI, nonInteractive: true })
+      );
+    });
   });
-
   describe("programmingLanguageQuestion", () => {
     const question = programmingLanguageQuestion();
     it("office addin: should have typescript as options", async () => {

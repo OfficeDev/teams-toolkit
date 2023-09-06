@@ -35,7 +35,6 @@ export enum QuestionNames {
   ApiSpecLocation = "openapi-spec-location",
   OpenAIPluginDomain = "openai-plugin-domain",
   ApiOperation = "api-operation",
-  CopilotPluginDevelopment = "copilot-plugin-option",
 
   Features = "features",
   Env = "env",

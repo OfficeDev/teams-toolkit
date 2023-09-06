@@ -6,6 +6,6 @@ import { listTemplatesCommand } from "./listTemplates";
 
 export const listCommand: CLICommand = {
   name: "list",
-  description: "List available options.",
+  description: "List available Microsoft Teams application templates and samples.",
   commands: [listSamplesCommand, listTemplatesCommand],
 };

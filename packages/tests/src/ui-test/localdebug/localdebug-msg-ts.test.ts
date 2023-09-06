@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Annefch <33708747+Annefch@users.noreply.github.com>
+ * @author Anne Fu <v-annefu@microsoft.com>
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";

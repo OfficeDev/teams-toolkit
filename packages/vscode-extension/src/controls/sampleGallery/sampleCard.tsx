@@ -15,26 +15,27 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
 import { Setting, Watch } from "../resources";
-import { SampleCardProps } from "./ISamples";
+import { SampleProps } from "./ISamples";
 
-export default class SampleCard extends React.Component<SampleCardProps, any> {
-  constructor(props: SampleCardProps) {
+export default class SampleCard extends React.Component<SampleProps, unknown> {
+  constructor(props: SampleProps) {
     super(props);
   }
 
   render() {
+    const sample = this.props.sample;
     return (
       <div
-        className={`sample-card box${this.props.order}`}
+        className={`sample-card`}
         tabIndex={0}
-        onClick={this.onSampleCard}
+        onClick={this.onSampleCardClicked}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
-            this.onSampleCard();
+            this.onSampleCardClicked();
           }
         }}
       >
-        {this.props.suggested && (
+        {sample.suggested && (
           <div className="triangle">
             <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
           </div>
@@ -51,7 +52,7 @@ export default class SampleCard extends React.Component<SampleCardProps, any> {
         >
           sample app card
         </label>
-        <Image src={this.props.image} />
+        <Image src={sample.gifUrl} />
         <label
           style={{
             position: "absolute",
@@ -66,9 +67,13 @@ export default class SampleCard extends React.Component<SampleCardProps, any> {
           sample app tags:
         </label>
         <div className="section" aria-labelledby="tagLabel">
-          {this.props.tags &&
-            this.props.tags.map((value: string) => {
-              return <VSCodeTag className="tag">{value}</VSCodeTag>;
+          {sample.tags &&
+            sample.tags.map((value: string) => {
+              return (
+                <VSCodeTag className="tag" key={value}>
+                  {value}
+                </VSCodeTag>
+              );
             })}
         </div>
         <label
@@ -84,34 +89,34 @@ export default class SampleCard extends React.Component<SampleCardProps, any> {
         >
           sample app title:
         </label>
-        <h3>{this.props.title}</h3>
+        <h3>{sample.title}</h3>
         <div className="estimation-time">
           <div className="watch">
             <Watch></Watch>
           </div>
-          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
+          <label style={{ paddingLeft: 4 }}>{sample.time}</label>
         </div>
         <div className="configuration">
           <div className="setting">
             <Setting></Setting>
           </div>
-          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
+          <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
         </div>
       </div>
     );
   }
 
-  onSampleCard = () => {
+  onSampleCardClicked = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.ClickSampleCard,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sampleAppFolder,
+          [TelemetryProperty.SampleAppName]: this.props.sample.id,
         },
       },
     });
-    this.props.selectSample(this.props.sampleAppFolder);
+    this.props.selectSample(this.props.sample.id);
   };
 }

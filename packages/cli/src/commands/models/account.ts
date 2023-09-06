@@ -8,7 +8,6 @@ import { accountShowCommand } from "./accountShow";
 
 export const accountCommand: CLICommand = {
   name: "account",
-  description:
-    "Manage cloud service accounts. The supported cloud services are 'Azure' and 'Microsoft 365'.",
+  description: "Manage Microsoft 365 and Azure accounts.",
   commands: [accountShowCommand, accountLoginCommand, accountLogoutCommand],
 };

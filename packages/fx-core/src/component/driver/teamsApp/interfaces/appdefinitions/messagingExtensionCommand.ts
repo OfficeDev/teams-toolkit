@@ -14,5 +14,5 @@ export interface MessagingExtensionCommand {
   context: string[];
   parameters: MessagingExtensionCommandParameter[];
   taskInfo?: MessagingExtensionCommandTaskInfo;
-  apiResponseRenderingTemplateUri?: string;
+  apiResponseRenderingTemplateFilePath?: string;
 }

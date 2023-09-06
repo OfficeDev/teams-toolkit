@@ -19,14 +19,14 @@
         "full": "Full name for {{appName}}"
     },
     "description": {
-        "short": "Easily track and monitor car repair records for stress-free maintenance management.",
-        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your vehicle repair records a breeze. With the power of Copilot, you can effortlessly stay informed about your car's maintenance timeline."
+        "short": "Track and monitor car repair records for stress-free maintenance management.",
+        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze. With the power of Copilot, you can effortlessly stay informed about your car's maintenance timeline."
     },
     "accentColor": "#FFFFFF",
     "composeExtensions": [
         {
             "composeExtensionType": "apiBased",
-            "apiSpecificationFile": "apiSpecFiles/repair.yaml",
+            "apiSpecificationFile": "apiSpecFiles/repair.yml",
             "commands": [
                 {
                     "id": "repair",

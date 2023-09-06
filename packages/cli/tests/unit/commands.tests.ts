@@ -46,6 +46,7 @@ import {
   updateTeamsAppCommand,
   upgradeCommand,
   validateCommand,
+  helpCommand,
 } from "../../src/commands/models";
 import AzureTokenProvider from "../../src/commonlib/azureLogin";
 import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
@@ -91,7 +92,6 @@ describe("CLI commands", () => {
       };
 
       const copilotPluginQuestionNames = [
-        QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
         QuestionNames.OpenAIPluginDomain.toString(),
         QuestionNames.ApiOperation.toString(),
@@ -118,13 +118,12 @@ describe("CLI commands", () => {
       };
       const res = await getCreateCommand().handler!(ctx);
       const copilotPluginQuestionNames = [
-        QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
         QuestionNames.OpenAIPluginDomain.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 4
+        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 3
       );
       assert.isTrue(res.isOk());
     });
@@ -521,6 +520,22 @@ describe("CLI commands", () => {
       };
       const res = await updateTeamsAppCommand.handler!(ctx);
       assert.isTrue(res.isOk());
+    });
+
+    it("MissingRequiredOptionError", async () => {
+      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-path": "fakePath" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await updateTeamsAppCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.equal(res.error.name, MissingRequiredOptionError.name);
+      }
     });
   });
   describe("upgradeCommand", async () => {
@@ -989,7 +1004,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
     });
   });
   describe("listSamplesCommand", async () => {
@@ -1027,6 +1042,19 @@ describe("CLI read-only commands", () => {
         telemetryProperties: {},
       };
       const res = await listSamplesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("helpCommand", async () => {
+    it("happy", async () => {
+      const ctx: CLIContext = {
+        command: { ...helpCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await helpCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

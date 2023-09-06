@@ -106,9 +106,9 @@ export class AadCollaboration {
       if (error.response!.status === 404) {
         return new AppIdNotExist(appId);
       } else if (error.response!.status >= 400 && error.response!.status < 500) {
-        return new HttpClientError(componentNameAad, message);
+        return new HttpClientError(error, componentNameAad, message);
       } else {
-        return new HttpServerError(componentNameAad, message);
+        return new HttpServerError(error, componentNameAad, message);
       }
     }
 
@@ -246,9 +246,9 @@ export class TeamsCollaboration {
         if (statusCode === 404) {
           return new AppIdNotExist(appId);
         } else if (statusCode >= 400 && statusCode < 500) {
-          return new HttpClientError(componentNameTeams, message);
+          return new HttpClientError(error, componentNameTeams, message);
         } else {
-          return new HttpServerError(componentNameTeams, message);
+          return new HttpServerError(error, componentNameTeams, message);
         }
       }
     }

@@ -1,0 +1,16 @@
+.sample-filter {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 8px;
+  margin-bottom: 24px;
+
+  .search-box {
+    width: 450px;
+    margin-bottom: 16px;
+  }
+
+  .type-dropdown {
+    width: 150px;
+    z-index: 2;
+  }
+}

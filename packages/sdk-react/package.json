@@ -68,7 +68,7 @@
     "@fluentui/react-components": "^9.15.0",
     "@microsoft/microsoft-graph-client": "^3.0.6",
     "@microsoft/teams-js": "^2.13.0",
-    "@microsoft/teamsfx": "workspace:*",
+    "@microsoft/teamsfx": "^2.2.2",
     "react": ">=16.8.0 <19.0.0",
     "react-dom": ">=16.8.0 <19.0.0"
   },

@@ -324,6 +324,26 @@ jobs:
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
           npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
 
+      - name: Extract VSCode & chromedriver(unix)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
+          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
+
+      - name: Extract VSCode & chromedriver(mac)
+        if: matrix.os == 'macos-latest' 
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+
+      - name: Extract VSCode & chromedriver(win)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
+          7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
+
       - name: M365 Login
         working-directory: packages/tests
         run: | # rm -r -f ~/.fx/account
@@ -539,3 +559,20 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+
+      - name: Send E-mail
+        run: |
+          response=$(curl \
+            --request POST \
+            --header "Content-Type: application/x-www-form-urlencoded" \
+            --data "grant_type=client_credentials&client_id=${{ secrets.TEST_CLEAN_CLIENT_ID }}&client_secret=${{ secrets.TEST_CLEAN_CLIENT_SECRET }}&resource=https://management.core.windows.net" \
+            "https://login.microsoftonline.com/${{ secrets.TEST_CLEAN_TENANT_ID }}/oauth2/token")
+
+          access_token=`echo $response | jq -r '. | select(.access_token) | .access_token'`
+
+          curl \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $access_token" \
+            --data '{"to": "${{ steps.list-jobs.outputs.to }}", "body": "${{ steps.list-jobs.outputs.body }}", "subject": "${{ steps.list-jobs.outputs.subject }}"}' \
+            'https://prod-18.northcentralus.logic.azure.com:443/workflows/b33d7861bfc64832a6f62cc8f2213988/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0'

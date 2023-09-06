@@ -17,7 +17,7 @@ export const DeployAadManifestOptions: CLICommandOption[] = [
     type: "string",
     shortName: "a",
     description:
-      "Specifies the Azure AD app manifest file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
+      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder, defaults to './aad.manifest.json'",
   },
   {
     name: "env",

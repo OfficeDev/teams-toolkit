@@ -28,14 +28,6 @@ export class UpdateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.update);
   readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle");
 
-  public async run(
-    args: UpdateAadAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const result = await this.execute(args, context);
-    return result.result;
-  }
-
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(args: UpdateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
     const summaries: string[] = [];
@@ -103,12 +95,12 @@ export class UpdateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new HttpClientError(actionName, message, helpLink)),
+            result: err(new HttpClientError(error, actionName, message, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new HttpServerError(actionName, message)),
+            result: err(new HttpServerError(error, actionName, message)),
             summaries: summaries,
           };
         }

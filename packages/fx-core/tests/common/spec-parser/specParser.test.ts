@@ -6,6 +6,7 @@ import fs from "fs-extra";
 import "mocha";
 import { expect } from "chai";
 import sinon from "sinon";
+import converter from "swagger2openapi";
 import { SpecParser } from "../../../src/common/spec-parser/specParser";
 import {
   ErrorType,
@@ -41,25 +42,88 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(parseStub);
     });
 
-    it("should return an error result object if the spec version is not supported", async function () {
+    it("should return an warning result object if the spec version is 2.0", async function () {
       const specPath = "path/to/spec";
-      const spec = { openapi: "2.0.0" };
+      const spec = {
+        swagger: "2.0",
+        info: {
+          version: "1.0.0",
+          title: "Swagger Petstore",
+          description:
+            "A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification",
+        },
+        host: "petstore.swagger.io",
+        basePath: "/v2",
+        schemes: ["https"],
+        paths: {
+          "/pet": {
+            post: {
+              summary: "Add a new pet to the store",
+              operationId: "addPet",
+              consumes: ["application/json"],
+              produces: ["application/json"],
+              parameters: [
+                {
+                  in: "body",
+                  name: "body",
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      id: {
+                        type: "integer",
+                        format: "int64",
+                      },
+                      name: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "Pet added to the store",
+                  schema: {
+                    type: "object",
+                    required: ["id", "name"],
+                    properties: {
+                      id: {
+                        type: "integer",
+                        format: "int64",
+                      },
+                      name: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
       const specParser = new SpecParser(specPath);
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+
+      const openapiSpecObj = await converter.convert(spec as any, {});
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .resolves(openapiSpecObj.openapi);
+      const validateStub = sinon
+        .stub(specParser.parser, "validate")
+        .resolves(openapiSpecObj.openapi);
 
       const result = await specParser.validate();
 
       expect(result).to.deep.equal({
-        status: ValidationStatus.Error,
-        warnings: [],
-        errors: [
+        status: ValidationStatus.Warning,
+        errors: [],
+        warnings: [
           {
-            type: ErrorType.VersionNotSupported,
-            content: ConstantString.SpecVersionNotSupported,
-            data: "2.0.0",
+            type: WarningType.ConvertSwaggerToOpenAPI,
+            content: ConstantString.ConvertSwaggerToOpenAPI,
           },
         ],
       });
@@ -533,10 +597,12 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
-        .returns({} as any);
+        .returns([] as any);
 
       const filter = ["get /hello"];
 
@@ -589,10 +655,12 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
-        .returns({} as any);
+        .returns([] as any);
 
       const filter = ["get /hello"];
 
@@ -650,7 +718,9 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
 
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
         .throws(new Error("generate adaptive card failed"));
@@ -691,7 +761,7 @@ describe("SpecParser", () => {
       const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
       const JSONStringifySpy = sinon.spy(JSON, "stringify");
       const JsyamlSpy = sinon.spy(jsyaml, "dump");
-      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves();
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves([] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
         .returns({} as any);
@@ -765,6 +835,21 @@ describe("SpecParser", () => {
             },
             post: {
               operationId: "createPet",
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                          required: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
               responses: {
                 200: {
                   content: {

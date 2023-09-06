@@ -31,13 +31,16 @@ export const SPFxAddWebpartOptions: CLICommandOption[] = [
     type: "string",
     shortName: "t",
     description:
-      "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
     required: true,
   },
   {
-    name: "local-manifest-path",
+    name: "local-teams-manifest-file",
+    questionName: "local-manifest-path",
     type: "string",
-    description: "Select local Teams manifest.json file",
+    shortName: "l",
+    description:
+      "Specifies the Microsoft Teams app manifest template file path for local environment, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.local.json'",
     required: true,
   },
 ];

@@ -39,6 +39,7 @@ function adjustOptions(options: CLICommandOption[]) {
     if (option.type === "string" && option.name === CliQuestionName.Capability) {
       // use dynamic options for capability question
       option.choices = CapabilityOptions.all({ platform: Platform.CLI }).map((o) => o.id);
+      break;
     }
   }
   return options;

@@ -43,7 +43,7 @@ const [nodeRange, platform, arch] = target.split("-");
     await pkg.exec(["./lib/index.js", "-t", target, "-o", output, "-c", "pkg.json", "--build"]);
     console.log("List files in lib folder:");
     fs.readdir("./lib/", (err, files) => {
-      files.forEach(file => {
+      files.forEach((file) => {
         console.log("\t" + file);
       });
     });

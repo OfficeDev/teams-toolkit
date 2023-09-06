@@ -415,6 +415,8 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
       ...CapabilityOptions.copilotPlugins(),
+      //add search me options here to unblock e2e test
+      CapabilityOptions.SearchMe(),
     ];
 
     return capabilityOptions;

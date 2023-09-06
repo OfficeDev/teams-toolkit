@@ -301,6 +301,9 @@ importers:
       open:
         specifier: ^8.2.1
         version: 8.2.1
+      semver:
+        specifier: ^7.5.4
+        version: 7.5.4
       tree-kill:
         specifier: ^1.2.2
         version: 1.2.2
@@ -351,6 +354,9 @@ importers:
       '@types/node':
         specifier: ^14.14.21
         version: 14.17.4
+      '@types/semver':
+        specifier: ^7.5.1
+        version: 7.5.1
       '@types/sinon':
         specifier: ^9.0.10
         version: 9.0.10
@@ -7403,7 +7409,7 @@ packages:
       read-package-json-fast: 2.0.3
       readdir-scoped-modules: 1.1.0
       rimraf: 3.0.2
-      semver: 7.5.2
+      semver: 7.5.4
       ssri: 8.0.1
       treeverse: 1.0.4
       walk-up-path: 1.0.0
@@ -8935,6 +8941,10 @@ packages:
 
   /@types/semver@7.5.0:
     resolution: {integrity: sha512-G8hZ6XJiHnuhQKR7ZmysCeJWE08o8T0AXtk5darsCaTVsYZhhgUrq53jizaR2FvsoeCwJhlmwTjkXBY5Pn/ZHw==}
+    dev: true
+
+  /@types/semver@7.5.1:
+    resolution: {integrity: sha512-cJRQXpObxfNKkFAZbJl2yjWtJCqELQIdShsogr1d2MilP8dKD9TE/nEKHkJgUNHdGKCQaf9HbIynuV2csLGVLg==}
     dev: true
 
   /@types/send@0.17.1:

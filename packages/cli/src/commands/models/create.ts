@@ -4,46 +4,42 @@ import {
   CLICommand,
   CLICommandOption,
   CLIContext,
-  CLIStringOption,
+  Platform,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
 import {
+  CapabilityOptions,
+  CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
   QuestionNames,
   isCopilotPluginEnabled,
-  CliQuestionName,
-  copilotPluginOptionIds,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
+import * as path from "path";
 import * as uuid from "uuid";
 import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { createSampleCommand } from "./createSample";
-import * as path from "path";
 
-function filterOptionsIfNotCopilotPlugin(options: CLICommandOption[]) {
+function adjustOptions(options: CLICommandOption[]) {
   if (!isCopilotPluginEnabled()) {
-    // filter out copilot-plugin in capability question
-    const capability = options.find(
-      (c: CLICommandOption) => c.name === CliQuestionName.Capability
-    ) as CLIStringOption;
-    if (capability.choices) {
-      capability.choices = capability.choices.filter(
-        (c: string) => !copilotPluginOptionIds.includes(c)
-      );
-    }
-
+    //skip copilot plugin options if copilot plugin is not enabled
     const copilotPluginQuestionNames = [
       QuestionNames.ApiSpecLocation.toString(),
       QuestionNames.OpenAIPluginDomain.toString(),
       QuestionNames.ApiOperation.toString(),
     ];
-
     options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
+  }
+  for (const option of options) {
+    if (option.type === "string" && option.name === CliQuestionName.Capability) {
+      // use dynamic options for capability question
+      option.choices = CapabilityOptions.all({ platform: Platform.CLI }).map((o) => o.id);
+    }
   }
   return options;
 }
@@ -52,7 +48,7 @@ export function getCreateCommand(): CLICommand {
   return {
     name: "new",
     description: "Create a new Microsoft Teams application.",
-    options: [...filterOptionsIfNotCopilotPlugin(CreateProjectOptions)],
+    options: [...adjustOptions(CreateProjectOptions)],
     examples: [
       {
         command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp -i false",

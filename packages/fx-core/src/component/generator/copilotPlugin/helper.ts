@@ -163,7 +163,7 @@ export async function listOperations(
         if (operations.length == 0) {
           const errors = [
             {
-              type: ApiSpecErrorType.NoSupportedApi,
+              type: ApiSpecErrorType.NoExtraAPICanBeAdded,
               content: getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"),
             },
           ];

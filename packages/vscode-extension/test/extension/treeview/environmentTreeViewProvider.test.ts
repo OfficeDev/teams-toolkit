@@ -27,6 +27,7 @@ describe("EnvironmentTreeViewProvider", () => {
   it("getChildren", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "test" });
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").returns(Promise.resolve(ok(["test"])));
+    sandbox.stub(environmentManager, "getExistingNonRemoteEnvs").returns(Promise.resolve(["test"]));
 
     const children = await EnvironmentTreeViewProvider.getChildren();
 

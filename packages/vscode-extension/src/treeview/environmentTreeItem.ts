@@ -4,7 +4,7 @@
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { LocalEnvironmentName, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import { M365Login } from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
@@ -18,7 +18,7 @@ import {
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes, environmentNameManager } from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",
@@ -55,7 +55,7 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     const children: DynamicNode[] = [];
-    if (this.identifier !== LocalEnvironmentName) {
+    if (environmentNameManager.isRemoteEnvironment(this.identifier)) {
       // check account status
       const accountStatus = await this.checkAccountForEnvironment(this.identifier);
       if (!accountStatus.isM365AccountLogin || accountStatus.isAzureAccountLogin === false) {

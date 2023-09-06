@@ -25,7 +25,7 @@
     "accentColor": "#FFFFFF",
     "composeExtensions": [
         {
-            "type": "apiBased",
+            "composeExtensionType": "apiBased",
             "apiSpecificationFile": "apiSpecFiles/repair.yml",
             "commands": [
                 {

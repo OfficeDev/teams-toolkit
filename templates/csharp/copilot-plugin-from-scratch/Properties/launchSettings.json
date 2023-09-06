@@ -5,10 +5,11 @@
       "commandLineArgs": "host start --port 5130 --pause-on-error",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "launchUrl": "https://teams.microsoft.com?login_hint=%USERNAME%",
+      "launchUrl": "https://teams.microsoft.com?appTenantId=%TENANTID%&login_hint=%USERNAME%",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "hotReloadProfile": "aspnetcore"
     }
     //// Uncomment following profile to debug project only (without launching Teams)
     //,
@@ -19,7 +20,8 @@
     //  "applicationUrl": "https://localhost:7130;http://localhost:5130",
     //  "environmentVariables": {
     //    "ASPNETCORE_ENVIRONMENT": "Development"
-    //  }
+    //  },
+    //  "hotReloadProfile": "aspnetcore"
     //}
   }
 }

@@ -77,6 +77,7 @@ export enum ErrorType {
   UrlProtocolNotSupported = "url-protocol-not-supported",
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
+  NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
   ResolveServerUrlFailed = "resolve-server-url-failed",
 
   ListFailed = "list-failed",

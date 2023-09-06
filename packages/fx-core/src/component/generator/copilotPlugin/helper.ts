@@ -159,6 +159,17 @@ export async function listOperations(
         operations = operations.filter(
           (operation: string) => !existingOperations.includes(operation)
         );
+        // No extra API can be added
+        if (operations.length == 0) {
+          const errors = [
+            {
+              type: ApiSpecErrorType.NoExtraAPICanBeAdded,
+              content: getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"),
+            },
+          ];
+          logValidationResults(errors, [], context, true, false);
+          return err(errors);
+        }
       } else {
         throw manifest.error;
       }

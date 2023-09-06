@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "linkunfurling${{RESOURCE_SUFFIX}}"
+        "value": "bot${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
         "value": "${{BOT_ID}}"
@@ -11,10 +11,10 @@
       "botAadAppClientSecret": {
         "value": "${{SECRET_BOT_PASSWORD}}"
       },
-      "openAIKey": {
-      "value": "${{SECRET_OPENAI_API_KEY}}"
+      "openAIApiKey": {
+        "value": "${{SECRET_OPENAI_API_KEY}}"
       },
-      "azureOpenAIKey": {
+      "azureOpenAIApiKey": {
         "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
       },
       "azureOpenAIEndpoint": {

@@ -11,10 +11,10 @@ param botAadAppClientId string
 param botAadAppClientSecret string
 
 @secure()
-param openAIKey string
+param openAIApiKey string
 
 @secure()
-param azureOpenAIKey string
+param azureOpenAIApiKey string
 
 @secure()
 param azureOpenAIEndpoint string
@@ -47,9 +47,14 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     serverFarmId: serverfarm.id
     httpsOnly: true
     siteConfig: {
+      alwaysOn: true
       appSettings: [
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {
+          name: 'RUNNING_ON_AZURE'
           value: '1'
         }
         {
@@ -61,15 +66,15 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           value: botAadAppClientSecret
         }
         {
-          name: 'OPENAI_API_KEY'
-          value: openAIKey
+          name: 'OpenAI__ApiKey'
+          value: openAIApiKey
         }
         {
-          name: 'AZURE_OPENAI_API_KEY'
-          value: azureOpenAIKey
+          name: 'Azure__OpenAIApiKey'
+          value: azureOpenAIApiKey
         }
         {
-          name: 'AZURE_OPENAI_ENDPOINT'
+          name: 'Azure__OpenAIEndpoint  '
           value: azureOpenAIEndpoint
         }
       ]

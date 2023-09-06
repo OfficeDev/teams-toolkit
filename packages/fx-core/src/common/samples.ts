@@ -30,8 +30,12 @@ export interface SampleConfig {
   configuration: string;
   suggested: boolean;
   gifUrl: string;
-  // maximum TTK version to run sample
+  // maximum TTK & CLI version to run sample
   maximumToolkitVersion?: string;
+  maximumCliVersion?: string;
+  // these 2 fields are used when external sample is upgraded and breaks in old TTK version.
+  minimumToolkitVersion?: string;
+  minimumCliVersion?: string;
   downloadUrl?: string;
 }
 

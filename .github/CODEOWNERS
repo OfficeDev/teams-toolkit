@@ -109,6 +109,7 @@
 /templates/**/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/message-extension-action @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/message-extension-search @JerryYangKai @eriolchan @Siglud @Yukun-dong
+/templates/**/message-extension-copilot @hund030 @eriolchan @huimiu
 
 /templates/**/non-sso-tab-default-bot @hund030 @yuqizhou77
 /templates/**/default-bot-message-extension @yuqizhou77 @MSFT-yiz

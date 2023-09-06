@@ -25,7 +25,7 @@ export { envUtil, DotenvOutput } from "./component/utils/envUtil";
 export { metadataUtil } from "./component/utils/metadataUtil";
 export { pathUtils } from "./component/utils/pathUtils";
 export { CoreCallbackFunc, FxCore } from "./core/FxCore";
-export { sampleProvider } from "./common/samples";
+export { sampleProvider, SampleConfig } from "./common/samples";
 export { loadingOptionsPlaceholder, loadingDefaultPlaceholder } from "./common/utils";
 export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioClient";
 export { getPermissionMap } from "./component/driver/aad/permissions/index";

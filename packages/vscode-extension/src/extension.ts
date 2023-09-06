@@ -738,6 +738,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/manifest.*.json`,
   };
 
+  const smeOpenapiSpecSelector = {
+    language: "yaml",
+    scheme: "file",
+    pattern: `**/${AppPackageFolderName}/apiSpecFiles/*.{yml,yaml}`,
+  };
+
   const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
 
   const aadAppTemplateSelectorV3 = {
@@ -792,6 +798,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
+      manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      smeOpenapiSpecSelector,
       manifestTemplateCodeLensProvider
     )
   );

@@ -505,6 +505,20 @@ describe("generateScaffoldingSummary", () => {
     assert.isTrue(res.includes("name/short"));
   });
 
+  it("no warnings if exceeding length with placeholder in short name", () => {
+    const shortName = "testdebug09051-${{TEAMSFX_ENV}}";
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        name: { short: shortName, full: "full" },
+        description: { short: "short", full: "full" },
+      },
+      "path"
+    );
+    assert.equal(res.length, 0);
+  });
+
   it("warnings about API spec", () => {
     const res = generateScaffoldingSummary(
       [{ type: WarningType.OperationIdMissing, content: "content" }],

@@ -1,23 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Colors,
-  IQTreeNode,
-  Inputs,
-  MultiSelectQuestion,
-  OptionItem,
-  Platform,
-  Question,
-  SingleSelectQuestion,
-} from "@microsoft/teamsfx-api";
-import { getSingleOption, sampleProvider } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { Options } from "yargs";
+import semver from "semver";
+
+import {
+  Colors,
+  Inputs,
+  IQTreeNode,
+  MultiSelectQuestion,
+  OptionItem,
+  Platform,
+  Question,
+  SingleSelectQuestion,
+} from "@microsoft/teamsfx-api";
+import { getSingleOption, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
+
 import { teamsAppFileName } from "./constants";
 import CLIUIInstance from "./userInteraction";
 
@@ -200,7 +203,19 @@ export interface Sample {
 
 export async function getTemplates(): Promise<Sample[]> {
   await sampleProvider.fetchSampleConfig();
-  const samples = sampleProvider.SampleCollection.samples.map((sample) => {
+  const version = getVersion();
+  const availableSamples = sampleProvider.SampleCollection.samples.filter(
+    (sample: SampleConfig) => {
+      if (sample.minimumCliVersion !== undefined) {
+        return semver.gte(version, sample.minimumCliVersion);
+      }
+      if (sample.maximumCliVersion !== undefined) {
+        return semver.lte(version, sample.maximumCliVersion);
+      }
+      return true;
+    }
+  );
+  const samples = availableSamples.map((sample: SampleConfig) => {
     return {
       tags: sample.tags,
       name: sample.title,

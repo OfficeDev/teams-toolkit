@@ -92,7 +92,6 @@ describe("CLI commands", () => {
       };
 
       const copilotPluginQuestionNames = [
-        QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
         QuestionNames.OpenAIPluginDomain.toString(),
         QuestionNames.ApiOperation.toString(),
@@ -119,13 +118,12 @@ describe("CLI commands", () => {
       };
       const res = await getCreateCommand().handler!(ctx);
       const copilotPluginQuestionNames = [
-        QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
         QuestionNames.OpenAIPluginDomain.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 4
+        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 3
       );
       assert.isTrue(res.isOk());
     });
@@ -1006,7 +1004,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
     });
   });
   describe("listSamplesCommand", async () => {

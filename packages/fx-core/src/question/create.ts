@@ -48,6 +48,7 @@ import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
   copilotPluginExistingApiOptionIds,
+  copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";
 
@@ -400,34 +401,28 @@ export class CapabilityOptions {
     ];
   }
 
-  static copilotPluginCli(): OptionItem {
-    return {
-      id: "copilot-plugin-capability",
-      label: `${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
-    };
-  }
-
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
-      CapabilityOptions.copilotPluginCli(),
+      ...CapabilityOptions.copilotPlugins(),
+      //add search me options here to unblock e2e test
+      CapabilityOptions.SearchMe(),
     ];
 
     return capabilityOptions;
   }
 
   static all(inputs?: Inputs): OptionItem[] {
-    // teamsfx list capabilities
+    // teamsfx list templates
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
     ];
     if (isCopilotPluginEnabled()) {
-      capabilityOptions.push(CapabilityOptions.copilotPluginCli());
+      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
 
     return capabilityOptions;
@@ -472,7 +467,7 @@ export class CapabilityOptions {
   // copilot plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: "new-api",
+      id: copilotPluginNewApiOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -715,17 +710,6 @@ function botTriggerQuestion(): SingleSelectQuestion {
         : NotificationTriggerOptions.appService().id;
     },
     placeholder: getLocalizedString("plugins.bot.questionHostTypeTrigger.placeholder"),
-  };
-}
-
-function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
-  return {
-    name: QuestionNames.CopilotPluginDevelopment,
-    title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
-    type: "singleSelect",
-    staticOptions: CapabilityOptions.copilotPlugins(),
-    cliShortName: "p",
-    cliDescription: "Plugin for Copilot.",
   };
 }
 
@@ -1476,14 +1460,6 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
   };
 }
 
-function getCopilotPluginFeatureId(inputs: Inputs): string {
-  if (CLIPlatforms.includes(inputs.platform)) {
-    return inputs[QuestionNames.CopilotPluginDevelopment];
-  } else {
-    return inputs[QuestionNames.Capabilities];
-  }
-}
-
 export function capabilitySubTree(): IQTreeNode {
   const node: IQTreeNode = {
     data: capabilityQuestion(),
@@ -1542,37 +1518,21 @@ export function capabilitySubTree(): IQTreeNode {
         data: officeAddinHostingQuestion(),
       },
       {
-        // Copilot plugin sub-tree (will show in CLI only)
-        condition: (inputs: Inputs) => {
-          return (
-            CLIPlatforms.includes(inputs.platform) &&
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
-          );
-        },
-        data: copilotPluginDevelopmentQuestion(),
-      },
-      {
         // Copilot plugin from API spec or AI Plugin
-        condition: (inputs: Inputs) => {
-          return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
+        condition: {
+          enum: [
+            CapabilityOptions.copilotPluginApiSpec().id,
+            CapabilityOptions.copilotPluginOpenAIPlugin().id,
+          ],
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: (inputs: Inputs) => {
-              return (
-                getCopilotPluginFeatureId(inputs) === CapabilityOptions.copilotPluginApiSpec().id
-              );
-            },
+            condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
             data: apiSpecLocationQuestion(),
           },
           {
-            condition: (inputs: Inputs) => {
-              return (
-                getCopilotPluginFeatureId(inputs) ===
-                CapabilityOptions.copilotPluginOpenAIPlugin().id
-              );
-            },
+            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
             data: openAIPluginManifestLocationQuestion(),
           },
           {
@@ -1583,13 +1543,11 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // programming language
         data: programmingLanguageQuestion(),
-        condition: (inputs: Inputs) => {
-          const copilotFeature = getCopilotPluginFeatureId(inputs);
-          if (copilotFeature) {
-            return !copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
-          } else {
-            return !!inputs[QuestionNames.Capabilities];
-          }
+        condition: {
+          excludesEnum: [
+            CapabilityOptions.copilotPluginApiSpec().id,
+            CapabilityOptions.copilotPluginOpenAIPlugin().id,
+          ],
         },
       },
       {
@@ -1682,7 +1640,6 @@ export function createProjectCliHelpNode(): IQTreeNode {
   }
   if (!isCopilotPluginEnabled()) {
     deleteNames.push(QuestionNames.CopilotPluginExistingApi);
-    deleteNames.push(QuestionNames.CopilotPluginDevelopment);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;

@@ -205,13 +205,7 @@ class Coordinator {
       // set isVS global var when creating project
       const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
-      let capability = inputs.capabilities as string;
-      if (
-        inputs.platform === Platform.CLI &&
-        capability === CapabilityOptions.copilotPluginCli().id
-      ) {
-        capability = inputs[QuestionNames.CopilotPluginDevelopment] as string;
-      }
+      const capability = inputs.capabilities as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {

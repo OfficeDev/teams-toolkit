@@ -136,7 +136,7 @@ export enum Capability {
   Spfx = "tab-spfx",
   M365SearchApp = "search-app",
   MessageExtension = "message-extension",
-  LinkUnfruling = "link-unfurling",
+  LinkUnfurling = "link-unfurling",
   // v2 only
   Tab = "tab",
 }

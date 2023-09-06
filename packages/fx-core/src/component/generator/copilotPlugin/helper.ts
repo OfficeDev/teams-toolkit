@@ -344,10 +344,15 @@ function validateTeamsManifestLength(
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
   const descriptionFullLimit = 4000;
+  const envPlaceholder = "${{TEAMSFX_ENV}}";
+  const devEnv = "dev";
   const resultWarnings = [];
 
   // validate name
-  if (teamsManifest.name.short.length > nameShortLimit) {
+  const shortNameLength = teamsManifest.name.short.includes(envPlaceholder)
+    ? teamsManifest.name.short.length - envPlaceholder.length + devEnv.length
+    : teamsManifest.name.short.length;
+  if (shortNameLength > nameShortLimit) {
     resultWarnings.push(formatLengthExceedingErrorMessage("/name/short", nameShortLimit));
   }
 

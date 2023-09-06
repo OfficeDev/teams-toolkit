@@ -72,7 +72,6 @@ export interface GenerateResult {
  */
 export enum ErrorType {
   SpecNotValid = "spec-not-valid",
-  VersionNotSupported = "version-not-supported",
   RemoteRefNotSupported = "remote-ref-not-supported",
   NoServerInformation = "no-server-information",
   UrlProtocolNotSupported = "url-protocol-not-supported",
@@ -101,6 +100,7 @@ export enum WarningType {
   OperationIdMissing = "operationid-missing",
   GenerateCardFailed = "generate-card-failed",
   OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
+  ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
   Unknown = "unknown",
 }
 

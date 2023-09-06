@@ -563,7 +563,7 @@ describe("Package Service", () => {
     chai.assert.deepEqual(result, ["foo", "bar"]);
   });
 
-  it("getActiveExperiences returns undefined on error", async () => {
+  it("getActiveExperiences throws expected error", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
         titlesServiceUrl: "https://test-url",
@@ -573,14 +573,37 @@ describe("Package Service", () => {
 
     const packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
-    let result: string[] | undefined;
     try {
-      result = await packageService.getActiveExperiences("test-token");
+      await packageService.getActiveExperiences("test-token");
     } catch (error: any) {
       actualError = error;
     }
 
-    chai.assert.isUndefined(actualError);
-    chai.assert.isUndefined(result);
+    chai.assert.isDefined(actualError);
+    chai.assert.isTrue(actualError?.message.includes("test-get"));
+  });
+
+  it("getActiveExperiences throws expected response error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    const expectedError = new Error("test-get") as any;
+    expectedError.response = {
+      data: {},
+    };
+    axiosGetResponses["/catalog/v1/users/experiences"] = expectedError;
+
+    const packageService = new PackageService("https://test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      await packageService.getActiveExperiences("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.isTrue(actualError instanceof UnhandledError);
   });
 });

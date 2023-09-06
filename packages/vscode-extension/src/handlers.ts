@@ -2835,7 +2835,7 @@ export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxE
 
 export function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
   VS_CODE_UI.showMessage(
-    "error",
+    "warn",
     localize("teamstoolkit.accountTree.copilotMessage"),
     false,
     localize("teamstoolkit.accountTree.copilotEnroll")

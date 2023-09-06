@@ -6,11 +6,11 @@ import * as vscode from "vscode";
 import { serviceScope, getCopilotStatus } from "@microsoft/teamsfx-core";
 
 import M365TokenInstance from "../../commonlib/m365Login";
-import { checkCopilotCallback, tools } from "../../handlers";
+import { checkCopilotCallback } from "../../handlers";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
-import { errorIcon, infoIcon, passIcon } from "./common";
+import { infoIcon, passIcon, warningIcon } from "./common";
 
 enum ContextValues {
   Normal = "checkCopilot",
@@ -73,10 +73,9 @@ export class CopilotNode extends DynamicNode {
       this.command = undefined;
     } else {
       this.label = localize("teamstoolkit.accountTree.copilotWarning");
-      this.iconPath = errorIcon;
+      this.iconPath = warningIcon;
       this.tooltip = localize("teamstoolkit.accountTree.copilotWarningTooltip");
       this.contextValue = ContextValues.ShowInfo;
-      // TD: callback command
       this.command = {
         title: this.label,
         command: "fx-extension.checkCopilotCallback",

@@ -299,6 +299,35 @@ describe("envUtils", () => {
         assert.deepEqual(res.value, ["dev", "prod"]);
       }
     });
+
+    it("remote env only", async () => {
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+      sandbox
+        .stub(fs, "readdir")
+        .resolves([".env.dev", ".env.prod", ".env.local", ".env.testtool"] as any);
+      const res = await envUtil.listEnv(".", true);
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.deepEqual(res.value, ["dev", "prod"]);
+      }
+    });
+  });
+
+  describe("environmentManager.getExistingNonRemoteEnvs", () => {
+    it("With testtool env", async () => {
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+      sandbox
+        .stub(fs, "readdir")
+        .resolves([".env.dev", ".env.prod", ".env.local", ".env.testtool"] as any);
+      const res = await environmentManager.getExistingNonRemoteEnvs(".");
+      assert.deepEqual(res, ["local", "testtool"]);
+    });
+    it("Without testtool env", async () => {
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+      sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod", ".env.local"] as any);
+      const res = await environmentManager.getExistingNonRemoteEnvs(".");
+      assert.deepEqual(res, ["local"]);
+    });
   });
 
   describe("pathUtils.mergeEnv", () => {

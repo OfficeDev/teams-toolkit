@@ -8,7 +8,6 @@ import {
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
-  LocalEnvironmentName,
   MultiSelectQuestion,
   OptionItem,
   Platform,
@@ -33,6 +32,7 @@ import {
   apiSpecLocationQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
+import { environmentNameManager } from "../core/environmentName";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -449,7 +449,7 @@ export function selectTargetEnvQuestion(
   questionName = QuestionNames.TargetEnvName,
   remoteOnly = true,
   throwErrorIfNoEnv = false,
-  defaultValueIfNoEnv = environmentManager.getDefaultEnvName()
+  defaultValueIfNoEnv = environmentNameManager.getDefaultEnvName()
 ): SingleSelectQuestion {
   return {
     type: "singleSelect",
@@ -624,15 +624,15 @@ export async function newEnvNameValidation(
   inputs?: Inputs
 ): Promise<string | undefined> {
   const targetEnvName = input;
-  const match = targetEnvName.match(environmentManager.envNameRegex);
+  const match = targetEnvName.match(environmentNameManager.envNameRegex);
   if (!match) {
     return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
   }
 
-  if (targetEnvName === LocalEnvironmentName) {
+  if (environmentNameManager.isRemoteEnvironment(targetEnvName)) {
     return getLocalizedString(
       "core.getQuestionNewTargetEnvironmentName.validation3",
-      LocalEnvironmentName
+      targetEnvName
     );
   }
   if (!inputs?.projectPath) return "Project path is not defined";

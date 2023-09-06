@@ -227,7 +227,9 @@ class EnvUtil {
     let envs = list
       .map((fileName) => this.extractEnvNameFromFileName(fileName))
       .filter((env) => env !== undefined) as string[];
-    if (remoteOnly) envs = envs.filter((env) => env !== "local");
+    if (remoteOnly) {
+      envs = envs.filter((env) => environmentNameManager.isRemoteEnvironment(env));
+    }
     return ok(envs);
   }
   object2map(obj: DotenvOutput): Map<string, string> {

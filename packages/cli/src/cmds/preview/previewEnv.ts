@@ -37,6 +37,7 @@ import { openHubWebClientNew } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 enum Progress {
   M365Account = "Microsoft 365 Account",
 }
@@ -62,7 +63,7 @@ export default class PreviewEnv extends YargsCommand {
       .options("env", {
         description: "Select an existing env for the project",
         string: true,
-        default: environmentManager.getLocalEnvName(),
+        default: environmentNameManager.getLocalEnvName(),
       })
       .options("manifest-file-path", {
         description:
@@ -131,7 +132,7 @@ export default class PreviewEnv extends YargsCommand {
 
     cliTelemetry.withRootFolder(workspaceFolder);
     this.telemetryProperties[TelemetryProperty.PreviewType] =
-      env.toLowerCase() === environmentManager.getLocalEnvName() ? "local" : `remote-${env}`;
+      environmentNameManager.isRemoteEnvironment(env.toLowerCase()) ? `remote-${env}` : env;
     this.telemetryProperties[TelemetryProperty.PreviewHub] = m365Host;
     this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
 
@@ -197,7 +198,7 @@ export default class PreviewEnv extends YargsCommand {
     if (
       !openOnly &&
       runCommand === undefined &&
-      env.toLowerCase() === environmentManager.getLocalEnvName()
+      env.toLowerCase() === environmentNameManager.getLocalEnvName()
     ) {
       const runCommandRes = await this.detectRunCommand(workspaceFolder);
       if (runCommandRes.isErr()) {
@@ -223,7 +224,10 @@ export default class PreviewEnv extends YargsCommand {
     try {
       // 5. run command as background task
       this.runningTasks = [];
-      if (runCommand !== undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
+      if (
+        runCommand !== undefined &&
+        env.toLowerCase() === environmentNameManager.getLocalEnvName()
+      ) {
         const runTaskRes = await localTelemetryReporter.runWithTelemetry(
           TelemetryEvent.PreviewStartServices,
           () => this.runCommandAsTask(workspaceFolder, runCommand!, runningPatternRegex, execPath)
@@ -238,7 +242,7 @@ export default class PreviewEnv extends YargsCommand {
       if (launchRes.isErr()) {
         throw launchRes.error;
       }
-      if (runCommand !== undefined && env === environmentManager.getLocalEnvName()) {
+      if (runCommand !== undefined && env === environmentNameManager.getLocalEnvName()) {
         cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
       }
     } catch (error: any) {

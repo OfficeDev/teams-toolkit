@@ -151,7 +151,7 @@ export class EnvironmentNode extends DynamicNode {
 
   // Get the environment info for the given environment name.
   private async getCurrentEnvInfo(envName: string): Promise<EnvInfo> {
-    if (envName === LocalEnvironmentName) {
+    if (envName === environmentNameManager.getLocalEnvName()) {
       return EnvInfo.Local;
     } else {
       const provisionSucceeded = await getProvisionSucceedFromEnv(envName);

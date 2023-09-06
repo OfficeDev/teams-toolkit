@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import {
   AppStudioScopes,
   Correlator,
-  environmentManager,
+  environmentNameManager,
   envUtil,
   Hub,
   isValidProject,
@@ -104,7 +104,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       env = env || debugConfiguration.teamsfxEnv;
 
       const isLocal =
-        env === environmentManager.getLocalEnvName() ||
+        (env && !environmentNameManager.isRemoteEnvironment(env)) ||
         !debugConfiguration.name.startsWith("Launch Remote");
       telemetryIsRemote = !isLocal;
 

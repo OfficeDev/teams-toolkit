@@ -10,7 +10,7 @@ import {
 import {
   MetadataV3,
   envUtil,
-  environmentManager,
+  environmentNameManager,
   getAllowedAppMaps,
   getPermissionMap,
 } from "@microsoft/teamsfx-core";
@@ -32,7 +32,7 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
   let localEnvs, defaultEnvs;
   const localEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
-    environmentManager.getLocalEnvName(),
+    environmentNameManager.getLocalEnvName(),
     false
   );
   if (localEnvsRes.isErr()) {
@@ -42,7 +42,7 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
   }
   const defaultEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
-    environmentManager.getDefaultEnvName(),
+    environmentNameManager.getDefaultEnvName(),
     false
   );
   if (defaultEnvsRes.isErr()) {
@@ -57,17 +57,17 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
     let title = "👉";
 
     const localValue = localEnvs[key];
-    title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
+    title = `${title} ${environmentNameManager.getLocalEnvName()}: ${localValue}`;
 
     if (lens.documentName.endsWith("manifest.template.local.json")) {
       lens.command = {
         title: title,
         command: "fx-extension.openConfigState",
-        arguments: [{ type: "env", from: from, env: environmentManager.getLocalEnvName() }],
+        arguments: [{ type: "env", from: from, env: environmentNameManager.getLocalEnvName() }],
       };
     } else {
       const defaultValue = defaultEnvs[key];
-      title = `${title}, ${environmentManager.getDefaultEnvName()}: ${defaultValue}`;
+      title = `${title}, ${environmentNameManager.getDefaultEnvName()}: ${defaultValue}`;
 
       lens.command = {
         title: title,

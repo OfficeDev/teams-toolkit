@@ -14,7 +14,7 @@ import {
   PreviewTeamsAppInputs,
   PreviewTeamsAppOptions,
   TelemetryContext,
-  environmentManager,
+  environmentNameManager,
 } from "@microsoft/teamsfx-core";
 import * as constants from "../../cmds/preview/constants";
 import { localTelemetryReporter } from "../../cmds/preview/localTelemetryReporter";
@@ -104,7 +104,7 @@ export const previewCommand: CLICommand = {
     const browser = inputs.browser as constants.Browser;
     const browserArguments = (inputs["browser-arg"] as string[]) ?? [];
     ctx.telemetryProperties[TelemetryProperty.PreviewType] =
-      env.toLowerCase() === environmentManager.getLocalEnvName() ? "local" : `remote-${env}`;
+      environmentNameManager.isRemoteEnvironment(env.toLowerCase()) ? `remote-${env}` : env;
     ctx.telemetryProperties[TelemetryProperty.PreviewHub] = m365Host;
     ctx.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
     const cmd = new PreviewEnv();

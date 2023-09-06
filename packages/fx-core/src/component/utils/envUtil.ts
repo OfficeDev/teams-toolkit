@@ -14,6 +14,7 @@ import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
 import { FileNotFoundError } from "../../error/common";
 import { internalOutputNames as UpdateTeamsAppOutputNames } from "../driver/teamsApp/configure";
+import { environmentNameManager } from "../../core/environmentName";
 
 export type DotenvOutput = {
   [k: string]: string;

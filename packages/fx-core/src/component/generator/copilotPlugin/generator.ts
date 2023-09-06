@@ -208,7 +208,7 @@ export class CopilotPluginGenerator {
         [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
-          .join("; "),
+          .join(";"),
       });
 
       if (generateResult.warnings.length > 0) {

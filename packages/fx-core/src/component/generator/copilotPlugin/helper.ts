@@ -40,7 +40,6 @@ import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { SpecParserError } from "../../../common/spec-parser/specParserError";
-import { ConstantString } from "../../../common/spec-parser/constants";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -162,9 +161,14 @@ export async function listOperations(
         );
         // No extra API can be added
         if (operations.length == 0) {
-          return err([
-            { type: ApiSpecErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
-          ]);
+          const errors = [
+            {
+              type: ApiSpecErrorType.NoSupportedApi,
+              content: getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"),
+            },
+          ];
+          logValidationResults(errors, [], context, true, false);
+          return err(errors);
         }
       } else {
         throw manifest.error;

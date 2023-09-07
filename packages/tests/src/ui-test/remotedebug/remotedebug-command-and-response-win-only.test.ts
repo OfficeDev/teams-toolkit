@@ -1,5 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/**
+ * @author Helly Zhang <v-helzha@microsoft.com>
+ */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";

@@ -409,28 +409,35 @@ export class CapabilityOptions {
     ];
   }
 
+  /**
+   * static capability list, which does not depend on any feature flags
+   */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
       ...CapabilityOptions.copilotPlugins(),
+      //add search me options here to unblock e2e test
+      CapabilityOptions.SearchMe(),
     ];
 
     return capabilityOptions;
   }
 
+  /**
+   * dynamic capability list, which depends on feature flags
+   */
   static all(inputs?: Inputs): OptionItem[] {
-    // teamsfx list templates
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
+      CapabilityOptions.SearchMe(),
     ];
     if (isCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
-
     return capabilityOptions;
   }
 

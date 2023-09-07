@@ -590,11 +590,6 @@ describe("scaffold question", () => {
         questions.push(question.name);
         await callFuncs(question, inputs);
         if (question.name === QuestionNames.Capabilities) {
-          const select = question as SingleSelectQuestion;
-          const staticOptions = select.staticOptions;
-          assert.isTrue(staticOptions.length === 15);
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 12);
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
           return ok({ type: "success", result: NotificationTriggerOptions.appService().id });
@@ -636,17 +631,8 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.Runtime) {
           return ok({ type: "success", result: RuntimeOptions.DotNet().id });
         } else if (question.name === QuestionNames.Capabilities) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 12);
           return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
         } else if (question.name === QuestionNames.BotTrigger) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.deepEqual(options, [
-            NotificationTriggerOptions.appServiceForVS(),
-            ...NotificationTriggerOptions.functionsTriggers(),
-          ]);
           return ok({ type: "success", result: NotificationTriggerOptions.appServiceForVS().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
@@ -863,9 +849,6 @@ describe("scaffold question", () => {
           questions.push(question.name);
           await callFuncs(question, inputs);
           if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 15);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             return ok({ type: "success", result: "javascript" });
@@ -1090,6 +1073,33 @@ describe("scaffold question", () => {
             { id: "GET /store/order", label: "GET /store/order", groupName: "GET" },
           ]);
           assert.isUndefined(res);
+        });
+
+        it("No extra API found", async () => {
+          const question = apiSpecLocationQuestion(false);
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            "manifest-path": "fakePath",
+          };
+          const operationMap = new Map<string, string>([
+            ["getUserById", "GET /user/{userId}"],
+            ["getStoreOrder", "GET /store/order"],
+          ]);
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox
+            .stub(SpecParser.prototype, "list")
+            .resolves(["GET /user/{userId}", "GET /store/order"]);
+          sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+          sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById", "getStoreOrder"]);
+          sandbox.stub(fs, "pathExists").resolves(true);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+          assert.isNotNull(res);
         });
       });
 

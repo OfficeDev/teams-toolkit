@@ -31,7 +31,8 @@ export interface CreateProjectInputs extends Inputs {
     | "collect-form-message-extension"
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
-    | "copilot-plugin-openai-plugin";
+    | "copilot-plugin-openai-plugin"
+    | "search-message-extension";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"

@@ -134,15 +134,6 @@ export async function generateCommands(
 
               const adaptiveCardPath = path.join(adaptiveCardFolder, operationId + ".json");
 
-              if (parameters.length === 0) {
-                warnings.push({
-                  type: WarningType.OperationOnlyContainsOptionalParam,
-                  content: format(ConstantString.OperationOnlyContainsOptionalParam, operationId),
-                  data: operationId,
-                });
-                continue;
-              }
-
               const command: Command = {
                 context: ["compose"],
                 type: "query",
@@ -154,6 +145,14 @@ export async function generateCommands(
                   : "",
               };
               commands.push(command);
+
+              if (parameters.length === 0) {
+                warnings.push({
+                  type: WarningType.OperationOnlyContainsOptionalParam,
+                  content: format(ConstantString.OperationOnlyContainsOptionalParam, operationId),
+                  data: operationId,
+                });
+              }
             }
           }
         }

@@ -132,7 +132,9 @@ export default class PreviewEnv extends YargsCommand {
 
     cliTelemetry.withRootFolder(workspaceFolder);
     this.telemetryProperties[TelemetryProperty.PreviewType] =
-      environmentNameManager.isRemoteEnvironment(env.toLowerCase()) ? `remote-${env}` : env;
+      environmentNameManager.isRemoteEnvironment(env.toLowerCase())
+        ? `remote-${env}`
+        : env.toLowerCase();
     this.telemetryProperties[TelemetryProperty.PreviewHub] = m365Host;
     this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
 

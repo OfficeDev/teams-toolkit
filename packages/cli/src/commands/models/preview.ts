@@ -104,7 +104,9 @@ export const previewCommand: CLICommand = {
     const browser = inputs.browser as constants.Browser;
     const browserArguments = (inputs["browser-arg"] as string[]) ?? [];
     ctx.telemetryProperties[TelemetryProperty.PreviewType] =
-      environmentNameManager.isRemoteEnvironment(env.toLowerCase()) ? `remote-${env}` : env;
+      environmentNameManager.isRemoteEnvironment(env.toLowerCase())
+        ? `remote-${env}`
+        : env.toLowerCase();
     ctx.telemetryProperties[TelemetryProperty.PreviewHub] = m365Host;
     ctx.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
     const cmd = new PreviewEnv();

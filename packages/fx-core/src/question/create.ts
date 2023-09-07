@@ -402,6 +402,30 @@ export class CapabilityOptions {
     ];
   }
 
+  /**
+   * Collect all capabilities for message extension, including dotnet and nodejs.
+   * @param filterByFeatureFlag true: filter capabilities by feature flag, false: return all capabilities
+   * @returns OptionItem[] capability list
+   */
+  static collectMECaps(filterByFeatureFlag: boolean): OptionItem[] {
+    return filterByFeatureFlag
+      ? [
+          CapabilityOptions.linkUnfurling(),
+          isMECopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.SearchMe(),
+        ]
+      : [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.copilotM365SearchMe(),
+          CapabilityOptions.SearchMe(),
+        ];
+  }
+
   static mes(inputs?: Inputs): OptionItem[] {
     return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
       ? [
@@ -433,10 +457,8 @@ export class CapabilityOptions {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.mes(),
+      ...CapabilityOptions.collectMECaps(false),
       ...CapabilityOptions.copilotPlugins(),
-      //add search me options here to unblock e2e test
-      CapabilityOptions.SearchMe(),
     ];
 
     return capabilityOptions;
@@ -449,8 +471,7 @@ export class CapabilityOptions {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.mes(),
-      CapabilityOptions.SearchMe(),
+      ...CapabilityOptions.collectMECaps(true),
     ];
     if (isCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());

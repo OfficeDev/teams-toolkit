@@ -29,10 +29,11 @@ export interface CreateProjectInputs extends Inputs {
     | "link-unfurling"
     | "search-app"
     | "collect-form-message-extension"
+    | "search-me-copilot"
+    | "search-message-extension"
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
-    | "copilot-plugin-openai-plugin"
-    | "search-message-extension";
+    | "copilot-plugin-openai-plugin";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"

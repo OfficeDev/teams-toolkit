@@ -76,6 +76,7 @@ import {
   ErrorResult,
   listOperations,
   OpenAIPluginManifestHelper,
+  generateScaffoldingSummary,
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
@@ -1120,8 +1121,23 @@ export class FxCore {
     );
 
     try {
-      const specParser = new SpecParser(url);
-      await specParser.generate(manifestPath, operations, outputAPISpecPath, adaptiveCardFolder);
+      const generateResult = await specParser.generate(
+        manifestPath,
+        operations,
+        outputAPISpecPath,
+        adaptiveCardFolder
+      );
+      if (generateResult.warnings) {
+        const warnSummary = generateScaffoldingSummary(
+          generateResult.warnings,
+          manifestRes.value,
+          inputs.projectPath!
+        );
+        if (warnSummary) {
+          const context = createContextV3();
+          context.logProvider.info(warnSummary);
+        }
+      }
     } catch (e) {
       let error: FxError;
       if (e instanceof SpecParserError) {

@@ -1376,8 +1376,8 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.OpenAIPluginDomain,
     cliShortName: "d",
-    title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
-    placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
+    title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
+    placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
     cliDescription: "OpenAI plugin website domain.",
     forgetLastValue: true,
     validation: {
@@ -1459,7 +1459,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     staticOptions: [],
     validation: {
       minItems: 1,
-      maxItems: 10,
+      maxItems: 1,
     },
     dynamicOptions: (inputs: Inputs) => {
       if (!inputs.supportedApisFromApiSpec) {

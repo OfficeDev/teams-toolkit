@@ -472,6 +472,7 @@
   "driver.aadApp.error.missingEnv": "Environment variable %s is not set.",
   "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",
   "driver.aadApp.error.invalidFieldInManifest": "Field %s is missing or invalid in Azure Active Directory app manifest.",
+  "driver.aadApp.error.appNameTooLong": "The name for this Azure Active Directory app is too long. The maximum length is 120.",
   "driver.aadApp.progressBar.createAadAppTitle": "Creating Azure Active Directory application...",
   "driver.aadApp.progressBar.updateAadAppTitle": "Updating Azure Active Directory application...",
   "driver.aadApp.log.startExecuteDriver": "Executing action %s",

@@ -15,6 +15,7 @@ export class FileNotFoundError extends UserError {
       message: getDefaultString(key, filePath),
       displayMessage: getLocalizedString(key, filePath),
       helpLink: helpLink,
+      categories: ["internal"],
     };
     super(errorOptions);
   }
@@ -31,6 +32,7 @@ export class MissingEnvironmentVariablesError extends UserError {
       message: getDefaultString(key, variableNames, templateFilePath, envFilePath),
       displayMessage: getLocalizedString(key, variableNames, templateFilePath, envFilePath),
       helpLink: helpLink || "https://aka.ms/teamsfx-v5.0-guide#environments",
+      categories: ["internal"],
     };
     super(errorOptions);
   }
@@ -50,6 +52,7 @@ export class InvalidActionInputError extends UserError {
         globalVars.ymlFilePath
       ),
       helpLink: helpLink || "https://aka.ms/teamsfx-actions",
+      categories: ["internal"],
     };
     super(errorOptions);
   }
@@ -61,23 +64,24 @@ export class InvalidProjectError extends UserError {
       message: getDefaultString("error.common.InvalidProjectError"),
       displayMessage: getLocalizedString("error.common.InvalidProjectError"),
       source: "coordinator",
+      categories: ["internal"],
     });
   }
 }
 
 export class JSONSyntaxError extends UserError {
-  constructor(filePathOrContent: string, e: any, source?: string) {
+  constructor(filePathOrContent: string, error: any, source?: string) {
     super({
-      message: getDefaultString("error.common.JSONSyntaxError", filePathOrContent, e.message),
+      message: getDefaultString("error.common.JSONSyntaxError", filePathOrContent, error.message),
       displayMessage: getLocalizedString(
         "error.common.JSONSyntaxError",
         filePathOrContent,
-        e.message
+        error.message
       ),
       source: source || "coordinator",
-      error: e,
+      error: error,
+      categories: ["internal"],
     });
-    super.stack = e.stack;
   }
 }
 
@@ -87,8 +91,9 @@ export class ReadFileError extends SystemError {
       source: source || "unknown",
       message: e.message || getDefaultString("error.common.ReadFileError", e.message),
       displayMessage: e.message || getLocalizedString("error.common.ReadFileError", e.message),
+      categories: ["internal"],
+      error: e,
     });
-    if (e.stack) super.stack = e.stack;
   }
 }
 
@@ -98,8 +103,9 @@ export class WriteFileError extends SystemError {
       source: source || "unknown",
       message: e.message || getDefaultString("error.common.WriteFileError", e.message),
       displayMessage: e.message || getLocalizedString("error.common.WriteFileError", e.message),
+      categories: ["internal"],
+      error: e,
     });
-    if (e.stack) super.stack = e.stack;
   }
 }
 
@@ -110,8 +116,9 @@ export class FilePermissionError extends UserError {
       source: source || "unknown",
       message: msg,
       displayMessage: msg,
+      error: e,
+      categories: ["internal"],
     });
-    if (e.stack) super.stack = e.stack;
   }
 }
 

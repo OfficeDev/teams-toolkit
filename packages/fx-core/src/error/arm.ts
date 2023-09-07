@@ -90,6 +90,7 @@ export class DownloadBicepCliError extends UserError {
       name: "DownloadBicepCliError",
       message: getDefaultString(key, url, error.message),
       displayMessage: getLocalizedString(key, url, error.message),
+      categories: ["external"],
     };
     super(errorOptions);
   }

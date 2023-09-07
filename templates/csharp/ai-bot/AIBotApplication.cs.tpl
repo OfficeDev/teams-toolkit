@@ -7,7 +7,8 @@ namespace {{SafeProjectName}};
 
 public class AIBotApplication : Application<TurnState, TurnStateManager>
 {
-    public AIBotApplication(ApplicationOptions<TurnState, TurnStateManager> options) : base(options) { 
+    public AIBotApplication(ApplicationOptions<TurnState, TurnStateManager> options) : base(options) 
+    { 
     }
 
     protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, TurnState turnState, CancellationToken cancellationToken)

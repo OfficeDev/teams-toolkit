@@ -237,6 +237,29 @@ export async function updateFunctionAuthorizationPolicy(
     policySnippets.locationValue2
   );
   await fs.writeFileSync(functionBicepPath, content);
+
+  if (version == "3.2.0") {
+    const fileName = "simpleAuth.bicep";
+    const simpleAuthBicepPath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "teamsFx",
+      fileName
+    );
+    let content = await fs.readFile(simpleAuthBicepPath, "utf-8");
+    content = updateContent(
+      content,
+      policySnippets.locationKey1,
+      locationValue1
+    );
+    content = updateContent(
+      content,
+      policySnippets.locationKey2,
+      policySnippets.locationValue2
+    );
+    await fs.writeFileSync(simpleAuthBicepPath, content);
+  }
 }
 
 export function updateContent(

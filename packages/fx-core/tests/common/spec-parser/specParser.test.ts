@@ -167,7 +167,7 @@ describe("SpecParser", () => {
         errors: [
           {
             type: ErrorType.UrlProtocolNotSupported,
-            content: util.format(ConstantString.UrlProtocolNotSupported, "http:"),
+            content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: [{ url: "http://server1" }],
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },

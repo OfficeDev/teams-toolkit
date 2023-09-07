@@ -389,7 +389,7 @@
   "core.common.NoServerInformation":  "No server information is found in the OpenAPI specification file.",
   "core.common.RemoteRefNotSupported": "Remote reference is not supported: %s.",
   "core.common.MissingOperationId": "Missing operationIds: %s.",
-  "core.common.NoSupportedApi": "No supported API is found in the OpenAPI specification file: only GET and POST methods are supported and there can be at most one required parameter and no auth is allowed.",
+  "core.common.NoSupportedApi": "No supported API is found in the OpenAPI specification file: only GET and POST methods are supported, additionally, there can be at most one required parameter, and no auth is allowed.",
   "core.common.AdditionalPropertiesNotSupported": "'additionalProperties' is not supported, and will be ignored.",
   "core.common.SchemaNotSupported": "'oneOf', 'anyOf', and 'not' schema are not supported: %s.",
   "core.common.UnknownSchema": "Unknown schema: %s.",

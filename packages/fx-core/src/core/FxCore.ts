@@ -1133,10 +1133,8 @@ export class FxCore {
           manifestRes.value,
           inputs.projectPath!
         );
-        if (warnSummary) {
-          const context = createContextV3();
-          context.logProvider.info(warnSummary);
-        }
+        const context = createContextV3();
+        context.logProvider.info(warnSummary);
       }
     } catch (e) {
       let error: FxError;

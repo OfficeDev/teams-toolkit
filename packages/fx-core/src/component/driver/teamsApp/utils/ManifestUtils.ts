@@ -19,7 +19,11 @@ import "reflect-metadata";
 import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
+import {
+  FileNotFoundError,
+  JSONSyntaxError,
+  MissingEnvironmentVariablesError,
+} from "../../../../error/common";
 import { CapabilityOptions } from "../../../../question/create";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
@@ -44,13 +48,15 @@ import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
 import { WrapDriverContext } from "../../util/wrapUtil";
+import { hooks } from "@feathersjs/hooks";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = this.getTeamsAppManifestPath(projectPath);
     return await this._readAppManifest(filePath);
   }
-
+  @hooks([ErrorContextMW({ component: "ManifestUtils" })])
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new FileNotFoundError("teamsApp", manifestTemplatePath));
@@ -60,8 +66,12 @@ export class ManifestUtils {
     let content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
     content = stripBom(content);
     const contentV3 = convertManifestTemplateToV3(content);
-    const manifest = JSON.parse(contentV3) as TeamsAppManifest;
-    return ok(manifest);
+    try {
+      const manifest = JSON.parse(contentV3) as TeamsAppManifest;
+      return ok(manifest);
+    } catch (e) {
+      return err(new JSONSyntaxError(manifestTemplatePath, e, "ManifestUtils"));
+    }
   }
 
   async _writeAppManifest(

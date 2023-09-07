@@ -1521,6 +1521,15 @@ describe("scaffold question", () => {
   });
 
   describe("CapabilityOptions", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.MECopilotPlugin]: "false",
+      });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
     it("has 3 options in message extension type", () => {
       // Act
       const options = CapabilityOptions.mes();
@@ -1539,6 +1548,96 @@ describe("scaffold question", () => {
         options,
         CapabilityOptions.all({ platform: Platform.CLI, nonInteractive: true })
       );
+    });
+  });
+  describe("message extension copilot capability options", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.MECopilotPlugin]: "true",
+      });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("has 3 options in message extension type", () => {
+      // Act
+      const options = CapabilityOptions.mes();
+      // Assert
+      assert.equal(options.length, 3);
+      assert.deepEqual(options, [
+        CapabilityOptions.linkUnfurling(),
+        CapabilityOptions.copilotM365SearchMe(),
+        CapabilityOptions.collectFormMe(),
+      ]);
+    });
+    it("cli non-interactive", () => {
+      const question = capabilityQuestion();
+      const options = question.staticOptions;
+      assert.equal(options.length, 17);
+    });
+  });
+  describe("ME copilot plugin template", () => {
+    const ui = new MockUserInteraction();
+    let mockedEnvRestore: RestoreFn;
+    const tools = new MockTools();
+    setTools(tools);
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.MECopilotPlugin]: "true",
+      });
+    });
+
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+    it("traverse in vscode ME Copilot Plugin", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+        await callFuncs(question, inputs);
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: ProjectTypeOptions.me().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          assert.deepEqual(options, CapabilityOptions.mes());
+          return ok({ type: "success", result: CapabilityOptions.copilotM365SearchMe().id });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 2);
+          return ok({ type: "success", result: "typescript" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
     });
   });
   describe("programmingLanguageQuestion", () => {

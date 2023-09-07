@@ -70,7 +70,7 @@ export class ManifestUtils {
       const manifest = JSON.parse(contentV3) as TeamsAppManifest;
       return ok(manifest);
     } catch (e) {
-      return err(new JSONSyntaxError(contentV3, e, "ManifestUtils"));
+      return err(new JSONSyntaxError(manifestTemplatePath, e, "ManifestUtils"));
     }
   }
 

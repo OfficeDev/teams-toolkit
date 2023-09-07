@@ -16,6 +16,7 @@ import * as constants from "./constants";
 import cliTelemetry from "./telemetry/cliTelemetry";
 import { getVersion } from "./utils";
 import { TelemetryProperty } from "./telemetry/cliTelemetryEvents";
+import { logger } from "./commonlib/logger";
 
 initializePreviewFeatureFlags();
 
@@ -38,6 +39,15 @@ export function initTelemetryReporter(): void {
  */
 export async function start(binName: "teamsfx" | "teamsapp"): Promise<void> {
   initTelemetryReporter();
+  if (binName === "teamsfx") {
+    logger.warning(
+      `
+**********************************************************************************
+* Warning: command 'teamsfx' is deprecated and will be replaced with 'teamsapp'. *
+**********************************************************************************/
+`
+    );
+  }
   cliTelemetry.reporter?.addSharedProperty(TelemetryProperty.BinName, binName); // trigger binary name for telemetry
   if (isCliNewUxEnabled()) {
     return startNewUX(binName);

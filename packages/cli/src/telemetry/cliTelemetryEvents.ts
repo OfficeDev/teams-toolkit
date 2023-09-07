@@ -5,6 +5,8 @@
 export enum TelemetryEvent {
   //TODO: define CLI telemetry event
 
+  RootCommand = "root",
+
   AccountShowStart = "account-show-start",
   AccountShow = "account-show",
 

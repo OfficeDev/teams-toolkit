@@ -20,6 +20,7 @@ import { validateCommand } from "./validate";
 import { listCommand } from "./list";
 import { helper } from "../helper";
 import { logger } from "../../commonlib/logger";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -94,4 +95,7 @@ export const rootCommand: CLICommand = {
       default: true,
     },
   ],
+  telemetry: {
+    event: TelemetryEvent.RootCommand,
+  },
 };

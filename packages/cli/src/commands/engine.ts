@@ -90,6 +90,7 @@ class CLIEngine {
         [TelemetryProperty.CommandName]: foundCommand.fullName,
         [TelemetryProperty.Component]: TelemetryComponentType,
         [CliConfigOptions.RunFrom]: tryDetectCICDPlatform(),
+        [TelemetryProperty.BinName]: rootCmd.name,
       },
     };
 
@@ -145,7 +146,10 @@ class CLIEngine {
 
     // send start event
     if (telemetryEnabled && context.command.telemetry) {
-      CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
+      CliTelemetry.sendTelemetryEvent(
+        context.command.telemetry.event + "-start",
+        context.telemetryProperties
+      );
     }
 
     if (parseRes.isErr()) {
@@ -153,13 +157,13 @@ class CLIEngine {
     }
 
     // 3. --version
-    if (context.optionValues.version === true || context.globalOptionValues.version === true) {
+    if (context.globalOptionValues.version === true) {
       logger.info(root.version ?? "1.0.0");
       return ok(undefined);
     }
 
     // 4. --help
-    if (context.optionValues.help === true || context.globalOptionValues.help === true) {
+    if (context.globalOptionValues.help === true) {
       const helpText = helper.formatHelp(
         context.command,
         context.command.fullName !== root.fullName ? root : undefined
@@ -363,7 +367,10 @@ class CLIEngine {
               }
             }
           }
-          const isCommandOption = command.options?.includes(option);
+          const isCommandOption =
+            command.options?.includes(option) &&
+            command.fullName !== "teamsfx" &&
+            command.fullName !== "teamsapp";
           const inputValues = isCommandOption ? context.optionValues : context.globalOptionValues;
           const inputKey = this.optionInputKey(option);
           const logObject = {

@@ -159,6 +159,7 @@ export enum TelemetryProperty {
   CommandDebug = "command-debug",
   CommandVerbose = "command-verbose",
   CommandInteractive = "command-interactive",
+  BinName = "bin-name", // the input binary name: teamsfx or teamsapp
 }
 
 export enum TelemetrySuccess {

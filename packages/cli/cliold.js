@@ -19,4 +19,4 @@ process.on("uncaughtException", (err) => {
 });
 
 const cli = require("./lib");
-cli.start("teamsapp");
+cli.start("teamsfx");

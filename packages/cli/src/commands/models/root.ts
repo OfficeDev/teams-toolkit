@@ -31,8 +31,8 @@ export const helpCommand: CLICommand = {
   },
 };
 export const rootCommand: CLICommand = {
-  name: "teamsfx",
-  fullName: "teamsfx",
+  name: "teamsapp",
+  fullName: "teamsapp",
   description: "Microsoft Teams Toolkit CLI.",
   version: getVersion(),
   footer: FooterText,

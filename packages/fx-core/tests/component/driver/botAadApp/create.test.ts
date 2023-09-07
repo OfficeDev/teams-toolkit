@@ -23,6 +23,7 @@ import {
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
+import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -70,6 +71,20 @@ describe("botAadAppCreate", async () => {
     await expect(
       createBotAadAppDriver.handler(args, mockedDriverContext, outputEnvVarNames)
     ).to.rejectedWith(InvalidActionInputError);
+  });
+
+  it("should throw error if AAD app name exceeds 120 characters", async () => {
+    const invalidAppName = "a".repeat(121);
+    const args: any = {
+      name: invalidAppName,
+    };
+    const result = await createBotAadAppDriver.execute(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
+    );
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(AadAppNameTooLongError);
   });
 
   it("should throw error if outputEnvVarNames is undefined", async () => {

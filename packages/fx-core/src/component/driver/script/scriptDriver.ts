@@ -132,16 +132,16 @@ export async function executeCommand(
         }
       }
     );
-    const dataHandler = async (data: string) => {
-      if (appendFile) {
-        await fs.appendFile(appendFile, data);
-      }
+    const dataHandler = (data: string) => {
       allOutputStrings.push(data);
+      if (appendFile) {
+        fs.appendFileSync(appendFile, data);
+      }
     };
-    cp.stdout?.on("data", async (data: Buffer) => {
+    cp.stdout?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
       logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
-      await dataHandler(str);
+      dataHandler(str);
     });
     const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
     cp.stderr?.on("data", handler);
@@ -152,12 +152,12 @@ export function getStderrHandler(
   logProvider: LogProvider,
   systemEncoding: string,
   stderrStrings: string[],
-  dataHandler: (data: string) => Promise<void>
-): (data: Buffer) => Promise<void> {
-  return async (data: Buffer) => {
+  dataHandler: (data: string) => void
+): (data: Buffer) => void {
+  return (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);
     logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
-    await dataHandler(str);
+    dataHandler(str);
     stderrStrings.push(str);
   };
 }
@@ -175,9 +175,9 @@ export function convertScriptErrorToFxError(
   run: string
 ): ScriptTimeoutError | ScriptExecutionError {
   if (error.killed) {
-    return new ScriptTimeoutError(run);
+    return new ScriptTimeoutError(run, error);
   } else {
-    return new ScriptExecutionError(run, error.message);
+    return new ScriptExecutionError(run, error.message, error);
   }
 }
 

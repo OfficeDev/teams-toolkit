@@ -26,6 +26,7 @@ import {
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { AadAppClient } from "../aad/utility/aadAppClient";
 import { SignInAudience } from "../aad/interface/signInAudience";
+import { AadAppNameTooLongError } from "../aad/error/aadAppNameTooLongError";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -174,6 +175,10 @@ export class CreateBotAadAppDriver implements StepDriver {
 
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
+    }
+
+    if (args.name.length > 120) {
+      throw new AadAppNameTooLongError(actionName);
     }
   }
 }

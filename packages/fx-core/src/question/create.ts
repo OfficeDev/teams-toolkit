@@ -21,7 +21,11 @@ import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
-import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
+import {
+  isCLIDotNetEnabled,
+  isCopilotPluginEnabled,
+  isMECopilotPluginEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
@@ -327,6 +331,17 @@ export class CapabilityOptions {
     };
   }
 
+  static copilotM365SearchMe(): OptionItem {
+    return {
+      id: "search-me-copilot",
+      label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+      detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.worksInOutlookCopilot"
+      ),
+    };
+  }
+
   static SearchMe(): OptionItem {
     return {
       id: "search-message-extension",
@@ -387,6 +402,30 @@ export class CapabilityOptions {
     ];
   }
 
+  /**
+   * Collect all capabilities for message extension, including dotnet and nodejs.
+   * @param filterByFeatureFlag true: filter capabilities by feature flag, false: return all capabilities
+   * @returns OptionItem[] capability list
+   */
+  static collectMECaps(filterByFeatureFlag: boolean): OptionItem[] {
+    return filterByFeatureFlag
+      ? [
+          CapabilityOptions.linkUnfurling(),
+          isMECopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.SearchMe(),
+        ]
+      : [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.copilotM365SearchMe(),
+          CapabilityOptions.SearchMe(),
+        ];
+  }
+
   static mes(inputs?: Inputs): OptionItem[] {
     return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
       ? [
@@ -396,7 +435,9 @@ export class CapabilityOptions {
         ]
       : [
           CapabilityOptions.linkUnfurling(),
-          CapabilityOptions.m365SearchMe(),
+          isMECopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.m365SearchMe(),
           CapabilityOptions.collectFormMe(),
         ];
   }
@@ -416,10 +457,8 @@ export class CapabilityOptions {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.mes(),
+      ...CapabilityOptions.collectMECaps(false),
       ...CapabilityOptions.copilotPlugins(),
-      //add search me options here to unblock e2e test
-      CapabilityOptions.SearchMe(),
     ];
 
     return capabilityOptions;
@@ -432,8 +471,7 @@ export class CapabilityOptions {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.mes(),
-      CapabilityOptions.SearchMe(),
+      ...CapabilityOptions.collectMECaps(true),
     ];
     if (isCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
@@ -1376,8 +1414,8 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.OpenAIPluginDomain,
     cliShortName: "d",
-    title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
-    placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
+    title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
+    placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
     cliDescription: "OpenAI plugin website domain.",
     forgetLastValue: true,
     validation: {

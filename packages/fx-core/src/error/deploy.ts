@@ -4,6 +4,7 @@
 import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { BlobDeleteResponse, BlobUploadCommonResponse } from "@azure/storage-blob";
+import { ErrorCategory } from "./types";
 
 export class DeployEmptyFolderError extends UserError {
   constructor(folderPath: string) {
@@ -11,6 +12,7 @@ export class DeployEmptyFolderError extends UserError {
       source: "azureDeploy",
       message: getDefaultString("error.deploy.DeployEmptyFolderError", folderPath),
       displayMessage: getLocalizedString("error.deploy.DeployEmptyFolderError", folderPath),
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -22,6 +24,7 @@ export class CheckDeploymentStatusTimeoutError extends UserError {
       message: getDefaultString("error.deploy.CheckDeploymentStatusTimeoutError"),
       displayMessage: getLocalizedString("error.deploy.CheckDeploymentStatusTimeoutError"),
       helpLink: helpLink,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -67,7 +70,7 @@ export class DeployZipPackageError extends UserError {
 }
 
 export class CheckDeploymentStatusError extends UserError {
-  constructor(location: string, error: Error, helpLink?: string) {
+  constructor(location: string, error: Error, helpLink?: string, displayMessage?: string) {
     super({
       source: "azureDeploy",
       message: getDefaultString(
@@ -78,9 +81,11 @@ export class CheckDeploymentStatusError extends UserError {
       displayMessage: getLocalizedString(
         "error.deploy.CheckDeploymentStatusError",
         location,
-        error.message || ""
+        displayMessage || error.message
       ),
       helpLink: helpLink,
+      error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -98,7 +103,9 @@ export class AzureStorageClearBlobsError extends UserError {
         "error.deploy.AzureStorageClearBlobsError.Notification",
         storageName
       ),
+      error: errorResponse as any,
       helpLink: helpLink,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -124,6 +131,8 @@ export class AzureStorageUploadFilesError extends UserError {
         storageName
       ),
       helpLink: helpLink,
+      error: errorResponse as any,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -166,6 +175,8 @@ export class AzureStorageGetContainerPropertiesError extends UserError {
         error.message || ""
       ),
       helpLink: helpLink,
+      error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -187,6 +198,8 @@ export class AzureStorageSetContainerPropertiesError extends UserError {
         error.message || ""
       ),
       helpLink: helpLink,
+      error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }

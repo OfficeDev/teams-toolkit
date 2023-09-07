@@ -66,7 +66,7 @@ export class InvalidProjectError extends UserError {
 }
 
 export class JSONSyntaxError extends UserError {
-  constructor(filePathOrContent: string, e: Error, source?: string) {
+  constructor(filePathOrContent: string, e: any, source?: string) {
     super({
       message: getDefaultString("error.common.JSONSyntaxError", filePathOrContent, e.message),
       displayMessage: getLocalizedString(
@@ -75,6 +75,7 @@ export class JSONSyntaxError extends UserError {
         e.message
       ),
       source: source || "coordinator",
+      error: e,
     });
     super.stack = e.stack;
   }

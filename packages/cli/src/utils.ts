@@ -19,7 +19,13 @@ import {
   Question,
   SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
-import { getSingleOption, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
+import {
+  CapabilityOptions,
+  CoreQuestionNames,
+  getSingleOption,
+  SampleConfig,
+  sampleProvider,
+} from "@microsoft/teamsfx-core";
 
 import { teamsAppFileName } from "./constants";
 import CLIUIInstance from "./userInteraction";
@@ -53,7 +59,11 @@ export function getSingleOptionString(
 }
 
 export async function toYargsOptions(data: Question): Promise<Options> {
-  const choices = getChoicesFromQTNodeQuestion(data);
+  let choices = getChoicesFromQTNodeQuestion(data);
+  if (data.type === "singleSelect" && data.name === CoreQuestionNames.Capabilities) {
+    const options = CapabilityOptions.all({ platform: Platform.CLI });
+    choices = options.map((op) => op.id);
+  }
   let defaultValue = data.default;
   if (typeof data.default === "function") {
     defaultValue = await data.default({ platform: Platform.CLI_HELP });

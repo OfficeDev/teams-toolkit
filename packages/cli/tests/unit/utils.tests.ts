@@ -152,6 +152,20 @@ describe("Utils Tests", function () {
       expect(answer.default).deep.equals(["aa"]);
       expect(answer.description).equals("dynamic title");
     });
+
+    it("for capabilities question", async () => {
+      const question: apis.Question = {
+        type: "singleSelect",
+        name: core.CoreQuestionNames.Capabilities,
+        title: "test",
+        returnObject: true,
+        staticOptions: staticOptions2,
+      };
+      const answer = await toYargsOptions(question);
+      expect(answer.choices).deep.equals(
+        core.CapabilityOptions.all({ platform: apis.Platform.CLI }).map((op) => op.id)
+      );
+    });
   });
 
   it("toLocaleLowerCase", () => {

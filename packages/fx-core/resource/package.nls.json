@@ -393,7 +393,7 @@
   "core.common.AdditionalPropertiesNotSupported": "'additionalProperties' is not supported, and will be ignored.",
   "core.common.SchemaNotSupported": "'oneOf', 'anyOf', and 'not' schema are not supported: %s.",
   "core.common.UnknownSchema": "Unknown schema: %s.",
-  "core.common.UrlProtocolNotSupported": "Sever url is not correct: protocol %s is not supported, you should use https protocol instead.",
+  "core.common.UrlProtocolNotSupported": "Server url is not correct: protocol %s is not supported, you should use https protocol instead.",
   "core.common.RelativeServerUrlNotSupported": "Server url is not correct: relative server url is not supported.",
   "core.common.ResolveServerUrlFailed": "Failed to resolve the server URL: please make sure that the environment variable %s is defined.",
   "core.common.OperationOnlyContainsOptionalParam": "Operation %s only contains optional parameters which is not supported",

@@ -28,7 +28,7 @@ import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
-import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
 import { SpecParserError } from "../../src/common/spec-parser/specParserError";
 import {
@@ -1378,7 +1378,10 @@ describe("copilotPlugin", async () => {
       ["getStoreOrder", "GET /store/order"],
     ]);
     const core = new FxCore(tools);
-    sinon.stub(SpecParser.prototype, "generate").resolves();
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" }],
+      allSuccess: false,
+    });
     sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);

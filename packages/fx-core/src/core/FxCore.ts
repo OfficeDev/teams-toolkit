@@ -1127,7 +1127,7 @@ export class FxCore {
         outputAPISpecPath,
         adaptiveCardFolder
       );
-      if (generateResult.warnings) {
+      if (generateResult.warnings && generateResult.warnings.length > 0) {
         const warnSummary = generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,

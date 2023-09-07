@@ -78,3 +78,4 @@ var apiEndpoint = 'https://${functionApp.properties.defaultHostName}'
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
 output API_FUNCTION_ENDPOINT string = apiEndpoint
 output API_FUNCTION_RESOURCE_ID string = functionApp.id
+output OPENAPI_SERVER_URL string = apiEndpoint

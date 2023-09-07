@@ -1,23 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Colors,
-  IQTreeNode,
-  Inputs,
-  MultiSelectQuestion,
-  OptionItem,
-  Platform,
-  Question,
-  SingleSelectQuestion,
-} from "@microsoft/teamsfx-api";
-import { getSingleOption, sampleProvider } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { Options } from "yargs";
+import semver from "semver";
+
+import {
+  Colors,
+  Inputs,
+  IQTreeNode,
+  MultiSelectQuestion,
+  OptionItem,
+  Platform,
+  Question,
+  SingleSelectQuestion,
+} from "@microsoft/teamsfx-api";
+import {
+  CapabilityOptions,
+  CoreQuestionNames,
+  getSingleOption,
+  SampleConfig,
+  sampleProvider,
+} from "@microsoft/teamsfx-core";
+
 import { teamsAppFileName } from "./constants";
 import CLIUIInstance from "./userInteraction";
 
@@ -50,7 +59,11 @@ export function getSingleOptionString(
 }
 
 export async function toYargsOptions(data: Question): Promise<Options> {
-  const choices = getChoicesFromQTNodeQuestion(data);
+  let choices = getChoicesFromQTNodeQuestion(data);
+  if (data.type === "singleSelect" && data.name === CoreQuestionNames.Capabilities) {
+    const options = CapabilityOptions.all({ platform: Platform.CLI });
+    choices = options.map((op) => op.id);
+  }
   let defaultValue = data.default;
   if (typeof data.default === "function") {
     defaultValue = await data.default({ platform: Platform.CLI_HELP });
@@ -200,7 +213,19 @@ export interface Sample {
 
 export async function getTemplates(): Promise<Sample[]> {
   await sampleProvider.fetchSampleConfig();
-  const samples = sampleProvider.SampleCollection.samples.map((sample) => {
+  const version = getVersion();
+  const availableSamples = sampleProvider.SampleCollection.samples.filter(
+    (sample: SampleConfig) => {
+      if (sample.minimumCliVersion !== undefined) {
+        return semver.gte(version, sample.minimumCliVersion);
+      }
+      if (sample.maximumCliVersion !== undefined) {
+        return semver.lte(version, sample.maximumCliVersion);
+      }
+      return true;
+    }
+  );
+  const samples = availableSamples.map((sample: SampleConfig) => {
     return {
       tags: sample.tags,
       name: sample.title,

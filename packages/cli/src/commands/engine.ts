@@ -37,6 +37,7 @@ import {
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
   UnknownArgumentError,
+  UnknownCommandError,
   UnknownOptionError,
 } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -104,16 +105,8 @@ class CLIEngine {
     }
   }
 
-  isUserSettingsTelemetryEnable(): boolean {
-    const res = UserSettings.getTelemetrySetting();
-    if (res.isOk()) return res.value;
-    return true;
-  }
-
-  isUserSettingsInteractive(): boolean {
-    const res = UserSettings.getInteractiveSetting();
-    if (res.isOk()) return res.value;
-    return true;
+  isTelemetryEnabled(context?: CLIContext) {
+    return context?.globalOptionValues.telemetry === false ? false : true;
   }
 
   async execute(
@@ -148,7 +141,7 @@ class CLIEngine {
       )}`
     );
 
-    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
+    const telemetryEnabled = this.isTelemetryEnabled(context);
 
     // send start event
     if (telemetryEnabled && context.command.telemetry) {
@@ -397,7 +390,11 @@ class CLIEngine {
           context.argumentValues.push(argument.value);
           argumentIndex++;
         } else {
-          return err(new UnknownArgumentError(command.fullName, token));
+          if (!command.arguments || command.arguments.length === 0) {
+            return err(new UnknownCommandError(token));
+          } else {
+            return err(new UnknownArgumentError(command.fullName, token));
+          }
         }
       }
     }
@@ -457,8 +454,8 @@ class CLIEngine {
         );
         context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
       } else {
-        const configValue = this.isUserSettingsInteractive();
-        logger.debug(`set interactive from user settings (value=${configValue})`);
+        const configValue = true;
+        logger.debug(`set interactive from default (value=${configValue})`);
         context.globalOptionValues.interactive = configValue;
       }
     }
@@ -562,7 +559,7 @@ class CLIEngine {
     return ok(undefined);
   }
   processResult(context?: CLIContext, fxError?: FxError): void {
-    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
+    const telemetryEnabled = this.isTelemetryEnabled(context);
     if (context && context.command.telemetry && telemetryEnabled) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(

@@ -60,6 +60,10 @@ enum OpenAIPluginManifestErrorType {
   ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
+export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
+export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
+export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
+
 export interface ErrorResult {
   /**
    * The type of error.
@@ -159,6 +163,17 @@ export async function listOperations(
         operations = operations.filter(
           (operation: string) => !existingOperations.includes(operation)
         );
+        // No extra API can be added
+        if (operations.length == 0) {
+          const errors = [
+            {
+              type: ApiSpecErrorType.NoExtraAPICanBeAdded,
+              content: getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"),
+            },
+          ];
+          logValidationResults(errors, [], context, true, false);
+          return err(errors);
+        }
       } else {
         throw manifest.error;
       }
@@ -344,10 +359,15 @@ function validateTeamsManifestLength(
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
   const descriptionFullLimit = 4000;
+  const envPlaceholder = "${{TEAMSFX_ENV}}";
+  const devEnv = "dev";
   const resultWarnings = [];
 
   // validate name
-  if (teamsManifest.name.short.length > nameShortLimit) {
+  const shortNameLength = teamsManifest.name.short.includes(envPlaceholder)
+    ? teamsManifest.name.short.length - envPlaceholder.length + devEnv.length
+    : teamsManifest.name.short.length;
+  if (shortNameLength > nameShortLimit) {
     resultWarnings.push(formatLengthExceedingErrorMessage("/name/short", nameShortLimit));
   }
 
@@ -379,8 +399,32 @@ function validateTeamsManifestLength(
     );
   }
 
-  // validate card
+  // validate command
   if (ManifestUtil.parseCommonProperties(teamsManifest).isCopilotPlugin) {
+    const optionalParamsOnlyWarnings = warnings.filter(
+      (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
+    );
+
+    if (optionalParamsOnlyWarnings) {
+      for (const optionalParamsOnlyWarning of optionalParamsOnlyWarnings) {
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters",
+            optionalParamsOnlyWarning.data
+          ) +
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation",
+              optionalParamsOnlyWarning.data,
+              path.join(AppPackageFolderName, ManifestTemplateFileName),
+              path.join(
+                AppPackageFolderName,
+                teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
+              )
+            )
+        );
+      }
+    }
+
     const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
     for (const command of commands) {
       if (command.type === "query") {

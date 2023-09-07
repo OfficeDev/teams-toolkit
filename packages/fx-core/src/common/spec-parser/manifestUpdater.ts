@@ -3,24 +3,33 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import { Command, PartialManifest, ComposeExtension, Parameter, ErrorType } from "./interfaces";
+import {
+  Command,
+  PartialManifest,
+  ComposeExtension,
+  Parameter,
+  ErrorType,
+  WarningResult,
+  WarningType,
+} from "./interfaces";
 import fs from "fs-extra";
 import path from "path";
 import { getRelativePath, updateFirstLetter } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
+import { format } from "util";
 
 export async function updateManifest(
   manifestPath: string,
   outputSpecPath: string,
   adaptiveCardFolder: string,
   spec: OpenAPIV3.Document
-): Promise<PartialManifest> {
+): Promise<[PartialManifest, WarningResult[]]> {
   try {
     // TODO: manifest interface can be updated when manifest parser library is ready
     const originalManifest: PartialManifest = await fs.readJSON(manifestPath);
 
-    const commands = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [commands, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
     const ComposeExtension: ComposeExtension = {
       composeExtensionType: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
@@ -37,7 +46,7 @@ export async function updateManifest(
 
     const updatedManifest = { ...originalManifest, ...updatedPart };
 
-    return updatedManifest;
+    return [updatedManifest, warnings];
   } catch (err) {
     throw new SpecParserError((err as Error).toString(), ErrorType.UpdateManifestFailed);
   }
@@ -55,11 +64,13 @@ export function generateParametersFromSchema(
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    parameters.push({
-      name: name,
-      title: updateFirstLetter(name),
-      description: schema.description ?? "",
-    });
+    if (schema.required) {
+      parameters.push({
+        name: name,
+        title: updateFirstLetter(name),
+        description: schema.description ?? "",
+      });
+    }
   } else if (schema.type === "object") {
     const { properties } = schema;
     for (const property in properties) {
@@ -79,9 +90,10 @@ export async function generateCommands(
   spec: OpenAPIV3.Document,
   adaptiveCardFolder: string,
   manifestPath: string
-): Promise<Command[]> {
+): Promise<[Command[], WarningResult[]]> {
   const paths = spec.paths;
   const commands: Command[] = [];
+  const warnings: WarningResult[] = [];
   if (paths) {
     for (const pathUrl in paths) {
       const pathItem = paths[pathUrl];
@@ -98,11 +110,13 @@ export async function generateCommands(
 
               if (paramObject) {
                 paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
-                  parameters.push({
-                    name: param.name,
-                    title: updateFirstLetter(param.name),
-                    description: param.description ?? "",
-                  });
+                  if (param.required) {
+                    parameters.push({
+                      name: param.name,
+                      title: updateFirstLetter(param.name),
+                      description: param.description ?? "",
+                    });
+                  }
                 });
               }
 
@@ -131,6 +145,14 @@ export async function generateCommands(
                   : "",
               };
               commands.push(command);
+
+              if (parameters.length === 0) {
+                warnings.push({
+                  type: WarningType.OperationOnlyContainsOptionalParam,
+                  content: format(ConstantString.OperationOnlyContainsOptionalParam, operationId),
+                  data: operationId,
+                });
+              }
             }
           }
         }
@@ -138,5 +160,5 @@ export async function generateCommands(
     }
   }
 
-  return commands;
+  return [commands, warnings];
 }

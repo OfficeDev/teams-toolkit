@@ -66,6 +66,7 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
+import { convertToAlphanumericOnly } from "../../common/utils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -204,13 +205,7 @@ class Coordinator {
       // set isVS global var when creating project
       const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
-      let capability = inputs.capabilities as string;
-      if (
-        inputs.platform === Platform.CLI &&
-        capability === CapabilityOptions.copilotPluginCli().id
-      ) {
-        capability = inputs[QuestionNames.CopilotPluginDevelopment] as string;
-      }
+      const capability = inputs.capabilities as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -566,9 +561,9 @@ class Coordinator {
           targetResourceGroupInfo.location = inputLocation;
           targetResourceGroupInfo.createNewResourceGroup = true; // create resource group if not exists
         } else {
-          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${
-            inputs.env as string
-          }`;
+          const defaultRg = `rg-${convertToAlphanumericOnly(folderName)}${
+            process.env.RESOURCE_SUFFIX
+          }-${inputs.env as string}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             inputs,
             ctx.azureAccountProvider,

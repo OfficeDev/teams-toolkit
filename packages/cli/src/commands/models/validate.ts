@@ -9,15 +9,19 @@ import { EnvOption, ProjectFolderOption } from "../common";
 
 export const validateCommand: CLICommand = {
   name: "validate",
-  description: "Validate the Teams app using manifest schema or validation rules.",
+  description: "Validate the Microsoft Teams app using manifest schema or validation rules.",
   options: [...ValidateTeamsAppOptions, EnvOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.ValidateManifest,
   },
   examples: [
     {
-      command: "teamsfx validate --app-package-file ./appPackage/build/appPackage.zip",
-      description: "Validate the Teams application package.",
+      command: "teamsfx validate --app-package-file ./appPackage/build/appPackage.dev.zip",
+      description: "Validate the Microsoft Teams application package.",
+    },
+    {
+      command: "teamsfx validate --teams-manifest-file ./appPackage/manifest.json --env dev",
+      description: "Validate the Microsoft Teams manifest using its schema.",
     },
   ],
   defaultInteractiveOption: false,

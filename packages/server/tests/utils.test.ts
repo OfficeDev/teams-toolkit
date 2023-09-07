@@ -88,17 +88,17 @@ describe("utils", () => {
     });
   });
 
-  it("convertUIConfigToJson", () => {
+  it("convertUIConfigToJson", async () => {
     const f = () => {};
     const config = {
       name: "test name",
       title: "test title",
-      default: "test default value",
+      default: () => Promise.resolve("test default value"),
       options: ["option1", "option2"],
       validation: f,
     };
     reset();
-    const res = convertUIConfigToJson(config as UIConfig<string>);
+    const res = await convertUIConfigToJson(config as UIConfig<string>);
     const exp = {
       name: "test name",
       title: "test title",

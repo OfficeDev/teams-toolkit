@@ -12,7 +12,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountShowCommand: CLICommand = {
   name: "show",
-  description: "Display all connected cloud accounts information.",
+  description: "Display all connected Microsoft 365 and Azure accounts.",
   telemetry: {
     event: TelemetryEvent.AccountShow,
   },
@@ -36,7 +36,7 @@ export const accountShowCommand: CLICommand = {
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
-      await logger.info(
+      logger.info(
         "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
       );
     }

@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as apis from "@microsoft/teamsfx-api";
-import { Colors, IQTreeNode, Platform } from "@microsoft/teamsfx-api";
-import * as core from "@microsoft/teamsfx-core";
-import fs from "fs-extra";
 import "mocha";
+
+import fs from "fs-extra";
 import sinon from "sinon";
+
+import * as apis from "@microsoft/teamsfx-api";
+import * as core from "@microsoft/teamsfx-core";
+
 import activate from "../../src/activate";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { UserSettings } from "../../src/userSetttings";
@@ -16,6 +18,7 @@ import {
   getSettingsVersion,
   getSingleOptionString,
   getSystemInputs,
+  getTemplates,
   getVersion,
   isWorkspaceSupported,
   toLocaleLowerCase,
@@ -149,6 +152,20 @@ describe("Utils Tests", function () {
       expect(answer.default).deep.equals(["aa"]);
       expect(answer.description).equals("dynamic title");
     });
+
+    it("for capabilities question", async () => {
+      const question: apis.Question = {
+        type: "singleSelect",
+        name: core.CoreQuestionNames.Capabilities,
+        title: "test",
+        returnObject: true,
+        staticOptions: staticOptions2,
+      };
+      const answer = await toYargsOptions(question);
+      expect(answer.choices).deep.equals(
+        core.CapabilityOptions.all({ platform: apis.Platform.CLI }).map((op) => op.id)
+      );
+    });
   });
 
   it("toLocaleLowerCase", () => {
@@ -158,7 +175,7 @@ describe("Utils Tests", function () {
   });
 
   it("flattenNodes", () => {
-    const root: IQTreeNode = {
+    const root: apis.IQTreeNode = {
       data: {
         type: "group",
       },
@@ -244,13 +261,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
   it("getSystemInputs", async () => {
     const inputs = getSystemInputs("real");
-    expect(inputs.platform).equals(Platform.CLI);
+    expect(inputs.platform).equals(apis.Platform.CLI);
     expect(inputs.projectPath).equals("real");
   });
 
   it("getColorizedString", async () => {
     /// TODO: mock chalk and test
-    const arr = Object.keys(Colors)
+    const arr = Object.keys(apis.Colors)
       .filter((v) => isNaN(Number(v)))
       .map((v, i) => i);
     getColorizedString(
@@ -268,6 +285,94 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("should work for input of type string and array of string", () => {
       expect(toLocaleLowerCase("AB")).equals("ab");
       expect(toLocaleLowerCase(["Ab", "BB"])).deep.equals(["ab", "bb"]);
+    });
+  });
+
+  describe("getTemplates", async () => {
+    const sandbox = sinon.createSandbox();
+
+    before(() => {
+      sandbox.stub(fs, "readJsonSync").returns({ version: "2.0.0" });
+    });
+
+    this.afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("filters samples have maximum cli verion", async () => {
+      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
+        core.sampleProvider["samplesConfig"] = {
+          samples: [
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+            },
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+              maximumCliVersion: "1.0.0",
+            },
+          ],
+        };
+      });
+      const templates = await getTemplates();
+      expect(templates.length).equals(1);
+    });
+
+    it("filters samples have minimum cli verion", async () => {
+      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
+        core.sampleProvider["samplesConfig"] = {
+          samples: [
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+            },
+            {
+              id: "test1",
+              onboardDate: "2021-05-06",
+              title: "test1",
+              shortDescription: "test1",
+              fullDescription: "test1",
+              types: ["Tab"],
+              tags: [],
+              time: "1hr to run",
+              configuration: "",
+              gifPath: "",
+              suggested: false,
+              minimumCliVersion: "2.1.0",
+            },
+          ],
+        };
+      });
+      const templates = await getTemplates();
+      expect(templates.length).equals(1);
     });
   });
 });

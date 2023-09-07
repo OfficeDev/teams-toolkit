@@ -72,12 +72,13 @@ export interface GenerateResult {
  */
 export enum ErrorType {
   SpecNotValid = "spec-not-valid",
-  VersionNotSupported = "version-not-supported",
   RemoteRefNotSupported = "remote-ref-not-supported",
   NoServerInformation = "no-server-information",
   UrlProtocolNotSupported = "url-protocol-not-supported",
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
+  NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
+  ResolveServerUrlFailed = "resolve-server-url-failed",
 
   ListFailed = "list-failed",
   ListOperationMapFailed = "list-operation-map-failed",
@@ -99,6 +100,8 @@ export enum WarningType {
   MethodNotSupported = "method-not-supported",
   OperationIdMissing = "operationid-missing",
   GenerateCardFailed = "generate-card-failed",
+  OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
+  ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
   Unknown = "unknown",
 }
 
@@ -160,4 +163,10 @@ export interface Parameter {
   name: string;
   title: string;
   description: string;
+}
+
+export interface CheckParamResult {
+  requiredNum: number;
+  optionalNum: number;
+  isValid: boolean;
 }

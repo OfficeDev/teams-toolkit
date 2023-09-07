@@ -92,7 +92,7 @@ function isApiBasedMessageExtension(appDefinition: AppDefinition): boolean {
   return (
     !!appDefinition.messagingExtensions &&
     appDefinition.messagingExtensions.length > 0 &&
-    appDefinition.messagingExtensions[0].messagingExtensionServiceType === "ApiBased"
+    appDefinition.messagingExtensions[0].messagingExtensionServiceType?.toLowerCase() === "apibased"
   );
 }
 

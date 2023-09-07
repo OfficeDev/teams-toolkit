@@ -8,9 +8,10 @@ import chaiAsPromised from "chai-as-promised";
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
-import { PackageService } from "../../../src/common/m365/packageService";
 import { MockLogProvider } from "../../core/utils";
+import { PackageService } from "../../../src/common/m365/packageService";
 import { UnhandledError } from "../../../src/error/common";
+import { setTools } from "../../../src/core/globalVars";
 
 chai.use(chaiAsPromised);
 
@@ -59,6 +60,13 @@ describe("Package Service", () => {
       return Promise.resolve(Buffer.from("test"));
     });
     sandbox.stub(axios, "create").returns(testAxiosInstance);
+
+    setTools({} as any);
+  });
+
+  it("GetSharedInstance happy path", () => {
+    const instance = PackageService.GetSharedInstance();
+    chai.assert.isDefined(instance);
   });
 
   it("sideLoading happy path", async () => {
@@ -605,5 +613,51 @@ describe("Package Service", () => {
 
     chai.assert.isDefined(actualError);
     chai.assert.isTrue(actualError instanceof UnhandledError);
+  });
+
+  it("getCopilotStatus happy path", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosGetResponses["/catalog/v1/users/experiences"] = {
+      data: {
+        activeExperiences: ["foo", "bar"],
+      },
+    };
+
+    const packageService = new PackageService("https://test-endpoint");
+    let actualError: Error | undefined;
+    let result: boolean | undefined;
+    try {
+      result = await packageService.getCopilotStatus("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.isFalse(result);
+  });
+
+  it("getCopilotStatus returns undefined on error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosGetResponses["/catalog/v1/users/experiences"] = new Error("test-get");
+
+    const packageService = new PackageService("https://test-endpoint");
+    let actualError: Error | undefined;
+    let result: boolean | undefined;
+    try {
+      result = await packageService.getCopilotStatus("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.isUndefined(result);
   });
 });

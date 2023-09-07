@@ -61,4 +61,14 @@ describe("m365Node", () => {
     const m365Node = new M365AccountNode(eventEmitter);
     chai.assert.isDefined(m365Node.getChildren());
   });
+
+  it("updateChecks", () => {
+    const m365Node = new M365AccountNode(eventEmitter);
+    m365Node.updateChecks("test token", false, false);
+    chai.assert.isDefined(m365Node.getChildren());
+    chai.assert.equal(1, (m365Node.getChildren() as any).length);
+    m365Node.updateChecks("test token", true, false);
+    chai.assert.isDefined(m365Node.getChildren());
+    chai.assert.equal(1, (m365Node.getChildren() as any).length);
+  });
 });

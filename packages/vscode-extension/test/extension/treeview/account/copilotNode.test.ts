@@ -49,6 +49,17 @@ describe("sideloadingNode", () => {
     chai.assert.equal(treeItem.iconPath, passIcon);
   });
 
+  it("getTreeItem with check error", async () => {
+    sandbox
+      .stub(M365TokenInstance, "getAccessToken")
+      .returns(Promise.resolve(new Ok("test-token")));
+    sandbox.stub(tools, "getCopilotStatus").returns(Promise.reject(new Error("test-error")));
+    const copilotNode = new CopilotNode(eventEmitter, "token");
+    const treeItem = await copilotNode.getTreeItem();
+
+    chai.assert.equal(treeItem.iconPath, infoIcon);
+  });
+
   it("getChildren", () => {
     const copilotNode = new CopilotNode(eventEmitter, "token");
     chai.assert.isNull(copilotNode.getChildren());

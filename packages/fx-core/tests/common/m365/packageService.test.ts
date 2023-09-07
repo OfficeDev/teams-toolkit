@@ -65,7 +65,9 @@ describe("Package Service", () => {
   });
 
   it("GetSharedInstance happy path", () => {
-    const instance = PackageService.GetSharedInstance();
+    let instance = PackageService.GetSharedInstance();
+    chai.assert.isDefined(instance);
+    instance = PackageService.GetSharedInstance();
     chai.assert.isDefined(instance);
   });
 
@@ -640,6 +642,29 @@ describe("Package Service", () => {
     chai.assert.isFalse(result);
   });
 
+  it("getCopilotStatus bad response", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosGetResponses["/catalog/v1/users/experiences"] = {
+      foo: "bar",
+    };
+
+    const packageService = new PackageService("https://test-endpoint");
+    let actualError: Error | undefined;
+    let result: boolean | undefined;
+    try {
+      result = await packageService.getCopilotStatus("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.isUndefined(result);
+  });
+
   it("getCopilotStatus returns undefined on error", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
@@ -648,9 +673,20 @@ describe("Package Service", () => {
     };
     axiosGetResponses["/catalog/v1/users/experiences"] = new Error("test-get");
 
-    const packageService = new PackageService("https://test-endpoint");
+    let packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
     let result: boolean | undefined;
+    try {
+      result = await packageService.getCopilotStatus("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.isUndefined(result);
+
+    packageService = new PackageService("https://test-endpoint", logger);
+    actualError = undefined;
     try {
       result = await packageService.getCopilotStatus("test-token");
     } catch (error: any) {

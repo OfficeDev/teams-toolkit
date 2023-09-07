@@ -1733,6 +1733,22 @@ describe("handlers", () => {
   });
 
   describe("callBackFunctions", () => {
+    it("checkCopilotCallback()", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      let showMessageCalledCount = 0;
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: async () => {
+          showMessageCalledCount += 1;
+          return Promise.resolve(ok("Enroll"));
+        },
+      });
+
+      handlers.checkCopilotCallback();
+
+      chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.restore();
+    });
+
     it("checkSideloadingCallback()", async () => {
       sinon.stub(localizeUtils, "localize").returns("");
       let showMessageCalledCount = 0;

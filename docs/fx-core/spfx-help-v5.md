@@ -2,6 +2,7 @@
 
 1. [Failed to scaffold](#scaffold)
 2. [Failed to import existing SPFx solution](#import)
+3. [Failed to deploy](#deploy)
 
 ## 1. Failed to scaffold<a name="scaffold"></a>
 
@@ -40,3 +41,19 @@ Failed to retrieve existing SPFx solution information. Please make sure your SPF
      **preconfiguredEntries** - The property (_preconfiguredEntries[0].title.default_) will be used as `name` to construct `staticTabs` in Teams manifest file. 
 
 - Or you could try to migrate your SPFx solution manually following [Integrate Teams Toolkit with an existing SPFx solution](https://github.com/OfficeDev/TeamsFx/wiki/Integrate-Teams-Toolkit-with-an-existing-SPFx-solution).
+
+## 3. Failed to deploy<a name="deploy"></a>
+
+### Error message
+Failed to deploy due to lint errors in gulp bundle task. Example:
+
+```
+(×) Error: cli/runNpxCommand failed.
+  (×) Error: Script ('npx gulp bundle --ship --no-color') execution error: Warning - lint - src/webparts/helloworld/HelloworldWebPart.ts(95,32): error @typescript-eslint/no-explicit-any: Unexpected any. Specify a different type. 
+```
+
+### Remediation
+
+There's a known issue that deploy stage will fail even if there're only lint warnings in log detail. The root cause is that when there're lint errors in your SPFx project, `gulp bundle --ship --no-color` command in deploy stage will fail with exit code 1, but they're printed as warning in log details. See related [GitHub issue](https://github.com/SharePoint/sp-dev-docs/issues/9165) for more details.
+
+You'll need to fix the lint errors or disable related lint rules to continue.

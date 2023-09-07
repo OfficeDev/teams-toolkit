@@ -1379,6 +1379,41 @@ describe("copilotPlugin", async () => {
     ]);
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    const result = await core.copilotPluginAddAPI(inputs);
+    console.log(result);
+    assert.isTrue(result.isOk());
+  });
+
+  it("add API - warnings", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const operationMap = new Map<string, string>([
+      ["getUserById", "GET /user/{userId}"],
+      ["getStoreOrder", "GET /store/order"],
+    ]);
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" }],
       allSuccess: false,
     });

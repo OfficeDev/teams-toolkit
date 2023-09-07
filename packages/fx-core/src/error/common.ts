@@ -5,6 +5,7 @@ import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/te
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
+import { ErrorCategory } from "./types";
 
 export class FileNotFoundError extends UserError {
   constructor(source: string, filePath: string, helpLink?: string) {
@@ -15,7 +16,7 @@ export class FileNotFoundError extends UserError {
       message: getDefaultString(key, filePath),
       displayMessage: getLocalizedString(key, filePath),
       helpLink: helpLink,
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -32,7 +33,7 @@ export class MissingEnvironmentVariablesError extends UserError {
       message: getDefaultString(key, variableNames, templateFilePath, envFilePath),
       displayMessage: getLocalizedString(key, variableNames, templateFilePath, envFilePath),
       helpLink: helpLink || "https://aka.ms/teamsfx-v5.0-guide#environments",
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -52,7 +53,7 @@ export class InvalidActionInputError extends UserError {
         globalVars.ymlFilePath
       ),
       helpLink: helpLink || "https://aka.ms/teamsfx-actions",
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -64,7 +65,7 @@ export class InvalidProjectError extends UserError {
       message: getDefaultString("error.common.InvalidProjectError"),
       displayMessage: getLocalizedString("error.common.InvalidProjectError"),
       source: "coordinator",
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -80,7 +81,7 @@ export class JSONSyntaxError extends UserError {
       ),
       source: source || "coordinator",
       error: error,
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -91,7 +92,7 @@ export class ReadFileError extends SystemError {
       source: source || "unknown",
       message: e.message || getDefaultString("error.common.ReadFileError", e.message),
       displayMessage: e.message || getLocalizedString("error.common.ReadFileError", e.message),
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
       error: e,
     });
   }
@@ -103,7 +104,7 @@ export class WriteFileError extends SystemError {
       source: source || "unknown",
       message: e.message || getDefaultString("error.common.WriteFileError", e.message),
       displayMessage: e.message || getLocalizedString("error.common.WriteFileError", e.message),
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
       error: e,
     });
   }
@@ -117,7 +118,7 @@ export class FilePermissionError extends UserError {
       message: msg,
       displayMessage: msg,
       error: e,
-      categories: ["internal"],
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -137,7 +138,7 @@ export class UnhandledError extends SystemError {
         source,
         e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
       ),
-      categories: ["unhandled"],
+      categories: [ErrorCategory.Unhandled],
     });
   }
 }
@@ -159,7 +160,7 @@ export class UnhandledUserError extends UserError {
       ),
       helpLink: helpLink,
       error: e,
-      categories: ["unhandled"],
+      categories: [ErrorCategory.Unhandled],
     });
   }
 }
@@ -170,6 +171,7 @@ export class InstallSoftwareError extends UserError {
       source: camelCase(source || "common"),
       message: getDefaultString("error.common.InstallSoftwareError", nameAndVersion),
       displayMessage: getLocalizedString("error.common.InstallSoftwareError", nameAndVersion),
+      categories: [ErrorCategory.External],
     });
     if (helpLink) this.helpLink = helpLink;
   }
@@ -181,6 +183,7 @@ export class MissingRequiredInputError extends UserError {
       source: source || "coordinator",
       message: getDefaultString("error.common.MissingRequiredInputError", name),
       displayMessage: getLocalizedString("error.common.MissingRequiredInputError", name),
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -191,6 +194,7 @@ export class InputValidationError extends UserError {
       source: source || "coordinator",
       message: getDefaultString("error.common.InputValidationError", name, reason),
       displayMessage: getLocalizedString("error.common.InputValidationError", name, reason),
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -203,6 +207,7 @@ export class NoEnvFilesError extends UserError {
       name: "NoEnvFilesError",
       message: getDefaultString(key),
       displayMessage: getLocalizedString(key),
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -216,6 +221,7 @@ export class MissingRequiredFileError extends UserError {
       name: "MissingRequiredFileError",
       message: getDefaultString(key, task, file),
       displayMessage: getLocalizedString(key, task, file),
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -231,6 +237,7 @@ export class HttpClientError extends UserError {
       displayMessage: getLocalizedString(messageKey, actionName, responseBody),
       helpLink: helpLink,
       error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -244,6 +251,7 @@ export class HttpServerError extends SystemError {
       message: getDefaultString(messageKey, actionName, responseBody),
       displayMessage: getLocalizedString(messageKey, actionName, responseBody),
       error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -254,6 +262,7 @@ export class UserCancelError extends UserError {
       source: actionName ? camelCase(actionName) : "ui",
       name: "UserCancel",
       message: "User canceled",
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -263,13 +272,18 @@ export class EmptyOptionError extends SystemError {
     super({
       source: source ? camelCase(source) : "UI",
       message: `Select option is empty list for question name: ${name}`,
+      categories: [ErrorCategory.Internal],
     });
   }
 }
 
 export class NotImplementedError extends SystemError {
   constructor(source: string, method: string) {
-    super({ source: source, message: `Method not implemented:${method}` });
+    super({
+      source: source,
+      message: `Method not implemented:${method}`,
+      categories: [ErrorCategory.Internal],
+    });
   }
 }
 export class ConcurrentError extends UserError {
@@ -277,6 +291,7 @@ export class ConcurrentError extends UserError {
     super({
       source: source,
       message: getLocalizedString("error.common.ConcurrentError"),
+      categories: [ErrorCategory.Internal],
     });
   }
 }
@@ -285,9 +300,9 @@ export class InternalError extends UserError {
   constructor(error: any, source: string) {
     super({
       source: source,
+      error: error,
+      categories: ["internal", error.code],
     });
-    this.innerError = error;
-    this.categories = ["internal", error.code];
   }
 }
 

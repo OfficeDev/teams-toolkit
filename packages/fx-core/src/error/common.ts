@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, SystemError, UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  SystemError,
+  SystemErrorOptions,
+  UserError,
+  UserErrorOptions,
+} from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
@@ -125,21 +131,19 @@ export class FilePermissionError extends UserError {
 
 export class UnhandledError extends SystemError {
   constructor(e: Error, source?: string) {
-    super({
+    const errJson = JSON.stringify(e, Object.getOwnPropertyNames(e));
+    const option: SystemErrorOptions = {
       source: camelCase(source) || "unknown",
       error: e,
-      message: getDefaultString(
-        "error.common.UnhandledError",
-        source,
-        JSON.stringify(e, Object.getOwnPropertyNames(e))
-      ),
+      message: getDefaultString("error.common.UnhandledError", source, errJson),
       displayMessage: getLocalizedString(
         "error.common.UnhandledError",
         source,
-        e.message || JSON.stringify(e, Object.getOwnPropertyNames(e))
+        e.message || errJson
       ),
       categories: [ErrorCategory.Unhandled],
-    });
+    };
+    super(option);
   }
 }
 

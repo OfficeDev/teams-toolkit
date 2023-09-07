@@ -23,7 +23,5 @@ namespace {{SafeProjectName}}
     {
         public string? OpenAIApiKey { get; set; }
         public string? OpenAIEndpoint { get; set; }
-        public string? ContentSafetyApiKey { get; set; }
-        public string? ContentSafetyEndpoint { get; set; }
     }
 }

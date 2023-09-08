@@ -44,8 +44,8 @@ export function isCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
 }
 
-export function isMECopilotPluginEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MECopilotPlugin, false);
+export function isApiCopilotPluginEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false);
 }
 
 export function isCliNewUxEnabled(): boolean {

@@ -21,11 +21,7 @@ import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
-import {
-  isCLIDotNetEnabled,
-  isCopilotPluginEnabled,
-  isMECopilotPluginEnabled,
-} from "../common/featureFlags";
+import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
@@ -411,7 +407,7 @@ export class CapabilityOptions {
     return filterByFeatureFlag
       ? [
           CapabilityOptions.linkUnfurling(),
-          isMECopilotPluginEnabled()
+          isCopilotPluginEnabled()
             ? CapabilityOptions.copilotM365SearchMe()
             : CapabilityOptions.m365SearchMe(),
           CapabilityOptions.collectFormMe(),
@@ -435,7 +431,7 @@ export class CapabilityOptions {
         ]
       : [
           CapabilityOptions.linkUnfurling(),
-          isMECopilotPluginEnabled()
+          isCopilotPluginEnabled()
             ? CapabilityOptions.copilotM365SearchMe()
             : CapabilityOptions.m365SearchMe(),
           CapabilityOptions.collectFormMe(),

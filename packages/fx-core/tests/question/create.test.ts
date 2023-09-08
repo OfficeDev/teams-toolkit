@@ -1578,6 +1578,25 @@ describe("scaffold question", () => {
       const options = question.staticOptions;
       assert.equal(options.length, 17);
     });
+    it("csharp message extension capabilities", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VS,
+      };
+      const options = CapabilityOptions.mes(inputs);
+      assert.deepEqual(options, [
+        CapabilityOptions.linkUnfurling(),
+        CapabilityOptions.copilotM365SearchMe(),
+        CapabilityOptions.collectFormMe(),
+      ]);
+    });
+    it("collect message extension capabilites filtered by feature flag", async () => {
+      const options = CapabilityOptions.collectMECaps(true);
+      assert.deepEqual(options, [
+        CapabilityOptions.linkUnfurling(),
+        CapabilityOptions.copilotM365SearchMe(),
+        CapabilityOptions.collectFormMe(),
+      ]);
+    });
   });
   describe("ME copilot plugin template only", () => {
     const ui = new MockUserInteraction();

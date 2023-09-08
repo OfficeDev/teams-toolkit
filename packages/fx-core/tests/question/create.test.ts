@@ -663,6 +663,7 @@ describe("scaffold question", () => {
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.CopilotPlugin]: "true",
+          [FeatureFlagName.ApiCopilotPlugin]: "true",
         });
       });
 

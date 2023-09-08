@@ -57,5 +57,6 @@ export class FeatureFlagName {
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly ImportSPFx = "IMPORT_SPFX";
   static readonly CopilotPlugin = "COPILOT_PLUGIN";
+  static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
 }

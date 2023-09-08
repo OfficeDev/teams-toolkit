@@ -26,6 +26,7 @@
     "teamstoolkit.azureLogin.failToFindSubscription": "Failed to find a subscription.",
     "teamstoolkit.azureLogin.message": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
     "teamstoolkit.azureLogin.subscription": "subscription",
+    "teamstoolkit.azureLogin.selectSubscription": "Select a Subscription",
     "teamstoolkit.azureLogin.unknownSubscription": "Cannot set subscription. Select a subscription that you have access to.",
     "teamstoolkit.cacheAccess.readHomeAccountIdFail": "Cannot read home account id from cache, clean up account cache. ",
     "teamstoolkit.cacheAccess.readTokenFail": "Cannot read token from cache, clean up account cache. ",

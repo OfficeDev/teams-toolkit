@@ -76,7 +76,8 @@ class ResourceGroupHelper {
         new CreateResourceGroupError(
           resourceGroupName,
           subscriptionId,
-          e.message || JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -118,7 +119,8 @@ class ResourceGroupHelper {
         new GetResourceGroupError(
           resourceGroupName,
           rmClient.subscriptionId,
-          e.message || JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -138,7 +140,7 @@ class ResourceGroupHelper {
       return ok(results);
     } catch (e: any) {
       return err(
-        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e), e)
       );
     }
   }
@@ -176,7 +178,11 @@ class ResourceGroupHelper {
       return ok(rgLocations);
     } catch (e: any) {
       return err(
-        new ListResourceGroupLocationsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+        new ListResourceGroupLocationsError(
+          rmClient.subscriptionId,
+          e.message || JSON.stringify(e),
+          e
+        )
       );
     }
   }

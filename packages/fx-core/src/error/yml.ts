@@ -7,6 +7,7 @@
 import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../core/globalVars";
+import { ErrorCategory } from "./types";
 
 /**
  * invalid yml schema, failed to parse yml file content into object or schema validation failed
@@ -26,6 +27,7 @@ export class InvalidYamlSchemaError extends UserError {
       name: "InvalidYamlSchemaError",
       message: defaultMessage,
       displayMessage: localizedMessage,
+      categories: [ErrorCategory.Internal],
     };
     errorOptions.helpLink = "https://aka.ms/teamsfx-actions/invalid-lifecycle-error";
     super(errorOptions);
@@ -43,6 +45,7 @@ export class YamlFieldTypeError extends UserError {
       name: "YamlFieldTypeError",
       message: getDefaultString(key, field, type, globalVars.ymlFilePath),
       displayMessage: getLocalizedString(key, field, type, globalVars.ymlFilePath),
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -59,6 +62,7 @@ export class YamlFieldMissingError extends UserError {
       name: "YamlFieldMissingError",
       message: getDefaultString(key, field, globalVars.ymlFilePath),
       displayMessage: getLocalizedString(key, field, globalVars.ymlFilePath),
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -76,6 +80,7 @@ export class InvalidYmlActionNameError extends UserError {
       message: getDefaultString(key, action, globalVars.ymlFilePath),
       displayMessage: getLocalizedString(key, action, globalVars.ymlFilePath),
       helpLink: "https://aka.ms/teamsfx-actions",
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -93,6 +98,7 @@ export class LifeCycleUndefinedError extends UserError {
       message: getDefaultString(key, lifecycle, globalVars.ymlFilePath),
       displayMessage: getLocalizedString(key, lifecycle, globalVars.ymlFilePath),
       helpLink: "https://aka.ms/teamsfx-actions",
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }

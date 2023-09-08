@@ -84,6 +84,7 @@ export enum TemplateNames {
   MessageExtension = "message-extension",
   MessageExtensionAction = "message-extension-action",
   MessageExtensionSearch = "message-extension-search",
+  MessageExtensionCopilot = "message-extension-copilot",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
@@ -113,6 +114,8 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
   [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
   [`${CapabilityOptions.m365SearchMe().id}:undefined`]: TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.copilotM365SearchMe().id}:undefined`]:
+    TemplateNames.MessageExtensionCopilot,
   [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
   [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
@@ -242,7 +245,8 @@ class Coordinator {
       } else {
         if (
           capability === CapabilityOptions.m365SsoLaunchPage().id ||
-          capability === CapabilityOptions.m365SearchMe().id
+          capability === CapabilityOptions.m365SearchMe().id ||
+          capability === CapabilityOptions.copilotM365SearchMe().id
         ) {
           inputs.isM365 = true;
         }

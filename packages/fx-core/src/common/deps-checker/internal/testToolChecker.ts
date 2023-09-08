@@ -186,7 +186,7 @@ export class TestToolChecker implements DepsChecker {
       const files = await fs.readdir(dir);
       for (const fileName of files) {
         const fullPath = path.join(dir, fileName);
-        if (fullPath.match(/microsoft-teams-app-test-tool-cli.*\.tgz/i)) {
+        if (fileName.match(/microsoft-teams-app-test-tool-cli.*\.tgz/i)) {
           try {
             const st = await fs.stat(fullPath);
             if (st.isFile()) {

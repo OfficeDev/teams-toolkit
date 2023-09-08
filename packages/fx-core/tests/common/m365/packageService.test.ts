@@ -605,8 +605,19 @@ describe("Package Service", () => {
     };
     axiosGetResponses["/catalog/v1/users/experiences"] = expectedError;
 
-    const packageService = new PackageService("https://test-endpoint");
+    let packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
+    try {
+      await packageService.getActiveExperiences("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.isTrue(actualError instanceof UnhandledError);
+
+    packageService = new PackageService("https://test-endpoint", logger);
+    actualError = undefined;
     try {
       await packageService.getActiveExperiences("test-token");
     } catch (error: any) {
@@ -687,6 +698,29 @@ describe("Package Service", () => {
 
     packageService = new PackageService("https://test-endpoint", logger);
     actualError = undefined;
+    try {
+      result = await packageService.getCopilotStatus("test-token");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.isUndefined(result);
+  });
+
+  it("getCopilotStatus returns undefined on error with trace", async () => {
+    const packageService = new PackageService("https://test-endpoint");
+    (packageService as any).getActiveExperiences = async (_: string) => {
+      const error = new Error("test-error");
+      (error as any).response = {
+        headers: {
+          traceresponse: "test-trace",
+        },
+      };
+      throw error;
+    };
+    let actualError: Error | undefined;
+    let result: boolean | undefined;
     try {
       result = await packageService.getCopilotStatus("test-token");
     } catch (error: any) {

@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import { Ok } from "@microsoft/teamsfx-api";
+import { Err, Ok, SystemError } from "@microsoft/teamsfx-api";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
@@ -54,6 +54,24 @@ describe("sideloadingNode", () => {
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
     sandbox.stub(tools, "getCopilotStatus").returns(Promise.reject(new Error("test-error")));
+    const copilotNode = new CopilotNode(eventEmitter, "token");
+    const treeItem = await copilotNode.getTreeItem();
+
+    chai.assert.equal(treeItem.iconPath, infoIcon);
+  });
+
+  it("getTreeItem with token error", async () => {
+    sandbox
+      .stub(M365TokenInstance, "getAccessToken")
+      .returns(Promise.resolve(new Err(new SystemError("test-source", "test-name", "test-error"))));
+    const copilotNode = new CopilotNode(eventEmitter, "token");
+    const treeItem = await copilotNode.getTreeItem();
+
+    chai.assert.equal(treeItem.iconPath, infoIcon);
+  });
+
+  it("getTreeItem with empty token", async () => {
+    sandbox.stub(M365TokenInstance, "getAccessToken").returns(Promise.resolve(new Ok("")));
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
 

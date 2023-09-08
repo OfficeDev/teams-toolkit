@@ -711,7 +711,7 @@ describe("Package Service", () => {
   it("getCopilotStatus returns undefined on error with trace", async () => {
     const packageService = new PackageService("https://test-endpoint");
     (packageService as any).getActiveExperiences = async (_: string) => {
-      const error = new Error("test-error");
+      const error = new Error();
       (error as any).response = {
         headers: {
           traceresponse: "test-trace",

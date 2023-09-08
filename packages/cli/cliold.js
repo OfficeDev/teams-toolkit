@@ -4,7 +4,6 @@
 // Licensed under the MIT license.
 
 const chalk = require("chalk");
-
 process.on("uncaughtException", (err) => {
   if (err.message.includes("async_hooks")) {
     console.error(

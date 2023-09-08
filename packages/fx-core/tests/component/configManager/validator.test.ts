@@ -9,7 +9,7 @@ import chai from "chai";
 import { describe, it } from "mocha";
 import { Validator } from "../../../src/component/configManager/validator";
 import * as sinon from "sinon";
-import * as featureFlags  from "../../../src/common/featureFlags";
+import * as featureFlags from "../../../src/common/featureFlags";
 
 describe("yaml validator", () => {
   const validator = new Validator();

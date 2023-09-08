@@ -75,7 +75,7 @@ export async function start(binName: "teamsfx" | "teamsapp"): Promise<void> {
     })
     .detectLocale(false)
     .demandCommand()
-    .scriptName(constants.cliName)
+    .scriptName(binName)
     .help()
     .strict()
     .showHelpOnFail(false, "Specify --help for available options")

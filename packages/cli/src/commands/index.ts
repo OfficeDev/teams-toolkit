@@ -7,5 +7,5 @@ export async function start(binName: "teamsfx" | "teamsapp" = "teamsapp"): Promi
   rootCommand.name = binName;
   rootCommand.fullName = binName;
   await engine.start(rootCommand);
-  process.exit(0);
+  // process.exit(0);
 }

@@ -191,7 +191,7 @@ class CLIEngine {
         logger.info(
           `Some arguments/options are useless because the interactive mode is opened.` +
             ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-            ` or set the global setting by 'teamsfx config set interactive false'.`
+            ` or set the global setting by '${process.env.TEAMSFX_CLI_BIN_NAME} config set interactive false'.`
         );
         context.optionValues = trimOptionValues;
         context.argumentValues = [];
@@ -208,8 +208,8 @@ class CLIEngine {
     // 6. version check
     const inputs = getSystemInputs(context.optionValues.projectPath as string);
     inputs.ignoreEnvInfo = true;
-    const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
-    if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
+    const skipCommands = ["new", "sample", "upgrade"];
+    if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
       const core = getFxCore();
       const res = await core.projectVersionCheck(inputs);
       if (res.isErr()) {

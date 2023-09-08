@@ -23,7 +23,7 @@ export const m365SideloadingCommand: CLICommand = {
   ],
   examples: [
     {
-      command: "teamsfx m365 sideloading --file-path appPackage.zip",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 sideloading --file-path appPackage.zip`,
       description: "Sideloading the m365 app package",
     },
   ],

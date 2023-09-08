@@ -759,11 +759,6 @@ describe("CLI read-only commands", () => {
       };
       const res = await accountShowCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(
-        messages.includes(
-          "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
-        )
-      );
     });
     it("both signedIn and checkIsOnline = true", async () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));

@@ -61,7 +61,7 @@
     "uuid": "^8.3.2"
   },
   "peerDependencies": {
-    "@microsoft/teams-js": "^2.13.0"
+    "@microsoft/teams-js": "^2.15.0"
   },
   "devDependencies": {
     "@azure/core-auth": "^1.4.0",

@@ -3261,10 +3261,13 @@
       </Item>
       <Item ItemId=";driver.deploy.deployToAzureAppServiceDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          <Val><![CDATA[deploy the project to the Azure App Service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プロジェクトを Azure APP Service にデプロイします。]]></Val>
+            <Val><![CDATA[プロジェクトを Azure App Service にデプロイします。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4756,6 +4759,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.copilotPlugin.noExtraAPICanBeAdded" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No API can be added. Only GET and POST methods with single parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API を追加できません。1 つのパラメーターを持ち、認証のない GET メソッドと POST メソッドのみがサポートされています。manifest.json で定義されたメソッドがリストにありません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.copilotPlugin.openAiPluginManifest.CannotGetManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to get OpenAI plugin manifest from '%s'.]]></Val>
@@ -6168,6 +6180,15 @@
           <Val><![CDATA[SharePoint Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[SharePoint ソリューション]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Name for SharePoint Framework Web Part]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint Framework Web パーツの名前]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

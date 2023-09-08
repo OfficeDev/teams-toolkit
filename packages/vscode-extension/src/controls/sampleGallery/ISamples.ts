@@ -1,6 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import Fuse from "fuse.js";
+
+export type SampleGalleryState = {
+  loading: boolean;
+  samples: Array<SampleInfo>;
+  selectedSampleId?: string;
+  query: string;
+  fuse: Fuse<SampleInfo>;
+};
+
 export interface SampleInfo {
   id: string;
   title: string;
@@ -12,10 +22,8 @@ export interface SampleInfo {
   suggested: boolean;
   downloadUrl: string;
   gifUrl: string;
-}
-
-export interface SampleCollection {
-  samples: SampleInfo[];
+  // -1 means TTK is lower than required.
+  versionComparisonResult: -1 | 0 | 1;
 }
 
 export type SampleProps = {

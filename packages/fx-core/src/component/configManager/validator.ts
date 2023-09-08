@@ -5,9 +5,10 @@ import Ajv, { ValidateFunction } from "ajv";
 import fs from "fs-extra";
 import path from "path";
 import { getResourceFolder } from "../../folder";
+import { isTestToolEnabled } from "../../common/featureFlags";
 
 type Version = string;
-const supportedVersions = ["1.0.0", "1.1.0", "v1.2"];
+const supportedVersions = ["1.0.0", "1.1.0", "v1.2", ...(isTestToolEnabled() ? ["v1.3"] : [])];
 
 export class Validator {
   impl: Map<Version, { validator: ValidateFunction }>;

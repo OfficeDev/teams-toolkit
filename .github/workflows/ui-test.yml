@@ -564,7 +564,7 @@ jobs:
         uses: ./.github/actions/send-email-report
         env:
           TO: ${{ steps.list-jobs.outputs.to }}
-          BODY: ${{ steps.list-jobs.outputs.body }}
+          BODY: '"${{ steps.list-jobs.outputs.body }}"'
           SUBJECT: ${{ steps.list-jobs.outputs.subject }}
           MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
           MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}

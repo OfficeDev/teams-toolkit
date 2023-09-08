@@ -16,6 +16,6 @@ runs:
             --request POST \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $access_token" \
-            --data '{"to": "${{ env.TO }}", "body": "${{ env.BODY }}", "subject": "${{ env.SUBJECT }}"}' \
+            --data '{"to": "${{ env.TO }}", "body": ${{ env.BODY }}, "subject": "${{ env.SUBJECT }}"}' \
             'https://prod-18.northcentralus.logic.azure.com:443/workflows/b33d7861bfc64832a6f62cc8f2213988/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0'
       shell: bash

@@ -470,6 +470,8 @@
   "depChecker.failToDownloadFromUrl": "Unable to download file from '@Url', HTTP status '@Status'.",
   "depChecker.failToValidateVxTestAppInstallOptions": "Invalid argument for video extensibility test app prerequisites checker. Please check tasks.json file.",
   "depChecker.failToValidateVxTestApp": "Unable to validate video extensibility test app after installation.",
+  "depChecker.testToolVersionNotMatch": "The version of Teams App Test Tool (%s) is not compatible with the specified version range (%s).",
+  "depChecker.failedToValidateTestTool": "Unable to validate Teams App Test Tool after installation. %s",
   "error.driver.outputEnvironmentVariableUndefined": "The output environment variable name(s) are not defined.",
   "driver.aadApp.description.create": "Create an Azure Active Directory app to authenticate users",
   "driver.aadApp.description.update": "Apply Azure Active Directory app manifest to an existing app",

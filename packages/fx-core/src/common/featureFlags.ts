@@ -45,13 +45,9 @@ export function isCopilotPluginEnabled(): boolean {
 }
 
 export function isApiCopilotPluginEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false);
+  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
 }
 
 export function isCliNewUxEnabled(): boolean {
   return isFeatureFlagEnabled("TEAMSFX_CLI_NEW_UX", false);
-}
-
-export function isApiCopilotPluginEnabled(): boolean {
-  return isCopilotPluginEnabled();
 }

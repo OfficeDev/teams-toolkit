@@ -40,11 +40,4 @@ export const Summaries = Object.freeze({
     binFolders && binFolders.length > 0
       ? getLocalizedString("driver.prerequisite.summary.dotnet.installedWithPath", binFolders[0])
       : getLocalizedString("driver.prerequisite.summary.dotnet.installed"),
-  testToolSuccess: (binFolders?: string[]): string =>
-    binFolders && binFolders?.length > 0
-      ? getLocalizedString(
-          "driver.prerequisite.summary.testTool.installedWithPath",
-          binFolders?.[0]
-        )
-      : getLocalizedString("driver.prerequisite.summary.testTool.installed"),
 });

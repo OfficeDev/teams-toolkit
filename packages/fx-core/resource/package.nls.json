@@ -533,8 +533,6 @@
   "driver.prerequisite.summary.func.installed": "Azure Functions Core Tools is installed.",
   "driver.prerequisite.summary.dotnet.installedWithPath": ".NET Core SDK is installed at %s.",
   "driver.prerequisite.summary.dotnet.installed": ".NET Core SDK is installed.",
-  "driver.prerequisite.summary.testTool.installedWithPath": "Teams App Test Tool is installed at %s.",
-  "driver.prerequisite.summary.testTool.installed": "Teams App Test Tool is installed.",
   "driver.file.createOrUpdateEnvironmentFile.description": "Create or update variables to environment file.",
   "driver.file.createOrUpdateEnvironmentFile.summary": "The variables have been generated successfully to %s.",
   "driver.file.createOrUpdateJsonFile.description": "Create or update JSON file.",

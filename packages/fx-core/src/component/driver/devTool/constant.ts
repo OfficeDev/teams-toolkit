@@ -7,7 +7,6 @@ export const TelemetryProperties = Object.freeze({
   devCertStatus: "dev-cert-status",
   funcStatus: "func-status",
   dotnetStatus: "dotnet-status",
-  testToolStatus: "test-tool-status",
 });
 
 export enum TelemetryDepsCheckStatus {

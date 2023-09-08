@@ -277,7 +277,7 @@ export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[]
     // Http server url is not supported
     errors.push({
       type: ErrorType.UrlProtocolNotSupported,
-      content: util.format(ConstantString.UrlProtocolNotSupported, protocol),
+      content: util.format(ConstantString.UrlProtocolNotSupported, protocol.slice(0, -1)),
       data: servers,
     });
   }

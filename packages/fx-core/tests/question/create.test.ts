@@ -49,6 +49,7 @@ import {
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
+import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -662,6 +663,7 @@ describe("scaffold question", () => {
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.CopilotPlugin]: "true",
+          [FeatureFlagName.ApiCopilotPlugin]: "true",
         });
       });
 
@@ -1524,7 +1526,7 @@ describe("scaffold question", () => {
     let mockedEnvRestore: RestoreFn = () => {};
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.MECopilotPlugin]: "false",
+        [FeatureFlagName.CopilotPlugin]: "false",
       });
     });
     afterEach(() => {
@@ -1554,7 +1556,7 @@ describe("scaffold question", () => {
     let mockedEnvRestore: RestoreFn = () => {};
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.MECopilotPlugin]: "true",
+        [FeatureFlagName.CopilotPlugin]: "true",
       });
     });
     afterEach(() => {
@@ -1577,14 +1579,15 @@ describe("scaffold question", () => {
       assert.equal(options.length, 17);
     });
   });
-  describe("ME copilot plugin template", () => {
+  describe("ME copilot plugin template only", () => {
     const ui = new MockUserInteraction();
     let mockedEnvRestore: RestoreFn;
     const tools = new MockTools();
     setTools(tools);
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.MECopilotPlugin]: "true",
+        [FeatureFlagName.CopilotPlugin]: "true",
+        [FeatureFlagName.ApiCopilotPlugin]: "false",
       });
     });
 
@@ -1638,6 +1641,9 @@ describe("scaffold question", () => {
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);
+    });
+    it("api copilot plugin feature flag", async () => {
+      assert.isFalse(isApiCopilotPluginEnabled());
     });
   });
   describe("programmingLanguageQuestion", () => {

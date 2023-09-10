@@ -5,14 +5,24 @@
       target: ./Properties/launchSettings.json
       content:
         profiles:
+        {{#profileName}}
+          {{profileName}}
+        {{/profileName}}
+        {{^profileName}}
           Microsoft Teams (browser):
+        {{/profileName}}
             commandName: "Project"
           {{#commandLineArgs}}
             commandLineArgs: {{{commandLineArgs}}}
           {{/commandLineArgs}}
             dotnetRunMessages: true
             launchBrowser: true
+          {{#launchUrl}}
+            launchUrl: {{{launchUrl}}}
+          {{/launchUrl}}
+          {{^launchUrl}}
             launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+          {{/launchUrl}}
           {{#applicationUrl}}
             applicationUrl: {{{applicationUrl}}}
           {{/applicationUrl}}

@@ -40,11 +40,11 @@ describe("manifestUpdater", () => {
               "application/json": {
                 schema: {
                   type: "object",
+                  required: ["name"],
                   properties: {
                     name: {
                       type: "string",
                       description: "Name of the pet",
-                      required: true,
                     },
                   },
                 },
@@ -142,12 +142,10 @@ describe("manifestUpdater", () => {
                       name: {
                         type: "string",
                         description: "Name of the pet",
-                        required: false,
                       },
                       id: {
                         type: "string",
                         description: "Id of the pet",
-                        required: false,
                       },
                     },
                   },
@@ -376,15 +374,16 @@ describe("generateCommands", () => {
             summary: "Create a pet",
             parameters: [{ name: "id", description: "ID of the pet", required: false }],
             requestBody: {
+              required: true,
               content: {
                 "application/json": {
                   schema: {
                     type: "object",
+                    required: ["name"],
                     properties: {
                       name: {
                         type: "string",
                         description: "Name of the pet",
-                        required: true,
                       },
                     },
                   },
@@ -485,7 +484,6 @@ describe("generateCommands", () => {
                       name: {
                         type: "string",
                         description: "Name of the pet",
-                        required: false,
                       },
                     },
                   },
@@ -573,12 +571,12 @@ describe("generateCommands", () => {
             operationId: "createPet",
             summary: "Create a pet",
             requestBody: {
+              required: true,
               content: {
                 "application/json": {
                   schema: {
                     type: "string",
                     description: "Name of the pet",
-                    required: true,
                   },
                 },
               },

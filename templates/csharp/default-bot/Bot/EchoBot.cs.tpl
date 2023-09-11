@@ -8,7 +8,7 @@ public class EchoBot : TeamsActivityHandler
 { 
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
-        string messageText = turnContext.Activity.RemoveRecipientMention().Trim();
+        string messageText = turnContext.Activity.RemoveRecipientMention()?.Trim();
         var replyText = $"Echo: {messageText}";
         await turnContext.SendActivityAsync(MessageFactory.Text(replyText), cancellationToken);
     }

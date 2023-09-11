@@ -17,6 +17,9 @@ namespace {{SafeProjectName}}
             // Log that the HTTP trigger function received a request
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            // Get the query parameters from the request
+            string assignedTo = req.Query["assignedTo"];
+
             // Create a new RepairModel object and set its properties
             var repair = new RepairModel
             {
@@ -28,8 +31,18 @@ namespace {{SafeProjectName}}
                 Image = "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg"
             };
 
-            // Return a response with the RepairModel object
-            return new OkObjectResult(repair);
+            // Check if the assignedTo query parameter is case-insensitive equal to the assignedTo property of the RepairModel object
+            if (repair.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase))
+            {
+                // Return the RepairModel object
+                return new OkObjectResult(repair);
+            }
+            else
+            {
+                // Return a empty object
+                return new OkObjectResult(new { });                
+            }
+            
         }
     }
 }

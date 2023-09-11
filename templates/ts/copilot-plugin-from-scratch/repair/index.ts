@@ -25,16 +25,21 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
     body: {},
   };
 
+  const assignedTo = req.query.assignedTo;
+
   // Define the repair information object.
-  const repairInfo = {
-    id: 1,
-    title: "Oil change",
-    description:
-      "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
-    assignedTo: "Karin Blair",
-    date: "2023-05-23",
-    image: "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg",
-  };
+  const repairInfo =
+    assignedTo === "Karin Blair"
+      ? {
+          id: 1,
+          title: "Oil change",
+          description:
+            "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
+          assignedTo: "Karin Blair",
+          date: "2023-05-23",
+          image: "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg",
+        }
+      : {};
 
   // Set the response body to the repair information object.
   res.body = repairInfo;

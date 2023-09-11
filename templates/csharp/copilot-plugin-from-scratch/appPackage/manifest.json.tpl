@@ -36,7 +36,15 @@
                         "compose",
                         "commandBox"
                     ],
-                    "apiResponseRenderingTemplateFile": "adaptiveCards/repair.json"
+                    "apiResponseRenderingTemplateFile": "adaptiveCards/repair.json",
+                    "parameters": [
+                        {
+                            "name": "assignedTo",
+                            "title": "Assigned To",
+                            "description": "Filter repairs by who they're assigned to",
+                            "inputType": "text"
+                        }
+                    ]
                 }
             ]
         }

@@ -18,6 +18,11 @@
   {{/DOTNET}}
 {{/TAB}}
 {{#FUNC}}
+  {{#FUNC_NAME}}
+        echo "::set-teamsfx-env FUNC_NAME={{{FUNC_NAME}}}";
+  {{/FUNC_NAME}}
+  {{^FUNC_NAME}}
         echo "::set-teamsfx-env FUNC_NAME=getUserProfile";
+  {{/FUNC_NAME}}
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
 {{/FUNC}}

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import m365Provider from "@microsoft/teamsfx-cli/src/commonlib/m365LoginUserPassword";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes, GraphScopes } from "@microsoft/teamsfx-core";
 import axios, { AxiosInstance } from "axios";
 
 async function createRequester(): Promise<AxiosInstance> {
@@ -21,11 +21,25 @@ async function createRequester(): Promise<AxiosInstance> {
   return requester;
 }
 
+async function createAadRequester(): Promise<AxiosInstance> {
+  const appStudioTokenRes = await m365Provider.getAccessToken({ scopes: GraphScopes });
+  const appStudioToken = appStudioTokenRes.isOk()
+    ? appStudioTokenRes.value
+    : undefined;
+  const requester = axios.create({
+    baseURL: "https://graph.microsoft.com/v1.0",
+  });
+  requester.defaults.headers.common[
+    "Authorization"
+  ] = `Bearer ${appStudioToken}`;
+  return requester;
+}
+
 export async function deleteAadAppByObjectId(objectId: string) {
-  const requester = await createRequester();
+  const requester = await createAadRequester();
   for (let retries = 3; retries > 0; --retries) {
     try {
-      const response = await requester.delete(`api/aadapp/v2/${objectId}`);
+      const response = await requester.delete(`/applications/${objectId}`);
       if (response.status >= 200 && response.status < 300) {
         console.log("Successfully deleted AAD app");
         return;
@@ -40,7 +54,7 @@ export async function getAadAppByClientId(clientId: string): Promise<any> {
   const requester = await createRequester();
   for (let retries = 3; retries > 0; --retries) {
     try {
-      const response = await requester.get(`api/aadapp/${clientId}`);
+      const response = await requester.get(`/applications/(appId=${clientId})`);
       if (response.status >= 200 && response.status < 300) {
         console.log("Successfully got AAD app");
         return response.data;

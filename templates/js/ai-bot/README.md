@@ -21,6 +21,10 @@ The app template is built using the Teams AI library, which provides the capabil
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
+>
+> **Note**
+>
+> Teams AI Library is currently in preview version.
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.

@@ -191,8 +191,7 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
 }
 
 /**
- * Shows in `teamsfx -v`.
- * @returns the version of teamsfx-cli.
+ * @returns the version of cli.
  */
 let version: string;
 export function getVersion(): string {

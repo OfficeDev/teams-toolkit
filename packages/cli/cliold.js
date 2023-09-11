@@ -4,7 +4,6 @@
 // Licensed under the MIT license.
 
 const chalk = require("chalk");
-
 process.on("uncaughtException", (err) => {
   if (err.message.includes("async_hooks")) {
     console.error(
@@ -17,6 +16,6 @@ process.on("uncaughtException", (err) => {
   }
   process.exit(1);
 });
-process.env.TEAMSFX_CLI_BIN_NAME = "teamsapp";
+process.env.TEAMSFX_CLI_BIN_NAME = "teamsfx";
 const cli = require("./lib");
-cli.start("teamsapp");
+cli.start("teamsfx");

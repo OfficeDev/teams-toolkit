@@ -96,7 +96,7 @@ describe("Start a new project", function () {
         // validation local env succeed without local debug
         const result = await Executor.validate(
           projectPath,
-          environmentManager.getLocalEnvName()
+          environmentNameManager.getLocalEnvName()
         );
         expect(result.success).to.be.true;
       }

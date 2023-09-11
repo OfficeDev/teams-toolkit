@@ -1281,7 +1281,7 @@
     "@microsoft/dev-tunnels-contracts": "~1.0.7360",
     "@microsoft/dev-tunnels-management": "~1.0.7360",
     "@microsoft/dev-tunnels-ssh": "~3.11.1",
-    "@microsoft/teamsfx-api": "^0.22.3",
+    "@microsoft/teamsfx-api": "^0.22.4-rc",
     "@microsoft/teamsfx-core": "^2.0.4-rc",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",

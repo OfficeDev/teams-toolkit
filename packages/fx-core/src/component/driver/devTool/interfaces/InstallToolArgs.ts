@@ -16,6 +16,11 @@ export interface InstallToolArgs {
    * Install Dotnet
    */
   dotnet?: boolean;
+
+  /**
+   * Install Test Tool
+   */
+  testTool?: TestToolArgs;
 }
 
 interface DevCertArgs {
@@ -25,4 +30,9 @@ interface DevCertArgs {
 interface FuncArgs {
   version: string | number;
   symlinkDir?: string;
+}
+
+interface TestToolArgs {
+  version: string | number;
+  symlinkDir: string;
 }

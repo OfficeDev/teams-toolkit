@@ -3,40 +3,36 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import {
-  Command,
-  PartialManifest,
-  ComposeExtension,
-  Parameter,
-  ErrorType,
-  WarningResult,
-  WarningType,
-} from "./interfaces";
+import { Parameter, ErrorType, WarningResult, WarningType } from "./interfaces";
 import fs from "fs-extra";
 import path from "path";
 import { getRelativePath, updateFirstLetter } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
 import { format } from "util";
-
+import {
+  IComposeExtension,
+  IMessagingExtensionCommand,
+  TeamsAppManifest,
+} from "@microsoft/teamsfx-api";
 export async function updateManifest(
   manifestPath: string,
   outputSpecPath: string,
   adaptiveCardFolder: string,
   spec: OpenAPIV3.Document
-): Promise<[PartialManifest, WarningResult[]]> {
+): Promise<[TeamsAppManifest, WarningResult[]]> {
   try {
     // TODO: manifest interface can be updated when manifest parser library is ready
-    const originalManifest: PartialManifest = await fs.readJSON(manifestPath);
+    const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
 
     const [commands, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
-    const ComposeExtension: ComposeExtension = {
+    const ComposeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
     };
 
-    const updatedPart: PartialManifest = {
+    const updatedPart = {
       description: {
         short: spec.info.title,
         full: spec.info.description ?? originalManifest.description.full,
@@ -54,7 +50,8 @@ export async function updateManifest(
 
 export function generateParametersFromSchema(
   schema: OpenAPIV3.SchemaObject,
-  name: string
+  name: string,
+  isRequired = false
 ): Parameter[] {
   const parameters: Parameter[] = [];
 
@@ -64,7 +61,7 @@ export function generateParametersFromSchema(
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    if (schema.required) {
+    if (isRequired) {
       parameters.push({
         name: name,
         title: updateFirstLetter(name),
@@ -74,9 +71,14 @@ export function generateParametersFromSchema(
   } else if (schema.type === "object") {
     const { properties } = schema;
     for (const property in properties) {
+      let isRequired = false;
+      if (schema.required && schema.required?.indexOf(property) >= 0) {
+        isRequired = true;
+      }
       const result = generateParametersFromSchema(
         properties[property] as OpenAPIV3.SchemaObject,
-        property
+        property,
+        isRequired
       );
 
       parameters.push(...result);
@@ -90,9 +92,9 @@ export async function generateCommands(
   spec: OpenAPIV3.Document,
   adaptiveCardFolder: string,
   manifestPath: string
-): Promise<[Command[], WarningResult[]]> {
+): Promise<[IMessagingExtensionCommand[], WarningResult[]]> {
   const paths = spec.paths;
-  const commands: Command[] = [];
+  const commands: IMessagingExtensionCommand[] = [];
   const warnings: WarningResult[] = [];
   if (paths) {
     for (const pathUrl in paths) {
@@ -121,11 +123,15 @@ export async function generateCommands(
               }
 
               if (operationItem.requestBody) {
-                const requestJson = (operationItem.requestBody as OpenAPIV3.RequestBodyObject)
-                  .content["application/json"];
+                const requestBody = operationItem.requestBody as OpenAPIV3.RequestBodyObject;
+                const requestJson = requestBody.content["application/json"];
                 if (Object.keys(requestJson).length !== 0) {
                   const schema = requestJson.schema as OpenAPIV3.SchemaObject;
-                  const result = generateParametersFromSchema(schema, "requestBody");
+                  const result = generateParametersFromSchema(
+                    schema,
+                    "requestBody",
+                    requestBody.required
+                  );
                   parameters.push(...result);
                 }
               }
@@ -134,7 +140,7 @@ export async function generateCommands(
 
               const adaptiveCardPath = path.join(adaptiveCardFolder, operationId + ".json");
 
-              const command: Command = {
+              const command: IMessagingExtensionCommand = {
                 context: ["compose"],
                 type: "query",
                 title: operationItem.summary ?? "",

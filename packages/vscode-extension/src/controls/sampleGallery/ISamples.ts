@@ -24,6 +24,8 @@ export interface SampleInfo {
   gifUrl: string;
   // -1 means TTK is lower than required.
   versionComparisonResult: -1 | 0 | 1;
+  minimumToolkitVersion?: string;
+  maximumToolkitVersion?: string;
 }
 
 export type SampleProps = {

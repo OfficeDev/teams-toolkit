@@ -156,6 +156,13 @@ export class CopilotPluginGenerator {
         }
       }
 
+      const specVersionWarning = warnings.find(
+        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      );
+      if (specVersionWarning) {
+        specVersionWarning.content = ""; // We don't care content of this warning
+      }
+
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =

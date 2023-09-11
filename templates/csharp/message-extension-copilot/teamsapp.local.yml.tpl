@@ -11,7 +11,7 @@ provision:
       name: {{appName}}-${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Create or reuse an existing Azure Active Directory application for bot.
@@ -23,7 +23,7 @@ provision:
       # The Azure Active Directory application's client id created for bot.
       botId: BOT_ID
       # The Azure Active Directory application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD 
+      botPassword: SECRET_BOT_PASSWORD
 
   # Generate runtime appsettings to JSON file
   - uses: file/createOrUpdateJsonFile
@@ -48,6 +48,7 @@ provision:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -55,6 +56,7 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:
@@ -91,7 +93,16 @@ provision:
             dotnetRunMessages: true
             launchBrowser: true
             launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
-            applicationUrl: "http://localhost:5130"
+            applicationUrl: "https://localhost:7130;http://localhost:5130"
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+            hotReloadProfile: "aspnetcore"
+          Copilot (browser):
+            commandName: "Project"
+            dotnetRunMessages: true
+            launchBrowser: true
+            launchUrl: "https://teams.microsoft.com?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+            applicationUrl: "https://localhost:7130;http://localhost:5130"
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"

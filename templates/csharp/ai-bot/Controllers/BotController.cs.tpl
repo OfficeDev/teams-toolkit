@@ -20,7 +20,7 @@ public class BotController : ControllerBase
         Bot = bot;
     }
 
-    [HttpPost, HttpGet]
+    [HttpPost]
     public async Task PostAsync(CancellationToken cancellationToken = default)
     {
         // Delegate the processing of the HTTP POST to the adapter.

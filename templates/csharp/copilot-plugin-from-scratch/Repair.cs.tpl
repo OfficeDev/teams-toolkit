@@ -8,8 +8,8 @@ using Microsoft.Extensions.Logging;
 namespace {{SafeProjectName}}
 {
     public static class Repair
-    {       
-        [FunctionName("Repair")]
+    {
+        [FunctionName("repair")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
@@ -20,29 +20,24 @@ namespace {{SafeProjectName}}
             // Get the query parameters from the request
             string assignedTo = req.Query["assignedTo"];
 
-            // Create a new RepairModel object and set its properties
-            var repair = new RepairModel
+            // Create the repair records
+            var repairRecords = new RepairModel[]
             {
-                Id = 1,
-                Title = "Oil change",
-                Description = "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
-                AssignedTo = "Karin Blair",
-                Date = "2023-05-23",
-                Image = "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg"
+                new RepairModel {
+                    Id = 1,
+                    Title = "Oil change",
+                    Description = "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
+                    AssignedTo = "Karin Blair",
+                    Date = "2023-05-23",
+                    Image = "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg"
+                }
             };
 
-            // Check if the assignedTo query parameter is case-insensitive equal to the assignedTo property of the RepairModel object
-            if (repair.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase))
-            {
-                // Return the RepairModel object
-                return new OkObjectResult(repair);
-            }
-            else
-            {
-                // Return a empty object
-                return new OkObjectResult(new { });                
-            }
+            // Filter the repair records by the assignedTo query parameter
+            var repair = repairRecords.FirstOrDefault(r => r.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase));
             
+            // Return the repair record
+            return new OkObjectResult(repair);            
         }
     }
 }

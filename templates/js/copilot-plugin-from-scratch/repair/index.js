@@ -15,23 +15,33 @@ module.exports = async function (context, req) {
     body: {},
   };
 
+  // Get the assignedTo query parameter.
   const assignedTo = req.query.assignedTo;
 
-  // Define the repair information object.
-  const repairInfo =
-    assignedTo === "Karin Blair"
-      ? {
-          id: 1,
-          title: "Oil change",
-          description:
-            "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
-          assignedTo: "Karin Blair",
-          date: "2023-05-23",
-          image: "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg",
-        }
-      : {};
+  // Define the repair records.
+  const repairRecords = [
+    {
+      id: 1,
+      title: "Oil change",
+      description:
+        "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
+      assignedTo: "Karin Blair",
+      date: "2023-05-23",
+      image: "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg",
+    },
+  ];
+
+  // Initialize the repair information object.
+  let repair = {};
+
+  // Filter the repair information by the assignedTo query parameter.
+  if (assignedTo) {
+    repair = repairRecords.find(
+      (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
+    );
+  }
 
   // Set the response body to the repair information object.
-  res.body = repairInfo;
+  res.body = repair ?? {};
   return res;
 };

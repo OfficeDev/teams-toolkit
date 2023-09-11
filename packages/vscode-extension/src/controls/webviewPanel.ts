@@ -8,6 +8,7 @@ import * as vscode from "vscode";
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Correlator, sampleProvider } from "@microsoft/teamsfx-core";
 
+import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs, openFolder } from "../handlers";
@@ -20,6 +21,7 @@ import {
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
+import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
 import { PanelType } from "./PanelType";
 
@@ -132,6 +134,7 @@ export class WebviewPanel {
             break;
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
+            break;
           case Commands.LoadSampleCollection:
             await this.LoadSampleCollection();
             break;
@@ -174,10 +177,31 @@ export class WebviewPanel {
 
   private async LoadSampleCollection() {
     await sampleProvider.fetchSampleConfig();
+    const sampleCollection = sampleProvider.SampleCollection;
+    const sampleData = sampleCollection.samples.map((sample) => {
+      const extensionVersion = extensionPackage.version;
+      let versionComparisonResult = 0;
+      if (
+        sample.maximumToolkitVersion &&
+        compare(extensionVersion, sample.maximumToolkitVersion) > 0
+      ) {
+        versionComparisonResult = 1;
+      }
+      if (
+        sample.minimumToolkitVersion &&
+        compare(extensionVersion, sample.minimumToolkitVersion) < 0
+      ) {
+        versionComparisonResult = -1;
+      }
+      return {
+        ...sample,
+        versionComparisonResult,
+      };
+    });
     if (this.panel && this.panel.webview) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
-        data: sampleProvider.SampleCollection,
+        data: sampleData,
       });
     }
   }

@@ -6,17 +6,8 @@ import { getLocalizedString } from "../localizeUtils";
 
 export class ConstantString {
   static readonly CancelledMessage = getLocalizedString("core.common.CancelledMessage");
-  // TODO: remove core.common.SpecVersionNotSupported message which is not used
-  static readonly SpecVersionNotSupported = getLocalizedString(
-    "core.common.SpecVersionNotSupported"
-  );
   static readonly NoServerInformation = getLocalizedString("core.common.NoServerInformation");
-  // TODO: remove core.common.MultipleServerInformation message which is not used
-  static readonly MultipleServerInformation = getLocalizedString(
-    "core.common.MultipleServerInformation"
-  );
   static readonly RemoteRefNotSupported = getLocalizedString("core.common.RemoteRefNotSupported");
-
   static readonly MissingOperationId = getLocalizedString("core.common.MissingOperationId");
   static readonly NoSupportedApi = getLocalizedString("core.common.NoSupportedApi");
   static readonly AdditionalPropertiesNotSupported = getLocalizedString(
@@ -24,16 +15,20 @@ export class ConstantString {
   );
   static readonly SchemaNotSupported = getLocalizedString("core.common.SchemaNotSupported");
   static readonly UnknownSchema = getLocalizedString("core.common.UnknownSchema");
-  // TODO: localization
-  static readonly UrlProtocolNotSupported =
-    "Sever url is not correct: protocol %s is not supported, you should use https protocol instead.";
-  static readonly RelativeServerUrlNotSupported =
-    "Server url is not correct: relative server url is not supported.";
-  static readonly ResolveServerUrlFailed =
-    "Resolve server Url failed: environment variable %s is not defined";
-  static readonly OperationOnlyContainsOptionalParam =
-    "Operation %s only contains optional parameters which is not supported";
-  static readonly ConvertSwaggerToOpenAPI = "Swagger 2.0 file has been converted to OpenAPI 3.0";
+
+  static readonly UrlProtocolNotSupported = getLocalizedString(
+    "core.common.UrlProtocolNotSupported"
+  );
+  static readonly RelativeServerUrlNotSupported = getLocalizedString(
+    "core.common.RelativeServerUrlNotSupported"
+  );
+  static readonly ResolveServerUrlFailed = getLocalizedString("core.common.ResolveServerUrlFailed");
+  static readonly OperationOnlyContainsOptionalParam = getLocalizedString(
+    "core.common.OperationOnlyContainsOptionalParam"
+  );
+  static readonly ConvertSwaggerToOpenAPI = getLocalizedString(
+    "core.common.ConvertSwaggerToOpenAPI"
+  );
 
   static readonly GetMethod = "get";
   static readonly PostMethod = "post";

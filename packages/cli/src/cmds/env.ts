@@ -21,6 +21,7 @@ import {
 import { isWorkspaceSupported, getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import { WorkspaceNotSupported } from "./preview/errors";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
@@ -114,7 +115,7 @@ class EnvAdd extends YargsCommand {
     newTargetEnvName: string
   ): Promise<Result<null, FxError>> {
     // valid target environment name
-    const match = newTargetEnvName.match(environmentManager.envNameRegex);
+    const match = newTargetEnvName.match(environmentNameManager.envNameRegex);
     if (!match) {
       return err(InvalidEnvNameError());
     }

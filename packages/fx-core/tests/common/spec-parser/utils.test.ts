@@ -891,7 +891,7 @@ describe("utils", () => {
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: util.format(ConstantString.UrlProtocolNotSupported, "http:"),
+          content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
           data: servers,
         },
       ]);
@@ -1055,12 +1055,12 @@ describe("utils", () => {
         },
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: util.format(ConstantString.UrlProtocolNotSupported, "http:"),
+          content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
           data: spec.paths["/api"].servers,
         },
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: util.format(ConstantString.UrlProtocolNotSupported, "ftp:"),
+          content: util.format(ConstantString.UrlProtocolNotSupported, "ftp"),
           data: spec.paths["/api"].get.servers,
         },
       ]);

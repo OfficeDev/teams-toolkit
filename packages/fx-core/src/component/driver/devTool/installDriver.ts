@@ -8,7 +8,12 @@ import * as path from "path";
 import semver from "semver";
 import { Service } from "typedi";
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import { DependencyStatus, EmptyLogger, EmptyTelemetry } from "../../../common/deps-checker";
+import {
+  DependencyStatus,
+  EmptyLogger,
+  EmptyTelemetry,
+  v3DefaultHelpLink,
+} from "../../../common/deps-checker";
 import {
   LocalCertificate,
   LocalCertificateManager,
@@ -34,6 +39,8 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
 import { DotnetChecker } from "../../../common/deps-checker/internal/dotnetChecker";
 import { ErrorContextMW } from "../../../core/globalVars";
+import { TestToolChecker } from "../../../common/deps-checker/internal/testToolChecker";
+import { TestToolInstallationUserError } from "./error/testToolInstallationUserError";
 
 const ACTION_NAME = "devTool/install";
 const helpLink = "https://aka.ms/teamsfx-actions/devtool-install";
@@ -43,6 +50,7 @@ const outputKeys = {
   sslKeyFile: "sslKeyFile",
   funcPath: "funcPath",
   dotnetPath: "dotnetPath",
+  testToolPath: "testToolPath",
 };
 
 @Service(ACTION_NAME)
@@ -117,6 +125,10 @@ export class ToolsInstallDriverImpl {
     if (args.dotnet) {
       const dotnetRes = await this.resolveDotnet(outputEnvVarNames);
       dotnetRes.forEach((v, k) => res.set(k, v));
+    }
+
+    if (args.testTool) {
+      await this.resolveTestTool(`${args.testTool.version}`, args.testTool.symlinkDir);
     }
 
     return res;
@@ -245,6 +257,32 @@ export class ToolsInstallDriverImpl {
     return res;
   }
 
+  async resolveTestTool(versionRange: string, symlinkDir: string): Promise<void> {
+    const checker = new TestToolChecker();
+    const projectPath = this.context.projectPath;
+    const status = await checker.resolve({ versionRange, symlinkDir, projectPath });
+    this.context.logProvider.debug(
+      `Teams App Test Tool result: ${JSON.stringify({
+        isInstalled: status.isInstalled,
+        version: status.details.installVersion,
+        bin: status.details.binFolders,
+        supportedVersions: status.details.supportedVersions,
+      })}`
+    );
+
+    this.setDepsCheckTelemetry(TelemetryProperties.testToolStatus, status);
+
+    if (!status.isInstalled) {
+      throw new TestToolInstallationUserError(
+        ACTION_NAME,
+        status.error,
+        status.error?.helpLink || v3DefaultHelpLink
+      );
+    } else {
+      this.context.addSummary(Summaries.testToolSuccess(status.details.binFolders));
+    }
+  }
+
   private validateArgs(args: InstallToolArgs): void {
     if (!!args.devCert && typeof args.devCert?.trust !== "boolean") {
       throw new InvalidActionInputError(ACTION_NAME, ["devCert.trust"], helpLink);
@@ -266,6 +304,20 @@ export class ToolsInstallDriverImpl {
     if (!!args.dotnet && typeof args.dotnet !== "boolean") {
       throw new InvalidActionInputError(ACTION_NAME, ["dotnet"], helpLink);
     }
+    if (typeof args.testTool !== "undefined") {
+      if (typeof args.testTool !== "object") {
+        throw new InvalidActionInputError(ACTION_NAME, ["testTool"], helpLink);
+      }
+      if (
+        typeof args.testTool.version !== "string" ||
+        !semver.validRange(`${args.testTool?.version}`)
+      ) {
+        throw new InvalidActionInputError(ACTION_NAME, ["testTool.version"], helpLink);
+      }
+      if (typeof args.testTool.symlinkDir !== "string") {
+        throw new InvalidActionInputError(ACTION_NAME, ["testTool.symlinkDir"], helpLink);
+      }
+    }
   }
 
   private setArgTelemetry(args: InstallToolArgs): void {
@@ -281,6 +333,14 @@ export class ToolsInstallDriverImpl {
             : "<undefined>",
         },
         dotnet: args.dotnet,
+        testTool: {
+          version: args.testTool?.version,
+          symlinkDir: args.testTool?.symlinkDir
+            ? path.resolve(args.testTool.symlinkDir) === path.resolve("./devTools/testTool")
+              ? "<default>"
+              : "<unknown>"
+            : "<undefined>",
+        },
       }),
     });
   }

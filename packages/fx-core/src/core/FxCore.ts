@@ -95,7 +95,7 @@ import { QuestionNames } from "../question/questionNames";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
-import { environmentManager } from "./environment";
+import { environmentNameManager } from "./environmentName";
 import { InvalidInputError } from "./error";
 import { ErrorContextMW, setErrorContext, setTools, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -232,7 +232,7 @@ export class FxCore {
   }
   @hooks([ErrorContextMW({ component: "FxCore", stage: "localDebug", reset: true })])
   async localDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    inputs.env = environmentManager.getLocalEnvName();
+    inputs.env = environmentNameManager.getLocalEnvName();
     return this.provisionResources(inputs);
   }
 

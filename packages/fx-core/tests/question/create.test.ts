@@ -663,6 +663,7 @@ describe("scaffold question", () => {
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.CopilotPlugin]: "true",
+          [FeatureFlagName.ApiCopilotPlugin]: "true",
         });
       });
 
@@ -1578,7 +1579,7 @@ describe("scaffold question", () => {
       assert.equal(options.length, 17);
     });
   });
-  describe("ME copilot plugin template", () => {
+  describe("ME copilot plugin template only", () => {
     const ui = new MockUserInteraction();
     let mockedEnvRestore: RestoreFn;
     const tools = new MockTools();
@@ -1612,7 +1613,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 5);
+          assert.isTrue(options.length === 4);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;

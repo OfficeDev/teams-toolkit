@@ -413,9 +413,6 @@ export interface IQTreeNode {
     inputsDisabled?: "self" | "children" | "all";
 }
 
-// @public (undocumented)
-export const LocalEnvironmentName = "local";
-
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 

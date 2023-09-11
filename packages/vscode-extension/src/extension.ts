@@ -19,6 +19,7 @@ import {
   VersionState,
   setRegion,
   isCopilotPluginEnabled,
+  isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -596,7 +597,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openManifestSchemaCmd);
 
-  if (isCopilotPluginEnabled()) {
+  if (isApiCopilotPluginEnabled()) {
     const addAPICmd = vscode.commands.registerCommand(
       "fx-extension.copilotPluginAddAPI",
       async (...args) => {

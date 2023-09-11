@@ -19,6 +19,7 @@ provision:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -26,6 +27,7 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:

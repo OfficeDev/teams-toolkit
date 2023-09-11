@@ -133,32 +133,6 @@ export interface AdaptiveCard {
   body: Array<TextBlockElement | ArrayElement>;
 }
 
-export interface PartialManifest {
-  description: Description;
-  composeExtensions: ComposeExtension[];
-}
-
-export interface Description {
-  short: string;
-  full: string;
-}
-
-export interface ComposeExtension {
-  composeExtensionType: string;
-  apiSpecificationFile: string;
-  commands: Command[];
-}
-
-export interface Command {
-  id: string;
-  type: string;
-  context: string[];
-  title: string;
-  description?: string;
-  parameters: Parameter[];
-  apiResponseRenderingTemplateFile?: string;
-}
-
 export interface Parameter {
   name: string;
   title: string;

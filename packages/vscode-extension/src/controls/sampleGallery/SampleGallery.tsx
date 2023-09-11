@@ -3,28 +3,19 @@
 
 import "./SampleGallery.scss";
 
+import Fuse from "fuse.js";
 import * as React from "react";
 
 import { Icon } from "@fluentui/react";
-import Fuse from "fuse.js";
 
 import { Commands } from "../Commands";
-import { SampleCollection, SampleInfo } from "./ISamples";
+import { SampleGalleryState, SampleInfo } from "./ISamples";
 import OfflinePage from "./offlinePage";
 import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
 import SampleFilter from "./sampleFilter";
 
-export default class SampleGallery extends React.Component<
-  unknown,
-  {
-    samples: Array<SampleInfo>;
-    loading: boolean;
-    query: string;
-    fuse: Fuse<SampleInfo>;
-    selectedSampleId?: string;
-  }
-> {
+export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   constructor(props: unknown) {
     super(props);
     this.state = {
@@ -73,7 +64,7 @@ export default class SampleGallery extends React.Component<
       const filteredSamples =
         query === ""
           ? this.state.samples
-          : this.state.fuse.search(query).map((result) => result.item);
+          : this.state.fuse.search(query).map((result: { item: SampleInfo }) => result.item);
       return (
         <div className="sample-gallery">
           {titleSection}
@@ -88,7 +79,7 @@ export default class SampleGallery extends React.Component<
                 }}
               ></SampleFilter>
               <div className="sample-stack">
-                {filteredSamples.map((sample) => {
+                {filteredSamples.map((sample: SampleInfo) => {
                   return (
                     <SampleCard key={sample.id} sample={sample} selectSample={this.selectSample} />
                   );
@@ -105,13 +96,13 @@ export default class SampleGallery extends React.Component<
     const message = event.data.message;
     switch (message) {
       case Commands.LoadSampleCollection:
-        const sampleCollection = event.data.data as SampleCollection;
+        const samples = event.data.data as SampleInfo[];
         this.setState({
-          samples: sampleCollection.samples,
-          fuse: new Fuse(sampleCollection.samples, {
+          loading: false,
+          samples: samples,
+          fuse: new Fuse(samples, {
             keys: ["title", "shortDescription", "fullDescription", "tags"],
           }),
-          loading: false,
         });
         break;
       default:

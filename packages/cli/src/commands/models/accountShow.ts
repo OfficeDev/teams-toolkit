@@ -37,7 +37,7 @@ export const accountShowCommand: CLICommand = {
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
       logger.info(
-        "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
+        `Use \`${process.env.TEAMSFX_CLI_BIN_NAME} account login azure\` or \`${process.env.TEAMSFX_CLI_BIN_NAME} account login m365\` to log in to Azure or Microsoft 365 account.`
       );
     }
     return ok(undefined);

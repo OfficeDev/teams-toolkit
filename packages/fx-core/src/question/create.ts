@@ -21,7 +21,11 @@ import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
-import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
+import {
+  isCLIDotNetEnabled,
+  isCopilotPluginEnabled,
+  isApiCopilotPluginEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
@@ -139,7 +143,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       let staticOptions: StaticOptions;
 
-      if (isCopilotPluginEnabled()) {
+      if (isApiCopilotPluginEnabled()) {
         staticOptions = [
           ProjectTypeOptions.copilotPlugin(inputs.platform),
           ProjectTypeOptions.bot(inputs.platform),
@@ -469,7 +473,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(true),
     ];
-    if (isCopilotPluginEnabled()) {
+    if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
     return capabilityOptions;
@@ -1685,7 +1689,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
   if (!isCLIDotNetEnabled()) {
     deleteNames.push(QuestionNames.Runtime);
   }
-  if (!isCopilotPluginEnabled()) {
+  if (!isApiCopilotPluginEnabled()) {
     deleteNames.push(QuestionNames.CopilotPluginExistingApi);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);

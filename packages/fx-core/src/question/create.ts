@@ -344,21 +344,13 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
-      ? // currently no ai bot for dotnet
-        [
-          CapabilityOptions.basicBot(),
-          CapabilityOptions.notificationBot(),
-          CapabilityOptions.commandBot(),
-          CapabilityOptions.workflowBot(inputs),
-        ]
-      : [
-          CapabilityOptions.basicBot(),
-          CapabilityOptions.aiBot(),
-          CapabilityOptions.notificationBot(),
-          CapabilityOptions.commandBot(),
-          CapabilityOptions.workflowBot(inputs),
-        ];
+    return [
+      CapabilityOptions.basicBot(),
+      CapabilityOptions.aiBot(),
+      CapabilityOptions.notificationBot(),
+      CapabilityOptions.commandBot(),
+      CapabilityOptions.workflowBot(inputs),
+    ];
   }
 
   static tabs(): OptionItem[] {

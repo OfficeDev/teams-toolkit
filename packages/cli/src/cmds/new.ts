@@ -196,7 +196,7 @@ class NewTemplateList extends YargsCommand {
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Use the command ${CLILogProvider.white(
-        "teamsfx new template <sampleAppName>"
+        `${process.env.TEAMSFX_CLI_BIN_NAME} new template <sampleAppName>`
       )} to create an application from the sample app.`
     );
     return ok(null);

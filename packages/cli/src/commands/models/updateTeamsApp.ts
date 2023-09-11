@@ -18,7 +18,7 @@ export const updateTeamsAppCommand: CLICommand = {
   handler: async (ctx) => {
     const inputs = ctx.optionValues as InputsWithProjectPath;
 
-    const validateInputsRes = validateInputs(inputs);
+    const validateInputsRes = validateInputs(ctx.command.fullName, inputs);
     if (validateInputsRes.isErr()) {
       return err(validateInputsRes.error);
     }
@@ -30,12 +30,11 @@ export const updateTeamsAppCommand: CLICommand = {
 };
 
 function validateInputs(
+  fullName: string,
   inputs: InputsWithProjectPath
 ): Result<undefined, MissingRequiredOptionError> {
   if (inputs["manifest-path"] && !inputs.env) {
-    return err(
-      new MissingRequiredOptionError(`teamsfx update ${updateTeamsAppCommand.name}`, "--env")
-    );
+    return err(new MissingRequiredOptionError(fullName, "--env"));
   }
   return ok(undefined);
 }

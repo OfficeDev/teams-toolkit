@@ -95,7 +95,7 @@ export abstract class YargsCommand {
           LogLevel.Info,
           `Some arguments are useless because the interactive mode is opened.` +
             ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-            ` or set the global setting by 'teamsfx config set interactive false'.`,
+            ` or set the global setting by '${process.env.TEAMSFX_CLI_BIN_NAME} config set interactive false'.`,
           true
         );
       }

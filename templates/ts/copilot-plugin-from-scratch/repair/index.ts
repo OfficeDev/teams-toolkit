@@ -41,15 +41,15 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
     },
   ];
 
-  // Initialize the repair information object.
-  let repair = {};
+  // If the assignedTo query parameter is not provided, return the response.
+  if (!assignedTo) {
+    return res;
+  }
 
   // Filter the repair information by the assignedTo query parameter.
-  if (assignedTo) {
-    repair = repairRecords.find(
-      (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
-    );
-  }
+  const repair = repairRecords.find(
+    (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
+  );
 
   // Set the response body to the repair information object.
   res.body = repair ?? {};

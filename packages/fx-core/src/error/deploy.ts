@@ -46,6 +46,8 @@ export class GetPublishingCredentialsError extends UserError {
         resourceGroup
       ),
       helpLink: helpLink,
+      error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -65,6 +67,8 @@ export class DeployZipPackageError extends UserError {
         endpoint
       ),
       helpLink: helpLink,
+      error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }
@@ -154,6 +158,8 @@ export class AzureStorageGetContainerError extends UserError {
         error.message || ""
       ),
       helpLink: helpLink,
+      error: error,
+      categories: [ErrorCategory.External],
     });
   }
 }

@@ -232,10 +232,10 @@ describe("utils", () => {
                   "application/json": {
                     schema: {
                       type: "object",
+                      required: ["name"],
                       properties: {
                         name: {
                           type: "string",
-                          required: true,
                         },
                       },
                     },
@@ -285,10 +285,10 @@ describe("utils", () => {
                   "application/json": {
                     schema: {
                       type: "object",
+                      required: ["name"],
                       properties: {
                         name: {
                           type: "string",
-                          required: true,
                         },
                       },
                     },
@@ -338,10 +338,10 @@ describe("utils", () => {
                   "application/json": {
                     schema: {
                       type: "object",
+                      required: ["name"],
                       properties: {
                         name: {
                           type: "array",
-                          required: true,
                           items: {
                             type: "string",
                           },
@@ -572,7 +572,8 @@ describe("utils", () => {
               parameters: [
                 {
                   in: "header",
-                  schema: { type: "string", required: true },
+                  required: true,
+                  schema: { type: "string" },
                 },
               ],
               responses: {
@@ -795,10 +796,10 @@ describe("utils", () => {
     it("should return 1 if the schema has a required string property", () => {
       const schema = {
         type: "object",
+        required: ["name"],
         properties: {
           name: {
             type: "string",
-            required: true,
           },
         },
       };
@@ -814,7 +815,6 @@ describe("utils", () => {
         properties: {
           name: {
             type: "string",
-            required: false,
           },
         },
       };
@@ -827,21 +827,20 @@ describe("utils", () => {
     it("should return the correct count for a nested schema", () => {
       const schema = {
         type: "object",
+        required: ["name", "address"],
         properties: {
           name: {
             type: "string",
-            required: true,
           },
           address: {
             type: "object",
+            required: ["street"],
             properties: {
               street: {
                 type: "string",
-                required: true,
               },
               city: {
                 type: "string",
-                required: false,
               },
             },
           },
@@ -853,12 +852,17 @@ describe("utils", () => {
       assert.strictEqual(result.isValid, true);
     });
 
-    it("should return NaN for an unsupported schema type", () => {
+    it("should return not valid for an unsupported schema type", () => {
       const schema = {
-        type: "array",
-        required: true,
-        items: {
-          type: "string",
+        type: "object",
+        required: ["name"],
+        properties: {
+          name: {
+            type: "array",
+            items: {
+              type: "string",
+            },
+          },
         },
       };
       const result = checkPostBody(schema as any);

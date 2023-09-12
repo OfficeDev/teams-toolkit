@@ -840,10 +840,10 @@ describe("SpecParser", () => {
                   "application/json": {
                     schema: {
                       type: "object",
+                      required: ["name"],
                       properties: {
                         name: {
                           type: "string",
-                          required: true,
                         },
                       },
                     },

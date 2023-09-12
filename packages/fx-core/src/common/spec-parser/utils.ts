@@ -75,7 +75,10 @@ export function checkParameters(paramObject: OpenAPIV3.ParameterObject[]): Check
   return paramResult;
 }
 
-export function checkPostBody(schema: OpenAPIV3.SchemaObject): CheckParamResult {
+export function checkPostBody(
+  schema: OpenAPIV3.SchemaObject,
+  isRequired = false
+): CheckParamResult {
   const paramResult = {
     requiredNum: 0,
     optionalNum: 0,
@@ -92,7 +95,7 @@ export function checkPostBody(schema: OpenAPIV3.SchemaObject): CheckParamResult 
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    if (schema.required) {
+    if (isRequired) {
       paramResult.requiredNum = paramResult.requiredNum + 1;
     } else {
       paramResult.optionalNum = paramResult.optionalNum + 1;
@@ -100,13 +103,17 @@ export function checkPostBody(schema: OpenAPIV3.SchemaObject): CheckParamResult 
   } else if (schema.type === "object") {
     const { properties } = schema;
     for (const property in properties) {
-      const result = checkPostBody(properties[property] as OpenAPIV3.SchemaObject);
+      let isRequired = false;
+      if (schema.required && schema.required?.indexOf(property) >= 0) {
+        isRequired = true;
+      }
+      const result = checkPostBody(properties[property] as OpenAPIV3.SchemaObject, isRequired);
       paramResult.requiredNum += result.requiredNum;
       paramResult.optionalNum += result.optionalNum;
       paramResult.isValid = paramResult.isValid && result.isValid;
     }
   } else {
-    if (schema.required) {
+    if (isRequired) {
       paramResult.isValid = false;
     }
   }
@@ -155,7 +162,7 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
 
       if (requestJsonBody) {
         const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-        requestBodyParamResult = checkPostBody(requestBodySchema);
+        requestBodyParamResult = checkPostBody(requestBodySchema, requestBody.required);
       }
 
       if (!requestBodyParamResult.isValid) {

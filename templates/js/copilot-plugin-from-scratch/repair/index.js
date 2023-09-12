@@ -37,7 +37,7 @@ module.exports = async function (context, req) {
   }
 
   // Filter the repair information by the assignedTo query parameter.
-  let repair = repairRecords.find(
+  const repair = repairRecords.find(
     (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
   );
 

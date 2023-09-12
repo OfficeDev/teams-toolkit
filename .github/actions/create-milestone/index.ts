@@ -19,15 +19,25 @@ class CreateMilestone extends Action {
 	id = 'CreateMilestone';
 
 	async onTriggered(_: OctoKit) {
-		safeLog(`start check and create milestone`);
-		const api = new DevopsClient(devopsToken, org, projectId);
-		const sprints = await api.queryCurrentAndFutureSprints();
+		safeLog(`begin to check and create milestone`);
+		const client = await this.createClient();
+		const sprints = await client.queryCurrentAndFutureSprints();
 		safeLog(`found ${sprints.length} sprints`);
 		const existingMilestones = await getExistingMilestones('CY');
 		safeLog(`found ${existingMilestones.length} existing milestones`);
 		for (const sprint of sprints) {
 			await checkAndCreateMilestone(sprint, existingMilestones);
 		}
+	}
+
+	private async createClient() {
+		let client = new DevopsClient(
+			devopsToken,
+			org,
+			projectId,
+		);
+		await client.init();
+		return client;
 	}
 }
 

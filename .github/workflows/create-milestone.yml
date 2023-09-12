@@ -29,7 +29,7 @@ jobs:
       - name: Run Create Milestone
         uses: ./action-base/create-milestone
         with:
-          milestone-prefix: CY
-          milestone-days: 14
-          advanced-days: 3
           token: ${{secrets.GITHUB_TOKEN}}
+          devops-token: ${{secrets.ADO_PAT}}
+          devops-org: "msazure"
+          devops-projectId: "Microsoft Teams Extensibility"

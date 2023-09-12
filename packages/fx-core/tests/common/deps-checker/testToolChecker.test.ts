@@ -5,6 +5,8 @@ import "mocha";
 
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as path from "path";
+import * as url from "url";
 import { cpUtils } from "../../../src/common/deps-checker/util/cpUtils";
 import { TestToolChecker } from "../../../src/common/deps-checker/internal/testToolChecker";
 import mockfs from "mock-fs";
@@ -135,6 +137,44 @@ describe("Test Tool Checker Test", () => {
     expect(status.isInstalled).to.be.false;
     expect(status.details.binFolders).to.be.empty;
     expect(status.error).instanceOf(DepsCheckerError);
+  });
+
+  it("Special characters in tgz path", async () => {
+    const checker = new TestToolChecker();
+    const symlinkDir = "symlinkDir";
+    const versionRange = "~1.2.3";
+    const mockProjectPath = "./projectPath";
+    mockfs({
+      [path.join(mockProjectPath, "microsoft-teams-app-test-tool-cli-1.2.3.tgz")]: "",
+    });
+    let installArgs: string[] = [];
+    sandbox.stub(fileHelper, "rename").resolves();
+    sandbox.stub(fileHelper, "createSymlink").resolves();
+    sandbox
+      .stub(cpUtils, "executeCommand")
+      .callsFake(async (_cwd, _logger, _options, command, ...args) => {
+        if (args.includes("--version")) {
+          throw new Error("not installed");
+        } else if (args.includes("install")) {
+          installArgs = args;
+        }
+        return "";
+      });
+
+    // Act
+    await checker.resolve({ projectPath, symlinkDir, versionRange });
+
+    // Assert
+    const fileArg = installArgs.filter((arg) =>
+      arg.includes("microsoft-teams-app-test-tool-cli")
+    )[0];
+    expect(fileArg).not.empty;
+    let parsed: url.URL | undefined;
+    expect(() => {
+      parsed = new url.URL(fileArg);
+    }).not.throw();
+    expect(parsed).not.undefined;
+    expect(parsed?.protocol).equals("file:");
   });
 
   it("Install timeout", async () => {

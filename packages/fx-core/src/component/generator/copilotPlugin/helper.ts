@@ -366,7 +366,7 @@ function formatApiSpecValidationWarningMessage(
     resultWarnings.push(
       `${SummaryConstant.NotExecuted} ` +
         getLocalizedString(
-          "core.copilotPlugin.scaffold.summary.warning.swaggerversion",
+          "core.copilotPlugin.scaffold.summary.warning.swaggerVersion",
           apiSpecFileName
         )
     );

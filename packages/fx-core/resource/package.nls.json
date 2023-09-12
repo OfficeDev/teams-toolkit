@@ -207,7 +207,7 @@
   "error.generator.DownloadSampleNetworkError": "Unable to download sample due to network error. Check your network connection and retry. Alternatively, you can go to %s to git clone the repo manually",
   "error.generator.ParseUrlError": "Unable to parse url %s",
   "error.copilotPlugin.openAiPluginManifest.CannotGetManifest": "Unable to get OpenAI plugin manifest from '%s'.",
-  "error.copilotPlugin.noExtraAPICanBeAdded": "No API can be added. Only GET and POST methods with at most one requiredResourceAccess parameter and no auth are supported. Methods defined in manifest.json are not listed.",
+  "error.copilotPlugin.noExtraAPICanBeAdded": "No API can be added. Only GET and POST methods with at most one required parameter and no auth are supported. Methods defined in manifest.json are not listed.",
   "error.m365.NotExtendedToM365Error": "Unable to extend Teams app to Microsoft 365. Use 'teamsApp/extendToM365' action to extend your Teams app to Microsoft 365.",
   "core.QuestionAppName.validation.pattern": "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.",
   "core.QuestionAppName.validation.maxlength": "Application name is longer than the maximum length of 30.",

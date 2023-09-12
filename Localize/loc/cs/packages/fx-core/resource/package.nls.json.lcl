@@ -3261,10 +3261,13 @@
       </Item>
       <Item ItemId=";driver.deploy.deployToAzureAppServiceDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          <Val><![CDATA[deploy the project to the Azure App Service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[nasadit projekt do služby Azure APP Service.]]></Val>
+            <Val><![CDATA[nasadit projekt do služby Azure App Service.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4756,6 +4759,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.copilotPlugin.noExtraAPICanBeAdded" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No API can be added. Only GET and POST methods with single parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nelze přidat žádné rozhraní API. Podporovány jsou jenom metody GET a POST s jedním parametrem a bez ověřování. Metody definované v souboru manifest.json nejsou uvedeny.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.copilotPlugin.openAiPluginManifest.CannotGetManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to get OpenAI plugin manifest from '%s'.]]></Val>
@@ -6168,6 +6180,15 @@
           <Val><![CDATA[SharePoint Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Řešení pro SharePoint]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Name for SharePoint Framework Web Part]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Název webové části SharePoint Framework]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

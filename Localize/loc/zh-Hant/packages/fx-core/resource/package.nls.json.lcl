@@ -3261,10 +3261,13 @@
       </Item>
       <Item ItemId=";driver.deploy.deployToAzureAppServiceDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          <Val><![CDATA[deploy the project to the Azure App Service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[將專案部署到 Azure App Service。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4756,6 +4759,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.copilotPlugin.noExtraAPICanBeAdded" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No API can be added. Only GET and POST methods with single parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[無法新增任何 API。僅支援具有單一參數且無驗證的 GET 和 POST 方法。未列出 manifest.json 中定義的方法。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.copilotPlugin.openAiPluginManifest.CannotGetManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to get OpenAI plugin manifest from '%s'.]]></Val>
@@ -6168,6 +6180,15 @@
           <Val><![CDATA[SharePoint Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[SharePoint 解決方案]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Name for SharePoint Framework Web Part]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint 架構網頁組件的名稱]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

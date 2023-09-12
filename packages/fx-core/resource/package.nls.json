@@ -250,7 +250,7 @@
   "core.copilotPlugin.validate.summary.validate.warning": "%s warning",
   "core.copilotPlugin.scaffold.summary": "We have detected the following issues for your OpenAPI specification file:\n%s",
   "core.copilotPlugin.scaffold.summary.warning.operationId": "%s Mitigation: Not required, operationId has been automatically generated and added into \"%s\" file.",
-  "core.copilotPlugin.scaffold.summary.warning.swaggerversion": "The API specification is of Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in \"%s\".",
+  "core.copilotPlugin.scaffold.summary.warning.swaggerversion": "The API specification is on Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in \"%s\".",
   "core.copilotPlugin.scaffold.summary.warning.teamsManifest.lengthExceeding": "\"%s\" must not have more than %s characters. ",
   "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingFullDescription": "Missing full description. ",
   "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation": "Mitigation: update \"%s\" field in \"%s\".",

@@ -1199,7 +1199,6 @@
   "devDependencies": {
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/core-auth": "^1.4.0",
-    "@azure/identity-vscode": "^1.0.0",
     "@azure/ms-rest-azure-env": "^2.0.0",
     "@fluentui/react": "^8.5.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
@@ -1210,7 +1209,6 @@
     "@types/express": "^4.17.14",
     "@types/fs-extra": "^9.0.5",
     "@types/jscodeshift": "^0.11.2",
-    "@types/keytar": "^4.4.2",
     "@types/lodash": "^4.14.181",
     "@types/mocha": "^8.0.4",
     "@types/node": "^14.14.21",

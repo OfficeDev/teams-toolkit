@@ -11,6 +11,7 @@ import {
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { DeployConstant } from "../constant/deployConstant";
 import { HttpStatusCode } from "../constant/commonConstant";
+import { camelCase } from "lodash";
 
 /**
  * component error
@@ -77,7 +78,7 @@ export class BaseComponentInnerError extends Error {
       } as UserErrorOptions);
     } else {
       return new SystemError({
-        source: this.source,
+        source: camelCase(this.source),
         name: this.name,
         message: this.message,
         // if innerError is set, send innerError to telemetry
@@ -110,7 +111,7 @@ export class BaseComponentInnerError extends Error {
       "SystemError",
       "UnhandledError",
       "error.common.UnhandledError",
-      [source, JSON.stringify(error)],
+      [source, JSON.stringify(error, Object.getOwnPropertyNames(error))],
       undefined,
       undefined,
       undefined,

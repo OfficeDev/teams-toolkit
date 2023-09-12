@@ -8,6 +8,7 @@ import * as React from "react";
 import { FontIcon, Image } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
+import Turtle from "../../../img/webview/sample/turtle.svg";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -24,46 +25,32 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
 
   render() {
     const sample = this.props.sample;
-    return (
-      <div
-        className={`sample-card`}
-        tabIndex={0}
-        onClick={this.onSampleCardClicked}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            this.onSampleCardClicked();
-          }
-        }}
-      >
+    const unavailable = sample.versionComparisonResult != 0;
+    const previewImage = (
+      <>
         {sample.suggested && (
           <div className="triangle">
             <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
           </div>
         )}
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-        >
-          sample app card
-        </label>
         <Image src={sample.gifUrl} />
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="tagLabel"
-        >
+      </>
+    );
+    const legacySampleImage = (
+      <div className="unavailableSampleImage">
+        <Turtle className="turtle" />
+        <h3>Available in newer version</h3>
+      </div>
+    );
+    const upgradingSampleImage = (
+      <div className="unavailableSampleImage">
+        <Turtle className="turtle" />
+        <h3>Upgrading...</h3>
+      </div>
+    );
+    const cardInformation = (
+      <div className="infoBox">
+        <label className="hidden-label" id="tagLabel">
           sample app tags:
         </label>
         <div className="section" aria-labelledby="tagLabel">
@@ -76,17 +63,7 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
               );
             })}
         </div>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="titleLabel"
-        >
+        <label className="hidden-label" id="titleLabel">
           sample app title:
         </label>
         <h3>{sample.title}</h3>
@@ -104,9 +81,42 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
         </div>
       </div>
     );
+    let sampleImage = previewImage;
+    let tooltipText = "";
+    let upgrade = false;
+    if (sample.versionComparisonResult < 0) {
+      sampleImage = legacySampleImage;
+      tooltipText = `This sample is upgraded to only work with newer version of Teams Toolkit, please install v${sample.minimumToolkitVersion} to run it.`;
+      upgrade = true;
+    } else if (sample.versionComparisonResult > 0) {
+      sampleImage = upgradingSampleImage;
+      tooltipText = "Coming soon";
+    }
+    return (
+      <div
+        className={`sample-card ${unavailable ? "unavailable" : ""}`}
+        tabIndex={0}
+        onClick={this.onSampleCardClicked}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            this.onSampleCardClicked();
+          }
+        }}
+      >
+        <label className="hidden-label">sample app card</label>
+        {unavailable && (
+          <span className={`tooltip ${upgrade ? "upgrade" : ""}`}>{tooltipText}</span>
+        )}
+        {sampleImage}
+        {cardInformation}
+      </div>
+    );
   }
 
   onSampleCardClicked = () => {
+    if (this.props.sample.versionComparisonResult != 0) {
+      return;
+    }
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {

@@ -18,7 +18,7 @@ export default class OfflinePage extends React.Component<unknown, unknown> {
         <div className="offlineImage">
           <OfflineImage height="118px" width="118px" />
         </div>
-        <div className="offlineTitle">You're offline</div>
+        <div className="offlineTitle">Disconnected with internet.</div>
         <div className="offlineMessage">
           Reconnect to the internet to continue using Teams Toolkit samples.
         </div>

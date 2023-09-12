@@ -37,7 +37,7 @@ namespace {{SafeProjectName}}
             var repair = repairRecords.FirstOrDefault(r => r.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase));
             
             // Return the repair record
-            return new OkObjectResult(repair);            
+            return new OkObjectResult(repair ?? new object());            
         }
     }
 }

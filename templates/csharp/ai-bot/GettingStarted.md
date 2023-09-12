@@ -1,10 +1,16 @@
-# Welcome to Teams Toolkit!
+# Overview of the AI Chat Bot template
 
 This template showcases a bot app that responds to user questions like an AI assistant. This enables your users to talk with the AI assistant in Teams to find information.
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
-## Quick Start
+- [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
+  - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
+    - [Use Azure OpenAI](#use-azure-openai)
+  - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
+  - [Additional information and references](#additional-information-and-references)
+
+## Get started with the AI Chat Bot template
 
 **Prerequisites**
 > To run the AI Chat Bot template in your local dev machine, you will need:
@@ -12,6 +18,10 @@ The app template is built using the Teams AI library, which provides the capabil
 > - [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
+>
+> **Note**
+>
+> Teams AI Library is currently in preview version.
 
 1. Set your [OpenAI API Key](https://openai.com/api/) to *appsettings.Development.json*.
 

@@ -6,7 +6,6 @@ import { Octokit as Kit } from '@octokit/rest';
 import { DevopsClient } from './azdo';
 
 const token = getRequiredInput('token');
-const advancedDays = +getRequiredInput('advanced-days');
 const devopsToken = getRequiredInput('devops-token');
 const org = getRequiredInput('devops-org');
 const projectId = getRequiredInput('devops-projectId');

@@ -20,6 +20,9 @@ jobs:
 
       - name: Copy action
         run: cp -r .github/actions/create-milestone ./action-base/create-milestone
+
+      - name: Npm install dependencies
+        run: npm install azure-devops-node-api --prefix ./action-base
       - name: Npm install
         run: npm install --production --prefix ./action-base
       - name: Build action

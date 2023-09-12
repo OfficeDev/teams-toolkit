@@ -6,7 +6,7 @@
  * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
  */
 import axios, { AxiosInstance } from "axios";
-import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
+import { SystemError, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import { AppDefinition } from "../../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { AppUser } from "../../../driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioError } from ".././errors";
@@ -319,6 +319,27 @@ export namespace AppStudioClient {
               return appDefinition.teamsAppId;
             }
           }
+
+          // Corner case
+          // Fail if an app with the same external.id exists in the staged app entitlements
+          // App with same id already exists in the staged apps, Invoke UpdateAPI instead.
+          if (
+            response.data.error.code == "Conflict" &&
+            response.data.error.innerError?.code == "AppDefinitionAlreadyExists"
+          ) {
+            try {
+              return await publishTeamsAppUpdate(teamsAppId, file, appStudioToken);
+            } catch (e: any) {
+              // Update Published app failed as well
+              const error = AppStudioResultFactory.SystemError(
+                AppStudioError.TeamsAppPublishConflictError.name,
+                AppStudioError.TeamsAppPublishConflictError.message(teamsAppId),
+                e
+              );
+              throw error;
+            }
+          }
+
           const error = new Error(response?.data.error.message);
           (error as any).response = response;
           (error as any).request = response.request;
@@ -410,6 +431,12 @@ export namespace AppStudioClient {
     }
   }
 
+  /**
+   * Get Stagged Teams app from tenant app catalog
+   * @param teamsAppId manifest.id, which is externalId in app catalog.
+   * @param appStudioToken
+   * @returns
+   */
   export async function getAppByTeamsAppId(
     teamsAppId: string,
     appStudioToken: string
@@ -418,7 +445,9 @@ export namespace AppStudioClient {
     sendStartEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
-      const response = await requester.get(`/api/publishing/${teamsAppId}`);
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/publishing/${teamsAppId}`)
+      );
       if (response && response.data && response.data.value && response.data.value.length > 0) {
         const appdefinitions: IPublishingAppDenition[] = response.data.value[0].appDefinitions.map(
           (item: any) => {

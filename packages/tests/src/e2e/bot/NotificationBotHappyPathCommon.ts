@@ -14,7 +14,7 @@ import {
   readContextMultiEnvV3,
   createResourceGroup,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
@@ -26,7 +26,7 @@ export function happyPathTest(runtime: Runtime): void {
     const appName = getUniqueAppName();
     const subscription = getSubscriptionId();
     const projectPath = path.resolve(testFolder, appName);
-    const envName = environmentManager.getDefaultEnvName();
+    const envName = environmentNameManager.getDefaultEnvName();
 
     const env = Object.assign({}, process.env);
     env["TEAMSFX_CONFIG_UNIFY"] = "true";

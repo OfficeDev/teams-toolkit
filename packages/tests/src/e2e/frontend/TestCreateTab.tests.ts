@@ -6,7 +6,7 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -29,7 +29,7 @@ describe("Create single tab", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  const envName = environmentManager.getDefaultEnvName();
+  const envName = environmentNameManager.getDefaultEnvName();
   const resourceGroupName = `${appName}-rg`;
 
   after(async () => {

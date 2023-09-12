@@ -25,18 +25,33 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
     body: {},
   };
 
-  // Define the repair information object.
-  const repairInfo = {
-    id: 1,
-    title: "Oil change",
-    description:
-      "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
-    assignedTo: "Karin Blair",
-    date: "2023-05-23",
-    image: "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg",
-  };
+  // Get the assignedTo query parameter.
+  const assignedTo = req.query.assignedTo;
+
+  // Define the repair records.
+  const repairRecords = [
+    {
+      id: 1,
+      title: "Oil change",
+      description:
+        "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
+      assignedTo: "Karin Blair",
+      date: "2023-05-23",
+      image: "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg",
+    },
+  ];
+
+  // If the assignedTo query parameter is not provided, return the response.
+  if (!assignedTo) {
+    return res;
+  }
+
+  // Filter the repair information by the assignedTo query parameter.
+  const repair = repairRecords.find(
+    (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
+  );
 
   // Set the response body to the repair information object.
-  res.body = repairInfo;
+  res.body = repair ?? {};
   return res;
 }

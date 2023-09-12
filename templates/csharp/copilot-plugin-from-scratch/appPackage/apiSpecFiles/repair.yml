@@ -11,7 +11,14 @@ paths:
     get:
       operationId: repair
       summary: Returns a repair
-      description: Returns a repair with its details and image     
+      description: Returns a repair with its details and image
+      parameters:
+        - name: assignedTo
+          in: query
+          description: Filter repairs by who they're assigned to
+          schema:
+            type: string
+          required: false
       responses:
         '200':
           description: A successful response

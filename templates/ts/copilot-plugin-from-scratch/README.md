@@ -53,4 +53,4 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Addition information and references
 
-- [Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot)
+- [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)

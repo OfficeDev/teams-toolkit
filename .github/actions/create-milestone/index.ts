@@ -82,7 +82,7 @@ async function checkAndCreateMilestone(sprint: any, existingMilestones: any[]): 
 		return;
 	}
 	const prefix = parts[2];
-	const existing = existingMilestones.find((item: { title: string; }) => item.title === name);
+	const existing = existingMilestones.find((item: { title: string; }) => item.title.includes(sprint.name) && item.title.includes(prefix));
 	if (existing) {
 		safeLog(`milestone ${name} already exists, ignore.`);
 		return;

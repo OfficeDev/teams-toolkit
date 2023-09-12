@@ -4,6 +4,7 @@
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
+import * as url from "url";
 import semver from "semver";
 import * as uuid from "uuid";
 import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
@@ -190,7 +191,8 @@ export class TestToolChecker implements DepsChecker {
           try {
             const st = await fs.stat(fullPath);
             if (st.isFile()) {
-              return fullPath;
+              // encode special characters in path
+              return url.pathToFileURL(fullPath).toString();
             }
           } catch {
             // ignore invalid files

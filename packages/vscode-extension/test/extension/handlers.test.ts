@@ -2574,4 +2574,17 @@ describe("autoOpenProjectHandler", () => {
 
     chai.assert.isTrue(executeCommandStub.calledWith("workbench.view.extension.teamsfx"));
   });
+
+  it("treeViewDebugInTestToolHandler", async () => {
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
+
+    await handlers.treeViewDebugInTestToolHandler();
+
+    chai.assert.isTrue(
+      executeCommandStub.calledOnceWith("workbench.action.quickOpen", "debug in Test Tool")
+    );
+    sinon.restore();
+  });
 });

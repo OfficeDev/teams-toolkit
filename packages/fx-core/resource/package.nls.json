@@ -622,6 +622,7 @@
   "error.common.MissingRequiredFileError": "Missing %srequired file `%s`",
   "error.common.HttpClientError": "A http client error happened while performing the %s task. The error response is: %s",
   "error.common.HttpServerError": "A http server error happened while performing the %s task. Please try again later. The error response is: %s",
+  "error.common.AccessGithubError": "Access Github (%s) Error: %s",
   "error.common.ConcurrentError": "Previous task is still running. Wait until your previous task is finished and try again.",
   "error.upgrade.NoNeedUpgrade": "This project is already the latest, no need to upgrade.",
   "error.collaboration.InvalidManifestError": "Unable to process your manifest file ('%s') due to the absence of the 'id' key. To identify your application correctly, please make sure that the 'id' key is present in the manifest file.",

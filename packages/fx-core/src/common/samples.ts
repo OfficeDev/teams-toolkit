@@ -6,6 +6,7 @@ import axios from "axios";
 import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
 import { FeatureFlagName } from "./constants";
 import { isVideoFilterEnabled } from "./featureFlags";
+import { AccessGithubError } from "../error/common";
 
 const packageJson = require("../../package.json");
 
@@ -120,13 +121,11 @@ class SampleProvider {
   }
 
   private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {
+    const url = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`;
     try {
       const fileResponse = await sendRequestWithTimeout(
         async () => {
-          return await axios.get(
-            `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`,
-            { responseType: "json" }
-          );
+          return await axios.get(url, { responseType: "json" });
         },
         1000,
         3
@@ -136,7 +135,7 @@ class SampleProvider {
         return fileResponse.data;
       }
     } catch (e) {
-      return undefined;
+      throw new AccessGithubError(url, "SampleProvider", e);
     }
   }
 }

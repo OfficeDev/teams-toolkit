@@ -109,6 +109,7 @@
     "figures": "^3.2.0",
     "fs-extra": "^9.1.0",
     "lodash": "^4.17.21",
+    "natural": "^6.7.2",
     "node-machine-id": "^1.1.12",
     "open": "^8.2.1",
     "semver": "^7.5.4",

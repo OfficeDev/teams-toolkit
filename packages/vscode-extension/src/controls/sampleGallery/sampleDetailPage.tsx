@@ -61,7 +61,7 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
           </div>
           <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
         </div>
-        <Image src={sample.gifUrl} />
+        <Image src={sample.gifUrl || sample.thumbnailUrl} />
         <div className="description">{sample.fullDescription}</div>
       </div>
     );

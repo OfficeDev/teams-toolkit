@@ -82,12 +82,12 @@ export class UnknownArgumentError extends UserError {
 }
 
 export class UnknownCommandError extends UserError {
-  constructor(name: string, mostSimilar?: string) {
+  constructor(token: string, fullName: string, mostSimilar?: string) {
     super({
       source: constants.cliSource,
-      message: `'${name}' is misspelled or not recognized by the system. See '${
-        process.env.TEAMSFX_CLI_BIN_NAME
-      } --help'.${mostSimilar ? " The most similar command is: '" + mostSimilar + "'" : ""}`,
+      message: `'${token}' is misspelled or not recognized by the system. See '${fullName} --help'.${
+        mostSimilar ? " The most similar command is: '" + mostSimilar + "'" : ""
+      }`,
     });
   }
 }

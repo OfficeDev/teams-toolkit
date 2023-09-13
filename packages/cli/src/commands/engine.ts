@@ -413,7 +413,7 @@ class CLIEngine {
         } else {
           if (!command.arguments || command.arguments.length === 0) {
             const mostSimilarCommand = this.findMostSimilarCommand(context, token);
-            return err(new UnknownCommandError(token, mostSimilarCommand?.name));
+            return err(new UnknownCommandError(token, command.fullName, mostSimilarCommand?.name));
           } else {
             return err(new UnknownArgumentError(command.fullName, token));
           }

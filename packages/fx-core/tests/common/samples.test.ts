@@ -11,6 +11,7 @@ import {
   sampleProvider,
 } from "../../src/common/samples";
 import sampleConfigV3 from "./samples-config-v3.json";
+import { AccessGithubError } from "../../src/error/common";
 
 const packageJson = require("../../package.json");
 
@@ -177,14 +178,12 @@ describe("Samples", () => {
         }
       });
 
-      await sampleProvider.fetchSampleConfig();
-      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-      const samples = sampleProvider.SampleCollection.samples;
-      chai
-        .expect(samples[0].downloadUrl)
-        .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
-        );
+      try {
+        await sampleProvider.fetchSampleConfig();
+        chai.assert.fail("should not reach here");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof AccessGithubError);
+      }
     });
 
     it("has empty sample collection if network in disconnected", async () => {
@@ -193,9 +192,12 @@ describe("Samples", () => {
         throw err(undefined);
       });
 
-      await sampleProvider.fetchSampleConfig();
-      const samples = sampleProvider.SampleCollection.samples;
-      chai.expect(samples.length).equal(0);
+      try {
+        await sampleProvider.fetchSampleConfig();
+        chai.assert.fail("should not reach here");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof AccessGithubError);
+      }
     });
   });
 
@@ -240,13 +242,16 @@ describe("Samples", () => {
         url ===
         "https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v2.2.0/.config/samples-config-v3.json"
       ) {
-        throw err(undefined);
+        throw new Error("test error");
       }
     });
 
-    await sampleProvider.fetchSampleConfig();
-
-    chai.expect(sampleProvider["samplesConfig"]).equals(undefined);
+    try {
+      await sampleProvider.fetchSampleConfig();
+      chai.assert.fail("should not reach here");
+    } catch (e) {
+      chai.assert.isTrue(e instanceof AccessGithubError);
+    }
   });
 
   it("fetchSampleConfig - online sample config succeeds to obtain", async () => {

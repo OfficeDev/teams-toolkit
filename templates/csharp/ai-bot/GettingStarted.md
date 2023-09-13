@@ -62,7 +62,7 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
 
 1. Prepare your own Azure OpenAI service and Azure AI Content Safety service.
 1. Modify source code `Program.cs`, comment out the "*#Use OpenAI*" part, and uncomment the "*#Use Azure OpenAI and Azure Content Safety*" part.
-2. Set your Azure OpenAI related settings to *appsettings.Development.json*.
+1. Set your Azure OpenAI related settings to *appsettings.Development.json*.
 
     ```json
       "Azure": {

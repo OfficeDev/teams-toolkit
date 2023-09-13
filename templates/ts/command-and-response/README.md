@@ -188,13 +188,13 @@ The notification feature adds the ability for your application to send Adaptive 
 
 ### Add workflow to your command bot
 
-Adaptive cards can be updated on user action to allow user progress through a series of cards that require user input. Developers can define actions and use a bot to return an Adaptive Cards in response to user action. This can be chained into sequential workflows. Follow the [steps here](https://aka.ms/teamsfx-workflow-new#add-more-card-actions) to add workflow feature to your command bot. Refer [the workflow document](https://aka.ms/teamsfx-workflow-new) for more information.
+Adaptive cards can be updated on user action to allow a user to progress through a series of cards that require user input. Developers can define actions and use a bot to return an Adaptive Cards in response to a user action. This can be chained into sequential workflows. Follow the [steps here](https://aka.ms/teamsfx-workflow-new#add-more-card-actions) to add the workflow feature to your command bot. Refer to [the workflow document](https://aka.ms/teamsfx-workflow-new) for more information.
 
 ## Additional information and references
 
 - [Manage multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
 - [Collaborate with others](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
-- [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
+- [Teams Toolkit Documentation](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
 - [TeamsFx SDK](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

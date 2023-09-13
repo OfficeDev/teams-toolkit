@@ -6,7 +6,7 @@
  * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
  */
 import axios, { AxiosInstance } from "axios";
-import { SystemError, LogProvider, UserError } from "@microsoft/teamsfx-api";
+import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
 import { AppDefinition } from "../../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { AppUser } from "../../../driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioError } from ".././errors";

@@ -77,6 +77,9 @@ import {
   listOperations,
   OpenAIPluginManifestHelper,
   generateScaffoldingSummary,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
@@ -107,7 +110,7 @@ import {
   getTrackingIdFromPath,
   getVersionState,
 } from "./middleware/utils/v3MigrationUtils";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
 
@@ -1127,13 +1130,24 @@ export class FxCore {
         outputAPISpecPath,
         adaptiveCardFolder
       );
+
+      const context = createContextV3();
+
+      // Send SpecParser.generate() warnings
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      });
+
       if (generateResult.warnings && generateResult.warnings.length > 0) {
         const warnSummary = generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
           inputs.projectPath!
         );
-        const context = createContextV3();
         context.logProvider.info(warnSummary);
       }
     } catch (e) {
@@ -1154,6 +1168,7 @@ export class FxCore {
     await TOOLS.ui.showMessage("info", message, false);
     return ok(undefined);
   }
+
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginLoadOpenAIManifest" }),
     ErrorHandlerMW,

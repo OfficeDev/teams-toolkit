@@ -7,6 +7,8 @@ import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/u
 import { FeatureFlagName } from "./constants";
 import { isVideoFilterEnabled } from "./featureFlags";
 import { AccessGithubError } from "../error/common";
+import { hooks } from "@feathersjs/hooks";
+import { ErrorContextMW } from "../core/globalVars";
 
 const packageJson = require("../../package.json");
 
@@ -48,7 +50,7 @@ class SampleProvider {
   private sampleCollection: SampleCollection | undefined;
   private samplesConfig: { samples: Array<Record<string, unknown>> } | undefined;
   private branchOrTag = SampleConfigTag;
-
+  @hooks([ErrorContextMW({ component: "SampleProvider" })])
   public async fetchSampleConfig() {
     const version: string = packageJson.version;
     if (version.includes("alpha")) {

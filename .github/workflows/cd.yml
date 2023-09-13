@@ -111,7 +111,7 @@ jobs:
           npx lerna version prerelease --conventional-prerelease --preid=rc --no-changelog --yes
 
       - name: version rc npm packages to npmjs.org on hotfix
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && (startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/')) && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version prerelease --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 

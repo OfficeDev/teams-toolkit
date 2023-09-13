@@ -1123,6 +1123,8 @@ export class FxCore {
       AdaptiveFolderName
     );
 
+    const context = createContextV3();
+
     try {
       const generateResult = await specParser.generate(
         manifestPath,
@@ -1130,8 +1132,6 @@ export class FxCore {
         outputAPISpecPath,
         adaptiveCardFolder
       );
-
-      const context = createContextV3();
 
       // Send SpecParser.generate() warnings
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
@@ -1165,7 +1165,7 @@ export class FxCore {
       operations,
       inputs.projectPath
     );
-    await TOOLS.ui.showMessage("info", message, false);
+    void context.userInteraction.showMessage("info", message, false);
     return ok(undefined);
   }
 

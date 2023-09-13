@@ -37,7 +37,7 @@ export class UpdateAadAppDriver implements StepDriver {
       const state = this.loadCurrentState();
 
       this.validateArgs(args);
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
 
       const manifest = await buildAadManifest(
         context,
@@ -52,17 +52,11 @@ export class UpdateAadAppDriver implements StepDriver {
       if (manifest.preAuthorizedApplications && manifest.preAuthorizedApplications.length > 0) {
         const preAuthorizedApplications = manifest.preAuthorizedApplications;
         manifest.preAuthorizedApplications = [];
-        await aadAppClient.updateAadApp(
-          manifest,
-          context.logProvider,
-        );
+        await aadAppClient.updateAadApp(manifest);
         manifest.preAuthorizedApplications = preAuthorizedApplications;
       }
       // 2. Update AAD app again with full manifest to set preAuthorizedApplications
-      await aadAppClient.updateAadApp(
-        manifest,
-        context.logProvider,
-      );
+      await aadAppClient.updateAadApp(manifest);
       const summary = getLocalizedString(
         logMessageKeys.successUpdateAadAppManifest,
         args.manifestPath,

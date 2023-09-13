@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Context, FxError, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, LogProvider, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
@@ -29,8 +29,8 @@ const componentNameTeams = "AppStudioPlugin";
 export class AadCollaboration {
   private readonly aadAppClient: AadAppClient;
 
-  constructor(m365TokenProvider: M365TokenProvider) {
-    this.aadAppClient = new AadAppClient(m365TokenProvider);
+  constructor(m365TokenProvider: M365TokenProvider, logProvider?: LogProvider) {
+    this.aadAppClient = new AadAppClient(m365TokenProvider, logProvider);
   }
   @hooks([
     ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
@@ -42,11 +42,7 @@ export class AadCollaboration {
     userObjectId: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     try {
-      await this.aadAppClient.addOwner(
-        objectId,
-        userObjectId,
-        ctx.logProvider,
-      );
+      await this.aadAppClient.addOwner(objectId, userObjectId);
 
       const result = [
         {
@@ -70,10 +66,7 @@ export class AadCollaboration {
     objectId: string
   ): Promise<Result<AadOwner[], FxError>> {
     try {
-      const owners = await this.aadAppClient.getOwners(
-        objectId,
-        ctx.logProvider,
-      );
+      const owners = await this.aadAppClient.getOwners(objectId);
       return ok(owners ?? []);
     } catch (error) {
       return err(this.handleError(error, ctx, objectId));
@@ -89,10 +82,7 @@ export class AadCollaboration {
     userObjectId: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     try {
-      const owners = await this.aadAppClient.getOwners(
-        objectId,
-        ctx.logProvider,
-      );
+      const owners = await this.aadAppClient.getOwners(objectId);
       const isAadOwner = owners?.find((owner: AadOwner) => owner.userObjectId === userObjectId);
 
       const result = [

@@ -88,7 +88,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       if (!outputEnvVarNames) {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
       const botAadAppState: CreateBotAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       const isReusingExisting = !(!botAadAppState.botId || !botAadAppState.botPassword);
 
@@ -100,16 +100,9 @@ export class CreateBotAadAppDriver implements StepDriver {
       const startTime = performance.now();
       if (!botAadAppState.botId) {
         context.logProvider?.info(getLocalizedString(logMessageKeys.startCreateBotAadApp));
-        const aadApp = await aadAppClient.createAadApp(
-          args.name,
-          SignInAudience.AzureADMultipleOrgs,
-          context.logProvider,
-        );
+        const aadApp = await aadAppClient.createAadApp(args.name, SignInAudience.AzureADMultipleOrgs);
         botAadAppState.botId = aadApp.appId!;
-        botAadAppState.botPassword = await aadAppClient.generateClientSecret(
-          aadApp.id!,
-          context.logProvider,
-        );
+        botAadAppState.botPassword = await aadAppClient.generateClientSecret(aadApp.id!);
         context.logProvider?.info(getLocalizedString(logMessageKeys.successCreateBotAadApp));
       } else {
         context.logProvider?.info(getLocalizedString(logMessageKeys.skipCreateBotAadApp));

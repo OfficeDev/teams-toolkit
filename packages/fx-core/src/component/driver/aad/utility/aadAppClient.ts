@@ -4,7 +4,7 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import { LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosError, AxiosInstance } from "axios";
-import axiosRetry from "axios-retry";
+import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
 import { AadOwner } from "../../../../common/permissionInterface";
 import { GraphScopes } from "../../../../common/tools";
 import { ErrorContextMW } from "../../../../core/globalVars";
@@ -18,19 +18,33 @@ import { aadErrorCode, constants } from "./constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
+
+// Missing this part will cause build failure when adding 'axios-retry' in AxiosRequestConfig
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    'axios-retry'?: IAxiosRetryConfig;
+  }
+}
+
 export class AadAppClient {
   private readonly retryNumber: number = 5;
   private readonly tokenProvider: M365TokenProvider;
+  private readonly logProvider: LogProvider | undefined;
   private readonly axios: AxiosInstance;
   private readonly baseUrl: string = "https://graph.microsoft.com/v1.0";
 
-  constructor(m365TokenProvider: M365TokenProvider) {
+  constructor(m365TokenProvider: M365TokenProvider, logProvider?: LogProvider) {
     this.tokenProvider = m365TokenProvider;
+    this.logProvider = logProvider;
     // Create axios instance which sets authorization header automatically before each MS Graph request
     this.axios = axios.create({
       baseURL: this.baseUrl,
     });
     this.axios.interceptors.request.use(async (config) => {
+      this.logProvider?.info(
+        getLocalizedString("core.common.SentApiRequest", config.url, JSON.stringify(config.data))
+      );
+
       const tokenResponse = await this.tokenProvider.getAccessToken({ scopes: GraphScopes });
       if (tokenResponse.isErr()) {
         throw tokenResponse.error;
@@ -44,6 +58,12 @@ export class AadAppClient {
 
       return config;
     });
+    this.axios.interceptors.response.use((response) => {
+      this.logProvider?.info(
+        getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
+      );
+      return response;
+    });
     // Add retry logic. Retry post request may result in creating additional resources but should be fine in AAD driver.
     axiosRetry(this.axios, {
       retries: this.retryNumber,
@@ -53,40 +73,24 @@ export class AadAppClient {
     });
   }
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async createAadApp(
-    displayName: string,
-    signInAudience = SignInAudience.AzureADMyOrg,
-    logProvider?: LogProvider
-  ): Promise<AADApplication> {
+  public async createAadApp(displayName: string, signInAudience = SignInAudience.AzureADMyOrg): Promise<AADApplication> {
     const requestBody: IAADDefinition = {
       displayName: displayName,
       signInAudience: signInAudience,
     }; // Create an AAD app without setting anything
 
-    logProvider?.debug(
-      getLocalizedString("core.common.SentApiRequest", `${this.baseUrl}/applications`, JSON.stringify(requestBody))
-    );
     const response = await this.axios.post("applications", requestBody);
-    logProvider?.debug(
-      getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
-    );
 
     return <AADApplication>response.data;
   }
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async generateClientSecret(
-    objectId: string,
-    logProvider?: LogProvider
-  ): Promise<string> {
+  public async generateClientSecret(objectId: string): Promise<string> {
     const requestBody = {
       passwordCredential: {
         displayName: constants.aadAppPasswordDisplayName,
       },
     };
 
-    logProvider?.debug(
-      getLocalizedString("core.common.SentApiRequest", `${this.baseUrl}/applications/{aadObjectId}/addPassword`, JSON.stringify(requestBody))
-    );
     const response = await this.axios.post(`applications/${objectId}/addPassword`, requestBody, {
       "axios-retry": {
         retries: this.retryNumber,
@@ -97,25 +101,16 @@ export class AadAppClient {
           this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
       },
     });
-    logProvider?.debug(
-      getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
-    );
 
     return response.data.secretText;
   }
 
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async updateAadApp(
-    manifest: AADManifest,
-    logProvider?: LogProvider
-  ): Promise<void> {
+  public async updateAadApp(manifest: AADManifest): Promise<void> {
     const objectId = manifest.id!; // You need to ensure the object id exists in manifest
     const requestBody = AadManifestHelper.manifestToApplication(manifest);
     try {
-      logProvider?.debug(
-        getLocalizedString("core.common.SentApiRequest", `${this.baseUrl}/applications/{aadObjectId}`, JSON.stringify(requestBody))
-      );
-      const response = await this.axios.patch(`applications/${objectId}`, requestBody, {
+      await this.axios.patch(`applications/${objectId}`, requestBody, {
         "axios-retry": {
           retries: this.retryNumber,
           retryDelay: axiosRetry.exponentialDelay,
@@ -126,9 +121,6 @@ export class AadAppClient {
             this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
         },
       });
-      logProvider?.debug(
-        getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
-      );
     } catch (err) {
       if (
         axios.isAxiosError(err) &&
@@ -142,13 +134,7 @@ export class AadAppClient {
     }
   }
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async getOwners(
-    objectId: string,
-    logProvider?: LogProvider,
-  ): Promise<AadOwner[] | undefined> {
-    logProvider?.debug(
-      getLocalizedString("core.common.SentApiRequest", `${this.baseUrl}/applications/{aadObjectId}/owners`, "")
-    );
+  public async getOwners(objectId: string): Promise<AadOwner[] | undefined> {
     const response = await this.axios.get(`applications/${objectId}/owners`, {
       "axios-retry": {
         retries: this.retryNumber,
@@ -159,9 +145,6 @@ export class AadAppClient {
           this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
       },
     });
-    logProvider?.debug(
-      getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
-    );
 
     const aadOwners: AadOwner[] = [];
     for (const aadOwner of response.data.value) {
@@ -177,20 +160,13 @@ export class AadAppClient {
     return aadOwners;
   }
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async addOwner(
-    objectId: string,
-    userObjectId: string,
-    logProvider?: LogProvider,
-  ): Promise<void> {
+  public async addOwner(objectId: string, userObjectId: string): Promise<void> {
     const requestBody = {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       "@odata.id": `${this.axios.defaults.baseURL}/directoryObjects/${userObjectId}`,
     };
 
-    logProvider?.debug(
-      getLocalizedString("core.common.SentApiRequest", `${this.baseUrl}/applications/{aadObjectId}/owners/$ref`, "")
-    );
-    const response = await this.axios.post(`applications/${objectId}/owners/$ref`, requestBody, {
+    await this.axios.post(`applications/${objectId}/owners/$ref`, requestBody, {
       "axios-retry": {
         retries: this.retryNumber,
         retryDelay: axiosRetry.exponentialDelay,
@@ -200,9 +176,6 @@ export class AadAppClient {
           this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
       },
     });
-    logProvider?.debug(
-      getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
-    );
   }
 
   // only use it to retry 404 errors for create client secret / update AAD app requests right after AAD app creation

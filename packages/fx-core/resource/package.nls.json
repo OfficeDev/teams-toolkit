@@ -191,6 +191,7 @@
   "error.appstudio.publishInDevPortalSuggestionForValidationError": "Please try to generate package from \"Zip Teams app package\" and try again.",
   "error.appstudio.teamsAppCreateConflict": "Unable to create Teams app with 409 Conflict error. That may come from your app id is conflicting with another app in your tenant. Click Get Help to learn more.",
   "error.appstudio.teamsAppCreateConflictWithPublishedApp": "A Teams app with that id already exists in your organization's app store. Manually update the app id and try again.",
+  "error.appstudio.teamsAppPublishConflict": "Unable to publish Teams app. Teams app with id %s already exists in the staged apps. Manually update the app id and try again.",
   "error.appstudio.NotAllowedToAcquireBotFrameworkToken": "The current account is not allowed to acquire botframework token.",
   "_error.appstudio.NotAllowedToAcquireBotFrameworkToken.comment": "This is to describe API call, no need to translate 'botframework'.",
   "error.appstudio.BotProvisionReturnsForbiddenResult": "Botframework provisioning returns forbidden result from attempting to create bot registration.",

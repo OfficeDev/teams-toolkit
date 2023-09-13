@@ -140,6 +140,85 @@ describe("App Studio API Test", () => {
       );
       chai.assert.equal(res, getResponse.data.value[0].appDefinitions[0].teamsAppId);
     });
+
+    it("AppdefinitionsAlreadyExists - update", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const publishResponse = {
+        data: {
+          error: {
+            code: "Conflict",
+            message: "Conflict",
+            innerError: {
+              code: "AppDefinitionAlreadyExists",
+            },
+          },
+        },
+      };
+
+      const updateResponse = {
+        data: {
+          teamsAppId: "fakeId",
+        },
+      };
+      sinon
+        .stub(fakeAxiosInstance, "post")
+        .onFirstCall()
+        .resolves(publishResponse)
+        .onSecondCall()
+        .resolves(updateResponse);
+      sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves("fakeId");
+
+      const getResponse = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  lastModifiedDateTime: new Date(),
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: uuid(),
+                  displayName: "fakeApp",
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+
+      const res = await AppStudioClient.publishTeamsApp(
+        appStudioToken,
+        Buffer.from(""),
+        appStudioToken
+      );
+      chai.assert.equal(res, "fakeId");
+    });
+
+    it("AppdefinitionsAlreadyExists - failed", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const postResponse = {
+        data: {
+          error: {
+            code: "Conflict",
+            message: "Conflict",
+            innerError: {
+              code: "AppDefinitionAlreadyExists",
+            },
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      try {
+        await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.TeamsAppPublishConflictError.name);
+      }
+    });
   });
 
   describe("import Teams app", () => {

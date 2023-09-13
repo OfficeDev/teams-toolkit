@@ -541,8 +541,14 @@ export namespace AppStudioClient {
       let response;
       if (region) {
         try {
+          logProvider.debug(
+            getLocalizedString("core.common.SentApiRequest", `${region ?? baseUrl}/api/appdefinitions/{teamsAppId}/owner`, JSON.stringify(app))
+          );
           requester = createRequesterWithToken(appStudioToken, region);
           response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+          logProvider?.debug(
+            getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
+          );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
           if (e.response?.status == 404) {
@@ -553,8 +559,14 @@ export namespace AppStudioClient {
           }
         }
       } else {
+        logProvider.debug(
+          getLocalizedString("core.common.SentApiRequest", `${baseUrl}/api/appdefinitions/{teamsAppId}/owner`, JSON.stringify(app))
+        );
         requester = createRequesterWithToken(appStudioToken);
         response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+        logProvider?.debug(
+          getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
+        );
       }
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
         throw new Error(ErrorMessages.GrantPermissionFailed);

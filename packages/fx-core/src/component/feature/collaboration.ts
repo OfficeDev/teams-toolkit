@@ -42,7 +42,11 @@ export class AadCollaboration {
     userObjectId: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     try {
-      await this.aadAppClient.addOwner(objectId, userObjectId);
+      await this.aadAppClient.addOwner(
+        objectId,
+        userObjectId,
+        ctx.logProvider,
+      );
 
       const result = [
         {
@@ -66,7 +70,10 @@ export class AadCollaboration {
     objectId: string
   ): Promise<Result<AadOwner[], FxError>> {
     try {
-      const owners = await this.aadAppClient.getOwners(objectId);
+      const owners = await this.aadAppClient.getOwners(
+        objectId,
+        ctx.logProvider,
+      );
       return ok(owners ?? []);
     } catch (error) {
       return err(this.handleError(error, ctx, objectId));
@@ -82,7 +89,10 @@ export class AadCollaboration {
     userObjectId: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     try {
-      const owners = await this.aadAppClient.getOwners(objectId);
+      const owners = await this.aadAppClient.getOwners(
+        objectId,
+        ctx.logProvider,
+      );
       const isAadOwner = owners?.find((owner: AadOwner) => owner.userObjectId === userObjectId);
 
       const result = [

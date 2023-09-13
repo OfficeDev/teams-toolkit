@@ -52,11 +52,17 @@ export class UpdateAadAppDriver implements StepDriver {
       if (manifest.preAuthorizedApplications && manifest.preAuthorizedApplications.length > 0) {
         const preAuthorizedApplications = manifest.preAuthorizedApplications;
         manifest.preAuthorizedApplications = [];
-        await aadAppClient.updateAadApp(manifest);
+        await aadAppClient.updateAadApp(
+          manifest,
+          context.logProvider,
+        );
         manifest.preAuthorizedApplications = preAuthorizedApplications;
       }
       // 2. Update AAD app again with full manifest to set preAuthorizedApplications
-      await aadAppClient.updateAadApp(manifest);
+      await aadAppClient.updateAadApp(
+        manifest,
+        context.logProvider,
+      );
       const summary = getLocalizedString(
         logMessageKeys.successUpdateAadAppManifest,
         args.manifestPath,

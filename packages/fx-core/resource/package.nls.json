@@ -401,6 +401,8 @@
   "core.common.ResolveServerUrlFailed": "Unable to resolve the server URL: please make sure that the environment variable %s is defined.",
   "core.common.OperationOnlyContainsOptionalParam": "Operation %s only contains optional parameters which are not supported",
   "core.common.ConvertSwaggerToOpenAPI": "The Swagger 2.0 file has been converted to OpenAPI 3.0.",
+  "core.common.SentApiRequest": "Sending API request: %s. Request body: %s",
+  "core.common.ReceiveApiResponse": "Received API response: %s.",
   "core.importAddin.label": "Import an Existing Outlook Add-ins",
   "core.importAddin.detail": "Upgrade an Add-ins project to the latest app manifest and project structure",
   "core.newTaskpaneAddin.label": "Taskpane",

@@ -1,4 +1,6 @@
-/* This code sample provides a starter kit to implement server side logic for your Teams App in TypeScript, refer to https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference for complete Azure Functions developer guide.
+/* This code sample provides a starter kit to implement server side logic for your Teams App in TypeScript,
+ * refer to https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference for complete Azure Functions
+ * developer guide.
  */
 
 /**
@@ -12,7 +14,9 @@ module.exports = async function (context, req) {
   // Initialize response.
   const res = {
     status: 200,
-    body: {},
+    body: {
+      results: [],
+    },
   };
 
   // Get the assignedTo query parameter.
@@ -37,11 +41,11 @@ module.exports = async function (context, req) {
   }
 
   // Filter the repair information by the assignedTo query parameter.
-  const repair = repairRecords.find(
+  const repairs = repairRecords.filter(
     (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
   );
 
-  // Set the response body to the repair information object.
-  res.body = repair ?? {};
+  // Return filtered repair records, or an empty array if no records were found
+  res.body.results = repairs ?? [];
   return res;
 };

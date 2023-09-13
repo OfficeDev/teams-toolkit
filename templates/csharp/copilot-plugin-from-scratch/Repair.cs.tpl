@@ -14,13 +14,13 @@ namespace {{SafeProjectName}}
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
-            // Log that the HTTP trigger function received a request
+            // Log that the HTTP trigger function received a request.
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            // Get the query parameters from the request
+            // Get the query parameters from the request.
             string assignedTo = req.Query["assignedTo"];
 
-            // Create the repair records
+            // Create the repair records.
             var repairRecords = new RepairModel[]
             {
                 new RepairModel {
@@ -33,11 +33,12 @@ namespace {{SafeProjectName}}
                 }
             };
 
-            // Filter the repair records by the assignedTo query parameter
-            var repair = repairRecords.FirstOrDefault(r => r.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase));
+            // Filter the repair records by the assignedTo query parameter.
+            var repairs = repairRecords.Where(r => r.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase));
             
-            // Return the repair record
-            return new OkObjectResult(repair ?? new object());            
+            // Return filtered repair records, or an empty array if no records were found.
+            var results = new { results = repairs ?? new object[] { } };
+            return new OkObjectResult(results);
         }
     }
 }

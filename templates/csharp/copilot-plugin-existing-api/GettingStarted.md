@@ -5,8 +5,9 @@
 > **Prerequisites**
 >
 > To run the copilot plugin app template in your local dev machine, you will need:
+>
 > - [Visual Studio 2022](https://aka.ms/vs) 17.8 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts). Access to Microsoft 365 Copilot is also required.
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 > - Join Microsoft 365 Copilot Plugin development [early access program](https://aka.ms/plugins-dev-waitlist).
 
 1. Right-click your project and select `Teams Toolkit > Provision in the Cloud..`. You can find everything it will do in the `teamsapp.yml`.
@@ -18,7 +19,7 @@ to install the app to.
 
 ## Learn more
 
-- [Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot)
+- [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)
 
 ## Report an issue
 

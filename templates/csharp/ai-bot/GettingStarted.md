@@ -6,9 +6,12 @@ The app template is built using the Teams AI library, which provides the capabil
 
 - [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
   - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
+    - [Deploy to Azure](#deploy-to-azure)
     - [Use Azure OpenAI](#use-azure-openai)
   - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
+  - [Learn more](#learn-more)
+  - [Report an issue](#report-an-issue)
 
 ## Get started with the AI Chat Bot template
 
@@ -59,8 +62,7 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
 
 1. Prepare your own Azure OpenAI service and Azure AI Content Safety service.
 1. Modify source code `Program.cs`, comment out the "*#Use OpenAI*" part, and uncomment the "*#Use Azure OpenAI and Azure Content Safety*" part.
-
-1. Set your Azure OpenAI related settings to *appsettings.Development.json*.
+2. Set your Azure OpenAI related settings to *appsettings.Development.json*.
 
     ```json
       "Azure": {
@@ -68,6 +70,7 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
         "OpenAIEndpoint": "<your-azure-openai-endpoint>"
       }
     ```
+1. In `Program.cs`, update `defaultModel` to your own model deployment name.
 
 **For deployment to Azure**
 

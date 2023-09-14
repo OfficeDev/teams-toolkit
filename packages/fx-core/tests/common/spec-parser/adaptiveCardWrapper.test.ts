@@ -35,8 +35,8 @@ describe("adaptiveCardWrapper", () => {
       };
 
       const expectedWrappedCard = {
-        version: ConstantString.AdaptiveCardVersion,
-        $schema: ConstantString.AdaptiveCardSchema,
+        version: ConstantString.WrappedCardVersion,
+        $schema: ConstantString.WrappedCardSchema,
         responseLayout: ConstantString.WrappedCardResponseLayout,
         responseCardTemplate: card,
         previewCardTemplate: {

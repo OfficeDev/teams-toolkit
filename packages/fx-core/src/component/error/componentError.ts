@@ -72,14 +72,14 @@ export class BaseComponentInnerError extends Error {
         // if innerError is set, send innerError to telemetry
         error: this.innerError ?? this,
         helpLink: this.helpLink,
-        name: this.innerError ? this.innerError.name : this.name,
+        name: this.name,
         message: this.message,
         displayMessage: this.toDisplayMessage(),
       } as UserErrorOptions);
     } else {
       return new SystemError({
         source: camelCase(this.source),
-        name: this.innerError ? this.innerError.name : this.name,
+        name: this.name,
         message: this.message,
         // if innerError is set, send innerError to telemetry
         error: this.innerError ?? this,
@@ -109,7 +109,8 @@ export class BaseComponentInnerError extends Error {
     return new BaseComponentInnerError(
       source,
       "SystemError",
-      "UnhandledError",
+      // use inner error name instead of "UnhandledError"
+      error instanceof Error ? error.name : "UnhandledError",
       "error.common.UnhandledError",
       [source, JSON.stringify(error, Object.getOwnPropertyNames(error))],
       undefined,

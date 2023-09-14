@@ -22,7 +22,9 @@ async function createRequester(): Promise<AxiosInstance> {
 }
 
 async function createGraphRequester(): Promise<AxiosInstance> {
-  const appStudioTokenRes = await m365Provider.getAccessToken({ scopes: GraphScopes });
+  const appStudioTokenRes = await m365Provider.getAccessToken({
+    scopes: GraphScopes,
+  });
   const appStudioToken = appStudioTokenRes.isOk()
     ? appStudioTokenRes.value
     : undefined;
@@ -54,9 +56,13 @@ export async function getAadAppByClientId(clientId: string): Promise<any> {
   const requester = await createGraphRequester();
   for (let retries = 3; retries > 0; --retries) {
     try {
-      const response = await requester.get(`/applications(appId='${clientId}')`);
+      const response = await requester.get(
+        `/applications(appId='${clientId}')`
+      );
       if (response.status >= 200 && response.status < 300) {
-        console.log(`Successfully got AAD app ${response.data.id} with client id ${clientId}`);
+        console.log(
+          `Successfully got AAD app ${response.data.id} with client id ${clientId}`
+        );
         return response.data;
       }
     } catch (e) {

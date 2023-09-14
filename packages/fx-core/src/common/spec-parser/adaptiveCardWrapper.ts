@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { ConstantString } from "./constants";
 import { AdaptiveCard, WrappedAdaptiveCard } from "./interfaces";
 
 export function wrapAdaptiveCard(
@@ -10,9 +11,9 @@ export function wrapAdaptiveCard(
   subtitle: string
 ): WrappedAdaptiveCard {
   const result: WrappedAdaptiveCard = {
-    version: "devPreview",
-    $schema: "<URL_REFERENCE_TO_SCHEMA>",
-    responseLayout: "list",
+    version: ConstantString.AdaptiveCardVersion,
+    $schema: ConstantString.AdaptiveCardSchema,
+    responseLayout: ConstantString.WrappedCardResponseLayout,
     responseCardTemplate: card,
     previewCardTemplate: {
       title: title,

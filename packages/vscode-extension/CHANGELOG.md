@@ -1,5 +1,34 @@
 # Changelog
 
+## 5.2.0 - Sep 19, 2023
+
+This minor version update of Teams Toolkit addresses your requests with new features and bug fixes, including import exiting SharePoint Framework solution, new app tempaltes for Link Unfurling and AI Chat Bot and much more. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
+
+- [July Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-july-2023): Import an existing SharePoint Framework solution, implement link unfurling in Teams and Outlook.
+- [August Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-with-new-ai-chat-bot-template/): Create an AI chat bot with the new AI Chat Bot template.
+
+We've listened to your feedback and included these additional new features, enhancements, and bug fixes to this release.
+
+New features:
+
+- Import an existing SharePoint Framework solution and continue development with Teams Toolkit.
+    ![SPFx Existing App](https://github.com/OfficeDev/TeamsFx/assets/11220663/3944f5c8-6c8c-4b4d-8df8-dc4f45b5967f)
+- A new link unfurling app template to help you get started with displaying rich content from links in Teams messages and Outlook emails.
+    ![Link Unfurling](https://github.com/OfficeDev/TeamsFx/assets/11220663/6e8b982a-0531-4ec1-8420-f6f17955ff40)
+- A new app template `AI Chat Bot` to help you get started with building a GPT-like chat bot with AI capabilities using `Teams AI Library`.
+  ![AI Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/86a90d2a-efc3-4d8b-9e8c-5d34a1e8c081)
+- Onboarded a new sample `One Productivity Hub using Graph Toolkit with SPFx` that shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and SharePoint provider.
+    ![SPFx Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/084ac508-49ea-4b30-854c-8b4d578ff6ee)
+- Added CodeLens to the `teamsapp.yml` file to help you run life-cycle commands easily after editing the file.
+    ![Inline Commands](https://github.com/OfficeDev/TeamsFx/assets/11220663/f6897b26-0e3c-441c-b028-32093e8322a7)
+
+Bug fixes:
+
+- Fixed an issue where the `Preview` tag for the `AI Chat Bot` app template was not included in previous version. ([#9901](https://github.com/OfficeDev/TeamsFx/pull/9901))
+- Fixed an issue where sometimes Teams Toolkit may fail to activate due to an unexpected package dependency on `types/keytar`. ([#9910](https://github.com/OfficeDev/TeamsFx/pull/9910))
+
+More details on other enhancements, bug fixes and updates on Teams Toolkit CLI and TeamsFx SDK can be found from the blogs.
+
 ## 5.0.1 - June 20, 2023
 
 Incremental version for Teams Toolkit with multiple bug fixes:

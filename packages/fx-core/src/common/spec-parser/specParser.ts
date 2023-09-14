@@ -25,6 +25,7 @@ import { convertPathToCamelCase, isSupportedApi, validateServer } from "./utils"
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";
+import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -228,7 +229,12 @@ export class SpecParser {
             try {
               const card: AdaptiveCard = generateAdaptiveCard(operation);
               const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
-              await fs.outputJSON(fileName, card, { spaces: 2 });
+              const wrappedCard = wrapAdaptiveCard(
+                card,
+                operation.operationId!,
+                method.toUpperCase() + " " + url
+              );
+              await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
             } catch (err) {
               result.allSuccess = false;
               result.warnings.push({

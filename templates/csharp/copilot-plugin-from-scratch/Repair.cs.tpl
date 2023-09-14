@@ -39,7 +39,7 @@ namespace {{SafeProjectName}}
                 // Split assignedTo into firstName and lastName
                 var parts = r.AssignedTo.Split(' ');
 
-                // Check if assignedTo matches firstName or lastName
+                // Check if the assignedTo query parameter matches the repair record's assignedTo value, or the repair record's firstName or lastName.
                 return r.assignedTo.Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
                        parts[0].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
                        parts[1].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase);

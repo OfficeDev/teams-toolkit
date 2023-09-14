@@ -583,10 +583,16 @@ describe("generateScaffoldingSummary", () => {
       apiSpecificationFile: "testApiFile",
       commands: [
         {
-          id: "command1",
+          id: "getAll",
           type: "query",
           title: "",
           apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [
+            {
+              name: "test",
+              title: "test",
+            },
+          ],
         },
       ],
     };

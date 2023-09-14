@@ -16,6 +16,6 @@
     "devDependencies": {
         "env-cmd": "^10.1.0",
         "@types/node": "^18.x",
-        "typescript": "^4.9.5"
+        "typescript": "^4.4.4"
     }
 }

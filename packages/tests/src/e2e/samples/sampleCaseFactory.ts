@@ -19,7 +19,7 @@ import {
 import { Executor } from "../../utils/executor";
 import { Cleaner } from "../../commonlib/cleaner";
 import { TemplateProjectFolder } from "../../utils/constants";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import {
   AadValidator,
   FrontendValidator,
@@ -118,7 +118,7 @@ export abstract class CaseFactory {
       const testFolder = getTestFolder();
       const appName = getUniqueAppName();
       const projectPath = path.resolve(testFolder, appName);
-      const env = environmentManager.getDefaultEnvName();
+      const env = environmentNameManager.getDefaultEnvName();
       before(async () => {
         await onBefore();
       });

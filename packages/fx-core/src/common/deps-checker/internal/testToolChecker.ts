@@ -4,6 +4,7 @@
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
+import * as url from "url";
 import semver from "semver";
 import * as uuid from "uuid";
 import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
@@ -34,17 +35,39 @@ export class TestToolChecker implements DepsChecker {
   ): Promise<DependencyStatus> {
     const symlinkDir = path.resolve(installOptions.projectPath, installOptions.symlinkDir);
 
-    const versionResult = await this.checkVersion(installOptions.versionRange, symlinkDir);
-    if (versionResult.isOk()) {
-      this.telemetryProperties[TelemetryProperties.SymlinkTestToolVersion] = versionResult.value;
-      return await this.getSuccessDepsInfo(versionResult.value, symlinkDir);
+    // check version in project devTools
+    const versionRes = await this.checkVersion(
+      installOptions.versionRange,
+      this.getBinFolder(symlinkDir)
+    );
+    if (versionRes.isOk()) {
+      this.telemetryProperties[TelemetryProperties.SymlinkTestToolVersion] = versionRes.value;
+      return await this.getSuccessDepsInfo(versionRes.value, symlinkDir);
     } else {
       this.telemetryProperties[TelemetryProperties.SymlinkTestToolVersionError] =
-        versionResult.error.message;
+        versionRes.error.message;
       await unlinkSymlink(symlinkDir);
     }
 
-    // TODO: check and use global version in case installation failure
+    // check version in ${HOME}/.fx/bin
+    const version = await this.findLatestInstalledPortableVersion(installOptions.versionRange);
+    if (version) {
+      const portablePath = path.join(this.getPortableVersionsDir(), version);
+      this.telemetryProperties[TelemetryProperties.SelectedPortableTestToolVersion] = version;
+      await createSymlink(portablePath, symlinkDir);
+      return await this.getSuccessDepsInfo(version, symlinkDir);
+    }
+
+    // check global version in PATH
+    const globalVersionRes = await this.checkVersion(installOptions.versionRange);
+    if (globalVersionRes.isOk()) {
+      const version = globalVersionRes.value;
+      this.telemetryProperties[TelemetryProperties.GlobalTestToolVersion] = version;
+      return this.getSuccessDepsInfo(version, undefined);
+    } else {
+      this.telemetryProperties[TelemetryProperties.GlobalTestToolVersionError] =
+        globalVersionRes.error.message;
+    }
 
     return this.createFailureDepsInfo(installOptions.versionRange, undefined);
   }
@@ -101,15 +124,51 @@ export class TestToolChecker implements DepsChecker {
     const actualPath = this.getPortableInstallPath(actualVersion);
     await rename(tmpPath, actualPath);
 
-    const binFolder = this.getBinFolder(actualPath);
-    await createSymlink(binFolder, symlinkDir);
+    await createSymlink(actualPath, symlinkDir);
 
     return await this.getSuccessDepsInfo(versionRange, symlinkDir);
   }
 
+  private async findLatestInstalledPortableVersion(
+    versionRange: string
+  ): Promise<string | undefined> {
+    let portablePath: string | undefined;
+    try {
+      const portableVersionsDir = this.getPortableVersionsDir();
+      const dirs = await fs.readdir(portableVersionsDir, { withFileTypes: true });
+      const satisfiedVersions = dirs
+        .filter(
+          (dir) =>
+            dir.isDirectory() && semver.valid(dir.name) && semver.satisfies(dir.name, versionRange)
+        )
+        .map((dir) => dir.name);
+
+      // sort by version desc
+      satisfiedVersions.sort((a, b) => semver.rcompare(a, b));
+
+      // find the latest version that is working
+      for (const version of satisfiedVersions) {
+        portablePath = path.join(portableVersionsDir, version);
+        const checkVersionRes = await this.checkVersion(
+          versionRange,
+          this.getBinFolder(portablePath)
+        );
+        if (checkVersionRes.isOk()) {
+          return version;
+        }
+        this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] =
+          (this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] ?? "") +
+          `[${version}] ${checkVersionRes.error.message}`;
+      }
+    } catch {
+      // ignore errors if portable dir doesn't exist
+    }
+    return undefined;
+  }
+
   private async checkVersion(
     versionRange: string,
-    binFolder: string
+    binFolder?: string
   ): Promise<Result<string, DepsCheckerError>> {
     try {
       const actualVersion = await this.queryVersion(binFolder);
@@ -190,7 +249,8 @@ export class TestToolChecker implements DepsChecker {
           try {
             const st = await fs.stat(fullPath);
             if (st.isFile()) {
-              return fullPath;
+              // encode special characters in path
+              return url.pathToFileURL(fullPath).toString();
             }
           } catch {
             // ignore invalid files
@@ -206,10 +266,13 @@ export class TestToolChecker implements DepsChecker {
   private getBinFolder(installPath: string) {
     return path.join(installPath, "node_modules", ".bin");
   }
-  private getPortableInstallPath(version: string): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", this.portableDirName, version);
+  private getPortableVersionsDir(): string {
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", this.portableDirName);
   }
-  private async getSuccessDepsInfo(version: string, binFolder: string): Promise<DependencyStatus> {
+  private getPortableInstallPath(version: string): string {
+    return path.join(this.getPortableVersionsDir(), version);
+  }
+  private async getSuccessDepsInfo(version: string, binFolder?: string): Promise<DependencyStatus> {
     return Promise.resolve({
       name: this.name,
       type: DepsType.TestTool,
@@ -218,7 +281,7 @@ export class TestToolChecker implements DepsChecker {
       details: {
         isLinuxSupported: true,
         supportedVersions: [], // unused
-        binFolders: [binFolder],
+        binFolders: binFolder ? [binFolder] : [],
         installVersion: version,
       },
       telemetryProperties: this.telemetryProperties,

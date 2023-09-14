@@ -21,9 +21,12 @@ export interface SampleInfo {
   configuration: string;
   suggested: boolean;
   downloadUrl: string;
-  gifUrl: string;
+  thumbnailUrl: string;
+  gifUrl?: string;
   // -1 means TTK is lower than required.
   versionComparisonResult: -1 | 0 | 1;
+  minimumToolkitVersion?: string;
+  maximumToolkitVersion?: string;
 }
 
 export type SampleProps = {

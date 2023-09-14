@@ -53,10 +53,10 @@ class EnvironmentManager {
 
   public async getExistingNonRemoteEnvs(projectPath: string): Promise<string[]> {
     return [
-      environmentNameManager.getLocalEnvName(),
       ...((await this.hasTestToolEnv(projectPath))
         ? [environmentNameManager.getTestToolEnvName()]
         : []),
+      environmentNameManager.getLocalEnvName(),
     ];
   }
 }

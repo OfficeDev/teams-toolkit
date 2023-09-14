@@ -16,7 +16,7 @@ import {
   readContextMultiEnvV3,
   createResourceGroup,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import {
   Runtime,
   CliCapabilities,
@@ -33,7 +33,7 @@ export async function happyPathTest(
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  const envName = environmentManager.getDefaultEnvName();
+  const envName = environmentNameManager.getDefaultEnvName();
 
   const env = Object.assign({}, process.env);
   if (runtime === Runtime.Dotnet) {

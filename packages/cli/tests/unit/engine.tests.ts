@@ -204,6 +204,12 @@ describe("CLI Engine", () => {
             description: "test option",
           },
         ],
+        commands: [
+          {
+            name: "subcommand",
+            description: "test",
+          },
+        ],
       };
       const ctx: CLIContext = {
         command: command,
@@ -212,8 +218,12 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      const result = engine.parseArgs(ctx, rootCommand, ["abc"]);
-      assert.isTrue(result.isErr() && result.error instanceof UnknownCommandError);
+      const result = engine.parseArgs(ctx, rootCommand, ["subcomand"]);
+      assert.isTrue(
+        result.isErr() &&
+          result.error instanceof UnknownCommandError &&
+          result.error.message.includes("subcomand")
+      );
     });
     it("UnknownArgumentError", async () => {
       const command: CLIFoundCommand = {

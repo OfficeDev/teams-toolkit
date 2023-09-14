@@ -53,7 +53,7 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-folder"?: string;
   /** @description OpenAPI Spec */
   "openapi-spec-location"?: string;
-  /** @description OpenAI Plugin Manifest */
+  /** @description OpenAI Plugin Domain */
   "openai-plugin-domain"?: string;
   /** @description Select an Operation */
   "api-operation"?: string[];

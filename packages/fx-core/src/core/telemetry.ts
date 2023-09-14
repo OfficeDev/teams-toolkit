@@ -3,7 +3,7 @@
 
 import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
 
-const CoreTelemetryComponentName = "core";
+export const CoreTelemetryComponentName = "core";
 
 export enum CoreTelemetryEvent {
   CreateStart = "create-start",

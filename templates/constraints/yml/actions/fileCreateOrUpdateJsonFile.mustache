@@ -5,6 +5,30 @@
       target: ./Properties/launchSettings.json
       content:
         profiles:
+        {{#profiles}}
+          {{{profileName}}}
+            commandName: "Project"
+          {{#commandLineArgs}}
+            commandLineArgs: {{{commandLineArgs}}}
+          {{/commandLineArgs}}
+            dotnetRunMessages: true
+            launchBrowser: true
+          {{#launchUrl}}
+            launchUrl: {{{launchUrl}}}
+          {{/launchUrl}}          
+          {{#applicationUrl}}
+            applicationUrl: {{{applicationUrl}}}
+          {{/applicationUrl}}
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+          {{#localstore}}
+              TEAMSFX_NOTIFICATION_LOCALSTORE_DIR: "../../.."
+          {{/localstore}}
+          {{#hotReload}}
+            hotReloadProfile: "aspnetcore"
+          {{/hotReload}}
+        {{/profiles}}
+        {{^profiles}}
         {{#profileName}}
           {{{profileName}}}
         {{/profileName}}
@@ -34,6 +58,7 @@
           {{#hotReload}}
             hotReloadProfile: "aspnetcore"
           {{/hotReload}}
+          {{/profiles}}
 {{/launchSettings}}
 {{#appsettings}}
   # Generate runtime appsettings to JSON file

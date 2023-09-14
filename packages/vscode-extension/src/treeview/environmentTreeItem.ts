@@ -22,6 +22,7 @@ import { AppStudioScopes, environmentNameManager } from "@microsoft/teamsfx-core
 
 enum EnvInfo {
   Local = "local",
+  TestTool = "testtool",
   LocalForExistingApp = "local-existing-app",
   RemoteEnv = "environment",
   ProvisionedRemoteEnv = "environment-provisioned",
@@ -153,6 +154,8 @@ export class EnvironmentNode extends DynamicNode {
   private async getCurrentEnvInfo(envName: string): Promise<EnvInfo> {
     if (envName === environmentNameManager.getLocalEnvName()) {
       return EnvInfo.Local;
+    } else if (envName === environmentNameManager.getTestToolEnvName()) {
+      return EnvInfo.TestTool;
     } else {
       const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
       return provisionSucceeded ? EnvInfo.ProvisionedRemoteEnv : EnvInfo.RemoteEnv;

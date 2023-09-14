@@ -133,30 +133,20 @@ export interface AdaptiveCard {
   body: Array<TextBlockElement | ArrayElement>;
 }
 
-export interface PartialManifest {
-  description: Description;
-  composeExtensions: ComposeExtension[];
-}
-
-export interface Description {
-  short: string;
-  full: string;
-}
-
-export interface ComposeExtension {
-  composeExtensionType: string;
-  apiSpecificationFile: string;
-  commands: Command[];
-}
-
-export interface Command {
-  id: string;
-  type: string;
-  context: string[];
-  title: string;
-  description?: string;
-  parameters: Parameter[];
-  apiResponseRenderingTemplateFile?: string;
+export interface WrappedAdaptiveCard {
+  version: string;
+  $schema?: string;
+  jsonPath?: string;
+  responseLayout: string;
+  responseCardTemplate: AdaptiveCard;
+  previewCardTemplate: {
+    title: string;
+    subtitle?: string;
+    image?: {
+      url: string;
+      alt?: string;
+    };
+  };
 }
 
 export interface Parameter {

@@ -25,6 +25,34 @@
     cursor: pointer;
     padding-bottom: 8px;
     box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
+    display: flex;
+    flex-direction: column;
+
+    .hidden-label {
+      position: absolute;
+      top: auto;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    .unavailableSampleImage {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 40/23; // 1600:920 ratio
+
+      .turtle {
+        margin-top: 25px;
+      }
+
+      h3 {
+        color: #BBB;
+        margin-top: 12px;
+      }
+    }
 
     .section {
       display: flex;
@@ -159,6 +187,59 @@
       width: auto;
     }
   }
+
+  .sample-card.unavailable {
+    cursor: default;
+
+    .infoBox {
+      opacity: 0.3;
+    }
+
+    .tooltip {
+      visibility: hidden;
+      width: 90px;
+      background-color: #E5E5E5;
+      color: #606060;
+      text-align: center;
+      border-radius: 4px;
+      padding: 4px 1px;
+
+      position: absolute;
+      z-index: 1;
+      top: 75%;
+      left: 60%;
+    }
+
+    .tooltip.upgrade {
+      width: 180px;
+    }
+  }
+
+  .sample-card.unavailable:hover .tooltip {
+    visibility: visible;
+  }
+}
+
+body.vscode-light {
+  .sample-card {
+    background-color: #FFF;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 16%);
+  }
+
+  .sample-card:not(.unavailable):hover {
+    background-color: #F0F0F0;
+  }
+}
+
+body.vscode-dark {
+  .sample-card {
+    background-color: #252526;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
+  }
+
+  .sample-card:not(.unavailable):hover {
+    background-color: #303031;
+  }
 }
 
 @media only screen and (max-width: 1024px) {
@@ -194,7 +275,7 @@
 @media only screen and (max-width: 480px) {
   .sample-gallery {
 
-    .sample-stack > .sample-card {
+    .sample-stack>.sample-card {
       grid-column: 1/13;
     }
   }

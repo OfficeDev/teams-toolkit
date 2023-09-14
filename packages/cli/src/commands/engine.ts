@@ -43,10 +43,9 @@ import {
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
-import { CliConfigOptions, UserSettings } from "../userSetttings";
-import { getSystemInputs } from "../utils";
+import { CliConfigOptions } from "../userSetttings";
+import { editDistance, getSystemInputs } from "../utils";
 import { helper } from "./helper";
-import natural from "natural";
 
 class CLIEngine {
   /**
@@ -280,7 +279,7 @@ class CLIEngine {
     let mini = token.length;
     let mostSimilarCommand: CLICommand | undefined = undefined;
     for (const cmd of context.command.commands || []) {
-      const d = natural.LevenshteinDistance(token, cmd.name);
+      const d = editDistance(token, cmd.name);
       if (d < mini && d <= 2) {
         mini = d;
         mostSimilarCommand = cmd;

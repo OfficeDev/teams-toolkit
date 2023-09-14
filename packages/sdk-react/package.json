@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@microsoft/teamsfx": "workspace:*",
     "@testing-library/react": "^13.4.0",
     "@types/enzyme": "^3.10.10",
     "@types/jest": "^29.4.0",

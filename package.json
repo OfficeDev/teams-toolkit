@@ -17,7 +17,6 @@
     "codeowners": "^5.1.1",
     "dotenv": "^10.0.0",
     "husky": "^6.0.0",
-    "lerna": "^6.0.0",
     "rimraf": "^5.0.1",
     "ts-node": "^10.2.1"
   },
@@ -31,5 +30,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "lerna": "6.6.2"
   }
 }

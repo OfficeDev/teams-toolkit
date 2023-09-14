@@ -21,7 +21,7 @@ async function createRequester(): Promise<AxiosInstance> {
   return requester;
 }
 
-async function createAadRequester(): Promise<AxiosInstance> {
+async function createGraphRequester(): Promise<AxiosInstance> {
   const appStudioTokenRes = await m365Provider.getAccessToken({ scopes: GraphScopes });
   const appStudioToken = appStudioTokenRes.isOk()
     ? appStudioTokenRes.value
@@ -36,7 +36,7 @@ async function createAadRequester(): Promise<AxiosInstance> {
 }
 
 export async function deleteAadAppByObjectId(objectId: string) {
-  const requester = await createAadRequester();
+  const requester = await createGraphRequester();
   for (let retries = 3; retries > 0; --retries) {
     try {
       const response = await requester.delete(`/applications/${objectId}`);
@@ -51,7 +51,7 @@ export async function deleteAadAppByObjectId(objectId: string) {
 }
 
 export async function getAadAppByClientId(clientId: string): Promise<any> {
-  const requester = await createRequester();
+  const requester = await createGraphRequester();
   for (let retries = 3; retries > 0; --retries) {
     try {
       const response = await requester.get(`/applications(appId='${clientId}')`);

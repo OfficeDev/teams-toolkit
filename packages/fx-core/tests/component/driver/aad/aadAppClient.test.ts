@@ -7,7 +7,7 @@ import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAp
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import axios, { AxiosInstance } from "axios";
-import { MockedM365Provider } from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import MockAdapter from "axios-mock-adapter";
 import { SystemError, err } from "@microsoft/teamsfx-api";
@@ -30,7 +30,7 @@ describe("AadAppClient", async () => {
   describe("constructor", async () => {
     it("should success", async () => {
       const initializeAadAppClient = function () {
-        new AadAppClient(new MockedM365Provider());
+        new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
       };
 
       expect(initializeAadAppClient).to.not.throw();
@@ -44,7 +44,7 @@ describe("AadAppClient", async () => {
     beforeEach(() => {
       mockAxiosCreate();
       doNotWaitBetweenEachRetry();
-      aadAppClient = new AadAppClient(new MockedM365Provider());
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
     });
 
     afterEach(() => {
@@ -58,8 +58,9 @@ describe("AadAppClient", async () => {
         "Get token failed"
       );
       const mockedM365TokenProvider = new MockedM365Provider();
+      const mockedLogProvider = new MockedLogProvider();
       sinon.stub(mockedM365TokenProvider, "getAccessToken").resolves(err(expectedError));
-      const aadAppClient = new AadAppClient(mockedM365TokenProvider);
+      const aadAppClient = new AadAppClient(mockedM365TokenProvider, mockedLogProvider);
 
       await expect(aadAppClient.createAadApp(expectedDisplayName)).to.be.eventually.rejectedWith(
         "Get token failed"
@@ -104,7 +105,7 @@ describe("AadAppClient", async () => {
     beforeEach(() => {
       axiosInstance = mockAxiosCreate();
       doNotWaitBetweenEachRetry();
-      aadAppClient = new AadAppClient(new MockedM365Provider());
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
     });
 
     afterEach(() => {
@@ -166,7 +167,7 @@ describe("AadAppClient", async () => {
     beforeEach(() => {
       axiosInstance = mockAxiosCreate();
       doNotWaitBetweenEachRetry();
-      aadAppClient = new AadAppClient(new MockedM365Provider());
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
     });
 
     afterEach(() => {
@@ -284,7 +285,7 @@ describe("AadAppClient", async () => {
     beforeEach(() => {
       axiosInstance = mockAxiosCreate();
       doNotWaitBetweenEachRetry();
-      aadAppClient = new AadAppClient(new MockedM365Provider());
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
     });
 
     afterEach(() => {
@@ -374,7 +375,7 @@ describe("AadAppClient", async () => {
     beforeEach(() => {
       axiosInstance = mockAxiosCreate();
       doNotWaitBetweenEachRetry();
-      aadAppClient = new AadAppClient(new MockedM365Provider());
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
     });
 
     afterEach(() => {
@@ -453,7 +454,7 @@ describe("AadAppClient", async () => {
     beforeEach(() => {
       axiosInstance = mockAxiosCreate();
       doNotWaitBetweenEachRetry();
-      aadAppClient = new AadAppClient(new MockedM365Provider());
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
     });
 
     afterEach(() => {

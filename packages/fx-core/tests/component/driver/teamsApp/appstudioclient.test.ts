@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
-import { Context, TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
+import { TeamsAppManifest, ok, err } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { AppDefinition } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { AppUser } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
@@ -18,6 +18,7 @@ import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/M
 import { AppStudioResultFactory } from "../../../../src/component/driver/teamsApp/results";
 import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { MockedLogProvider } from "../../../plugins/solution/util";
+import { DeveloperPortalAPIFailedError } from "../../../../src/error/teamsApp";
 
 function newEnvInfo() {
   return {
@@ -66,7 +67,7 @@ describe("App Studio API Test", () => {
       try {
         await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
     });
 
@@ -96,7 +97,7 @@ describe("App Studio API Test", () => {
       try {
         await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
         chai.assert.include(error.message, xCorrelationId);
       }
     });
@@ -328,7 +329,7 @@ describe("App Studio API Test", () => {
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
     });
 
@@ -417,7 +418,7 @@ describe("App Studio API Test", () => {
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
     });
   });
@@ -456,7 +457,7 @@ describe("App Studio API Test", () => {
       try {
         await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
     });
 
@@ -485,7 +486,7 @@ describe("App Studio API Test", () => {
       try {
         await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       } finally {
         AppStudioClient.setRegion(undefined as unknown as string);
       }

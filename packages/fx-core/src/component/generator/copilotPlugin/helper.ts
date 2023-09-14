@@ -431,7 +431,7 @@ function validateTeamsManifestLength(
       (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
     );
 
-    const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
+    const commands = teamsManifest.composeExtensions![0].commands;
     if (optionalParamsOnlyWarnings) {
       for (const optionalParamsOnlyWarning of optionalParamsOnlyWarnings) {
         const command = commands.find(

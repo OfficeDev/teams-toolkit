@@ -607,4 +607,28 @@ describe("generateScaffoldingSummary", () => {
 
     assert.isTrue(res.includes("testApiFile"));
   });
+
+  it("warnings about command parameters with some properties missing", () => {
+    const composeExtension: IComposeExtension = {
+      composeExtensionType: "apiBased",
+      commands: [
+        {
+          id: "getAll",
+          type: "query",
+          title: "",
+          apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+        },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isFalse(res.includes("testApiFile"));
+  });
 });

@@ -40,7 +40,8 @@ namespace {{SafeProjectName}}
                 var parts = r.AssignedTo.Split(' ');
 
                 // Check if assignedTo matches firstName or lastName
-                return parts[0].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
+                return r.assignedTo.Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
+                       parts[0].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
                        parts[1].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase);
             });
             

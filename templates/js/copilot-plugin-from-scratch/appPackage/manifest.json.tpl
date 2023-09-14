@@ -31,7 +31,7 @@
                 {
                     "id": "repair",
                     "type": "query",
-                    "title": "Returns a repair",
+                    "title": "Search for repairs info",
                     "context": [
                         "compose",
                         "commandBox"

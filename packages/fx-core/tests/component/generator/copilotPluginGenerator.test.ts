@@ -617,6 +617,7 @@ describe("generateScaffoldingSummary", () => {
           type: "query",
           title: "",
           apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [],
         },
       ],
     };

@@ -14,6 +14,7 @@ import {
   Platform,
   Colors,
   LogLevel,
+  ManifestUtil,
 } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
@@ -85,6 +86,10 @@ export class ValidateAppPackageDriver implements StepDriver {
       const manifestContent = manifestFile.getData().toString();
       const manifest = JSON.parse(manifestContent) as TeamsAppManifest;
       metadataUtil.parseManifest(manifest);
+
+      // Add common properties like isCopilotPlugin: boolean
+      const manifestTelemetries = ManifestUtil.parseCommonTelemetryProperties(manifest);
+      merge(context.telemetryProperties, manifestTelemetries);
     }
 
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({

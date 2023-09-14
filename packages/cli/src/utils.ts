@@ -235,3 +235,33 @@ export async function getTemplates(): Promise<Sample[]> {
   });
   return samples;
 }
+
+export function editDistance(s1: string, s2: string): number {
+  const len1 = s1.length;
+  const len2 = s2.length;
+
+  // Create a 2D array to store the edit distances
+  const dp: number[][] = new Array(len1 + 1).fill(0).map(() => new Array(len2 + 1).fill(0));
+
+  // Initialize the first row and column
+  for (let i = 0; i <= len1; i++) {
+    dp[i][0] = i;
+  }
+  for (let j = 0; j <= len2; j++) {
+    dp[0][j] = j;
+  }
+
+  // Calculate the edit distance using dynamic programming
+  for (let i = 1; i <= len1; i++) {
+    for (let j = 1; j <= len2; j++) {
+      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1, // Deletion
+        dp[i][j - 1] + 1, // Insertion
+        dp[i - 1][j - 1] + cost // Substitution
+      );
+    }
+  }
+
+  return dp[len1][len2];
+}

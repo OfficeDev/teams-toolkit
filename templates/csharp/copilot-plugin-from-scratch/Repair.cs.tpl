@@ -14,13 +14,13 @@ namespace {{SafeProjectName}}
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
-            // Log that the HTTP trigger function received a request
+            // Log that the HTTP trigger function received a request.
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            // Get the query parameters from the request
+            // Get the query parameters from the request.
             string assignedTo = req.Query["assignedTo"];
 
-            // Create the repair records
+            // Create the repair records.
             var repairRecords = new RepairModel[]
             {
                 new RepairModel {
@@ -33,11 +33,21 @@ namespace {{SafeProjectName}}
                 }
             };
 
-            // Filter the repair records by the assignedTo query parameter
-            var repair = repairRecords.FirstOrDefault(r => r.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase));
+            // Filter the repair records by the assignedTo query parameter.
+            var repairs = repairRecords.Where(r =>
+            {
+                // Split assignedTo into firstName and lastName
+                var parts = r.AssignedTo.Split(' ');
+
+                // Check if the assignedTo query parameter matches the repair record's assignedTo value, or the repair record's firstName or lastName.
+                return r.assignedTo.Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
+                       parts[0].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
+                       parts[1].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase);
+            });
             
-            // Return the repair record
-            return new OkObjectResult(repair ?? new object());            
+            // Return filtered repair records, or an empty array if no records were found.
+            var results = new { results = repairs };
+            return new OkObjectResult(results);
         }
     }
 }

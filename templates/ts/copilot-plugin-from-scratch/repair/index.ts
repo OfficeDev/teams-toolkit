@@ -5,10 +5,12 @@
 
 import { Context, HttpRequest } from "@azure/functions";
 
-// Define a Response interface with a status number and a body object that can contain any key-value pairs.
+// Define a Response interface.
 interface Response {
   status: number;
-  body: { [key: string]: any };
+  body: {
+    results: any[];
+  };
 }
 
 /**
@@ -22,7 +24,9 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
   // Initialize response.
   const res: Response = {
     status: 200,
-    body: {},
+    body: {
+      results: [],
+    },
   };
 
   // Get the assignedTo query parameter.
@@ -47,11 +51,14 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
   }
 
   // Filter the repair information by the assignedTo query parameter.
-  const repair = repairRecords.find(
-    (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
-  );
+  const repairs = repairRecords.filter((item) => {
+    const fullName = item.assignedTo.toLowerCase();
+    const query = assignedTo.trim().toLowerCase();
+    const [firstName, lastName] = fullName.split(" ");
+    return fullName === query || firstName === query || lastName === query;
+  });
 
-  // Set the response body to the repair information object.
-  res.body = repair ?? {};
+  // Return filtered repair records, or an empty array if no records were found.
+  res.body.results = repairs ?? [];
   return res;
 }

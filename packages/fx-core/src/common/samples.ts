@@ -32,7 +32,8 @@ export interface SampleConfig {
   time: string;
   configuration: string;
   suggested: boolean;
-  gifUrl: string;
+  thumbnailUrl: string;
+  gifUrl?: string;
   // maximum TTK & CLI version to run sample
   maximumToolkitVersion?: string;
   maximumCliVersion?: string;
@@ -85,14 +86,26 @@ class SampleProvider {
     const samples =
       this.samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrl"] ? true : false;
-        let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+        let gifUrl =
+          sample["gifPath"] !== undefined
+            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+                this.branchOrTag
+              }/${sample["id"] as string}/${sample["gifPath"] as string}`
+            : undefined;
+        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
           this.branchOrTag
-        }/${sample["id"] as string}/${sample["gifPath"] as string}`;
+        }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
           const info = parseSampleUrl(sample["downloadUrl"] as string);
-          gifUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
+          gifUrl =
+            sample["gifPath"] !== undefined
+              ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
+                  info.dir
+                }/${sample["gifPath"] as string}`
+              : undefined;
+          thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
             info.ref
-          }/${info.dir}/${sample["gifPath"] as string}`;
+          }/${info.dir}/${sample["thumbnailPath"] as string}`;
         }
         return {
           ...sample,
@@ -103,6 +116,7 @@ class SampleProvider {
                 this.branchOrTag
               }/${sample["id"] as string}`,
           gifUrl: gifUrl,
+          thumbnailUrl: thumbnailUrl,
         } as SampleConfig;
       }) || [];
 

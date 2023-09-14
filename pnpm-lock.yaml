@@ -27,7 +27,7 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       lerna:
-        specifier: 6.6.2
+        specifier: ^6.6.2
         version: 6.6.2
       rimraf:
         specifier: ^5.0.1

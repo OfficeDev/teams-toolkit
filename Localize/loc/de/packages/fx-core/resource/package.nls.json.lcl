@@ -934,6 +934,9 @@
       <Item ItemId=";core.common.ConvertSwaggerToOpenAPI" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Swagger 2.0 file has been converted to OpenAPI 3.0.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Swagger 2.0-Datei wurde in OpenAPI 3.0 konvertiert.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -994,8 +997,8 @@
       <Item ItemId=";core.common.NoSupportedApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No supported API is found in the OpenAPI specification file: only GET and POST methods are supported, additionally, there can be at most one required parameter, and no auth is allowed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[In der OpenAPI-Spezifikationsdatei wurde keine unterstützte API gefunden.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[In der OpenAPI-Spezifikationsdatei wurde keine unterstützte API gefunden: Nur GET- und POST-Methoden werden unterstützt. Darüber hinaus kann es höchstens einen erforderlichen Parameter geben, und es ist keine Authentifizierung zulässig.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[No supported API is found in the OpenAPI specification file.]]></Val>
@@ -1042,6 +1045,9 @@
       <Item ItemId=";core.common.OperationOnlyContainsOptionalParam" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Operation %s only contains optional parameters which are not supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Der Vorgang „%s“ enthält nur optionale Parameter, die nicht unterstützt werden.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1075,6 +1081,9 @@
       <Item ItemId=";core.common.RelativeServerUrlNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Server url is not correct: relative server url is not supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Server-URL ist falsch: Die relative Server-URL wird nicht unterstützt.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1090,6 +1099,9 @@
       <Item ItemId=";core.common.ResolveServerUrlFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to resolve the server URL: please make sure that the environment variable %s is defined.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Server-URL kann nicht aufgelöst werden: Stellen Sie sicher, dass die Umgebungsvariable %s definiert ist.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1132,6 +1144,9 @@
       <Item ItemId=";core.common.UrlProtocolNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Server url is not correct: protocol %s is not supported, you should use https protocol instead.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Server-URL ist falsch: Das Protokoll „%s“ wird nicht unterstützt. Verwenden Sie stattdessen das HTTPS-Protokoll.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1174,6 +1189,9 @@
       <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.swaggerVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The API specification is on Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die API-Spezifikation gilt für Swagger Version 2.0. Mitigation: Nicht erforderlich. Der Inhalt wurde in OpenAPI 3.0 konvertiert und in „%s“ gespeichert.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1207,12 +1225,18 @@
       <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing parameters in command "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehlende Parameter im Befehl „%s“.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[ Mitigation: add at least one parameter for command "%s" in "%s". The parameter name should match what's defined in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ Entschärfung: Fügen Sie mindestens einen Parameter für den Befehl „%s“ in „%s“ hinzu. Der Parametername sollte mit dem in „%s“ definierten Wert übereinstimmen.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1294,6 +1318,9 @@
       <Item ItemId=";core.createProjectQuestion.OpenAIPluginDomain" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[OpenAI Plugin Domain]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAI-Plug-In-Domäne]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1327,8 +1354,8 @@
       <Item ItemId=";core.createProjectQuestion.apiSpec.operation.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[GET/POST methods with at most one required parameter and no auth are listed]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Es werden nur GET- und POST-Methoden mit einem einzelnen Parameter und ohne Authentifizierung aufgelistet]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[GET-/ POST-Methoden mit höchstens einem erforderlichen Parameter und ohne Authentifizierung werden aufgeführt.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Only GET and POST methods with single parameter and no auth are listed]]></Val>
@@ -1510,6 +1537,9 @@
       <Item ItemId=";core.createProjectQuestion.option.description.worksInOutlookCopilot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Works in Teams, Outlook and Copilot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Funktioniert in Teams, Outlook und Copilot]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2800,6 +2830,9 @@
       <Item ItemId=";depChecker.failedToValidateTestTool" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to validate Teams App Test Tool after installation. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Teams App-Testtool kann nach der Installation nicht überprüft werden. %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2911,6 +2944,9 @@
       <Item ItemId=";depChecker.testToolVersionNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The version of Teams App Test Tool (%s) is not compatible with the specified version range (%s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Version des Teams App Test-Tools (%s) ist nicht mit dem angegebenen Versionsbereich (%s) kompatibel.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2950,6 +2986,9 @@
       <Item ItemId=";driver.aadApp.error.appNameTooLong" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The name for this Azure Active Directory app is too long. The maximum length is 120.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Der Name für diese Azure Active Directory-App ist zu lang. Die maximale Länge ist 120.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3532,6 +3571,9 @@
       <Item ItemId=";driver.prerequisite.error.testToolInstallationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to check and install Teams App Test Tool.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Teams App-Testtool kann nicht überprüft und installiert werden.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3610,12 +3652,18 @@
       <Item ItemId=";driver.prerequisite.summary.testTool.installed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams App Test Tool is installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Teams App-Testtool ist installiert.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.prerequisite.summary.testTool.installedWithPath" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams App Test Tool is installed at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Teams App-Testtool ist unter %s installiert.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4834,8 +4882,8 @@
       <Item ItemId=";error.copilotPlugin.noExtraAPICanBeAdded" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No API can be added. Only GET and POST methods with at most one required parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Es kann keine API hinzugefügt werden. Es werden nur GET- und POST-Methoden mit einem einzelnen Parameter und ohne Authentifizierung unterstützt. In "manifest.json" definierte Methoden sind nicht aufgeführt.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Es kann keine API hinzugefügt werden. Es werden nur GET- und POST-Methoden mit höchstens einem erforderlichen Parameter und ohne Authentifizierung unterstützt. In „manifest.json“ definierte Methoden sind nicht aufgeführt.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[No API can be added. Only GET and POST methods with single parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>

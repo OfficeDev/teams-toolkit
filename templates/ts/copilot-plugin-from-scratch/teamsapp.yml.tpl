@@ -87,7 +87,7 @@ deploy:
   - uses: cli/runNpmCommand
     name: install dependencies
     with:
-      args: install --production
+      args: install
 
   - uses: cli/runNpmCommand
     name: build app

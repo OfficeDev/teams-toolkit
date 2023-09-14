@@ -21,7 +21,7 @@ import {
 import { EnvConstants } from "../../commonlib/constants";
 import { Capability } from "../../utils/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { AzureScopes, environmentManager } from "@microsoft/teamsfx-core";
+import { AzureScopes, environmentNameManager } from "@microsoft/teamsfx-core";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
@@ -36,7 +36,7 @@ describe("Basic Tab", function () {
   const appName = getUniqueAppName();
   const resourceGroupName = `${appName}-rg`;
   const projectPath = path.resolve(testFolder, appName);
-  const envName = environmentManager.getDefaultEnvName();
+  const envName = environmentNameManager.getDefaultEnvName();
   afterEach(async () => {
     await cleanUp(appName, projectPath, true, false, false);
   });

@@ -8,7 +8,7 @@
 import * as path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentNameManager } from "@microsoft/teamsfx-core/build/core/environmentName";
 import { AppStudioValidator, BotValidator } from "../../commonlib";
 import { Runtime } from "../../commonlib/constants";
 import {
@@ -28,7 +28,7 @@ export function happyPathTest(runtime: Runtime): void {
     const testFolder = getTestFolder();
     const appName = getUniqueAppName();
     const projectPath = path.resolve(testFolder, appName);
-    const envName = environmentManager.getDefaultEnvName();
+    const envName = environmentNameManager.getDefaultEnvName();
     let teamsAppId: string | undefined;
 
     const env = Object.assign({}, process.env);

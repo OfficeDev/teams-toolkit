@@ -200,6 +200,7 @@ export enum TelemetryEvent {
   MigrateTeamsManifest = "migrate-teams-manifest",
 
   TreeViewLocalDebug = "treeview-localdebug",
+  TreeViewDebugInTestTool = "treeview-debugintesttool",
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",

@@ -28,6 +28,7 @@ describe("Samples", () => {
         tags: ["Tab", "TS", "Azure function"],
         time: "5min to run",
         configuration: "Ready for debug",
+        thumbnailUrl: "",
         suggested: true,
       },
     ],
@@ -68,6 +69,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config of prerelease branch in prerelease(beta) version", async () => {
@@ -91,6 +93,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigBranchForPrerelease}/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config of rc tag in rc version", async () => {
@@ -114,6 +117,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTagForRc}/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config of release tag in stable version", async () => {
@@ -137,6 +141,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config using feature flag if available in stable version", async () => {
@@ -161,6 +166,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.0.0/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download bundled sample config if feature flag branch is unavailable in stable version", async () => {
@@ -185,6 +191,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("has empty sample collection if network in disconnected", async () => {
@@ -229,6 +236,7 @@ describe("Samples", () => {
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
     chai.expect(faked?.downloadUrl).equals(fakedExternalSample.downloadUrl);
+    chai.expect(faked?.gifUrl).equals(undefined);
 
     (sampleProvider as any).sampleCollection = undefined;
     sampleConfigV3.samples.splice(sampleConfigV3.samples.length - 1, 1);

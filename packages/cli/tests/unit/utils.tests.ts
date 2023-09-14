@@ -13,6 +13,7 @@ import activate from "../../src/activate";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { UserSettings } from "../../src/userSetttings";
 import {
+  editDistance,
   flattenNodes,
   getColorizedString,
   getSettingsVersion,
@@ -413,6 +414,31 @@ describe("activate", async () => {
     expect(res.isErr()).equals(true);
     if (res.isErr()) {
       expect(res.error instanceof core.UnhandledError).equals(true);
+    }
+  });
+});
+
+describe("editDistance", async () => {
+  it("happy", async () => {
+    {
+      const d = editDistance("a", "b");
+      expect(d).equals(1);
+    }
+    {
+      const d = editDistance("abc", "abd");
+      expect(d).equals(1);
+    }
+    {
+      const d = editDistance("abc", "aabbc");
+      expect(d).equals(2);
+    }
+    {
+      const d = editDistance("", "abc");
+      expect(d).equals(3);
+    }
+    {
+      const d = editDistance("abc", "");
+      expect(d).equals(3);
     }
   });
 });

@@ -430,6 +430,13 @@ export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<nu
   return ok(null);
 }
 
+export async function treeViewDebugInTestToolHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewDebugInTestTool);
+  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug in Test Tool");
+
+  return ok(null);
+}
+
 export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
   const properties: { [key: string]: string } = {};

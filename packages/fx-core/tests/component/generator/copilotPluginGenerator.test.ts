@@ -138,6 +138,10 @@ describe("copilotPluginGenerator", function () {
           content: "warning",
           data: ["operation1", " operation2"],
         },
+        {
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: "",
+        },
       ],
     });
     sandbox.stub(fs, "ensureDir").resolves();
@@ -157,12 +161,13 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      assert.isTrue(result.value.warnings!.length === 3);
+      assert.isTrue(result.value.warnings!.length === 4);
       assert.isFalse(result.value.warnings![0].content.includes("operation2"));
       assert.isUndefined(result.value.warnings![0].data);
-      assert.equal(result.value.warnings![1].type, WarningType.GenerateCardFailed);
-      assert.equal(result.value.warnings![2].type, WarningType.OperationOnlyContainsOptionalParam);
-      assert.equal(result.value.warnings![2].content, "");
+      assert.equal(result.value.warnings![1].type, WarningType.ConvertSwaggerToOpenAPI);
+      assert.equal(result.value.warnings![2].type, WarningType.GenerateCardFailed);
+      assert.equal(result.value.warnings![3].type, WarningType.OperationOnlyContainsOptionalParam);
+      assert.equal(result.value.warnings![3].content, "");
     }
   });
 

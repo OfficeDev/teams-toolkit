@@ -3,11 +3,12 @@ import { Action } from '../common/Action';
 import { context } from '@actions/github';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { Octokit as Kit } from '@octokit/rest';
+import { DevopsClient } from './azdo';
 
 const token = getRequiredInput('token');
-const milestonePrefix = getRequiredInput('milestone-prefix');
-const milestoneDays = +getRequiredInput('milestone-days');
-const advancedDays = +getRequiredInput('advanced-days');
+const devopsToken = getRequiredInput('devops-token');
+const org = getRequiredInput('devops-org');
+const projectId = getRequiredInput('devops-projectId');
 const owner = context.repo.owner;
 const repo = context.repo.repo;
 const kit = new Kit({
@@ -18,28 +19,104 @@ class CreateMilestone extends Action {
 	id = 'CreateMilestone';
 
 	async onTriggered(_: OctoKit) {
-		safeLog(`start check and create milestone`);
-		const latest = await getLastest(milestonePrefix);
-		safeLog(`latest milestone is ${latest.year}-${latest.month}.${latest.order}`);
-		const next = await buildNext(latest, advancedDays, milestoneDays);
-		if (!next) {
-			return;
+		safeLog(`begin to check and create milestone`);
+		const client = await this.createClient();
+		const sprints = await client.queryCurrentAndFutureSprints();
+		safeLog(`found ${sprints.length} sprints`);
+		const existingMilestones = await getExistingMilestones('CY');
+		safeLog(`found ${existingMilestones.length} existing milestones`);
+		for (const sprint of sprints) {
+			await checkAndCreateMilestone(sprint, existingMilestones);
 		}
-		safeLog(`create new milestone ${next.year}-${next.month}.${next.order}`);
-		await createMilestone(next, milestonePrefix);
+	}
+
+	private async createClient() {
+		let client = new DevopsClient(
+			devopsToken,
+			org,
+			projectId,
+		);
+		await client.init();
+		return client;
 	}
 }
 
-new CreateMilestone().run() // eslint-disable-line
+new CreateMilestone().run(); // eslint-disable-line
 
 type MilestoneInfo = {
-	year: number;
-	month: number;
-	order: number;
+	title: string;
 	due_on?: Date;
 };
 
-async function getLastest(prefix: string): Promise<MilestoneInfo> {
+
+async function createMilestone(info: MilestoneInfo): Promise<void> {
+	await kit.request('POST /repos/{owner}/{repo}/milestones', {
+		owner: owner,
+		repo: repo,
+		title: info.title,
+		due_on: info.due_on!.toISOString(),
+		description: 'created by action',
+	});
+}
+
+/**
+ * sprint looks like this:
+ {
+	id: '14c9a845-d6e1-43d7-aeb4-b5884228d996',
+	name: '2Wk13 (Sep 10 - Sep 23)',
+	path: 'Microsoft Teams Extensibility\\Gallium\\CY23Q3\\2Wk\\2Wk13 (Sep 10 - Sep 23)',
+	attributes: {
+	  startDate: 2023-09-10T00:00:00.000Z,
+	  finishDate: 2023-09-23T00:00:00.000Z,
+	  timeFrame: 1
+	},
+	url: 'https://msazure.visualstudio.com/9660fff2-2363-48b0-9e15-64df2283e932/ebf67970-6944-421e-b763-0f2360dd96b4/_apis/work/teamsettings/iterations/14c9a845-d6e1-43d7-aeb4-b5884228d996'
+  } 
+ */
+async function checkAndCreateMilestone(sprint: any, existingMilestones: any[]): Promise<void> {
+	safeLog(`start to check sprint ${sprint.name}`);
+	const name = sprint.name;
+	const parts = sprint.path.split('\\');
+	if (parts.length < 5) {
+		safeLog(`invalid sprint path: ${sprint.path}`);
+		return;
+	}
+	const prefix = parts[2];
+	const existing = existingMilestones.find((item: { title: string; }) => item.title.includes(sprint.name) && item.title.includes(prefix));
+	if (existing) {
+		safeLog(`milestone ${name} already exists, ignore.`);
+		return;
+	}
+	// CY23Q3-2Wk13 (Sep 10 - Sep 23)
+	const milestoneInfo: MilestoneInfo = {
+		title: `${prefix}-${name}`,
+		due_on: new Date(sprint.attributes.finishDate),
+	}
+	safeLog(`create milestone ${milestoneInfo.title}`);
+	await createMilestone(milestoneInfo);
+}
+/**
+ * milestone structure:
+ milestone: {
+	  url: string;
+	  html_url: string;
+	  labels_url: string;
+	  id: number;
+	  node_id: string;
+	  number: number;
+	  state: "open" | "closed";
+	  title: string;
+	  description: string | null;
+	  creator: components["schemas"]["simple-user"] | null;
+	  open_issues: number;
+	  closed_issues: number;
+	  created_at: string;
+	  updated_at: string;
+	  closed_at: string | null;
+	  due_on: string | null;
+	};
+ */
+async function getExistingMilestones(prefix: string): Promise<any[]> {
 	let resp = await kit.request('GET /repos/{owner}/{repo}/milestones', {
 		owner: owner,
 		repo: repo,
@@ -48,114 +125,10 @@ async function getLastest(prefix: string): Promise<MilestoneInfo> {
 		per_page: 20,
 	});
 	const milestones = resp.data.filter(
-		(item: { title: string }) =>
-			item.title.includes(prefix) && item.title.includes('-') && item.title.includes('.'),
+		(item: { title: string; }) =>
+			item.title.includes(prefix) && item.title.includes('-'),
 	);
-	if (milestones.length === 0) {
-		throw new Error('no validate milestone');
-	}
-	let latestIndex = 0;
-	let latestInfo = parseTitle(milestones[0].title);
-	for (let i = 1; i < milestones.length; i++) {
-		const element = milestones[i];
-		const currentInfo = parseTitle(element.title);
-		if (isLater(currentInfo, latestInfo)) {
-			latestInfo = currentInfo;
-			latestIndex = i;
-		}
-	}
-
-	if (!milestones[latestIndex].due_on) {
-		throw new Error(`milestone ${milestones[latestIndex].title} has no due date`);
-	}
-	latestInfo.due_on = new Date(milestones[latestIndex].due_on!);
-	return latestInfo;
+	return milestones;
+	// latestInfo.due_on = new Date(milestones[latestIndex].due_on!);
 }
 
-function parseTitle(t: string): MilestoneInfo {
-	t = t.replace(/CY/g, '');
-	let arr = t.split(/[-.]+/);
-	return {
-		year: Number(arr[0]),
-		month: Number(arr[1]),
-		order: Number(arr[2]),
-	};
-}
-
-function buildNext(
-	now: MilestoneInfo,
-	advancedDays: number,
-	milestoneDays: number,
-): MilestoneInfo | undefined {
-	const current = new Date();
-
-	const createDate = addDays(now.due_on!, -advancedDays);
-
-	// if current is earlier than create date, just return undefined.
-	if (current < createDate) {
-		safeLog(
-			`the start date to create milestone is ${createDate.toISOString()}, now is ${current.toISOString()}. Just skip`,
-		);
-		return undefined;
-	}
-
-	const nextDueDay = addDays(now.due_on!, milestoneDays);
-
-	// if current is later than next due day, there should be some error happened.
-	if (current > nextDueDay) {
-		throw new Error(
-			`new milestone created based on ${now.year}-${now.month}.${now.order} will have expired due date`,
-		);
-	}
-
-	const startDate = addDays(now.due_on!, 1);
-	let next: MilestoneInfo = {
-		year: startDate.getFullYear() - 2000,
-		month: startDate.getMonth() + 1,
-		order: 1,
-	};
-	if (now.month == next.month) {
-		next.order = now.order + 1;
-	}
-	next.due_on = nextDueDay;
-	return next;
-}
-
-async function createMilestone(info: MilestoneInfo, prefix: string): Promise<void> {
-	const title = `${prefix}${info.year}-${info.month}.${info.order}`;
-	await kit.request('POST /repos/{owner}/{repo}/milestones', {
-		owner: owner,
-		repo: repo,
-		title: title,
-		due_on: info.due_on!.toISOString(),
-		description: 'created by action',
-	});
-}
-
-function addDays(date: Date, days: number): Date {
-	var result = new Date(date);
-	result.setDate(result.getDate() + days);
-	return result;
-}
-
-function isLater(a: MilestoneInfo, b: MilestoneInfo): boolean {
-	if (a.year < b.year) {
-		return false;
-	} else if (a.year > b.year) {
-		return true;
-	}
-
-	if (a.month < b.month) {
-		return false;
-	} else if (a.month > b.month) {
-		return true;
-	}
-
-	if (a.order < b.order) {
-		return false;
-	} else if (a.order > b.order) {
-		return true;
-	}
-
-	return false;
-}

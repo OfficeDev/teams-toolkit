@@ -298,6 +298,11 @@
           "group": "inline@3"
         },
         {
+          "command": "fx-extension.debugInTestToolWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /^testtool$/",
+          "group": "inline@3"
+        },
+        {
           "command": "fx-extension.manageCollaborator",
           "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
@@ -377,6 +382,10 @@
         },
         {
           "command": "fx-extension.localdebugWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.debugInTestToolWithIcon",
           "when": "false"
         },
         {
@@ -657,6 +666,11 @@
       {
         "command": "fx-extension.localdebugWithIcon",
         "title": "%teamstoolkit.commands.localDebug.title%",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "fx-extension.debugInTestToolWithIcon",
+        "title": "%teamstoolkit.commands.debugInTestTool.title%",
         "icon": "$(debug-alt)"
       },
       {
@@ -1217,7 +1231,7 @@
         "fx-extension.developCopilotPlugin": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Enable to develop Copilot plugin (Require to reload VSCode). Visit [How to Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot) to learn more."
+          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
         }
       }
     }

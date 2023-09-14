@@ -313,16 +313,24 @@ export function generateScaffoldingSummary(
   teamsManifest: TeamsAppManifest,
   projectPath: string
 ): string {
-  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(warnings);
+  const apiSpecFileName =
+    teamsManifest.composeExtensions?.length &&
+    teamsManifest.composeExtensions[0].apiSpecificationFile
+      ? teamsManifest.composeExtensions[0].apiSpecificationFile
+      : "";
+  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(
+    warnings,
+    path.join(AppPackageFolderName, apiSpecFileName)
+  );
   const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath, warnings);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
 
-  if (apiSpecWarningMessage || manifestWarningMessage.length) {
+  if (apiSpecWarningMessage.length || manifestWarningMessage.length) {
     let details = "";
-    if (apiSpecWarningMessage) {
-      details += EOL + apiSpecWarningMessage;
+    if (apiSpecWarningMessage.length) {
+      details += EOL + apiSpecWarningMessage.join(EOL);
     }
 
     if (manifestWarningMessage.length) {
@@ -335,19 +343,36 @@ export function generateScaffoldingSummary(
   }
 }
 
-function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string {
-  const apiSpecWarning =
-    specWarnings.length > 0 && specWarnings[0].type === WarningType.OperationIdMissing
-      ? `${SummaryConstant.NotExecuted} ${specWarnings[0].content}`
-      : "";
+function formatApiSpecValidationWarningMessage(
+  specWarnings: Warning[],
+  apiSpecFileName: string
+): string[] {
+  const resultWarnings = [];
+  const operationIdWarning = specWarnings.find((w) => w.type === WarningType.OperationIdMissing);
 
-  return apiSpecWarning
-    ? getLocalizedString(
+  if (operationIdWarning) {
+    resultWarnings.push(
+      getLocalizedString(
         "core.copilotPlugin.scaffold.summary.warning.operationId",
-        apiSpecWarning,
+        `${SummaryConstant.NotExecuted} ${operationIdWarning.content}`,
         ManifestTemplateFileName
       )
-    : "";
+    );
+  }
+
+  const swaggerWarning = specWarnings.find((w) => w.type === WarningType.ConvertSwaggerToOpenAPI);
+
+  if (swaggerWarning) {
+    resultWarnings.push(
+      `${SummaryConstant.NotExecuted} ` +
+        getLocalizedString(
+          "core.copilotPlugin.scaffold.summary.warning.swaggerVersion",
+          apiSpecFileName
+        )
+    );
+  }
+
+  return resultWarnings;
 }
 
 function validateTeamsManifestLength(

@@ -43,8 +43,8 @@ import {
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
-import { CliConfigOptions, UserSettings } from "../userSetttings";
-import { getSystemInputs } from "../utils";
+import { CliConfigOptions } from "../userSetttings";
+import { editDistance, getSystemInputs } from "../utils";
 import { helper } from "./helper";
 
 class CLIEngine {
@@ -275,6 +275,19 @@ class CLIEngine {
     return option.questionName || option.name;
   }
 
+  findMostSimilarCommand(context: CLIContext, token: string): CLICommand | undefined {
+    let mini = token.length;
+    let mostSimilarCommand: CLICommand | undefined = undefined;
+    for (const cmd of context.command.commands || []) {
+      const d = editDistance(token, cmd.name);
+      if (d < mini && d <= 2) {
+        mini = d;
+        mostSimilarCommand = cmd;
+      }
+    }
+    return mostSimilarCommand;
+  }
+
   parseArgs(
     context: CLIContext,
     rootCommand: CLICommand,
@@ -398,7 +411,8 @@ class CLIEngine {
           argumentIndex++;
         } else {
           if (!command.arguments || command.arguments.length === 0) {
-            return err(new UnknownCommandError(token));
+            const mostSimilarCommand = this.findMostSimilarCommand(context, token);
+            return err(new UnknownCommandError(token, command.fullName, mostSimilarCommand?.name));
           } else {
             return err(new UnknownArgumentError(command.fullName, token));
           }

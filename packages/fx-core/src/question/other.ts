@@ -629,7 +629,7 @@ export async function newEnvNameValidation(
     return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
   }
 
-  if (environmentNameManager.isRemoteEnvironment(targetEnvName)) {
+  if (!environmentNameManager.isRemoteEnvironment(targetEnvName)) {
     return getLocalizedString(
       "core.getQuestionNewTargetEnvironmentName.validation3",
       targetEnvName

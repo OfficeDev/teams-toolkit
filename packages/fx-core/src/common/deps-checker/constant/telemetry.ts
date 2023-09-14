@@ -35,10 +35,15 @@ export enum TelemetryProperties {
   VersioningFuncVersionError = "versioning-func-version-error",
   GlobalFuncVersionError = "global-func-version-error",
   InstallFuncError = "install-func-error",
+
   InstalledTestToolVersion = "installed-test-tool-version",
   InstallTestToolError = "install-test-tool-error",
   SymlinkTestToolVersion = "symlink-test-tool-version",
   SymlinkTestToolVersionError = "symlink-test-tool-version-error",
+  SelectedPortableTestToolVersion = "selected-test-tool-version",
+  VersioningTestToolVersionError = "versioning-test-tool-version-error",
+  GlobalTestToolVersion = "global-test-tool-version",
+  GlobalTestToolVersionError = "global-test-tool-version-error",
 }
 
 export enum TelemetryMessurement {

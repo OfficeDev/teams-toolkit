@@ -41,11 +41,14 @@ module.exports = async function (context, req) {
   }
 
   // Filter the repair information by the assignedTo query parameter.
-  const repairs = repairRecords.filter(
-    (item) => item.assignedTo.toLocaleLowerCase() === assignedTo.toLocaleLowerCase()
-  );
+  const repairs = repairRecords.filter((item) => {
+    const fullName = item.assignedTo.toLowerCase();
+    const query = assignedTo.trim().toLowerCase();
+    const [firstName, lastName] = fullName.split(" ");
+    return fullName === query || firstName === query || lastName === query;
+  });
 
-  // Return filtered repair records, or an empty array if no records were found
+  // Return filtered repair records, or an empty array if no records were found.
   res.body.results = repairs ?? [];
   return res;
 };

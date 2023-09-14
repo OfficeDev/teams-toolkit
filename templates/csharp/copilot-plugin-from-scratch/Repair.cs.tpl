@@ -34,10 +34,18 @@ namespace {{SafeProjectName}}
             };
 
             // Filter the repair records by the assignedTo query parameter.
-            var repairs = repairRecords.Where(r => r.AssignedTo.Equals(assignedTo, StringComparison.InvariantCultureIgnoreCase));
+            var repairs = repairRecords.Where(r =>
+            {
+                // Split assignedTo into firstName and lastName
+                var parts = r.AssignedTo.Split(' ');
+
+                // Check if assignedTo matches firstName or lastName
+                return parts[0].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
+                       parts[1].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase);
+            });
             
             // Return filtered repair records, or an empty array if no records were found.
-            var results = new { results = repairs ?? new object[] { } };
+            var results = new { results = repairs };
             return new OkObjectResult(results);
         }
     }

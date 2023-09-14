@@ -257,7 +257,7 @@
   "core.copilotPlugin.scaffold.summary.warning.teamsManifest.mitigation": "Mitigation: update \"%s\" field in \"%s\".",
   "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate": "Missing \"%s\" in command \"%s\".",
   "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate.mitigation": " Mitigation: create Adaptive Card template in \"%s\" and then update \"%s\" field to the relative path in \"%s\".",
-  "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly": "There is no required parameter defined in API \"%s\" so we set the first optional parameter as the parameter for command \"%s\".",
+  "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly": "There is no required parameter defined in API \"%s\", so we set the first optional parameter as the parameter for command \"%s\".",
   "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation": " Mitigation: If \"%s\" is not what you need, please edit the parameter of command \"%s\" in \"%s\". The parameter name should match what's defined in \"%s\".",
   "core.createCapabilityQuestion.titleNew": "Capabilities",
   "core.createCapabilityQuestion.placeholder": "Select a capability",

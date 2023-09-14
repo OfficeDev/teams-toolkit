@@ -20,9 +20,9 @@ import { getLocalizedString } from "../../../../common/localizeUtils";
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
 
 // Missing this part will cause build failure when adding 'axios-retry' in AxiosRequestConfig
-declare module 'axios' {
+declare module "axios" {
   export interface AxiosRequestConfig {
-    'axios-retry'?: IAxiosRetryConfig;
+    "axios-retry"?: IAxiosRetryConfig;
   }
 }
 
@@ -73,7 +73,10 @@ export class AadAppClient {
     });
   }
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async createAadApp(displayName: string, signInAudience = SignInAudience.AzureADMyOrg): Promise<AADApplication> {
+  public async createAadApp(
+    displayName: string,
+    signInAudience = SignInAudience.AzureADMyOrg
+  ): Promise<AADApplication> {
     const requestBody: IAADDefinition = {
       displayName: displayName,
       signInAudience: signInAudience,

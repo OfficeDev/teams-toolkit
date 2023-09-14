@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Context, FxError, LogProvider, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  Context,
+  FxError,
+  LogProvider,
+  M365TokenProvider,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";

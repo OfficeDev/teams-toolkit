@@ -542,7 +542,11 @@ export namespace AppStudioClient {
       if (region) {
         try {
           logProvider.debug(
-            getLocalizedString("core.common.SentApiRequest", `${region ?? baseUrl}/api/appdefinitions/{teamsAppId}/owner`, JSON.stringify(app))
+            getLocalizedString(
+              "core.common.SentApiRequest",
+              `${region ?? baseUrl}/api/appdefinitions/{teamsAppId}/owner`,
+              JSON.stringify(app)
+            )
           );
           requester = createRequesterWithToken(appStudioToken, region);
           response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
@@ -560,7 +564,11 @@ export namespace AppStudioClient {
         }
       } else {
         logProvider.debug(
-          getLocalizedString("core.common.SentApiRequest", `${baseUrl}/api/appdefinitions/{teamsAppId}/owner`, JSON.stringify(app))
+          getLocalizedString(
+            "core.common.SentApiRequest",
+            `${baseUrl}/api/appdefinitions/{teamsAppId}/owner`,
+            JSON.stringify(app)
+          )
         );
         requester = createRequesterWithToken(appStudioToken);
         response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);

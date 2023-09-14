@@ -100,7 +100,10 @@ export class CreateBotAadAppDriver implements StepDriver {
       const startTime = performance.now();
       if (!botAadAppState.botId) {
         context.logProvider?.info(getLocalizedString(logMessageKeys.startCreateBotAadApp));
-        const aadApp = await aadAppClient.createAadApp(args.name, SignInAudience.AzureADMultipleOrgs);
+        const aadApp = await aadAppClient.createAadApp(
+          args.name,
+          SignInAudience.AzureADMultipleOrgs
+        );
         botAadAppState.botId = aadApp.appId!;
         botAadAppState.botPassword = await aadAppClient.generateClientSecret(aadApp.id!);
         context.logProvider?.info(getLocalizedString(logMessageKeys.successCreateBotAadApp));

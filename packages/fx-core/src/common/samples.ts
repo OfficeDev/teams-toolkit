@@ -84,7 +84,7 @@ class SampleProvider {
       this.samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrl"] ? true : false;
         let gifUrl =
-          sample["gifPath"] != ""
+          sample["gifPath"] !== undefined
             ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
                 this.branchOrTag
               }/${sample["id"] as string}/${sample["gifPath"] as string}`
@@ -95,7 +95,7 @@ class SampleProvider {
         if (isExternal) {
           const info = parseSampleUrl(sample["downloadUrl"] as string);
           gifUrl =
-            sample["gifPath"] != ""
+            sample["gifPath"] !== undefined
               ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
                   info.dir
                 }/${sample["gifPath"] as string}`

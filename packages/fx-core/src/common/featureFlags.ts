@@ -50,7 +50,7 @@ export function isApiCopilotPluginEnabled(): boolean {
 }
 
 export function isCliNewUxEnabled(): boolean {
-  return isFeatureFlagEnabled("TEAMSFX_CLI_NEW_UX", false);
+  return true;
 }
 
 export function isTestToolEnabled(): boolean {

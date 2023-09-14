@@ -56,7 +56,7 @@ export async function getAadAppByClientId(clientId: string): Promise<any> {
     try {
       const response = await requester.get(`/applications(appId='${clientId}')`);
       if (response.status >= 200 && response.status < 300) {
-        console.log("Successfully got AAD app");
+        console.log(`Successfully got AAD app ${response.data.id} with client id ${clientId}`);
         return response.data;
       }
     } catch (e) {
@@ -68,8 +68,8 @@ export async function getAadAppByClientId(clientId: string): Promise<any> {
 
 export async function deleteAadAppByClientId(clientId: string) {
   const aadApp = await getAadAppByClientId(clientId);
-  if (aadApp?.objectId) {
-    await deleteAadAppByObjectId(aadApp.objectId);
+  if (aadApp?.id) {
+    await deleteAadAppByObjectId(aadApp.id);
   }
 }
 

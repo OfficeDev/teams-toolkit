@@ -7,6 +7,7 @@ import "mocha";
 import sinon from "sinon";
 import { wrapAdaptiveCard } from "../../../src/common/spec-parser/adaptiveCardWrapper";
 import { AdaptiveCard } from "../../../src/common/spec-parser/interfaces";
+import { ConstantString } from "../../../src/common/spec-parser/constants";
 
 describe("adaptiveCardWrapper", () => {
   afterEach(() => {
@@ -34,9 +35,9 @@ describe("adaptiveCardWrapper", () => {
       };
 
       const expectedWrappedCard = {
-        version: "devPreview",
-        $schema: "<URL_REFERENCE_TO_SCHEMA>",
-        responseLayout: "list",
+        version: ConstantString.AdaptiveCardVersion,
+        $schema: ConstantString.AdaptiveCardSchema,
+        responseLayout: ConstantString.WrappedCardResponseLayout,
         responseCardTemplate: card,
         previewCardTemplate: {
           title: "title",

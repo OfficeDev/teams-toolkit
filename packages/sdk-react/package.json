@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@microsoft/teamsfx": "workspace:*",
     "@testing-library/react": "^13.4.0",
     "@types/enzyme": "^3.10.10",
     "@types/jest": "^29.4.0",
@@ -74,7 +73,8 @@
     "react-dom": ">=16.8.0 <19.0.0"
   },
   "dependencies": {
-    "@fluentui/react": "^8.106.1"
+    "@fluentui/react": "^8.106.1",
+    "@microsoft/teamsfx": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

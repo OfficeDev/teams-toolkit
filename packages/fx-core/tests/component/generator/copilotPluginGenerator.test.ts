@@ -12,6 +12,7 @@ import {
   ok,
   OpenAIManifestAuthType,
   Platform,
+  ResponseTemplatesFolderName,
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
@@ -147,7 +148,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves({
+    const generateParser = sandbox.stub(SpecParser.prototype, "generate").resolves({
       allSuccess: true,
       warnings: [
         { type: WarningType.GenerateCardFailed, content: "test", data: "getPets" },
@@ -168,6 +169,7 @@ describe("copilotPluginGenerator", function () {
       assert.equal(result.value.warnings![2].type, WarningType.GenerateCardFailed);
       assert.equal(result.value.warnings![3].type, WarningType.OperationOnlyContainsOptionalParam);
       assert.equal(result.value.warnings![3].content, "");
+      assert.isTrue(generateParser.args[0][3].includes(ResponseTemplatesFolderName));
     }
   });
 

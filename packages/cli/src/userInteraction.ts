@@ -531,6 +531,15 @@ class CLIUserInteraction implements UserInteraction {
         error.source = cliSource;
         return err(error);
       }
+
+      if (config.validation) {
+        const validateRes = await config.validation?.(result.value);
+        if (validateRes) {
+          const error = new InputValidationError(config.name, validateRes.toString());
+          error.source = cliSource;
+          return err(error);
+        }
+      }
       const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
       if (config.returnObject) {
         return ok({ type: "success", result: anwers });

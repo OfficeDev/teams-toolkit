@@ -257,19 +257,13 @@ export class ToolsInstallDriverImpl {
     return res;
   }
 
-  async resolveTestTool(
-    versionRange: string,
-    symlinkDir: string,
-    updateInterval?: number
-  ): Promise<void> {
+  async resolveTestTool(versionRange: string, symlinkDir: string): Promise<void> {
     const checker = new TestToolChecker();
     const projectPath = this.context.projectPath;
-    // default to 7 days
     const status = await checker.resolve({
       versionRange,
       symlinkDir,
       projectPath,
-      updateInterval,
     });
     this.context.logProvider.debug(
       `Teams App Test Tool result: ${JSON.stringify({

@@ -6,7 +6,11 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { AadCollaboration, TeamsCollaboration } from "../../../src/component/feature/collaboration";
-import { MockedLogProvider, MockedM365Provider, MockedV2Context } from "../../plugins/solution/util";
+import {
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedV2Context,
+} from "../../plugins/solution/util";
 import { AadAppClient } from "../../../src/component/driver/aad/utility/aadAppClient";
 import axios from "axios";
 import { AppStudioClient } from "../../../src/component/driver/teamsApp/clients/appStudioClient";

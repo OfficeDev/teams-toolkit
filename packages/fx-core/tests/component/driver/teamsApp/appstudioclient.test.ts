@@ -609,21 +609,21 @@ describe("App Studio API Test", () => {
           displayName: "fake",
           userPrincipalName: "fake",
           isAdministrator: false,
-        }
-      ]
+        },
+      ];
       const newAppUser: AppUser = {
         tenantId: "new-tenant-id",
         aadId: "new-aad-id",
         displayName: "fake",
         userPrincipalName: "fake",
         isAdministrator: false,
-      }
+      };
       const getResponse = {
         data: appDefWithUser,
       };
       appDefWithUser.userList?.push(newAppUser);
       const postResponse = {
-        data: appDefWithUser
+        data: appDefWithUser,
       };
       sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
       sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
@@ -634,7 +634,50 @@ describe("App Studio API Test", () => {
         newAppUser,
         logProvider
       );
-    })
+    });
+
+    it("happy path with region", async () => {
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const appDefWithUser: AppDefinition = appDef;
+      appDefWithUser.userList = [
+        {
+          tenantId: "fake-tenant-id",
+          aadId: "fake-aad-id",
+          displayName: "fake",
+          userPrincipalName: "fake",
+          isAdministrator: false,
+        },
+      ];
+      const newAppUser: AppUser = {
+        tenantId: "new-tenant-id",
+        aadId: "new-aad-id",
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+      const getResponse = {
+        data: appDefWithUser,
+      };
+      appDefWithUser.userList?.push(newAppUser);
+      const postResponse = {
+        data: appDefWithUser,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      const res = await AppStudioClient.grantPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        newAppUser,
+        logProvider
+      );
+
+      AppStudioClient.setRegion(undefined as unknown as string);
+    });
   });
 
   describe("getUserList", () => {

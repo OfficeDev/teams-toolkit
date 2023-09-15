@@ -128,7 +128,11 @@ export class ToolsInstallDriverImpl {
     }
 
     if (args.testTool) {
-      await this.resolveTestTool(`${args.testTool.version}`, args.testTool.symlinkDir);
+      await this.resolveTestTool(
+        `${args.testTool.version}`,
+        args.testTool.symlinkDir,
+        args.testTool.updateInterval
+      );
     }
 
     return res;
@@ -257,10 +261,20 @@ export class ToolsInstallDriverImpl {
     return res;
   }
 
-  async resolveTestTool(versionRange: string, symlinkDir: string): Promise<void> {
+  async resolveTestTool(
+    versionRange: string,
+    symlinkDir: string,
+    updateInterval?: number
+  ): Promise<void> {
     const checker = new TestToolChecker();
     const projectPath = this.context.projectPath;
-    const status = await checker.resolve({ versionRange, symlinkDir, projectPath });
+    // default to 7 days
+    const status = await checker.resolve({
+      versionRange,
+      symlinkDir,
+      projectPath,
+      updateInterval,
+    });
     this.context.logProvider.debug(
       `Teams App Test Tool result: ${JSON.stringify({
         isInstalled: status.isInstalled,

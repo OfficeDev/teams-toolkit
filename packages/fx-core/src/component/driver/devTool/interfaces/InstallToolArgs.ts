@@ -35,4 +35,7 @@ interface FuncArgs {
 interface TestToolArgs {
   version: string | number;
   symlinkDir: string;
+  // check and update interval, in milliseconds
+  // negative value for skip update
+  updateInterval?: number;
 }

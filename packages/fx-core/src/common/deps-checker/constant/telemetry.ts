@@ -44,6 +44,9 @@ export enum TelemetryProperties {
   VersioningTestToolVersionError = "versioning-test-tool-version-error",
   GlobalTestToolVersion = "global-test-tool-version",
   GlobalTestToolVersionError = "global-test-tool-version-error",
+  TestToolLastUpdateTimestamp = "test-tool-last-update-timestamp",
+  TestToolUpdatePreviousVersion = "test-tool-update-previous-version",
+  TestToolUpdateError = "test-tool-update-error",
 }
 
 export enum TelemetryMessurement {

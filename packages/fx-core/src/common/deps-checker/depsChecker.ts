@@ -56,6 +56,8 @@ export interface TestToolInstallOptions {
   symlinkDir: string;
   projectPath: string;
   versionRange: string;
+  // in milliseconds
+  updateInterval?: number;
 }
 
 export type InstallOptions = BaseInstallOptions | FuncInstallOptions | TestToolInstallOptions;

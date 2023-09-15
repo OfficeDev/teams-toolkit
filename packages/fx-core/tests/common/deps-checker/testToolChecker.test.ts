@@ -592,7 +592,7 @@ describe("Test Tool Checker Test", () => {
     it("Already installed, symlink created, but skip update", async () => {
       const checker = new TestToolChecker();
       const symlinkDir = "symlinkDir";
-      const versionRange = "~1.2.3";
+      const versionRange = "1.2.3";
       let npmInstalled = false;
       let checkedUpdate = false;
       const homePortableDir = path.join(homePortablesDir, "1.2.3");
@@ -619,14 +619,14 @@ describe("Test Tool Checker Test", () => {
         projectPath,
         symlinkDir,
         versionRange,
-        updateInterval: -1,
       });
       // Assert
       expect(status.isInstalled).to.be.true;
       expect(status.details.binFolders).not.empty;
       expect(status.error).to.be.undefined;
       expect(npmInstalled).to.be.false;
-      expect(checkedUpdate).to.be.false;
+      expect(checkedUpdate).to.be.true;
+      expect(status.details.installVersion).to.eq("1.2.3");
     });
   });
 });

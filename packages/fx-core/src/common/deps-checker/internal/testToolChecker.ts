@@ -183,14 +183,10 @@ export class TestToolChecker implements DepsChecker {
   private async autoUpdate(
     installOptions: TestToolInstallOptions
   ): Promise<TestToolDependencyStatus | undefined> {
-    const updateInterval = installOptions.updateInterval || this.defaultUpdateInterval;
-    if (updateInterval < 0) {
-      // provide an optional way to opt-out auto update
-      return undefined;
-    }
     const installInfo = await this.readInstallInfoFile(installOptions.projectPath);
     const now = new Date().getTime();
-    const updateExpired = !installInfo || now > installInfo.lastCheckTimestamp + updateInterval;
+    const updateExpired =
+      !installInfo || now > installInfo.lastCheckTimestamp + this.defaultUpdateInterval;
 
     if (!updateExpired) {
       return undefined;

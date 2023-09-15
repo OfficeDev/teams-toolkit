@@ -128,11 +128,7 @@ export class ToolsInstallDriverImpl {
     }
 
     if (args.testTool) {
-      await this.resolveTestTool(
-        `${args.testTool.version}`,
-        args.testTool.symlinkDir,
-        args.testTool.updateInterval
-      );
+      await this.resolveTestTool(`${args.testTool.version}`, args.testTool.symlinkDir);
     }
 
     return res;

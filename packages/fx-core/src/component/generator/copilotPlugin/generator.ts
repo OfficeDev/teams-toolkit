@@ -51,7 +51,7 @@ const fromApiSpeccomponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
-const responseTemplateFolderName = "responseTemplates";
+const apiSpecFolderName = "apiSpecificationFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 
@@ -185,11 +185,7 @@ export class CopilotPluginGenerator {
         ManifestTemplateFileName
       );
 
-      const apiSpecFolderPath = path.join(
-        destinationPath,
-        AppPackageFolderName,
-        responseTemplateFolderName
-      );
+      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);
 
       let isYaml: boolean;

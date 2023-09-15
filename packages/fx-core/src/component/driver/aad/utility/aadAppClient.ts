@@ -42,7 +42,7 @@ export class AadAppClient {
     });
     this.axios.interceptors.request.use(async (config) => {
       this.logProvider?.info(
-        getLocalizedString("core.common.SentApiRequest", config.url, JSON.stringify(config.data))
+        getLocalizedString("core.common.SendingApiRequest", config.url, JSON.stringify(config.data))
       );
 
       const tokenResponse = await this.tokenProvider.getAccessToken({ scopes: GraphScopes });

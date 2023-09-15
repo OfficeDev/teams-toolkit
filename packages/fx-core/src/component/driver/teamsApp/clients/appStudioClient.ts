@@ -543,7 +543,7 @@ export namespace AppStudioClient {
         try {
           logProvider.debug(
             getLocalizedString(
-              "core.common.SentApiRequest",
+              "core.common.SendingApiRequest",
               `${baseUrl}/api/appdefinitions/{teamsAppId}/owner`,
               JSON.stringify(app)
             )
@@ -565,7 +565,7 @@ export namespace AppStudioClient {
       } else {
         logProvider.debug(
           getLocalizedString(
-            "core.common.SentApiRequest",
+            "core.common.SendingApiRequest",
             `${baseUrl}/api/appdefinitions/{teamsAppId}/owner`,
             JSON.stringify(app)
           )

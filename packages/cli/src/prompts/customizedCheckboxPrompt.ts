@@ -35,7 +35,7 @@ export type Config = AsyncPromptConfig & {
   instructions?: string | boolean;
   choices: ReadonlyArray<Choice | Separator>;
   defaultValues?: ReadonlyArray<string>;
-  validateAnswers?: (value: string[]) => string | Promise<string | undefined> | undefined;
+  validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined;
 };
 
 function isSelectableChoice(choice: undefined | Separator | Choice): choice is Choice {
@@ -48,7 +48,7 @@ export const checkbox = createPrompt(
       prefix = usePrefix(),
       instructions,
       defaultValues = [],
-      validateAnswers = () => undefined,
+      validateValues = () => undefined,
     } = config;
 
     const [status, setStatus] = useState("pending");
@@ -73,7 +73,7 @@ export const checkbox = createPrompt(
           .filter((choice) => isSelectableChoice(choice) && choice.checked)
           .map((choice) => (choice as Choice).id);
 
-        const validationRes = await validateAnswers(answer);
+        const validationRes = await validateValues(answer);
         if (validationRes) {
           setError(validationRes);
           setStatus("pending");

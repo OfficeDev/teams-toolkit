@@ -211,7 +211,7 @@ class CLIUserInteraction implements UserInteraction {
     message: string,
     choices: CheckboxChoice[],
     defaultValues?: string[],
-    validateAnswers?: (value: string[]) => string | Promise<string | undefined> | undefined
+    validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined
   ): Promise<Result<string[], FxError>> {
     const check = await this.checkIfSkip(name, defaultValues);
     if (check.isErr()) {
@@ -228,7 +228,7 @@ class CLIUserInteraction implements UserInteraction {
       message,
       choices,
       defaultValues,
-      validateAnswers,
+      validateValues,
     });
     ScreenManager.continue();
     return ok(answer);

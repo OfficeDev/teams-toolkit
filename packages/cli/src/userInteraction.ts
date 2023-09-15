@@ -535,7 +535,7 @@ class CLIUserInteraction implements UserInteraction {
       if (config.validation) {
         const validateRes = await config.validation?.(result.value);
         if (validateRes) {
-          const error = new InputValidationError(config.name, validateRes.toString());
+          const error = new InputValidationError(config.name, validateRes);
           error.source = cliSource;
           return err(error);
         }

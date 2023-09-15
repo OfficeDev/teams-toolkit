@@ -173,7 +173,13 @@ describe("manifestUpdater", () => {
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
               context: ["compose"],
               id: "createPet",
-              parameters: [],
+              parameters: [
+                {
+                  description: "Name of the pet",
+                  name: "name",
+                  title: "Name",
+                },
+              ],
               title: "Create a pet",
               type: "query",
             },
@@ -459,7 +465,7 @@ describe("generateCommands", () => {
     expect(warnings).to.deep.equal([]);
   });
 
-  it("should throw error for each GET/POST operation in the spec if only contains optional parameters", async () => {
+  it("should show warning for each GET/POST operation in the spec if only contains optional parameters", async () => {
     const spec: any = {
       paths: {
         "/pets": {
@@ -502,7 +508,13 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
         context: ["compose"],
         id: "getPets",
-        parameters: [],
+        parameters: [
+          {
+            description: "Maximum number of pets to return",
+            name: "limit",
+            title: "Limit",
+          },
+        ],
         title: "Get all pets",
         type: "query",
       },
@@ -510,7 +522,13 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
         context: ["compose"],
         id: "createPet",
-        parameters: [],
+        parameters: [
+          {
+            description: "ID of the pet",
+            name: "id",
+            title: "Id",
+          },
+        ],
         title: "Create a pet",
         type: "query",
       },
@@ -527,6 +545,73 @@ describe("generateCommands", () => {
         data: "createPet",
       },
     ]);
+  });
+
+  it("should not show warning for each GET/POST operation in the spec if only contains 1 optional parameters", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            parameters: [{ name: "id", description: "ID of the pet", required: false }],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    expect(result).to.deep.equal([
+      {
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+        context: ["compose"],
+        id: "getPets",
+        parameters: [
+          {
+            description: "ID of the pet",
+            name: "id",
+            title: "Id",
+          },
+        ],
+        title: "Get all pets",
+        type: "query",
+      },
+      {
+        apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+        context: ["compose"],
+        id: "createPet",
+        parameters: [
+          {
+            description: "Name of the pet",
+            name: "name",
+            title: "Name",
+          },
+        ],
+        title: "Create a pet",
+        type: "query",
+      },
+    ]);
+    expect(warnings).to.deep.equal([]);
   });
 
   it("should only generate commands for GET operation with required parameter", async () => {

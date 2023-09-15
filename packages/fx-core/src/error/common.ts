@@ -260,6 +260,28 @@ export class HttpServerError extends SystemError {
   }
 }
 
+export class AccessGithubError extends UserError {
+  constructor(url: string, source: string, error: any) {
+    const messageKey = "error.common.AccessGithubError";
+    super({
+      source: source,
+      name: "AccessGithubError",
+      message: getDefaultString(
+        messageKey,
+        url,
+        error.message || JSON.stringify(error, Object.getOwnPropertyNames(error))
+      ),
+      displayMessage: getDefaultString(
+        messageKey,
+        url,
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+      ),
+      error: error,
+      categories: [ErrorCategory.External],
+    });
+  }
+}
+
 export class UserCancelError extends UserError {
   constructor(actionName?: string) {
     super({

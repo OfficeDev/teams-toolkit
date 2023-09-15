@@ -223,8 +223,9 @@ export class TestToolChecker implements DepsChecker {
       );
     } catch (e: unknown) {
       // ignore update failure and use existing version
-      this.telemetryProperties[TelemetryProperties.TestToolUpdateError] =
-        e instanceof Error ? e.message : `${e}`;
+      if (e instanceof Error) {
+        this.telemetryProperties[TelemetryProperties.TestToolUpdateError] = e.message;
+      }
       await this.writeInstallInfoFile(installOptions.projectPath);
       return undefined;
     }

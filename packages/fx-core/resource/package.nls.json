@@ -295,7 +295,7 @@
   "core.createProjectQuestion.invalidDomain.message": "Please enter a valid domain",
   "core.createProjectQuestion.apiSpec.operation.title": "Select an Operation",
   "core.createProjectQuestion.apiSpec.operation.placeholder": "GET/POST methods with at most one required parameter and no auth are listed",
-  "core.createProjectQuestion.apiSpec.operation.invalidMessage": "%s API(s) selected. You can select at least one and at most %s APIs",
+  "core.createProjectQuestion.apiSpec.operation.invalidMessage": "%s API(s) selected. You can select at least one and at most %s APIs.",
   "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting": "Methods defined in manifest.json are not listed",
   "core.createProjectQuestion.apiSpec.multipleValidationErrors.message": "Invalid API specification. Check output panel for details.",
   "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message": "Invalid API specification. Check [output panel](command:fx-extension.showOutputChannel) for details.",

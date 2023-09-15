@@ -601,16 +601,6 @@ describe("App Studio API Test", () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
-      const appDefWithUser: AppDefinition = appDef;
-      appDefWithUser.userList = [
-        {
-          tenantId: "fake-tenant-id",
-          aadId: "fake-aad-id",
-          displayName: "fake",
-          userPrincipalName: "fake",
-          isAdministrator: false,
-        },
-      ];
       const newAppUser: AppUser = {
         tenantId: "new-tenant-id",
         aadId: "new-aad-id",
@@ -618,15 +608,40 @@ describe("App Studio API Test", () => {
         userPrincipalName: "fake",
         isAdministrator: false,
       };
-      const getResponse = {
-        data: appDefWithUser,
+      const teamsAppId = appDef.teamsAppId!;
+      const appDefWithUser: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+        ],
       };
-      appDefWithUser.userList?.push(newAppUser);
-      const postResponse = {
-        data: appDefWithUser,
+      const appDefWithUserAdded: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+          newAppUser,
+        ],
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
-      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: appDefWithUser,
+      });
+      sinon.stub(fakeAxiosInstance, "post").resolves({
+        data: appDefWithUserAdded,
+      });
 
       const res = await AppStudioClient.grantPermission(
         appDef.teamsAppId!,
@@ -642,16 +657,6 @@ describe("App Studio API Test", () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
-      const appDefWithUser: AppDefinition = appDef;
-      appDefWithUser.userList = [
-        {
-          tenantId: "fake-tenant-id",
-          aadId: "fake-aad-id",
-          displayName: "fake",
-          userPrincipalName: "fake",
-          isAdministrator: false,
-        },
-      ];
       const newAppUser: AppUser = {
         tenantId: "new-tenant-id",
         aadId: "new-aad-id",
@@ -659,15 +664,40 @@ describe("App Studio API Test", () => {
         userPrincipalName: "fake",
         isAdministrator: false,
       };
-      const getResponse = {
-        data: appDefWithUser,
+      const teamsAppId = appDef.teamsAppId!;
+      const appDefWithUser: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+        ],
       };
-      appDefWithUser.userList?.push(newAppUser);
-      const postResponse = {
-        data: appDefWithUser,
+      const appDefWithUserAdded: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+          newAppUser,
+        ],
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
-      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: appDefWithUser,
+      });
+      sinon.stub(fakeAxiosInstance, "post").resolves({
+        data: appDefWithUserAdded,
+      });
 
       const res = await AppStudioClient.grantPermission(
         appDef.teamsAppId!,
@@ -675,8 +705,6 @@ describe("App Studio API Test", () => {
         newAppUser,
         logProvider
       );
-
-      AppStudioClient.setRegion(undefined as unknown as string);
     });
   });
 

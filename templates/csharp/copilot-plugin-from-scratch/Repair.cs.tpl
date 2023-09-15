@@ -20,18 +20,8 @@ namespace {{SafeProjectName}}
             // Get the query parameters from the request.
             string assignedTo = req.Query["assignedTo"];
 
-            // Create the repair records.
-            var repairRecords = new RepairModel[]
-            {
-                new RepairModel {
-                    Id = 1,
-                    Title = "Oil change",
-                    Description = "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
-                    AssignedTo = "Karin Blair",
-                    Date = "2023-05-23",
-                    Image = "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg"
-                }
-            };
+            // Get the repair records.
+            var repairRecords = RepairData.GetRepairs();
 
             // Filter the repair records by the assignedTo query parameter.
             var repairs = repairRecords.Where(r =>
@@ -40,7 +30,7 @@ namespace {{SafeProjectName}}
                 var parts = r.AssignedTo.Split(' ');
 
                 // Check if the assignedTo query parameter matches the repair record's assignedTo value, or the repair record's firstName or lastName.
-                return r.assignedTo.Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
+                return r.AssignedTo.Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
                        parts[0].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
                        parts[1].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase);
             });

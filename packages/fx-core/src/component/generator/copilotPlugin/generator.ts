@@ -16,7 +16,7 @@ import {
   Platform,
   Result,
   UserError,
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   AppPackageFolderName,
   Warning,
 } from "@microsoft/teamsfx-api";
@@ -202,7 +202,7 @@ export class CopilotPluginGenerator {
       const adaptiveCardFolder = path.join(
         destinationPath,
         AppPackageFolderName,
-        AdaptiveFolderName
+        ResponseTemplatesFolderName
       );
       const generateResult = await specParser.generate(
         manifestPath,

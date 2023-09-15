@@ -550,7 +550,7 @@ export namespace AppStudioClient {
           );
           requester = createRequesterWithToken(appStudioToken, region);
           response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
-          logProvider?.debug(
+          logProvider.debug(
             getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
           );
         } catch (e: any) {
@@ -572,7 +572,7 @@ export namespace AppStudioClient {
         );
         requester = createRequesterWithToken(appStudioToken);
         response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
-        logProvider?.debug(
+        logProvider.debug(
           getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
         );
       }

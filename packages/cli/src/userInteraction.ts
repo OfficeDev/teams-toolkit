@@ -210,7 +210,8 @@ class CLIUserInteraction implements UserInteraction {
     name: string,
     message: string,
     choices: CheckboxChoice[],
-    defaultValues?: string[]
+    defaultValues?: string[],
+    validateAnswers?: (value: string[]) => string | Promise<string | undefined> | undefined
   ): Promise<Result<string[], FxError>> {
     const check = await this.checkIfSkip(name, defaultValues);
     if (check.isErr()) {
@@ -227,6 +228,7 @@ class CLIUserInteraction implements UserInteraction {
       message,
       choices,
       defaultValues,
+      validateAnswers,
     });
     ScreenManager.continue();
     return ok(answer);
@@ -512,7 +514,13 @@ class CLIUserInteraction implements UserInteraction {
       config.options as StaticOptions,
       config.default as string[]
     );
-    const result = await this.multiSelect(config.name, config.title, choices, defaultValue);
+    const result = await this.multiSelect(
+      config.name,
+      config.title,
+      choices,
+      defaultValue,
+      config.validation
+    );
     if (result.isOk()) {
       const indexes = this.findIndexes(
         choices.map((choice) => choice.id),
@@ -532,14 +540,6 @@ class CLIUserInteraction implements UserInteraction {
         return err(error);
       }
 
-      if (config.validation) {
-        const validateRes = await config.validation?.(result.value);
-        if (validateRes) {
-          const error = new InputValidationError(config.name, validateRes);
-          error.source = cliSource;
-          return err(error);
-        }
-      }
       const anwers = this.getSubArray(config.options as StaticOptions as any[], indexes);
       if (config.returnObject) {
         return ok({ type: "success", result: anwers });

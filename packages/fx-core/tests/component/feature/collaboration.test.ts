@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { AadCollaboration, TeamsCollaboration } from "../../../src/component/feature/collaboration";
-import { MockedM365Provider, MockedV2Context } from "../../plugins/solution/util";
+import { MockedLogProvider, MockedM365Provider, MockedV2Context } from "../../plugins/solution/util";
 import { AadAppClient } from "../../../src/component/driver/aad/utility/aadAppClient";
 import axios from "axios";
 import { AppStudioClient } from "../../../src/component/driver/teamsApp/clients/appStudioClient";
@@ -17,7 +17,8 @@ const expect = chai.expect;
 
 describe("AadCollaboration", async () => {
   const m365TokenProvider = new MockedM365Provider();
-  const aadCollaboration = new AadCollaboration(m365TokenProvider);
+  const logProvider = new MockedLogProvider();
+  const aadCollaboration = new AadCollaboration(m365TokenProvider, logProvider);
   const sandbox = sinon.createSandbox();
   const context = new MockedV2Context();
   const expectedObjectId = "00000000-0000-0000-0000-000000000000";

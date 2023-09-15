@@ -596,6 +596,45 @@ describe("App Studio API Test", () => {
         chai.assert.equal(e.name, error.name);
       }
     });
+
+    it("happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const appDefWithUser: AppDefinition = appDef;
+      appDefWithUser.userList = [
+        {
+          tenantId: "fake-tenant-id",
+          aadId: "fake-aad-id",
+          displayName: "fake",
+          userPrincipalName: "fake",
+          isAdministrator: false,
+        }
+      ]
+      const newAppUser: AppUser = {
+        tenantId: "new-tenant-id",
+        aadId: "new-aad-id",
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      }
+      const getResponse = {
+        data: appDefWithUser,
+      };
+      appDefWithUser.userList?.push(newAppUser);
+      const postResponse = {
+        data: appDefWithUser
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      const res = await AppStudioClient.grantPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        newAppUser,
+        logProvider
+      );
+    })
   });
 
   describe("getUserList", () => {

@@ -21,7 +21,7 @@ import { logger } from "./logger";
  */
 export class CliTelemetryReporter implements TelemetryReporter {
   enable = true;
-  private readonly reporter: Reporter;
+  readonly reporter: Reporter;
   private rootFolder: string | undefined;
   private sharedProperties: { [key: string]: string } = {};
 

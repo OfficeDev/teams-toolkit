@@ -4,7 +4,6 @@
 import { FxError, Inputs } from "@microsoft/teamsfx-api";
 import { fillInTelemetryPropsForFxError, getHashedEnv } from "@microsoft/teamsfx-core";
 import { CliTelemetryReporter } from "../commonlib/telemetry";
-import CLIUIInstance from "../userInteraction";
 import { getSettingsVersion } from "../utils";
 import { TelemetryComponentType, TelemetryProperty, TelemetrySuccess } from "./cliTelemetryEvents";
 

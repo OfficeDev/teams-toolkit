@@ -37,6 +37,7 @@ import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
 import { UserSettings } from "../../src/userSetttings";
+import { CliTelemetryReporter } from "../../src/commonlib/telemetry";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -323,7 +324,9 @@ describe("CLI Engine", () => {
       assert.isTrue(sendTelemetryEventStub.calledOnce);
     });
     it("skip telemetry", async () => {
-      const sendTelemetryEventStub = sandbox.stub(CliTelemetry, "sendTelemetryEvent").returns();
+      CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
+      CliTelemetry.enable = false;
+      const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
       const ctx: CLIContext = {
         command: { ...getCreateCommand(), fullName: "abc" },
         optionValues: {},
@@ -332,7 +335,7 @@ describe("CLI Engine", () => {
         telemetryProperties: {},
       };
       engine.processResult(ctx, undefined);
-      assert.isTrue(sendTelemetryEventStub.callCount === 0);
+      assert.isTrue(spy.notCalled);
     });
   });
   describe("start", async () => {

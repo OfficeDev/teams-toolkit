@@ -142,10 +142,8 @@ class CLIEngine {
       )}`
     );
 
-    const telemetryEnabled = this.isTelemetryEnabled(context);
-
     // send start event
-    if (telemetryEnabled && context.command.telemetry) {
+    if (context.command.telemetry) {
       CliTelemetry.sendTelemetryEvent(
         context.command.telemetry.event + "-start",
         context.telemetryProperties
@@ -464,6 +462,10 @@ class CLIEngine {
     }
     this.debugLogs = [];
 
+    // disable telemetry of turned off
+    const telemetryEnabled = this.isTelemetryEnabled(context);
+    CliTelemetry.enable = telemetryEnabled;
+
     // special process for global options
     // interactive
     // if user not input "--interactive" option value explicitly, toolkit will use default value defined by `defaultInteractiveOption`
@@ -580,8 +582,7 @@ class CLIEngine {
     return ok(undefined);
   }
   processResult(context?: CLIContext, fxError?: FxError): void {
-    const telemetryEnabled = this.isTelemetryEnabled(context);
-    if (context && context.command.telemetry && telemetryEnabled) {
+    if (context && context.command.telemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
           context.optionValues.env as string

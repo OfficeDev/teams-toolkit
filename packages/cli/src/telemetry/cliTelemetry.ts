@@ -24,6 +24,12 @@ class CliTelemetry {
   reporter: CliTelemetryReporter | undefined;
   rootFolder: string | undefined;
 
+  set enable(value: boolean) {
+    if (this.reporter) {
+      this.reporter.enable = value;
+    }
+  }
+
   public withRootFolder(rootFolder: string | undefined): CliTelemetry {
     this.rootFolder = rootFolder;
     this.reporter?.withRootFolder(rootFolder);

@@ -1,4 +1,5 @@
 import {
+  CLICommand,
   CLICommandOption,
   CLIContext,
   CLIFoundCommand,
@@ -323,12 +324,37 @@ describe("CLI Engine", () => {
       engine.processResult(ctx, undefined);
       assert.isTrue(sendTelemetryEventStub.calledOnce);
     });
-    it("skip telemetry", async () => {
+    it("skip telemetry when reporter is disabled", async () => {
       CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
       CliTelemetry.enable = false;
       const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
       const ctx: CLIContext = {
         command: { ...getCreateCommand(), fullName: "abc" },
+        optionValues: {},
+        globalOptionValues: { telemetry: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      engine.processResult(ctx, undefined);
+      assert.isTrue(spy.notCalled);
+    });
+    it("skip telemetry when context is undefined", async () => {
+      CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
+      CliTelemetry.enable = false;
+      const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
+      engine.processResult(undefined, undefined);
+      assert.isTrue(spy.notCalled);
+    });
+    it("skip telemetry when command telemetry is undefined", async () => {
+      CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
+      CliTelemetry.enable = false;
+      const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
+      const command: CLICommand = {
+        name: "test",
+        description: "test",
+      };
+      const ctx: CLIContext = {
+        command: { ...command, fullName: "test" },
         optionValues: {},
         globalOptionValues: { telemetry: false },
         argumentValues: [],

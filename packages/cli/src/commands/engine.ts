@@ -100,7 +100,7 @@ class CLIEngine {
     } else {
       this.processResult(context);
     }
-    if (context.command.name !== "preview") {
+    if (context.command.name !== "preview" || context.globalOptionValues.help) {
       // TODO: consider to remove the hardcode
       process.exit();
     }

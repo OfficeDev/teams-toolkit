@@ -14,6 +14,9 @@ describe("CLI Telemetry", function () {
     sandbox.restore();
   });
   describe("disable", () => {
+    it("no reporter", () => {
+      cliTelemetry.enable = false;
+    });
     it("sendTelemetryEvent", () => {
       cliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
       const spy = sandbox.spy(cliTelemetry.reporter.reporter, "sendTelemetryEvent");

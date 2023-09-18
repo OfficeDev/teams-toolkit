@@ -136,7 +136,8 @@ export const unzipAction: GeneratorAction = {
     if (!context.zip) {
       throw new MissKeyError("zip");
     }
-    for (let i = 0; i < 2; i++) {
+    const tryLimits = 2;
+    for (let i = 0; i < tryLimits; i++) {
       context.outputs = await unzip(
         context.zip,
         context.destination,

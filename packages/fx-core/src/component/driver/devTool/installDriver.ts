@@ -260,7 +260,11 @@ export class ToolsInstallDriverImpl {
   async resolveTestTool(versionRange: string, symlinkDir: string): Promise<void> {
     const checker = new TestToolChecker();
     const projectPath = this.context.projectPath;
-    const status = await checker.resolve({ versionRange, symlinkDir, projectPath });
+    const status = await checker.resolve({
+      versionRange,
+      symlinkDir,
+      projectPath,
+    });
     this.context.logProvider.debug(
       `Teams App Test Tool result: ${JSON.stringify({
         isInstalled: status.isInstalled,

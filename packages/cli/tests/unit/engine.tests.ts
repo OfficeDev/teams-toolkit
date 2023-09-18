@@ -39,6 +39,7 @@ import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
 import { UserSettings } from "../../src/userSetttings";
 import { CliTelemetryReporter } from "../../src/commonlib/telemetry";
+import * as common from "@microsoft/teamsfx-core";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -558,23 +559,16 @@ describe("CLI Engine", () => {
     });
   });
   describe("getFxCore", async () => {
-    let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
-      if (mockedEnvRestore) {
-        mockedEnvRestore();
-      }
+      sandbox.restore();
     });
     it("new logger", async () => {
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_CLI_NEW_UX: "true",
-      });
+      sandbox.stub(common, "isCliNewUxEnabled").returns(true);
       resetFxCore();
       getFxCore();
     });
     it("old logger", async () => {
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_CLI_NEW_UX: "false",
-      });
+      sandbox.stub(common, "isCliNewUxEnabled").returns(false);
       resetFxCore();
       getFxCore();
     });

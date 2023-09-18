@@ -125,7 +125,14 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
     if (context.zip) {
       return;
     }
-    await fetchFallback(context);
+    context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
+    context.fallback = true;
+    const fallbackPath = path.join(getTemplatesFolder(), "fallback");
+    const fileName = `${context.name}.zip`;
+    const zipPath: string = path.join(fallbackPath, fileName);
+
+    const data: Buffer = await fs.readFile(zipPath);
+    context.zip = new AdmZip(data);
   },
 };
 
@@ -136,33 +143,15 @@ export const unzipAction: GeneratorAction = {
     if (!context.zip) {
       throw new MissKeyError("zip");
     }
-    for (let i = 0; i < 2; i++) {
-      context.outputs = await unzip(
-        context.zip,
-        context.destination,
-        context.fileNameReplaceFn,
-        context.fileDataReplaceFn,
-        context.filterFn
-      );
-      if (context.outputs?.length == 0) {
-        await fetchFallback(context);
-      } else {
-        break;
-      }
-    }
+    context.outputs = await unzip(
+      context.zip,
+      context.destination,
+      context.fileNameReplaceFn,
+      context.fileDataReplaceFn,
+      context.filterFn
+    );
   },
 };
-
-// Fetching zip from local
-async function fetchFallback(context: GeneratorContext) {
-  context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
-  context.fallback = true;
-  const fallbackPath = path.join(getTemplatesFolder(), "fallback");
-  const fileName = `${context.name}.zip`;
-  const zipPath: string = path.join(fallbackPath, fileName);
-  const data: Buffer = await fs.readFile(zipPath);
-  context.zip = new AdmZip(data);
-}
 
 export const TemplateActionSeq: GeneratorAction[] = [
   fetchTemplateZipFromSourceCodeAction,

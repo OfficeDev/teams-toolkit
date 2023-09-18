@@ -9,14 +9,21 @@ import semver from "semver";
 import * as uuid from "uuid";
 import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../localizeUtils";
-import { v3DefaultHelpLink } from "../constant/helpLink";
+import { v3DefaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
-import { DependencyStatus, DepsChecker, DepsType, TestToolInstallOptions } from "../depsChecker";
-import { DepsCheckerError } from "../depsError";
+import {
+  DependencyStatus,
+  DepsChecker,
+  DepsInfo,
+  DepsType,
+  TestToolInstallOptions,
+} from "../depsChecker";
+import { DepsCheckerError, NodeNotFoundError } from "../depsError";
 import { createSymlink, rename, unlinkSymlink, cleanup } from "../util/fileHelper";
 import { isWindows } from "../util/system";
 import { TelemetryProperties } from "../constant/telemetry";
 import { cpUtils } from "../util";
+import { NodeChecker } from "./nodeChecker";
 
 enum InstallType {
   Global = "global",
@@ -90,6 +97,9 @@ export class TestToolChecker implements DepsChecker {
   public async resolve(installOptions: TestToolInstallOptions): Promise<DependencyStatus> {
     let installationInfo: TestToolDependencyStatus;
     try {
+      if (!(await this.hasNode())) {
+        throw new NodeNotFoundError(Messages.NodeNotFound(), v3NodeNotFoundHelpLink);
+      }
       installationInfo = await this.getInstallationInfo(installOptions);
       if (!installationInfo.isInstalled) {
         const symlinkDir = path.resolve(installOptions.projectPath, installOptions.symlinkDir);
@@ -124,7 +134,9 @@ export class TestToolChecker implements DepsChecker {
     versionRange: string,
     symlinkDir: string
   ): Promise<TestToolDependencyStatus> {
-    // TODO: check npm installed
+    if (!(await this.hasNPM())) {
+      throw new DepsCheckerError(Messages.needInstallNpm(), v3DefaultHelpLink);
+    }
 
     const tmpVersion = `tmp-${uuid.v4().slice(0, 6)}`;
     const tmpPath = this.getPortableInstallPath(tmpVersion);
@@ -331,6 +343,24 @@ export class TestToolChecker implements DepsChecker {
       "--version"
     );
     return output.trim();
+  }
+
+  private async hasNode(): Promise<boolean> {
+    try {
+      await cpUtils.executeCommand(undefined, undefined, { shell: true }, "node", "--version");
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  private async hasNPM(): Promise<boolean> {
+    try {
+      await cpUtils.executeCommand(undefined, undefined, { shell: true }, "npm", "--version");
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   private async npmInstall(

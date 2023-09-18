@@ -37,6 +37,74 @@ function mockInstallInfoFile(projectPath: string) {
   };
 }
 
+// input, undefined means failure by default
+interface EnvironmentInfo {
+  nodeVersion?: string;
+  npmVersion?: string;
+  testToolVersionBeforeInstall?: string;
+  testToolVersionAfterInstall?: string;
+  installSuccess?: boolean;
+}
+
+// output
+interface EnvironmentStatus {
+  npmInstalled: boolean;
+  npmInstallArgs?: string[];
+}
+
+// mock environment for simpler cases.
+// for complex cases, mock executeCommand directly
+function mockEnvironment(sandbox: sinon.SinonSandbox, info: EnvironmentInfo): EnvironmentStatus {
+  const status: EnvironmentStatus = {
+    npmInstalled: false,
+  };
+  sandbox.stub(fileHelper, "rename").resolves();
+  sandbox.stub(fileHelper, "createSymlink").resolves();
+  sandbox
+    .stub(cpUtils, "executeCommand")
+    .callsFake(async (_cwd, _logger, _options, command, ...args) => {
+      command = trimQuotes(command);
+      args = args.map(trimQuotes);
+      if (command === "node" && args.includes("--version")) {
+        if (info.nodeVersion === undefined) {
+          throw new Error("not found");
+        } else {
+          return info.nodeVersion;
+        }
+      } else if (command === "npm" && args.includes("--version")) {
+        if (info.npmVersion === undefined) {
+          throw new Error("not found");
+        } else {
+          return info.npmVersion;
+        }
+      } else if (command.includes("teamsapptester") && args.includes("--version")) {
+        if (status.npmInstalled) {
+          if (info.testToolVersionAfterInstall === undefined) {
+            throw new Error("not found");
+          } else {
+            return info.testToolVersionAfterInstall;
+          }
+        } else {
+          if (info.testToolVersionBeforeInstall === undefined) {
+            throw new Error("not found");
+          } else {
+            return info.testToolVersionBeforeInstall;
+          }
+        }
+      } else if (command === "npm" && args.includes("install")) {
+        if (info.installSuccess) {
+          status.npmInstalled = true;
+          status.npmInstallArgs = args;
+          return "";
+        } else {
+          throw new Error("failed to npm install");
+        }
+      }
+      throw new Error("Command not mocked");
+    });
+  return status;
+}
+
 describe("Test Tool Checker Test", () => {
   const sandbox = sinon.createSandbox();
   const projectPath = "projectPath";
@@ -53,28 +121,17 @@ describe("Test Tool Checker Test", () => {
       const checker = new TestToolChecker();
       const symlinkDir = "symlinkDir";
       const versionRange = "~1.2.3";
-      let npmInstalled = false;
-      mockfs({});
       const writtenFiles: string[] = [];
       sandbox.stub(fs, "writeJson").callsFake((path) => {
         writtenFiles.push(path);
       });
-      sandbox.stub(fileHelper, "rename").resolves();
-      sandbox.stub(fileHelper, "createSymlink").resolves();
-      sandbox
-        .stub(cpUtils, "executeCommand")
-        .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          if (args.includes("--version")) {
-            if (npmInstalled) {
-              return "1.2.3";
-            } else {
-              throw new Error("not installed");
-            }
-          } else if (args.includes("install")) {
-            npmInstalled = true;
-          }
-          return "";
-        });
+      const envStatus = mockEnvironment(sandbox, {
+        nodeVersion: "v18.16.1",
+        npmVersion: "9.5.1",
+        installSuccess: true,
+        testToolVersionBeforeInstall: undefined,
+        testToolVersionAfterInstall: "1.2.3",
+      });
 
       // Act
       const status = await checker.resolve({ projectPath, symlinkDir, versionRange });
@@ -83,7 +140,7 @@ describe("Test Tool Checker Test", () => {
       expect(status.isInstalled).to.be.true;
       expect(status.details.binFolders).not.empty;
       expect(status.error).to.be.undefined;
-      expect(npmInstalled).to.be.true;
+      expect(envStatus.npmInstalled).to.be.true;
       expect(writtenFiles.map((f) => path.resolve(f))).to.include(
         path.resolve(path.join(projectPath, "devTools", ".testTool.installInfo.json"))
       );
@@ -95,20 +152,14 @@ describe("Test Tool Checker Test", () => {
       const checker = new TestToolChecker();
       const symlinkDir = "symlinkDir";
       const versionRange = "~1.2.3";
-      let npmInstalled = false;
       mockfs({
         ...mockInstallInfoFile(projectPath),
       });
-      sandbox
-        .stub(cpUtils, "executeCommand")
-        .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          if (args.includes("--version")) {
-            return "1.2.3";
-          } else if (args.includes("install")) {
-            npmInstalled = true;
-          }
-          return "";
-        });
+      const envStatus = mockEnvironment(sandbox, {
+        nodeVersion: "v18.16.1",
+        npmVersion: "9.5.1",
+        testToolVersionBeforeInstall: "1.2.3",
+      });
 
       // Act
       const status = await checker.resolve({ projectPath, symlinkDir, versionRange });
@@ -117,7 +168,7 @@ describe("Test Tool Checker Test", () => {
       expect(status.isInstalled).to.be.true;
       expect(status.details.binFolders).not.empty;
       expect(status.error).to.be.undefined;
-      expect(npmInstalled).to.be.false;
+      expect(envStatus.npmInstalled).to.be.false;
     });
 
     it("Already installed in home", async () => {
@@ -269,23 +320,13 @@ describe("Test Tool Checker Test", () => {
       const checker = new TestToolChecker();
       const symlinkDir = "symlinkDir";
       const versionRange = "~1.2.3";
-      let npmInstalled = false;
-      sandbox.stub(fileHelper, "rename").resolves();
-      sandbox.stub(fileHelper, "createSymlink").resolves();
-      sandbox
-        .stub(cpUtils, "executeCommand")
-        .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          if (args.includes("--version")) {
-            if (npmInstalled) {
-              return "1.2.3";
-            } else {
-              return "1.2.2";
-            }
-          } else if (args.includes("install")) {
-            npmInstalled = true;
-          }
-          return "";
-        });
+      const envStatus = mockEnvironment(sandbox, {
+        nodeVersion: "v18.16.1",
+        npmVersion: "9.5.1",
+        testToolVersionBeforeInstall: "1.2.2",
+        testToolVersionAfterInstall: "1.2.3",
+        installSuccess: true,
+      });
 
       // Act
       const status = await checker.resolve({ projectPath, symlinkDir, versionRange });
@@ -294,7 +335,7 @@ describe("Test Tool Checker Test", () => {
       expect(status.isInstalled).to.be.true;
       expect(status.details.binFolders).not.empty;
       expect(status.error).to.be.undefined;
-      expect(npmInstalled).to.be.true;
+      expect(envStatus.npmInstalled).to.be.true;
     });
     it("Already installed in home, but version not match", async () => {
       const checker = new TestToolChecker();
@@ -389,31 +430,26 @@ describe("Test Tool Checker Test", () => {
       mockfs({
         [path.join(mockProjectPath, "microsoft-teams-app-test-tool-cli-1.2.3.tgz")]: "",
       });
-      let installArgs: string[] = [];
-      sandbox.stub(fileHelper, "rename").resolves();
-      sandbox.stub(fileHelper, "createSymlink").resolves();
-      sandbox
-        .stub(cpUtils, "executeCommand")
-        .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          if (args.includes("--version")) {
-            throw new Error("not installed");
-          } else if (args.includes("install")) {
-            installArgs = args;
-          }
-          return "";
-        });
+      const envStatus = mockEnvironment(sandbox, {
+        nodeVersion: "v18.16.1",
+        npmVersion: "9.5.1",
+        testToolVersionBeforeInstall: undefined,
+        testToolVersionAfterInstall: "1.2.3",
+        installSuccess: true,
+      });
 
       // Act
       await checker.resolve({ projectPath, symlinkDir, versionRange });
 
       // Assert
-      const fileArg = installArgs.filter((arg) =>
+      expect(envStatus.npmInstallArgs).not.undefined;
+      const fileArg = envStatus.npmInstallArgs?.filter((arg) =>
         arg.includes("microsoft-teams-app-test-tool-cli")
-      )[0];
+      )?.[0];
       expect(fileArg).not.empty;
       let parsed: url.URL | undefined;
       expect(() => {
-        parsed = new url.URL(trimQuotes(fileArg));
+        parsed = new url.URL(fileArg!);
       }).not.throw();
       expect(parsed).not.undefined;
       expect(parsed?.protocol).equals("file:");
@@ -564,6 +600,8 @@ describe("Test Tool Checker Test", () => {
         .stub(cpUtils, "executeCommand")
         .callsFake(async (_cwd, _logger, _options, command, ...args) => {
           if (args.includes("--version")) {
+            if (command === "node") return "v18.16.1";
+            if (command === "npm") return "9.5.1";
             if (checkedUpdate) {
               // after update
               throw new Error("Update failed");
@@ -627,6 +665,44 @@ describe("Test Tool Checker Test", () => {
       expect(npmInstalled).to.be.false;
       expect(checkedUpdate).to.be.true;
       expect(status.details.installVersion).to.eq("1.2.3");
+    });
+  });
+
+  describe("Prerequisites", () => {
+    it("Node not found", async () => {
+      const checker = new TestToolChecker();
+      const symlinkDir = "symlinkDir";
+      const versionRange = "1.2.3";
+      mockEnvironment(sandbox, { nodeVersion: undefined, npmVersion: "9.5.1" });
+      // Act
+      const status = await checker.resolve({
+        projectPath,
+        symlinkDir,
+        versionRange,
+      });
+      // Assert
+      expect(status.isInstalled).to.be.false;
+      expect(status.details.binFolders).be.empty;
+      expect(status.error).not.undefined;
+      expect(status.error?.message).match(/node/i);
+    });
+    it("Npm not found", async () => {
+      const checker = new TestToolChecker();
+      const symlinkDir = "symlinkDir";
+      const versionRange = "1.2.3";
+      mockfs({});
+      mockEnvironment(sandbox, { nodeVersion: "v18.16.1", npmVersion: undefined });
+      // Act
+      const status = await checker.resolve({
+        projectPath,
+        symlinkDir,
+        versionRange,
+      });
+      // Assert
+      expect(status.isInstalled).to.be.false;
+      expect(status.details.binFolders).be.empty;
+      expect(status.error).not.undefined;
+      expect(status.error?.message).match(/npm/i);
     });
   });
 });

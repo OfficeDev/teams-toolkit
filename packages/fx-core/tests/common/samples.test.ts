@@ -186,9 +186,16 @@ describe("Samples", () => {
 
       try {
         await sampleProvider.fetchSampleConfig();
-        chai.assert.fail("should not reach here");
+        chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
+        const samples = sampleProvider.SampleCollection.samples;
+        chai
+          .expect(samples[0].downloadUrl)
+          .equal(
+            `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
+          );
+        chai.expect(samples[0].gifUrl).equal(undefined);
       } catch (e) {
-        chai.assert.isTrue(e instanceof AccessGithubError);
+        chai.assert.fail("should not reach here");
       }
     });
 

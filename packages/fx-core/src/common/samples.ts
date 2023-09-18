@@ -72,11 +72,7 @@ class SampleProvider {
           const data = await this.fetchRawFileContent(branch);
           this.branchOrTag = branch;
           this.samplesConfig = data as { samples: Array<Record<string, unknown>> };
-        } catch (e: unknown) {
-          if (!(e instanceof AccessGithubError)) {
-            throw e;
-          }
-        }
+        } catch (e: unknown) {}
       }
     }
     if (this.samplesConfig === undefined) {

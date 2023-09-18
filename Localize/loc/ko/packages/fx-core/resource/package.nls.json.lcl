@@ -934,6 +934,9 @@
       <Item ItemId=";core.common.ConvertSwaggerToOpenAPI" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Swagger 2.0 file has been converted to OpenAPI 3.0.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Swagger 2.0 파일이 OpenAPI 3.0으로 변환되었습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -994,8 +997,8 @@
       <Item ItemId=";core.common.NoSupportedApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No supported API is found in the OpenAPI specification file: only GET and POST methods are supported, additionally, there can be at most one required parameter, and no auth is allowed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[OpenAPI 사양 파일에서 지원되는 API를 찾을 수 없습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAPI 사양 파일에서 지원되는 API를 찾을 수 없습니다. GET 및 POST 메서드만 지원되며, 더불어 필요한 매개 변수는 최대 하나만 있을 수 있고, 인증이 허용되지 않습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[No supported API is found in the OpenAPI specification file.]]></Val>
@@ -1042,6 +1045,9 @@
       <Item ItemId=";core.common.OperationOnlyContainsOptionalParam" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Operation %s only contains optional parameters which are not supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 작업이 지원되지 않는 선택적 매개 변수만 포함합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1075,6 +1081,9 @@
       <Item ItemId=";core.common.RelativeServerUrlNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Server url is not correct: relative server url is not supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[서버 URL이 잘못되었습니다. 상대 서버 URL이 지원되지 않습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1090,6 +1099,9 @@
       <Item ItemId=";core.common.ResolveServerUrlFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to resolve the server URL: please make sure that the environment variable %s is defined.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[서버 URL을 확인할 수 없습니다. %s 환경 변수가 정의되어 있는지 확인하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1132,6 +1144,9 @@
       <Item ItemId=";core.common.UrlProtocolNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Server url is not correct: protocol %s is not supported, you should use https protocol instead.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[서버 URL이 잘못되었습니다. %s 프로토콜이 지원되지 않습니다. 대신 https 프로토콜을 사용해야 합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1174,6 +1189,9 @@
       <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.swaggerVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The API specification is on Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API 사양이 Swagger 버전 2.0에 있습니다. 완화: 필요하지 않습니다. 콘텐츠가 OpenAPI 3.0으로 변환되어 "%s"에 저장되었습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1207,12 +1225,18 @@
       <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing parameters in command "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA["%s" 명령에 매개 변수가 없습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[ Mitigation: add at least one parameter for command "%s" in "%s". The parameter name should match what's defined in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ 완화: "%s"의 "%s" 명령에 대한 매개 변수를 하나 이상 추가하세요. 매개 변수 이름은 "%s"에 정의된 이름과 일치해야 합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1294,6 +1318,9 @@
       <Item ItemId=";core.createProjectQuestion.OpenAIPluginDomain" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[OpenAI Plugin Domain]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[OpenAI 플러그 인 도메인]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1327,8 +1354,8 @@
       <Item ItemId=";core.createProjectQuestion.apiSpec.operation.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[GET/POST methods with at most one required parameter and no auth are listed]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[단일 매개 변수가 있고 인증은 없는 GET 및 POST 메서드만 나열됩니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[필수 매개 변수가 하나만 있고 인증이 나열되지 않은 GET/POST 메서드]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Only GET and POST methods with single parameter and no auth are listed]]></Val>
@@ -1510,6 +1537,9 @@
       <Item ItemId=";core.createProjectQuestion.option.description.worksInOutlookCopilot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Works in Teams, Outlook and Copilot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams, Outlook 및 Copilot에서 작동]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2800,6 +2830,9 @@
       <Item ItemId=";depChecker.failedToValidateTestTool" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to validate Teams App Test Tool after installation. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[설치 후 Teams 앱 테스트 도구의 유효성을 검사할 수 없습니다. %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2911,6 +2944,9 @@
       <Item ItemId=";depChecker.testToolVersionNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The version of Teams App Test Tool (%s) is not compatible with the specified version range (%s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 테스트 도구(%s) 버전이 지정한 버전 범위(%s)와 호환되지 않습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2950,6 +2986,9 @@
       <Item ItemId=";driver.aadApp.error.appNameTooLong" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The name for this Azure Active Directory app is too long. The maximum length is 120.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 Azure Active Directory 앱의 이름이 너무 깁니다. 최대 길이는 120자입니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3532,6 +3571,9 @@
       <Item ItemId=";driver.prerequisite.error.testToolInstallationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to check and install Teams App Test Tool.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 테스트 도구를 검사 및 설치할 수 없습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3610,12 +3652,18 @@
       <Item ItemId=";driver.prerequisite.summary.testTool.installed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams App Test Tool is installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 테스트 도구가 설치되어 있습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.prerequisite.summary.testTool.installedWithPath" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams App Test Tool is installed at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 테스트 도구가 %s에 설치되어 있습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4834,8 +4882,8 @@
       <Item ItemId=";error.copilotPlugin.noExtraAPICanBeAdded" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No API can be added. Only GET and POST methods with at most one required parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[API를 추가할 수 없습니다. 단일 매개 변수와 인증이 없는 GET 및 POST 메서드만 지원됩니다. manifest.json에 정의된 메서드가 나열되지 않습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[API를 추가할 수 없습니다. 최대 하나의 필수 매개 변수와 인증이 없는 GET 및 POST 메서드만 지원됩니다. manifest.json에 정의된 메서드는 나열되지 않습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[No API can be added. Only GET and POST methods with single parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>

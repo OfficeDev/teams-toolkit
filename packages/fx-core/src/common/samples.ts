@@ -68,11 +68,11 @@ class SampleProvider {
       this.branchOrTag = SampleConfigTag;
       const branch = process.env[FeatureFlagName.SampleConfigBranch];
       if (branch) {
-        const data = await this.fetchRawFileContent(branch);
-        if (data !== undefined) {
+        try {
+          const data = await this.fetchRawFileContent(branch);
           this.branchOrTag = branch;
           this.samplesConfig = data as { samples: Array<Record<string, unknown>> };
-        }
+        } catch (e: unknown) {}
       }
     }
     if (this.samplesConfig === undefined) {

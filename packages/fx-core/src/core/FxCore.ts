@@ -3,7 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
@@ -1120,7 +1120,7 @@ export class FxCore {
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
-      AdaptiveFolderName
+      ResponseTemplatesFolderName
     );
 
     const context = createContextV3();

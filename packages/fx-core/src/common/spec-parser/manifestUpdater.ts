@@ -52,8 +52,9 @@ export function generateParametersFromSchema(
   schema: OpenAPIV3.SchemaObject,
   name: string,
   isRequired = false
-): Parameter[] {
-  const parameters: Parameter[] = [];
+): [Parameter[], Parameter[]] {
+  const requiredParams: Parameter[] = [];
+  const optionalParams: Parameter[] = [];
 
   if (
     schema.type === "string" ||
@@ -61,12 +62,15 @@ export function generateParametersFromSchema(
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
+    const parameter = {
+      name: name,
+      title: updateFirstLetter(name),
+      description: schema.description ?? "",
+    };
     if (isRequired) {
-      parameters.push({
-        name: name,
-        title: updateFirstLetter(name),
-        description: schema.description ?? "",
-      });
+      requiredParams.push(parameter);
+    } else {
+      optionalParams.push(parameter);
     }
   } else if (schema.type === "object") {
     const { properties } = schema;
@@ -75,17 +79,18 @@ export function generateParametersFromSchema(
       if (schema.required && schema.required?.indexOf(property) >= 0) {
         isRequired = true;
       }
-      const result = generateParametersFromSchema(
+      const [requiredP, optionalP] = generateParametersFromSchema(
         properties[property] as OpenAPIV3.SchemaObject,
         property,
         isRequired
       );
 
-      parameters.push(...result);
+      requiredParams.push(...requiredP);
+      optionalParams.push(...optionalP);
     }
   }
 
-  return parameters;
+  return [requiredParams, optionalParams];
 }
 
 export async function generateCommands(
@@ -107,17 +112,21 @@ export async function generateCommands(
           if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
             const operationItem = operations[method];
             if (operationItem) {
-              const parameters: Parameter[] = [];
+              const requiredParams: Parameter[] = [];
+              const optionalParams: Parameter[] = [];
               const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
 
               if (paramObject) {
                 paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
+                  const parameter: Parameter = {
+                    name: param.name,
+                    title: updateFirstLetter(param.name),
+                    description: param.description ?? "",
+                  };
                   if (param.required) {
-                    parameters.push({
-                      name: param.name,
-                      title: updateFirstLetter(param.name),
-                      description: param.description ?? "",
-                    });
+                    requiredParams.push(parameter);
+                  } else {
+                    optionalParams.push(parameter);
                   }
                 });
               }
@@ -127,18 +136,27 @@ export async function generateCommands(
                 const requestJson = requestBody.content["application/json"];
                 if (Object.keys(requestJson).length !== 0) {
                   const schema = requestJson.schema as OpenAPIV3.SchemaObject;
-                  const result = generateParametersFromSchema(
+                  const [requiredP, optionalP] = generateParametersFromSchema(
                     schema,
                     "requestBody",
                     requestBody.required
                   );
-                  parameters.push(...result);
+                  requiredParams.push(...requiredP);
+                  optionalParams.push(...optionalP);
                 }
               }
 
               const operationId = operationItem.operationId!;
 
               const adaptiveCardPath = path.join(adaptiveCardFolder, operationId + ".json");
+
+              const parameters = [];
+
+              if (requiredParams.length != 0) {
+                parameters.push(...requiredParams);
+              } else {
+                parameters.push(optionalParams[0]);
+              }
 
               const command: IMessagingExtensionCommand = {
                 context: ["compose"],
@@ -152,7 +170,7 @@ export async function generateCommands(
               };
               commands.push(command);
 
-              if (parameters.length === 0) {
+              if (requiredParams.length === 0 && optionalParams.length > 1) {
                 warnings.push({
                   type: WarningType.OperationOnlyContainsOptionalParam,
                   content: format(ConstantString.OperationOnlyContainsOptionalParam, operationId),

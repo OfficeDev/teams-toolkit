@@ -20,7 +20,8 @@ import { logger } from "./logger";
  *    extensionId = '<your extension unique name>', all events will be prefixed with this event name. eg: 'extensionId/eventname'
  */
 export class CliTelemetryReporter implements TelemetryReporter {
-  private readonly reporter: Reporter;
+  enable = true;
+  readonly reporter: Reporter;
   private rootFolder: string | undefined;
   private sharedProperties: { [key: string]: string } = {};
 
@@ -50,6 +51,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
+    if (!this.enable) return;
     if (!properties) {
       properties = { ...this.sharedProperties };
     } else {
@@ -73,6 +75,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!this.enable) return;
     if (!properties) {
       properties = { ...this.sharedProperties };
     } else {
@@ -96,6 +99,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!this.enable) return;
     if (!properties) {
       properties = { ...this.sharedProperties };
     } else {
@@ -111,6 +115,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
   }
 
   async flush(): Promise<void> {
+    if (!this.enable) return;
     await this.reporter.flush();
   }
 

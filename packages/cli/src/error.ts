@@ -18,7 +18,7 @@ export class MissingRequiredOptionError extends UserError {
     super({
       source: constants.cliSource,
       message: util.format(
-        strings["error.MissingRequiredArgumentError"],
+        strings["error.MissingRequiredOptionError"],
         command,
         typeof option === "string" ? option : option.name,
         typeof option === "string" ? option : helper.formatOptionName(option, false)
@@ -85,9 +85,9 @@ export class UnknownCommandError extends UserError {
   constructor(token: string, fullName: string, mostSimilar?: string) {
     super({
       source: constants.cliSource,
-      message: `'${token}' is misspelled or not recognized by the system. See '${fullName} --help'.${
-        mostSimilar ? " The most similar command is: '" + mostSimilar + "'" : ""
-      }`,
+      message: `'${token}' is misspelled or not recognized by Teams Toolkit CLI.${
+        mostSimilar ? " Did you mean '" + fullName + " " + mostSimilar + "'?" : ""
+      } Use '${fullName} -h' for more command information.`,
     });
   }
 }

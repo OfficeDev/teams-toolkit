@@ -75,6 +75,7 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a string title 2, title 3");
 
     expect(await answer).to.deep.equal(["id2", "id3"]);
@@ -102,6 +103,7 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a string title 4");
 
     expect(await answer).to.be.deep.equal(["id4"]);
@@ -219,6 +221,7 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a topping Pepperoni");
 
     expect(await answer).to.be.deep.equal(["pepperoni"]);
@@ -254,6 +257,7 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a topping Ham");
 
     expect(await answer).to.be.deep.equal(["ham"]);
@@ -289,6 +293,7 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a topping Pepperoni");
 
     expect(await answer).to.be.deep.equal(["pepperoni"]);
@@ -324,6 +329,7 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a topping Ham");
 
     expect(await answer).to.be.deep.equal(["ham"]);
@@ -434,6 +440,7 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a string");
 
     expect(await answer).to.be.deep.equal([]);
@@ -462,8 +469,50 @@ describe("checkbox prompt", () => {
     );
 
     events.keypress("enter");
+    await Promise.resolve();
     expect(getScreen()).equal("? Select a string");
 
     expect(await answer).to.be.deep.equal([]);
+  });
+
+  it("fail on validate values", async () => {
+    const { answer, events, getScreen } = await render(checkbox, {
+      message: "Select a string",
+      choices: choices,
+      validateValues: (values) => {
+        return "invalid selections";
+      },
+    });
+
+    expect(getScreen()).equal(
+      trimOutput(`
+        ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
+        selection, and <enter> to proceed)
+        [ ] title 1  detail 1
+        [ ] title 2  detail 2
+        [ ] title 3  detail 3
+        [ ] title 4  detail 4
+        [ ] title 5  detail 5
+        [ ] title 6  detail 6
+        [ ] title 7  detail 7
+        (Move up and down to reveal more choices)`)
+    );
+
+    events.keypress("enter");
+    await Promise.resolve();
+    expect(getScreen()).equal(
+      trimOutput(`
+        ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
+        selection, and <enter> to proceed)
+        [ ] title 1  detail 1
+        [ ] title 2  detail 2
+        [ ] title 3  detail 3
+        [ ] title 4  detail 4
+        [ ] title 5  detail 5
+        [ ] title 6  detail 6
+        [ ] title 7  detail 7
+        (Move up and down to reveal more choices)
+        > invalid selections`)
+    );
   });
 });

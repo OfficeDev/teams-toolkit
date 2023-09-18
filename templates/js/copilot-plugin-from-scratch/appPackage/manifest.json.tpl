@@ -26,7 +26,7 @@
     "composeExtensions": [
         {
             "composeExtensionType": "apiBased",
-            "apiSpecificationFile": "apiSpecFiles/repair.yml",
+            "apiSpecificationFile": "apiSpecificationFiles/repair.yml",
             "commands": [
                 {
                     "id": "repair",
@@ -36,7 +36,7 @@
                         "compose",
                         "commandBox"
                     ],
-                    "apiResponseRenderingTemplateFile": "adaptiveCards/repair.json",
+                    "apiResponseRenderingTemplateFile": "responseTemplates/repair.json",
                     "parameters": [
                         {
                             "name": "assignedTo",

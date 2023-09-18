@@ -11,19 +11,12 @@ import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../localizeUtils";
 import { v3DefaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
-import {
-  DependencyStatus,
-  DepsChecker,
-  DepsInfo,
-  DepsType,
-  TestToolInstallOptions,
-} from "../depsChecker";
+import { DependencyStatus, DepsChecker, DepsType, TestToolInstallOptions } from "../depsChecker";
 import { DepsCheckerError, NodeNotFoundError } from "../depsError";
 import { createSymlink, rename, unlinkSymlink, cleanup } from "../util/fileHelper";
 import { isWindows } from "../util/system";
 import { TelemetryProperties } from "../constant/telemetry";
 import { cpUtils } from "../util";
-import { NodeChecker } from "./nodeChecker";
 
 enum InstallType {
   Global = "global",

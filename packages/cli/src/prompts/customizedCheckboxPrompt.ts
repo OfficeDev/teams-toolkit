@@ -35,6 +35,7 @@ export type Config = AsyncPromptConfig & {
   instructions?: string | boolean;
   choices: ReadonlyArray<Choice | Separator>;
   defaultValues?: ReadonlyArray<string>;
+  validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined;
 };
 
 function isSelectableChoice(choice: undefined | Separator | Choice): choice is Choice {
@@ -42,8 +43,13 @@ function isSelectableChoice(choice: undefined | Separator | Choice): choice is C
 }
 
 export const checkbox = createPrompt(
-  (config: Config, done: (value: Array<string>) => void): string => {
-    const { prefix = usePrefix(), instructions, defaultValues = [] } = config;
+  (config: Config, done: (value: Array<string>) => void): [string, string | undefined] => {
+    const {
+      prefix = usePrefix(),
+      instructions,
+      defaultValues = [],
+      validateValues = () => undefined,
+    } = config;
 
     const [status, setStatus] = useState("pending");
     const [choices, setChoices] = useState<Array<Separator | Choice>>(() =>
@@ -57,17 +63,26 @@ export const checkbox = createPrompt(
     );
     const [cursorPosition, setCursorPosition] = useState(0);
     const [showHelpTip, setShowHelpTip] = useState(true);
+    const [errorMsg, setError] = useState<string | undefined>(undefined);
 
-    useKeypress((key) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    useKeypress(async (key) => {
       let newCursorPosition = cursorPosition;
       if (isEnterKey(key)) {
-        setStatus("done");
-        done(
-          choices
-            .filter((choice) => isSelectableChoice(choice) && choice.checked)
-            .map((choice) => (choice as Choice).id)
-        );
+        const answer = choices
+          .filter((choice) => isSelectableChoice(choice) && choice.checked)
+          .map((choice) => (choice as Choice).id);
+
+        const validationRes = await validateValues(answer);
+        if (validationRes) {
+          setError(validationRes);
+          setStatus("pending");
+        } else {
+          setStatus("done");
+          done(answer);
+        }
       } else if (isUpKey(key) || isDownKey(key)) {
+        setError(undefined);
         const offset = isUpKey(key) ? -1 : 1;
         let selectedOption;
 
@@ -78,6 +93,7 @@ export const checkbox = createPrompt(
 
         setCursorPosition(newCursorPosition);
       } else if (isSpaceKey(key)) {
+        setError(undefined);
         setShowHelpTip(false);
         setChoices(
           choices.map((choice, i) => {
@@ -89,6 +105,7 @@ export const checkbox = createPrompt(
           })
         );
       } else if (key.name === "a") {
+        setError(undefined);
         const selectAll = Boolean(
           choices.find((choice) => isSelectableChoice(choice) && !choice.checked)
         );
@@ -98,12 +115,14 @@ export const checkbox = createPrompt(
           )
         );
       } else if (key.name === "i") {
+        setError(undefined);
         setChoices(
           choices.map((choice) =>
             isSelectableChoice(choice) ? { ...choice, checked: !choice.checked } : choice
           )
         );
       } else if (isNumberKey(key)) {
+        setError(undefined);
         // Adjust index to start at 1
         const position = Number(key.name) - 1;
 
@@ -172,11 +191,15 @@ export const checkbox = createPrompt(
       pageSize: config.pageSize,
     });
 
+    let error = "";
+    if (errorMsg) {
+      error = chalk.red(`> ${errorMsg}`);
+    }
     if (status === "done") {
       const selection = choices
         .filter((choice) => isSelectableChoice(choice) && choice.checked)
         .map((choice) => (choice as Choice).title);
-      return `${prefix} ${message} ${chalk.cyan(selection.join(", "))}`;
+      return [`${prefix} ${message} ${chalk.cyan(selection.join(", "))}`, error];
     }
 
     let helpTip = "";
@@ -194,7 +217,7 @@ export const checkbox = createPrompt(
       }
     }
 
-    return `${prefix} ${message}${helpTip}\n${windowedChoices}${ansiEscapes.cursorHide}`;
+    return [`${prefix} ${message}${helpTip}\n${windowedChoices}${ansiEscapes.cursorHide}`, error];
   }
 );
 

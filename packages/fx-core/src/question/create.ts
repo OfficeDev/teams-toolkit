@@ -1333,7 +1333,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       const res = await listOperations(
         context,
         undefined,
-        input,
+        input.trim(),
         inputs![QuestionNames.ManifestPath],
         includeExistingAPIs,
         false

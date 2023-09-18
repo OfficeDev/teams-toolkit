@@ -373,6 +373,7 @@ export class VsCodeUI implements UserInteraction {
           if (config.validation) {
             const validateRes = await config.validation(strArray);
             if (validateRes) {
+              void this.showMessage("error", validateRes, false);
               return;
             }
           }

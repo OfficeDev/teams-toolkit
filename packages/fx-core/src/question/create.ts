@@ -1496,8 +1496,15 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     forgetLastValue: true,
     staticOptions: [],
     validation: {
-      minItems: 1,
-      maxItems: 10,
+      validFunc: (input: string[]): string | undefined => {
+        if (input.length < 1 || input.length > 10) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.invalidMessage",
+            input.length,
+            10
+          );
+        }
+      },
     },
     dynamicOptions: (inputs: Inputs) => {
       if (!inputs.supportedApisFromApiSpec) {

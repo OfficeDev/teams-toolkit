@@ -1425,7 +1425,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
 
         const result = match
           ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
         return Promise.resolve(result);
       },
     },

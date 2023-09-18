@@ -1,4 +1,5 @@
 import {
+  CLICommand,
   CLICommandOption,
   CLIContext,
   CLIFoundCommand,
@@ -37,6 +38,7 @@ import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
 import { getVersion } from "../../src/utils";
 import { UserSettings } from "../../src/userSetttings";
+import { CliTelemetryReporter } from "../../src/commonlib/telemetry";
 import * as common from "@microsoft/teamsfx-core";
 
 describe("CLI Engine", () => {
@@ -323,8 +325,10 @@ describe("CLI Engine", () => {
       engine.processResult(ctx, undefined);
       assert.isTrue(sendTelemetryEventStub.calledOnce);
     });
-    it("skip telemetry", async () => {
-      const sendTelemetryEventStub = sandbox.stub(CliTelemetry, "sendTelemetryEvent").returns();
+    it("skip telemetry when reporter is disabled", async () => {
+      CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
+      CliTelemetry.enable = false;
+      const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
       const ctx: CLIContext = {
         command: { ...getCreateCommand(), fullName: "abc" },
         optionValues: {},
@@ -333,7 +337,32 @@ describe("CLI Engine", () => {
         telemetryProperties: {},
       };
       engine.processResult(ctx, undefined);
-      assert.isTrue(sendTelemetryEventStub.callCount === 0);
+      assert.isTrue(spy.notCalled);
+    });
+    it("skip telemetry when context is undefined", async () => {
+      CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
+      CliTelemetry.enable = false;
+      const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
+      engine.processResult(undefined, undefined);
+      assert.isTrue(spy.notCalled);
+    });
+    it("skip telemetry when command telemetry is undefined", async () => {
+      CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
+      CliTelemetry.enable = false;
+      const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
+      const command: CLICommand = {
+        name: "test",
+        description: "test",
+      };
+      const ctx: CLIContext = {
+        command: { ...command, fullName: "test" },
+        optionValues: {},
+        globalOptionValues: { telemetry: false },
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      engine.processResult(ctx, undefined);
+      assert.isTrue(spy.notCalled);
     });
   });
   describe("start", async () => {

@@ -18,7 +18,7 @@ export class MissingRequiredOptionError extends UserError {
     super({
       source: constants.cliSource,
       message: util.format(
-        strings["error.MissingRequiredArgumentError"],
+        strings["error.MissingRequiredOptionError"],
         command,
         typeof option === "string" ? option : option.name,
         typeof option === "string" ? option : helper.formatOptionName(option, false)

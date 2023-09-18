@@ -4,6 +4,7 @@
  */
 
 import { Context, HttpRequest } from "@azure/functions";
+import repairRecords from "../repairsData.json";
 
 // Define a Response interface.
 interface Response {
@@ -31,19 +32,6 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
 
   // Get the assignedTo query parameter.
   const assignedTo = req.query.assignedTo;
-
-  // Define the repair records.
-  const repairRecords = [
-    {
-      id: 1,
-      title: "Oil change",
-      description:
-        "Need to drain the old engine oil and replace it with fresh oil to keep the engine lubricated and running smoothly.",
-      assignedTo: "Karin Blair",
-      date: "2023-05-23",
-      image: "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg",
-    },
-  ];
 
   // If the assignedTo query parameter is not provided, return the response.
   if (!assignedTo) {

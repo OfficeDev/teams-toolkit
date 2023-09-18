@@ -37,12 +37,12 @@ The plugin allows Copilot to interact directly with third-party data, apps, and 
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                   | Contents                                                                     |
-| -------------------------------------- | ---------------------------------------------------------------------------- |
-| `repair/function.json`                 | A configuration file that defines the function’s trigger and other settings. |
-| `src/index.js`                         | The main file of a function in Azure Functions.                              |
-| `appPackage/adaptiveCards/repair.json` | A generated Adaptive Card that is sent to Teams.                             |
-| `appPackage/apiSpecFiles/repair.yml`   | A file that describes the structure and behavior of the repair API.          |
+| File                                          | Contents                                                                     |
+| --------------------------------------------- | ---------------------------------------------------------------------------- |
+| `repair/function.json`                        | A configuration file that defines the function’s trigger and other settings. |
+| `src/index.js`                                | The main file of a function in Azure Functions.                              |
+| `appPackage/apiSpecificationFiles/repair.yml` | A file that describes the structure and behavior of the repair API.          |
+| `appPackage/responseTemplates/repair.json`    | A generated Adaptive Card that used to render API response.                  |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

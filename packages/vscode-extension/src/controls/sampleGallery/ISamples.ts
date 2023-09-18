@@ -6,6 +6,7 @@ import Fuse from "fuse.js";
 export type SampleGalleryState = {
   loading: boolean;
   samples: Array<SampleInfo>;
+  error?: Error;
   selectedSampleId?: string;
   query: string;
   fuse: Fuse<SampleInfo>;

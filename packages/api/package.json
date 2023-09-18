@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.22.5-rc-hotfix.0",
+  "version": "0.22.5",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@azure/core-auth": "^1.4.0",
-    "@microsoft/teams-manifest": "^0.1.2-rc-hotfix.0",
+    "@microsoft/teams-manifest": "^0.1.2",
     "axios": "^0.21.2",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",

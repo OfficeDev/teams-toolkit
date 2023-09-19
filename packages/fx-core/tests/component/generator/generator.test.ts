@@ -539,6 +539,26 @@ describe("Generator happy path", async () => {
     assert.isTrue(success);
     mockedEnvRestore();
   });
+
+  it("template from fallback", async () => {
+    const foobarTemplateName = "foobarTemplate";
+    const realTemplateName = "non-sso-tab";
+    const language = "ts";
+    const inputDir = path.join(tmpDir, "input");
+    await fs.ensureDir(path.join(inputDir, foobarTemplateName));
+    const fileData = "{{appName}}";
+    await fs.writeFile(path.join(inputDir, foobarTemplateName, "test.txt.tpl"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "foobar.zip"));
+    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("foobar.zip");
+    sandbox
+      .stub(generatorUtils, "fetchZipFromUrl")
+      .resolves(new AdmZip(path.join(tmpDir, "foobar.zip")));
+    context.templateVariables = Generator.getDefaultVariables("foobar");
+    const result = await Generator.generateTemplate(context, tmpDir, realTemplateName, language);
+    assert.isTrue(result.isOk());
+  });
 });
 
 describe("Generate sample using download directory", () => {

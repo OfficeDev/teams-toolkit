@@ -10,23 +10,12 @@ import { ArmDeployImpl } from "./deployImpl";
 import { FxError, Result } from "@microsoft/teamsfx-api";
 import { WrapDriverContext, wrapRun } from "../util/wrapUtil";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { hooks } from "@feathersjs/hooks/lib";
-import { updateProgress } from "../middleware/updateProgress";
 
 @Service(Constants.actionName) // DO NOT MODIFY the service name
 export class ArmDeployDriver implements StepDriver {
   description = getLocalizedString("driver.arm.description.deploy");
-  public async run(
-    args: deployArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, Constants.actionName, Constants.actionName);
-    const impl = new ArmDeployImpl(args, wrapContext);
-    const wrapRes = await wrapRun(wrapContext, () => impl.run());
-    return wrapRes as Result<Map<string, string>, FxError>;
-  }
+  readonly progressTitle = getLocalizedString("driver.arm.deploy.progressBar.message");
 
-  @hooks([updateProgress(getLocalizedString("driver.arm.deploy.progressBar.message"))])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(ctx, Constants.actionName, Constants.actionName);
     const impl = new ArmDeployImpl(args as deployArgs, wrapContext);

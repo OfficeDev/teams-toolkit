@@ -105,6 +105,7 @@ export class ManifestUtils {
           } else {
             if (capability.existingApp) {
               const template = cloneDeep(STATIC_TABS_TPL_EXISTING_APP[0]);
+              // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             } else {
@@ -113,6 +114,7 @@ export class ManifestUtils {
                   ? STATIC_TABS_TPL_V3[1]
                   : STATIC_TABS_TPL_V3[0];
               const template = cloneDeep(tabManifest);
+              // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             }

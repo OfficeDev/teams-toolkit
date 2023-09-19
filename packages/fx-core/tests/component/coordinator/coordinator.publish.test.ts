@@ -52,12 +52,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -115,12 +109,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -165,9 +153,6 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      assert.isTrue(res.error.message.indexOf("test") !== -1);
-    }
     assert.deepEqual(inputs.envVars, {} as DotenvParseOutput);
     assert.isTrue(progressStartStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(false));
@@ -177,12 +162,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -217,12 +196,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -257,12 +230,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];
@@ -307,9 +274,6 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      assert.isTrue(res.error.message.indexOf("test") !== -1);
-    }
     assert.deepEqual(inputs.envVars, {} as DotenvParseOutput);
     assert.isTrue(progressStartStub.calledOnce);
     assert.isTrue(progressEndStub.calledOnceWithExactly(false));
@@ -319,12 +283,6 @@ describe("component coordinator test", () => {
       version: "1.0.0",
       publish: {
         name: "publish",
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         driverDefs: [],
         resolvePlaceholders: () => {
           return [];

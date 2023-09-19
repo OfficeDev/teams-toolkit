@@ -25,7 +25,7 @@ import { YargsCommand } from "../../yargsCommand";
 const sideloadingServiceEndpoint = process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
 const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
 
-async function getTokenAndUpn(): Promise<[string, string]> {
+export async function getTokenAndUpn(): Promise<[string, string]> {
   const tokenRes = await M365TokenProvider.getAccessToken({ scopes: [sideloadingServiceScope] });
   if (tokenRes.isErr()) {
     CLILogProvider.necessaryLog(
@@ -46,7 +46,7 @@ async function getTokenAndUpn(): Promise<[string, string]> {
         throw accountRes.error;
       }
     } catch (error) {
-      CLILogProvider.debug(`Failed to get upn. Error: ${JSON.stringify(error)}`);
+      await CLILogProvider.debug(`Failed to get upn. Error: ${JSON.stringify(error)}`);
     }
     if (upn !== undefined) {
       CLILogProvider.necessaryLog(LogLevel.Info, `Using account ${upn}`);
@@ -231,7 +231,7 @@ export default class M365 extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    return ok(null);
+  public runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return Promise.resolve(ok(null));
   }
 }

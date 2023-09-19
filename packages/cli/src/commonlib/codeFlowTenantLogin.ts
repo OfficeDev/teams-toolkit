@@ -147,7 +147,7 @@ export class CodeFlowTenantLogin {
     let accessToken = undefined;
     try {
       await this.startServer(server, serverPort);
-      this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+      void this.pca.getAuthCodeUrl(authCodeUrlParameters).then((response: string) => {
         response += "#";
         if (this.accountName == "azure") {
           CliCodeLogInstance.outputInfo(
@@ -158,7 +158,7 @@ export class CodeFlowTenantLogin {
             m365LoginMessage + colorize(response, TextType.Hyperlink) + os.EOL
           );
         }
-        open(response);
+        void open(response);
       });
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
@@ -215,7 +215,7 @@ export class CodeFlowTenantLogin {
             return accessToken;
           });
       }
-    } catch (error) {
+    } catch (error: any) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
       throw LoginFailureError(error);
     }

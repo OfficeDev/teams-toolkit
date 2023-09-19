@@ -13,6 +13,7 @@ import {
   TeamsAppManifest,
   Platform,
   Colors,
+  LogLevel,
 } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
@@ -35,7 +36,6 @@ import AdmZip from "adm-zip";
 import { Constants } from "./constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { SummaryConstant } from "../../configManager/constant";
-import { updateProgress } from "../middleware/updateProgress";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/validateAppPackage";
@@ -43,6 +43,9 @@ const actionName = "teamsApp/validateAppPackage";
 @Service(actionName)
 export class ValidateAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.validateDriver");
+  readonly progressTitle = getLocalizedString(
+    "plugins.appstudio.validateAppPackage.progressBar.message"
+  );
 
   public async run(
     args: ValidateAppPackageArgs,
@@ -65,10 +68,7 @@ export class ValidateAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("plugins.appstudio.validateAppPackage.progressBar.message")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async validate(
     args: ValidateAppPackageArgs,
     context: WrapDriverContext
@@ -247,7 +247,10 @@ export class ValidateAppPackageDriver implements StepDriver {
           );
         context.logProvider?.info(outputMessage);
         // logs in log file
-        context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
+        await context.logProvider?.logInFile(
+          LogLevel.Info,
+          `${outputMessage}\n${errors}\n${warnings}\n${notes}`
+        );
 
         const defaultMesage = getDefaultString(
           "driver.teamsApp.validate.result",

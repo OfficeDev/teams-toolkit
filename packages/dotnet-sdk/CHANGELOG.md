@@ -1,3 +1,9 @@
+# 2.2.0-rc
+
+- Add `validationEnabled` to `GetPagedInstallationsAsync()` to enable or disable installation validation.
+- Add new API `ValidateInstallationAsync` to validate bot installation.
+- Deprecate the class `TeamsFx` and `MsGraphAuthProvider`. Please use `TokenCredential` and `GraphServiceClient(tokenCredential, new string[] { _scope })` instead to create Microsoft Graph Client instead.
+
 # 2.1.0
 
 - Add new interface `IConversationReferenceStore` to manage notification target references.

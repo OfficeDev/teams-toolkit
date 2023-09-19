@@ -57,9 +57,9 @@ class TodoListBackendTestCase extends CaseFactory {
     editDotEnvFile(envFilePath, "SQL_USER_NAME", user);
     editDotEnvFile(envFilePath, "SQL_PASSWORD", password);
   };
-  public override async onBeforeBrowerStart(
+  public override onBeforeBrowerStart = async (
     sampledebugContext: SampledebugContext
-  ): Promise<void> {
+  ): Promise<void> => {
     const user = this.sqlUserName;
     const password = this.sqlPassword;
     // read database from devEnvFilePath
@@ -102,7 +102,7 @@ class TodoListBackendTestCase extends CaseFactory {
       password
     );
     await sqlHelper.createTable(sqlEndpoint ?? "");
-  }
+  };
   public override async onInitPage(
     sampledebugContext: SampledebugContext,
     teamsAppId: string,

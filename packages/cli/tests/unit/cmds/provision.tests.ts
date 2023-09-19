@@ -12,6 +12,7 @@ import Provision from "../../../src/cmds/provision";
 import * as constants from "../../../src/constants";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import { expect, mockLogProvider, mockTelemetry, mockYargs } from "../utils";
+import UI from "../../../src/userInteraction";
 
 describe("Provision Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -25,7 +26,7 @@ describe("Provision Command Tests", function () {
     mockLogProvider(sandbox, logs);
     sandbox.stub(activate, "default").resolves(ok(new FxCore({} as any)));
     sandbox.stub(FxCore.prototype, "provisionResources").callsFake(async (inputs: Inputs) => {
-      if (inputs.projectPath?.includes("real")) return ok("");
+      if (inputs.projectPath?.includes("real")) return ok(undefined);
       else if (inputs.projectPath?.includes("Cancel")) return err(new UserCancelError());
       else return err(new InvalidProjectError());
     });
@@ -64,5 +65,16 @@ describe("Provision Command Tests", function () {
       expect(result.error).instanceOf(UserError);
       expect(result.error.name).equals("InvalidProjectError");
     }
+  });
+
+  it("Provision with region", async () => {
+    sandbox.stub(UI, "interactive").value(false);
+    const cmd = new Provision();
+    const args = {
+      "resource-group": "mockrg",
+      region: "fake",
+    };
+    const result = await cmd.runCommand(args);
+    expect(result.isErr()).equals(true);
   });
 });

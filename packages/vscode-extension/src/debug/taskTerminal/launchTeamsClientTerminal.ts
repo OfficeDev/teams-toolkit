@@ -68,7 +68,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
     }
     const launchUrl = result.value;
 
-    await VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
+    VsCodeLogInstance.info(launchingTeamsClientDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
       launchingTeamsClientDisplayMessages.launchUrlMessage(launchUrl)

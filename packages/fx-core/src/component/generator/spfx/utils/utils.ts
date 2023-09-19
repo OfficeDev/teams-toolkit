@@ -47,16 +47,16 @@ export class Utils {
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       if (showInOutputWindow) {
-        logProvider?.info(`[${title}] Start to run command: "${command}".`);
+        logProvider?.info(`[${title || ""}] Start to run command: "${command}".`);
       }
 
       exec(command, { cwd: workingDir }, (error, standardOutput) => {
         if (showInOutputWindow) {
-          logProvider?.debug(`[${title}]${standardOutput}`);
+          logProvider?.debug(`[${title || ""}]${standardOutput}`);
         }
         if (error) {
           if (showInOutputWindow) {
-            logProvider?.error(`[${title}] Failed to run command: "${command}".`);
+            logProvider?.error(`[${title || ""}] Failed to run command: "${command}".`);
             logProvider?.error(error.message);
           }
           reject(error);

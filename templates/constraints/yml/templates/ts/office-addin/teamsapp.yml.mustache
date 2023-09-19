@@ -1,0 +1,19 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsfx provision' is executed
+provision:
+{{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
+
+{{#azureStorageEnableStaticWebsite}} storageResourceId: ${{ADDIN_AZURE_STORAGE_RESOURCE_ID}} {{/azureStorageEnableStaticWebsite}}
+
+# Triggered when 'teamsfx deploy' is executed
+deploy:
+{{#cliRunNpmCommand}} install, args: install {{/cliRunNpmCommand}}
+{{#cliRunNpmCommand}} args: run build --if-present, build {{/cliRunNpmCommand}}
+{{#azureStorageDeploy}}
+  workingDirectory: .,
+  artifactFolder: dist,
+  resourceId: ${{ADDIN_AZURE_STORAGE_RESOURCE_ID}}
+{{/azureStorageDeploy}}

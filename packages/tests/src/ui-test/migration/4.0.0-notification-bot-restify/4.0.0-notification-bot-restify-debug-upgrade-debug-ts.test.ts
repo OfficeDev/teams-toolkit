@@ -1,5 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
- * @author Frank Qian <frankqian@microsoft.com>
+ * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import { MigrationTestContext } from "../migrationContext";
 import {
@@ -10,6 +13,7 @@ import {
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
   CliVersion,
+  LocalDebugTaskLabel2,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
@@ -29,9 +33,10 @@ import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
 import { execCommand } from "../../../utils/execCommand";
 import { expect } from "chai";
+import { updateDeverloperInManifestFile } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
   CliHelper.setV3Enable();
 
@@ -74,6 +79,10 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
+
       // local debug with TTK
       try {
         await startDebugging();
@@ -86,7 +95,7 @@ describe("Migration Tests", function () {
 
         console.log("Start Bot");
         await waitForTerminal(
-          LocalDebugTaskLabel.StartBot,
+          LocalDebugTaskLabel2.StartBot2,
           LocalDebugTaskResult.AppSuccess
         );
       } catch (error) {

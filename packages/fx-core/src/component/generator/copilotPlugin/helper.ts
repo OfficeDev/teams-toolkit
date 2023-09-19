@@ -19,6 +19,9 @@ import {
   ManifestTemplateFileName,
   Warning,
   AppPackageFolderName,
+  ManifestUtil,
+  IComposeExtension,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -36,6 +39,7 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
+import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -70,7 +74,8 @@ export interface ErrorResult {
 
 export class OpenAIPluginManifestHelper {
   static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
-    let path = input + manifestFilePath;
+    let path =
+      (input.endsWith("/") ? input.substring(0, input.length - 1) : input) + manifestFilePath;
     if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
       path = "https://" + path;
     }
@@ -117,47 +122,55 @@ export async function listOperations(
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
   if (manifest) {
     const errors = validateOpenAIPluginManifest(manifest);
+    logValidationResults(errors, [], context, false, shouldLogWarning);
     if (errors.length > 0) {
-      logValidationResults(errors, [], context, false, shouldLogWarning);
       return err(errors);
     }
     apiSpecUrl = manifest.api.url;
   }
 
-  const specParser = new SpecParser(apiSpecUrl!);
-  const validationRes = await specParser.validate();
+  try {
+    const specParser = new SpecParser(apiSpecUrl!);
+    const validationRes = await specParser.validate();
 
-  logValidationResults(
-    validationRes.errors,
-    validationRes.warnings,
-    context,
-    true,
-    shouldLogWarning
-  );
-  if (validationRes.status === ValidationStatus.Error) {
-    return err(validationRes.errors);
-  }
-
-  let operations = await specParser.list();
-
-  // Filter out exsiting APIs
-  if (!includeExistingAPIs) {
-    if (!teamsManifestPath) {
-      throw new MissingRequiredInputError("teamsManifestPath", "inputs");
+    logValidationResults(
+      validationRes.errors,
+      validationRes.warnings,
+      context,
+      true,
+      shouldLogWarning
+    );
+    if (validationRes.status === ValidationStatus.Error) {
+      return err(validationRes.errors);
     }
-    const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
-    if (manifest.isOk()) {
-      const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-      operations = operations.filter(
-        (operation: string) => !existingOperationIds.includes(operation)
-      );
+
+    let operations = await specParser.list();
+
+    // Filter out exsiting APIs
+    if (!includeExistingAPIs) {
+      if (!teamsManifestPath) {
+        throw new MissingRequiredInputError("teamsManifestPath", "inputs");
+      }
+      const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+      if (manifest.isOk()) {
+        const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+        operations = operations.filter(
+          (operation: string) => !existingOperationIds.includes(operation)
+        );
+      } else {
+        throw manifest.error;
+      }
+    }
+
+    const sortedOperations = sortOperations(operations);
+    return ok(sortedOperations);
+  } catch (e) {
+    if (e instanceof SpecParserError) {
+      throw convertSpecParserErrorToFxError(e);
     } else {
-      throw manifest.error;
+      throw e;
     }
   }
-
-  const sortedOperations = sortOperations(operations);
-  return ok(sortedOperations);
 }
 
 function sortOperations(operations: string[]): ApiOperation[] {
@@ -274,10 +287,11 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
 
 export function generateScaffoldingSummary(
   specWarnings: Warning[],
-  teamsManifest: TeamsAppManifest
+  teamsManifest: TeamsAppManifest,
+  projectPath: string
 ): string {
   const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(specWarnings);
-  const manifestWarningResult = validateTeamsManifestLength(teamsManifest);
+  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
@@ -313,7 +327,10 @@ function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string 
     : "";
 }
 
-function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] {
+function validateTeamsManifestLength(
+  teamsManifest: TeamsAppManifest,
+  projectPath: string
+): string[] {
   const nameShortLimit = 30;
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
@@ -349,6 +366,50 @@ function validateTeamsManifestLength(teamsManifest: TeamsAppManifest): string[] 
     warnings.push(formatLengthExceedingErrorMessage("/description/full", descriptionFullLimit));
   }
 
+  // validate card
+  if (ManifestUtil.parseCommonProperties(teamsManifest).isCopilotPlugin) {
+    const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
+    for (const command of commands) {
+      if (command.type === "query") {
+        if (!command.apiResponseRenderingTemplate) {
+          warnings.push(
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate",
+              "apiResponseRenderingTemplateFile",
+              command.id
+            ) +
+              getLocalizedString(
+                "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCardTemlate.mitigation",
+                AppPackageFolderName,
+                `composeExtensions/commands/${command.id}/apiResponseRenderingTemplateFile`,
+                path.join(AppPackageFolderName, ManifestTemplateFileName)
+              )
+          );
+        } else {
+          const cardPath = path.join(
+            projectPath,
+            AppPackageFolderName,
+            command.apiResponseRenderingTemplate
+          );
+          if (!fs.existsSync(cardPath)) {
+            warnings.push(
+              getLocalizedString(
+                "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard",
+                command.apiResponseRenderingTemplate,
+                AppPackageFolderName
+              ) +
+                getLocalizedString(
+                  "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard.mitigation",
+                  command.apiResponseRenderingTemplate,
+                  AppPackageFolderName
+                )
+            );
+          }
+        }
+      }
+    }
+  }
+
   return warnings;
 }
 
@@ -365,4 +426,8 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
       path.join(AppPackageFolderName, ManifestTemplateFileName)
     )
   );
+}
+
+export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
+  return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
 }

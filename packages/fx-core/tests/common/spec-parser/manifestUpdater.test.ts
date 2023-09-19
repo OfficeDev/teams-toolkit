@@ -4,9 +4,10 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import fs from "fs-extra";
-import path from "path";
 import "mocha";
 import { updateManifest, generateCommands } from "../../../src/common/spec-parser/manifestUpdater";
+import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
+import { ErrorType } from "../../../src/common/spec-parser/interfaces";
 
 describe("manifestUpdater", () => {
   const spec: any = {
@@ -73,7 +74,23 @@ describe("manifestUpdater", () => {
     const result = await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec);
 
     expect(result).to.deep.equal(expectedManifest);
-    readJSONStub.restore();
+  });
+
+  it("should throw a SpecParserError if fs.readJSON throws an error", async () => {
+    const manifestPath = "path/to/manifest.json";
+    const outputSpecPath = "path/to/outputSpec.json";
+    const adaptiveCardFolder = "path/to/adaptiveCardFolder";
+    const spec = {} as any;
+    const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
+
+    try {
+      await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec);
+      expect.fail("Expected updateManifest to throw a SpecParserError");
+    } catch (err) {
+      expect(err).to.be.instanceOf(SpecParserError);
+      expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
+      expect(err.message).to.equal("Error: readJSON error");
+    }
   });
 
   it("should skip updating full/description if missing info/description", async () => {

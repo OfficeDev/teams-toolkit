@@ -212,6 +212,7 @@ export class Timeout {
   public static readonly testCase: number = 20 * 60 * 1000;
   public static readonly finishAzureTestCase: number = 15 * 60 * 1000;
   public static readonly testAzureCase: number = 45 * 60 * 1000;
+  public static readonly migrationTestCase: number = 40 * 60 * 1000;
 
   // SPFx
   public static readonly spfxProvision: number = 10 * 1000;
@@ -324,6 +325,10 @@ export class LocalDebugTaskResult {
   static readonly DebuggerAttached = "Debugger attached";
 }
 
+export enum LocalDebugTaskLabel2 {
+  StartBot2 = "Start Bot",
+}
+
 export class LocalDebugTaskInfo {
   static readonly StartBotAppInfo = "App Started";
   static readonly StartBotInfo = "Bot Started";
@@ -370,6 +375,8 @@ export class CreateProjectQuestion {
 export class ValidationContent {
   static readonly Tab = "Hello, World";
   static readonly Bot = "Your Hello World Bot is Running";
+  static readonly BotWelcomeInstruction =
+    "Hi there! I'm a Teams bot that will echo what you said to me";
 }
 
 export class CliVersion {

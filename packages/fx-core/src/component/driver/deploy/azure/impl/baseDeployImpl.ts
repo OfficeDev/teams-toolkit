@@ -66,7 +66,7 @@ export abstract class BaseDeployImpl {
   });
 
   async run(): Promise<ExecutionResult> {
-    await this.context.logProvider.debug("start deploy process");
+    this.context.logProvider.debug("start deploy process");
     this.updateProgressbar();
     return await this.wrapErrorHandler(async () => {
       const deployArgs = BaseDeployImpl.asDeployArgs(this.args, this.helpLink);
@@ -102,7 +102,7 @@ export abstract class BaseDeployImpl {
             ig.add(it);
           });
       } else {
-        await context.logProvider.warning(
+        context.logProvider.warning(
           `already set deploy ignore file ${args.ignoreFile} but file not exists in ${this.workingDirectory}, skip ignore!`
         );
       }
@@ -118,7 +118,7 @@ export abstract class BaseDeployImpl {
     } catch (e) {
       if (e instanceof BaseComponentInnerError) {
         const errorDetail = e.detail ? `Detail: ${e.detail}` : "";
-        await this.context.logProvider.error(`${e.message} ${errorDetail}`);
+        this.context.logProvider.error(`${e.message} ${errorDetail}`);
         return { result: err(e.toFxError()), summaries: [] };
       } else if (e instanceof SystemError || e instanceof UserError) {
         return {
@@ -126,7 +126,7 @@ export abstract class BaseDeployImpl {
           summaries: [],
         };
       } else {
-        await this.context.logProvider.error(`Unknown error: ${e}`);
+        this.context.logProvider.error(`Unknown error: ${e.toString() as string}`);
         return {
           result: err(BaseComponentInnerError.unknownError("Deploy", e).toFxError()),
           summaries: [],

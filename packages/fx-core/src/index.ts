@@ -7,6 +7,7 @@ export * from "./common/correlator";
 export * from "./common/deps-checker";
 export * from "./common/featureFlags";
 export * from "./common/globalState";
+export * from "./common/telemetry";
 export { jsonUtils } from "./common/jsonUtils";
 export * from "./common/local";
 export * from "./common/m365/constants";

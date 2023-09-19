@@ -39,7 +39,7 @@ describe("Package Command Tests", function () {
   });
 
   it("Package Command Running Check", async () => {
-    sandbox.stub(FxCore.prototype, "createAppPackage").resolves(ok(new Map()));
+    sandbox.stub(FxCore.prototype, "createAppPackage").resolves(ok(undefined));
     const cmd = new Package();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",

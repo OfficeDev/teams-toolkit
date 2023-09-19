@@ -53,7 +53,8 @@ export function listCollaboratorQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
         data: selectAppTypeQuestion(),
-        interactiveOnly: "self",
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
         children: [selectTeamsAppNode, selectAadAppNode],
       },
     ],
@@ -79,7 +80,8 @@ export function grantPermissionQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
         data: selectAppTypeQuestion(),
-        interactiveOnly: "self",
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
         children: [
           selectTeamsAppNode,
           selectAadAppNode,
@@ -107,7 +109,8 @@ export function deployAadManifestQuestionNode(): IQTreeNode {
               path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
                 path.join(inputs.projectPath, "aad.manifest.json"),
             data: confirmManifestQuestion(false, false),
-            interactiveOnly: "self",
+            cliOptionDisabled: "self",
+            inputsDisabled: "self",
           },
           {
             condition: isAadMainifestContainsPlaceholder,
@@ -122,7 +125,8 @@ export function deployAadManifestQuestionNode(): IQTreeNode {
 export function validateTeamsAppQuestionNode(): IQTreeNode {
   return {
     data: selectTeamsAppValidationMethodQuestion(),
-    interactiveOnly: "self",
+    cliOptionDisabled: "self",
+    inputsDisabled: "self",
     children: [
       {
         condition: { equals: TeamsAppValidationOptions.schema().id },
@@ -143,7 +147,8 @@ export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => confirmCondition(inputs, false),
         data: confirmManifestQuestion(true, false),
-        interactiveOnly: "self",
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
       },
     ],
   };
@@ -161,7 +166,8 @@ export function selectAadAppManifestQuestionNode(): IQTreeNode {
           path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
             path.join(inputs.projectPath, "aad.manifest.json"),
         data: confirmManifestQuestion(false, false),
-        interactiveOnly: "self",
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
       },
     ],
   };
@@ -194,7 +200,8 @@ export function addWebPartQuestionNode(): IQTreeNode {
               {
                 condition: (inputs: Inputs) => confirmCondition(inputs, false),
                 data: confirmManifestQuestion(true, false),
-                interactiveOnly: "self",
+                cliOptionDisabled: "self",
+                inputsDisabled: "self",
               },
               {
                 data: selectLocalTeamsAppManifestQuestion(),
@@ -202,7 +209,8 @@ export function addWebPartQuestionNode(): IQTreeNode {
                   {
                     condition: (inputs: Inputs) => confirmCondition(inputs, true),
                     data: confirmManifestQuestion(true, true),
-                    interactiveOnly: "self",
+                    cliOptionDisabled: "self",
+                    inputsDisabled: "self",
                   },
                 ],
               },
@@ -263,7 +271,7 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
     false_true: QuestionNames.ConfirmAadManifest,
     false_false: QuestionNames.ConfirmAadManifest,
   };
-  const name = map[`${isTeamsApp}_${isLocal}`];
+  const name = map[`${isTeamsApp.toString()}_${isLocal.toString()}`];
   return {
     name: name,
     title: isTeamsApp
@@ -810,7 +818,7 @@ function selectResourceGroupLocationQuestion(
       }
       return getLocationsRes.value;
     },
-    default: "East US",
+    default: "Central US",
   };
 }
 

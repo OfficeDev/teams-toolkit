@@ -16,9 +16,9 @@ import { localize } from "../utils/localizeUtils";
 import { context } from "../globalVariables";
 import { SecretStorage } from "vscode";
 
-const cacheDir = os.homedir + `/.${ConfigFolderName}/account`;
-const cachePath = os.homedir + `/.${ConfigFolderName}/account/token.cache.`;
-const accountPath = os.homedir + `/.${ConfigFolderName}/account/homeId.cache.`;
+const cacheDir = os.homedir() + `/.${ConfigFolderName}/account`;
+const cachePath = os.homedir() + `/.${ConfigFolderName}/account/token.cache.`;
+const accountPath = os.homedir() + `/.${ConfigFolderName}/account/homeId.cache.`;
 const cachePathEnd = ".json";
 
 // the friendly service name to store secret in keytar
@@ -149,8 +149,8 @@ export class CryptoCachePlugin {
           }
         }
       } catch (err) {
-        await VsCodeLogInstance.warning(
-          localize("teamstoolkit.cacheAccess.readTokenFail") + err.message
+        VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.readTokenFail") + (err.message as string)
         );
       }
     } else {
@@ -159,8 +159,8 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        await VsCodeLogInstance.warning(
-          localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message
+        VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.writeTokenFail") + (err.message as string)
         );
       }
     }
@@ -175,8 +175,8 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        await VsCodeLogInstance.warning(
-          localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message
+        VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.saveTokenFail") + (err.message as string)
         );
       }
     }
@@ -197,8 +197,8 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
   } catch (err) {
-    await VsCodeLogInstance.warning(
-      localize("teamstoolkit.cacheAccess.saveHomeAccountIdFail") + err.message
+    VsCodeLogInstance.warning(
+      localize("teamstoolkit.cacheAccess.saveHomeAccountIdFail") + (err.message as string)
     );
   }
 }
@@ -208,8 +208,8 @@ export async function clearCache(accountName: string) {
   try {
     await fs.writeFile(cachePath + accountName + cachePathEnd, "");
   } catch (err) {
-    await VsCodeLogInstance.warning(
-      localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message
+    VsCodeLogInstance.warning(
+      localize("teamstoolkit.cacheAccess.writeTokenFail") + (err.message as string)
     );
   }
 }
@@ -219,8 +219,8 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      await VsCodeLogInstance.warning(
-        localize("teamstoolkit.cacheAccess.readHomeAccountIdFail") + err.message
+      VsCodeLogInstance.warning(
+        localize("teamstoolkit.cacheAccess.readHomeAccountIdFail") + (err.message as string)
       );
     }
   }

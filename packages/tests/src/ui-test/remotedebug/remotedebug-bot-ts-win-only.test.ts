@@ -1,5 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
- * @author Helly Zhang <v-helzha@microsoft.com>
+ * @author wenyt <75360946+wenytang-ms@users.noreply.github.com>
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
@@ -13,7 +16,7 @@ import {
   execCommandIfExist,
   createNewProject,
 } from "../../utils/vscodeOperation";
-import { initPage, validateBot } from "../../utils/playwrightOperation";
+import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 
@@ -74,7 +77,7 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateBot(page);
+      await validateEchoBot(page);
     }
   );
 });

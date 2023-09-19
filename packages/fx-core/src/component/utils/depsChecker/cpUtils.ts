@@ -32,10 +32,10 @@ export namespace cpUtils {
     if (result.code !== 0) {
       const errorMessage = `Failed to run command: "${command} ${result.formattedArgs}", code: "${result.code}",
                             output: "${result.cmdOutput}", error: "${result.cmdOutputIncludingStderr}"`;
-      await logger?.debug(errorMessage);
+      logger?.debug(errorMessage);
       throw new Error(errorMessage);
     } else {
-      await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
+      logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
     }
 
     return result.cmdOutput;
@@ -74,6 +74,7 @@ export namespace cpUtils {
             );
             reject(
               new Error(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout} ms`
               )
             );
@@ -96,6 +97,7 @@ export namespace cpUtils {
 
         childProc.on("error", (error) => {
           logger?.debug(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`
           );
           if (timer) {

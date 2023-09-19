@@ -133,7 +133,7 @@ export class LocalDebugTestContext extends TestContext {
       case "msg":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities collectformmessagingextension --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capabilities collect-form-message-extension --programming-language ${this.lang}`
         );
         break;
       case "msgsa":

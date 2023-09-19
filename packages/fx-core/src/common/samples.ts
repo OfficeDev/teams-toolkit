@@ -62,17 +62,21 @@ class SampleProvider {
     const samples = (this.samplesConfig ? this.samplesConfig.samples : sampleConfigV3.samples).map(
       (sample) => {
         const isExternal = sample["downloadUrl"] ? true : false;
-        let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${sample["id"]}/${sample["gifPath"]}`;
+        let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${
+          sample["id"] as string
+        }/${sample["gifPath"] as string}`;
         if (isExternal) {
           const info = parseSampleUrl(sample["downloadUrl"] as string);
-          gifUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${info.dir}/${sample["gifPath"]}`;
+          gifUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
+            info.ref
+          }/${info.dir}/${sample["gifPath"] as string}`;
         }
         return {
           ...sample,
           onboardDate: new Date(sample["onboardDate"] as string),
           downloadUrl: isExternal
             ? sample["downloadUrl"]
-            : `${this.getBaseSampleUrl()}${sample["id"]}`,
+            : `${this.getBaseSampleUrl()}${sample["id"] as string}`,
           gifUrl: gifUrl,
         } as SampleConfig;
       }

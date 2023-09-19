@@ -92,7 +92,7 @@ export namespace ArmErrorHandle {
         failedDeployments.push(deployCtx.deploymentName);
       }
       const format = failedDeployments.map((deployment) => deployment + " module");
-      error.message = error.message + "\n" + deploymentErrorMessage;
+      error.message = (error.message as string) + "\n" + deploymentErrorMessage;
       return err(new DeployArmError(format.join(", "), deployCtx.resourceGroupName, error));
     } else {
       deployCtx.ctx.logProvider?.info(

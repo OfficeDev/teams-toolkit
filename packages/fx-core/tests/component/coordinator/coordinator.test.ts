@@ -26,6 +26,7 @@ import {
   ExecutionResult,
   ProjectModel,
 } from "../../../src/component/configManager/interface";
+import { ExecutionResult as DriverExecutionResult } from "../../../src/component/driver/interface/stepDriver";
 import { coordinator } from "../../../src/component/coordinator";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
 import * as appStudio from "../../../src/component/driver/teamsApp/appStudio";
@@ -39,7 +40,6 @@ import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../../src/component/utils/pathUtils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
-import { FxCoreV3Implement } from "../../../src/core/FxCoreImplementV3";
 import { setTools } from "../../../src/core/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { MissingEnvironmentVariablesError } from "../../../src/error/common";
@@ -52,11 +52,8 @@ export function mockedResolveDriverInstances(log: LogProvider): Result<DriverIns
       uses: "arm/deploy",
       with: undefined,
       instance: {
-        run: async (
-          args: unknown,
-          context: DriverContext
-        ): Promise<Result<Map<string, string>, FxError>> => {
-          return ok(new Map());
+        execute: async (args: unknown, context: DriverContext): Promise<DriverExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
       },
     },
@@ -149,12 +146,6 @@ describe("component coordinator test", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -198,12 +189,6 @@ describe("component coordinator test", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -259,12 +244,6 @@ describe("component coordinator test", () => {
             },
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["BotId"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["BotId"];
         },
@@ -290,15 +269,6 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("buildAadManifest", async () => {
-    sandbox.stub(FxCoreV3Implement.prototype, "buildAadManifest").resolves(ok(Void));
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
-    const fxCore = new FxCore(tools);
-    const res1 = await fxCore.buildAadManifest(inputs);
-    assert.isTrue(res1.isOk());
-  });
   it("executeUserTaskNew", async () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));

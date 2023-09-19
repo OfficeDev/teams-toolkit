@@ -26,4 +26,9 @@ export interface ManifestCommonProperties {
    * Whether it's SPFx Teams app
    */
   isSPFx: boolean;
+
+  /**
+   * Whether it's apiBased MessageExtension but not copilot plugin
+   */
+  isApiBasedMe: boolean;
 }

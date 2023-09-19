@@ -197,7 +197,7 @@ export default class TelemetryReporter {
       });
 
       if (this.logging) {
-        logger.debug(
+        void logger.debug(
           `Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({
             properties,
             measurements,
@@ -226,7 +226,7 @@ export default class TelemetryReporter {
       });
 
       if (this.logging) {
-        logger.debug(
+        void logger.debug(
           `Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({
             properties,
             measurements,
@@ -253,7 +253,7 @@ export default class TelemetryReporter {
       });
 
       if (this.logging) {
-        logger.debug(
+        void logger.debug(
           `Telemetry: ${this.cliName}/${error.name} ${error.message} ${JSON.stringify({
             properties,
             measurements,

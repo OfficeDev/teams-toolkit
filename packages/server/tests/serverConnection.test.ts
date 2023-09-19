@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import { assert } from "chai";
-import sinon from "sinon";
-import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
-import ServerConnection from "../src/serverConnection";
-import { Duplex } from "stream";
 import { err, Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
-import { setFunc } from "../src/customizedFuncAdapter";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
+import { assert } from "chai";
+import "mocha";
+import sinon from "sinon";
+import { Duplex } from "stream";
+import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
+import { setFunc } from "../src/customizedFuncAdapter";
+import ServerConnection from "../src/serverConnection";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -79,7 +79,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.localDebugRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -123,7 +123,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.provisionResourcesRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -140,7 +140,7 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -157,7 +157,7 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -171,7 +171,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.deployArtifactsRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -219,7 +219,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.publishApplicationRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -251,7 +251,7 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -447,7 +447,7 @@ describe("serverConnections", () => {
 
   it("copilotPluginAddAPIRequest", async () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(ok({}));
+    const fake = sandbox.fake.resolves(ok(undefined));
     sandbox.replace(connection["core"], "copilotPluginAddAPI", fake);
     const res = await connection.copilotPluginAddAPIRequest({} as Inputs, {} as CancellationToken);
     assert.isTrue(res.isOk());

@@ -1,42 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
+import {
+  Colors,
+  Context,
+  CreateProjectResult,
+  FxError,
+  Inputs,
+  InputsWithProjectPath,
+  Platform,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
+import { glob } from "glob";
 import * as jsonschema from "jsonschema";
 import { camelCase, merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
-
-import { hooks } from "@feathersjs/hooks/lib";
-import {
-  Colors,
-  Context,
-  CreateProjectResult,
-  err,
-  FxError,
-  Inputs,
-  InputsWithProjectPath,
-  ok,
-  Platform,
-  Result,
-  Void,
-} from "@microsoft/teamsfx-api";
-import { glob } from "glob";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { ObjectIsUndefinedError } from "../../core/error";
-import { globalVars } from "../../core/globalVars";
+import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
-  assembleError,
   InputValidationError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  assembleError,
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
@@ -62,10 +60,10 @@ import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
 import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
+import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { envUtil } from "../utils/envUtil";
 import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
-import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 
@@ -84,6 +82,7 @@ export enum TemplateNames {
   DefaultBot = "default-bot",
   MessageExtension = "message-extension",
   MessageExtensionAction = "message-extension-action",
+  MessageExtensionSearch = "message-extension-search",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
@@ -113,6 +112,7 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
   [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
   [`${CapabilityOptions.m365SearchMe().id}:undefined`]: TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
   [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
   [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
@@ -144,6 +144,7 @@ const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramewo
 
 class Coordinator {
   @hooks([
+    ErrorContextMW({ component: "Coordinator" }),
     ActionExecutionMW({
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.CreateProject,
@@ -181,7 +182,7 @@ class Coordinator {
       const res = await Generator.generateSample(context, projectPath, sampleId);
       if (res.isErr()) return err(res.error);
 
-      await downloadSampleHook(sampleId, projectPath);
+      downloadSampleHook(sampleId, projectPath);
     } else if (!scratch || scratch === ScratchOptions.yes().id) {
       // create from new
       const appName = inputs[QuestionNames.AppName] as string;
@@ -328,6 +329,7 @@ class Coordinator {
     return ok(settings.trackingId);
   }
 
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async preProvisionForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
@@ -396,10 +398,11 @@ class Coordinator {
     return ok(res);
   }
 
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async preCheckYmlAndEnvForVS(
     ctx: DriverContext,
     inputs: InputsWithProjectPath
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const templatePath =
       inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
@@ -419,20 +422,13 @@ class Coordinator {
     if (unresolvedPlaceholders.length > 0) {
       return err(new LifeCycleUndefinedError(unresolvedPlaceholders.join(",")));
     }
-    return ok(Void);
+    return ok(undefined);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.Provision,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async provision(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const folderName = path.parse(ctx.projectPath).name;
@@ -482,7 +478,7 @@ class Coordinator {
       }
       m365tenantInfo = tenantInfoInTokenRes.value;
 
-      const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
+      const checkM365TenatRes = provisionUtils.ensureM365TenantMatchesV3(
         tenantSwitchCheckActions,
         m365tenantInfo?.tenantIdInToken
       );
@@ -561,8 +557,11 @@ class Coordinator {
           targetResourceGroupInfo.location = inputLocation;
           targetResourceGroupInfo.createNewResourceGroup = true; // create resource group if not exists
         } else {
-          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
+          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${
+            inputs.env as string
+          }`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
+            inputs,
             ctx.azureAccountProvider,
             resolvedSubscriptionId!,
             undefined,
@@ -689,13 +688,13 @@ class Coordinator {
       }
     } else {
       if (ctx.platform === Platform.VS) {
-        ctx.ui!.showMessage(
+        void ctx.ui!.showMessage(
           "info",
           getLocalizedString("core.common.LifecycleComplete.prepareTeamsApp"),
           false
         );
       } else {
-        ctx.ui!.showMessage("info", msg, false);
+        void ctx.ui!.showMessage("info", msg, false);
       }
     }
     ctx.logProvider.info(msg);
@@ -736,17 +735,10 @@ class Coordinator {
     return [output, error];
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.Deploy,
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async deploy(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const templatePath =
@@ -816,17 +808,10 @@ class Coordinator {
     return ok(output);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: "publish",
-      telemetryComponentName: "coordinator",
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async publish(
     ctx: DriverContext,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
@@ -866,7 +851,7 @@ class Coordinator {
           if (ctx.platform !== Platform.CLI) {
             ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
               if (value.isOk() && value.value === adminPortal) {
-                ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+                void ctx.ui!.openUrl(Constants.TEAMS_ADMIN_PORTAL);
               }
             });
           } else {
@@ -884,19 +869,11 @@ class Coordinator {
     return ok(output);
   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.PublishInDeveloperPortal,
-      telemetryComponentName: "coordinator",
-      errorSource: CoordinatorSource,
-    }),
-  ])
+  @hooks([ErrorContextMW({ component: "Coordinator" })])
   async publishInDeveloperPortal(
     ctx: Context,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
-  ): Promise<Result<Void, FxError>> {
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
     // update teams app
     if (!ctx.tokenProvider) {
       return err(new ObjectIsUndefinedError("tokenProvider"));
@@ -917,9 +894,11 @@ class Coordinator {
       loginHint = accountRes.value.unique_name as string;
     }
     await ctx.userInteraction.openUrl(
-      `https://dev.teams.microsoft.com/apps/${updateRes.value}/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
+      `https://dev.teams.microsoft.com/apps/${
+        updateRes.value as string
+      }/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
     );
-    return ok(Void);
+    return ok(undefined);
   }
 }
 
@@ -947,8 +926,8 @@ function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
   } as BotTroubleShootMessage;
 }
 
-async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
-  // A temporary solution to avoid duplicate componentId
+function downloadSampleHook(sampleId: string, sampleAppPath: string): void {
+  // A temporary solution to aundefined duplicate componentId
   if (sampleId === "todo-list-SPFx") {
     const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
     const componentId = uuid.v4();

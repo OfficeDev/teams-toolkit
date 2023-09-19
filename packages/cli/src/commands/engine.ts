@@ -1,142 +1,514 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import {
-  InputValidationError,
-  MissingRequiredInputError,
+  CLICommand,
+  CLICommandArgument,
+  CLICommandOption,
+  CLIContext,
+  CLIFoundCommand,
+  FxError,
+  LogLevel,
+  Platform,
+  Result,
+  SystemError,
+  UserError,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import {
+  Correlator,
+  IncompatibleProjectError,
+  VersionState,
   assembleError,
+  getHashedEnv,
+  isUserCancelError,
 } from "@microsoft/teamsfx-core";
-import { cloneDeep } from "lodash";
-import { format } from "util";
+import { cloneDeep, pick } from "lodash";
+import path from "path";
+import * as uuid from "uuid";
+import { getFxCore } from "../activate";
 import { TextType, colorize } from "../colorize";
+import { tryDetectCICDPlatform } from "../commonlib/common/cicdPlatformDetector";
 import { logger } from "../commonlib/logger";
-import { strings } from "../resource";
+import Progress from "../console/progress";
+import {
+  InvalidChoiceError,
+  MissingRequiredArgumentError,
+  MissingRequiredOptionError,
+  UnknownArgumentError,
+  UnknownOptionError,
+} from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
+import UI from "../userInteraction";
+import { CliConfigOptions, UserSettings } from "../userSetttings";
+import { getSystemInputs } from "../utils";
 import { helper } from "./helper";
-import { CLICommand, CLICommandOption, CLIContext } from "./types";
 
-// Licensed under the MIT license.
 class CLIEngine {
+  /**
+   * @description cached debug logsd
+   */
+  debugLogs: string[] = [];
+
+  /**
+   * detect whether the process is a bundled electrop app
+   */
+  isBundledElectronApp(): boolean {
+    return process.versions && process.versions.electron && !(process as any).defaultApp
+      ? true
+      : false;
+  }
+
+  /**
+   * entry point of the CLI engine
+   */
   async start(rootCmd: CLICommand): Promise<void> {
+    this.debugLogs = [];
+
     const root = cloneDeep(rootCmd);
-    const args = process.argv.slice(2);
 
-    // 1. find command
+    // get user args
+    const args = this.isBundledElectronApp() ? process.argv.slice(1) : process.argv.slice(2);
+    this.debugLogs.push(`user argument list: ${JSON.stringify(args)}`);
+
+    // find command
     const findRes = this.findCommand(rootCmd, args);
-    const cmd = findRes.cmd;
+    const foundCommand = findRes.cmd;
     const remainingArgs = findRes.remainingArgs;
-    // process.stdout.write("name:" + cmd.name + "\n");
-    // console.log("find command:", cmd.fullName!);
 
-    // 2. parse args
-    const context = this.parseArgs(cmd, root, remainingArgs);
+    this.debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
 
-    // 3. --version
-    if (context.globalOptionValues.version === true) {
-      logger.info(rootCmd.version ?? "1.0.0");
-      return;
+    const context: CLIContext = {
+      command: foundCommand,
+      optionValues: {},
+      globalOptionValues: {},
+      argumentValues: [],
+      telemetryProperties: {
+        [TelemetryProperty.CommandName]: foundCommand.fullName,
+        [TelemetryProperty.Component]: TelemetryComponentType,
+        [CliConfigOptions.RunFrom]: tryDetectCICDPlatform(),
+      },
+    };
+
+    const executeRes = await this.execute(context, root, remainingArgs);
+    if (executeRes.isErr()) {
+      this.processResult(context, executeRes.error);
+    } else {
+      this.processResult(context);
     }
-
-    // 4. --help
-    if (context.globalOptionValues.help === true) {
-      const helpText = helper.formatHelp(context.command, root);
-      logger.info(helpText);
-      return;
-    }
-
-    // 5. validate
-    const validateRes = this.validateOptionsAndArguments(context.command);
-    if (validateRes.isErr()) {
-      this.processResult(context, validateRes.error);
-      return;
-    }
-
-    // 6. run handler
-    try {
-      const handleRes = await context.command.handler(context);
-      if (handleRes.isErr()) {
-        this.processResult(context, handleRes.error);
-      } else {
-        this.processResult(context);
-      }
-    } catch (e) {
-      const fxError = assembleError(e);
-      this.processResult(context, fxError);
+    if (context.command.name !== "preview") {
+      // TODO: consider to remove the hardcode
+      process.exit();
     }
   }
 
-  findCommand(model: CLICommand, args: string[]): { cmd: CLICommand; remainingArgs: string[] } {
+  isUserSettingsTelemetryEnable(): boolean {
+    const res = UserSettings.getTelemetrySetting();
+    if (res.isOk()) return res.value;
+    return true;
+  }
+
+  isUserSettingsInteractive(): boolean {
+    const res = UserSettings.getInteractiveSetting();
+    if (res.isOk()) return res.value;
+    return true;
+  }
+
+  async execute(
+    context: CLIContext,
+    root: CLICommand,
+    remainingArgs: string[]
+  ): Promise<Result<undefined, FxError>> {
+    // parse args
+    const parseRes = this.parseArgs(context, root, remainingArgs);
+
+    // load project meta in telemetry properties
+    if (context.optionValues.projectPath) {
+      const core = getFxCore();
+      const res = await core.getProjectMetadata(context.optionValues.projectPath as string);
+      if (res.isOk()) {
+        const value = res.value;
+        context.telemetryProperties[TelemetryProperty.ProjectId] = value.projectId || "";
+        context.telemetryProperties[TelemetryProperty.SettingsVersion] = value.version || "";
+      }
+    }
+
+    logger.debug(
+      `parsed context: ${JSON.stringify(
+        pick(context, [
+          "optionValues",
+          "globalOptionValues",
+          "argumentValues",
+          "telemetryProperties",
+        ]),
+        null,
+        2
+      )}`
+    );
+
+    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
+
+    // send start event
+    if (telemetryEnabled && context.command.telemetry) {
+      CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
+    }
+
+    if (parseRes.isErr()) {
+      return err(parseRes.error);
+    }
+
+    // 3. --version
+    if (context.optionValues.version === true || context.globalOptionValues.version === true) {
+      logger.info(root.version ?? "1.0.0");
+      return ok(undefined);
+    }
+
+    // 4. --help
+    if (context.optionValues.help === true || context.globalOptionValues.help === true) {
+      const helpText = helper.formatHelp(
+        context.command,
+        context.command.fullName !== root.fullName ? root : undefined
+      );
+      logger.info(helpText);
+      return ok(undefined);
+    }
+
+    // 5. validate
+    if (!context.globalOptionValues.interactive) {
+      const validateRes = this.validateOptionsAndArguments(context.command);
+      if (validateRes.isErr()) {
+        return err(validateRes.error);
+      }
+    } else {
+      // discard other options and args for interactive mode
+      const reservedOptionNames = (
+        context.command.reservedOptionNamesInInteractiveMode || []
+      ).concat(["projectPath", "env", "correlationId", "platform", "nonInteractive"]);
+      const trimOptionValues = pick(context.optionValues, reservedOptionNames);
+      if (
+        Object.keys(trimOptionValues).length < Object.keys(context.optionValues).length ||
+        context.argumentValues.length
+      ) {
+        logger.info(
+          `Some arguments/options are useless because the interactive mode is opened.` +
+            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
+            ` or set the global setting by 'teamsfx config set interactive false'.`
+        );
+        context.optionValues = trimOptionValues;
+        context.argumentValues = [];
+        logger.debug(
+          `trimmed context for interactive mode: ${JSON.stringify(
+            pick(context, ["optionValues", "argumentValues"]),
+            null,
+            2
+          )}`
+        );
+      }
+    }
+
+    // 6. version check
+    const inputs = getSystemInputs(context.optionValues.projectPath as string);
+    inputs.ignoreEnvInfo = true;
+    const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
+    if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
+      const core = getFxCore();
+      const res = await core.projectVersionCheck(inputs);
+      if (res.isErr()) {
+        return err(res.error);
+      } else {
+        if (res.value.isSupport === VersionState.unsupported) {
+          return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
+        } else if (res.value.isSupport === VersionState.upgradeable) {
+          const upgrade = await core.phantomMigrationV3(inputs);
+          if (upgrade.isErr()) {
+            return err(upgrade.error);
+          }
+        }
+      }
+    }
+
+    try {
+      // 7. run handler
+      if (context.command.handler) {
+        const handleRes = await Correlator.run(context.command.handler, context);
+        if (handleRes.isErr()) {
+          return err(handleRes.error);
+        }
+      } else {
+        const helpText = helper.formatHelp(context.command, root);
+        logger.info(helpText);
+      }
+    } catch (e) {
+      Progress.end(false);
+      return err(assembleError(e));
+    } finally {
+      await CliTelemetry.flush();
+      Progress.end(true);
+    }
+
+    return ok(undefined);
+  }
+
+  findCommand(
+    model: CLICommand,
+    args: string[]
+  ): { cmd: CLIFoundCommand; remainingArgs: string[] } {
     let i = 0;
     let cmd = model;
+    let token: string | undefined;
     for (; i < args.length; i++) {
-      const arg = args[i];
-      const command = cmd.commands?.find((c) => c.name === arg);
+      token = args[i];
+      const command = cmd.commands?.find((c) => c.name === token);
       if (command) {
         cmd = command;
       } else {
         break;
       }
     }
-    cmd.fullName = [model.name, ...args.slice(0, i)].join(" ");
-    const command = cloneDeep(cmd);
+    const command: CLIFoundCommand = {
+      fullName: [model.name, ...args.slice(0, i)].join(" "),
+      ...cloneDeep(cmd),
+    };
     return { cmd: command, remainingArgs: args.slice(i) };
   }
 
-  parseArgs(command: CLICommand, rootCommand: CLICommand, args: string[]): CLIContext {
-    let i = 0;
-    let j = 0;
-    const context: CLIContext = {
-      command: command,
-      optionValues: {},
-      globalOptionValues: {},
-      argumentValues: [],
-      telemetryProperties: {},
-    };
+  optionInputKey(option: CLICommandOption | CLICommandArgument) {
+    return option.questionName || option.name;
+  }
+
+  parseArgs(
+    context: CLIContext,
+    rootCommand: CLICommand,
+    args: string[]
+  ): Result<undefined, UnknownOptionError> {
+    let argumentIndex = 0;
+    const command = context.command;
     const options = (rootCommand.options || []).concat(command.options || []);
-    for (; i < args.length; i++) {
-      const arg = args[i];
-      if (arg.startsWith("-")) {
-        const argName = arg.replace(/-/g, "");
-        const option = options.find((o) => o.name === argName || o.shortName === argName);
-        if (option) {
+    const optionName2OptionMap = new Map<string, CLICommandOption>();
+    options.forEach((option) => {
+      optionName2OptionMap.set(option.name, option);
+      if (option.shortName) {
+        optionName2OptionMap.set(option.shortName, option);
+      }
+    });
+    const remainingArgs = cloneDeep(args);
+    const findOption = (token: string) => {
+      if (token.startsWith("-") || token.startsWith("--")) {
+        const trimmedToken = token.startsWith("--") ? token.substring(2) : token.substring(1);
+        let key: string;
+        let value: string | undefined;
+        if (trimmedToken.includes("=")) {
+          [key, value] = trimmedToken.split("=");
+          //process key, value
+          remainingArgs.unshift(value);
+        } else {
+          key = trimmedToken;
+        }
+        const option = optionName2OptionMap.get(key);
+        return {
+          key: key,
+          value: value,
+          option: option,
+        };
+      }
+      return undefined;
+    };
+    while (remainingArgs.length) {
+      const token = remainingArgs.shift();
+      if (!token) continue;
+      if (token.startsWith("-") || token.startsWith("--")) {
+        const findOptionRes = findOption(token);
+        if (findOptionRes?.option) {
+          const option = findOptionRes.option;
           if (option.type === "boolean") {
-            if (args[i + 1] === "false") {
-              option.value = false;
-              ++i;
-            } else if (args[i + 1] === "true") {
-              option.value = true;
-              ++i;
+            // boolean: try next token
+            const nextToken = remainingArgs[0];
+            if (nextToken) {
+              if (nextToken.toLowerCase() === "false") {
+                option.value = false;
+                remainingArgs.shift();
+              } else if (nextToken.toLowerCase() === "true") {
+                option.value = true;
+                remainingArgs.shift();
+              } else {
+                // not a boolean value, no matter what next token is, current option value is true
+                option.value = true;
+              }
             } else {
               option.value = true;
             }
+          } else if (option.type === "string") {
+            // string
+            const nextToken = remainingArgs[0];
+            if (nextToken) {
+              const findNextOptionRes = findOption(nextToken);
+              if (findNextOptionRes?.option) {
+                // next token is an option, current option value is undefined
+              } else {
+                option.value = nextToken;
+                remainingArgs.shift();
+              }
+            }
           } else {
-            const value = args[++i];
-            if (value) {
-              option.value = value;
+            // array
+            const nextToken = remainingArgs[0];
+            if (nextToken) {
+              const findNextOptionRes = findOption(nextToken);
+              if (findNextOptionRes?.option) {
+                // next token is an option, current option value is undefined
+              } else {
+                if (option.value === undefined) {
+                  option.value = [];
+                }
+                const values = nextToken.split(",");
+                for (const v of values) {
+                  option.value.push(v);
+                }
+                remainingArgs.shift();
+              }
             }
           }
-          const inputValues = command.options?.includes(option)
-            ? context.optionValues
-            : context.globalOptionValues;
-          if (option.value !== undefined) inputValues[option.name] = option.value;
+          const isCommandOption = command.options?.includes(option);
+          const inputValues = isCommandOption ? context.optionValues : context.globalOptionValues;
+          const inputKey = this.optionInputKey(option);
+          const logObject = {
+            token: token,
+            option: option.name,
+            value: option.value,
+            isGlobal: !isCommandOption,
+          };
+          if (option.value !== undefined) inputValues[inputKey] = option.value;
+          this.debugLogs.push(`find option: ${JSON.stringify(logObject)}`);
+        } else {
+          return err(new UnknownOptionError(command.fullName, token));
         }
       } else {
-        if (command.arguments && command.arguments[j]) {
-          command.arguments[j++].value = args[i];
-          context.argumentValues.push(args[i]);
+        if (command.arguments && command.arguments[argumentIndex]) {
+          const argument = command.arguments[argumentIndex];
+          if (argument.type === "array") {
+            argument.value = token.split(",");
+          } else if (argument.type === "string") {
+            argument.value = token;
+          } else {
+            argument.value = Boolean(token);
+          }
+          context.argumentValues.push(argument.value);
+          argumentIndex++;
+        } else {
+          return err(new UnknownArgumentError(command.fullName, token));
         }
       }
     }
-    return context;
+    // for required options or arguments, set default value if not set
+    if (command.options) {
+      for (const option of command.options) {
+        if (option.required && option.value === undefined) {
+          if (option.default !== undefined) {
+            option.value = option.default;
+            context.optionValues[this.optionInputKey(option)] = option.default;
+            this.debugLogs.push(
+              `set required option with default value, ${option.name}=${JSON.stringify(
+                option.default
+              )}`
+            );
+          }
+        }
+      }
+    }
+    if (command.arguments) {
+      for (let i = 0; i < command.arguments.length; ++i) {
+        const argument = command.arguments[i];
+        if (argument.required && argument.value === undefined) {
+          if (argument.default !== undefined) {
+            argument.value = argument.default;
+            context.argumentValues[i] = argument.default as string;
+            this.debugLogs.push(
+              `set required argument with default value, ${argument.name}=${JSON.stringify(
+                argument.default
+              )}`
+            );
+          }
+        }
+        // set argument value in optionValues
+        if (argument.value !== undefined) {
+          context.optionValues[this.optionInputKey(argument)] = argument.value;
+        }
+      }
+    }
+
+    // set log level
+    const logLevel = context.globalOptionValues.debug ? LogLevel.Debug : LogLevel.Info;
+    logger.logLevel = logLevel;
+    for (const log of this.debugLogs) {
+      logger.debug(log);
+    }
+    this.debugLogs = [];
+
+    // special process for global options
+    // interactive
+    // if user not input "--interactive" option value explicitly, toolkit will use default value defined by `defaultInteractiveOption`
+    // if `defaultInteractiveOption` is undefined, use default value = true
+    if (context.globalOptionValues.interactive === undefined) {
+      if (context.command.defaultInteractiveOption !== undefined) {
+        logger.debug(
+          `set interactive from command.defaultInteractiveOption (value=${context.command.defaultInteractiveOption})`
+        );
+        context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
+      } else {
+        const configValue = this.isUserSettingsInteractive();
+        logger.debug(`set interactive from user settings (value=${configValue})`);
+        context.globalOptionValues.interactive = configValue;
+      }
+    }
+
+    // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
+    context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
+    context.optionValues.correlationId = uuid.v4();
+    context.optionValues.platform = Platform.CLI;
+    // set projectPath
+    const projectFolderOption = context.command.options?.find(
+      (o) => o.questionName === "projectPath"
+    );
+    if (projectFolderOption) {
+      // resolve projectPath
+      const projectPath = path.resolve(projectFolderOption.value as string);
+      projectFolderOption.value = projectPath;
+      context.optionValues.projectPath = projectPath;
+      if (projectPath) {
+        CliTelemetry.withRootFolder(projectPath);
+      }
+    }
+
+    UI.interactive = context.globalOptionValues.interactive as boolean;
+
+    // set global option telemetry property
+    context.telemetryProperties[TelemetryProperty.CommandDebug] =
+      context.globalOptionValues.debug + "";
+    context.telemetryProperties[TelemetryProperty.CommandVerbose] =
+      context.globalOptionValues.verbose + "";
+    context.telemetryProperties[TelemetryProperty.CommandHelp] =
+      context.globalOptionValues.help + "";
+    context.telemetryProperties[TelemetryProperty.CommandInteractive] =
+      context.globalOptionValues.interactive + "";
+    context.telemetryProperties[TelemetryProperty.CommandVersion] =
+      context.globalOptionValues.version + "";
+    context.telemetryProperties[TelemetryProperty.CorrelationId] =
+      context.optionValues.correlationId;
+
+    return ok(undefined);
   }
 
   validateOptionsAndArguments(
-    command: CLICommand
-  ): Result<undefined, InputValidationError | MissingRequiredInputError> {
+    command: CLIFoundCommand
+  ): Result<
+    undefined,
+    MissingRequiredOptionError | MissingRequiredArgumentError | InvalidChoiceError
+  > {
     if (command.options) {
       for (const option of command.options) {
-        const res = this.validateOption(option);
+        const res = this.validateOption(command, option, "option");
         if (res.isErr()) {
           return err(res.error);
         }
@@ -144,7 +516,7 @@ class CLIEngine {
     }
     if (command.arguments) {
       for (const argument of command.arguments) {
-        const res = this.validateOption(argument);
+        const res = this.validateOption(command, argument, "argument");
         if (res.isErr()) {
           return err(res.error);
         }
@@ -157,51 +529,46 @@ class CLIEngine {
    * validate option value
    */
   validateOption(
-    option: CLICommandOption
-  ): Result<undefined, InputValidationError | MissingRequiredInputError> {
+    command: CLIFoundCommand,
+    option: CLICommandOption | CLICommandArgument,
+    type: "option" | "argument"
+  ): Result<undefined, MissingRequiredOptionError | MissingRequiredArgumentError> {
     if (option.required && option.default === undefined && option.value === undefined) {
-      return err(new MissingRequiredInputError(helper.formatOptionName(option, false)));
+      const error =
+        type === "option"
+          ? new MissingRequiredOptionError(command.fullName, option)
+          : new MissingRequiredArgumentError(command.fullName, option);
+      return err(error);
     }
     if (
-      (option.type === "singleSelect" || option.type === "multiSelect") &&
+      (option.type === "string" || option.type === "array") &&
       option.choices &&
-      option.value !== undefined
+      option.value !== undefined &&
+      !option.skipValidation
     ) {
-      if (option.type === "singleSelect") {
+      if (option.type === "string") {
         if (!(option.choices as string[]).includes(option.value as string)) {
-          return err(
-            new InputValidationError(
-              helper.formatOptionName(option, false),
-              format(
-                strings["error.InvalidOptionErrorReason"],
-                option.value,
-                option.choices.map((i) => JSON.stringify(i)).join(", ")
-              )
-            )
-          );
+          return err(new InvalidChoiceError(command.fullName, option.value, option));
         }
       } else {
         const values = option.value as string[];
         for (const v of values) {
           if (!(option.choices as string[]).includes(v)) {
-            return err(
-              new InputValidationError(
-                helper.formatOptionName(option, false),
-                format(
-                  strings["error.InvalidOptionErrorReason"],
-                  option.value,
-                  option.choices.join(",")
-                )
-              )
-            );
+            return err(new InvalidChoiceError(command.fullName, v, option));
           }
         }
       }
     }
     return ok(undefined);
   }
-  processResult(context: CLIContext, fxError?: FxError): void {
-    if (context.command.telemetry) {
+  processResult(context?: CLIContext, fxError?: FxError): void {
+    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
+    if (context && context.command.telemetry && telemetryEnabled) {
+      if (context.optionValues.env) {
+        context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
+          context.optionValues.env as string
+        );
+      }
       if (fxError) {
         CliTelemetry.sendTelemetryErrorEvent(
           context.command.telemetry.event,
@@ -216,20 +583,31 @@ class CLIEngine {
       }
     }
     if (fxError) {
-      logger.outputError(`${fxError.source}.${fxError.name}: ${fxError.message}`);
-      if ("helpLink" in fxError && fxError["helpLink"]) {
-        logger.outputError(
-          `Get help from `,
-          colorize(fxError["helpLink"] as string, TextType.Hyperlink)
-        );
-      }
-      if ("issueLink" in fxError && fxError["issueLink"]) {
-        logger.outputError(
-          `Report this issue at `,
-          colorize(fxError["issueLink"] as string, TextType.Hyperlink)
-        );
-      }
+      this.printError(fxError);
     }
+  }
+
+  printError(fxError: FxError): void {
+    if (isUserCancelError(fxError)) {
+      logger.info("User canceled.");
+      return;
+    }
+    logger.outputError(
+      `${fxError.source}.${fxError.name}: ${fxError.message || fxError.innerError?.message}`
+    );
+    if (fxError instanceof UserError && fxError.helpLink) {
+      logger.outputError(
+        `Get help from %s`,
+        colorize(fxError.helpLink as string, TextType.Hyperlink)
+      );
+    }
+    if (fxError instanceof SystemError && fxError.issueLink) {
+      logger.outputError(
+        `Report this issue at %s`,
+        colorize(fxError.issueLink as string, TextType.Hyperlink)
+      );
+    }
+    logger.debug(`Call stack: ${fxError.stack || fxError.innerError?.stack || ""}`);
   }
 }
 

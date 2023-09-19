@@ -9,16 +9,16 @@ import "mocha";
 import os from "os";
 import * as sinon from "sinon";
 import * as tools from "../../../../src/common/tools";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import {
   convertScriptErrorToFxError,
+  getStderrHandler,
   parseSetOutputCommand,
   scriptDriver,
 } from "../../../../src/component/driver/script/scriptDriver";
 import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
 import { DefaultEncoding, getSystemEncoding } from "../../../../src/component/utils/charsetUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
-import { MockUserInteraction } from "../../../core/utils";
+import { MockLogProvider, MockUserInteraction } from "../../../core/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 
@@ -31,7 +31,7 @@ describe("Script Driver test", () => {
     sandbox.restore();
   });
   it("execute success: set-output and append to file", async () => {
-    const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
+    const appendFileSyncStub = sandbox.stub(fs, "appendFile");
     const args = {
       workingDirectory: "./",
       run: `echo '::set-output MY_KEY=MY_VALUE'`,
@@ -47,7 +47,7 @@ describe("Script Driver test", () => {
         end: async (): Promise<void> => {},
       } as IProgressHandler,
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
@@ -69,7 +69,7 @@ describe("Script Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isErr());
   });
@@ -159,5 +159,26 @@ describe("parseSetOutputCommand", () => {
       TAB_DOMAIN: "localhost:53000",
       TAB_ENDPOINT: "https://localhost:53000",
     });
+  });
+});
+
+describe("getStderrHandler", () => {
+  const sandbox = sinon.createSandbox();
+  beforeEach(() => {});
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    const logProvider = new MockLogProvider();
+    const systemEncoding = "utf-8";
+    const stderrStrings: string[] = [];
+    const handler = getStderrHandler(
+      logProvider,
+      systemEncoding,
+      stderrStrings,
+      async (data: string) => {}
+    );
+    await handler(Buffer.from("test"));
+    assert.deepEqual(stderrStrings, ["test"]);
   });
 });

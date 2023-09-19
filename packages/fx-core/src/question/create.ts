@@ -43,7 +43,7 @@ import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, assembleError } from "../error";
-import { QuestionNames } from "./questionNames";
+import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
@@ -320,6 +320,14 @@ export class CapabilityOptions {
     };
   }
 
+  static SearchMe(): OptionItem {
+    return {
+      id: "search-message-extension",
+      label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+      detail: getLocalizedString("core.SearchAppOptionItem.detail"),
+    };
+  }
+
   static collectFormMe(): OptionItem {
     return {
       id: "collect-form-message-extension",
@@ -336,21 +344,13 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
-      ? // currently no ai bot for dotnet
-        [
-          CapabilityOptions.basicBot(),
-          CapabilityOptions.notificationBot(),
-          CapabilityOptions.commandBot(),
-          CapabilityOptions.workflowBot(inputs),
-        ]
-      : [
-          CapabilityOptions.basicBot(),
-          CapabilityOptions.aiBot(),
-          CapabilityOptions.notificationBot(),
-          CapabilityOptions.commandBot(),
-          CapabilityOptions.workflowBot(inputs),
-        ];
+    return [
+      CapabilityOptions.basicBot(),
+      CapabilityOptions.aiBot(),
+      CapabilityOptions.notificationBot(),
+      CapabilityOptions.commandBot(),
+      CapabilityOptions.workflowBot(inputs),
+    ];
   }
 
   static tabs(): OptionItem[] {
@@ -368,16 +368,22 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
-      ...CapabilityOptions.mes(),
+      ...CapabilityOptions.mes(inputs),
     ];
   }
 
-  static mes(): OptionItem[] {
-    return [
-      CapabilityOptions.linkUnfurling(),
-      CapabilityOptions.m365SearchMe(),
-      CapabilityOptions.collectFormMe(),
-    ];
+  static mes(inputs?: Inputs): OptionItem[] {
+    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
+      ? [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.SearchMe(),
+          CapabilityOptions.collectFormMe(),
+        ]
+      : [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+        ];
   }
 
   static copilotPlugins(): OptionItem[] {
@@ -396,24 +402,35 @@ export class CapabilityOptions {
     };
   }
 
+  static staticAll(inputs?: Inputs): OptionItem[] {
+    const capabilityOptions = [
+      ...CapabilityOptions.bots(inputs),
+      ...CapabilityOptions.tabs(),
+      ...CapabilityOptions.mes(),
+      CapabilityOptions.copilotPluginCli(),
+    ];
+
+    return capabilityOptions;
+  }
+
   static all(inputs?: Inputs): OptionItem[] {
+    // teamsfx list capabilities
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.mes(),
     ];
-
     if (isCopilotPluginEnabled()) {
       capabilityOptions.push(CapabilityOptions.copilotPluginCli());
     }
+
     return capabilityOptions;
   }
 
   static officeAddinImport(): OptionItem {
     return {
-      id: "import-addin-project",
+      id: "import",
       label: getLocalizedString("core.importAddin.label"),
-      cliName: "import",
       detail: getLocalizedString("core.importAddin.detail"),
       description: getLocalizedString(
         "core.createProjectQuestion.option.description.previewOnWindow"
@@ -449,7 +466,7 @@ export class CapabilityOptions {
   // copilot plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: "copilot-new-api",
+      id: "copilot-plugin-new-api",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -516,11 +533,11 @@ function capabilityQuestion(): SingleSelectQuestion {
       }
     },
     cliDescription: "Specifies the Teams App capability.",
-    cliName: "capability",
+    cliName: CliQuestionName.Capability,
     cliShortName: "c",
     cliChoiceListCommand: "teamsfx list capabilities",
     type: "singleSelect",
-    staticOptions: CapabilityOptions.all(),
+    staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {
       // from dev portal
       if (isFromDevPortal(inputs)) {
@@ -594,7 +611,6 @@ export class NotificationTriggerOptions {
       id: "http-restify",
       hostType: HostType.AppService,
       label: getLocalizedString("plugins.bot.triggers.http-restify.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-restify.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-restify.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-restify.detail"),
     };
@@ -604,7 +620,6 @@ export class NotificationTriggerOptions {
       id: "http-webapi",
       hostType: HostType.AppService,
       label: getLocalizedString("plugins.bot.triggers.http-webapi.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-webapi.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-webapi.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-webapi.detail"),
     };
@@ -616,7 +631,6 @@ export class NotificationTriggerOptions {
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.TIMER],
       label: getLocalizedString("plugins.bot.triggers.timer-functions.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.timer-functions.cliName"),
       description: getLocalizedString("plugins.bot.triggers.timer-functions.description"),
       detail: getLocalizedString("plugins.bot.triggers.timer-functions.detail"),
     };
@@ -628,7 +642,6 @@ export class NotificationTriggerOptions {
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
       label: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.detail"),
     };
@@ -640,7 +653,6 @@ export class NotificationTriggerOptions {
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.HTTP],
       label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
-      cliName: getLocalizedString("plugins.bot.triggers.http-functions.cliName"),
       description: getLocalizedString("plugins.bot.triggers.http-functions.description"),
       detail: getLocalizedString("plugins.bot.triggers.http-functions.detail"),
     };
@@ -711,6 +723,7 @@ function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: CapabilityOptions.copilotPlugins(),
     cliShortName: "cp",
+    cliDescription: "Plugin for Copilot.",
   };
 }
 
@@ -789,17 +802,17 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
     },
     default: SPFxVersionOptionIds.installLocally,
     validation: {
-      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      validFunc: (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         if (input === SPFxVersionOptionIds.globalPackage) {
           const hasPackagesInstalled =
             !!previousInputs &&
             !!previousInputs.globalSpfxPackageVersion &&
             !!previousInputs.globalYeomanPackageVersion;
           if (!hasPackagesInstalled) {
-            throw DevEnvironmentSetupError();
+            return Promise.reject(DevEnvironmentSetupError());
           }
         }
-        return undefined;
+        return Promise.resolve(undefined);
       },
     },
     cliShortName: "sp",
@@ -898,13 +911,13 @@ export const getTemplate = (inputs: Inputs): string => {
 
   return foundTemplate ?? "";
 };
-function officeAddinHostingQuestion(): SingleSelectQuestion {
+export function officeAddinHostingQuestion(): SingleSelectQuestion {
   const OfficeHostQuestion: SingleSelectQuestion = {
     type: "singleSelect",
     name: QuestionNames.OfficeAddinHost,
     title: "Add-in Host",
     staticOptions: [],
-    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    dynamicOptions: (inputs: Inputs) => {
       const template = getTemplate(inputs);
       const getHostTemplateNames = officeAddinJsonData.getHostTemplateNames(template);
       const options = getHostTemplateNames.map((host) => ({
@@ -913,7 +926,7 @@ function officeAddinHostingQuestion(): SingleSelectQuestion {
       }));
       return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
     },
-    default: async (inputs: Inputs): Promise<string> => {
+    default: (inputs: Inputs) => {
       const template = getTemplate(inputs);
       const options = officeAddinJsonData.getHostTemplateNames(template);
       return options[0] || "No Options";
@@ -998,15 +1011,21 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
   return programmingLanguageQuestion;
 }
 
-function rootFolderQuestion(): FolderQuestion {
+export function folderQuestion(): FolderQuestion {
   return {
     type: "folder",
     name: QuestionNames.Folder,
     cliShortName: "f",
-    title: getLocalizedString("core.question.workspaceFolder.title"),
-    cliDescription: "Root folder of the project.",
+    title: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "Directory where the project folder will be created in"
+        : getLocalizedString("core.question.workspaceFolder.title"),
+    cliDescription: "Directory where the project folder will be created in.",
     placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
-    default: path.join(os.homedir(), ConstantString.RootFolder),
+    default: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "./"
+        : path.join(os.homedir(), ConstantString.RootFolder),
   };
 }
 
@@ -1071,6 +1090,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     cliName: "sample-name",
     cliDescription: "Specifies the Teams App sample name.",
     cliChoiceListCommand: "teamsfx list samples",
+    skipValidation: true,
     cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),
     staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
@@ -1127,6 +1147,7 @@ function runtimeQuestion(): SingleSelectQuestion {
     staticOptions: [RuntimeOptions.NodeJS(), RuntimeOptions.DotNet()],
     default: RuntimeOptions.NodeJS().id,
     placeholder: getLocalizedString("core.getRuntimeQuestion.placeholder"),
+    cliHidden: true,
   };
 }
 const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
@@ -1284,6 +1305,9 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         inputs!.supportedApisFromApiSpec = res.value;
       } else {
         const errors = res.error;
+        if (inputs?.platform === Platform.CLI) {
+          return errors.map((e) => e.content).join("\n");
+        }
         if (
           errors.length === 1 &&
           errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
@@ -1308,19 +1332,25 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
     cliShortName: "oapi",
+    cliDescription: "OpenAPI specification file location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
+      type: "innerText",
       title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
       placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.placeholder"),
       name: "input-api-spec-url",
       step: 2, // Add "back" button
-      validation: async (input: string): Promise<string | undefined> => {
-        return isValidHttpUrl(input)
-          ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+      validation: {
+        validFunc: (input: string, inputs?: Inputs): Promise<string | undefined> => {
+          const result = isValidHttpUrl(input)
+            ? undefined
+            : inputs?.platform === Platform.CLI
+            ? "Please enter a valid URL or local path of your API Specification"
+            : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+          return Promise.resolve(result);
+        },
       },
-      additionalValidationOnAccept: validationOnAccept,
     },
     inputOptionItem: {
       id: "input",
@@ -1331,8 +1361,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     },
     validation: {
       validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
-        if (input === "input") {
-          return undefined;
+        if (!isValidHttpUrl(input) && !(await fs.pathExists(input))) {
+          return "Please enter a valid URL or local path of your API Specification";
         }
 
         return await validationOnAccept(input, inputs);
@@ -1345,19 +1375,21 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
   return {
     type: "text",
-    name: QuestionNames.OpenAIPluginManifestLocation,
+    name: QuestionNames.OpenAIPluginDomain,
     cliShortName: "oai",
     title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
+    cliDescription: "OpenAI plugin website domain.",
     forgetLastValue: true,
     validation: {
-      validFunc: async (input: string): Promise<string | undefined> => {
-        const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?$/i;
+      validFunc: (input: string): Promise<string | undefined> => {
+        const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?(\/)?$/i;
         const match = pattern.test(input);
 
-        return match
+        const result = match
           ? undefined
           : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+        return Promise.resolve(result);
       },
     },
     additionalValidationOnAccept: {
@@ -1386,6 +1418,9 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             inputs!.supportedApisFromApiSpec = res.value;
           } else {
             const errors = res.error;
+            if (inputs?.platform === Platform.CLI) {
+              return errors.map((e) => e.content).join("\n");
+            }
             if (
               errors.length === 1 &&
               errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
@@ -1416,6 +1451,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    cliDescription: "Specifies API(s) to be used in Copilot plugin.",
     cliShortName: "api",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
@@ -1425,9 +1461,9 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     validation: {
       minItems: 1,
     },
-    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    dynamicOptions: (inputs: Inputs) => {
       if (!inputs.supportedApisFromApiSpec) {
-        throw new EmptyOptionError();
+        throw new EmptyOptionError(QuestionNames.ApiOperation, "question");
       }
 
       const operations = inputs.supportedApisFromApiSpec;
@@ -1555,7 +1591,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         // root folder
-        data: rootFolderQuestion(),
+        data: folderQuestion(),
       },
       {
         // app name
@@ -1570,25 +1606,23 @@ export function createProjectQuestionNode(): IQTreeNode {
   const createProjectQuestion: IQTreeNode = {
     data: { type: "group" },
     children: [
-      ...(isCLIDotNetEnabled()
-        ? [
-            {
-              condition: (inputs: Inputs) => CLIPlatforms.includes(inputs.platform),
-              data: runtimeQuestion(),
-            },
-          ]
-        : []),
+      {
+        condition: (inputs: Inputs) =>
+          isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform),
+        data: runtimeQuestion(),
+      },
       {
         condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
         data: projectTypeQuestion(),
-        interactiveOnly: "self",
+        cliOptionDisabled: "self",
       },
       capabilitySubTree(),
       {
         condition: (inputs: Inputs) =>
           inputs.teamsAppFromTdp && isPersonalApp(inputs.teamsAppFromTdp),
         data: { type: "group", name: QuestionNames.RepalceTabUrl },
-        interactiveOnly: "all", //CLI non interactive mode will ignore this option
+        cliOptionDisabled: "all", //CLI non interactive mode will ignore this option
+        inputsDisabled: "all",
         children: [
           {
             condition: (inputs: Inputs) =>
@@ -1610,7 +1644,8 @@ export function createProjectQuestionNode(): IQTreeNode {
           return appDef && needBotCode(appDef);
         },
         data: selectBotIdsQuestion(),
-        interactiveOnly: "all", //CLI non interactive mode will ignore this option
+        cliOptionDisabled: "all", //CLI non interactive mode will ignore this option
+        inputsDisabled: "all",
       },
     ],
   };
@@ -1622,7 +1657,7 @@ export function createSampleProjectQuestionNode(): IQTreeNode {
     data: sampleSelectQuestion(), // for create sample command, sample name is argument
     children: [
       {
-        data: rootFolderQuestion(),
+        data: folderQuestion(),
       },
     ],
   };

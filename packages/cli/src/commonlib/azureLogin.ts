@@ -65,7 +65,7 @@ function getConfig(tenantId?: string) {
       loggerOptions: {
         loggerCallback(loglevel: any, message: any, containsPii: any) {
           if (this.logLevel <= LogLevel.Error) {
-            CLILogProvider.log(4 - loglevel, message);
+            void CLILogProvider.log(4 - loglevel, message);
           }
         },
         piiLoggingEnabled: false,
@@ -172,8 +172,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * Async get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
    */
-  async getIdentityCredentialAsync(showDialog = true): Promise<TokenCredential | undefined> {
-    return AzureAccountManager.teamsFxTokenCredential;
+  getIdentityCredentialAsync(showDialog = true): Promise<TokenCredential | undefined> {
+    return Promise.resolve(AzureAccountManager.teamsFxTokenCredential);
   }
 
   private async updateLoginStatus(): Promise<void> {
@@ -338,7 +338,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
                     });
                   }
                 }
-              } catch (error) {
+              } catch (error: any) {
                 if (error.message.indexOf(MFACode) >= 0) {
                   if (showMFA) {
                     CLILogProvider.necessaryLog(LLevel.Info, changeLoginTenantMessage);
@@ -467,11 +467,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    return undefined;
+  readSubscription(): Promise<SubscriptionInfo | undefined> {
+    return Promise.resolve(undefined);
   }
 
-  async getSubscriptionInfoPath(): Promise<string | undefined> {
+  getSubscriptionInfoPath(): Promise<string | undefined> {
     if (AzureAccountManager.rootPath) {
       if (isWorkspaceSupported(AzureAccountManager.rootPath)) {
         const subscriptionFile = path.join(
@@ -479,12 +479,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           `.${ConfigFolderName}`,
           subscriptionInfoFile
         );
-        return subscriptionFile;
+        return Promise.resolve(subscriptionFile);
       } else {
-        return undefined;
+        return Promise.resolve(undefined);
       }
     } else {
-      return undefined;
+      return Promise.resolve(undefined);
     }
   }
 

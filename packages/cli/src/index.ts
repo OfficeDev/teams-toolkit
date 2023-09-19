@@ -3,22 +3,21 @@
 
 "use strict";
 
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
-import "./console/screen";
-
-import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
-initializePreviewFeatureFlags();
-
+import { initializePreviewFeatureFlags, isCliNewUxEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import * as path from "path";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import { registerCommands } from "./cmds";
+import { start as startNewUX } from "./commands/index";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
+import "./console/screen";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
 import cliTelemetry from "./telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/cliTelemetryEvents";
 import { getVersion } from "./utils";
+
+initializePreviewFeatureFlags();
 
 function changeArgv(argv: string[]): string[] {
   return argv.map((s) => (s.startsWith("--") ? s.toLocaleLowerCase() : s));
@@ -34,40 +33,22 @@ export function initTelemetryReporter(): void {
   cliTelemetry.reporter = reporter;
 }
 
-export function sendCommandUsageTelemetry(processArgv: string[]): void {
-  const argv = yargs(changeArgv(hideBin(processArgv))).help(false).argv as any;
-  const keys = Object.keys(argv)
-    .filter((k) => k !== "_" && k !== "$0")
-    .join(",");
-  const body = argv._.join(" ");
-  const help = argv.h || argv.help;
-  const interactive = argv.interactive as string;
-  const level = argv.debug ? "debug" : argv.verbose ? "verbose" : "info";
-  const props: Record<string, string> = {
-    [TelemetryProperty.CommandOptions]: keys,
-    [TelemetryProperty.CommandHead]: (argv._[0] as string) || "",
-    [TelemetryProperty.CommandBody]: body,
-    [TelemetryProperty.CommandHelp]: help ? "true" : "",
-    [TelemetryProperty.Interactive]: interactive || "",
-    [TelemetryProperty.CommandLogLevel]: level,
-  };
-  cliTelemetry.sendTelemetryEvent(TelemetryEvent.Command, props);
-}
-
 /**
  * Starts the CLI process.
  */
 export async function start(): Promise<void> {
   initTelemetryReporter();
-  sendCommandUsageTelemetry(process.argv);
   registerPrompts();
+  if (isCliNewUxEnabled()) {
+    return startNewUX();
+  }
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
     "camel-case-expansion": false,
   });
 
   registerCommands(argv);
-  argv
+  void argv
     .options("verbose", {
       description: "Print additional information.",
       boolean: true,

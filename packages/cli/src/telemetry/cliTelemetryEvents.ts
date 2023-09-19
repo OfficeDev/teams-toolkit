@@ -10,6 +10,10 @@ export enum TelemetryEvent {
 
   AccountLoginStart = "login-start",
   AccountLogin = "login",
+  AccountLoginAzure = "login-azure",
+  AccountLoginM365 = "login-m365",
+
+  AccountLogout = "logout",
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
@@ -104,6 +108,10 @@ export enum TelemetryEvent {
   Upgrade = "upgrade",
 
   Command = "command", // this event is used to track the usage of each command, including --help command
+
+  M365Sigeloading = "m365-sideloading",
+  M365Unacquire = "m365-unacquire",
+  M365LaunchInfo = "m365-launch-info",
 }
 
 export enum TelemetryProperty {
@@ -143,13 +151,14 @@ export enum TelemetryProperty {
   IsCreatingM365 = "is-creating-m365",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
-  Interactive = "interactive",
 
-  CommandOptions = "options",
-  CommandHead = "head",
-  CommandBody = "body",
-  CommandHelp = "help",
-  CommandLogLevel = "loglevel",
+  // command related property
+  CommandName = "command-name",
+  CommandHelp = "command-help",
+  CommandVersion = "command-version",
+  CommandDebug = "command-debug",
+  CommandVerbose = "command-verbose",
+  CommandInteractive = "command-interactive",
 }
 
 export enum TelemetrySuccess {

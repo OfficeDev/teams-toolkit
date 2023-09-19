@@ -83,11 +83,11 @@ export function getLocalDebugSessionId(): string {
 export async function checkAndSkipDebugging(): Promise<boolean> {
   // skip debugging if there is already a debug session
   if (allRunningDebugSessions.size > 0) {
-    await VsCodeLogInstance.warning("Skip debugging because there is already a debug session.");
+    VsCodeLogInstance.warning("Skip debugging because there is already a debug session.");
     endLocalDebugSession();
-    return true;
+    return Promise.resolve(true);
   }
-  return false;
+  return Promise.resolve(false);
 }
 
 export class Step {

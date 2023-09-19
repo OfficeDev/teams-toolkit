@@ -138,14 +138,14 @@ export class OfficeAddinGenerator {
         await importProgress.next(
           getLocalizedString("core.generator.officeAddin.importProject.updateManifest")
         );
-        HelperMethods.updateManifest(destinationPath, manifestFile);
+        await HelperMethods.updateManifest(destinationPath, manifestFile);
       }
       process.chdir(workingDir);
-      importProgress.end(true, true);
+      await importProgress.end(true, true);
       return ok(undefined);
     } catch (e) {
       process.chdir(workingDir);
-      importProgress.end(false, true);
+      await importProgress.end(false, true);
       return err(CopyFileError(e as Error));
     }
   }

@@ -1,5 +1,5 @@
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { ok } from "@microsoft/teamsfx-api";
+import { ok, Platform } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
@@ -39,6 +39,7 @@ describe("resouce group helper test", () => {
       "id"
     );
     const res = await resourceGroupHelper.askResourceGroupInfoV3(
+      { platform: Platform.VSCode, projectPath: "" },
       tools.tokenProvider.azureAccountProvider,
       mockResourceManagementClient,
       "rg1"

@@ -12,6 +12,14 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
 export const CreateProjectOptions: CLICommandOption[] = [
   {
+    name: "runtime",
+    type: "string",
+    description: "Teams Toolkit: select runtime for your app",
+    default: "node",
+    hidden: true,
+    choices: ["node", "dotnet"],
+  },
+  {
     name: "capability",
     questionName: "capabilities",
     type: "string",
@@ -20,6 +28,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     required: true,
     choices: [
       "bot",
+      "ai-bot",
       "notification",
       "command-bot",
       "workflow-bot",
@@ -29,7 +38,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "tab-spfx",
       "link-unfurling",
       "search-app",
-      "CollectFormMessagingExtension",
+      "collect-form-message-extension",
       "copilot-plugin-capability",
     ],
     choiceListCommand: "teamsfx list capabilities",
@@ -88,26 +97,26 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "copilot-plugin-option",
     type: "string",
     shortName: "cp",
-    description: "Plugin for Copilot",
-    choices: ["copilot-new-api", "copilot-api-spec", "copilot-ai-plugin"],
+    description: "Plugin for Copilot.",
+    choices: ["copilot-plugin-new-api", "copilot-plugin-api-spec", "copilot-plugin-openai-plugin"],
   },
   {
     name: "api-spec-location",
     type: "string",
     shortName: "oapi",
-    description: "OpenAPI Spec",
+    description: "OpenAPI specification file location.",
   },
   {
-    name: "openai-plugin-manifest-location",
+    name: "openai-plugin-domain",
     type: "string",
     shortName: "oai",
-    description: "OpenAI Plugin Manifest",
+    description: "OpenAI plugin website domain.",
   },
   {
     name: "api-operation",
     type: "array",
     shortName: "api",
-    description: "Select an Operation",
+    description: "Specifies API(s) to be used in Copilot plugin.",
   },
   {
     name: "programming-language",
@@ -116,6 +125,14 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Programming Language.",
     default: "javascript",
     choices: ["javascript", "typescript", "csharp"],
+  },
+  {
+    name: "folder",
+    type: "string",
+    shortName: "f",
+    description: "Directory where the project folder will be created in.",
+    required: true,
+    default: "./",
   },
   {
     name: "app-name",

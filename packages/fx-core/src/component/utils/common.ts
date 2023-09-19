@@ -91,7 +91,7 @@ export async function wrapRun(
     }
     if (error instanceof BaseComponentInnerError) {
       if (error.detail) {
-        await logProvider?.debug(`Error occurred: ${error.detail}`);
+        logProvider?.debug(`Error occurred: ${error.detail}`);
       }
       return err(error.toFxError());
     } else if (error instanceof UserError || error instanceof SystemError) {

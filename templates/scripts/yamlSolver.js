@@ -167,7 +167,7 @@ function solveMustache(mustachePaths) {
     const solutionPath = path.resolve(
       solutionFolder,
       path.dirname(path.relative(mustacheFolder, mustachePath)),
-      path.basename(mustachePath, ".mustache") + ".yml.tpl"
+      path.basename(mustachePath, Ext.Mustache)
     );
     return { mustachePath, solution, solutionPath };
   });
@@ -222,7 +222,7 @@ class YamlSolver {
       const mustachePath = path.resolve(
         mustacheFolder,
         path.dirname(path.relative(solutionFolder, file)),
-        path.basename(file, ".yml.tpl") + ".mustache"
+        path.basename(file) + Ext.Mustache
       );
       if (existsSync(mustachePath)) {
         return;
@@ -266,7 +266,7 @@ function parseInput() {
   if (command === Command.INIT) {
     return {
       command,
-      solutionsPath: utils.filterYmlTplFiles(path.resolve(process.argv[3])),
+      solutionsPath: utils.filterYmlFiles(path.resolve(process.argv[3])),
     };
   }
   return {

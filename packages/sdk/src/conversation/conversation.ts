@@ -140,11 +140,13 @@ export class ConversationBot {
     // the default error handler
     adapter.onTurnError = async (context, error) => {
       // This check writes out errors to console.
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       console.error(`[onTurnError] unhandled error: ${error}`);
 
       // Send a trace activity, which will be displayed in Bot Framework Emulator
       await context.sendTraceActivity(
         "OnTurnError Trace",
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         `${error}`,
         "https://www.botframework.com/schemas/error",
         "TurnError"

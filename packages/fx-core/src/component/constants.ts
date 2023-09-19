@@ -65,6 +65,11 @@ export const TelemetryConstants = {
     errorCat1: "error-cat1", // need classify, error category level 1
     errorCat2: "error-cat2", // need classify, error category level 2
     errorCat3: "error-cat3", // need classify, error category level 3
+    errorStage: "error-stage", // need classify
+    errorComponent: "error-component", // need classify
+    errorMethod: "error-method", // need classify
+    errorSource: "error-source", // need classify
+    errorInnerCode: "error-inner-code", // need classify
   },
   values: {
     yes: "yes",

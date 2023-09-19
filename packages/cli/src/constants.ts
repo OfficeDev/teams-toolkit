@@ -43,6 +43,20 @@ export const EnvOptions: OptionsMap = {
     description: "Select an existing environment for the project",
   },
 };
+export const ProvisionOptions: OptionsMap = {
+  ["resource-group"]: {
+    type: "string",
+    global: false,
+    hidden: true,
+    description: "Specifies resource group name",
+  },
+  ["region"]: {
+    type: "string",
+    global: false,
+    hidden: true,
+    description: "Specifies resource group region",
+  },
+};
 
 export const SubscriptionNode = new QTreeNode({
   type: "text",

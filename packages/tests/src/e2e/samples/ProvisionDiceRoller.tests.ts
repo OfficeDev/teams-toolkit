@@ -6,11 +6,12 @@
  */
 
 import { TemplateProjectFolder } from "../../utils/constants";
-import sampleCaseFactory from "./sampleCaseFactory";
+import { CaseFactory } from "./sampleCaseFactory";
 
-const sampleCase = sampleCaseFactory(
+class DiceRollerTestCase extends CaseFactory {}
+
+new DiceRollerTestCase(
   TemplateProjectFolder.DiceRoller,
   24132156,
   "v-ivanchen@microsoft.com"
-);
-sampleCase.test();
+).test();

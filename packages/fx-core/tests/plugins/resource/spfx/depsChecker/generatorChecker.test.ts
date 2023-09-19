@@ -14,34 +14,28 @@ import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
 
 class StubLogger implements LogProvider {
-  async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    return true;
+  msg = "";
+  verbose(msg: string): void {
+    this.log(LogLevel.Verbose, msg);
   }
-
-  async trace(message: string): Promise<boolean> {
-    return true;
+  debug(msg: string): void {
+    this.log(LogLevel.Debug, msg);
   }
-
-  async debug(message: string): Promise<boolean> {
-    return true;
+  info(msg: string | Array<any>): void {
+    this.log(LogLevel.Info, msg as string);
   }
-
-  async info(message: string | Array<{ content: string; color: Colors }>): Promise<boolean> {
-    return true;
+  warning(msg: string): void {
+    this.log(LogLevel.Warning, msg);
   }
-
-  async warning(message: string): Promise<boolean> {
-    return true;
+  error(msg: string): void {
+    this.log(LogLevel.Error, msg);
   }
-
-  async error(message: string): Promise<boolean> {
-    return true;
+  log(level: LogLevel, msg: string): void {
+    this.msg = msg;
   }
-
-  async fatal(message: string): Promise<boolean> {
-    return true;
+  async logInFile(level: LogLevel, msg: string): Promise<void> {
+    this.msg = msg;
   }
-
   getLogFilePath(): string {
     return "";
   }

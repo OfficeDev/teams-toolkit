@@ -61,7 +61,7 @@ export abstract class NodeChecker implements DepsChecker {
     try {
       supportedVersions = await this.getSupportedVersions(installOptions?.projectPath);
 
-      await this._logger.debug(
+      this._logger.debug(
         `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
       );
 
@@ -105,9 +105,9 @@ export abstract class NodeChecker implements DepsChecker {
   public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     const installationInfo = await this.getInstallationInfo(installOptions);
     if (installationInfo.error) {
-      await this._logger.printDetailLog();
-      await this._logger.error(
-        `${installationInfo.error.message}, error = '${installationInfo.error}'`
+      this._logger.printDetailLog();
+      this._logger.error(
+        `${installationInfo.error.message}, error = '${installationInfo.error.toString()}'`
       );
     }
     this._logger.cleanup();

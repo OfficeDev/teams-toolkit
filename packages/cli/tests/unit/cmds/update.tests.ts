@@ -11,7 +11,7 @@ import Update, { UpdateAadApp, UpdateTeamsApp } from "../../../src/cmds/update";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../../src/userInteraction";
 import { mockLogProvider, mockTelemetry, mockYargs } from "../utils";
-import { MissingRequiredArgumentError } from "../../../src/error";
+import { MissingRequiredArgumentError, MissingRequiredOptionError } from "../../../src/error";
 
 describe("Update Aad Manifest Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -30,14 +30,17 @@ describe("Update Aad Manifest Command Tests", function () {
     options = [];
     telemetryEvents = [];
   });
-
+  it("update", () => {
+    const cmd = new Update();
+    cmd.runCommand({});
+  });
   it("should pass builder check -- aad", () => {
     const cmd = new UpdateAadApp();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
   });
 
   it("Run command failed without env", async () => {
-    sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(""));
+    sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
     const cmd = new Update();
     const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-app");
     const args = {
@@ -49,12 +52,12 @@ describe("Update Aad Manifest Command Tests", function () {
     const res = await updateAadManifest!.runCommand(args);
     expect(res.isErr()).to.be.true;
     if (res.isErr()) {
-      expect(res.error instanceof MissingRequiredArgumentError).to.be.true;
+      expect(res.error instanceof MissingRequiredOptionError).to.be.true;
     }
   });
 
   it("Run command success -- aad", async () => {
-    sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(""));
+    sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
     const cmd = new Update();
     const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-app");
     const args = {
@@ -123,7 +126,7 @@ describe("Update Teams app manifest Command Tests", function () {
   });
 
   it("Run command success", async () => {
-    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(""));
+    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
     const cmd = new Update();
     const updateTeamsAppManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");
     const args = {
@@ -164,7 +167,7 @@ describe("Update Teams app manifest Command Tests", function () {
   });
 
   it("Update Teams app - Run command failed without env", async () => {
-    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(""));
+    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
     const cmd = new Update();
     const updateTeamsAppManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");
     const args = {
@@ -174,7 +177,7 @@ describe("Update Teams app manifest Command Tests", function () {
     const res = await updateTeamsAppManifest!.runCommand(args);
     expect(res.isErr()).to.be.true;
     if (res.isErr()) {
-      expect(res.error instanceof MissingRequiredArgumentError).to.be.true;
+      expect(res.error instanceof MissingRequiredOptionError).to.be.true;
     }
   });
 });

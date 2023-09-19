@@ -171,7 +171,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
       // NOTE: handle the case that msedge/chrome will be resolved twice
       if (!debugConfiguration.teamsfxResolved) {
-        await VsCodeLogInstance.info(
+        VsCodeLogInstance.info(
           sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub ?? Hub.teams)
         );
         VsCodeLogInstance.outputChannel.appendLine("");

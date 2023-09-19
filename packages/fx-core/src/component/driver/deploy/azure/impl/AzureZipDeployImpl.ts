@@ -23,6 +23,8 @@ import { getLocalizedString } from "../../../../../common/localizeUtils";
 import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
 import { DeployZipPackageError } from "../../../../../error/deploy";
+import { ErrorContextMW } from "../../../../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -57,7 +59,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     const cost = await this.zipDeploy(args, azureResource, azureCredential);
     await this.restartFunctionApp(azureResource);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
-      await this.context.logProvider?.info(
+      this.context.logProvider?.info(
         getLocalizedString(
           "driver.deploy.notice.deployAcceleration",
           "https://aka.ms/teamsfx-config-run-from-package"
@@ -84,11 +86,11 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
     azureCredential: TokenCredential
   ): Promise<number> {
     const zipBuffer = await this.packageToZip(args, this.context);
-    await this.context.logProvider.debug("Start to get Azure account info for deploy");
+    this.context.logProvider.debug("Start to get Azure account info for deploy");
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);
-    await this.context.logProvider.debug("Get Azure account info for deploy complete");
+    this.context.logProvider.debug("Get Azure account info for deploy complete");
     const endpoint = this.getZipDeployEndpoint(azureResource.instanceId);
-    await this.context.logProvider.debug(`Start to upload code to ${endpoint}`);
+    this.context.logProvider.debug(`Start to upload code to ${endpoint}`);
     const startTime = Date.now();
     const location = await this.zipDeployPackage(
       endpoint,
@@ -96,10 +98,10 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
       config,
       this.context.logProvider
     );
-    await this.context.logProvider.debug("Upload code to Azure complete");
-    await this.context.logProvider.debug("Start to check Azure deploy status");
+    this.context.logProvider.debug("Upload code to Azure complete");
+    this.context.logProvider.debug("Start to check Azure deploy status");
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
-    await this.context.logProvider.debug("Check Azure deploy status complete");
+    this.context.logProvider.debug("Check Azure deploy status complete");
     const cost = Date.now() - startTime;
     this.context.telemetryReporter.sendTelemetryEvent("deployResponse", {
       time_cost: cost.toString(),
@@ -136,9 +138,9 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           DeployConstant.DEPLOYMENT_TMP_FOLDER,
           DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
         );
-    await this.context.logProvider?.debug(`start zip dist folder ${this.distDirectory}`);
+    this.context.logProvider?.debug(`start zip dist folder ${this.distDirectory}`);
     const res = await zipFolderAsync(this.distDirectory, this.zipFilePath, ig);
-    await this.context.logProvider?.debug(
+    this.context.logProvider?.debug(
       `zip dist folder ${this.distDirectory} to ${this.zipFilePath} complete`
     );
     return res;
@@ -152,6 +154,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    * @param logger log provider
    * @protected
    */
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureZipDeployImpl" })])
   async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
@@ -170,14 +173,14 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           if ((e.response?.status ?? HttpStatusCode.OK) >= HttpStatusCode.INTERNAL_SERVER_ERROR) {
             retryCount += 1;
             if (retryCount < DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
-              await logger.warning(
+              logger.warning(
                 `Upload zip file failed with response status code: ${
                   e.response?.status ?? "NA"
                 }. Retrying...`
               );
             } else {
               // if retry times exceed, throw error
-              await logger.warning(
+              logger.warning(
                 `Retry times exceeded. Upload zip file failed with remote server error. Message: ${JSON.stringify(
                   e.response?.data
                 )}`
@@ -194,7 +197,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
             }
           } else {
             // None server error, throw
-            await logger.error(
+            logger.error(
               `Upload zip file failed with response status code: ${
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
@@ -211,7 +214,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           }
         } else {
           // if the error is not axios error, throw
-          await logger.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
+          logger.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
           throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
       }
@@ -219,7 +222,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
 
     if (res?.status !== HttpStatusCode.OK && res?.status !== HttpStatusCode.ACCEPTED) {
       if (res?.status) {
-        await logger.error(`Deployment is failed with error code: ${res.status}.`);
+        logger.error(`Deployment is failed with error code: ${res.status}.`);
       }
       throw new DeployZipPackageError(
         zipDeployEndpoint,

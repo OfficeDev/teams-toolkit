@@ -11,9 +11,14 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface CreateProjectInputs extends Inputs {
+  /** @description Teams Toolkit: select runtime for your app */
+  runtime?: "node" | "dotnet";
+  /** @description New Project */
+  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type";
   /** @description Capabilities */
   capabilities?:
     | "bot"
+    | "ai-bot"
     | "notification"
     | "command-bot"
     | "workflow-bot"
@@ -23,7 +28,7 @@ export interface CreateProjectInputs extends Inputs {
     | "tab-spfx"
     | "link-unfurling"
     | "search-app"
-    | "CollectFormMessagingExtension"
+    | "collect-form-message-extension"
     | "copilot-plugin-capability";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
@@ -43,11 +48,14 @@ export interface CreateProjectInputs extends Inputs {
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
   /** @description Plugin for Copilot */
-  "copilot-plugin-option"?: "copilot-new-api" | "copilot-api-spec" | "copilot-ai-plugin";
+  "copilot-plugin-option"?:
+    | "copilot-plugin-new-api"
+    | "copilot-plugin-api-spec"
+    | "copilot-plugin-openai-plugin";
   /** @description OpenAPI Spec */
   "api-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */
-  "openai-plugin-manifest-location"?: string;
+  "openai-plugin-domain"?: string;
   /** @description Select an Operation */
   "api-operation"?: string[];
   /** @description Programming Language. */

@@ -13,7 +13,6 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { GenerateJsonArgs } from "./interface/generateJsonArgs";
 import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 import * as commentJson from "comment-json";
@@ -25,11 +24,9 @@ const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateOrUpdateJsonFileDriver implements StepDriver {
   description = getLocalizedString("driver.file.createOrUpdateJsonFile.description");
+  readonly progressTitle = getLocalizedString("driver.file.progressBar.appsettings");
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: GenerateJsonArgs,
     context: DriverContext
@@ -40,10 +37,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(args: GenerateJsonArgs, ctx: DriverContext): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {

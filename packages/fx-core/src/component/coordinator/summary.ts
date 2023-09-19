@@ -205,7 +205,8 @@ export class SummaryReporter {
     const flattened = _.flatten(summaries);
     return `Summary:${EOL}${
       createdEnvFile
-        ? `  ${getLocalizedString("core.summary.createdEnvFile")} ` + createdEnvFile + EOL + EOL
+        ? // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+          `  ${getLocalizedString("core.summary.createdEnvFile")} ` + createdEnvFile + EOL + EOL
         : ""
     }${flattened.join(EOL)}`;
   }

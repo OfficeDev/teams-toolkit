@@ -20,7 +20,6 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError, UserCancelError } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
 
 const actionName = "teamsApp/publishAppPackage";
 
@@ -31,6 +30,8 @@ const defaultOutputNames = {
 @Service(actionName)
 export class PublishAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.publishDriver");
+  readonly progressTitle = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
+
   public async run(
     args: PublishAppPackageArgs,
     context: DriverContext
@@ -57,10 +58,7 @@ export class PublishAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async publish(
     args: PublishAppPackageArgs,
     context: WrapDriverContext,
@@ -182,7 +180,7 @@ export class PublishAppPackageDriver implements StepDriver {
       return err(e);
     }
 
-    await context.logProvider.info(`Publish success!`);
+    context.logProvider.info(`Publish success!`);
     context.addSummary(
       getLocalizedString("driver.teamsApp.summary.publishTeamsAppSuccess", manifest.id)
     );

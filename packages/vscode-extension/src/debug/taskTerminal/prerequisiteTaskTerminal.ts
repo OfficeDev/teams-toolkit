@@ -85,7 +85,7 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     const duration = this.getDurationInSeconds();
     const displayMessages = v3PrerequisiteCheckTaskDisplayMessages;
     if (res.isOk() && duration) {
-      await VsCodeLogInstance.info(displayMessages.durationMessage(duration));
+      VsCodeLogInstance.info(displayMessages.durationMessage(duration));
     }
     return res;
   }

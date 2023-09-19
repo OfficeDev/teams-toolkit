@@ -44,8 +44,8 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: command and response", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsfx new --interactive false --app-name ${appName} --capabilities command-bot --programming-language typescript`
-          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capabilities command-bot`;
+          ? `teamsfx new --interactive false --app-name ${appName} --capability command-bot --programming-language typescript`
+          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capability command-bot`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,

@@ -555,7 +555,6 @@ describe("Generator happy path", async () => {
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "foobar.zip")));
-    context.templateVariables = Generator.getDefaultVariables("foobar");
     const result = await Generator.generateTemplate(context, tmpDir, realTemplateName, language);
     assert.isTrue(result.isOk());
   });

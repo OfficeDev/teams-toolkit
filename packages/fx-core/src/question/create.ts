@@ -1333,7 +1333,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       const res = await listOperations(
         context,
         undefined,
-        input,
+        input.trim(),
         inputs![QuestionNames.ManifestPath],
         includeExistingAPIs,
         false
@@ -1425,7 +1425,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
 
         const result = match
           ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
         return Promise.resolve(result);
       },
     },

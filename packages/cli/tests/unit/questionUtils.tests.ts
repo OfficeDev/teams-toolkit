@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { QTreeNode, Question, StaticOptions } from "@microsoft/teamsfx-api";
+import { IQTreeNode, Question, StaticOptions } from "@microsoft/teamsfx-api";
 import "mocha";
 import sinon from "sinon";
 import { filterQTreeNode } from "../../src/questionUtils";
@@ -21,23 +21,28 @@ describe("Question Utils Tests", function () {
       cliName: "azure-sql",
     },
   ];
-  const root = new QTreeNode({
-    type: "multiSelect",
-    name: "add-azure-resources",
-    title: "Cloud Resources",
-    staticOptions: resources,
-    onDidChangeSelection: async (currentSelectedIds: Set<string>, _: any) => {
-      if (currentSelectedIds.has("sql")) currentSelectedIds.add("function");
-      return currentSelectedIds;
+  const root: IQTreeNode = {
+    data: {
+      type: "multiSelect",
+      name: "add-azure-resources",
+      title: "Cloud Resources",
+      staticOptions: resources,
+      onDidChangeSelection: async (currentSelectedIds: Set<string>, _: any) => {
+        if (currentSelectedIds.has("sql")) currentSelectedIds.add("function");
+        return currentSelectedIds;
+      },
     },
-  });
-  const functionNode = new QTreeNode({
-    type: "text",
-    name: "function-name",
-    title: "Function Name",
-  });
-  functionNode.condition = { contains: "function" };
-  root.addChild(functionNode);
+    children: [
+      {
+        condition: { contains: "function" },
+        data: {
+          type: "text",
+          name: "function-name",
+          title: "Function Name",
+        },
+      },
+    ],
+  };
 
   afterEach(() => {
     sandbox.restore();

@@ -21,7 +21,8 @@ Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/package
 
 ### Prerequisites
 
-- Node.js version 10.x.x or higher
+- Node.js version 18 or higher
+- PNPM version 8 or higher
 - A project created by the Teams Toolkit VS Code extension or `teamsfx` CLI tool.
 - If your project has installed `botbuilder` related [packages](https://github.com/Microsoft/botbuilder-js#packages) as dependencies, ensure they are of the same version and the version `>= 4.18.0`. ([Issue - all of the BOTBUILDER packages should be the same version](https://github.com/BotBuilderCommunity/botbuilder-community-js/issues/57#issuecomment-508538548))
 
@@ -597,7 +598,7 @@ Also see [Credential](#Credential) for furthur description.
 
 From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter` is recommended to be used instead. You can import `ConversationBot` from `BotBuilderCloudAdapter` to use the latest SDK implemented with `CloudAdapter`.
 
-1. Install `@microsoft/teamsfx @^2.2.0`, `botbuilder @^4.18.0`, (and `@types/node @^14.0.0` for TS projects) via `npm install` as follows.
+1. Install `@microsoft/teamsfx @^2.2.0`, `botbuilder @^4.18.0`, (and `@types/node @^18.0.0` for TS projects) via `npm install` as follows.
 
    ```sh
    npm install @microsoft/teamsfx

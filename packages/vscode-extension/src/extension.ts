@@ -19,6 +19,7 @@ import {
   VersionState,
   setRegion,
   isCopilotPluginEnabled,
+  isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -518,6 +519,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(localDebugWithIcon);
 
+  const debugInTestToolWithIcon = vscode.commands.registerCommand(
+    "fx-extension.debugInTestToolWithIcon",
+    () => Correlator.run(handlers.treeViewDebugInTestToolHandler)
+  );
+  context.subscriptions.push(debugInTestToolWithIcon);
+
   const m365AccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.m365AccountSettings",
     () => Correlator.run(handlers.openM365AccountHandler)
@@ -590,7 +597,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openManifestSchemaCmd);
 
-  if (isCopilotPluginEnabled()) {
+  if (isApiCopilotPluginEnabled()) {
     const addAPICmd = vscode.commands.registerCommand(
       "fx-extension.copilotPluginAddAPI",
       async (...args) => {
@@ -727,6 +734,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/manifest.*.json`,
   };
 
+  const smeOpenapiSpecSelector = {
+    language: "yaml",
+    scheme: "file",
+    pattern: `**/${AppPackageFolderName}/apiSpecFiles/*.{yml,yaml}`,
+  };
+
   const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
 
   const aadAppTemplateSelectorV3 = {
@@ -781,6 +794,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
+      manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      smeOpenapiSpecSelector,
       manifestTemplateCodeLensProvider
     )
   );

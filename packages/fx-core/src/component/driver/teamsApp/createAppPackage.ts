@@ -10,7 +10,11 @@ import { Service } from "typedi";
 import { isCopilotPluginEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorContextMW } from "../../../core/globalVars";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import {
+  FileNotFoundError,
+  InvalidActionInputError,
+  MissingEnvironmentVariablesError,
+} from "../../../error/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
@@ -18,6 +22,8 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { Constants } from "./constants";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { manifestUtils } from "./utils/ManifestUtils";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
+import { TelemetryPropertyKey } from "./utils/telemetry";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -28,14 +34,6 @@ export class CreateAppPackageDriver implements StepDriver {
     "plugins.appstudio.createPackage.progressBar.message"
   );
 
-  public async run(
-    args: CreateAppPackageArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.build(args, wrapContext);
-    return res;
-  }
   public async execute(
     args: CreateAppPackageArgs,
     context: DriverContext
@@ -66,7 +64,7 @@ export class CreateAppPackageDriver implements StepDriver {
       manifestPath = path.join(context.projectPath, manifestPath);
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath);
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath, context);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -159,26 +157,40 @@ export class CreateAppPackageDriver implements StepDriver {
       isCopilotPluginEnabled() &&
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
-      manifest.composeExtensions[0].type == "apiBased" &&
-      manifest.composeExtensions[0].apiSpecFile
+      manifest.composeExtensions[0].composeExtensionType == "apiBased" &&
+      manifest.composeExtensions[0].apiSpecificationFile
     ) {
-      const apiSpecFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecFile}`;
-      if (!(await fs.pathExists(apiSpecFile))) {
+      const apiSpecificationFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecificationFile}`;
+      if (!(await fs.pathExists(apiSpecificationFile))) {
         return err(
           new FileNotFoundError(
             actionName,
-            apiSpecFile,
+            apiSpecificationFile,
             "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
           )
         );
       }
-      const dir = path.dirname(manifest.composeExtensions[0].apiSpecFile);
-      zip.addLocalFile(apiSpecFile, dir === "." ? "" : dir);
+      const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
+        apiSpecificationFile,
+        context
+      );
+      if (expandedEnvVarResult.isErr()) {
+        return err(expandedEnvVarResult.error);
+      }
+      const openAPIContent = expandedEnvVarResult.value;
+      const attr = await fs.stat(apiSpecificationFile);
+      zip.addFile(
+        manifest.composeExtensions[0].apiSpecificationFile,
+        Buffer.from(openAPIContent),
+        "",
+        attr.mode
+      );
+      // zip.addLocalFile(apiSpecificationFile, dir === "." ? "" : dir);
 
       if (manifest.composeExtensions[0].commands.length > 0) {
         for (const command of manifest.composeExtensions[0].commands) {
-          if (command.apiResponseRenderingTemplate) {
-            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplate}`;
+          if (command.apiResponseRenderingTemplateFile) {
+            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplateFile}`;
             if (!(await fs.pathExists(adaptiveCardFile))) {
               return err(
                 new FileNotFoundError(
@@ -188,7 +200,7 @@ export class CreateAppPackageDriver implements StepDriver {
                 )
               );
             }
-            const dir = path.dirname(command.apiResponseRenderingTemplate);
+            const dir = path.dirname(command.apiResponseRenderingTemplateFile);
             zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
         }
@@ -209,13 +221,27 @@ export class CreateAppPackageDriver implements StepDriver {
       { content: zipFileName, color: Colors.BRIGHT_MAGENTA },
       { content: " built successfully!", color: Colors.BRIGHT_WHITE },
     ];
-    if (context.platform === Platform.VS || context.platform === Platform.VSCode) {
-      context.logProvider.info(builtSuccess);
-    } else {
-      void context.ui!.showMessage("info", builtSuccess, false);
-    }
-
+    context.logProvider.info(builtSuccess);
     return ok(new Map());
+  }
+
+  private static async expandOpenAPIEnvVars(
+    openAPISpecPath: string,
+    ctx: WrapDriverContext
+  ): Promise<Result<string, FxError>> {
+    const content = await fs.readFile(openAPISpecPath, "utf8");
+    const vars = getEnvironmentVariables(content);
+    ctx.addTelemetryProperties({
+      [TelemetryPropertyKey.customizedOpenAPIKeys]: vars.join(";"),
+    });
+    const result = expandEnvironmentVariable(content);
+    const notExpandedVars = getEnvironmentVariables(result);
+    if (notExpandedVars.length > 0) {
+      return err(
+        new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), openAPISpecPath)
+      );
+    }
+    return ok(result);
   }
 
   private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {

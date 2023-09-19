@@ -8,7 +8,6 @@ import sinon from "sinon";
 
 import { err, ok } from "@microsoft/teamsfx-api";
 
-import { Hub } from "../../../src/common/m365/constants";
 import { LaunchHelper } from "../../../src/common/m365/launchHelper";
 import { MockM365TokenProvider } from "../../core/utils";
 import { PackageService } from "../../../src/common/m365/packageService";
@@ -35,6 +34,102 @@ describe("LaunchHelper", () => {
         })
       );
       const result = await launchHelper.getLaunchUrl(HubTypes.teams, "test-id", ["staticTab"]);
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+      );
+    });
+
+    it("getLaunchUrl: Teams, signed in, copilot plugin", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const result = await launchHelper.getLaunchUrl(
+        HubTypes.teams,
+        "test-id",
+        ["MessageExtension"],
+        true,
+        true
+      );
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://teams.microsoft.com/?appTenantId=test-tid&login_hint=test-upn"
+      );
+    });
+
+    it("getLaunchUrl: Teams, signed in, copilot plugin + staticTab", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const result = await launchHelper.getLaunchUrl(
+        HubTypes.teams,
+        "test-id",
+        ["MessageExtension", "staticTab"],
+        true,
+        true
+      );
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+      );
+    });
+
+    it("getLaunchUrl: Teams, signed in, copilot plugin + configurableTab", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const result = await launchHelper.getLaunchUrl(
+        HubTypes.teams,
+        "test-id",
+        ["MessageExtension", "configurableTab"],
+        true,
+        true
+      );
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+      );
+    });
+
+    it("getLaunchUrl: Teams, signed in, copilot plugin + bot", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const result = await launchHelper.getLaunchUrl(
+        HubTypes.teams,
+        "test-id",
+        ["MessageExtension", "Bot"],
+        true,
+        true
+      );
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,

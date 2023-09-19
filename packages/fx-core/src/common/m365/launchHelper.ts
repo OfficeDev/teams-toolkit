@@ -26,7 +26,8 @@ export class LaunchHelper {
     hub: HubTypes,
     teamsAppId: string,
     capabilities: string[],
-    withLoginHint = true
+    withLoginHint = true,
+    isCopilotPlugin = false
   ): Promise<Result<string, FxError>> {
     const loginHint = withLoginHint
       ? (await this.getUpnFromToken()) ?? "login_your_m365_account" // a workaround that user has the chance to login
@@ -34,7 +35,18 @@ export class LaunchHelper {
     let url: URL;
     switch (hub) {
       case HubTypes.teams: {
-        const baseUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true`;
+        let installAppPackage = true;
+        if (
+          isCopilotPlugin &&
+          !capabilities.includes("staticTab") &&
+          !capabilities.includes("configurableTab") &&
+          !capabilities.includes("Bot")
+        ) {
+          installAppPackage = false;
+        }
+        const baseUrl = installAppPackage
+          ? `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true`
+          : "https://teams.microsoft.com";
         url = new URL(baseUrl);
         const tid = await this.getTidFromToken();
         if (tid) {

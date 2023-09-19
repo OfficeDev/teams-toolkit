@@ -206,15 +206,11 @@ export interface IComposeExtension {
   /**
    * To support SME, denotes what powers the compose extension
    */
-  type?: "apiBased" | "botBased";
+  composeExtensionType?: "apiBased" | "botBased";
   /**
    * To support SME, it's the relative path to api spec file in the manifest
    */
-  apiSpecFile?: string;
-  /**
-   * To support SME, whether the compose extension will work with biz chat as a plugin
-   */
-  supportsConversationalAI?: boolean;
+  apiSpecificationFile?: string;
 }
 
 export interface IComposeExtensionMessageHandler {
@@ -268,7 +264,7 @@ export interface IMessagingExtensionCommand {
   /**
    * To support SME
    */
-  apiResponseRenderingTemplate?: string;
+  apiResponseRenderingTemplateFile?: string;
 }
 
 export interface IParameter {

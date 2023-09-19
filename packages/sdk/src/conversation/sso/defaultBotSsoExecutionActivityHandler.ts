@@ -119,7 +119,7 @@ export class DefaultBotSsoExecutionActivityHandler
    * @param query Signin state (part of signin action auth flow) verification invoke query
    * @returns A promise that represents the work queued.
    *
-   * @remark
+   * @remarks
    * It should trigger {@link BotSsoExecutionDialog} instance to handle signin process
    */
   async handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery) {

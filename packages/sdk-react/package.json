@@ -28,11 +28,7 @@
     "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
-    "@fluentui/react-components": "^9.15.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@microsoft/microsoft-graph-client": "^3.0.5",
-    "@microsoft/teams-js": "^2.13.0",
-    "@microsoft/teamsfx": "^2.2.2",
     "@testing-library/react": "^13.4.0",
     "@types/enzyme": "^3.10.10",
     "@types/jest": "^29.4.0",
@@ -40,7 +36,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
-    "@typescript-eslint/parser": "^5.13.0",
+    "@typescript-eslint/parser": "^6.5.0",
     "eslint": "^8.15.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-header": "^3.1.1",
@@ -61,24 +57,24 @@
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "prettier": "^2.5.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "react-test-renderer": "^18.2.0",
     "rimraf": "^3.0.2",
     "scheduler": "^0.20.2",
-    "ts-jest": "^29.0.5",
+    "ts-jest": "29.1.0",
+    "tslib": "^2.3.1",
     "typescript": "latest"
   },
   "peerDependencies": {
     "@fluentui/react-components": "^9.15.0",
-    "@microsoft/microsoft-graph-client": "^3.0.5",
+    "@microsoft/microsoft-graph-client": "^3.0.6",
     "@microsoft/teams-js": "^2.13.0",
-    "@microsoft/teamsfx": "^2.0.0",
+    "@microsoft/teamsfx": "^2.2.2",
     "react": ">=16.8.0 <19.0.0",
     "react-dom": ">=16.8.0 <19.0.0"
   },
   "dependencies": {
-    "@fluentui/react": "^8.106.1"
+    "@fluentui/react": "^8.106.1",
+    "@microsoft/teamsfx": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

@@ -1,8 +1,8 @@
-import { environmentManager } from "../src/core/environment";
+import { environmentNameManager } from "../src/core/environmentName";
 
 export function newEnvInfoV3(envName?: string, config?: any, state?: any): any {
   return {
-    envName: envName ?? environmentManager.getDefaultEnvName(),
+    envName: envName ?? environmentNameManager.getDefaultEnvName(),
     config: config ?? {
       manifest: {
         appName: {

@@ -1,4 +1,4 @@
-# 2.2.0-rc
+# 2.2.0
 
 - Add `validationEnabled` to `GetPagedInstallationsAsync()` to enable or disable installation validation.
 - Add new API `ValidateInstallationAsync` to validate bot installation.

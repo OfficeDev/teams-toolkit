@@ -52,9 +52,11 @@ export class AddWebPartDriver implements StepDriver {
     const spfxPackage = args.spfxPackage;
 
     const yorcPath = path.join(spfxFolder, Constants.YO_RC_FILE);
+    context.logProvider.verbose(`Checking configuration file under ${yorcPath}...`);
     if (!(await fs.pathExists(yorcPath))) {
       throw new NoConfigurationError();
     }
+    context.logProvider.verbose(`Configuration file exists.`);
 
     const inputs: Inputs = { platform: context.platform, stage: Stage.addWebpart };
     inputs[QuestionNames.SPFxWebpartName] = webpartName;
@@ -62,12 +64,17 @@ export class AddWebPartDriver implements StepDriver {
     inputs[QuestionNames.ManifestPath] = manifestPath;
     inputs[QuestionNames.LocalTeamsAppManifestFilePath] = localManifestPath;
     inputs[QuestionNames.SPFxInstallPackage] = spfxPackage;
+    context.logProvider.verbose(`Adding web part with Yeoman generator...`);
+    context.logProvider.debug(
+      `SPFx web part name: ${webpartName}, SPFx folder: ${spfxFolder}, manifest path: ${manifestPath}, local manifest path: ${localManifestPath}`
+    );
     const yeomanRes = await SPFxGenerator.doYeomanScaffold(
       createContextV3(),
       inputs,
       context.projectPath
     );
     if (yeomanRes.isErr()) throw yeomanRes.error;
+    context.logProvider.verbose(`Succeeded to add web part '${webpartName}'.`);
 
     const componentId = yeomanRes.value;
     const remoteStaticSnippet: IStaticTab = {
@@ -86,18 +93,26 @@ export class AddWebPartDriver implements StepDriver {
     };
 
     inputs["addManifestPath"] = localManifestPath;
+    context.logProvider.verbose(
+      `Exposing web part with component id ${componentId} to local manifest file under ${localManifestPath}...`
+    );
     const localRes = await manifestUtils.addCapabilities(
       { ...inputs, projectPath: context.projectPath },
       [{ name: "staticTab", snippet: localStaticSnippet }]
     );
     if (localRes.isErr()) throw localRes.error;
+    context.logProvider.verbose(`Succeeded to update local manifest file.`);
 
     inputs["addManifestPath"] = manifestPath;
+    context.logProvider.verbose(
+      `Exposing web part with component id ${componentId} to remote manifest file under ${manifestPath}...`
+    );
     const remoteRes = await manifestUtils.addCapabilities(
       { ...inputs, projectPath: context.projectPath },
       [{ name: "staticTab", snippet: remoteStaticSnippet }]
     );
     if (remoteRes.isErr()) throw remoteRes.error;
+    context.logProvider.verbose(`Succeeded to update remote manifest file.`);
 
     context.ui?.showMessage(
       "info",

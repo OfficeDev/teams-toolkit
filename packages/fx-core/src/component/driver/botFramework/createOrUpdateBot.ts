@@ -104,7 +104,8 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       TelemetryUtils.init(context); // AppStudioClient will use TelemetryUtils to send telemetry.
       const result = await createOrUpdateBotRegistration(
         context.m365TokenProvider,
-        botRegistrationData
+        botRegistrationData,
+        context.logProvider
       );
 
       if (result.isErr()) {

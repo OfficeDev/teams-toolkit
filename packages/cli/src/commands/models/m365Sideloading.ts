@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, LogLevel, ok } from "@microsoft/teamsfx-api";
 import { PackageService, serviceEndpoint } from "@microsoft/teamsfx-core";
 import { getTokenAndUpn } from "../../cmds/m365/m365";
 import { logger } from "../../commonlib/logger";
@@ -23,7 +23,7 @@ export const m365SideloadingCommand: CLICommand = {
   ],
   examples: [
     {
-      command: "teamsfx m365 sideloading --file-path appPackage.zip",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 sideloading --file-path appPackage.zip`,
       description: "Sideloading the m365 app package",
     },
   ],
@@ -32,6 +32,8 @@ export const m365SideloadingCommand: CLICommand = {
   },
   defaultInteractiveOption: false,
   handler: async (ctx) => {
+    // Command is preview, set log level to verbose
+    logger.logLevel = logger.logLevel > LogLevel.Verbose ? LogLevel.Verbose : logger.logLevel;
     logger.warning("This command is in preview.");
     const packageService = new PackageService(sideloadingServiceEndpoint, logger);
     const manifestPath = ctx.optionValues["file-path"] as string;

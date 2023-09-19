@@ -30,15 +30,6 @@ export class ValidateManifestDriver implements StepDriver {
     "plugins.appstudio.validateManifest.progressBar.message"
   );
 
-  public async run(
-    args: ValidateManifestArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.validate(args, wrapContext);
-    return res;
-  }
-
   public async execute(
     args: ValidateManifestArgs,
     context: DriverContext
@@ -62,7 +53,8 @@ export class ValidateManifestDriver implements StepDriver {
       return err(result.error);
     }
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath, context.projectPath)
+      getAbsolutePath(args.manifestPath, context.projectPath),
+      context
     );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
@@ -168,7 +160,20 @@ export class ValidateManifestDriver implements StepDriver {
         context.logProvider.info(validationSuccess);
       }
       if (args.showMessage) {
-        context.ui?.showMessage("info", validationSuccess, false);
+        if (context.platform === Platform.CLI) {
+          const outputMessage: Array<{ content: string; color: Colors }> = [
+            {
+              content:
+                "Teams Toolkit has completed checking your app package against validation rules. " +
+                summaryStr +
+                ".",
+              color: Colors.BRIGHT_GREEN,
+            },
+          ];
+          context.logProvider.info(outputMessage);
+        } else {
+          context.ui?.showMessage("info", validationSuccess, false);
+        }
       }
       return ok(new Map());
     }

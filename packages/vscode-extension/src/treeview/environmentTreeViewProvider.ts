@@ -4,7 +4,7 @@
 import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
-import { FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
@@ -82,7 +82,9 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
           return null;
         }
 
-        const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
+        const envNames = (await environmentManager.getExistingNonRemoteEnvs(workspacePath)).concat(
+          envNamesResult.value
+        );
         this.environments = envNames.map((env) => new EnvironmentNode(env));
         this.needRefresh = false;
       }

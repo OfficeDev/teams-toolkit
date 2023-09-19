@@ -2,56 +2,11 @@
 // Licensed under the MIT license.
 "use strict";
 
-import "mocha";
-import {
-  AzureAccountProvider,
-  BasicLogin,
-  LoginStatus,
-  M365TokenProvider,
-  SubscriptionInfo,
-  TokenRequest,
-} from "../src/utils/login";
 import { assert } from "chai";
-import { TokenCredential } from "@azure/core-auth";
-import { ok, Result } from "neverthrow";
+import "mocha";
+import { Result, ok } from "neverthrow";
 import { FxError } from "../src/error";
-
-class TestAzureAccountProvider implements AzureAccountProvider {
-  getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    throw new Error("getIdentityCredentialAsync Method not implemented.");
-  }
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    throw new Error("Method not implemented.");
-  }
-  listSubscriptions(): Promise<SubscriptionInfo[]> {
-    throw new Error("Method not implemented.");
-  }
-  setSubscription(subscriptionId: string): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-  getAccountInfo(): Record<string, string> {
-    throw new Error("Method not implemented.");
-  }
-  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
-    throw new Error("Method not implemented.");
-  }
-}
+import { BasicLogin, LoginStatus, M365TokenProvider, TokenRequest } from "../src/utils/login";
 
 class M365Provider extends BasicLogin implements M365TokenProvider {
   async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {

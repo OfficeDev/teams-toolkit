@@ -33,9 +33,10 @@ import {
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { SampleConfig } from "../../../src/common/samples";
+import { sampleProvider, SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
+import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
 
 const mockedSampleInfo: SampleConfig = {
@@ -49,8 +50,29 @@ const mockedSampleInfo: SampleConfig = {
   time: "",
   configuration: "test-configuration",
   suggested: false,
+  thumbnailUrl: "",
   gifUrl: "",
   downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
+};
+
+// The sample prefix is present in the downloadurl of the external sample
+const mockedExternalSampleConfig = {
+  samples: [
+    {
+      id: "test",
+      onboardDate: new Date(),
+      title: "test-title",
+      shortDescription: "test-sd",
+      fullDescription: "test-fd",
+      types: [],
+      tags: [],
+      time: "",
+      configuration: "test-configuration",
+      suggested: false,
+      gifUrl: "",
+      downloadUrl: "https://github.com/Org/Repo/tree/main/sample/test",
+    },
+  ],
 };
 
 describe("Generator utils", () => {
@@ -231,7 +253,7 @@ describe("Generator utils", () => {
       (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
       (fileName: string, fileData: Buffer) =>
         renderTemplateFileData(fileName, fileData, { appName: "test" }),
-      "test1"
+      (fileName: string) => fileName.startsWith("test1")
     );
     assert.isFalse(await fs.pathExists(path.join(outputDir, "test.txt")));
   });
@@ -315,6 +337,9 @@ describe("Generator error", async () => {
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {
+    if (await fs.pathExists(tmpDir)) {
+      await fs.rm(tmpDir, { recursive: true });
+    }
     sandbox.restore();
   });
 
@@ -322,9 +347,9 @@ describe("Generator error", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").rejects();
     const generatorContext: GeneratorContext = {
       name: "test",
-      relativePath: "/",
       destination: "test",
       logProvider: tools.logProvider,
+      filterFn: (filename) => filename.startsWith("/"),
       onActionError: templateDefaultOnActionError,
     };
     try {
@@ -344,15 +369,6 @@ describe("Generator error", async () => {
     assert.isTrue(generatorContext.cancelDownloading);
   });
 
-  it("fetch sample zip from url error", async () => {
-    sandbox.stub(fetchZipFromUrlAction, "run").throws(new Error("test"));
-    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
-    const result = await Generator.generateSample(ctx, tmpDir, "test");
-    if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "FetchZipFromUrlError");
-    }
-  });
-
   it("template fallback error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
     sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
@@ -370,6 +386,18 @@ describe("Generator error", async () => {
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "UnzipError");
+    }
+  });
+
+  it("sample not found error", async () => {
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
+    sandbox.stub(generatorUtils, "downloadDirectory").resolves([] as string[]);
+
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    if (result.isErr()) {
+      assert.equal(result.error.name, "SampleNotFoundError");
+    } else {
+      assert.fail("Sample not found error should be thrown.");
     }
   });
 });
@@ -437,6 +465,11 @@ describe("Generator happy path", async () => {
   const context = createContextV3();
   const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
+
+  beforeEach(async () => {
+    sampleProvider["samplesConfig"] = sampleConfigV3;
+  });
+
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
@@ -446,22 +479,26 @@ describe("Generator happy path", async () => {
 
   it("external sample", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    const sampleName = "bot-proactive-messaging-teamsfx";
+    sandbox.stub(sampleProvider, "SampleCollection").value(mockedExternalSampleConfig);
+    const sampleName = "test";
     const mockFileName = "test.txt";
     const mockFileData = "test data";
-    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    const foobarName = "foobar";
+    const foobarFileName = "foobar.txt";
+    const fileInfo = [
+      { type: "file", path: `sample/${sampleName}/${mockFileName}` },
+      { type: "file", path: `sample/${foobarName}/${foobarFileName}` },
+    ];
     axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
     axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
-  });
-
-  it("teamsfx sample", async () => {
-    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
-    const sampleName = "test";
-    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
-    const result = await Generator.generateSample(context, tmpDir, sampleName);
-    assert.isTrue(result.isOk());
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("file creation failure");
+    }
+    if (fs.existsSync(path.join(tmpDir, foobarFileName))) {
+      assert.fail("file should not be created");
+    }
   });
 
   it("template", async () => {

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author wenyt <75360946+wenytang-ms@users.noreply.github.com>
+ * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";

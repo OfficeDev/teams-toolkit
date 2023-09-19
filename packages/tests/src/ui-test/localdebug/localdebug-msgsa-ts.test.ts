@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
+ */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import { initPage, validateBot } from "../../utils/playwrightOperation";

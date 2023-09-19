@@ -7,7 +7,6 @@ import { m365UnacquireCommand } from "./m365Unacquire";
 
 export const m365Command: CLICommand = {
   name: "m365",
-  hidden: true,
   description: "M365 App Management.",
   commands: [m365SideloadingCommand, m365UnacquireCommand, m365LaunchInfoCommand],
 };

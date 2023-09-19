@@ -67,7 +67,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
   });
 
   it("checkDeployStatus empty response", async () => {
-    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves(undefined);
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves("");
     const config = {
       headers: {
         "Content-Type": "text",

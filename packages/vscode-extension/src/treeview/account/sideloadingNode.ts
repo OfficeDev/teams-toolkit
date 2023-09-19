@@ -9,7 +9,12 @@ import { checkSideloadingCallback } from "../../handlers";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
-import { errorIcon, passIcon, warningIcon } from "./common";
+import { errorIcon, infoIcon, passIcon } from "./common";
+
+enum ContextValues {
+  Normal = "checkSideloading",
+  ShowInfo = "checkSideloading-info",
+}
 
 export class SideloadingNode extends DynamicNode {
   constructor(
@@ -17,7 +22,7 @@ export class SideloadingNode extends DynamicNode {
     public token: string
   ) {
     super("", vscode.TreeItemCollapsibleState.None);
-    this.contextValue = "checkSideloading";
+    this.contextValue = ContextValues.Normal;
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
@@ -34,16 +39,21 @@ export class SideloadingNode extends DynamicNode {
     }
     if (isSideloadingAllowed === undefined) {
       this.label = localize("teamstoolkit.accountTree.sideloadingStatusUnknown");
-      this.iconPath = warningIcon;
+      this.iconPath = infoIcon;
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingStatusUnknownTooltip");
+      this.contextValue = ContextValues.Normal;
+      this.command = undefined;
     } else if (isSideloadingAllowed) {
       this.label = localize("teamstoolkit.accountTree.sideloadingPass");
       this.iconPath = passIcon;
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingPassTooltip");
+      this.contextValue = ContextValues.Normal;
+      this.command = undefined;
     } else {
       this.label = localize("teamstoolkit.accountTree.sideloadingWarning");
       this.iconPath = errorIcon;
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingWarningTooltip");
+      this.contextValue = ContextValues.ShowInfo;
       this.command = {
         title: this.label,
         command: "fx-extension.checkSideloading",

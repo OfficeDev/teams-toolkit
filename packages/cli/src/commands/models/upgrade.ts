@@ -22,6 +22,7 @@ export const upgradeCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.Upgrade,
   },
+  reservedOptionNamesInInteractiveMode: ["force"],
   handler: async (ctx) => {
     const inputs = ctx.optionValues as InputsWithProjectPath;
     // if skipUserConfirm is set, no confirm dialog will be shown

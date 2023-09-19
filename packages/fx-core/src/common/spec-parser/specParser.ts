@@ -6,10 +6,12 @@ import * as util from "util";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { SpecParserError } from "./specParserError";
+import converter from "swagger2openapi";
 import {
   AdaptiveCard,
   ErrorResult,
   ErrorType,
+  GenerateResult,
   ValidateResult,
   ValidationStatus,
   WarningResult,
@@ -19,10 +21,11 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, isSupportedApi } from "./utils";
+import { convertPathToCamelCase, isSupportedApi, validateServer } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";
+import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -34,6 +37,7 @@ export class SpecParser {
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
+  private isSwaggerFile: boolean | undefined;
 
   /**
    * Creates a new instance of the SpecParser class.
@@ -66,33 +70,16 @@ export class SpecParser {
         };
       }
 
-      // Spec version not supported
-      if (!this.spec!.openapi || this.spec!.openapi < "3.0.0") {
-        errors.push({
-          type: ErrorType.VersionNotSupported,
-          content: ConstantString.SpecVersionNotSupported,
-          data: this.spec!.openapi,
+      if (this.isSwaggerFile) {
+        warnings.push({
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: ConstantString.ConvertSwaggerToOpenAPI,
         });
-        return {
-          status: ValidationStatus.Error,
-          warnings,
-          errors,
-        };
       }
 
-      // Server information invalid
-      if (!this.spec!.servers || this.spec!.servers.length === 0) {
-        errors.push({
-          type: ErrorType.NoServerInformation,
-          content: ConstantString.NoServerInformation,
-        });
-      } else if (this.spec!.servers.length > 1) {
-        errors.push({
-          type: ErrorType.MultipleServerInformation,
-          content: ConstantString.MultipleServerInformation,
-          data: this.spec!.servers,
-        });
-      }
+      // Server validation
+      const serverErrors = validateServer(this.spec!);
+      errors.push(...serverErrors);
 
       // Remote reference not supported
       const refPaths = this.parser.$refs.paths();
@@ -205,7 +192,11 @@ export class SpecParser {
     outputSpecPath: string,
     adaptiveCardFolder: string,
     signal?: AbortSignal
-  ): Promise<void> {
+  ): Promise<GenerateResult> {
+    const result: GenerateResult = {
+      allSuccess: true,
+      warnings: [],
+    };
     try {
       if (signal?.aborted) {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
@@ -216,7 +207,7 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!);
+      const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!, this.spec!);
       let resultStr;
       if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
         resultStr = jsyaml.dump(newUnResolvedSpec);
@@ -231,7 +222,36 @@ export class SpecParser {
 
       const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
 
-      const updatedManifest = await updateManifest(
+      for (const url in newSpec.paths) {
+        for (const method in newSpec.paths[url]) {
+          if (method === ConstantString.GetMethod || method === ConstantString.PostMethod) {
+            const operation = newSpec.paths[url]![method] as OpenAPIV3.OperationObject;
+            try {
+              const card: AdaptiveCard = generateAdaptiveCard(operation);
+              const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
+              const wrappedCard = wrapAdaptiveCard(
+                card,
+                operation.operationId!,
+                method.toUpperCase() + " " + url
+              );
+              await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
+            } catch (err) {
+              result.allSuccess = false;
+              result.warnings.push({
+                type: WarningType.GenerateCardFailed,
+                content: (err as Error).toString(),
+                data: operation.operationId!,
+              });
+            }
+          }
+        }
+      }
+
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
+      const [updatedManifest, warnings] = await updateManifest(
         manifestPath,
         outputSpecPath,
         adaptiveCardFolder,
@@ -240,27 +260,27 @@ export class SpecParser {
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
 
-      if (signal?.aborted) {
-        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
-      }
-
-      for (const url in newSpec.paths) {
-        const getOperation = newSpec.paths[url]?.get;
-        const card: AdaptiveCard = generateAdaptiveCard(getOperation!);
-        const fileName = path.join(adaptiveCardFolder, `${getOperation!.operationId!}.json`);
-        await fs.outputJSON(fileName, card, { spaces: 2 });
-      }
+      result.warnings.push(...warnings);
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;
       }
       throw new SpecParserError((err as Error).toString(), ErrorType.GenerateFailed);
     }
+
+    return result;
   }
 
   private async loadSpec(): Promise<void> {
     if (!this.spec) {
       this.unResolveSpec = (await this.parser.parse(this.specPath)) as OpenAPIV3.Document;
+      // Convert swagger 2.0 to openapi 3.0
+      if (!this.unResolveSpec.openapi && (this.unResolveSpec as any).swagger === "2.0") {
+        const specObj = await converter.convert(this.unResolveSpec as any, {});
+        this.unResolveSpec = specObj.openapi as OpenAPIV3.Document;
+        this.isSwaggerFile = true;
+      }
+
       const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
       this.spec = (await this.parser.dereference(clonedUnResolveSpec)) as OpenAPIV3.Document;
     }

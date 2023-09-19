@@ -8,9 +8,9 @@ import {
   CreateProjectResult,
   Func,
   FxError,
+  IQTreeNode,
   Inputs,
   OpenAIPluginManifest,
-  QTreeNode,
   Result,
   Stage,
   Tools,
@@ -27,6 +27,7 @@ import {
   setRegion,
   listDevTunnels,
   HubOptions,
+  environmentNameManager,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
@@ -93,11 +94,11 @@ export default class ServerConnection implements IServerConnection {
     this.connection.listen();
   }
 
-  public async getQuestionsRequest(
+  public getQuestionsRequest(
     stage: Stage,
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
+  ): Result<IQTreeNode | undefined, FxError> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = Correlator.runWithId(
       corrId,
@@ -105,7 +106,7 @@ export default class ServerConnection implements IServerConnection {
       stage,
       inputs
     );
-    return Promise.resolve(standardizeResult(res));
+    return standardizeResult(res);
   }
 
   public async createProjectRequest(
@@ -334,7 +335,7 @@ export default class ServerConnection implements IServerConnection {
       namespace: "fx-solution-azure",
       method: "addSso",
       params: {
-        envName: environmentManager.getDefaultEnvName(),
+        envName: environmentNameManager.getDefaultEnvName(),
       },
     };
     const res = await Correlator.runWithId(

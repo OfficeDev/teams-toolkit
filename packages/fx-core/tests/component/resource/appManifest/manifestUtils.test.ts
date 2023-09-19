@@ -7,9 +7,9 @@ import "reflect-metadata";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { Constants } from "../../../../src/component/driver/teamsApp/constants";
-import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
+import { JSONSyntaxError, MissingEnvironmentVariablesError } from "../../../../src/error/common";
 import { newEnvInfoV3 } from "../../../helpers";
+import fs from "fs-extra";
 
 describe("getManifest V3", () => {
   const sandbox = sinon.createSandbox();
@@ -99,5 +99,18 @@ describe("getManifest V3", () => {
     ];
     const ids = manifestUtils.getOperationIds(manifest);
     chai.assert.equal(ids.length, 1);
+  });
+});
+
+describe("_readAppManifest", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("JSONSyntaxError", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves("invalid json" as any);
+    const res = await manifestUtils._readAppManifest("invalid json");
+    chai.assert.isTrue(res.isErr() && res.error instanceof JSONSyntaxError);
   });
 });

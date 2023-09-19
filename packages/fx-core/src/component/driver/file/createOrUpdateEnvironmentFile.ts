@@ -64,10 +64,12 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
       const target = this.getAbsolutePath(args.target!, context.projectPath);
       await fs.ensureFile(target);
       const envs = dotenv.parse(await fs.readFile(target));
-      const content = Object.entries({ ...envs, ...args.envs })
-        .map(([key, value]) => `${key}=${value}`)
-        .join(os.EOL);
-      await fs.writeFile(target, content);
+      context.logProvider?.debug(`Existing envs: ${JSON.stringify(envs)}`);
+      const updatedEnvs = Object.entries({ ...envs, ...args.envs }).map(
+        ([key, value]) => `${key}=${value}`
+      );
+      context.logProvider?.debug(`Updated envs: ${JSON.stringify(updatedEnvs)}`);
+      await fs.writeFile(target, updatedEnvs.join(os.EOL));
       return {
         output: new Map<string, string>(),
         summaries: [

@@ -21,7 +21,11 @@ import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
-import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
+import {
+  isCLIDotNetEnabled,
+  isCopilotPluginEnabled,
+  isApiCopilotPluginEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
@@ -48,6 +52,7 @@ import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
   copilotPluginExistingApiOptionIds,
+  copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";
 
@@ -72,44 +77,50 @@ export class ScratchOptions {
 }
 
 export class ProjectTypeOptions {
-  static tab(): OptionItem {
+  static tab(platform?: Platform): OptionItem {
     return {
       id: "tab-type",
-      label: `$(browser) ${getLocalizedString("core.TabOption.label")}`,
+      label: `${platform === Platform.VSCode ? "$(browser) " : ""}${getLocalizedString(
+        "core.TabOption.label"
+      )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.tab.detail"),
     };
   }
 
-  static bot(): OptionItem {
+  static bot(platform?: Platform): OptionItem {
     return {
       id: "bot-type",
-      label: `$(hubot) ${getLocalizedString("core.createProjectQuestion.projectType.bot.label")}`,
+      label: `${platform === Platform.VSCode ? "$(hubot) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.bot.label"
+      )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.bot.detail"),
     };
   }
 
-  static me(): OptionItem {
+  static me(platform?: Platform): OptionItem {
     return {
       id: "me-type",
-      label: `$(symbol-keyword) ${getLocalizedString("core.MessageExtensionOption.label")}`,
+      label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
+        "core.MessageExtensionOption.label"
+      )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
     };
   }
 
-  static outlookAddin(): OptionItem {
+  static outlookAddin(platform?: Platform): OptionItem {
     return {
       id: "outlook-addin-type",
-      label: `$(mail) ${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(mail) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.outlookAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
     };
   }
 
-  static copilotPlugin(): OptionItem {
+  static copilotPlugin(platform?: Platform): OptionItem {
     return {
       id: "copilot-plugin-type",
-      label: `$(sparkle) ${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.copilotPlugin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
@@ -119,10 +130,10 @@ export class ProjectTypeOptions {
 
 function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
-    ProjectTypeOptions.bot(),
-    ProjectTypeOptions.tab(),
-    ProjectTypeOptions.me(),
-    ProjectTypeOptions.outlookAddin(),
+    ProjectTypeOptions.bot(Platform.CLI),
+    ProjectTypeOptions.tab(Platform.CLI),
+    ProjectTypeOptions.me(Platform.CLI),
+    ProjectTypeOptions.outlookAddin(Platform.CLI),
   ];
   return {
     name: QuestionNames.ProjectType,
@@ -132,18 +143,18 @@ function projectTypeQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       let staticOptions: StaticOptions;
 
-      if (isCopilotPluginEnabled()) {
+      if (isApiCopilotPluginEnabled()) {
         staticOptions = [
-          ProjectTypeOptions.copilotPlugin(),
-          ProjectTypeOptions.bot(),
-          ProjectTypeOptions.tab(),
-          ProjectTypeOptions.me(),
+          ProjectTypeOptions.copilotPlugin(inputs.platform),
+          ProjectTypeOptions.bot(inputs.platform),
+          ProjectTypeOptions.tab(inputs.platform),
+          ProjectTypeOptions.me(inputs.platform),
         ];
       } else {
         staticOptions = [
-          ProjectTypeOptions.bot(),
-          ProjectTypeOptions.tab(),
-          ProjectTypeOptions.me(),
+          ProjectTypeOptions.bot(inputs.platform),
+          ProjectTypeOptions.tab(inputs.platform),
+          ProjectTypeOptions.me(inputs.platform),
         ];
       }
 
@@ -153,7 +164,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        staticOptions.push(ProjectTypeOptions.outlookAddin());
+        staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
       }
       return staticOptions;
     },
@@ -320,6 +331,17 @@ export class CapabilityOptions {
     };
   }
 
+  static copilotM365SearchMe(): OptionItem {
+    return {
+      id: "search-me-copilot",
+      label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+      detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.worksInOutlookCopilot"
+      ),
+    };
+  }
+
   static SearchMe(): OptionItem {
     return {
       id: "search-message-extension",
@@ -372,6 +394,30 @@ export class CapabilityOptions {
     ];
   }
 
+  /**
+   * Collect all capabilities for message extension, including dotnet and nodejs.
+   * @param filterByFeatureFlag true: filter capabilities by feature flag, false: return all capabilities
+   * @returns OptionItem[] capability list
+   */
+  static collectMECaps(filterByFeatureFlag: boolean): OptionItem[] {
+    return filterByFeatureFlag
+      ? [
+          CapabilityOptions.linkUnfurling(),
+          isCopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.SearchMe(),
+        ]
+      : [
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.copilotM365SearchMe(),
+          CapabilityOptions.SearchMe(),
+        ];
+  }
+
   static mes(inputs?: Inputs): OptionItem[] {
     return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
       ? [
@@ -381,7 +427,9 @@ export class CapabilityOptions {
         ]
       : [
           CapabilityOptions.linkUnfurling(),
-          CapabilityOptions.m365SearchMe(),
+          isCopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.m365SearchMe(),
           CapabilityOptions.collectFormMe(),
         ];
   }
@@ -394,36 +442,32 @@ export class CapabilityOptions {
     ];
   }
 
-  static copilotPluginCli(): OptionItem {
-    return {
-      id: "copilot-plugin-capability",
-      label: `${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
-    };
-  }
-
+  /**
+   * static capability list, which does not depend on any feature flags
+   */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.mes(),
-      CapabilityOptions.copilotPluginCli(),
+      ...CapabilityOptions.collectMECaps(false),
+      ...CapabilityOptions.copilotPlugins(),
     ];
 
     return capabilityOptions;
   }
 
+  /**
+   * dynamic capability list, which depends on feature flags
+   */
   static all(inputs?: Inputs): OptionItem[] {
-    // teamsfx list capabilities
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.mes(),
+      ...CapabilityOptions.collectMECaps(true),
     ];
-    if (isCopilotPluginEnabled()) {
-      capabilityOptions.push(CapabilityOptions.copilotPluginCli());
+    if (isApiCopilotPluginEnabled()) {
+      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
-
     return capabilityOptions;
   }
 
@@ -466,7 +510,7 @@ export class CapabilityOptions {
   // copilot plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: "copilot-plugin-new-api",
+      id: copilotPluginNewApiOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -510,7 +554,7 @@ export class CapabilityOptions {
   }
 }
 
-function capabilityQuestion(): SingleSelectQuestion {
+export function capabilityQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.Capabilities,
     title: (inputs: Inputs) => {
@@ -532,10 +576,10 @@ function capabilityQuestion(): SingleSelectQuestion {
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
     },
-    cliDescription: "Specifies the Teams App capability.",
+    cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx list capabilities",
+    cliChoiceListCommand: "teamsfx list templates",
     type: "singleSelect",
     staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {
@@ -550,6 +594,12 @@ function capabilityQuestion(): SingleSelectQuestion {
       if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
         return CapabilityOptions.dotnetCaps(inputs);
       }
+
+      if (inputs.nonInteractive && inputs.platform === Platform.CLI) {
+        //cli non-interactive mode the choice list is the same as staticOptions
+        return CapabilityOptions.all(inputs);
+      }
+
       // nodejs capabilities
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.bot().id) {
@@ -563,16 +613,7 @@ function capabilityQuestion(): SingleSelectQuestion {
       } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
         return CapabilityOptions.copilotPlugins();
       } else {
-        const capabilityOptions = [
-          ...CapabilityOptions.bots(inputs),
-          ...CapabilityOptions.tabs(),
-          ...CapabilityOptions.mes(),
-        ];
-
-        if (isCopilotPluginEnabled()) {
-          capabilityOptions.push(CapabilityOptions.copilotPluginCli());
-        }
-        return capabilityOptions;
+        return CapabilityOptions.all(inputs);
       }
     },
     placeholder: (inputs: Inputs) => {
@@ -716,24 +757,13 @@ function botTriggerQuestion(): SingleSelectQuestion {
   };
 }
 
-function copilotPluginDevelopmentQuestion(): SingleSelectQuestion {
-  return {
-    name: QuestionNames.CopilotPluginDevelopment,
-    title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
-    type: "singleSelect",
-    staticOptions: CapabilityOptions.copilotPlugins(),
-    cliShortName: "cp",
-    cliDescription: "Plugin for Copilot.",
-  };
-}
-
 function SPFxSolutionQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxSolution,
     title: getLocalizedString("plugins.spfx.questions.spfxSolution.title"),
     cliDescription: "Create a new or import an existing SharePoint Framework solution.",
-    cliShortName: "ss",
+    cliShortName: "s",
     staticOptions: [
       {
         id: "new",
@@ -815,7 +845,6 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
         return Promise.resolve(undefined);
       },
     },
-    cliShortName: "sp",
     isBoolean: true,
   };
 }
@@ -824,7 +853,8 @@ function SPFxFrameworkQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxFramework,
-    cliShortName: "sfk",
+    cliShortName: "k",
+    cliDescription: "Framework.",
     title: getLocalizedString("plugins.spfx.questions.framework.title"),
     staticOptions: [
       { id: "react", label: "React" },
@@ -840,8 +870,9 @@ export function SPFxWebpartNameQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.SPFxWebpartName,
-    cliShortName: "sw",
-    title: "Name for SharePoint Framework Web Part.",
+    cliShortName: "w",
+    cliDescription: "Name for SharePoint Framework Web Part.",
+    title: getLocalizedString("plugins.spfx.questions.webpartName"),
     default: Constants.DEFAULT_WEBPART_NAME,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
@@ -890,7 +921,6 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
   return {
     type: "folder",
     name: QuestionNames.SPFxFolder,
-    cliShortName: "sf",
     title: getLocalizedString("core.spfxFolder.title"),
     cliDescription: "Directory or Path that contains the existing SharePoint Framework solution.",
     placeholder: getLocalizedString("core.spfxFolder.placeholder"),
@@ -1088,7 +1118,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: QuestionNames.Samples,
     cliName: "sample-name",
-    cliDescription: "Specifies the Teams App sample name.",
+    cliDescription: "Specifies the Microsoft Teams App sample name.",
     cliChoiceListCommand: "teamsfx list samples",
     skipValidation: true,
     cliType: "argument",
@@ -1296,7 +1326,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       const res = await listOperations(
         context,
         undefined,
-        input,
+        input.trim(),
         inputs![QuestionNames.ManifestPath],
         includeExistingAPIs,
         false
@@ -1331,7 +1361,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
   return {
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
-    cliShortName: "oapi",
+    cliShortName: "a",
     cliDescription: "OpenAPI specification file location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
@@ -1376,9 +1406,9 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginDomain,
-    cliShortName: "oai",
-    title: getLocalizedString("core.createProjectQuestion.AIPluginManifest.title"),
-    placeholder: getLocalizedString("core.createProjectQuestion.AIPluginManifest.placeholder"),
+    cliShortName: "d",
+    title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
+    placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
     cliDescription: "OpenAI plugin website domain.",
     forgetLastValue: true,
     validation: {
@@ -1388,7 +1418,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
 
         const result = match
           ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
         return Promise.resolve(result);
       },
     },
@@ -1452,14 +1482,22 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
     cliDescription: "Specifies API(s) to be used in Copilot plugin.",
-    cliShortName: "api",
+    cliShortName: "o",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
       : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
     forgetLastValue: true,
     staticOptions: [],
     validation: {
-      minItems: 1,
+      validFunc: (input: string[]): string | undefined => {
+        if (input.length < 1 || input.length > 10) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.invalidMessage",
+            input.length,
+            10
+          );
+        }
+      },
     },
     dynamicOptions: (inputs: Inputs) => {
       if (!inputs.supportedApisFromApiSpec) {
@@ -1471,14 +1509,6 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
       return operations;
     },
   };
-}
-
-function getCopilotPluginFeatureId(inputs: Inputs): string {
-  if (CLIPlatforms.includes(inputs.platform)) {
-    return inputs[QuestionNames.CopilotPluginDevelopment];
-  } else {
-    return inputs[QuestionNames.Capabilities];
-  }
 }
 
 export function capabilitySubTree(): IQTreeNode {
@@ -1539,37 +1569,21 @@ export function capabilitySubTree(): IQTreeNode {
         data: officeAddinHostingQuestion(),
       },
       {
-        // Copilot plugin sub-tree (will show in CLI only)
-        condition: (inputs: Inputs) => {
-          return (
-            CLIPlatforms.includes(inputs.platform) &&
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginCli().id
-          );
-        },
-        data: copilotPluginDevelopmentQuestion(),
-      },
-      {
         // Copilot plugin from API spec or AI Plugin
-        condition: (inputs: Inputs) => {
-          return copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
+        condition: {
+          enum: [
+            CapabilityOptions.copilotPluginApiSpec().id,
+            CapabilityOptions.copilotPluginOpenAIPlugin().id,
+          ],
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: (inputs: Inputs) => {
-              return (
-                getCopilotPluginFeatureId(inputs) === CapabilityOptions.copilotPluginApiSpec().id
-              );
-            },
+            condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
             data: apiSpecLocationQuestion(),
           },
           {
-            condition: (inputs: Inputs) => {
-              return (
-                getCopilotPluginFeatureId(inputs) ===
-                CapabilityOptions.copilotPluginOpenAIPlugin().id
-              );
-            },
+            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
             data: openAIPluginManifestLocationQuestion(),
           },
           {
@@ -1580,13 +1594,11 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // programming language
         data: programmingLanguageQuestion(),
-        condition: (inputs: Inputs) => {
-          const copilotFeature = getCopilotPluginFeatureId(inputs);
-          if (copilotFeature) {
-            return !copilotPluginExistingApiOptionIds.includes(getCopilotPluginFeatureId(inputs));
-          } else {
-            return !!inputs[QuestionNames.Capabilities];
-          }
+        condition: {
+          excludesEnum: [
+            CapabilityOptions.copilotPluginApiSpec().id,
+            CapabilityOptions.copilotPluginOpenAIPlugin().id,
+          ],
         },
       },
       {
@@ -1612,7 +1624,8 @@ export function createProjectQuestionNode(): IQTreeNode {
         data: runtimeQuestion(),
       },
       {
-        condition: (inputs: Inputs) => inputs.platform === Platform.VSCode,
+        condition: (inputs: Inputs) =>
+          inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI,
         data: projectTypeQuestion(),
         cliOptionDisabled: "self",
       },
@@ -1676,9 +1689,8 @@ export function createProjectCliHelpNode(): IQTreeNode {
   if (!isCLIDotNetEnabled()) {
     deleteNames.push(QuestionNames.Runtime);
   }
-  if (!isCopilotPluginEnabled()) {
+  if (!isApiCopilotPluginEnabled()) {
     deleteNames.push(QuestionNames.CopilotPluginExistingApi);
-    deleteNames.push(QuestionNames.CopilotPluginDevelopment);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;

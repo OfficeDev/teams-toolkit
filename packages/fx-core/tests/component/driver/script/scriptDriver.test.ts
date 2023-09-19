@@ -31,7 +31,7 @@ describe("Script Driver test", () => {
     sandbox.restore();
   });
   it("execute success: set-output and append to file", async () => {
-    const appendFileSyncStub = sandbox.stub(fs, "appendFile");
+    const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
     const args = {
       workingDirectory: "./",
       run: `echo '::set-output MY_KEY=MY_VALUE'`,

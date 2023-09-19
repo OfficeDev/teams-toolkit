@@ -274,6 +274,11 @@ export async function getSPFxToken(
 export async function setRegion(authSvcToken: string) {
   const region = await AuthSvcClient.getRegion(authSvcToken);
   if (region) {
+    // Do not set region for INT env
+    const appStudioEndpoint = getAppStudioEndpoint();
+    if (appStudioEndpoint.includes("dev-int")) {
+      return;
+    }
     AppStudioClient.setRegion(region);
     BotAppStudioClient.setRegion(region);
   }
@@ -324,6 +329,6 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
     const tunnels = await tunnelManagementClientImpl.listTunnels(undefined, undefined, options);
     return ok(tunnels);
   } catch (error) {
-    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", (error as any).message));
+    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", error.message));
   }
 }

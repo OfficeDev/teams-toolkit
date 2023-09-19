@@ -13,7 +13,8 @@ function updateTemplatesDeps(templateDir, templateList) {
                 depPkgs.push(subTempPath)
         });
     }
-    const pkgDirs = require(path.join(repoRoot, "lerna.json")).packages;
+    // const pkgDirs = require(path.join(repoRoot, "lerna.json")).packages;
+    const pkgDirs = ["packages/adaptivecards-tools-sdk", "packages/sdk", "packages/sdk-react"]
     let templatesDeps = {};
     for (let pkgDir of pkgDirs) {
         const pkgPath = path.join(repoRoot, pkgDir, "package.json");

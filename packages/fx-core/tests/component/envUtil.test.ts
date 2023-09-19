@@ -32,6 +32,7 @@ import {
   FileNotFoundError,
   MissingEnvironmentVariablesError,
   MissingRequiredFileError,
+  NoEnvFilesError,
   UserCancelError,
 } from "../../src/error/common";
 import { MockTools } from "../core/utils";
@@ -299,6 +300,18 @@ describe("envUtils", () => {
         assert.deepEqual(res.value, ["dev", "prod"]);
       }
     });
+
+    it("remote env only", async () => {
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+      sandbox
+        .stub(fs, "readdir")
+        .resolves([".env.dev", ".env.prod", ".env.local", ".env.testtool"] as any);
+      const res = await envUtil.listEnv(".", true);
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.deepEqual(res.value, ["dev", "prod"]);
+      }
+    });
   });
 
   describe("pathUtils.mergeEnv", () => {
@@ -349,6 +362,12 @@ describe("envUtils", () => {
         assert.deepEqual(res.value, ["dev", "prod"]);
       }
     });
+    it("environmentManager.listAllEnvConfigs projectPath doesn't exist", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const res = await environmentManager.listAllEnvConfigs(".");
+      assert.isFalse(res.isOk());
+      assert.instanceOf(res._unsafeUnwrapErr(), FileNotFoundError);
+    });
     it("environmentManager.listRemoteEnvConfigs", async () => {
       sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
       sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod", ".env.local"] as any);
@@ -358,11 +377,43 @@ describe("envUtils", () => {
         assert.deepEqual(res.value, ["dev", "prod"]);
       }
     });
+    it("environmentManager.listRemoteEnvConfigs projectPath doesn't exist", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const res = await environmentManager.listRemoteEnvConfigs(".");
+      assert.isFalse(res.isOk());
+      assert.instanceOf(res._unsafeUnwrapErr(), FileNotFoundError);
+    });
+    it("environmentManager.listRemoteEnvConfigs no remote env, only local", async () => {
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+      sandbox.stub(fs, "readdir").resolves([".env.local"] as any);
+      const res = await environmentManager.listRemoteEnvConfigs(".", true);
+      assert.isFalse(res.isOk());
+      assert.instanceOf(res._unsafeUnwrapErr(), NoEnvFilesError);
+    });
     it("environmentManager.listRemoteEnvConfigs return error", async () => {
       sandbox.stub(fs, "readdir").resolves([] as any);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await environmentManager.listRemoteEnvConfigs(".", true);
       assert.isTrue(res.isErr());
+    });
+    it("environmentManager.getExistingNonRemoteEnvs with testtool env", async () => {
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+      sandbox
+        .stub(fs, "readdir")
+        .resolves([".env.dev", ".env.prod", ".env.local", ".env.testtool"] as any);
+      const res = await environmentManager.getExistingNonRemoteEnvs(".");
+      assert.deepEqual(res, ["testtool", "local"]);
+    });
+    it("environmentManager.getExistingNonRemoteEnvs without testtool env", async () => {
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
+      sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod", ".env.local"] as any);
+      const res = await environmentManager.getExistingNonRemoteEnvs(".");
+      assert.deepEqual(res, ["local"]);
+    });
+    it("environmentManager.getExistingNonRemoteEnvs without projectPath", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const res = await environmentManager.getExistingNonRemoteEnvs(".");
+      assert.deepEqual(res, ["local"]);
     });
   });
 

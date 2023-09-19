@@ -251,8 +251,13 @@
         },
         {
           "command": "fx-extension.refreshSideloading",
-          "when": "view == teamsfx-accounts && viewItem == checkSideloading",
-          "group": "inline"
+          "when": "view == teamsfx-accounts && viewItem =~ /^checkSideloading$|^checkSideloading-info$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.checkSideloading",
+          "when": "view == teamsfx-accounts && viewItem == checkSideloading-info",
+          "group": "inline@2"
         },
         {
           "command": "fx-extension.azureAccountSettings",
@@ -280,6 +285,11 @@
         {
           "command": "fx-extension.localdebugWithIcon",
           "when": "view == teamsfx-environment && viewItem =~ /^local$/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.debugInTestToolWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /^testtool$/",
           "group": "inline@3"
         },
         {
@@ -365,6 +375,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.debugInTestToolWithIcon",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.m365AccountSettings",
           "when": "false"
         },
@@ -422,6 +436,10 @@
         },
         {
           "command": "fx-extension.refreshSideloading",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.checkSideloading",
           "when": "false"
         },
         {
@@ -633,6 +651,11 @@
         "icon": "$(debug-alt)"
       },
       {
+        "command": "fx-extension.debugInTestToolWithIcon",
+        "title": "%teamstoolkit.commands.debugInTestTool.title%",
+        "icon": "$(debug-alt)"
+      },
+      {
         "command": "fx-extension.m365AccountSettings",
         "title": "%teamstoolkit.commands.m365AccountSettings.title%",
         "icon": "$(settings-gear)"
@@ -705,6 +728,11 @@
         "command": "fx-extension.refreshSideloading",
         "title": "%teamstoolkit.commands.refresh.title%",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "fx-extension.checkSideloading",
+        "title": "%teamstoolkit.accountTree.sideloadingWarningTooltip%",
+        "icon": "$(info)"
       },
       {
         "command": "fx-extension.signOut",
@@ -1168,7 +1196,17 @@
           }
         ]
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Teams Toolkit",
+      "properties": {
+        "fx-extension.developCopilotPlugin": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
+        }
+      }
+    }
   },
   "scripts": {
     "lint:staged": "lint-staged",
@@ -1194,7 +1232,8 @@
     "precommit": "npm run check-sensitive && lint-staged",
     "updateFont": "node ./scripts/updateFont.js",
     "previewFont": "start ./media/font/teamstoolkit.html",
-    "version": "bash ../../.github/scripts/vsc-version.sh"
+    "version": "bash ../../.github/scripts/vsc-version.sh",
+    "pack-local": "pnpm dlx vsce package --no-dependencies"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^5.0.0",
@@ -1202,6 +1241,7 @@
     "@azure/ms-rest-azure-env": "^2.0.0",
     "@fluentui/react": "^8.5.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@svgr/webpack": "^8.1.0",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
@@ -1241,6 +1281,7 @@
     "html-webpack-plugin": "^5.3.1",
     "kill-port-process": "^3.0.1",
     "lint-staged": "^11.2.6",
+    "lodash": "^4.17.21",
     "mocha": "^10.0.0",
     "mocha-multi-reporters": "^1.5.1",
     "mock-require": "^3.0.3",
@@ -1257,19 +1298,19 @@
     "sinon": "^9.2.2",
     "style-loader": "^2.0.0",
     "svgtofont": "^3.23.1",
-    "terser-webpack-plugin": "^4.2.3",
+    "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^8.0.3",
     "ts-node": "^9.1.1",
     "ts-sinon": "^2.0.2",
     "ttypescript": "^1.5.12",
     "typemoq": "^1.3.1",
-    "typescript": "^4.2.4",
+    "typescript": "4.3.2",
     "umd-compat-loader": "^2.1.2",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "verdaccio": "^5.25.0",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.2"
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "@azure/identity": "^3.1.3",
@@ -1283,15 +1324,16 @@
     "@microsoft/teamsfx-core": "^2.0.5",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
-    "@vscode/webview-ui-toolkit": "^0.9.3",
+    "@vscode/webview-ui-toolkit": "^1.2.2",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.18.2",
+    "fuse.js": "^6.6.2",
     "jscodeshift": "^0.14.0",
     "jsonc-parser": "^3.0.0",
-    "lodash": "^4.17.21",
     "log4js": "^6.3.0",
     "node-rsa": "^1.1.1",
+    "query-string": "6.14.1",
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",

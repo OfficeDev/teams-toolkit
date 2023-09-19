@@ -1,9 +1,9 @@
 {
     "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
-    "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
     "packageName": "com.microsoft.teams.extension",
+    "version": "1.0.0",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -19,12 +19,36 @@
         "full": "Full name for {{appName}}"
     },
     "description": {
-        "short": "Short description of {{appName}}",
-        "full": "Full description of {{appName}}"
+        "short": "Track and monitor car repair records for stress-free maintenance management.",
+        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze. With the power of Copilot, you can effortlessly stay informed about your car's maintenance timeline."
     },
     "accentColor": "#FFFFFF",
-    "bots": [],
-    "composeExtensions": [],    
+    "composeExtensions": [
+        {
+            "composeExtensionType": "apiBased",
+            "apiSpecificationFile": "apiSpecificationFiles/repair.yml",
+            "commands": [
+                {
+                    "id": "repair",
+                    "type": "query",
+                    "title": "Search for repairs info",
+                    "context": [
+                        "compose",
+                        "commandBox"
+                    ],
+                    "apiResponseRenderingTemplateFile": "responseTemplates/repair.json",
+                    "parameters": [
+                        {
+                            "name": "assignedTo",
+                            "title": "Assigned To",
+                            "description": "Filter repairs by who they're assigned to",
+                            "inputType": "text"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],    
     "permissions": [
         "identity",
         "messageTeamMembers"

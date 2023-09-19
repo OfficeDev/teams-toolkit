@@ -22,6 +22,7 @@ import {
 } from "../../../../src/error/common";
 import { UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
+import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -103,6 +104,17 @@ describe("aadAppCreate", async () => {
     result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
+  });
+
+  it("should throw error if AAD app name exceeds 120 characters", async () => {
+    const invalidAppName = "a".repeat(121);
+    const args: any = {
+      name: invalidAppName,
+      generateClientSecret: false,
+    };
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(AadAppNameTooLongError);
   });
 
   it("should throw error if outputEnvVarNames is undefined", async () => {

@@ -32,6 +32,7 @@ import {
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { SignInAudience } from "./interface/signInAudience";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
+import { AadAppNameTooLongError } from "./error/aadAppNameTooLongError";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -43,14 +44,6 @@ const driverConstants = {
 export class CreateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.create);
   readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.createAadAppTitle");
-
-  public async run(
-    args: CreateAadAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const result = await this.execute(args, context);
-    return result.result;
-  }
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
@@ -68,7 +61,7 @@ export class CreateAadAppDriver implements StepDriver {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
 
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
       const aadAppState: CreateAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       if (!aadAppState.clientId) {
         context.logProvider?.info(
@@ -161,12 +154,12 @@ export class CreateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new HttpClientError(actionName, message, helpLink)),
+            result: err(new HttpClientError(error, actionName, message, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new HttpServerError(actionName, message)),
+            result: err(new HttpServerError(error, actionName, message)),
             summaries: summaries,
           };
         }
@@ -204,6 +197,10 @@ export class CreateAadAppDriver implements StepDriver {
 
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
+    }
+
+    if (args.name.length > 120) {
+      throw new AadAppNameTooLongError(actionName);
     }
   }
 

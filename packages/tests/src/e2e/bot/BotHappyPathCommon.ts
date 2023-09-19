@@ -11,18 +11,20 @@ import {
   cleanUp,
   execAsync,
   execAsyncWithRetry,
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  readContextMultiEnv,
   readContextMultiEnvV3,
+  createResourceGroup,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import {
   Runtime,
   CliCapabilities,
   CliTriggerType,
 } from "../../commonlib/constants";
+import { Executor } from "../../utils/executor";
+import { expect } from "chai";
+
 export async function happyPathTest(
   runtime: Runtime,
   capabilities: CliCapabilities,
@@ -30,9 +32,8 @@ export async function happyPathTest(
 ): Promise<void> {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
-  const envName = environmentManager.getDefaultEnvName();
+  const envName = environmentNameManager.getDefaultEnvName();
 
   const env = Object.assign({}, process.env);
   if (runtime === Runtime.Dotnet) {
@@ -61,14 +62,15 @@ export async function happyPathTest(
 
   console.log(`[Successfully] set subscription for ${projectPath}`);
 
-  // provision
-  await execAsyncWithRetry(`teamsfx provision`, {
-    cwd: projectPath,
-    env: env,
-    timeout: 0,
-  });
-
-  console.log(`[Successfully] provision for ${projectPath}`);
+  {
+    // provision
+    const result = await createResourceGroup(appName + "-rg", "eastus");
+    expect(result).to.be.true;
+    process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+    const { success } = await Executor.provision(projectPath, envName);
+    expect(success).to.be.true;
+    console.log(`[Successfully] provision for ${projectPath}`);
+  }
 
   {
     // Validate provision

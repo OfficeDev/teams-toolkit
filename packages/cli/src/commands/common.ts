@@ -18,3 +18,22 @@ export const EnvOption: CLICommandOption = {
   type: "string",
   description: "Specifies the environment name for the project.",
 };
+
+export const ListFormatOption: CLICommandOption = {
+  name: "format",
+  shortName: "f",
+  description: "Specifies the format of the results.",
+  type: "string",
+  choices: ["table", "json"],
+  default: "table",
+  required: true,
+};
+
+export const ShowDescriptionOption: CLICommandOption = {
+  name: "description",
+  shortName: "d",
+  description: "Whether to show description in the result.",
+  type: "boolean",
+  default: false,
+  required: true,
+};

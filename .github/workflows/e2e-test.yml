@@ -46,25 +46,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Setup legacy-peer-deps
-        run: |
-          npm config set legacy-peer-deps true
-
-      - name: manage pkgs to setup
-        run: bash .github/scripts/lerna.sh tests
-
-      - name: Setup project
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 5
-          command: |
-            npm run setup
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: List cases for schedule
         id: schedule-cases
@@ -106,7 +89,7 @@ jobs:
         if: ${{ github.event.inputs.target-testplan-id != '' }}
         working-directory: ./packages/tests
         run: |
-          npm install
+          pnpm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
   
@@ -154,6 +137,12 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
+          node-version: 18
+
+      - name: Setup node for SPFx project
+        if: contains(matrix.cases, 'SPFx')
+        uses: actions/setup-node@v3
+        with:
           node-version: 16
 
       - name: Setup Azure Functions Core Tools For Linux
@@ -166,30 +155,23 @@ jobs:
           which func
           func --version
 
-      - name: manage pkgs to setup
-        run: bash .github/scripts/lerna.sh tests
-
-      - name: Setup legacy-peer-deps
-        run: |
-          npm config set legacy-peer-deps true
-
       - name: Setup .net
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
 
-      - name: Setup project
-        uses: nick-fields/retry@v2
+      - uses: pnpm/action-setup@v2
         with:
-          timeout_minutes: 10
-          max_attempts: 5
-          command: |
-            npm run setup
+          version: 8
+
+      - name: Setup project
+        run: |
+          npm run setup
 
       - name: Link CLI
         if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
         run: |
-          npm link --force
+          pnpm link --global
 
       - name: Update CLI and legacy-peer-deps for PR cases
         if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
@@ -295,25 +277,8 @@ jobs:
       - name: Checkout (dev)
         uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: manage pkgs to setup
-        run: bash .github/scripts/lerna.sh tests
-
-      - name: Setup legacy-peer-deps
-        run: |
-          npm config set legacy-peer-deps true
-
-      - name: Setup project
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 5
-          command: |
-            npm run setup
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: E2E Test clean
         working-directory: packages/tests
@@ -475,3 +440,13 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+          
+      - name: Send E-mail to the whole team
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.list-jobs.outputs.to }}
+          BODY: '"${{ steps.list-jobs.outputs.body }}"'
+          SUBJECT: ${{ steps.list-jobs.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

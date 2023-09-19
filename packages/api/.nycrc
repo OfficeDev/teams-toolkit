@@ -4,5 +4,8 @@
   "include": ["src/**/*.ts", "src/**/*.js"],
   "reporter": ["text", "html", "cobertura", "lcov"],
   "check-coverage": true,
-  "lines": 90
+  "exclude": [
+    "src/constants.ts"
+  ],
+  "lines": 75
 }

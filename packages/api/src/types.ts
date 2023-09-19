@@ -150,6 +150,7 @@ export interface ApiOperation {
 export interface Warning {
   type: string;
   content: string;
+  data?: any;
 }
 
 export interface CreateProjectResult {

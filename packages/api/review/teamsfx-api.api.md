@@ -13,9 +13,6 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
-export const AdaptiveFolderName = "adaptiveCards";
-
-// @public (undocumented)
 export interface ApiOperation {
     // (undocumented)
     groupName: string;
@@ -341,9 +338,6 @@ export interface FxError extends Error {
 }
 
 // @public
-export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
-
-// @public
 export interface Group {
     // (undocumented)
     name?: string;
@@ -404,7 +398,7 @@ export interface IProgressHandler {
     start: (detail?: string) => Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export interface IQTreeNode {
     // (undocumented)
     children?: IQTreeNode[];
@@ -415,9 +409,6 @@ export interface IQTreeNode {
     data: Question | Group;
     inputsDisabled?: "self" | "children" | "all";
 }
-
-// @public (undocumented)
-export const LocalEnvironmentName = "local";
 
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
@@ -615,26 +606,11 @@ export enum Platform {
 // @public (undocumented)
 export const ProductName = "teamsfx";
 
-// @public
-export class QTreeNode implements IQTreeNode {
-    constructor(data: Question | Group);
-    // (undocumented)
-    addChild(node: QTreeNode): QTreeNode;
-    // (undocumented)
-    children?: QTreeNode[];
-    cliOptionDisabled?: "self" | "children" | "all";
-    // (undocumented)
-    condition?: StringValidation | StringArrayValidation | ConditionFunc;
-    // (undocumented)
-    data: Question | Group;
-    inputsDisabled?: "self" | "children" | "all";
-    trim(): QTreeNode | undefined;
-    // (undocumented)
-    validate(): boolean;
-}
-
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
+
+// @public (undocumented)
+export const ResponseTemplatesFolderName = "responseTemplates";
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {
@@ -1103,9 +1079,6 @@ export interface UserInteraction {
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
 
-// @public
-export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema | ConditionFunc, value: T, inputs?: Inputs): Promise<string | undefined>;
-
 // @public (undocumented)
 export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;
 
@@ -1134,6 +1107,8 @@ export enum VsCodeEnv {
 export interface Warning {
     // (undocumented)
     content: string;
+    // (undocumented)
+    data?: any;
     // (undocumented)
     type: string;
 }

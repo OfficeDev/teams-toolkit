@@ -19,7 +19,7 @@ export * from "./env";
 export * from "./envAdd";
 export * from "./envList";
 export * from "./list";
-export * from "./listCapabilities";
+export * from "./listTemplates";
 export * from "./listSamples";
 export * from "./m365";
 export * from "./m365LaunchInfo";

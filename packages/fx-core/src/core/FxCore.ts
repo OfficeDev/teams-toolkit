@@ -3,7 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
@@ -16,10 +16,11 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
+  IQTreeNode,
+  ManifestUtil,
   ok,
   OpenAIPluginManifest,
   Platform,
-  QTreeNode,
   Result,
   Stage,
   Tools,
@@ -75,6 +76,10 @@ import {
   ErrorResult,
   listOperations,
   OpenAIPluginManifestHelper,
+  generateScaffoldingSummary,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
@@ -93,7 +98,7 @@ import { QuestionNames } from "../question/questionNames";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
-import { environmentManager } from "./environment";
+import { environmentNameManager } from "./environmentName";
 import { InvalidInputError } from "./error";
 import { ErrorContextMW, setErrorContext, setTools, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -105,7 +110,7 @@ import {
   getTrackingIdFromPath,
   getVersionState,
 } from "./middleware/utils/v3MigrationUtils";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
 
@@ -230,7 +235,7 @@ export class FxCore {
   }
   @hooks([ErrorContextMW({ component: "FxCore", stage: "localDebug", reset: true })])
   async localDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    inputs.env = environmentManager.getLocalEnvName();
+    inputs.env = environmentNameManager.getLocalEnvName();
     return this.provisionResources(inputs);
   }
 
@@ -269,9 +274,9 @@ export class FxCore {
     };
     const Context: DriverContext = createDriverContext(inputs);
     setErrorContext({ component: "aadAppUpdate" });
-    const res = await updateAadClient.run(inputArgs, Context);
-    if (res.isErr()) {
-      return err(res.error);
+    const res = await updateAadClient.execute(inputArgs, Context);
+    if (res.result.isErr()) {
+      return err(res.result.error);
     }
     if (Context.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
@@ -455,8 +460,8 @@ export class FxCore {
       showMessage: inputs?.showMessage != undefined ? inputs.showMessage : true,
     };
     const driver: ValidateManifestDriver = Container.get("teamsApp/validateManifest");
-    const result = await driver.run(args, context);
-    return result;
+    const result = await driver.execute(args, context);
+    return result.result;
   }
   /**
    * v3 only none lifecycle command
@@ -475,7 +480,7 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-    return await driver.run(args, context);
+    return (await driver.execute(args, context)).result;
   }
   /**
    * v3 only none lifecycle command
@@ -508,7 +513,7 @@ export class FxCore {
         `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
           .TEAMSFX_ENV!}.json`,
     };
-    const result = await driver.run(args, context);
+    const result = (await driver.execute(args, context)).result;
     if (context.platform === Platform.VSCode) {
       if (result.isOk()) {
         const isWindows = process.platform === "win32";
@@ -551,24 +556,30 @@ export class FxCore {
     const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, undefined, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
 
     const teamsAppId = manifestRes.value.id;
-    const capabilities = manifestUtils.getCapabilities(manifestRes.value);
+    const properties = ManifestUtil.parseCommonProperties(manifestRes.value);
 
     const launchHelper = new LaunchHelper(TOOLS.tokenProvider.m365TokenProvider, TOOLS.logProvider);
-    const result = await launchHelper.getLaunchUrl(hub, teamsAppId, capabilities);
+    const result = await launchHelper.getLaunchUrl(
+      hub,
+      teamsAppId,
+      properties.capabilities,
+      true,
+      properties.isCopilotPlugin
+    );
     return result;
   }
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */
-  getQuestions(stage: Stage, inputs: Inputs): Result<QTreeNode | undefined, FxError> {
+  getQuestions(stage: Stage, inputs: Inputs): Result<IQTreeNode | undefined, FxError> {
     if (stage === Stage.create) {
-      return ok(createProjectCliHelpNode() as QTreeNode);
+      return ok(createProjectCliHelpNode());
     }
     return ok(undefined);
   }
@@ -1085,7 +1096,7 @@ export class FxCore {
     ConcurrentLockerMW,
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const operations = inputs[QuestionNames.ApiOperation] as string[];
+    let operations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
 
@@ -1094,18 +1105,51 @@ export class FxCore {
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    const apiSpecFile = manifestRes.value.composeExtensions![0].apiSpecFile;
-    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecFile!);
+    const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
+
+    // Merge exisiting operations in manifest.json
+    const specParser = new SpecParser(url);
+    const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+    const operationMaps = await specParser.listOperationMap();
+    const existingOperations = existingOperationIds.map((key) =>
+      operationMaps.get(key)
+    ) as string[];
+    operations = operations.concat(existingOperations);
 
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
-      AdaptiveFolderName
+      ResponseTemplatesFolderName
     );
 
+    const context = createContextV3();
+
     try {
-      const specParser = new SpecParser(url);
-      await specParser.generate(manifestPath, operations, outputAPISpecPath, adaptiveCardFolder);
+      const generateResult = await specParser.generate(
+        manifestPath,
+        operations,
+        outputAPISpecPath,
+        adaptiveCardFolder
+      );
+
+      // Send SpecParser.generate() warnings
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      });
+
+      if (generateResult.warnings && generateResult.warnings.length > 0) {
+        const warnSummary = generateScaffoldingSummary(
+          generateResult.warnings,
+          manifestRes.value,
+          inputs.projectPath!
+        );
+        context.logProvider.info(warnSummary);
+      }
     } catch (e) {
       let error: FxError;
       if (e instanceof SpecParserError) {
@@ -1121,9 +1165,10 @@ export class FxCore {
       operations,
       inputs.projectPath
     );
-    await TOOLS.ui.showMessage("info", message, false);
+    void context.userInteraction.showMessage("info", message, false);
     return ok(undefined);
   }
+
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginLoadOpenAIManifest" }),
     ErrorHandlerMW,

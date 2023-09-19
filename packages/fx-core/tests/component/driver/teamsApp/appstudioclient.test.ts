@@ -17,6 +17,7 @@ import { PublishingState } from "../../../../src/component/driver/teamsApp/inter
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../../../src/component/driver/teamsApp/results";
 import { Constants } from "../../../../src/component/driver/teamsApp/constants";
+import { MockedLogProvider } from "../../../plugins/solution/util";
 
 function newEnvInfo() {
   return {
@@ -28,6 +29,7 @@ function newEnvInfo() {
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
+  const logProvider = new MockedLogProvider();
 
   const appDef: AppDefinition = {
     appName: "fake",
@@ -138,6 +140,85 @@ describe("App Studio API Test", () => {
       );
       chai.assert.equal(res, getResponse.data.value[0].appDefinitions[0].teamsAppId);
     });
+
+    it("AppdefinitionsAlreadyExists - update", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const publishResponse = {
+        data: {
+          error: {
+            code: "Conflict",
+            message: "Conflict",
+            innerError: {
+              code: "AppDefinitionAlreadyExists",
+            },
+          },
+        },
+      };
+
+      const updateResponse = {
+        data: {
+          teamsAppId: "fakeId",
+        },
+      };
+      sinon
+        .stub(fakeAxiosInstance, "post")
+        .onFirstCall()
+        .resolves(publishResponse)
+        .onSecondCall()
+        .resolves(updateResponse);
+      sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves("fakeId");
+
+      const getResponse = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  lastModifiedDateTime: new Date(),
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: uuid(),
+                  displayName: "fakeApp",
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+
+      const res = await AppStudioClient.publishTeamsApp(
+        appStudioToken,
+        Buffer.from(""),
+        appStudioToken
+      );
+      chai.assert.equal(res, "fakeId");
+    });
+
+    it("AppdefinitionsAlreadyExists - failed", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const postResponse = {
+        data: {
+          error: {
+            code: "Conflict",
+            message: "Conflict",
+            innerError: {
+              code: "AppDefinitionAlreadyExists",
+            },
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      try {
+        await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.TeamsAppPublishConflictError.name);
+      }
+    });
   });
 
   describe("import Teams app", () => {
@@ -152,7 +233,7 @@ describe("App Studio API Test", () => {
 
       AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
 
-      const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       chai.assert.equal(res, appDef);
     });
 
@@ -166,7 +247,7 @@ describe("App Studio API Test", () => {
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
       AppStudioClient.setRegion("https://dev.teams.microsoft.com");
 
-      const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       chai.assert.equal(res, appDef);
     });
 
@@ -189,7 +270,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.TeamsAppCreateConflictError.name);
       }
@@ -214,7 +295,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(
           error.name,
@@ -245,7 +326,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       }
@@ -274,7 +355,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.InvalidTeamsAppIdError.name);
       }
@@ -305,7 +386,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.FileNotFoundError.name);
       }
@@ -334,7 +415,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       }
@@ -351,7 +432,7 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+      const res = await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       chai.assert.equal(res, appDef);
     });
 
@@ -373,7 +454,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       }
@@ -402,7 +483,7 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       } finally {
@@ -505,10 +586,163 @@ describe("App Studio API Test", () => {
       sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
-        await AppStudioClient.grantPermission(appDef.teamsAppId!, appStudioToken, appUser);
+        await AppStudioClient.grantPermission(
+          appDef.teamsAppId!,
+          appStudioToken,
+          appUser,
+          logProvider
+        );
       } catch (e) {
         chai.assert.equal(e.name, error.name);
       }
+    });
+
+    it("happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const newAppUser: AppUser = {
+        tenantId: "new-tenant-id",
+        aadId: "new-aad-id",
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+      const teamsAppId = appDef.teamsAppId!;
+      const appDefWithUser: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+        ],
+      };
+      const appDefWithUserAdded: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+          newAppUser,
+        ],
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: appDefWithUser,
+      });
+      sinon.stub(fakeAxiosInstance, "post").resolves({
+        data: appDefWithUserAdded,
+      });
+
+      const res = await AppStudioClient.grantPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        newAppUser,
+        logProvider
+      );
+    });
+
+    it("happy path with region", async () => {
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const newAppUser: AppUser = {
+        tenantId: "new-tenant-id",
+        aadId: "new-aad-id",
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+      const teamsAppId = appDef.teamsAppId!;
+      const appDefWithUser: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+        ],
+      };
+      const appDefWithUserAdded: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+          newAppUser,
+        ],
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: appDefWithUser,
+      });
+      sinon.stub(fakeAxiosInstance, "post").resolves({
+        data: appDefWithUserAdded,
+      });
+
+      const res = await AppStudioClient.grantPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        newAppUser,
+        logProvider
+      );
+    });
+  });
+
+  describe("getUserList", () => {
+    it("happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appDef,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.getUserList(
+        appDef.teamsAppId!,
+        appStudioToken,
+        logProvider
+      );
+    });
+  });
+
+  describe("checkPermission", () => {
+    it("No permission", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appDef,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.checkPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        "fakeUesrId",
+        logProvider
+      );
+      chai.assert.equal(res, Constants.PERMISSIONS.noPermission);
     });
   });
 });

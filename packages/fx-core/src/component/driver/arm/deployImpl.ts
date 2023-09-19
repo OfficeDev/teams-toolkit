@@ -45,7 +45,11 @@ export class ArmDeployImpl {
     await this.validateArgs();
     await this.createClient();
     const needBicepCli = hasBicepTemplate(this.args.templates);
+
     if (needBicepCli && this.args.bicepCliVersion) {
+      this.context.logProvider.debug(
+        `Ensure bicep cli version ${this.args.bicepCliVersion} for ${Constants.actionName}`
+      );
       this.bicepCommand = await this.ensureBicepCli();
     } else {
       this.bicepCommand = "bicep";
@@ -72,6 +76,9 @@ export class ArmDeployImpl {
   }
 
   private async createClient(): Promise<void> {
+    this.context.logProvider.debug(
+      `Get token from AzureAccountProvider to create ResourceManagementClient of @azure/arm-resources`
+    );
     const azureToken = await this.context.azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken) {
       throw new InvalidAzureCredentialError();
@@ -84,6 +91,9 @@ export class ArmDeployImpl {
     this.setTelemetries();
     await Promise.all(
       this.args.templates.map(async (template) => {
+        this.context.logProvider.debug(
+          `Deploy template ${template.deploymentName} from ${template.path} to resource group ${this.args.resourceGroupName}`
+        );
         const res = await this.deployTemplate(template);
         if (res.isOk() && res.value) {
           this.context.addSummary(
@@ -189,6 +199,7 @@ export class ArmDeployImpl {
 
   async compileBicepToJson(filePath: string): Promise<JSON> {
     try {
+      this.context.logProvider.debug(`Compile bicep template ${filePath} to json`);
       const result = await cpUtils.executeCommand(
         undefined,
         this.context.logProvider,

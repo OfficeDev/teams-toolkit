@@ -5,6 +5,7 @@ import Ajv, { ValidateFunction } from "ajv";
 import fs from "fs-extra";
 import path from "path";
 import { getResourceFolder } from "../../folder";
+import { isTestToolEnabled } from "../../common/featureFlags";
 
 type Version = string;
 const supportedVersions = ["1.0.0", "1.1.0", "v1.2"];
@@ -14,7 +15,7 @@ export class Validator {
 
   constructor() {
     this.impl = new Map();
-    for (const version of supportedVersions) {
+    for (const version of this.supportedVersions()) {
       this.initVersion(version);
     }
   }
@@ -35,11 +36,11 @@ export class Validator {
   }
 
   supportedVersions(): string[] {
-    return supportedVersions;
+    return [...supportedVersions, ...(isTestToolEnabled() ? ["v1.3"] : [])];
   }
 
   private latestSupportedVersion(): string {
-    return supportedVersions[supportedVersions.length - 1];
+    return this.supportedVersions()[this.supportedVersions().length - 1];
   }
 
   validate(obj: Record<string, unknown>, version?: string): boolean {

@@ -152,6 +152,26 @@ describe("adaptiveCardGenerator", () => {
     });
   });
 
+  it("should generate a card if schema is empty", () => {
+    const schema = {};
+    const expected = {
+      type: "AdaptiveCard",
+      $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      version: "1.5",
+      body: [
+        {
+          type: "TextBlock",
+          text: "success",
+          wrap: true,
+        },
+      ],
+    };
+
+    const actual = generateAdaptiveCard(schema);
+
+    expect(actual).to.deep.equal(expected);
+  });
+
   describe("generateCardFromResponse", () => {
     it("should generate a card from a schema object", () => {
       const schema = {

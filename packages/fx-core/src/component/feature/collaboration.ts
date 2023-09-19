@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Context, FxError, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  Context,
+  FxError,
+  LogProvider,
+  M365TokenProvider,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
@@ -29,8 +37,8 @@ const componentNameTeams = "AppStudioPlugin";
 export class AadCollaboration {
   private readonly aadAppClient: AadAppClient;
 
-  constructor(m365TokenProvider: M365TokenProvider) {
-    this.aadAppClient = new AadAppClient(m365TokenProvider);
+  constructor(m365TokenProvider: M365TokenProvider, logProvider?: LogProvider) {
+    this.aadAppClient = new AadAppClient(m365TokenProvider, logProvider);
   }
   @hooks([
     ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
@@ -106,9 +114,9 @@ export class AadCollaboration {
       if (error.response!.status === 404) {
         return new AppIdNotExist(appId);
       } else if (error.response!.status >= 400 && error.response!.status < 500) {
-        return new HttpClientError(componentNameAad, message);
+        return new HttpClientError(error, componentNameAad, message);
       } else {
-        return new HttpServerError(componentNameAad, message);
+        return new HttpServerError(error, componentNameAad, message);
       }
     }
 
@@ -141,7 +149,12 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
+      await AppStudioClient.grantPermission(
+        teamsAppId,
+        appStudioToken as string,
+        userInfo,
+        ctx.logProvider
+      );
       const result: ResourcePermission[] = [
         {
           name: Constants.PERMISSIONS.name,
@@ -169,7 +182,11 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+      const userLists = await AppStudioClient.getUserList(
+        teamsAppId,
+        appStudioToken as string,
+        ctx.logProvider
+      );
       if (!userLists) {
         return ok([]);
       }
@@ -210,7 +227,8 @@ export class TeamsCollaboration {
       const teamsAppRoles = await AppStudioClient.checkPermission(
         teamsAppId,
         appStudioToken as string,
-        userInfo.aadId
+        userInfo.aadId,
+        ctx.logProvider
       );
 
       const result: ResourcePermission[] = [
@@ -236,9 +254,9 @@ export class TeamsCollaboration {
         if (statusCode === 404) {
           return new AppIdNotExist(appId);
         } else if (statusCode >= 400 && statusCode < 500) {
-          return new HttpClientError(componentNameTeams, message);
+          return new HttpClientError(error, componentNameTeams, message);
         } else {
-          return new HttpServerError(componentNameTeams, message);
+          return new HttpServerError(error, componentNameTeams, message);
         }
       }
     }

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import chalk from "chalk";
-import { strings } from "./resource";
+import figures from "figures";
 
 export enum TextType {
   Success = "success",
@@ -28,7 +28,7 @@ export function colorize(message: string, type: TextType): string {
     case TextType.Warning:
       return chalk.yellowBright(message);
     case TextType.Info:
-      return chalk.whiteBright(message);
+      return message;
     case TextType.Hyperlink:
       return chalk.cyanBright(message);
     case TextType.Email:
@@ -41,8 +41,9 @@ export function colorize(message: string, type: TextType): string {
   }
 }
 
-export const SuccessText = colorize(strings["success.prefix"], TextType.Success);
-export const WarningText = colorize(strings["warning.prefix"], TextType.Success);
+export const SuccessText = colorize(`(${figures.tick}) Success: `, TextType.Success);
+export const WarningText = colorize(`(${figures.warning}) Warning: `, TextType.Success);
+export const ErrorPrefix = `(${figures.cross}) Error: `;
 
 export function replaceTemplateString(template: string, ...args: string[]): string {
   let result = template;

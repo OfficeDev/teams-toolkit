@@ -12,6 +12,7 @@ import {
   ok,
   OpenAIManifestAuthType,
   Platform,
+  ResponseTemplatesFolderName,
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
@@ -31,7 +32,6 @@ import {
 } from "../../../src/component/generator/copilotPlugin/helper";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
-import path from "path";
 import {
   ErrorType,
   ValidationStatus,
@@ -107,11 +107,13 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
     assert.isTrue(getDefaultVariables.calledOnce);
@@ -119,7 +121,7 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 
-  it("success with api spec warning", async function () {
+  it("success with api spec warning and generate warnings", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
@@ -137,21 +139,37 @@ describe("copilotPluginGenerator", function () {
           content: "warning",
           data: ["operation1", " operation2"],
         },
+        {
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: "",
+        },
       ],
     });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const generateParser = sandbox.stub(SpecParser.prototype, "generate").resolves({
+      allSuccess: true,
+      warnings: [
+        { type: WarningType.GenerateCardFailed, content: "test", data: "getPets" },
+        { type: WarningType.OperationOnlyContainsOptionalParam, content: "test", data: "getPets" },
+      ],
+    });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      assert.isTrue(result.value.warnings!.length === 1);
+      assert.isTrue(result.value.warnings!.length === 4);
       assert.isFalse(result.value.warnings![0].content.includes("operation2"));
+      assert.isUndefined(result.value.warnings![0].data);
+      assert.equal(result.value.warnings![1].type, WarningType.ConvertSwaggerToOpenAPI);
+      assert.equal(result.value.warnings![2].type, WarningType.GenerateCardFailed);
+      assert.equal(result.value.warnings![3].type, WarningType.OperationOnlyContainsOptionalParam);
+      assert.equal(result.value.warnings![3].content, "");
+      assert.isTrue(generateParser.args[0][3].includes(ResponseTemplatesFolderName));
     }
   });
 
@@ -174,11 +192,11 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -204,11 +222,11 @@ describe("copilotPluginGenerator", function () {
       .stub(manifestUtils, "_readAppManifest")
       .resolves(ok({ ...teamsManifest, name: { short: "", full: "" } }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isOk());
   });
@@ -226,13 +244,19 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(true);
-    const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
       .stub(OpenAIPluginManifestHelper, "updateManifest")
       .resolves(ok(undefined));
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromOpenAIPlugin(
+      context,
+      inputs,
+      "projectPath"
+    );
 
     assert.isTrue(result.isOk());
     assert.isTrue(getDefaultVariables.calledOnce);
@@ -254,13 +278,19 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(specParserUtils, "isYamlSpecFile").throws(new Error("test"));
-    const generateBasedOnSpec = sandbox.stub(SpecParser.prototype, "generate").resolves();
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     const updateManifestBasedOnOpenAIPlugin = sandbox
       .stub(OpenAIPluginManifestHelper, "updateManifest")
       .resolves(err(new SystemError("source", "name", "", "")));
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromOpenAIPlugin(
+      context,
+      inputs,
+      "projectPath"
+    );
 
     assert.isTrue(result.isErr());
     assert.isTrue(getDefaultVariables.calledOnce);
@@ -281,7 +311,7 @@ describe("copilotPluginGenerator", function () {
       .stub(Generator, "generateTemplate")
       .resolves(err(new SystemError("source", "name", "", "")));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
   });
@@ -303,7 +333,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -326,11 +356,11 @@ describe("copilotPluginGenerator", function () {
       .stub(manifestUtils, "_readAppManifest")
       .resolves(err(new SystemError("readManifest", "name", "", "")));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves();
+    sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -347,7 +377,7 @@ describe("copilotPluginGenerator", function () {
     const context = createContextV3();
     sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
   });
@@ -371,7 +401,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
 
-    const result = await CopilotPluginGenerator.generate(context, inputs, "projectPath");
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
 
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -433,9 +463,9 @@ describe("generateScaffoldingSummary", () => {
   it("no warnings", () => {
     sandbox.stub(fs, "existsSync").returns(true);
     const composeExtension: IComposeExtension = {
-      type: "apiBased",
+      composeExtensionType: "apiBased",
       commands: [
-        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+        { id: "command1", type: "query", apiResponseRenderingTemplateFile: "test", title: "" },
         { id: "command1", type: "action", title: "" },
       ],
     };
@@ -487,6 +517,20 @@ describe("generateScaffoldingSummary", () => {
     assert.isTrue(res.includes("name/short"));
   });
 
+  it("no warnings if exceeding length with placeholder in short name", () => {
+    const shortName = "testdebug09051-${{TEAMSFX_ENV}}";
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        name: { short: shortName, full: "full" },
+        description: { short: "short", full: "full" },
+      },
+      "path"
+    );
+    assert.equal(res.length, 0);
+  });
+
   it("warnings about API spec", () => {
     const res = generateScaffoldingSummary(
       [{ type: WarningType.OperationIdMissing, content: "content" }],
@@ -499,9 +543,8 @@ describe("generateScaffoldingSummary", () => {
 
   it("warnings about adaptive card template in manifest", () => {
     const composeExtension: IComposeExtension = {
-      type: "apiBased",
+      composeExtensionType: "apiBased",
       commands: [{ id: "command1", type: "query", title: "" }],
-      supportsConversationalAI: true,
     };
     const res = generateScaffoldingSummary(
       [],
@@ -512,20 +555,19 @@ describe("generateScaffoldingSummary", () => {
       "path"
     );
 
-    assert.isTrue(res.includes("apiResponseRenderingTemplate"));
+    assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
   });
 
   it("warnings about missing adaptive card template", () => {
     const composeExtension: IComposeExtension = {
-      type: "apiBased",
-      supportsConversationalAI: true,
+      composeExtensionType: "apiBased",
       commands: [
-        { id: "command1", type: "query", apiResponseRenderingTemplate: "test", title: "" },
+        { id: "command1", type: "query", apiResponseRenderingTemplateFile: "", title: "" },
       ],
     };
     sandbox.stub(fs, "existsSync").returns(false);
     const res = generateScaffoldingSummary(
-      [],
+      [{ type: WarningType.GenerateCardFailed, content: "test", data: "command1" }],
       {
         ...teamsManifest,
         composeExtensions: [composeExtension],
@@ -533,7 +575,63 @@ describe("generateScaffoldingSummary", () => {
       "path"
     );
 
-    assert.isTrue(!res.includes("apiResponseRenderingTemplate"));
+    assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
     assert.isTrue(res.includes("test"));
+  });
+
+  it("warnings about command parameters", () => {
+    const composeExtension: IComposeExtension = {
+      composeExtensionType: "apiBased",
+      apiSpecificationFile: "testApiFile",
+      commands: [
+        {
+          id: "getAll",
+          type: "query",
+          title: "",
+          apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [
+            {
+              name: "test",
+              title: "test",
+            },
+          ],
+        },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isTrue(res.includes("testApiFile"));
+  });
+
+  it("warnings about command parameters with some properties missing", () => {
+    const composeExtension: IComposeExtension = {
+      composeExtensionType: "apiBased",
+      commands: [
+        {
+          id: "getAll",
+          type: "query",
+          title: "",
+          apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [],
+        },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isFalse(res.includes("testApiFile"));
   });
 });

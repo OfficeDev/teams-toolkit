@@ -62,16 +62,23 @@ export interface ErrorResult {
   data?: any;
 }
 
+export interface GenerateResult {
+  allSuccess: boolean;
+  warnings: WarningResult[];
+}
+
 /**
  * An enum that represents the types of errors that can occur during validation.
  */
 export enum ErrorType {
   SpecNotValid = "spec-not-valid",
-  VersionNotSupported = "version-not-supported",
   RemoteRefNotSupported = "remote-ref-not-supported",
   NoServerInformation = "no-server-information",
-  MultipleServerInformation = "multiple-server-information",
+  UrlProtocolNotSupported = "url-protocol-not-supported",
+  RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
+  NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
+  ResolveServerUrlFailed = "resolve-server-url-failed",
 
   ListFailed = "list-failed",
   ListOperationMapFailed = "list-operation-map-failed",
@@ -92,6 +99,9 @@ export enum WarningType {
   AuthNotSupported = "auth-not-supported",
   MethodNotSupported = "method-not-supported",
   OperationIdMissing = "operationid-missing",
+  GenerateCardFailed = "generate-card-failed",
+  OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
+  ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
   Unknown = "unknown",
 }
 
@@ -123,35 +133,30 @@ export interface AdaptiveCard {
   body: Array<TextBlockElement | ArrayElement>;
 }
 
-export interface PartialManifest {
-  description: Description;
-  composeExtensions: ComposeExtension[];
-}
-
-export interface Description {
-  short: string;
-  full: string;
-}
-
-export interface ComposeExtension {
-  type: string;
-  apiSpecFile: string;
-  supportsConversationalAI: boolean;
-  commands: Command[];
-}
-
-export interface Command {
-  id: string;
-  type: string;
-  context: string[];
-  title: string;
-  description?: string;
-  parameters: Parameter[];
-  apiResponseRenderingTemplate?: string;
+export interface WrappedAdaptiveCard {
+  version: string;
+  $schema?: string;
+  jsonPath?: string;
+  responseLayout: string;
+  responseCardTemplate: AdaptiveCard;
+  previewCardTemplate: {
+    title: string;
+    subtitle?: string;
+    image?: {
+      url: string;
+      alt?: string;
+    };
+  };
 }
 
 export interface Parameter {
   name: string;
   title: string;
   description: string;
+}
+
+export interface CheckParamResult {
+  requiredNum: number;
+  optionalNum: number;
+  isValid: boolean;
 }

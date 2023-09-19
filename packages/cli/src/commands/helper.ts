@@ -8,6 +8,7 @@ import {
   CLIExample,
 } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
+import { cloneDeep } from "lodash";
 
 class Helper {
   itemIndentWidth = 2;
@@ -48,7 +49,7 @@ class Helper {
     return items.join(" ");
   }
   formatExample(example: CLIExample) {
-    return `  '${chalk.blueBright(example.command)}': ${example.description}`;
+    return `  ${example.description}.\n    ${chalk.bold(example.command)}\n`;
   }
   formatCommandName(command: CLICommand) {
     const items: string[] = [command.fullName || command.name];
@@ -208,6 +209,12 @@ class Helper {
 
     // Global Options
     let globalOptions = (rootCommand?.options || []).filter((o) => !o.hidden);
+    if (command.defaultInteractiveOption !== undefined) {
+      globalOptions = cloneDeep(globalOptions);
+      globalOptions.forEach((o) => {
+        if (o.name === "interactive") o.default = command.defaultInteractiveOption;
+      });
+    }
     if (rootCommand?.sortOptions) globalOptions = globalOptions.sort(compareOptions);
     const globalOptionList = globalOptions.map((option) => {
       return this.formatItem(

@@ -58,10 +58,15 @@ const config = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.(jpg|png|svg|gif)$/,
+        test: /\.(jpg|png|gif)$/,
         use: {
           loader: "url-loader",
         },
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.tsx?$/,
+        use: ["@svgr/webpack"],
       },
       {
         test: /node_modules[\\|/](yaml-language-server|vscode-languageserver|vscode-json-languageservice|prettier)/,

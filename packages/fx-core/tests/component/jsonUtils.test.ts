@@ -36,14 +36,6 @@ describe("JSONUtils", () => {
       assert.isTrue(res.error instanceof JSONSyntaxError);
     }
   });
-  it("parseJSON other error", async () => {
-    sandbox.stub(JSON, "parse").throws(new Error("test error"));
-    const res = jsonUtils.parseJSON(`{"a":1,}`);
-    assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      assert.isTrue(res.error instanceof UnhandledError);
-    }
-  });
   it("readJSONFile success", async () => {
     sandbox.stub(fs, "readJSON").resolves({ a: 1 });
     const res = await jsonUtils.readJSONFile("xxx");

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
+import { IQTreeNode, Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { Options } from "yargs";
 import chalk from "chalk";
+import { Options } from "yargs";
 
 export type OptionsMap = { [_: string]: Options };
 
@@ -14,12 +14,14 @@ export const cliTelemetryPrefix = "teamsfx-cli";
 
 export const teamsAppFileName = "teamsapp.yml";
 
-export const RootFolderNode = new QTreeNode({
-  type: "folder",
-  name: "folder",
-  title: "Select root folder of the project",
-  default: "./",
-});
+export const RootFolderNode: IQTreeNode = {
+  data: {
+    type: "folder",
+    name: "folder",
+    title: "Select root folder of the project",
+    default: "./",
+  },
+};
 
 export const RootFolderOptions: OptionsMap = {
   folder: {
@@ -30,11 +32,13 @@ export const RootFolderOptions: OptionsMap = {
   },
 };
 
-export const EnvNodeNoCreate = new QTreeNode({
-  type: "text",
-  name: "env",
-  title: "Select an existing environment for the project",
-});
+export const EnvNodeNoCreate: IQTreeNode = {
+  data: {
+    type: "text",
+    name: "env",
+    title: "Select an existing environment for the project",
+  },
+};
 
 export const EnvOptions: OptionsMap = {
   env: {
@@ -58,17 +62,21 @@ export const ProvisionOptions: OptionsMap = {
   },
 };
 
-export const SubscriptionNode = new QTreeNode({
-  type: "text",
-  name: "subscription",
-  title: "Select a subscription",
-});
+export const SubscriptionNode: IQTreeNode = {
+  data: {
+    type: "text",
+    name: "subscription",
+    title: "Select a subscription",
+  },
+};
 
-export const CollaboratorEmailNode = new QTreeNode({
-  type: "text",
-  name: "email",
-  title: "Input email address of collaborator",
-});
+export const CollaboratorEmailNode: IQTreeNode = {
+  data: {
+    type: "text",
+    name: "email",
+    title: "Input email address of collaborator",
+  },
+};
 
 export const CollaboratorEmailOptions: OptionsMap = {
   email: {
@@ -161,7 +169,7 @@ export const AddFeatureFunc = {
   method: Stage.addFeature,
 };
 
-export const EmptyQTreeNode = new QTreeNode({ type: "group" });
+export const EmptyQTreeNode: IQTreeNode = { data: { type: "group" } };
 
 export const SUPPORTED_SPFX_VERSION = "1.16.1";
 

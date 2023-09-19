@@ -2,15 +2,23 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
+
 import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
-import sampleConfigV3 from "./samples-config-v3.json";
+import { FeatureFlagName } from "./constants";
 import { isVideoFilterEnabled } from "./featureFlags";
+import { AccessGithubError } from "../error/common";
+import { hooks } from "@feathersjs/hooks";
+import { ErrorContextMW } from "../core/globalVars";
+
 const packageJson = require("../../package.json");
 
 const SampleConfigOwner = "OfficeDev";
 const SampleConfigRepo = "TeamsFx-Samples";
 const SampleConfigFile = ".config/samples-config-v3.json";
 export const SampleConfigTag = "v2.3.0";
+// rc and prerelease tag is only different with stable tag when there will a breaking change.
+export const SampleConfigTagForRc = "v2.3.0";
+export const SampleConfigBranchForPrerelease = "v3";
 
 export interface SampleConfig {
   id: string;
@@ -24,9 +32,14 @@ export interface SampleConfig {
   time: string;
   configuration: string;
   suggested: boolean;
-  gifUrl: string;
-  // maximum TTK version to run sample
+  thumbnailUrl: string;
+  gifUrl?: string;
+  // maximum TTK & CLI version to run sample
   maximumToolkitVersion?: string;
+  maximumCliVersion?: string;
+  // these 2 fields are used when external sample is upgraded and breaks in old TTK version.
+  minimumToolkitVersion?: string;
+  minimumCliVersion?: string;
   downloadUrl?: string;
 }
 
@@ -37,50 +50,75 @@ interface SampleCollection {
 class SampleProvider {
   private sampleCollection: SampleCollection | undefined;
   private samplesConfig: { samples: Array<Record<string, unknown>> } | undefined;
-
+  private branchOrTag = SampleConfigTag;
+  @hooks([ErrorContextMW({ component: "SampleProvider" })])
   public async fetchSampleConfig() {
-    try {
-      const fileResponse = await sendRequestWithTimeout(
-        async () => {
-          return await axios.get(
-            `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${SampleConfigFile}`,
-            { responseType: "json" }
-          );
-        },
-        1000,
-        3
-      );
-
-      if (fileResponse && fileResponse.data) {
-        this.samplesConfig = fileResponse.data as { samples: Array<Record<string, unknown>> };
+    const version: string = packageJson.version;
+    if (version.includes("alpha")) {
+      // daily build version always use 'dev' branch
+      this.branchOrTag = "dev";
+    } else if (version.includes("beta")) {
+      // prerelease build version always use branch head for prerelease.
+      this.branchOrTag = SampleConfigBranchForPrerelease;
+    } else if (version.includes("rc")) {
+      // rc version(before next stable TTK) always use prerelease tag
+      this.branchOrTag = SampleConfigTagForRc;
+    } else {
+      // stable version uses the head of branch defined by feature flag when available
+      this.branchOrTag = SampleConfigTag;
+      const branch = process.env[FeatureFlagName.SampleConfigBranch];
+      if (branch) {
+        try {
+          const data = await this.fetchRawFileContent(branch);
+          this.branchOrTag = branch;
+          this.samplesConfig = data as { samples: Array<Record<string, unknown>> };
+        } catch (e: unknown) {}
       }
-    } catch (e) {
-      this.samplesConfig = undefined;
+    }
+    if (this.samplesConfig === undefined) {
+      this.samplesConfig = (await this.fetchRawFileContent(this.branchOrTag)) as {
+        samples: Array<Record<string, unknown>>;
+      };
     }
   }
+
   public get SampleCollection(): SampleCollection {
-    const samples = (this.samplesConfig ? this.samplesConfig.samples : sampleConfigV3.samples).map(
-      (sample) => {
+    const samples =
+      this.samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrl"] ? true : false;
-        let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${SampleConfigTag}/${
-          sample["id"] as string
-        }/${sample["gifPath"] as string}`;
+        let gifUrl =
+          sample["gifPath"] !== undefined
+            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+                this.branchOrTag
+              }/${sample["id"] as string}/${sample["gifPath"] as string}`
+            : undefined;
+        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+          this.branchOrTag
+        }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
           const info = parseSampleUrl(sample["downloadUrl"] as string);
-          gifUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
+          gifUrl =
+            sample["gifPath"] !== undefined
+              ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
+                  info.dir
+                }/${sample["gifPath"] as string}`
+              : undefined;
+          thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
             info.ref
-          }/${info.dir}/${sample["gifPath"] as string}`;
+          }/${info.dir}/${sample["thumbnailPath"] as string}`;
         }
         return {
           ...sample,
           onboardDate: new Date(sample["onboardDate"] as string),
           downloadUrl: isExternal
             ? sample["downloadUrl"]
-            : `${this.getBaseSampleUrl()}${sample["id"] as string}`,
+            : `https://github.com/${SampleConfigOwner}/${SampleConfigRepo}/tree/${
+                this.branchOrTag
+              }/${sample["id"] as string}`,
           gifUrl: gifUrl,
+          thumbnailUrl: thumbnailUrl,
         } as SampleConfig;
-      }
-    );
+      }) || [];
 
     // remove video filter sample app if feature flag is disabled.
     if (!isVideoFilterEnabled()) {
@@ -98,15 +136,23 @@ class SampleProvider {
     return this.sampleCollection;
   }
 
-  private getBaseSampleUrl(): string {
-    const version: string = packageJson.version;
-    if (version.includes("alpha")) {
-      return "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/";
+  private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {
+    const url = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`;
+    try {
+      const fileResponse = await sendRequestWithTimeout(
+        async () => {
+          return await axios.get(url, { responseType: "json" });
+        },
+        1000,
+        3
+      );
+
+      if (fileResponse && fileResponse.data) {
+        return fileResponse.data;
+      }
+    } catch (e) {
+      throw new AccessGithubError(url, "SampleProvider", e);
     }
-    if (version.includes("rc")) {
-      return "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/";
-    }
-    return `https://github.com/${SampleConfigOwner}/${SampleConfigRepo}/tree/${SampleConfigTag}/`;
   }
 }
 

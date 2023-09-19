@@ -39,7 +39,7 @@ jobs:
             }
 
   npm-audit:
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' }}
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -72,15 +72,9 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Setup Project
-        run: |
-          npm run setup
+      
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: prettier check files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
@@ -88,13 +82,13 @@ jobs:
           git remote add upstream https://github.com/OfficeDev/TeamsFx.git
           git fetch upstream ${{ github.event.pull_request.base.ref }}
           VAR=$(realpath .github/scripts/lint-pr.sh)
-          npx lerna exec -- bash $VAR upstream/${{ github.event.pull_request.base.ref }}
+          pnpm -r exec -- bash $VAR upstream/${{ github.event.pull_request.base.ref }}
 
       - name: prettier check files in PR on local
         if: ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }}
         run: |
           VAR=$(realpath .github/scripts/lint-pr.sh)
-          npx lerna exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
+          pnpm -r exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
 
       - name: Check if there are changes
         id: changes
@@ -108,7 +102,7 @@ jobs:
             echo 'There may be some unformatted files in your PR, please run these commands on Git Bash terminal: '
             echo '1. npm run setup'
             echo '2. VAR=$(realpath .github/scripts/lint-pr.sh) '
-            echo '3. npx lerna exec -- bash $VAR ${your-PR-target-branch}'
+            echo '3. pnpm -r exec -- bash $VAR ${your-PR-target-branch}'
             echo 'please replace the ${your-PR-target-branch} as the target branch of your PR, such as origin/dev or upstream/dev'
             exit 1
           fi
@@ -202,7 +196,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
+    if: ${{ github.event_name !=  'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch

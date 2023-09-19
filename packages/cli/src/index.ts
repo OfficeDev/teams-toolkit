@@ -13,9 +13,10 @@ import { start as startNewUX } from "./commands/index";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import "./console/screen";
 import * as constants from "./constants";
-import { registerPrompts } from "./prompts";
 import cliTelemetry from "./telemetry/cliTelemetry";
 import { getVersion } from "./utils";
+import { TelemetryProperty } from "./telemetry/cliTelemetryEvents";
+import { logger } from "./commonlib/logger";
 
 initializePreviewFeatureFlags();
 
@@ -36,11 +37,20 @@ export function initTelemetryReporter(): void {
 /**
  * Starts the CLI process.
  */
-export async function start(): Promise<void> {
+export async function start(binName: "teamsfx" | "teamsapp"): Promise<void> {
   initTelemetryReporter();
-  registerPrompts();
+  //   if (binName === "teamsfx") {
+  //     logger.warning(
+  //       `
+  // **********************************************************************************
+  // * Warning: command 'teamsfx' is deprecated and will be replaced with 'teamsapp'. *
+  // **********************************************************************************/
+  // `
+  //     );
+  //   }
+  cliTelemetry.reporter?.addSharedProperty(TelemetryProperty.BinName, binName); // trigger binary name for telemetry
   if (isCliNewUxEnabled()) {
-    return startNewUX();
+    return startNewUX(binName);
   }
   const argv = yargs(changeArgv(hideBin(process.argv))).parserConfiguration({
     "parse-numbers": false,
@@ -65,7 +75,7 @@ export async function start(): Promise<void> {
     })
     .detectLocale(false)
     .demandCommand()
-    .scriptName(constants.cliName)
+    .scriptName(binName)
     .help()
     .strict()
     .showHelpOnFail(false, "Specify --help for available options")

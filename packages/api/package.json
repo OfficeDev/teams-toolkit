@@ -42,6 +42,7 @@
     "@typescript-eslint/parser": "^4.19.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
+    "copyfiles": "^2.4.1",
     "cpy-cli": "^4.0.0",
     "eslint": "^7.22.0",
     "eslint-plugin-header": "^3.1.1",
@@ -57,7 +58,7 @@
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^4.2.3"
+    "typescript": "^5.0.4"
   },
   "dependencies": {
     "@azure/core-auth": "^1.4.0",
@@ -65,7 +66,8 @@
     "axios": "^0.21.2",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",
-    "neverthrow": "^3.2.0"
+    "neverthrow": "^3.2.0",
+    "tslib": "^2.3.1"
   },
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {

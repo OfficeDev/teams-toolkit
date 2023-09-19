@@ -20,19 +20,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Setup project
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            npm run setup
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: setup python
         uses: actions/setup-python@v3
@@ -146,3 +135,13 @@ jobs:
            -H "X-GitHub-Api-Version: 2022-11-28" \
            https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
            -d '{"ref":"${{ github.ref_name }}","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
+
+      - name: Report result
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.list-jobs.outputs.to }}
+          BODY: '"${{ steps.list-jobs.outputs.body }}"'
+          SUBJECT: ${{ steps.list-jobs.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

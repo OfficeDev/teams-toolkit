@@ -128,6 +128,7 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
   workspaceFolders: undefined,
   openTextDocument: () => {},
   createFileSystemWatcher: (globPattern: vscode.GlobPattern) => {},
+  getConfiguration: () => {},
 };
 
 // Setup extensions APIs

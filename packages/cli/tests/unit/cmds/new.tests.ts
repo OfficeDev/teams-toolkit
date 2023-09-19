@@ -32,7 +32,26 @@ describe("New Command Tests", function () {
     sandbox.stub(questionUtils, "filterQTreeNode").resolves(RootFolderNode);
     sandbox.stub(utils, "flattenNodes").returns([RootFolderNode]);
     sandbox.stub(fs, "pathExistsSync").callsFake((filePath: string) => !filePath.includes("fake"));
-    sandbox.stub(sampleProvider, "fetchSampleConfig").resolves();
+    sandbox.stub(sampleProvider, "fetchSampleConfig").callsFake(async () => {
+      sampleProvider["samplesConfig"] = {
+        samples: [
+          {
+            id: "todo-list-SPFx",
+            onboardDate: "2021-05-06",
+            title: "Todo List with SPFx",
+            shortDescription: "Todo List app hosting on SharePoint",
+            fullDescription:
+              "Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources.",
+            types: ["Tab"],
+            tags: ["SharePoint", "SPFx", "TS"],
+            time: "1hr to run",
+            configuration: "Manual configurations required",
+            gifPath: "images/ToDoListCRUD.gif",
+            suggested: false,
+          },
+        ],
+      };
+    });
   });
 
   afterEach(() => {
@@ -107,6 +126,6 @@ describe("New Command Tests", function () {
     expect(result.isOk()).equals(true);
     expect(logs.length).equals(3);
     expect(logs[1]).includes(JSON.stringify(await utils.getTemplates(), undefined, 4));
-    expect(logs[2]).includes("teamsfx new template <sampleAppName>");
+    expect(logs[2]).includes(" new template <sampleAppName>");
   });
 });

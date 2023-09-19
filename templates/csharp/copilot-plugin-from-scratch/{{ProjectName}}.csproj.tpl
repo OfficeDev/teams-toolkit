@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
+    <ProjectCapability Include="CopilotPlugin" />
   </ItemGroup>
 
   <ItemGroup>

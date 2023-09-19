@@ -68,7 +68,7 @@ class TeamsFxTokenCredential implements TokenCredential {
         return null;
       }
     } catch (error) {
-      if ((error as any).message === "Entry not found in cache.") {
+      if (error.message === "Entry not found in cache.") {
         throw new SystemError(
           "Login",
           ExtensionErrors.LoginCacheError,

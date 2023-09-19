@@ -1,0 +1,288 @@
+.sample-gallery {
+
+  .sample-stack .sample-card:nth-child(4n + 1) {
+    grid-column: 1/4;
+  }
+
+  .sample-stack .sample-card:nth-child(4n + 2) {
+    grid-column: 4/7;
+  }
+
+  .sample-stack .sample-card:nth-child(4n + 3) {
+    grid-column: 7/10;
+  }
+
+  .sample-stack .sample-card:nth-child(4n + 4) {
+    grid-column: 10/13;
+  }
+
+  .sample-card {
+    background-color: var(--vscode-editorWidget-background);
+    border-radius: 6px;
+    max-width: 276px;
+    height: auto;
+    position: relative;
+    cursor: pointer;
+    padding-bottom: 8px;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
+    display: flex;
+    flex-direction: column;
+
+    .hidden-label {
+      position: absolute;
+      top: auto;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    .unavailableSampleImage {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 40/23; // 1600:920 ratio
+
+      .turtle {
+        margin-top: 25px;
+      }
+
+      h3 {
+        color: #BBB;
+        margin-top: 12px;
+      }
+    }
+
+    .section {
+      display: flex;
+      margin-bottom: 0px;
+      flex-wrap: wrap;
+    }
+
+    .triangle {
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 16px;
+      border-color: #007ACC transparent transparent #007ACC;
+      float: left;
+      position: absolute;
+      top: 0px;
+      border-radius: 6px 0px 0px 0px;
+      z-index: 1;
+    }
+
+    .star {
+      display: block;
+      text-align: center;
+      height: 12px;
+      width: 12px;
+      position: absolute;
+      margin: 2px;
+      top: -16px;
+      left: -16px;
+      right: 0;
+      bottom: 0;
+      z-index: 3;
+      color: #CCCCCC;
+    }
+
+    .ms-Image {
+      border-radius: 6px 6px 0 0;
+    }
+
+    .tag {
+      margin: 8px 0px 0px 8px;
+    }
+
+    .estimation-time {
+      padding-left: 8px;
+      height: 24px;
+      color: var(--vscode-editor-foreground);
+      display: flex;
+      font-size: 11px;
+      margin-top: 8px;
+      margin-bottom: 2px;
+
+      .watch {
+        width: 16px;
+        height: 16px;
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+
+      .ms-Image {
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+
+      label {
+        margin-top: auto;
+        margin-bottom: auto;
+        cursor: pointer;
+      }
+    }
+
+    .configuration {
+      padding-left: 8px;
+      height: auto;
+      color: var(--vscode-editor-foreground);
+      display: flex;
+      font-size: 11px;
+      height: 24px;
+
+      .setting {
+        width: 16px;
+        height: 16px;
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+
+      .ms-Image {
+        margin-top: auto;
+        margin-bottom: auto;
+      }
+
+      label {
+        width: 242px;
+        margin-top: auto;
+        margin-bottom: auto;
+        cursor: pointer;
+      }
+    }
+
+    h3 {
+      font-size: 13px;
+      text-align: center;
+      color: var(--vscode-editor-foreground);
+      font-weight: 800;
+      text-align: left;
+      margin: 8px 12px 0px 12px;
+      line-height: 16px;
+    }
+
+    button {
+      font-size: 13px;
+      text-align: center;
+      background-color: var(--vscode-button-background);
+      height: 28px;
+      padding: 6px 11px 6px 11px;
+      border-radius: 0px;
+    }
+
+    span {
+      font-weight: normal;
+    }
+
+    .buttons {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+    }
+
+    .right-aligned {
+      margin-right: 0px;
+      margin-left: 10px;
+      width: auto;
+    }
+  }
+
+  .sample-card.unavailable {
+    cursor: default;
+
+    .infoBox {
+      opacity: 0.3;
+    }
+
+    .tooltip {
+      visibility: hidden;
+      width: 90px;
+      background-color: #E5E5E5;
+      color: #606060;
+      text-align: center;
+      border-radius: 4px;
+      padding: 4px 1px;
+
+      position: absolute;
+      z-index: 1;
+      top: 75%;
+      left: 60%;
+    }
+
+    .tooltip.upgrade {
+      width: 180px;
+    }
+  }
+
+  .sample-card.unavailable:hover .tooltip {
+    visibility: visible;
+  }
+}
+
+body.vscode-light {
+  .sample-card {
+    background-color: #FFF;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 16%);
+  }
+
+  .sample-card:not(.unavailable):hover {
+    background-color: #F0F0F0;
+  }
+}
+
+body.vscode-dark {
+  .sample-card {
+    background-color: #252526;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
+  }
+
+  .sample-card:not(.unavailable):hover {
+    background-color: #303031;
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .sample-gallery {
+
+    .sample-stack .sample-card:nth-child(3n + 1) {
+      grid-column: 1/5;
+    }
+
+    .sample-stack .sample-card:nth-child(3n + 2) {
+      grid-column: 5/9;
+    }
+
+    .sample-stack .sample-card:nth-child(3n + 3) {
+      grid-column: 9/13;
+    }
+  }
+}
+
+@media only screen and (max-width: 813px) {
+  .sample-gallery {
+
+    .sample-stack .sample-card:nth-child(2n + 1) {
+      grid-column: 1/7;
+    }
+
+    .sample-stack .sample-card:nth-child(2n + 2) {
+      grid-column: 7/13;
+    }
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .sample-gallery {
+
+    .sample-stack>.sample-card {
+      grid-column: 1/13;
+    }
+  }
+
+  .sample-card {
+    justify-self: center;
+    grid-column: 1/5;
+    width: 100%;
+  }
+}

@@ -228,6 +228,7 @@ export function fillInTelemetryPropsForFxError(
   }
 
   if (error.categories) {
+    props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
     props[TelemetryConstants.properties.errorCat1] = error.categories[0];
     props[TelemetryConstants.properties.errorCat2] = error.categories[1];
     props[TelemetryConstants.properties.errorCat3] = error.categories[2];

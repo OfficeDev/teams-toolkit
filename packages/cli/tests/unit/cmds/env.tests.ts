@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import os from "os";
 
+import os from "os";
 import sinon, { SinonSandbox } from "sinon";
 import yargs, { Options } from "yargs";
 
@@ -44,7 +44,7 @@ class MockVars {
 function mockYargs(sandbox: SinonSandbox, vars: Reference<MockVars>) {
   sandbox
     .stub<any, any>(yargs, "command")
-    .callsFake((command: string, description: string, builder: any, handler: any) => {
+    .callsFake((command: any, description: any, builder: any, handler: any) => {
       vars.value.registeredCommands.push(command);
       builder(yargs);
     });
@@ -201,7 +201,7 @@ describe("Env Add Command Tests", function () {
     // Act
     try {
       await addCmd.handler(args);
-    } catch (error) {
+    } catch (error: any) {
       exceptionThrown = true;
 
       // Assert
@@ -228,7 +228,7 @@ describe("Env Add Command Tests", function () {
     // Act
     try {
       await addCmd.handler(args);
-    } catch (error) {
+    } catch (error: any) {
       exceptionThrown = true;
 
       // Assert
@@ -257,7 +257,7 @@ describe("Env Add Command Tests", function () {
     // Act
     try {
       await addCmd.handler(args);
-    } catch (error) {
+    } catch (error: any) {
       exceptionThrown = true;
 
       // Assert
@@ -280,7 +280,7 @@ describe("Env Add Command Tests", function () {
     // Act
     try {
       await addCmd.handler(args);
-    } catch (error) {
+    } catch (error: any) {
       exceptionThrown = true;
 
       // Assert
@@ -389,7 +389,7 @@ describe("Env List Command Tests", function () {
     // Act
     try {
       await listCmd.handler(args);
-    } catch (error) {
+    } catch (error: any) {
       exceptionThrown = true;
 
       // Assert

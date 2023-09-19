@@ -44,23 +44,12 @@ jobs:
           git fetch ${{ github.event.pull_request.base.repo.owner.login }}
           git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
-
-      - name: Setup project
-        run: |
-          npm run setup
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: Unit Test
         run: |
-          xvfb-run -a npx lerna run test:unit --stream
+          xvfb-run -a pnpm run -r --stream test:unit
 
       - name: CodeCov report attempt 1
         id: codecov1

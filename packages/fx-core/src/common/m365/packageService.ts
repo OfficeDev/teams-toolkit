@@ -8,11 +8,13 @@ import fs from "fs-extra";
 import { LogProvider } from "@microsoft/teamsfx-api";
 
 import { waitSeconds } from "../tools";
-import { CoreSource } from "../../core/error";
 import { NotExtendedToM365Error } from "./errors";
 import { assembleError } from "../../error/common";
 import { ErrorContextMW } from "../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
+
+const M365ErrorSource = "M365";
+const M365ErrorComponent = "PackageService";
 
 // Call m365 service for package CRUD
 export class PackageService {
@@ -27,9 +29,15 @@ export class PackageService {
     this.initEndpoint = endpoint;
     this.logger = logger;
   }
-  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   private async getTitleServiceUrl(token: string): Promise<string> {
     try {
+      try {
+        new URL(this.initEndpoint);
+      } catch (_) {
+        throw new Error("Invalid URL. Mis-configuration SIDELOADING_SERVICE_ENDPOINT.");
+      }
+
       const envInfo = await this.axiosInstance.get("/config/v1/environment", {
         baseURL: this.initEndpoint,
         headers: {
@@ -37,6 +45,7 @@ export class PackageService {
         },
       });
       this.logger?.debug(JSON.stringify(envInfo.data));
+      new URL(envInfo.data.titlesServiceUrl);
       return envInfo.data.titlesServiceUrl;
     } catch (error: any) {
       this.logger?.error(`Get ServiceUrl failed. ${error.message as string}`);
@@ -44,14 +53,14 @@ export class PackageService {
     }
   }
 
-  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   public async sideLoading(token: string, manifestPath: string): Promise<[string, string]> {
     try {
       const data = await fs.readFile(manifestPath);
       const content = new FormData();
       content.append("package", data);
       const serviceUrl = await this.getTitleServiceUrl(token);
-      this.logger?.info("Uploading package ...");
+      this.logger?.verbose("Uploading package ...");
       const uploadHeaders = content.getHeaders();
       uploadHeaders["Authorization"] = `Bearer ${token}`;
       const uploadResponse = await this.axiosInstance.post(
@@ -66,7 +75,7 @@ export class PackageService {
       const operationId = uploadResponse.data.operationId;
       this.logger?.debug(`Package uploaded. OperationId: ${operationId as string}`);
 
-      this.logger?.info("Acquiring package ...");
+      this.logger?.verbose("Acquiring package ...");
       const acquireResponse = await this.axiosInstance.post(
         "/dev/v1/users/packages/acquisitions",
         {
@@ -92,12 +101,13 @@ export class PackageService {
           }
         );
         const resCode = statusResponse.status;
+        this.logger?.debug(`Package status: ${resCode} ...`);
         if (resCode === 200) {
           const titleId: string = statusResponse.data.titleId;
           const appId: string = statusResponse.data.appId;
           this.logger?.info(`TitleId: ${titleId}`);
           this.logger?.info(`AppId: ${appId}`);
-          this.logger?.info("Sideloading done.");
+          this.logger?.verbose("Sideloading done.");
           return [titleId, appId];
         } else {
           await waitSeconds(2);
@@ -111,14 +121,14 @@ export class PackageService {
       } else {
         this.logger?.error(error.message);
       }
-      throw assembleError(error, CoreSource);
+      throw assembleError(error, M365ErrorSource);
     }
   }
-  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   public async getLaunchInfoByManifestId(token: string, manifestId: string): Promise<any> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
-      this.logger?.info(`Getting LaunchInfo with ManifestId ${manifestId} ...`);
+      this.logger?.verbose(`Getting LaunchInfo with ManifestId ${manifestId} ...`);
       const launchInfo = await this.axiosInstance.post(
         "/catalog/v1/users/titles/launchInfo",
         {
@@ -159,15 +169,15 @@ export class PackageService {
         this.logger?.error(JSON.stringify(error.response.data));
         this.traceError(error);
         if (error.response.status === 404) {
-          throw new NotExtendedToM365Error(CoreSource);
+          throw new NotExtendedToM365Error(M365ErrorSource);
         }
       } else {
         this.logger?.error(error.message);
       }
-      throw assembleError(error, CoreSource);
+      throw assembleError(error, M365ErrorSource);
     }
   }
-  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   public async retrieveTitleId(token: string, manifestId: string): Promise<string> {
     const launchInfo = await this.getLaunchInfoByManifestId(token, manifestId);
     const titleId =
@@ -183,18 +193,18 @@ export class PackageService {
     this.logger?.debug(`AppId: ${appId as string}`);
     return appId;
   }
-  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   public async unacquire(token: string, titleId: string): Promise<void> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
-      this.logger?.info(`Unacquiring package with TitleId ${titleId} ...`);
+      this.logger?.verbose(`Unacquiring package with TitleId ${titleId} ...`);
       await this.axiosInstance.delete(`/catalog/v1/users/acquisitions/${titleId}`, {
         baseURL: serviceUrl,
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      this.logger?.info("Unacquiring done.");
+      this.logger?.verbose("Unacquiring done.");
     } catch (error: any) {
       this.logger?.error("Unacquire failed.");
       if (error.response) {
@@ -204,14 +214,14 @@ export class PackageService {
         this.logger?.error(error.message);
       }
 
-      throw assembleError(error, CoreSource);
+      throw assembleError(error, M365ErrorSource);
     }
   }
-  @hooks([ErrorContextMW({ source: "M365", component: "PackageService" })])
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   public async getLaunchInfoByTitleId(token: string, titleId: string): Promise<unknown> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
-      this.logger?.info(`Getting LaunchInfo with TitleId ${titleId} ...`);
+      this.logger?.verbose(`Getting LaunchInfo with TitleId ${titleId} ...`);
       const launchInfo = await this.axiosInstance.get(
         `/catalog/v1/users/titles/${titleId}/launchInfo`,
         {
@@ -237,7 +247,7 @@ export class PackageService {
         this.logger?.error(error.message);
       }
 
-      throw assembleError(error, CoreSource);
+      throw assembleError(error, M365ErrorSource);
     }
   }
 

@@ -2185,7 +2185,7 @@ describe("editAadManifestTemplate", () => {
 
     sandbox.assert.calledOnceWithExactly(
       openTextDocumentStub as any,
-      `${workspaceUri.fsPath}/templates/appPackage/aad.template.json`
+      `${workspaceUri.fsPath}/aad.manifest.json`
     );
   });
 
@@ -2217,7 +2217,7 @@ describe("editAadManifestTemplate", () => {
 
     sandbox.assert.calledOnceWithExactly(
       openTextDocumentStub as any,
-      `${workspaceUri}/templates/appPackage/aad.template.json`
+      `${workspaceUri}/aad.manifest.json`
     );
   });
 });
@@ -2573,5 +2573,18 @@ describe("autoOpenProjectHandler", () => {
     await handlers.openLifecycleTreeview();
 
     chai.assert.isTrue(executeCommandStub.calledWith("workbench.view.extension.teamsfx"));
+  });
+
+  it("treeViewDebugInTestToolHandler", async () => {
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
+
+    await handlers.treeViewDebugInTestToolHandler();
+
+    chai.assert.isTrue(
+      executeCommandStub.calledOnceWith("workbench.action.quickOpen", "debug in Test Tool")
+    );
+    sinon.restore();
   });
 });

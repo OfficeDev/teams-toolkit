@@ -14,7 +14,7 @@ export declare class InvokeResponseFactory
 
 ## Remarks
 
-All of these functions return an  object, which can be passed as input to generate a new `invokeResponse` activity.
+All of these functions return an `InvokeResponse` object, which can be passed as input to generate a new `invokeResponse` activity.
 
 This example sends an invoke response that contains an adaptive card.
 

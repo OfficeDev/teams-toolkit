@@ -1,20 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import inquirer from "inquirer";
-import CustomizedCheckboxPrompt from "./customizedCheckboxPrompt";
-import CustomizedListPrompt from "./customizedListPrompt";
-
-export interface ChoiceOptions {
-  name: string;
-  extra: {
-    title: string;
-    description?: string;
-    detail?: string;
-  };
-}
-
-export function registerPrompts() {
-  inquirer.registerPrompt("checkbox", CustomizedCheckboxPrompt);
-  inquirer.registerPrompt("list", CustomizedListPrompt);
-}
+export {
+  Choice as CheckboxChoice,
+  Config as CheckboxConfig,
+  checkbox,
+} from "./customizedCheckboxPrompt";
+export { Choice as SelectChoice, Config as SelectConfig, select } from "./customizedListPrompt";

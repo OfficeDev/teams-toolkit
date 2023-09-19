@@ -14,8 +14,10 @@ export function generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): 
     const json = getResponseJson(operationItem);
 
     let cardBody: Array<TextBlockElement | ArrayElement> = [];
-    if (json.schema) {
-      cardBody = generateCardFromResponse(json.schema as OpenAPIV3.SchemaObject, "");
+
+    const schema = json.schema as OpenAPIV3.SchemaObject;
+    if (schema && Object.keys(schema).length > 0) {
+      cardBody = generateCardFromResponse(schema, "");
     }
 
     // if no schema, try to use example value

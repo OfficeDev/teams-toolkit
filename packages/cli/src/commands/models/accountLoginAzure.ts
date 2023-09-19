@@ -13,7 +13,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",
-  description: "Log in to Azure.",
+  description: "Log in to Azure account.",
   options: [
     {
       name: "tenant",
@@ -44,16 +44,15 @@ export const accountLoginAzureCommand: CLICommand = {
   ],
   examples: [
     {
-      command: "teamsfx account login azure",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} account login azure`,
       description: "Log in interactively",
     },
     {
-      command:
-        "teamsfx account login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} account login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID`,
       description: "Log in with a service principal using client secret",
     },
     {
-      command: `teamsfx account login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} account login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID`,
       description: "Log in with a service principal using client certificate",
     },
   ],

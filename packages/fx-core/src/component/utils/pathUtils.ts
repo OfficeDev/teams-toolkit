@@ -7,6 +7,7 @@ import * as path from "path";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { MissingRequiredFileError, MissingRequiredInputError } from "../../error/common";
 import { yamlParser } from "../configManager/parser";
+import { environmentNameManager } from "../../core/environmentName";
 
 class PathUtils {
   getYmlFilePath(projectPath: string, env?: string): string {
@@ -14,15 +15,19 @@ class PathUtils {
     if (!envName) throw new MissingRequiredInputError("env", "PathUtils");
     const ymlPath = path.join(
       projectPath,
-      envName === "local" ? MetadataV3.localConfigFile : MetadataV3.configFile
+      envName === environmentNameManager.getLocalEnvName()
+        ? MetadataV3.localConfigFile
+        : envName === environmentNameManager.getTestToolEnvName()
+        ? MetadataV3.testToolConfigFile
+        : MetadataV3.configFile
     );
     if (fs.pathExistsSync(ymlPath)) {
       return ymlPath;
     }
-    if (envName === "local") {
-      throw new MissingRequiredFileError("core", "Debug ", ymlPath);
-    } else {
+    if (environmentNameManager.isRemoteEnvironment(envName)) {
       throw new MissingRequiredFileError("core", "", ymlPath);
+    } else {
+      throw new MissingRequiredFileError("core", "Debug ", ymlPath);
     }
   }
   async getEnvFolderPath(projectPath: string): Promise<Result<string | undefined, FxError>> {

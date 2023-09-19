@@ -44,3 +44,10 @@ export async function rename(oldPath: string, newPath: string): Promise<void> {
   }
   await fs.rename(oldPath, newPath);
 }
+
+// sliently remove file or dir
+export async function cleanup(path: string): Promise<void> {
+  try {
+    await fs.remove(path);
+  } catch {}
+}

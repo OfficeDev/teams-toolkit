@@ -4,7 +4,7 @@ info:
   description: A simple service to manage repairs for various items
   version: 1.0.0
 servers:
-  - url: https://repairs-api-2023.azurewebsites.net/
+  - url: ${{TEAMSFX_TEST_API_URL}}
 paths:
   /repairs:
     get:

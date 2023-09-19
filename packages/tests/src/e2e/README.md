@@ -151,14 +151,14 @@ import { AadValidator, BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  const env = environmentManager.getDefaultEnvName();
+  const env = environmentNameManager.getDefaultEnvName();
 
   it(`${TemplateProject.HelloWorldBotSSO}`, { testPlanCaseId: 15277464 }, async function () {
     await CliHelper.createTemplateProject(
@@ -292,7 +292,7 @@ teamsfx deploy ${resourceToDeploy} ${option}
 capability: "tab" | "bot"
 
 ```bash
-teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}
+teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options}
 ```
 
 #### createProjectWithCapability
@@ -314,7 +314,7 @@ enum Capability {
 ```
 
 ```bash
-teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}
+teamsfx new --interactive false --app-name ${appName} --capability ${capability} ${options}
 ```
 
 #### createTemplateProject

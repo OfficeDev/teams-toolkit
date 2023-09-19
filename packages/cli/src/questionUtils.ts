@@ -5,25 +5,24 @@ import {
   IQTreeNode,
   MultiSelectQuestion,
   OptionItem,
-  QTreeNode,
   Question,
   SingleSelectQuestion,
   StaticOptions,
-  validate,
 } from "@microsoft/teamsfx-api";
 import { isAutoSkipSelect } from "@microsoft/teamsfx-core";
 import { Options } from "yargs";
 import { getSingleOptionString, toYargsOptions } from "./utils";
 import { globals } from "./globals";
+import { validate } from "@microsoft/teamsfx-core";
 
 export async function filterQTreeNode(
-  root: QTreeNode,
+  root: IQTreeNode,
   key: string,
   value: any
-): Promise<QTreeNode> {
+): Promise<IQTreeNode> {
   /// finds the searched node
-  let searchedNode: QTreeNode | undefined = undefined;
-  const parentMap = new Map<QTreeNode, QTreeNode>();
+  let searchedNode: IQTreeNode | undefined = undefined;
+  const parentMap = new Map<IQTreeNode, IQTreeNode>();
   const stack = [root];
   while (stack.length > 0) {
     const currentNode = stack.pop();
@@ -49,7 +48,7 @@ export async function filterQTreeNode(
   (searchedNode.data as any).hide = true;
 
   /// gets the children which conditions match the parent's answer
-  const matchedChildren: QTreeNode[] = [];
+  const matchedChildren: IQTreeNode[] = [];
   if (searchedNode.children) {
     for (const child of searchedNode.children) {
       if (child && child.condition) {

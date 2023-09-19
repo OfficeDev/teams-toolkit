@@ -127,7 +127,7 @@ class AccountShow extends YargsCommand {
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
       CLILogProvider.necessaryLog(
         LogLevel.Info,
-        "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
+        `Use \`${process.env.TEAMSFX_CLI_BIN_NAME} account login azure\` or \`${process.env.TEAMSFX_CLI_BIN_NAME} account login m365\` to log in to Azure or Microsoft 365 account.`
       );
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountShow, {
@@ -205,13 +205,13 @@ export class AzureLogin extends YargsCommand {
         type: "string",
         default: "",
       })
-      .example("teamsfx account login azure", "Log in interactively.")
+      .example(`${process.env.TEAMSFX_CLI_BIN_NAME} account login azure`, "Log in interactively.")
       .example(
-        "teamsfx account login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID",
+        `${process.env.TEAMSFX_CLI_BIN_NAME} account login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID`,
         "Log in with a service principal using client secret."
       )
       .example(
-        'teamsfx account login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID',
+        `${process.env.TEAMSFX_CLI_BIN_NAME} account login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID`,
         "Log in with a service principal using client certificate."
       );
   }

@@ -1,37 +1,32 @@
 {
   "name": "teamsfx",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "setup": "npm install && npm run build",
-    "setup-failpoint": "npm run setup && npx lerna run build-failpoint",
-    "bootstrap": "lerna bootstrap",
-    "lint:staged": "lerna run lint:staged --stream",
-    "lint": "lerna run lint --stream",
-    "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog",
-    "prepare": "husky install",
+    "setup": "pnpm install && npm run build",
+    "watch": "pnpm --parallel -r run watch",
+    "build": "pnpm -r run --filter=!@microsoft/teamsfx-react build && pnpm run --filter=@microsoft/teamsfx-react build",
     "precommit": "lint-staged",
-    "postinstall": "npm run bootstrap --hoist",
-    "build": "lerna run build",
-    "clean": "lerna clean"
+    "clean": "pnpm -r exec rimraf node_modules"
   },
   "devDependencies": {
-    "@commitlint/cli": "^12.0.1",
+    "@commitlint/cli": "^17.7.1",
     "@commitlint/config-conventional": "^12.0.1",
-    "@types/fs-extra": "^9.0.12",
-    "@types/node": "^16.7.10",
-    "@types/semver": "^7.3.8",
-    "axios": "^0.21.3",
     "codecov": "^3.8.3",
     "codeowners": "^5.1.1",
-    "cz-conventional-changelog": "^3.3.0",
     "dotenv": "^10.0.0",
     "husky": "^6.0.0",
-    "lerna": "^4.0.0",
-    "ts-node": "^10.2.1",
-    "typescript": "^4.4.2"
+    "lerna": "^6.6.2",
+    "rimraf": "^5.0.1",
+    "ts-node": "^10.2.1"
   },
-  "bin": {
-    "teamsfx": "./packages/cli/cli.js"
+  "keywords": [],
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
   },
+  "packageManager": "pnpm@8.6.12",
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"

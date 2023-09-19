@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Hosted workbench (Edge)",
+            "name": "SharePoint workbench (Edge)",
             "type": "msedge",
             "request": "launch",
             "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
@@ -26,7 +26,7 @@
             }
         },
         {
-            "name": "Hosted workbench (Chrome)",
+            "name": "SharePoint workbench (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "https://enter-your-SharePoint-site/_layouts/workbench.aspx",

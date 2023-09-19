@@ -8,7 +8,6 @@ import {
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
-  LocalEnvironmentName,
   MultiSelectQuestion,
   OptionItem,
   Platform,
@@ -33,6 +32,7 @@ import {
   apiSpecLocationQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
+import { environmentNameManager } from "../core/environmentName";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -226,9 +226,9 @@ function selectTeamsAppManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.TeamsAppManifestFilePath,
     cliName: "teams-manifest-file",
-    cliShortName: "tm",
+    cliShortName: "t",
     cliDescription:
-      "Specifies the Teams app manifest template file path, it's a relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -246,6 +246,10 @@ function selectTeamsAppManifestQuestion(): SingleFileQuestion {
 function selectLocalTeamsAppManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.LocalTeamsAppManifestFilePath,
+    cliName: "local-teams-manifest-file",
+    cliShortName: "l",
+    cliDescription:
+      "Specifies the Microsoft Teams app manifest template file path for local environment, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.local.json'",
     title: getLocalizedString("core.selectLocalTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -359,9 +363,9 @@ function selectTeamsAppPackageQuestion(): SingleFileQuestion {
     name: QuestionNames.TeamsAppPackageFilePath,
     title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
     cliDescription:
-      "Specifies the zipped Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
+      "Specifies the zipped Microsoft Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
     cliName: "app-package-file",
-    cliShortName: "pf",
+    cliShortName: "p",
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
       if (!inputs.projectPath) return undefined;
@@ -419,7 +423,7 @@ export class HubOptions {
 function selectM365HostQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.M365Host,
-    cliShortName: "mh",
+    cliShortName: "m",
     cliDescription: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     title: getLocalizedString("core.M365HostQuestion.title"),
     default: HubOptions.teams().id,
@@ -445,7 +449,7 @@ export function selectTargetEnvQuestion(
   questionName = QuestionNames.TargetEnvName,
   remoteOnly = true,
   throwErrorIfNoEnv = false,
-  defaultValueIfNoEnv = environmentManager.getDefaultEnvName()
+  defaultValueIfNoEnv = environmentNameManager.getDefaultEnvName()
 ): SingleSelectQuestion {
   return {
     type: "singleSelect",
@@ -536,9 +540,9 @@ export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.AadAppManifestFilePath,
     cliName: "aad-manifest-file",
-    cliShortName: "am",
+    cliShortName: "a",
     cliDescription:
-      "Specifies the Azure AD app manifest file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
+      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder, defaults to './aad.manifest.json'",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -570,6 +574,8 @@ function selectAppTypeQuestion(): MultiSelectQuestion {
         description: getLocalizedString("core.teamsAppQuestion.description"),
       },
     ],
+    validation: { minItems: 1 },
+    validationHelp: "Please select at least one app type.",
   };
 }
 
@@ -618,15 +624,15 @@ export async function newEnvNameValidation(
   inputs?: Inputs
 ): Promise<string | undefined> {
   const targetEnvName = input;
-  const match = targetEnvName.match(environmentManager.envNameRegex);
+  const match = targetEnvName.match(environmentNameManager.envNameRegex);
   if (!match) {
     return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
   }
 
-  if (targetEnvName === LocalEnvironmentName) {
+  if (!environmentNameManager.isRemoteEnvironment(targetEnvName)) {
     return getLocalizedString(
       "core.getQuestionNewTargetEnvironmentName.validation3",
-      LocalEnvironmentName
+      targetEnvName
     );
   }
   if (!inputs?.projectPath) return "Project path is not defined";

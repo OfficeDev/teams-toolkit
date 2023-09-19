@@ -3,6 +3,7 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
+  CopilotPluginEnable = "developCopilotPlugin",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";

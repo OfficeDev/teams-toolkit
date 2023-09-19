@@ -9,7 +9,7 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountLogoutCommand: CLICommand = {
   name: "logout",
-  description: "Log out of the selected cloud service.",
+  description: "Log out of Microsoft 365 or Azure account.",
   arguments: [
     {
       type: "string",
@@ -22,6 +22,7 @@ export const accountLogoutCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.AccountLogout,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const service = ctx.argumentValues[0];
     switch (service) {
@@ -29,9 +30,9 @@ export const accountLogoutCommand: CLICommand = {
         ctx.telemetryProperties.service = "azure";
         const result = await AzureTokenProvider.signout();
         if (result) {
-          await logger.info(`[${cliSource}] Successfully signed out of Azure.`);
+          logger.info(`[${cliSource}] Successfully signed out of Azure.`);
         } else {
-          await logger.error(`[${cliSource}] Failed to sign out of Azure.`);
+          logger.error(`[${cliSource}] Failed to sign out of Azure.`);
         }
         break;
       }
@@ -39,9 +40,9 @@ export const accountLogoutCommand: CLICommand = {
         ctx.telemetryProperties.service = "m365";
         const result = await M365TokenProvider.signout();
         if (result) {
-          await logger.info(`[${cliSource}] Successfully signed out of Microsoft 365.`);
+          logger.info(`[${cliSource}] Successfully signed out of Microsoft 365.`);
         } else {
-          await logger.error(`[${cliSource}] Failed to sign out of Microsoft 365.`);
+          logger.error(`[${cliSource}] Failed to sign out of Microsoft 365.`);
         }
         break;
       }

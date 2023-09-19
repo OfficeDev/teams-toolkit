@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
 import { getSSOToken, AADJwtPayLoad, SSOToken, getGraphToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
-import { AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
+import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
 chaiUse(chaiPromises);
 const env = (window as any).__env__;
@@ -62,7 +62,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
             uniqueId: "uniqueId",
             tenantId: "tenantId",
             scopes: ["User.Read"],
-            account: null,
+            account: {} as unknown as AccountInfo,
             idToken: "idToken",
             idTokenClaims: {},
             accessToken: graphToken,

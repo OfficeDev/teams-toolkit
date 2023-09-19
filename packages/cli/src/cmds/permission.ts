@@ -96,7 +96,10 @@ export class PermissionStatus extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredOptionError("teamsfx status", "env");
+      const error = new MissingRequiredOptionError(
+        `${process.env.TEAMSFX_CLI_BIN_NAME} status`,
+        "env"
+      );
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
       return err(error);
     }
@@ -173,7 +176,10 @@ export class PermissionGrant extends YargsCommand {
 
     // Throw error if --env not specified
     if (!args[env] && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredOptionError("teamsfx grant", "env");
+      const error = new MissingRequiredOptionError(
+        `${process.env.TEAMSFX_CLI_BIN_NAME} grant`,
+        "env"
+      );
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, error);
       return err(error);
     }

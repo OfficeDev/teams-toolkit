@@ -30,6 +30,10 @@ import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefini
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";
 import { setErrorContext } from "../../../../core/globalVars";
+import {
+  CheckSideloadingPermissionFailedError,
+  DeveloperPortalAPIFailedError,
+} from "../../../../error/teamsApp";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -90,20 +94,8 @@ export namespace AppStudioClient {
   ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
-
-    const error = AppStudioResultFactory.SystemError(
-      AppStudioError.DeveloperPortalAPIFailedError.name,
-      AppStudioError.DeveloperPortalAPIFailedError.message(
-        e,
-        correlationId,
-        requestPath,
-        apiName,
-        extraData
-      ),
-      e
-    );
+    const error = new DeveloperPortalAPIFailedError(e, correlationId, apiName, extraData);
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
       method: e.request?.method,
@@ -126,7 +118,7 @@ export namespace AppStudioClient {
   export async function importApp(
     file: Buffer,
     appStudioToken: string,
-    logProvider?: LogProvider,
+    logProvider: LogProvider,
     overwrite = false
   ): Promise<AppDefinition> {
     setErrorContext({ source: "Teams" });
@@ -140,6 +132,7 @@ export namespace AppStudioClient {
     try {
       const requester = createRequesterWithToken(appStudioToken, region);
 
+      logProvider.debug(`Sent API Request: ${region ?? baseUrl}/api/appdefinitions/v2/import`);
       const response = await RetryHandler.Retry(() =>
         requester.post(`/api/appdefinitions/v2/import`, file, {
           headers: { "Content-Type": "application/zip" },
@@ -151,7 +144,7 @@ export namespace AppStudioClient {
 
       if (response && response.data) {
         const app = <AppDefinition>response.data;
-        logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
+        logProvider.debug(`Received data from Teams Developer Portal: ${JSON.stringify(app)}`);
         sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_APP, telemetryProperties);
         return app;
       } else {
@@ -204,7 +197,7 @@ export namespace AppStudioClient {
   export async function getApp(
     teamsAppId: string,
     appStudioToken: string,
-    logProvider?: LogProvider
+    logProvider: LogProvider
   ): Promise<AppDefinition> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP);
@@ -214,12 +207,14 @@ export namespace AppStudioClient {
       if (region) {
         requester = createRequesterWithToken(appStudioToken, region);
         try {
+          logProvider.debug(`Sent API Request: ${region}/api/appdefinitions/v2/import`);
           response = await RetryHandler.Retry(() =>
             requester.get(`/api/appdefinitions/${teamsAppId}`)
           );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
           if (e.response?.status == 404) {
+            logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
             requester = createRequesterWithToken(appStudioToken);
             response = await RetryHandler.Retry(() =>
               requester.get(`/api/appdefinitions/${teamsAppId}`)
@@ -229,6 +224,7 @@ export namespace AppStudioClient {
           }
         }
       } else {
+        logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
         requester = createRequesterWithToken(appStudioToken);
         response = await RetryHandler.Retry(() =>
           requester.get(`/api/appdefinitions/${teamsAppId}`)
@@ -315,6 +311,27 @@ export namespace AppStudioClient {
               return appDefinition.teamsAppId;
             }
           }
+
+          // Corner case
+          // Fail if an app with the same external.id exists in the staged app entitlements
+          // App with same id already exists in the staged apps, Invoke UpdateAPI instead.
+          if (
+            response.data.error.code == "Conflict" &&
+            response.data.error.innerError?.code == "AppDefinitionAlreadyExists"
+          ) {
+            try {
+              return await publishTeamsAppUpdate(teamsAppId, file, appStudioToken);
+            } catch (e: any) {
+              // Update Published app failed as well
+              const error = AppStudioResultFactory.SystemError(
+                AppStudioError.TeamsAppPublishConflictError.name,
+                AppStudioError.TeamsAppPublishConflictError.message(teamsAppId),
+                e
+              );
+              throw error;
+            }
+          }
+
           const error = new Error(response?.data.error.message);
           (error as any).response = response;
           (error as any).request = response.request;
@@ -406,6 +423,12 @@ export namespace AppStudioClient {
     }
   }
 
+  /**
+   * Get Stagged Teams app from tenant app catalog
+   * @param teamsAppId manifest.id, which is externalId in app catalog.
+   * @param appStudioToken
+   * @returns
+   */
   export async function getAppByTeamsAppId(
     teamsAppId: string,
     appStudioToken: string
@@ -414,7 +437,9 @@ export namespace AppStudioClient {
     sendStartEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
-      const response = await requester.get(`/api/publishing/${teamsAppId}`);
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/publishing/${teamsAppId}`)
+      );
       if (response && response.data && response.data.value && response.data.value.length > 0) {
         const appdefinitions: IPublishingAppDenition[] = response.data.value[0].appDefinitions.map(
           (item: any) => {
@@ -441,11 +466,12 @@ export namespace AppStudioClient {
 
   export async function getUserList(
     teamsAppId: string,
-    appStudioToken: string
+    appStudioToken: string,
+    logProvider: LogProvider
   ): Promise<AppUser[] | undefined> {
     let app;
     try {
-      app = await getApp(teamsAppId, appStudioToken);
+      app = await getApp(teamsAppId, appStudioToken, logProvider);
     } catch (error) {
       throw error;
     }
@@ -456,11 +482,12 @@ export namespace AppStudioClient {
   export async function checkPermission(
     teamsAppId: string,
     appStudioToken: string,
-    userObjectId: string
+    userObjectId: string,
+    logProvider: LogProvider
   ): Promise<string> {
     let userList;
     try {
-      userList = await getUserList(teamsAppId, appStudioToken);
+      userList = await getUserList(teamsAppId, appStudioToken, logProvider);
     } catch (error) {
       return Constants.PERMISSIONS.noPermission;
     }
@@ -480,12 +507,13 @@ export namespace AppStudioClient {
   export async function grantPermission(
     teamsAppId: string,
     appStudioToken: string,
-    newUser: AppUser
+    newUser: AppUser,
+    logProvider: LogProvider
   ): Promise<void> {
     sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_OWNER);
     let app;
     try {
-      app = await getApp(teamsAppId, appStudioToken);
+      app = await getApp(teamsAppId, appStudioToken, logProvider);
     } catch (error) {
       throw error;
     }
@@ -505,8 +533,18 @@ export namespace AppStudioClient {
       let response;
       if (region) {
         try {
+          logProvider.debug(
+            getLocalizedString(
+              "core.common.SendingApiRequest",
+              `${baseUrl}/api/appdefinitions/{teamsAppId}/owner`,
+              JSON.stringify(app)
+            )
+          );
           requester = createRequesterWithToken(appStudioToken, region);
           response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+          logProvider.debug(
+            getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
+          );
         } catch (e: any) {
           // Teams apps created by non-regional API cannot be found by regional API
           if (e.response?.status == 404) {
@@ -517,8 +555,18 @@ export namespace AppStudioClient {
           }
         }
       } else {
+        logProvider.debug(
+          getLocalizedString(
+            "core.common.SendingApiRequest",
+            `${baseUrl}/api/appdefinitions/{teamsAppId}/owner`,
+            JSON.stringify(app)
+          )
+        );
         requester = createRequesterWithToken(appStudioToken);
         response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+        logProvider.debug(
+          getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
+        );
       }
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
         throw new Error(ErrorMessages.GrantPermissionFailed);
@@ -640,17 +688,12 @@ export namespace AppStudioClient {
         sendTelemetryErrorEvent(
           Component.core,
           TelemetryEvent.CheckSideloading,
-          new SystemError({
+          new CheckSideloadingPermissionFailedError(
             error,
-            source: "M365Account",
-            message: AppStudioError.DeveloperPortalAPIFailedError.message(
-              error,
-              error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
-              apiPath,
-              apiName,
-              error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
-            )[0],
-          }),
+            error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
+            apiName,
+            error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+          ),
           {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,

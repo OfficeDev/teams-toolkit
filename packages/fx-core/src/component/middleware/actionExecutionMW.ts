@@ -8,7 +8,7 @@ import {
   IProgressHandler,
   InputsWithProjectPath,
   MaybePromise,
-  QTreeNode,
+  IQTreeNode,
   Result,
   SystemError,
   UserError,
@@ -38,7 +38,7 @@ interface ActionOption {
   question?: (
     context: Context,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<IQTreeNode | undefined, FxError>>;
 }
 export interface ActionContext {
   progressBar?: IProgressHandler;

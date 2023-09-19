@@ -93,13 +93,17 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: create pvt file (random platform/node)
         if: ${{ github.event.schedule == '0 18 * * *' }} || ${{ github.event.inputs.test-case }} == ''
         working-directory: ./packages/tests
         run: |
-          npm install
+          pnpm --filter=@microsoft/teamsfx-test install
           npx ts-node ./scripts/createRandomPVT.ts
 
       - name: setup matrix
@@ -140,7 +144,7 @@ jobs:
         if: ${{ github.event.inputs.target-testplan-id != '' }}
         working-directory: ./packages/tests
         run: |
-          npm install
+          pnpm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
@@ -268,6 +272,11 @@ jobs:
         run: |
           npm install
 
+      - name: Download browsers for playwright
+        working-directory: packages/tests
+        run: |
+          npx playwright install
+
       - name: Download TTK
         uses: actions/download-artifact@v3
         with:
@@ -319,6 +328,26 @@ jobs:
         run: |
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
           npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
+
+      - name: Extract VSCode & chromedriver(unix)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
+          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
+
+      - name: Extract VSCode & chromedriver(mac)
+        if: matrix.os == 'macos-latest' 
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+
+      - name: Extract VSCode & chromedriver(win)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
+          7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
 
       - name: M365 Login
         working-directory: packages/tests
@@ -535,3 +564,13 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+
+      - name: Send E-mail
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.list-jobs.outputs.to }}
+          BODY: '"${{ steps.list-jobs.outputs.body }}"'
+          SUBJECT: ${{ steps.list-jobs.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

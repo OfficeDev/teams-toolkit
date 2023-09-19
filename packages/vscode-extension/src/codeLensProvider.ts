@@ -10,7 +10,7 @@ import {
 import {
   MetadataV3,
   envUtil,
-  environmentManager,
+  environmentNameManager,
   getAllowedAppMaps,
   getPermissionMap,
 } from "@microsoft/teamsfx-core";
@@ -32,7 +32,7 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
   let localEnvs, defaultEnvs;
   const localEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
-    environmentManager.getLocalEnvName(),
+    environmentNameManager.getLocalEnvName(),
     false
   );
   if (localEnvsRes.isErr()) {
@@ -42,7 +42,7 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
   }
   const defaultEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
-    environmentManager.getDefaultEnvName(),
+    environmentNameManager.getDefaultEnvName(),
     false
   );
   if (defaultEnvsRes.isErr()) {
@@ -57,17 +57,17 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
     let title = "👉";
 
     const localValue = localEnvs[key];
-    title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
+    title = `${title} ${environmentNameManager.getLocalEnvName()}: ${localValue}`;
 
     if (lens.documentName.endsWith("manifest.template.local.json")) {
       lens.command = {
         title: title,
         command: "fx-extension.openConfigState",
-        arguments: [{ type: "env", from: from, env: environmentManager.getLocalEnvName() }],
+        arguments: [{ type: "env", from: from, env: environmentNameManager.getLocalEnvName() }],
       };
     } else {
       const defaultValue = defaultEnvs[key];
-      title = `${title}, ${environmentManager.getDefaultEnvName()}: ${defaultValue}`;
+      title = `${title}, ${environmentNameManager.getDefaultEnvName()}: ${defaultValue}`;
 
       lens.command = {
         title: title,
@@ -489,12 +489,23 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
 
-    const editTemplateCmd = {
-      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
-      command: "fx-extension.editAadManifestTemplate",
-      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      const workspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      const aadTemplateFileExist = fs.pathExistsSync(
+        `${workspacePath}/${MetadataV3.aadManifestFileName}`
+      );
+
+      if (aadTemplateFileExist) {
+        const editTemplateCmd = {
+          title: "⚠️This file is auto-generated, click here to edit the manifest template file",
+          command: "fx-extension.editAadManifestTemplate",
+          arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
+        };
+        codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+      }
+    }
+
     return codeLenses;
   }
 }
@@ -534,7 +545,7 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
 
     const manifest: TeamsAppManifest = JSON.parse(document.getText());
     const manifestProperties = ManifestUtil.parseCommonProperties(manifest);
-    if (!manifestProperties.isApiBasedMe) {
+    if (!manifestProperties.isCopilotPlugin) {
       return codeLenses;
     }
 

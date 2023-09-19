@@ -6,11 +6,9 @@ import {
   AzureAccountProvider,
   err,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   ok,
   OptionItem,
-  Platform,
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -72,11 +70,13 @@ class ResourceGroupHelper {
       }
       return ok(response.name);
     } catch (e: any) {
+      delete e["request"];
       return err(
         new CreateResourceGroupError(
           resourceGroupName,
           subscriptionId,
-          e.message || JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -89,12 +89,14 @@ class ResourceGroupHelper {
     try {
       const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
       return ok(!!checkRes.body);
-    } catch (e) {
+    } catch (e: any) {
+      delete e["request"];
       return err(
         new CheckResourceGroupExistenceError(
           resourceGroupName,
           rmClient.subscriptionId,
-          JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -114,11 +116,13 @@ class ResourceGroupHelper {
         });
       } else return ok(undefined);
     } catch (e: any) {
+      delete e["request"];
       return err(
         new GetResourceGroupError(
           resourceGroupName,
           rmClient.subscriptionId,
-          e.message || JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -137,8 +141,9 @@ class ResourceGroupHelper {
       } while (!result.done);
       return ok(results);
     } catch (e: any) {
+      delete e["request"];
       return err(
-        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e), e)
       );
     }
   }
@@ -175,8 +180,13 @@ class ResourceGroupHelper {
       }
       return ok(rgLocations);
     } catch (e: any) {
+      delete e["request"];
       return err(
-        new ListResourceGroupLocationsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+        new ListResourceGroupLocationsError(
+          rmClient.subscriptionId,
+          e.message || JSON.stringify(e),
+          e
+        )
       );
     }
   }

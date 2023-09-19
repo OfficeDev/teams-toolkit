@@ -56,15 +56,6 @@ export class CreateTeamsAppDriver implements StepDriver {
     "driver.teamsApp.progressBar.createTeamsAppStepMessage"
   );
 
-  public async run(
-    args: CreateTeamsAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.create(args, wrapContext);
-    return res;
-  }
-
   public async execute(
     args: CreateTeamsAppArgs,
     context: DriverContext,
@@ -153,7 +144,7 @@ export class CreateTeamsAppDriver implements StepDriver {
           "plugins.appstudio.teamsAppCreatedNotice",
           createdAppDefinition.teamsAppId!
         );
-        context.logProvider.info(message);
+        context.logProvider.verbose(message);
         context.addSummary(message);
         return ok(
           new Map([
@@ -178,6 +169,9 @@ export class CreateTeamsAppDriver implements StepDriver {
       }
     } else {
       context.addSummary(
+        getLocalizedString("driver.teamsApp.summary.createTeamsAppAlreadyExists", teamsAppId)
+      );
+      context.logProvider.verbose(
         getLocalizedString("driver.teamsApp.summary.createTeamsAppAlreadyExists", teamsAppId)
       );
       return ok(

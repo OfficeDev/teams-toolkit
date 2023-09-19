@@ -41,10 +41,10 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-terser": "^5.1.1",
     "rollup-plugin-typescript2": "^0.25.3",
-    "typescript": "^4.1.2"
+    "typescript": "^5.0.4"
   },
   "dependencies": {
-    "adaptive-expressions": "^4.15.0",
+    "adaptive-expressions": "^4.20.0",
     "adaptivecards": "~2.10.0",
     "adaptivecards-templating": "^2.1.0",
     "markdown-it": "^12.2.0",

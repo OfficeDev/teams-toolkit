@@ -12,7 +12,6 @@ import * as tools from "../../../../src/common/tools";
 import * as utils from "../../../../src/component/driver/script/scriptDriver";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { NpxBuildDriver } from "../../../../src/component/driver/script/npxBuildDriver";
 import { MockUserInteraction } from "../../../core/utils";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
@@ -42,8 +41,8 @@ describe("NPX Build Driver test", () => {
       projectPath: "./",
     } as any;
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
-    const res = await driver.run(args, context);
-    assert.equal(res.isOk(), true);
+    const res = await driver.execute(args, context);
+    assert.equal(res.result.isOk(), true);
     chai.assert.equal((await driver.execute(args, context)).result.isOk(), true);
   });
 
@@ -60,7 +59,7 @@ describe("NPX Build Driver test", () => {
       projectPath: "./",
     } as any;
     sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
-    const res = await driver.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await driver.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 });

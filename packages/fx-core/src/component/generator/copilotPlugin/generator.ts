@@ -16,7 +16,7 @@ import {
   Platform,
   Result,
   UserError,
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   AppPackageFolderName,
   Warning,
 } from "@microsoft/teamsfx-api";
@@ -31,6 +31,9 @@ import {
   generateScaffoldingSummary,
   logValidationResults,
   OpenAIPluginManifestHelper,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
 } from "./helper";
 import { ValidationStatus, WarningType } from "../../../common/spec-parser/interfaces";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -42,14 +45,19 @@ import { isYamlSpecFile } from "../../../common/spec-parser/utils";
 import { ConstantString } from "../../../common/spec-parser/constants";
 import * as util from "util";
 import { SpecParserError } from "../../../common/spec-parser/specParserError";
+import { isValidHttpUrl } from "../../../question/util";
 
-const componentName = "simplified-message-extension-existing-api";
-const templateName = "simplified-message-extension-existing-api";
-const apiSpecFolderName = "apiSpecFiles";
+const fromApiSpeccomponentName = "copilot-plugin-existing-api";
+const fromApiSpecTemplateName = "copilot-plugin-existing-api";
+const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
+const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
+const apiSpecFolderName = "apiSpecificationFiles";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 
 const invalidApiSpecErrorName = "invalid-api-spec";
+const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
+const isRemoteUrlTelemetryProperty = "remote-url";
 
 export interface CopilotPluginGeneratorResult {
   warnings?: Warning[];
@@ -59,15 +67,53 @@ export class CopilotPluginGenerator {
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
-      telemetryComponentName: componentName,
+      telemetryComponentName: fromApiSpeccomponentName,
       telemetryEventName: TelemetryEvents.Generate,
-      errorSource: componentName,
+      errorSource: fromApiSpeccomponentName,
     }),
   ])
-  public static async generate(
+  public static async generateFromApiSpec(
     context: Context,
     inputs: Inputs,
     destinationPath: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    return await this.generateForME(
+      context,
+      inputs,
+      destinationPath,
+      fromApiSpecTemplateName,
+      fromApiSpeccomponentName
+    );
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: fromOpenAIPlugincomponentName,
+      telemetryEventName: TelemetryEvents.Generate,
+      errorSource: fromOpenAIPlugincomponentName,
+    }),
+  ])
+  public static async generateFromOpenAIPlugin(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    return await this.generateForME(
+      context,
+      inputs,
+      destinationPath,
+      fromOpenAIPluginTemplateName,
+      fromOpenAIPlugincomponentName
+    );
+  }
+
+  private static async generateForME(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    templateName: string,
+    componentName: string
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
@@ -86,14 +132,15 @@ export class CopilotPluginGenerator {
       if (templateRes.isErr()) return err(templateRes.error);
 
       const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
+        [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+      });
 
       // validate API spec
       const specParser = new SpecParser(url);
       const validationRes = await specParser.validate();
-      const specWarnings = validationRes.warnings;
-      const operationIdWarning = specWarnings.find(
-        (w) => w.type === WarningType.OperationIdMissing
-      );
+      const warnings = validationRes.warnings;
+      const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
       if (operationIdWarning && operationIdWarning.data) {
         const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
           filters.includes(api)
@@ -103,13 +150,21 @@ export class CopilotPluginGenerator {
             ConstantString.MissingOperationId,
             apisMissingOperationId.join(", ")
           );
+          delete operationIdWarning.data;
         } else {
-          specWarnings.splice(specWarnings.indexOf(operationIdWarning), 1);
+          warnings.splice(warnings.indexOf(operationIdWarning), 1);
         }
       }
 
+      const specVersionWarning = warnings.find(
+        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      );
+      if (specVersionWarning) {
+        specVersionWarning.content = ""; // We don't care content of this warning
+      }
+
       if (validationRes.status === ValidationStatus.Error) {
-        logValidationResults(validationRes.errors, specWarnings, context, true, false, true);
+        logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =
           inputs.platform === Platform.VSCode
             ? getLocalizedString(
@@ -147,9 +202,30 @@ export class CopilotPluginGenerator {
       const adaptiveCardFolder = path.join(
         destinationPath,
         AppPackageFolderName,
-        AdaptiveFolderName
+        ResponseTemplatesFolderName
       );
-      await specParser.generate(manifestPath, filters, openapiSpecPath, adaptiveCardFolder);
+      const generateResult = await specParser.generate(
+        manifestPath,
+        filters,
+        openapiSpecPath,
+        adaptiveCardFolder
+      );
+
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+      });
+
+      if (generateResult.warnings.length > 0) {
+        generateResult.warnings.find((o) => {
+          if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
+            o.content = ""; // We don't care content of this warning
+          }
+        });
+        warnings.push(...generateResult.warnings);
+      }
 
       // update manifest based on openAI plugin manifest
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);
@@ -170,11 +246,7 @@ export class CopilotPluginGenerator {
 
       // log warnings
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
-        const warnSummary = generateScaffoldingSummary(
-          specWarnings,
-          teamsManifest,
-          destinationPath
-        );
+        const warnSummary = generateScaffoldingSummary(warnings, teamsManifest, destinationPath);
 
         if (warnSummary) {
           void context.logProvider.info(warnSummary);
@@ -183,10 +255,11 @@ export class CopilotPluginGenerator {
 
       if (inputs.platform === Platform.VSCode) {
         return ok({
-          warnings: specWarnings.map((specWarning) => {
+          warnings: warnings.map((warning) => {
             return {
-              type: specWarning.type,
-              content: specWarning.content,
+              type: warning.type,
+              content: warning.content,
+              data: warning.data,
             };
           }),
         });

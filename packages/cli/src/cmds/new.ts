@@ -104,7 +104,7 @@ class NewTemplate extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    const templatesNames = (await getTemplates()).map((t) => toLocaleLowerCase(t.sampleAppName));
+    const templatesNames = (await getTemplates()).map((t) => toLocaleLowerCase(t.id));
     yargs
       .positional("template-name", {
         description: "Enter the template name",
@@ -141,9 +141,9 @@ class NewTemplate extends YargsCommand {
     const core = activeRes.value;
 
     const hitTempaltes = (await getTemplates()).filter(
-      (t) => t.sampleAppName.toLocaleLowerCase() === args["template-name"]
+      (t) => t.id.toLocaleLowerCase() === args["template-name"]
     );
-    const templateName = hitTempaltes[0].sampleAppName;
+    const templateName = hitTempaltes[0].id;
     const inputs = getSystemInputs();
     inputs["scratch"] = "no";
     const properties: any = {
@@ -196,7 +196,7 @@ class NewTemplateList extends YargsCommand {
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Use the command ${CLILogProvider.white(
-        "teamsfx new template <sampleAppName>"
+        `${process.env.TEAMSFX_CLI_BIN_NAME} new template <sampleAppName>`
       )} to create an application from the sample app.`
     );
     return ok(null);

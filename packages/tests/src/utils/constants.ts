@@ -75,6 +75,8 @@ export enum TemplateProjectFolder {
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",
   ChefBot = "teams-chef-bot",
+  GraphConnectorBot = "graph-connector-bot",
+  SpfxProductivity = "spfx-productivity-dashboard",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }

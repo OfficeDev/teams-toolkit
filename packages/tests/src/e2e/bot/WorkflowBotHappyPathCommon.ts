@@ -46,8 +46,8 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: workflow bot", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsfx new --interactive false --app-name ${appName} --capabilities workflow-bot --programming-language typescript`
-          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capabilities workflow-bot`;
+          ? `teamsfx new --interactive false --app-name ${appName} --capability workflow-bot --programming-language typescript`
+          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capability workflow-bot`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,

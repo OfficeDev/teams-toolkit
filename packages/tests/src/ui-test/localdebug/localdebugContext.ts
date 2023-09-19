@@ -87,37 +87,37 @@ export class LocalDebugTestContext extends TestContext {
       case "tab":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities sso-launch-page --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability sso-launch-page --programming-language ${this.lang}`
         );
         break;
       case "tabnsso":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities tab-non-sso --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability tab-non-sso --programming-language ${this.lang}`
         );
         break;
       case "funcNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities notification --bot-host-type-trigger http-functions --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-functions --programming-language ${this.lang}`
         );
         break;
       case "restNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities notification --bot-host-type-trigger http-restify --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-restify --programming-language ${this.lang}`
         );
         break;
       case "crbot":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities command-bot --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability command-bot --programming-language ${this.lang}`
         );
         break;
       case "function":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities tab --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang}`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
@@ -127,25 +127,25 @@ export class LocalDebugTestContext extends TestContext {
       case "bot":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities bot --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability bot --programming-language ${this.lang}`
         );
         break;
       case "msg":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities collect-form-message-extension --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability collect-form-message-extension --programming-language ${this.lang}`
         );
         break;
       case "msgsa":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities search-app --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability search-app --programming-language ${this.lang}`
         );
         break;
       case "tabbot":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities tab --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang}`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
@@ -155,13 +155,13 @@ export class LocalDebugTestContext extends TestContext {
       case "spfx":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities tab-spfx --spfx-framework-type none --spfx-webpart-name ${this.appName}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type none --spfx-webpart-name ${this.appName}`
         );
         break;
       case "botfunc":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities tab --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang}`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
@@ -175,31 +175,31 @@ export class LocalDebugTestContext extends TestContext {
       case "m365lp":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities sso-launch-page --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability sso-launch-page --programming-language ${this.lang}`
         );
         break;
       case "workflow":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities workflow-bot --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability workflow-bot --programming-language ${this.lang}`
         );
         break;
       case "dashboard":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities dashboard-tab --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability dashboard-tab --programming-language ${this.lang}`
         );
         break;
       case "timeNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities notification --bot-host-type-trigger timer-functions --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger timer-functions --programming-language ${this.lang}`
         );
         break;
       case "ftNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capabilities notification --bot-host-type-trigger http-and-timer-functions --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-and-timer-functions --programming-language ${this.lang}`
         );
     }
     if (this.needMigrate) {
@@ -290,7 +290,7 @@ export class LocalDebugSpfxTestContext extends LocalDebugTestContext {
   public async createProject(): Promise<void> {
     await execCommand(
       this.testRootFolder,
-      `teamsfx new --app-name ${this.appName} --interactive false --capabilities tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName}`
+      `teamsfx new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName}`
     );
   }
 }

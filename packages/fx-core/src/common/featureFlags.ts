@@ -45,8 +45,8 @@ export function isCopilotPluginEnabled(): boolean {
 }
 
 export function isApiCopilotPluginEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, true) && isCopilotPluginEnabled();
-  // return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled(); // TODO: update default value to false for September release
+  // return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, true) && isCopilotPluginEnabled();
+  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
 }
 
 export function isCliNewUxEnabled(): boolean {

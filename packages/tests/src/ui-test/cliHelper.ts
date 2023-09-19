@@ -343,7 +343,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ): Promise<void> {
-    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}`;
+    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -379,7 +379,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv
   ) {
     console.log("isV3Enabled: " + isV3Enabled());
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    const command = `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
     const timeout = 100000;
     try {
       await Executor.execute("teamsfx -v", testFolder);

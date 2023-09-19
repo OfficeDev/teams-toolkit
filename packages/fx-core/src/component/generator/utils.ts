@@ -116,6 +116,7 @@ export async function fetchTemplateZipUrl(
     throw new Error(`Failed to find valid template for ${name}`);
   }
   return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
+  // return `https://github.com/Yimin-Jin/TeamsFx/releases/download/testTag/${name}.zip`;
 }
 
 export async function fetchZipFromUrl(

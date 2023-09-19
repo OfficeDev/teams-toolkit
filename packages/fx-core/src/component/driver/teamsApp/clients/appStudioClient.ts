@@ -30,6 +30,10 @@ import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefini
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";
 import { setErrorContext } from "../../../../core/globalVars";
+import {
+  CheckSideloadingPermissionFailedError,
+  DeveloperPortalAPIFailedError,
+} from "../../../../error/teamsApp";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -90,20 +94,8 @@ export namespace AppStudioClient {
   ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
-
-    const error = AppStudioResultFactory.SystemError(
-      AppStudioError.DeveloperPortalAPIFailedError.name,
-      AppStudioError.DeveloperPortalAPIFailedError.message(
-        e,
-        correlationId,
-        requestPath,
-        apiName,
-        extraData
-      ),
-      e
-    );
+    const error = new DeveloperPortalAPIFailedError(e, correlationId, apiName, extraData);
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
       method: e.request?.method,
@@ -696,17 +688,12 @@ export namespace AppStudioClient {
         sendTelemetryErrorEvent(
           Component.core,
           TelemetryEvent.CheckSideloading,
-          new SystemError({
+          new CheckSideloadingPermissionFailedError(
             error,
-            source: "M365Account",
-            message: AppStudioError.DeveloperPortalAPIFailedError.message(
-              error,
-              error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
-              apiPath,
-              apiName,
-              error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
-            )[0],
-          }),
+            error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
+            apiName,
+            error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+          ),
           {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,

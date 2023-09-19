@@ -16,8 +16,7 @@
         "${workspaceFolder}/../api/build/**/*.js"
       ],
       "env": {
-        "NODE_ENV": "development",
-        "TEAMSFX_DEBUG_TEMPLATE": "true"
+        "NODE_ENV": "development"
       },
       "preLaunchTask": "npm: build"
     },

@@ -27,7 +27,7 @@ import { expect } from "chai";
 
 export async function happyPathTest(
   runtime: Runtime,
-  capabilities: CliCapabilities,
+  capability: CliCapabilities,
   trigger?: CliTriggerType[]
 ): Promise<void> {
   const testFolder = getTestFolder();
@@ -44,7 +44,7 @@ export async function happyPathTest(
     trigger === undefined
       ? ""
       : `--bot-host-type-trigger ${trigger.join(" ")} `;
-  const cmdBase = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capabilities} ${triggerStr}`;
+  const cmdBase = `teamsfx new --interactive false --app-name ${appName} --capability ${capability} ${triggerStr}`;
   const cmd =
     runtime === Runtime.Dotnet
       ? `${cmdBase} --runtime dotnet`

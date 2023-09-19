@@ -532,7 +532,7 @@ export async function getCapabilitiesFromProjectSetting(
     )
   );
   return projectSettings[ProjectSettingKey.solutionSettings][
-    ProjectSettingKey.capabilities
+    ProjectSettingKey.capability
   ];
 }
 

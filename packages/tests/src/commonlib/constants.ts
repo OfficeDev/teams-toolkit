@@ -117,7 +117,7 @@ export class StateConfigKey {
 export class ProjectSettingKey {
   static readonly solutionSettings = "solutionSettings";
   static readonly activeResourcePlugins = "activeResourcePlugins";
-  static readonly capabilities = "capabilities";
+  static readonly capability = "capability";
 }
 
 export class provisionParametersKey {

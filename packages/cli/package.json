@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-cli",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
@@ -98,8 +98,8 @@
     "@inquirer/core": "^4.0.0",
     "@inquirer/prompts": "^3.0.4",
     "@inquirer/type": "^1.1.2",
-    "@microsoft/teamsfx-api": "^0.22.3",
-    "@microsoft/teamsfx-core": "^2.0.2",
+    "@microsoft/teamsfx-api": "^0.22.5",
+    "@microsoft/teamsfx-core": "^2.0.5",
     "ansi-escapes": "^4.3.2",
     "applicationinsights": "^1.8.10",
     "async-mutex": "^0.3.1",

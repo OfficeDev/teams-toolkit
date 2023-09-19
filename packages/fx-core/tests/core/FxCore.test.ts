@@ -1328,7 +1328,7 @@ describe("isEnvFile", async () => {
           "spfx-webpart-name",
           "spfx-folder",
           "openapi-spec-location",
-          "openai-plugin-domain",
+          "openai-plugin-manifest",
           "api-operation",
           "programming-language",
           "folder",

@@ -82,8 +82,8 @@ export class Executor {
   ) {
     const command =
       `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
-      ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
-      ` --local-manifest-path ${localManifestPath}`;
+      ` --spfx-folder ${spfxFolder} --teams-manifest-file ${manifestPath}` +
+      ` --local-teams-manifest-file ${localManifestPath}`;
     return this.execute(command, workspace);
   }
 

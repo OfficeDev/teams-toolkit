@@ -596,6 +596,116 @@ describe("App Studio API Test", () => {
         chai.assert.equal(e.name, error.name);
       }
     });
+
+    it("happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const newAppUser: AppUser = {
+        tenantId: "new-tenant-id",
+        aadId: "new-aad-id",
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+      const teamsAppId = appDef.teamsAppId!;
+      const appDefWithUser: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+        ],
+      };
+      const appDefWithUserAdded: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+          newAppUser,
+        ],
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: appDefWithUser,
+      });
+      sinon.stub(fakeAxiosInstance, "post").resolves({
+        data: appDefWithUserAdded,
+      });
+
+      const res = await AppStudioClient.grantPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        newAppUser,
+        logProvider
+      );
+    });
+
+    it("happy path with region", async () => {
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const newAppUser: AppUser = {
+        tenantId: "new-tenant-id",
+        aadId: "new-aad-id",
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+      const teamsAppId = appDef.teamsAppId!;
+      const appDefWithUser: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+        ],
+      };
+      const appDefWithUserAdded: AppDefinition = {
+        appName: "fake",
+        teamsAppId: teamsAppId,
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+          newAppUser,
+        ],
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves({
+        data: appDefWithUser,
+      });
+      sinon.stub(fakeAxiosInstance, "post").resolves({
+        data: appDefWithUserAdded,
+      });
+
+      const res = await AppStudioClient.grantPermission(
+        appDef.teamsAppId!,
+        appStudioToken,
+        newAppUser,
+        logProvider
+      );
+    });
   });
 
   describe("getUserList", () => {

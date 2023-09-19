@@ -268,9 +268,11 @@ export async function updateTeamsAppV3ForPublish(
     } catch (e) {
       validationError = AppStudioResultFactory.UserError(
         AppStudioError.ValidationFailedError.name,
-        AppStudioError.ValidationFailedError.message([e.message])
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        AppStudioError.ValidationFailedError.message([(e as any).message])
       );
-      validationError.stack = e.stack;
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      validationError.stack = (e as any).stack;
     }
   } else {
     // missing manifest file

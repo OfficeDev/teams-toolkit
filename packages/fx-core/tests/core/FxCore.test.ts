@@ -1439,6 +1439,10 @@ describe("copilotPlugin", async () => {
             id: "getUserById",
             title: "Get User By Id",
           },
+          {
+            id: "notexist",
+            title: "Get User By Id",
+          },
         ],
       },
     ];

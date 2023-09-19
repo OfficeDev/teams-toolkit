@@ -255,6 +255,7 @@
   "core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard.mitigation": " Mitigation: please create Adaptive Card template \"%s\" in \"%s\".",
   "core.createCapabilityQuestion.titleNew": "Capabilities",
   "core.createCapabilityQuestion.placeholder": "Select a capability",
+  "core.createProjectQuestion.option.description.preview": "Preview",
   "core.createProjectQuestion.option.description.previewOnWindow": "Preview on Windows",
   "core.createProjectQuestion.option.description.worksInOutlook": "Works in Teams and Outlook",
   "core.createProjectQuestion.option.description.worksInOutlookM365": "Works in Teams, Outlook and the Microsoft 365 app",

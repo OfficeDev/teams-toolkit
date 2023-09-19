@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/* eslint-disable @typescript-eslint/no-empty-function */
 
 /* eslint-disable @typescript-eslint/no-empty-function */
 
@@ -42,10 +43,7 @@ import { VS_CODE_UI } from "../extension";
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AccessToken, GetTokenOptions, useIdentityPlugin } from "@azure/identity";
-import { vsCodePlugin } from "@azure/identity-vscode";
-
-useIdentityPlugin(vsCodePlugin);
+import type { AccessToken, GetTokenOptions } from "@azure/identity";
 
 class TeamsFxTokenCredential implements TokenCredential {
   private tokenCredentialBase: TokenCredentialsBase;

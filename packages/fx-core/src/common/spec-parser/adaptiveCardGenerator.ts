@@ -112,7 +112,7 @@ export function generateCardFromResponse(
     let text = "result: ${$root}";
     if (name) {
       // object { id: "1" }
-      text = `${name}: \${${name}}`;
+      text = `${name}: \${if(${name}, ${name}, 'N/A')}`;
       if (parentArrayName) {
         // object types inside array: { tags: ["id": 1, "name": "name"] }
         text = `${parentArrayName}.${text}`;

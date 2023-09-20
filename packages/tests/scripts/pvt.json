@@ -8,6 +8,7 @@
       "remotedebug-spfxreact",
       "localdebug-tab-nosso",
       "localdebug-bot",
+      "localdebug-bot-twice",
       "localdebug-obo-tab",
       "localdebug-command-and-response",
       "localdebug-notification-func",
@@ -87,7 +88,6 @@
       "localdebug-notification-timertrigger-ts",
       "localdebug-dashboard-tab-ts",
       "localdebug-dashboard-tab",
-      "localdebug-bot-twice",
       "localdebug-tab-aad-deploy",
       "localdebug-notification-func-timertrigger-ts",
       "localdebug-notification-func-timertrigger"

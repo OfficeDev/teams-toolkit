@@ -874,33 +874,44 @@ describe("copilotPluginQuestions", async () => {
     await traverse(res, inputs, ui, undefined, visitor);
     assert.deepEqual(questionNames, [QuestionNames.ApiSpecLocation, QuestionNames.ApiOperation]);
   });
+});
 
-  describe("selectTeamsAppManifestQuestion", async () => {
-    it("default for CLI_HELP", async () => {
-      const question = selectTeamsAppManifestQuestion();
-      if (typeof question.default === "function") {
-        const res = await question.default({ platform: Platform.CLI_HELP });
-        assert.equal(res, "./appPackage/manifest.json");
-      }
-    });
+describe("selectTeamsAppManifestQuestion", async () => {
+  it("default for CLI_HELP", async () => {
+    const question = selectTeamsAppManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.CLI_HELP });
+      assert.equal(res, "./appPackage/manifest.json");
+    }
   });
+});
 
-  describe("selectLocalTeamsAppManifestQuestion", async () => {
-    it("default for CLI_HELP", async () => {
-      const question = selectLocalTeamsAppManifestQuestion();
-      if (typeof question.default === "function") {
-        const res = await question.default({ platform: Platform.CLI_HELP });
-        assert.equal(res, "./appPackage/manifest.local.json");
-      }
-    });
+describe("selectLocalTeamsAppManifestQuestion", async () => {
+  afterEach(() => {
+    sinon.restore();
   });
-  describe("selectAadManifestQuestion", async () => {
-    it("default for CLI_HELP", async () => {
-      const question = selectAadManifestQuestion();
-      if (typeof question.default === "function") {
-        const res = await question.default({ platform: Platform.CLI_HELP });
-        assert.equal(res, "./aad.manifest.json");
-      }
-    });
+  it("default for CLI_HELP", async () => {
+    const question = selectLocalTeamsAppManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.CLI_HELP });
+      assert.equal(res, "./appPackage/manifest.local.json");
+    }
+  });
+  it("default for vsc, path exists", async () => {
+    sinon.stub(fs, "pathExistsSync").returns(true);
+    const question = selectLocalTeamsAppManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.VSCode, projectPath: "./" });
+      assert.isDefined(res);
+    }
+  });
+});
+describe("selectAadManifestQuestion", async () => {
+  it("default for CLI_HELP", async () => {
+    const question = selectAadManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.CLI_HELP });
+      assert.equal(res, "./aad.manifest.json");
+    }
   });
 });

@@ -528,7 +528,11 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateAadAppCommand, fullName: "teamsfx" },
-        optionValues: { env: "local", projectPath: "./" },
+        optionValues: {
+          env: "local",
+          projectPath: "./",
+          "manifest-file-path": "./aad.manifest.json",
+        },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},

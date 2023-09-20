@@ -29,6 +29,7 @@ function getString(key: string, defValue?: string) {
 
 export function _resetCollections(): void {
   loadedLocale = "";
+  defaultCollection = undefined;
   loadedCollection = undefined;
   askedForCollection = {};
 }

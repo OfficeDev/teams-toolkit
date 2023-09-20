@@ -11,6 +11,7 @@ import { waitSeconds } from "../tools";
 import { NotExtendedToM365Error } from "./errors";
 import { serviceEndpoint } from "./serviceConstant";
 import { assembleError } from "../../error/common";
+import { ErrorCategory } from "../../error/types";
 import { ErrorContextMW, TOOLS } from "../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
 import {
@@ -316,6 +317,7 @@ export class PackageService {
           error,
           source: M365ErrorSource,
           message: error.message ?? "Failed to get copilot status.",
+          categories: [ErrorCategory.External],
         }),
         {
           [TelemetryProperty.CheckCopilotTracingId]: `${

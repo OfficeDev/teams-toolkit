@@ -22,8 +22,7 @@ class ChefBotTestCase extends CaseFactory {
       `.env.${env}`
     );
     let OPENAI_API_KEY = fs.readFileSync(envFile, "utf-8");
-    OPENAI_API_KEY +=
-      "\nSECRET_OPENAI_API_KEY=yourapikey";
+    OPENAI_API_KEY += "\nSECRET_OPENAI_API_KEY=yourapikey";
     fs.writeFileSync(envFile, OPENAI_API_KEY);
     console.log(`add OPENAI_API_KEY ${OPENAI_API_KEY} to .env.${env} file`);
   }
@@ -34,8 +33,5 @@ new ChefBotTestCase(
   24409837,
   "v-ivanchen@microsoft.com",
   "local",
-  [
-    LocalDebugTaskLabel.StartLocalTunnel,
-    LocalDebugTaskLabel.StartBotApp,
-  ]
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp]
 ).test();

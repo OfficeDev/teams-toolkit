@@ -328,6 +328,7 @@ export class LocalDebugTaskResult {
   static readonly Failed = "failed";
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
+  static readonly WebServerSuccess = "press h to show help";
 }
 
 export enum LocalDebugTaskLabel2 {

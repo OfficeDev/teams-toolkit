@@ -6,7 +6,11 @@
  */
 
 import { Page } from "playwright";
-import { TemplateProject, LocalDebugTaskLabel, ValidationContent } from "../../utils/constants";
+import {
+  TemplateProject,
+  LocalDebugTaskLabel,
+  ValidationContent,
+} from "../../utils/constants";
 import { validateBot } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 
@@ -23,8 +27,5 @@ new BotSSOTestCase(
   12462156,
   "v-ivanchen@microsoft.com",
   "local",
-  [
-    LocalDebugTaskLabel.StartLocalTunnel,
-    LocalDebugTaskLabel.StartApplication,
-  ]
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartApplication]
 ).test();

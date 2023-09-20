@@ -102,10 +102,10 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "OpenAPI specification file location.",
   },
   {
-    name: "openai-plugin-domain",
+    name: "openai-plugin-manifest",
     type: "string",
-    shortName: "d",
-    description: "OpenAI plugin website domain.",
+    shortName: "m",
+    description: "OpenAI plugin website domain or manifest URL.",
   },
   {
     name: "api-operation",

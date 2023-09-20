@@ -908,6 +908,10 @@ describe("selectLocalTeamsAppManifestQuestion", async () => {
   });
 });
 describe("selectAadManifestQuestion", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
   it("default for CLI_HELP", async () => {
     const question = selectAadManifestQuestion();
     if (typeof question.default === "function") {
@@ -916,9 +920,10 @@ describe("selectAadManifestQuestion", async () => {
     }
   });
   it("default for VSCode", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(false);
     const question = selectAadManifestQuestion();
     if (typeof question.default === "function") {
-      const res = await question.default({ platform: Platform.VSCode });
+      const res = await question.default({ platform: Platform.VSCode, projectPath: "./" });
       assert.isUndefined(res);
     }
   });

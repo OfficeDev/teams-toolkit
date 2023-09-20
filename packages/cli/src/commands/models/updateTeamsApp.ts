@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, InputsWithProjectPath, Result, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, Result, err, ok } from "@microsoft/teamsfx-api";
 import { SelectTeamsManifestInputs, SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
 import { MissingRequiredOptionError } from "../../error";

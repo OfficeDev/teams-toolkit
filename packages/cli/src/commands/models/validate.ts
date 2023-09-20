@@ -59,7 +59,7 @@ function validateInputs(
     return err(error);
   } else if (!inputs["manifest-path"] && !inputs["app-package-file-path"]) {
     inputs["manifest-path"] = path.join(
-      path.resolve(inputs.projectPath!),
+      path.resolve(inputs.projectPath! || "./"),
       "./appPackage/manifest.json"
     );
   }

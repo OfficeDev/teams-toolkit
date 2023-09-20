@@ -915,4 +915,11 @@ describe("selectAadManifestQuestion", async () => {
       assert.equal(res, "./aad.manifest.json");
     }
   });
+  it("default for VSCode", async () => {
+    const question = selectAadManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.VSCode });
+      assert.isUndefined(res);
+    }
+  });
 });

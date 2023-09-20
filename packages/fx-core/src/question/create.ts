@@ -55,6 +55,7 @@ import {
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";
+import { Correlator } from "../common/correlator";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1403,6 +1404,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
 
 export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
+  const correlationId = Correlator.getId();
+  console.log("cid: " + correlationId);
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginDomain,
@@ -1413,6 +1416,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): Promise<string | undefined> => {
+        console.log("id in validaate" + Correlator.getId());
         const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?(\/)?$/i;
         const match = pattern.test(input);
 
@@ -1436,6 +1440,8 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
 
         const context = createContextV3();
         try {
+          console.log("cid in additonal: " + correlationId);
+          console.log("cid in additonal get id: " + Correlator.getId());
           const res = await listOperations(
             context,
             manifest,

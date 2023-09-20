@@ -4,7 +4,6 @@
 import { FxError, Inputs } from "@microsoft/teamsfx-api";
 import { fillInTelemetryPropsForFxError, getHashedEnv } from "@microsoft/teamsfx-core";
 import { CliTelemetryReporter } from "../commonlib/telemetry";
-import CLIUIInstance from "../userInteraction";
 import { getSettingsVersion } from "../utils";
 import { TelemetryComponentType, TelemetryProperty, TelemetrySuccess } from "./cliTelemetryEvents";
 
@@ -23,6 +22,12 @@ export function makeEnvRelatedProperty(
 class CliTelemetry {
   reporter: CliTelemetryReporter | undefined;
   rootFolder: string | undefined;
+
+  set enable(value: boolean) {
+    if (this.reporter) {
+      this.reporter.enable = value;
+    }
+  }
 
   public withRootFolder(rootFolder: string | undefined): CliTelemetry {
     this.rootFolder = rootFolder;

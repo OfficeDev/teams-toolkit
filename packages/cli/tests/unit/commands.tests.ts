@@ -342,16 +342,15 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("isWorkspaceSupported: false", async () => {
-      sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
       sandbox.stub(utils, "isWorkspaceSupported").returns(false);
       const ctx: CLIContext = {
-        command: { ...envAddCommand, fullName: "teamsfx" },
+        command: { ...envListCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await envAddCommand.handler!(ctx);
+      const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isErr());
     });
     it("listEnv error", async () => {

@@ -21,6 +21,7 @@ import {
   AppPackageFolderName,
   ManifestUtil,
   IComposeExtension,
+  IMessagingExtensionCommand,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
@@ -78,8 +79,11 @@ export interface ErrorResult {
 
 export class OpenAIPluginManifestHelper {
   static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
-    let path =
-      (input.endsWith("/") ? input.substring(0, input.length - 1) : input) + manifestFilePath;
+    input = input.trim();
+    let path = input.endsWith("/") ? input.substring(0, input.length - 1) : input;
+    if (!input.toLowerCase().endsWith(manifestFilePath)) {
+      path = path + manifestFilePath;
+    }
     if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
       path = "https://" + path;
     }
@@ -430,27 +434,36 @@ function validateTeamsManifestLength(
       (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
     );
 
+    const commands = teamsManifest.composeExtensions![0].commands;
     if (optionalParamsOnlyWarnings) {
       for (const optionalParamsOnlyWarning of optionalParamsOnlyWarnings) {
-        resultWarnings.push(
-          getLocalizedString(
-            "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters",
-            optionalParamsOnlyWarning.data
-          ) +
-            getLocalizedString(
-              "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation",
-              optionalParamsOnlyWarning.data,
-              path.join(AppPackageFolderName, ManifestTemplateFileName),
-              path.join(
-                AppPackageFolderName,
-                teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
-              )
-            )
+        const command = commands.find(
+          (o: IMessagingExtensionCommand) => o.id === optionalParamsOnlyWarning.data
         );
+
+        if (command && command.parameters) {
+          const parameterName = command.parameters[0]?.name;
+          resultWarnings.push(
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly",
+              optionalParamsOnlyWarning.data,
+              optionalParamsOnlyWarning.data
+            ) +
+              getLocalizedString(
+                "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation",
+                parameterName,
+                optionalParamsOnlyWarning.data,
+                path.join(AppPackageFolderName, ManifestTemplateFileName),
+                path.join(
+                  AppPackageFolderName,
+                  teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
+                )
+              )
+          );
+        }
       }
     }
 
-    const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
     for (const command of commands) {
       if (command.type === "query") {
         if (!command.apiResponseRenderingTemplateFile) {

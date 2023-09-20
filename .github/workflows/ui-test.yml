@@ -144,7 +144,7 @@ jobs:
         if: ${{ github.event.inputs.target-testplan-id != '' }}
         working-directory: ./packages/tests
         run: |
-          npm install
+          pnpm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
@@ -271,6 +271,11 @@ jobs:
         working-directory: packages/tests
         run: |
           npm install
+
+      - name: Download browsers for playwright
+        working-directory: packages/tests
+        run: |
+          npx playwright install
 
       - name: Download TTK
         uses: actions/download-artifact@v3

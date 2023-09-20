@@ -39,7 +39,7 @@ describe("Collaboration", function () {
 
       // new a project
       await execAsync(
-        `teamsfx new --interactive false --capabilities tab-spfx --app-name ${appName}`,
+        `teamsfx new --interactive false --capability tab-spfx --app-name ${appName}`,
         {
           cwd: testFolder,
           env: process.env,

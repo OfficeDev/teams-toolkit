@@ -89,7 +89,7 @@ jobs:
         if: ${{ github.event.inputs.target-testplan-id != '' }}
         working-directory: ./packages/tests
         run: |
-          npm install
+          pnpm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-version }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
   

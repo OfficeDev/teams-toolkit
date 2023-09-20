@@ -61,7 +61,7 @@ export class Executor {
     customized: Record<string, string> = {}
   ) {
     const command =
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${language} ` +
+      `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");
@@ -82,8 +82,8 @@ export class Executor {
   ) {
     const command =
       `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
-      ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
-      ` --local-manifest-path ${localManifestPath}`;
+      ` --spfx-folder ${spfxFolder} --teams-manifest-file ${manifestPath}` +
+      ` --local-teams-manifest-file ${localManifestPath}`;
     return this.execute(command, workspace);
   }
 

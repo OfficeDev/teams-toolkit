@@ -20,7 +20,9 @@ provision:
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:
-{{#cliRunNpmCommand}} install, args: install --production {{/cliRunNpmCommand}}
+{{#cliRunNpmCommand}} install, args: install {{/cliRunNpmCommand}}
+
+{{#cliRunNpmCommand}} args: run build --if-present, build {{/cliRunNpmCommand}}
 
 {{#azureFunctionsZipDeploy}} resourceId: ${{API_FUNCTION_RESOURCE_ID}}, ignoreFile: .funcignore {{/azureFunctionsZipDeploy}}
 

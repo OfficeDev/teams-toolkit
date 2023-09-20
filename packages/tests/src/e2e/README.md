@@ -292,7 +292,7 @@ teamsfx deploy ${resourceToDeploy} ${option}
 capability: "tab" | "bot"
 
 ```bash
-teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}
+teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options}
 ```
 
 #### createProjectWithCapability
@@ -314,7 +314,7 @@ enum Capability {
 ```
 
 ```bash
-teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}
+teamsfx new --interactive false --app-name ${appName} --capability ${capability} ${options}
 ```
 
 #### createTemplateProject

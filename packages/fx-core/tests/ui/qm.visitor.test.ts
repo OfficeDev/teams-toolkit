@@ -704,13 +704,12 @@ describe("Question Model - Visitor Test", () => {
   describe("questionVisitor", () => {
     const tools = new MockTools();
     setTools(tools);
-    let mockedEnvRestore: RestoreFn = () => {};
+    const mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
       mockedEnvRestore();
       sandbox.restore();
     });
     it("should return MissingRequiredInputError for non-interactive mode", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: TextInputQuestion = {
         type: "text",
         name: "test",
@@ -725,7 +724,6 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
     });
     it("should return skip for non-interactive mode", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: TextInputQuestion = {
         type: "text",
         name: "test",
@@ -738,7 +736,6 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === undefined);
     });
     it("should return empty option error for non-interactive mode", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: SingleSelectQuestion = {
         type: "singleSelect",
         name: "test",
@@ -755,7 +752,6 @@ describe("Question Model - Visitor Test", () => {
     });
 
     it("should return single option for non-interactive mode", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: SingleSelectQuestion = {
         type: "singleSelect",
         name: "test",
@@ -772,7 +768,6 @@ describe("Question Model - Visitor Test", () => {
     });
 
     it("should return default value for non-interactive mode", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: SingleSelectQuestion = {
         type: "singleSelect",
         name: "test",
@@ -789,7 +784,6 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk() && res.value.type === "skip" && res.value.result === "b");
     });
     it("should return default value (validation failed) for non-interactive mode", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const question: SingleSelectQuestion = {
         type: "singleSelect",
         name: "test",

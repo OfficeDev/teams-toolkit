@@ -12,6 +12,7 @@ import {
   ok,
   OpenAIManifestAuthType,
   Platform,
+  ResponseTemplatesFolderName,
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
@@ -147,7 +148,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves({
+    const generateParser = sandbox.stub(SpecParser.prototype, "generate").resolves({
       allSuccess: true,
       warnings: [
         { type: WarningType.GenerateCardFailed, content: "test", data: "getPets" },
@@ -168,6 +169,7 @@ describe("copilotPluginGenerator", function () {
       assert.equal(result.value.warnings![2].type, WarningType.GenerateCardFailed);
       assert.equal(result.value.warnings![3].type, WarningType.OperationOnlyContainsOptionalParam);
       assert.equal(result.value.warnings![3].content, "");
+      assert.isTrue(generateParser.args[0][3].includes(ResponseTemplatesFolderName));
     }
   });
 
@@ -583,10 +585,16 @@ describe("generateScaffoldingSummary", () => {
       apiSpecificationFile: "testApiFile",
       commands: [
         {
-          id: "command1",
+          id: "getAll",
           type: "query",
           title: "",
           apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [
+            {
+              name: "test",
+              title: "test",
+            },
+          ],
         },
       ],
     };
@@ -600,5 +608,30 @@ describe("generateScaffoldingSummary", () => {
     );
 
     assert.isTrue(res.includes("testApiFile"));
+  });
+
+  it("warnings about command parameters with some properties missing", () => {
+    const composeExtension: IComposeExtension = {
+      composeExtensionType: "apiBased",
+      commands: [
+        {
+          id: "getAll",
+          type: "query",
+          title: "",
+          apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [],
+        },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isFalse(res.includes("testApiFile"));
   });
 });

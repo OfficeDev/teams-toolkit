@@ -44,7 +44,7 @@ export async function happyPathTest(
     trigger === undefined
       ? ""
       : `--bot-host-type-trigger ${trigger.join(" ")} `;
-  const cmdBase = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capabilities} ${triggerStr}`;
+  const cmdBase = `teamsfx new --interactive false --app-name ${appName} --capability ${capabilities} ${triggerStr}`;
   const cmd =
     runtime === Runtime.Dotnet
       ? `${cmdBase} --runtime dotnet`

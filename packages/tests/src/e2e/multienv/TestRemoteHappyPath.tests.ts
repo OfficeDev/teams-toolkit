@@ -43,7 +43,7 @@ describe("Multi Env Happy Path for Azure", function () {
       try {
         let result;
         result = await execAsync(
-          `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-functions --programming-language javascript`,
+          `teamsfx new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-functions --programming-language javascript`,
           {
             cwd: testFolder,
             env: processEnv,

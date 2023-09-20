@@ -68,7 +68,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       return (
         <div className="sample-gallery">
           {titleSection}
-          {this.state.samples.length === 0 ? (
+          {this.state.error !== undefined ? (
             <OfflinePage />
           ) : (
             <>
@@ -96,10 +96,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     const message = event.data.message;
     switch (message) {
       case Commands.LoadSampleCollection:
+        const error = event.data.error;
         const samples = event.data.data as SampleInfo[];
         this.setState({
           loading: false,
-          samples: samples,
+          samples,
+          error,
           fuse: new Fuse(samples, {
             keys: ["title", "shortDescription", "fullDescription", "tags"],
           }),

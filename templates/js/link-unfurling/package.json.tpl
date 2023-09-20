@@ -20,7 +20,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "botbuilder": "^4.20.0",
+        "botbuilder": "^4.20.1",
         "restify": "^10.0.0"
     },
     "devDependencies": {

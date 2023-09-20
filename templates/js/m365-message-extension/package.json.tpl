@@ -21,7 +21,7 @@
     "adaptive-expressions": "^4.20.0",
     "adaptivecards-templating": "^2.3.1",
     "adaptivecards": "^3.0.1",
-    "botbuilder": "^4.20.0",
+    "botbuilder": "^4.20.1",
     "restify": "^10.0.0"
   },
   "devDependencies": {

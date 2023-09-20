@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "@microsoft/teams-ai": "^0.1.0-preview.2",
-        "botbuilder": "^4.20.0",
+        "botbuilder": "^4.20.1",
         "restify": "^10.0.0"
     },
     "devDependencies": {

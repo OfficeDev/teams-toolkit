@@ -19,7 +19,7 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "botbuilder": "^4.20.0",
+        "botbuilder": "^4.20.1",
         "restify": "^10.0.0"
     },
     "devDependencies": {

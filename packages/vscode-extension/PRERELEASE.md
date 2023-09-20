@@ -2,6 +2,48 @@
 
 ## Changelog
 
+### September 26, 2023
+
+#### New Features
+
+- **Sample App Gallery Search**: We have introduced the ability to search for sample apps within the Sample App Gallery.
+    ![Sample Gallery](https://github.com/OfficeDev/TeamsFx/assets/11220663/0b5636da-aa21-4624-82c1-2824f2557e9f)
+
+- **Custom Search Results Template Optimization**: We've optimized the `Custom Search Results` project template to seamlessly integrate with Microsoft 365 Copilot. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and enroll in the Microsoft 365 Copilot [Early Access Program](https://aka.ms/PluginsEarlyAccess).
+    ![Copilot Plugin](https://github.com/OfficeDev/TeamsFx/assets/11220663/67c22709-4c70-4d17-b9a3-9e1629ceded1)
+
+#### New Additions to the Sample App Gallery
+
+- **SSO Enabled Tab via APIM Proxy**: This addition showcases how to build a single-page web application with a single sign-on feature leveraging Azure API Management service as a proxy to perform on-behalf-of flow, eliminating the need for a dedicated backend.
+    ![APIM-Architecture](https://github.com/OfficeDev/TeamsFx-Samples/assets/63089166/a256f1ab-1b23-4264-9f0d-ed8ff45aea09)
+
+- **Large Scale Notification Bot**: This addition demonstrates the architecture of a Teams notification bot app created by Teams Toolkit. It enables sending individual chat messages to a large number of users in a tenant and relies on Azure services such as [Durable Function](https://learn.microsoft.com/azure/azure-functions/durable/durable-functions-overview?tabs=csharp-inproc) and [Service Bus Queue](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-queues-topics-subscriptions#queues) to handle high-volume and high-speed notification messaging.
+    ![Large Notification App](https://github.com/OfficeDev/TeamsFx/assets/11220663/d5ccbcd4-2a2a-4f2b-b6cb-e1e6b2e4bfef)
+
+#### Enhanced Sample App Contribution Process
+
+In addition to these two new sample projects, we have simplified the process for the community to contribute samples by updating a configuration file. You can now submit your sample app to the gallery by following the [Teams Toolkit Sample App Contribution Guidelines](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/CONTRIBUTING.md). We are excited to see more sample apps from the community! 🥳 
+    ![Sample Contribution Process](https://github.com/OfficeDev/TeamsFx/assets/11220663/9babc3b6-f89f-489a-9988-4ef9cc315e75)
+
+#### Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.3@beta`
+
+In this beta release of Teams Toolkit CLI, we have implemented a number of usability improvements based on your valuable feedback.
+
+- **Hierarchical Command Structure**: Commands have been reorganized into a hierarchical structure.
+
+- **Redesigned Help Command**: The help command has been redesigned for improved readability, including vertical and column alignments for commands and their descriptions, refined subcommands, command options/arguments, and global options, support for option abbreviations, indicators of required options, and inclusion of example commands.
+    ![CLI-2](https://github.com/OfficeDev/TeamsFx/assets/11220663/e365832f-cd38-4a6d-89ca-ebd8721a48e8)
+
+- **New `teamsfx list` Command**: We've added the `teamsfx list` command for reviewing available project templates and samples.
+    ![CLI-1](https://github.com/OfficeDev/TeamsFx/assets/11220663/8b9da73e-2159-4276-9719-5688a36b4c28)
+
+- **Enhanced Outputs and Streamlined Log Levels**: Outputs have been refreshed, and log levels have been streamlined for clarity.
+    ![CLI-3](https://github.com/OfficeDev/TeamsFx/assets/11220663/077fe077-e12e-4617-b326-caefd7934dbe)
+
+- **Improved Compatibility**: Color issues for terminals with light-colored backgrounds have been fixed, and suggestions for misspelled commands have been added.
+
+- **Global Config Commands Removal**: The global config commands, `teamsfx config set` and `teamsfx config get` have been removed and are now incorporated into global options.
+
 ### Aug 15, 2023
 
 New features:

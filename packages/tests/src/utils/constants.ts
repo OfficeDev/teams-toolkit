@@ -141,6 +141,8 @@ export enum Capability {
   LinkUnfurling = "link-unfurling",
   // v2 only
   Tab = "tab",
+  // v3 only
+  AiBot = "ai-bot",
 }
 
 export enum Trigger {

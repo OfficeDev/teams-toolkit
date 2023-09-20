@@ -118,7 +118,7 @@ export class Executor {
   }
 
   static async validate(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "validate", env);
+    return this.executeCmd(workspace, "validate -t ./appPackage/manifest.json", env);
   }
 
   static async validateWithCustomizedProcessEnv(
@@ -271,6 +271,6 @@ export class Executor {
   }
 
   static async package(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "package", env);
+    return this.executeCmd(workspace, "package -t ./appPackage/manifest.json", env);
   }
 }

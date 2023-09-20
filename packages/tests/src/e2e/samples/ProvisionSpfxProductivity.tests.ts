@@ -11,16 +11,16 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 
-class TodoListSpfxTestCase extends CaseFactory {
+class SpfxProductivityTestCase extends CaseFactory {
   override async onAfterCreate(projectPath: string): Promise<void> {
     expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be
       .true;
   }
 }
 
-new TodoListSpfxTestCase(
-  TemplateProjectFolder.TodoListSpfx,
-  15277466,
+new SpfxProductivityTestCase(
+  TemplateProjectFolder.SpfxProductivity,
+  24753056,
   "v-ivanchen@microsoft.com",
   ["spfx"]
 ).test();

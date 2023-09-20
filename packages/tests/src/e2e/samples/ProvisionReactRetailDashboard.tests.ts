@@ -12,10 +12,10 @@ import * as path from "path";
 import { expect } from "chai";
 
 class RetailDashboardTestCase extends CaseFactory {
-    override async onAfterCreate(projectPath: string): Promise<void> {
-        expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be
-          .true;
-      }
+  override async onAfterCreate(projectPath: string): Promise<void> {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be
+      .true;
+  }
 }
 
 new RetailDashboardTestCase(

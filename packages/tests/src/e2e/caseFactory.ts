@@ -19,7 +19,10 @@ import {
 import { Executor } from "../utils/executor";
 import { Cleaner } from "../commonlib/cleaner";
 import { Capability } from "../utils/constants";
-import { environmentNameManager, ProgrammingLanguage } from "@microsoft/teamsfx-core";
+import {
+  environmentNameManager,
+  ProgrammingLanguage,
+} from "@microsoft/teamsfx-core";
 import {
   AadValidator,
   FrontendValidator,
@@ -98,7 +101,13 @@ export abstract class CaseFactory {
     capability: Capability,
     custimized?: Record<string, string>
   ): Promise<void> {
-    await Executor.createProject(testFolder, appName, capability, ProgrammingLanguage.TS, custimized);
+    await Executor.createProject(
+      testFolder,
+      appName,
+      capability,
+      ProgrammingLanguage.TS,
+      custimized
+    );
   }
 
   public async onBeforeProvision(projectPath: string): Promise<void> {

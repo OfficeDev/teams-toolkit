@@ -1434,7 +1434,16 @@ describe("copilotPlugin", async () => {
       {
         composeExtensionType: "apiBased",
         apiSpecificationFile: "apiSpecificationFiles/openapi.json",
-        commands: [],
+        commands: [
+          {
+            id: "getUserById",
+            title: "Get User By Id",
+          },
+          {
+            id: "notexist",
+            title: "Get User By Id",
+          },
+        ],
       },
     ];
     const operationMap = new Map<string, string>([

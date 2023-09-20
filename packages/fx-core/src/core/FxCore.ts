@@ -1096,7 +1096,7 @@ export class FxCore {
     ConcurrentLockerMW,
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    let operations = inputs[QuestionNames.ApiOperation] as string[];
+    const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
 
@@ -1112,10 +1112,15 @@ export class FxCore {
     const specParser = new SpecParser(url);
     const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
     const operationMaps = await specParser.listOperationMap();
-    const existingOperations = existingOperationIds.map((key) =>
-      operationMaps.get(key)
-    ) as string[];
-    operations = operations.concat(existingOperations);
+
+    const existingOperations: string[] = [];
+    for (const id of existingOperationIds) {
+      if (operationMaps.get(id)) {
+        existingOperations.push(operationMaps.get(id)!);
+      }
+    }
+
+    const operations = [...existingOperations, ...newOperations];
 
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
@@ -1162,7 +1167,7 @@ export class FxCore {
 
     const message = getLocalizedString(
       "core.copilot.addAPI.success",
-      operations,
+      newOperations,
       inputs.projectPath
     );
     void context.userInteraction.showMessage("info", message, false);

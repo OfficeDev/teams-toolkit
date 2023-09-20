@@ -261,6 +261,7 @@
   "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation": " Mitigation: If \"%s\" is not what you need, edit the parameter of command \"%s\" in \"%s\". The parameter name should match what's defined in \"%s\".",
   "core.createCapabilityQuestion.titleNew": "Capabilities",
   "core.createCapabilityQuestion.placeholder": "Select a capability",
+  "core.createProjectQuestion.option.description.preview": "Preview",
   "core.createProjectQuestion.option.description.previewOnWindow": "Preview on Windows",
   "core.createProjectQuestion.option.description.worksInOutlook": "Works in Teams and Outlook",
   "core.createProjectQuestion.option.description.worksInOutlookM365": "Works in Teams, Outlook and the Microsoft 365 app",

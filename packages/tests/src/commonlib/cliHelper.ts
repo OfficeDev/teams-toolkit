@@ -241,7 +241,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ): Promise<void> {
-    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}`;
+    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -277,7 +277,7 @@ export class CliHelper {
     npx = false
   ) {
     const npxCommand = npx ? "npx" : "";
-    const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
+    const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capability ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

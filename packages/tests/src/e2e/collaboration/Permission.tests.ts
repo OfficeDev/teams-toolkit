@@ -38,7 +38,7 @@ describe("Collaboration", function () {
 
       // new a project
       await execAsync(
-        `teamsfx new --interactive false --capabilities sso-launch-page --app-name ${appName}`,
+        `teamsfx new --interactive false --capability sso-launch-page --app-name ${appName}`,
         {
           cwd: testFolder,
           env: process.env,

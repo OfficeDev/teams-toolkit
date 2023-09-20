@@ -887,8 +887,9 @@ describe("selectTeamsAppManifestQuestion", async () => {
 });
 
 describe("selectLocalTeamsAppManifestQuestion", async () => {
+  const sandbox = sinon.createSandbox();
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
   });
   it("default for CLI_HELP", async () => {
     const question = selectLocalTeamsAppManifestQuestion();
@@ -898,7 +899,7 @@ describe("selectLocalTeamsAppManifestQuestion", async () => {
     }
   });
   it("default for vsc, path exists", async () => {
-    sinon.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     const question = selectLocalTeamsAppManifestQuestion();
     if (typeof question.default === "function") {
       const res = await question.default({ platform: Platform.VSCode, projectPath: "./" });

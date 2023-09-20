@@ -61,7 +61,7 @@ export class Executor {
     customized: Record<string, string> = {}
   ) {
     const command =
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${language} ` +
+      `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");

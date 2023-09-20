@@ -555,7 +555,7 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-path": "fakePath" },
+        optionValues: { "manifest-path": "fakePath", projectPath: "./" },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},

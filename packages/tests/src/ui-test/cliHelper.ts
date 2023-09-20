@@ -399,6 +399,35 @@ export class CliHelper {
     }
   }
 
+  static async createProjectWithCapabilityMigration(
+    appName: string,
+    testFolder: string,
+    capability: Capability,
+    lang: "javascript" | "typescript" = "javascript",
+    options = "",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    console.log("isV3Enabled: " + isV3Enabled());
+    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    const timeout = 100000;
+    try {
+      await Executor.execute("teamsfx -v", testFolder);
+      await Executor.execute(command, testFolder);
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with capability ${capability}`;
+      console.log(`[Successfully] ${message}`);
+    } catch (e: any) {
+      console.log(
+        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
+      );
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
+
   static async createTemplateProject(
     testFolder: string,
     template: TemplateProjectFolder,

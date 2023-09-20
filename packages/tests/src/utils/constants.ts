@@ -75,6 +75,10 @@ export enum TemplateProjectFolder {
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",
   ChefBot = "teams-chef-bot",
+  GraphConnectorBot = "graph-connector-bot",
+  SpfxProductivity = "spfx-productivity-dashboard",
+  RetailDashboard = "react-retail-dashboard",
+  TabSSOApimProxyTestCase = "sso-enabled-tab-via-apim-proxy",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -139,6 +143,8 @@ export enum Capability {
   LinkUnfurling = "link-unfurling",
   // v2 only
   Tab = "tab",
+  // v3 only
+  AiBot = "ai-bot",
 }
 
 export enum Trigger {

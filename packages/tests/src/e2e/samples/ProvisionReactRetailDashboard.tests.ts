@@ -7,8 +7,16 @@
 
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { expect } from "chai";
 
-class RetailDashboardTestCase extends CaseFactory {}
+class RetailDashboardTestCase extends CaseFactory {
+    override async onAfterCreate(projectPath: string): Promise<void> {
+        expect(fs.pathExistsSync(path.resolve(projectPath, "src", "src"))).to.be
+          .true;
+      }
+}
 
 new RetailDashboardTestCase(
   TemplateProjectFolder.RetailDashboard,

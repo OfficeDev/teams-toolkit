@@ -46,12 +46,12 @@ describe("adaptiveCardGenerator", () => {
         body: [
           {
             type: "TextBlock",
-            text: "name: ${name}",
+            text: "name: ${if(name, name, 'N/A')}",
             wrap: true,
           },
           {
             type: "TextBlock",
-            text: "age: ${age}",
+            text: "age: ${if(age, age, 'N/A')}",
             wrap: true,
           },
         ],
@@ -190,12 +190,12 @@ describe("adaptiveCardGenerator", () => {
       const expected = [
         {
           type: "TextBlock",
-          text: "person.name: ${person.name}",
+          text: "person.name: ${if(person.name, person.name, 'N/A')}",
           wrap: true,
         },
         {
           type: "TextBlock",
-          text: "person.age: ${person.age}",
+          text: "person.age: ${if(person.age, person.age, 'N/A')}",
           wrap: true,
         },
       ];
@@ -262,7 +262,7 @@ describe("adaptiveCardGenerator", () => {
       const expected = [
         {
           type: "TextBlock",
-          text: "person: ${person}",
+          text: "person: ${if(person, person, 'N/A')}",
           wrap: true,
         },
       ];
@@ -297,17 +297,17 @@ describe("adaptiveCardGenerator", () => {
       const expected = [
         {
           type: "TextBlock",
-          text: "person.name: ${person.name}",
+          text: "person.name: ${if(person.name, person.name, 'N/A')}",
           wrap: true,
         },
         {
           type: "TextBlock",
-          text: "person.address.street: ${person.address.street}",
+          text: "person.address.street: ${if(person.address.street, person.address.street, 'N/A')}",
           wrap: true,
         },
         {
           type: "TextBlock",
-          text: "person.address.city: ${person.address.city}",
+          text: "person.address.city: ${if(person.address.city, person.address.city, 'N/A')}",
           wrap: true,
         },
       ];
@@ -342,17 +342,17 @@ describe("adaptiveCardGenerator", () => {
       const expected = [
         {
           type: "TextBlock",
-          text: "name: ${name}",
+          text: "name: ${if(name, name, 'N/A')}",
           wrap: true,
         },
         {
           type: "TextBlock",
-          text: "address.street: ${address.street}",
+          text: "address.street: ${if(address.street, address.street, 'N/A')}",
           wrap: true,
         },
         {
           type: "TextBlock",
-          text: "address.city: ${address.city}",
+          text: "address.city: ${if(address.city, address.city, 'N/A')}",
           wrap: true,
         },
       ];
@@ -397,7 +397,7 @@ describe("adaptiveCardGenerator", () => {
           items: [
             {
               type: "TextBlock",
-              text: "company.name: ${name}",
+              text: "company.name: ${if(name, name, 'N/A')}",
               wrap: true,
             },
             {
@@ -406,12 +406,12 @@ describe("adaptiveCardGenerator", () => {
               items: [
                 {
                   type: "TextBlock",
-                  text: "people.name: ${name}",
+                  text: "people.name: ${if(name, name, 'N/A')}",
                   wrap: true,
                 },
                 {
                   type: "TextBlock",
-                  text: "people.age: ${age}",
+                  text: "people.age: ${if(age, age, 'N/A')}",
                   wrap: true,
                 },
               ],
@@ -460,7 +460,7 @@ describe("adaptiveCardGenerator", () => {
           items: [
             {
               type: "TextBlock",
-              text: "name: ${name}",
+              text: "name: ${if(name, name, 'N/A')}",
               wrap: true,
             },
             {
@@ -469,12 +469,12 @@ describe("adaptiveCardGenerator", () => {
               items: [
                 {
                   type: "TextBlock",
-                  text: "people.name: ${name}",
+                  text: "people.name: ${if(name, name, 'N/A')}",
                   wrap: true,
                 },
                 {
                   type: "TextBlock",
-                  text: "people.age: ${age}",
+                  text: "people.age: ${if(age, age, 'N/A')}",
                   wrap: true,
                 },
               ],
@@ -516,7 +516,7 @@ describe("adaptiveCardGenerator", () => {
       const expected = [
         {
           type: "TextBlock",
-          text: "company.name: ${company.name}",
+          text: "company.name: ${if(company.name, company.name, 'N/A')}",
           wrap: true,
         },
         {
@@ -525,12 +525,12 @@ describe("adaptiveCardGenerator", () => {
           items: [
             {
               type: "TextBlock",
-              text: "company.people.name: ${name}",
+              text: "company.people.name: ${if(name, name, 'N/A')}",
               wrap: true,
             },
             {
               type: "TextBlock",
-              text: "company.people.age: ${age}",
+              text: "company.people.age: ${if(age, age, 'N/A')}",
               wrap: true,
             },
           ],
@@ -588,7 +588,7 @@ describe("adaptiveCardGenerator", () => {
       const expected = [
         {
           type: "TextBlock",
-          text: "person.name: ${person.name}",
+          text: "person.name: ${if(person.name, person.name, 'N/A')}",
           wrap: true,
         },
       ];

@@ -147,6 +147,25 @@ function isTeamsfxTask(task: vscode.Task): boolean {
   return false;
 }
 
+function isLaunchTestToolTask(task: vscode.Task): boolean {
+  if (task) {
+    // dev:teamsfx and watch:teamsfx
+    if (task.execution && <vscode.ShellExecution>task.execution) {
+      const execution = <vscode.ShellExecution>task.execution;
+      const commandLine =
+        execution.commandLine ||
+        `${typeof execution.command === "string" ? execution.command : execution.command.value} ${(
+          execution.args || []
+        ).join(" ")}`;
+      if (/(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx:launch-testtool/i.test(commandLine)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 function displayTerminal(taskName: string): boolean {
   const terminal = vscode.window.terminals.find((t) => t.name === taskName);
   if (terminal !== undefined && terminal !== vscode.window.activeTerminal) {
@@ -177,7 +196,7 @@ function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
   }
 }
 
-function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void {
+async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
   if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
@@ -191,6 +210,30 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
       });
 
       activeNpmInstallTasks.set(task.name, new NpmInstallTaskInfo());
+    }
+    if (isLaunchTestToolTask(task)) {
+      // Debug in Test Tool doesn't launch browser in vscode launch.json
+      // This is the final task that we have control to send debug-all event.
+      const session = getLocalDebugSession();
+      if (session.id !== DebugNoSessionId) {
+        if (session.failedServices.length > 0) {
+          terminateAllRunningTeamsfxTasks();
+          // TODO: send test tool log file
+          await sendDebugAllEvent(
+            new UserError({
+              source: ExtensionSource,
+              name: ExtensionErrors.DebugServiceFailedBeforeStartError,
+            }),
+            {
+              [TelemetryProperty.DebugFailedServices]: JSON.stringify(session.failedServices),
+              [TelemetryProperty.DebugTestTool]: "true",
+            }
+          );
+          endLocalDebugSession();
+          return;
+        }
+        await sendDebugAllEvent(undefined, { [TelemetryProperty.DebugTestTool]: "true" });
+      }
     }
   }
 }
@@ -211,8 +254,8 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   }
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
+    const currentSession = getLocalDebugSession();
     if (event.exitCode !== 0) {
-      const currentSession = getLocalDebugSession();
       currentSession.failedServices.push({ name: task.name, exitCode: event.exitCode });
     }
     allRunningTeamsfxTasks.delete(getTaskKey(task));
@@ -220,6 +263,25 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       [TelemetryProperty.DebugServiceName]: task.name,
       [TelemetryProperty.DebugServiceExitCode]: String(event.exitCode),
     });
+
+    if (isLaunchTestToolTask(task)) {
+      // This is the final task for test tool.
+      // If this task exits (even exitCode is 0) before being successfully started, the debug fails.
+      if (currentSession.id !== DebugNoSessionId) {
+        terminateAllRunningTeamsfxTasks();
+        await sendDebugAllEvent(
+          new UserError({
+            source: ExtensionSource,
+            name: ExtensionErrors.DebugTestToolFailedToStartError,
+          }),
+          {
+            [TelemetryProperty.DebugTestTool]: "true",
+            [TelemetryProperty.DebugServiceExitCode]: String(event.exitCode),
+          }
+        );
+        endLocalDebugSession();
+      }
+    }
   } else if (
     task.scope !== undefined &&
     isTeamsFxTransparentTask(task) &&

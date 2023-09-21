@@ -547,6 +547,56 @@ describe("generateCommands", () => {
     ]);
   });
 
+  it("should treat POST operation required parameter with default value as optional parameter", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                        default: "value",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    expect(result).to.deep.equal([
+      {
+        apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+        context: ["compose"],
+        id: "createPet",
+        parameters: [
+          {
+            description: "Name of the pet",
+            name: "name",
+            title: "Name",
+          },
+        ],
+        title: "Create a pet",
+        type: "query",
+      },
+    ]);
+    expect(warnings).to.deep.equal([]);
+  });
+
   it("should not show warning for each GET/POST operation in the spec if only contains 1 optional parameters", async () => {
     const spec: any = {
       paths: {
@@ -646,6 +696,62 @@ describe("generateCommands", () => {
 
     expect(result).to.deep.equal(expectedCommands);
     expect(warnings).to.deep.equal([]);
+  });
+
+  it("should treat required parameter with default value as optional parameter", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            parameters: [
+              {
+                name: "limit",
+                in: "query",
+                description: "Maximum number of pets to return",
+                required: false,
+              },
+              {
+                name: "id",
+                in: "query",
+                description: "ID of the pet",
+                required: true,
+                schema: {
+                  type: "string",
+                  default: "value",
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const expectedCommands = [
+      {
+        context: ["compose"],
+        type: "query",
+        title: "Get all pets",
+        id: "getPets",
+        parameters: [
+          { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+        ],
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+      },
+    ];
+
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+
+    expect(result).to.deep.equal(expectedCommands);
+    expect(warnings).to.deep.equal([
+      {
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
+        data: "getPets",
+      },
+    ]);
   });
 
   it("should generate commands for POST operation with string schema", async () => {

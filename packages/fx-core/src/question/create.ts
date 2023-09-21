@@ -403,11 +403,10 @@ export class CapabilityOptions {
     return filterByFeatureFlag
       ? [
           CapabilityOptions.linkUnfurling(),
-          isCopilotPluginEnabled()
-            ? CapabilityOptions.copilotM365SearchMe()
-            : CapabilityOptions.m365SearchMe(),
+          ...(isCopilotPluginEnabled()
+            ? [CapabilityOptions.copilotM365SearchMe()]
+            : [CapabilityOptions.m365SearchMe(), CapabilityOptions.SearchMe()]),
           CapabilityOptions.collectFormMe(),
-          CapabilityOptions.SearchMe(),
         ]
       : [
           CapabilityOptions.linkUnfurling(),
@@ -422,7 +421,9 @@ export class CapabilityOptions {
     return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
       ? [
           CapabilityOptions.linkUnfurling(),
-          CapabilityOptions.SearchMe(),
+          isCopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.SearchMe(),
           CapabilityOptions.collectFormMe(),
         ]
       : [

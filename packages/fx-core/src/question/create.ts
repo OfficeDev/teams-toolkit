@@ -403,11 +403,10 @@ export class CapabilityOptions {
     return filterByFeatureFlag
       ? [
           CapabilityOptions.linkUnfurling(),
-          isCopilotPluginEnabled()
-            ? CapabilityOptions.copilotM365SearchMe()
-            : CapabilityOptions.m365SearchMe(),
+          ...(isCopilotPluginEnabled()
+            ? [CapabilityOptions.copilotM365SearchMe()]
+            : [CapabilityOptions.m365SearchMe(), CapabilityOptions.SearchMe()]),
           CapabilityOptions.collectFormMe(),
-          CapabilityOptions.SearchMe(),
         ]
       : [
           CapabilityOptions.linkUnfurling(),
@@ -422,7 +421,9 @@ export class CapabilityOptions {
     return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
       ? [
           CapabilityOptions.linkUnfurling(),
-          CapabilityOptions.SearchMe(),
+          isCopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.SearchMe(),
           CapabilityOptions.collectFormMe(),
         ]
       : [
@@ -1405,11 +1406,11 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
   return {
     type: "text",
-    name: QuestionNames.OpenAIPluginDomain,
-    cliShortName: "d",
+    name: QuestionNames.OpenAIPluginManifest,
+    cliShortName: "m",
     title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
     placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
-    cliDescription: "OpenAI plugin website domain.",
+    cliDescription: "OpenAI plugin website domain or manifest URL.",
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): Promise<string | undefined> => {

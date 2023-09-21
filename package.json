@@ -8,7 +8,8 @@
     "watch": "pnpm --parallel -r run watch",
     "build": "pnpm -r run --filter=!@microsoft/teamsfx-react build && pnpm run --filter=@microsoft/teamsfx-react build",
     "precommit": "lint-staged",
-    "clean": "pnpm -r exec rimraf node_modules"
+    "clean": "pnpm -r exec rimraf node_modules",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",
@@ -18,6 +19,7 @@
     "dotenv": "^10.0.0",
     "husky": "^6.0.0",
     "lerna": "^6.6.2",
+    "pnpm": "^8.6.12",
     "rimraf": "^5.0.1",
     "ts-node": "^10.2.1"
   },
@@ -26,10 +28,5 @@
     "node": ">=18",
     "pnpm": ">=8"
   },
-  "packageManager": "pnpm@8.6.12",
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  }
+  "packageManager": "pnpm@8.6.12"
 }

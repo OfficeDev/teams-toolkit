@@ -56,7 +56,11 @@
             "sample-localdebug-todo-list-sql",
             "sample-localdebug-hello-world-tab-with-backend",
             "sample-localdebug-npm-search",
-            "sample-localdebug-hello-world-tab-outlook"
+            "sample-localdebug-hello-world-tab-outlook",
+            "sample-localdebug-graph-connector-bot",
+            "sample-localdebug-bot-sso",
+            "sample-localdebug-dice-roller",
+            "sample-localdebug-chef-bot"
         ]
     },
     {

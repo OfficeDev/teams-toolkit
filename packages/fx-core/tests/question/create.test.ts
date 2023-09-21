@@ -22,7 +22,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
-import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
@@ -50,6 +50,7 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
+import { Correlator } from "../../src/common/correlator";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -922,15 +923,17 @@ describe("scaffold question", () => {
           assert.isNotEmpty(res);
         });
 
-        it("valid API spec selecting from local file", async () => {
+        it("valid API spec selecting from local file with warning", async () => {
           const question = apiSpecLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
           };
 
-          sandbox
-            .stub(SpecParser.prototype, "validate")
-            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Warning,
+            errors: [],
+            warnings: [{ content: "warn", type: WarningType.Unknown }],
+          });
           sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
           sandbox.stub(fs, "pathExists").resolves(true);
 
@@ -962,6 +965,27 @@ describe("scaffold question", () => {
           ]);
           assert.isUndefined(res);
         });
+
+        it("throw error if missing inputs", async () => {
+          const question = apiSpecLocationQuestion();
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+
+          let err: Error | undefined = undefined;
+          try {
+            const validationSchema = question.validation as FuncValidation<string>;
+
+            await validationSchema.validFunc!("https://www.test.com", undefined);
+          } catch (e) {
+            err = e as Error;
+          }
+
+          assert.isTrue(err?.message.includes("inputs is undefined"));
+        });
+
         it("invalid api spec", async () => {
           const question = apiSpecLocationQuestion();
           const inputs: Inputs = {
@@ -1297,6 +1321,24 @@ describe("scaffold question", () => {
           console.log(res);
 
           assert.equal(res, "error\nerror2");
+        });
+
+        it("throw error if missing inputs", async () => {
+          const question = openAIPluginManifestLocationQuestion();
+
+          const manifest = {
+            schema_version: "1.0.0",
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+
+          let err: Error | undefined = undefined;
+          try {
+            await (question.additionalValidationOnAccept as any).validFunc("url", undefined);
+          } catch (e) {
+            err = e as Error;
+          }
+
+          assert.equal(err?.message, "inputs is undefined");
         });
 
         describe("validate when changing value", async () => {

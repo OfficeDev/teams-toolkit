@@ -69,7 +69,6 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { Correlator } from "@microsoft/teamsfx-core";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -517,7 +516,6 @@ export class VsCodeUI implements UserInteraction {
               inputBox.placeholder = localize("teamstoolkit.qm.validatingInput");
               inputBox.value = "";
               try {
-                console.log(Correlator.getId());
                 const additionalValidationOnAcceptRes = await config.additionalValidationOnAccept(
                   oldValue
                 );

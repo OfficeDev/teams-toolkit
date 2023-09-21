@@ -131,7 +131,15 @@ export async function listOperations(
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
   if (manifest) {
     const errors = validateOpenAIPluginManifest(manifest);
-    logValidationResults(errors, [], context, false, shouldLogWarning);
+    logValidationResults(
+      errors,
+      [],
+      context,
+      false,
+      shouldLogWarning,
+      false,
+      existingCorrelationId
+    );
     if (errors.length > 0) {
       return err(errors);
     }
@@ -178,7 +186,7 @@ export async function listOperations(
               content: getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"),
             },
           ];
-          logValidationResults(errors, [], context, true, false);
+          logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
           return err(errors);
         }
       } else {
@@ -221,7 +229,7 @@ export function logValidationResults(
   context: Context,
   isApiSpec: boolean,
   shouldLogWarning: boolean,
-  shouldSkipTelemetry = false,
+  shouldSkipTelemetry: boolean,
   existingCorrelationId?: string
 ): void {
   if (!shouldSkipTelemetry) {
@@ -235,6 +243,7 @@ export function logValidationResults(
         .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
         .join(";"),
     };
+    console.log(existingCorrelationId);
     if (existingCorrelationId) {
       properties["correlation-id"] = existingCorrelationId;
     }

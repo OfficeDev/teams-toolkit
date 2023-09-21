@@ -7,17 +7,17 @@
 #### New Features
 
 - **Sample App Gallery Search**: We have introduced the ability to search for sample apps within the Sample App Gallery.
-    ![Sample Gallery](https://github.com/OfficeDev/TeamsFx/assets/11220663/0b5636da-aa21-4624-82c1-2824f2557e9f)
+    ![Sample Gallery](https://github.com/OfficeDev/TeamsFx/assets/11220663/87a705e2-aa79-46dc-87ba-204f20fd3771)
 
 - **Custom Search Results Template Optimization**: We've optimized the `Custom Search Results` project template to seamlessly integrate with Microsoft 365 Copilot. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and enroll in the Microsoft 365 Copilot [Early Access Program](https://aka.ms/PluginsEarlyAccess).
     ![Copilot Plugin](https://github.com/OfficeDev/TeamsFx/assets/11220663/7fba4a92-f912-4021-b048-9f72de1267d8)
 
 #### New Additions to the Sample App Gallery
 
-- **SSO Enabled Tab via APIM Proxy**: This addition showcases how to build a single-page web application with a single sign-on feature leveraging Azure API Management service as a proxy to perform on-behalf-of flow, eliminating the need for a dedicated backend.
+- **SSO Enabled Tab via APIM Proxy**: This sample app showcases how to build a single-page web application with a single sign-on feature leveraging Azure API Management service as a proxy to perform on-behalf-of flow, eliminating the need for a dedicated backend.
     ![APIM-Architecture](https://github.com/OfficeDev/TeamsFx-Samples/assets/63089166/a256f1ab-1b23-4264-9f0d-ed8ff45aea09)
 
-- **Contso Retail Dashboard**: This addition demonstrates how to build a dashboard for viewing different control layouts. It also shows you how to create a Microsoft Teams personal app with SharePoint Framework, hosting the solution also in Outlook.com and in the Microsoft 365 Portal as a Microsoft 365 app.
+- **Contoso Retail Dashboard**: This sample app demonstrates how to build a dashboard for viewing different control layouts. It also shows you how to create a Microsoft Teams personal app with SharePoint Framework, hosting the solution also in Outlook.com and in the Microsoft 365 Portal as a Microsoft 365 app.
     ![Contoso Retail Dashboard](https://github.com/OfficeDev/TeamsFx/assets/11220663/172af4c7-e5d0-4159-9b62-16aff271c4c5)
 
 #### Enhanced Sample App Contribution Process
@@ -57,7 +57,7 @@ In this beta release of Teams Toolkit CLI, we have implemented a number of usabi
 - Fixed an issue where Teams Toolkit CLI did not accept region choice in non-interactive mode when provisioning cloud resources to Azure. ([#9604](https://github.com/OfficeDev/TeamsFx/pull/9604))
 - Fixed an issue where the CodeLens `This file is auto-generated, click here to edit the manifest template file` in `aad.local.json` file was not responding properly. ([#9699](https://github.com/OfficeDev/TeamsFx/pull/9699))
 - Fixed an issue with build warnings in `TeamsFx` SDK. ([#9707](https://github.com/OfficeDev/TeamsFx/pull/9707))
-- Fxied an issue where the depency of `@microsoft/microsoft-graph-client` used in the `@microsoft/teamsfx` and `@microsoft/teamsfx-react` SDK were not updated to the latest version. ([#9720](https://github.com/OfficeDev/TeamsFx/pull/9720))
+- Fixed an issue where the depency of `@microsoft/microsoft-graph-client` used in the `@microsoft/teamsfx` and `@microsoft/teamsfx-react` SDK were not updated to the latest version. ([#9720](https://github.com/OfficeDev/TeamsFx/pull/9720))
 
 ### Aug 15, 2023
 

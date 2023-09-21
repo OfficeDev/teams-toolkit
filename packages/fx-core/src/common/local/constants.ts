@@ -104,17 +104,25 @@ export const TaskCommand = Object.freeze({
   migrate: "migrate",
 });
 
+export const TeamsFxNpmCommands = Object.freeze({
+  startApplication: "npm run dev:teamsfx",
+  startApplicationForTestTool: "npm run dev:teamsfx:testtool",
+  startTestTool: "npm run dev:teamsfx:launch-testtool",
+});
+
 export const TaskOverallLabel = Object.freeze({
   NextDefault: "Pre Debug Check & Start All",
   NextM365: "Pre Debug Check & Start All & Install App",
   NextSPFx: "prepare dev env",
   TransparentDefault: "Start Teams App Locally",
   TransparentM365: "Start Teams App Locally & Install App",
+  TestToolDefault: "Start Teams App (Test Tool)",
 });
 
 export const TaskLabel = Object.freeze({
   PrerequisiteCheck: "Validate & install prerequisites",
   PrerequisiteCheckV3: "Validate prerequisites",
+  PrerequisiteCheckV3TestTool: "Validate prerequisites (Test Tool)",
   InstallNpmPackages: "Install npm packages",
   StartLocalTunnel: "Start local tunnel",
   SetUpTab: "Set up tab",
@@ -124,6 +132,8 @@ export const TaskLabel = Object.freeze({
   InstallAzureFuncBindingExt: "Install Azure Functions binding extensions",
   StartServices: "Start services",
   StartApplication: "Start application", // V3
+  StartApplicationTestTool: "Start application for Test Tool", // V3
+  StartTestTool: "Start Test Tool", // V3
   StartFrontend: "Start frontend",
   StartBackend: "Start backend",
   WatchBackend: "Watch backend",
@@ -135,6 +145,7 @@ export const TaskLabel = Object.freeze({
   GulpServe: "gulp serve",
   Provision: "Provision", // V3
   Deploy: "Deploy", // V3
+  DeployTestTool: "Deploy (Test Tool)", // V3
 });
 
 export const TaskDefaultValue = Object.freeze({

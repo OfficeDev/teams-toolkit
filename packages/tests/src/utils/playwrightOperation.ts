@@ -82,6 +82,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.ChefBot]: async () => {
     await startDebugging();
   },
+  [TemplateProject.GraphConnectorBot]: async () => {
+    await startDebugging();
+  },
 };
 
 export async function initPage(

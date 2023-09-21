@@ -43,28 +43,30 @@ export function checkParameters(paramObject: OpenAPIV3.ParameterObject[]): Check
 
   for (let i = 0; i < paramObject.length; i++) {
     const param = paramObject[i];
+    const schema = param.schema as OpenAPIV3.SchemaObject;
+    const isRequiredWithoutDefault = param.required && schema.default === undefined;
+
     if (param.in === "header" || param.in === "cookie") {
-      if (param.required) {
+      if (isRequiredWithoutDefault) {
         paramResult.isValid = false;
       }
       continue;
     }
 
-    const schema = param.schema as OpenAPIV3.SchemaObject;
     if (
       schema.type !== "boolean" &&
       schema.type !== "string" &&
       schema.type !== "number" &&
       schema.type !== "integer"
     ) {
-      if (param.required) {
+      if (isRequiredWithoutDefault) {
         paramResult.isValid = false;
       }
       continue;
     }
 
     if (param.in === "query" || param.in === "path") {
-      if (param.required) {
+      if (isRequiredWithoutDefault) {
         paramResult.requiredNum = paramResult.requiredNum + 1;
       } else {
         paramResult.optionalNum = paramResult.optionalNum + 1;
@@ -89,13 +91,15 @@ export function checkPostBody(
     return paramResult;
   }
 
+  const isRequiredWithoutDefault = isRequired && schema.default === undefined;
+
   if (
     schema.type === "string" ||
     schema.type === "integer" ||
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    if (isRequired) {
+    if (isRequiredWithoutDefault) {
       paramResult.requiredNum = paramResult.requiredNum + 1;
     } else {
       paramResult.optionalNum = paramResult.optionalNum + 1;
@@ -113,7 +117,7 @@ export function checkPostBody(
       paramResult.isValid = paramResult.isValid && result.isValid;
     }
   } else {
-    if (isRequired) {
+    if (isRequiredWithoutDefault) {
       paramResult.isValid = false;
     }
   }

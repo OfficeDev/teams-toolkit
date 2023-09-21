@@ -93,7 +93,7 @@ describe("CLI commands", () => {
 
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -120,7 +120,7 @@ describe("CLI commands", () => {
       const res = await getCreateCommand().handler!(ctx);
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -147,7 +147,7 @@ describe("CLI commands", () => {
 
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -528,7 +528,11 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateAadAppCommand, fullName: "teamsfx" },
-        optionValues: { env: "local" },
+        optionValues: {
+          env: "local",
+          projectPath: "./",
+          "manifest-file-path": "./aad.manifest.json",
+        },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -555,7 +559,7 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-path": "fakePath" },
+        optionValues: { "manifest-path": "fakePath", projectPath: "./" },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},

@@ -28,6 +28,7 @@ export const PreviewTeamsAppOptions: CLICommandOption[] = [
     description:
       "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
     required: true,
+    default: "./appPackage/manifest.json",
   },
 ];
 export const PreviewTeamsAppArguments: CLICommandArgument[] = [];

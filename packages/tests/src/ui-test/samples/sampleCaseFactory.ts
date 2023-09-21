@@ -82,6 +82,12 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
       LocalDebugTaskResult.GulpServeSuccess
     );
   },
+  [LocalDebugTaskLabel.StartWebServer]: async () => {
+    await waitForTerminal(
+      LocalDebugTaskLabel.StartWebServer,
+      LocalDebugTaskResult.WebServerSuccess
+    );
+  },
 };
 
 export abstract class CaseFactory {

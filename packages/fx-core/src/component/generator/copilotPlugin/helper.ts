@@ -126,7 +126,8 @@ export async function listOperations(
   apiSpecUrl: string | undefined,
   teamsManifestPath: string | undefined,
   includeExistingAPIs = true,
-  shouldLogWarning = true
+  shouldLogWarning = true,
+  existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
   if (manifest) {
     const errors = validateOpenAIPluginManifest(manifest);
@@ -146,7 +147,9 @@ export async function listOperations(
       validationRes.warnings,
       context,
       true,
-      shouldLogWarning
+      shouldLogWarning,
+      false,
+      existingCorrelationId
     );
     if (validationRes.status === ValidationStatus.Error) {
       return err(validationRes.errors);
@@ -218,21 +221,26 @@ export function logValidationResults(
   context: Context,
   isApiSpec: boolean,
   shouldLogWarning: boolean,
-  shouldSkipTelemetry = false
+  shouldSkipTelemetry = false,
+  existingCorrelationId?: string
 ): void {
   if (!shouldSkipTelemetry) {
+    const properties: { [key: string]: string } = {
+      [telemetryProperties.validationStatus]:
+        errors.length !== 0 ? "error" : warnings.length !== 0 ? "warning" : "success",
+      [telemetryProperties.validationErrors]: errors
+        .map((error: ErrorResult) => formatTelemetryValidationProperty(error))
+        .join(";"),
+      [telemetryProperties.validationWarnings]: warnings
+        .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
+        .join(";"),
+    };
+    if (existingCorrelationId) {
+      properties["correlation-id"] = existingCorrelationId;
+    }
     context.telemetryReporter.sendTelemetryEvent(
       isApiSpec ? telemetryEvents.validateApiSpec : telemetryEvents.validateOpenAiPluginManifest,
-      {
-        [telemetryProperties.validationStatus]:
-          errors.length !== 0 ? "error" : warnings.length !== 0 ? "warning" : "success",
-        [telemetryProperties.validationErrors]: errors
-          .map((error: ErrorResult) => formatTelemetryValidationProperty(error))
-          .join(";"),
-        [telemetryProperties.validationWarnings]: warnings
-          .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
-          .join(";"),
-      }
+      properties
     );
   }
 

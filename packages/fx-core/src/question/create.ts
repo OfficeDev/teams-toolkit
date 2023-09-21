@@ -1318,6 +1318,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
 export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
+  const correlationId = Correlator.getId(); // This is workaround for VSCode which will loose correlation id when user accepts the value.
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs
@@ -1330,7 +1331,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         input.trim(),
         inputs![QuestionNames.ManifestPath],
         includeExistingAPIs,
-        false
+        false,
+        inputs?.platform === Platform.VSCode ? correlationId : undefined
       );
       if (res.isOk()) {
         inputs!.supportedApisFromApiSpec = res.value;
@@ -1404,8 +1406,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
 
 export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
-  const correlationId = Correlator.getId();
-  console.log("cid: " + correlationId);
+  const correlationId = Correlator.getId(); // This is workaround for VSCode which will loose correlation id when user accepts the value.
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginDomain,
@@ -1440,15 +1441,14 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
 
         const context = createContextV3();
         try {
-          console.log("cid in additonal: " + correlationId);
-          console.log("cid in additonal get id: " + Correlator.getId());
           const res = await listOperations(
             context,
             manifest,
             inputs![QuestionNames.ApiSpecLocation],
             undefined,
             true,
-            true
+            true,
+            inputs?.platform === Platform.VSCode ? correlationId : undefined
           );
           if (res.isOk()) {
             inputs!.supportedApisFromApiSpec = res.value;

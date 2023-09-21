@@ -14,6 +14,7 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  # Generate runtime environment variables
   - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./env/.env.local

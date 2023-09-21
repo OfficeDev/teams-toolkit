@@ -30,7 +30,7 @@ Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check
 | `teamsfx publish`   | Publish the app to Teams.             |
 | `teamsfx preview`   | Preview the current application. |
 | `teamsfx config`    | Manage the configuration data. |
-| `teamsfx permission`| Collaborate with other developers in same project.|
+| `teamsapp collaborator`| Collaborate with other developers in same project.|
 
 ## `teamsfx new`
 
@@ -313,57 +313,57 @@ teamsfx config get --env dev
 teamsfx config set fx-resource-aad-app-for-teams.clientSecret xxx --env dev
 ```
 
-## `teamsfx permission`
+## `teamsapp collaborator`
 
-TeamsFx CLI provides `teamsFx permission` Commands for collaboration scenario.
+TeamsFx CLI provides `teamsapp collaborator` Commands for collaboration scenario.
 
-| `teamsFx permission` Commands | Descriptions |
+| `teamsapp collaborator` Commands | Descriptions |
 |:------------------------------|-------------|
-| `teamsfx permission grant --env --email` | Grant permission for collaborator's Microsoft 365 account for the project of a specified environment. |
-| `teamsfx permission status` | Show permission status for the project |
+| `teamsapp collaborator grant --env --email` | Grant permission for collaborator's Microsoft 365 account for the project of a specified environment. |
+| `teamsapp collaborator status` | Show permission status for the project |
 
-### Parameters for `teamsfx permission grant`
+### Parameters for `teamsapp collaborator grant`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
 |`--env`| Yes | Provide env name. |
 |`--email`| Yes | Provide collaborator's Microsoft 365 email address. Note that the collaborator's account should be in the same tenant with creator. |
 
-### Parameters for `teamsfx permission status`
+### Parameters for `teamsapp collaborator status`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
 |`--env`| Yes | Provide env name. |
 |`--list-all-collaborators` | No | With this flag, Teams Toolkit CLI will print out all collaborators for this project. |
 
-### Scenarios for `teamsfx permission`
+### Scenarios for `teamsapp collaborator`
 
 Here are some examples, for better handling permission for `TeamsFx` projects.
 
 #### Grant Permission
 
-Project creator and collaborators can use `teamsfx permission grant` command to add a new collaborator to the project:
+Project creator and collaborators can use `teamsapp collaborator grant` command to add a new collaborator to the project:
 
 ```bash
-teamsfx permission grant --env dev --email user-email@user-tenant.com
+teamsapp collaborator grant --env dev --email user-email@user-tenant.com
 ```
 
 After successfully granted permission, project creator and collaborators can share the project with the new collaborator by Github, and the new collaborator will have all permission for Microsoft 365 account.
 
 #### Show Permission Status
 
-Project creator and collaborators can use `teamsfx permission status` command to view his Microsoft 365 account permission for specific env:
+Project creator and collaborators can use `teamsapp collaborator status` command to view his Microsoft 365 account permission for specific env:
 
 ```bash
-teamsfx permission status --env dev
+teamsapp collaborator status --env dev
 ```
 
 #### List All Collaborators
 
-Project creator and collaborators can use `teamsfx permission status` command to view all collaborators for specific env:
+Project creator and collaborators can use `teamsapp collaborator status` command to view all collaborators for specific env:
 
 ```bash
-teamsfx permission status --env dev --list-all-collaborators
+teamsapp collaborator status --env dev --list-all-collaborators
 ```
 
 #### E2E Collaboration work flow in CLI
@@ -392,14 +392,14 @@ As a project creator:
 - View collaborators. You should see yourself here.
 
   ```bash
-  teamsfx permission status --env dev --list-all-collaborators
+  teamsapp collaborator status --env dev --list-all-collaborators
   ```
 
   ![list-all-collaborators](./images/permission-status-all.png)
 - Add another account as collaborator. Note that the added account must under the same tenant:
 
   ```bash
-  teamsfx permission grant --env dev --email user-email@user-tenant.com
+  teamsapp collaborator grant --env dev --email user-email@user-tenant.com
   ```
 
   ![add-new-collaborator](./images/permission-grant.png)
@@ -423,7 +423,7 @@ As a Project Collaborator:
 - Check permission status. You should find yourself have the owner permission of the project:
 
   ```bash
-  teamsfx permission status --env dev
+  teamsapp collaborator status --env dev
   ```
 
   ![permission status](./images/permission-status.png)

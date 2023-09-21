@@ -2,11 +2,13 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import sinon from "ts-sinon";
 import VsCodeLogInstance from "../../../src/commonlib/log";
+import * as globalVariables from "../../../src/globalVariables";
 import { _resetCollections, loadLocalizedStrings } from "../../../src/utils/localizeUtils";
 
 describe("localizeUtils", () => {
   describe("loadLocalizedStrings", () => {
     afterEach(() => {
+      _resetCollections();
       sinon.restore();
     });
 
@@ -18,6 +20,7 @@ describe("localizeUtils", () => {
         return true;
       });
       sinon.stub(fs, "readJsonSync").returns({});
+      sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       const vscodeLogStub = sinon.stub(VsCodeLogInstance, "error");
       _resetCollections();
 

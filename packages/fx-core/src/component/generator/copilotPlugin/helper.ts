@@ -243,7 +243,6 @@ export function logValidationResults(
         .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
         .join(";"),
     };
-    console.log(existingCorrelationId);
     if (existingCorrelationId) {
       properties["correlation-id"] = existingCorrelationId;
     }

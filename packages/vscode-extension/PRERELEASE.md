@@ -10,7 +10,7 @@
     ![Sample Gallery](https://github.com/OfficeDev/TeamsFx/assets/11220663/0b5636da-aa21-4624-82c1-2824f2557e9f)
 
 - **Custom Search Results Template Optimization**: We've optimized the `Custom Search Results` project template to seamlessly integrate with Microsoft 365 Copilot. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and enroll in the Microsoft 365 Copilot [Early Access Program](https://aka.ms/PluginsEarlyAccess).
-    ![Copilot Plugin](https://github.com/OfficeDev/TeamsFx/assets/11220663/67c22709-4c70-4d17-b9a3-9e1629ceded1)
+    ![Copilot Plugin](https://github.com/OfficeDev/TeamsFx/assets/11220663/7fba4a92-f912-4021-b048-9f72de1267d8)
 
 #### New Additions to the Sample App Gallery
 

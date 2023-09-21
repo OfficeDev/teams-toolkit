@@ -41,11 +41,16 @@ on:
         required: false
         type: string
 
-      target-testplan-id:
-        description: "target testplan id: 24569079. If not set, will not archive ado testplan"
+      source-testplan-id:
+        description: "source testplan id: 24569079."
         required: false
         type: string
+        default: "24569079"
 
+      target-testplan-name:
+          description: "For example: CY230919. Sync test result to this test plan."
+          required: false
+          type: string
   schedule:
     - cron: "0 18 * * *"
 
@@ -54,7 +59,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ADO_TOKEN: ${{ secrets.ADO_PAT }}
-      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
+      TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
 
     steps:
       - name: Init GitHub CLI
@@ -141,15 +147,15 @@ jobs:
             ./${{ steps.ttk.outputs.package }}
 
       - name: Archive Test Plan
-        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         working-directory: ./packages/tests
         run: |
           pnpm install
-          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
-        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         uses: actions/upload-artifact@v3
         with:
           name: testplan

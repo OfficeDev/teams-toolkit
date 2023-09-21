@@ -34,7 +34,13 @@ provision:
       "applicationUrl": "\"https://localhost:7130;http://localhost:5130\"",
       "launchUrl": "\"https://teams.microsoft.com?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}\"",
       "hotReload": true
-    }    
+    },
+    {
+      "profileName": "Outlook (browser):",
+      "applicationUrl": "\"https://localhost:7130;http://localhost:5130\"",
+      "launchUrl": "\"https://outlook.office.com/mail?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}\"",
+      "hotReload": true
+    }
   ]  
 } 
 {{/fileCreateOrUpdateJsonFile}}

@@ -14,6 +14,12 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./env/.env.local
+      envs:
+        OPENAPI_SERVER_URL: https://${{DEV_TUNNEL_URL}}
+
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:

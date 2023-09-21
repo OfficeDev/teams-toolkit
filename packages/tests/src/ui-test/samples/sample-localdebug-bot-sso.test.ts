@@ -5,10 +5,7 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import {
-  TemplateProject,
-  LocalDebugTaskLabel,
-} from "../../utils/constants";
+import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
 class BotSSOTestCase extends CaseFactory {}

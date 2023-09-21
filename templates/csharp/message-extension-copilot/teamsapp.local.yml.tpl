@@ -106,3 +106,12 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
+          Outlook (browser):
+            commandName: "Project"
+            dotnetRunMessages: true
+            launchBrowser: true
+            launchUrl: "https://outlook.office.com/mail?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+            applicationUrl: "https://localhost:7130;http://localhost:5130"
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+            hotReloadProfile: "aspnetcore"

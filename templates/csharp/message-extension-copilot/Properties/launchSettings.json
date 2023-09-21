@@ -23,6 +23,18 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "hotReloadProfile": "aspnetcore"
+    },
+    // Debug project within Outlook
+    "Outlook (browser)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "https://outlook.office.com/mail?appTenantId=11756892-e000-4b66-85ca-04842059824f&login_hint=huimiao@07yyn.onmicrosoft.com",
+      "applicationUrl": "https://localhost:7130;http://localhost:5130",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "hotReloadProfile": "aspnetcore"
     }
     //// Uncomment following profile to debug project only (without launching Teams)
     //,

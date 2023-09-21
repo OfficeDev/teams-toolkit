@@ -29,6 +29,9 @@ importers:
       lerna:
         specifier: ^6.6.2
         version: 6.6.2
+      pnpm:
+        specifier: ^8.6.12
+        version: 8.6.12
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -21723,6 +21726,12 @@ packages:
     resolution: {integrity: sha512-gQR3WpIgNIKwBMVLkpMUeR3e1/E1y42bqDQZfql+kDeXd8COYfM8PQA4X6y7a8u9Ua9FHmsrrmirW2vHs45hWg==}
     dependencies:
       semver-compare: 1.0.0
+    dev: true
+
+  /pnpm@8.6.12:
+    resolution: {integrity: sha512-Eza4C5SO/Xl5IYozupbZ5NOA5leBRPYxmXmXfe7G4/4uCkRLhks84rB33aitxNZU/uMrnDGGjwrLktoKvPjqHA==}
+    engines: {node: '>=16.14'}
+    hasBin: true
     dev: true
 
   /posix-character-classes@0.1.1:

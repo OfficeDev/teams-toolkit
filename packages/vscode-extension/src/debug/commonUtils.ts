@@ -32,6 +32,14 @@ export async function getNpmInstallLogInfo(): Promise<any> {
   return await localEnvManager.getNpmInstallLogInfo();
 }
 
+export async function getTestToolLogInfo(): Promise<string | undefined> {
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  if (!globalVariables.workspaceUri?.fsPath) {
+    return undefined;
+  }
+  return await localEnvManager.getTestToolLogInfo(globalVariables.workspaceUri?.fsPath);
+}
+
 export class LocalDebugSession {
   static createSession() {
     const session = new LocalDebugSession(uuid.v4());

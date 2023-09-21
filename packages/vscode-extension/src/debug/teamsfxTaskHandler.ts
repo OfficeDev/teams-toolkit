@@ -31,6 +31,7 @@ import {
   getLocalDebugSession,
   getLocalDebugSessionId,
   getNpmInstallLogInfo,
+  getTestToolLogInfo,
 } from "./commonUtils";
 import {
   errorDetail,
@@ -277,6 +278,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           {
             [TelemetryProperty.DebugTestTool]: "true",
             [TelemetryProperty.DebugServiceExitCode]: String(event.exitCode),
+            [TelemetryProperty.DebugTestToolLog]: (await getTestToolLogInfo()) || "<undefined>",
           }
         );
         endLocalDebugSession();

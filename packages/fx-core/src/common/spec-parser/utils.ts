@@ -44,9 +44,10 @@ export function checkParameters(paramObject: OpenAPIV3.ParameterObject[]): Check
   for (let i = 0; i < paramObject.length; i++) {
     const param = paramObject[i];
     const schema = param.schema as OpenAPIV3.SchemaObject;
+    const isRequiredWithoutDefault = param.required && schema.default === undefined;
 
     if (param.in === "header" || param.in === "cookie") {
-      if (isRequiredDefaultParam(param, schema)) {
+      if (isRequiredWithoutDefault) {
         paramResult.isValid = false;
       }
       continue;
@@ -58,14 +59,14 @@ export function checkParameters(paramObject: OpenAPIV3.ParameterObject[]): Check
       schema.type !== "number" &&
       schema.type !== "integer"
     ) {
-      if (isRequiredDefaultParam(param, schema)) {
+      if (isRequiredWithoutDefault) {
         paramResult.isValid = false;
       }
       continue;
     }
 
     if (param.in === "query" || param.in === "path") {
-      if (isRequiredDefaultParam(param, schema)) {
+      if (isRequiredWithoutDefault) {
         paramResult.requiredNum = paramResult.requiredNum + 1;
       } else {
         paramResult.optionalNum = paramResult.optionalNum + 1;
@@ -74,13 +75,6 @@ export function checkParameters(paramObject: OpenAPIV3.ParameterObject[]): Check
   }
 
   return paramResult;
-}
-
-export function isRequiredDefaultParam(
-  param: OpenAPIV3.ParameterObject,
-  schema: OpenAPIV3.SchemaObject
-): boolean | undefined {
-  return param.required && schema.default === undefined;
 }
 
 export function checkPostBody(
@@ -97,13 +91,15 @@ export function checkPostBody(
     return paramResult;
   }
 
+  const isRequiredWithoutDefault = isRequired && schema.default === undefined;
+
   if (
     schema.type === "string" ||
     schema.type === "integer" ||
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    if (isRequired && schema.default === undefined) {
+    if (isRequiredWithoutDefault) {
       paramResult.requiredNum = paramResult.requiredNum + 1;
     } else {
       paramResult.optionalNum = paramResult.optionalNum + 1;
@@ -121,7 +117,7 @@ export function checkPostBody(
       paramResult.isValid = paramResult.isValid && result.isValid;
     }
   } else {
-    if (isRequired && schema.default === undefined) {
+    if (isRequiredWithoutDefault) {
       paramResult.isValid = false;
     }
   }

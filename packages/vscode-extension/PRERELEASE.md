@@ -17,7 +17,7 @@
 - **SSO Enabled Tab via APIM Proxy**: This sample app showcases how to build a single-page web application with a single sign-on feature leveraging Azure API Management service as a proxy to perform on-behalf-of flow, eliminating the need for a dedicated backend.
     ![APIM-Architecture](https://github.com/OfficeDev/TeamsFx-Samples/assets/63089166/a256f1ab-1b23-4264-9f0d-ed8ff45aea09)
 
-- **Contoso Retail Dashboard**: This sample app demonstrates how to build a dashboard for viewing different control layouts. It also shows you how to create a Microsoft Teams personal app with SharePoint Framework, hosting the solution also in Outlook.com and in the Microsoft 365 Portal as a Microsoft 365 app.
+- **Contoso Retail Dashboard**: This sample app demonstrates how to build a dashboard for viewing different control layouts. It shows you how to create a Microsoft Teams personal app with SharePoint Framework, available in Teams, Outlook and the Microsoft 365 app.
     ![Contoso Retail Dashboard](https://github.com/OfficeDev/TeamsFx/assets/11220663/172af4c7-e5d0-4159-9b62-16aff271c4c5)
 
 #### Enhanced Sample App Contribution Process

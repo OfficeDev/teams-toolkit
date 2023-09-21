@@ -37,7 +37,8 @@
   ],
   "preferGlobal": true,
   "bin": {
-    "teamsfx": "./cliold.js"
+    "teamsfx": "./cliold.js",
+    "teamsapp": "./cli.js"
   },
   "aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
   "devDependencies": {

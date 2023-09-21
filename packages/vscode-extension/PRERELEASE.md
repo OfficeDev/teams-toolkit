@@ -17,12 +17,12 @@
 - **SSO Enabled Tab via APIM Proxy**: This addition showcases how to build a single-page web application with a single sign-on feature leveraging Azure API Management service as a proxy to perform on-behalf-of flow, eliminating the need for a dedicated backend.
     ![APIM-Architecture](https://github.com/OfficeDev/TeamsFx-Samples/assets/63089166/a256f1ab-1b23-4264-9f0d-ed8ff45aea09)
 
-- **Large Scale Notification Bot**: This addition demonstrates the architecture of a Teams notification bot app created by Teams Toolkit. It enables sending individual chat messages to a large number of users in a tenant and relies on Azure services such as [Durable Function](https://learn.microsoft.com/azure/azure-functions/durable/durable-functions-overview?tabs=csharp-inproc) and [Service Bus Queue](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-queues-topics-subscriptions#queues) to handle high-volume and high-speed notification messaging.
-    ![Large Notification App](https://github.com/OfficeDev/TeamsFx/assets/11220663/d5ccbcd4-2a2a-4f2b-b6cb-e1e6b2e4bfef)
+- **Contso Retail Dashboard**: This addition demonstrates how to build a dashboard for viewing different control layouts. It also shows you how to create a Microsoft Teams personal app with SharePoint Framework, hosting the solution also in Outlook.com and in the Microsoft 365 Portal as a Microsoft 365 app.
+    ![Contoso Retail Dashboard](https://github.com/OfficeDev/TeamsFx/assets/11220663/172af4c7-e5d0-4159-9b62-16aff271c4c5)
 
 #### Enhanced Sample App Contribution Process
 
-In addition to these two new sample projects, we have simplified the process for the community to contribute samples by updating a configuration file. You can now submit your sample app to the gallery by following the [Teams Toolkit Sample App Contribution Guidelines](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/CONTRIBUTING.md). We are excited to see more sample apps from the community! 🥳 
+In addition to these two new sample projects, we have simplified the process for the community to contribute samples by updating a configuration file. You can now submit your sample app to the gallery by following the [Teams Toolkit Sample App Contribution Guidelines](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/CONTRIBUTING.md). We are excited to see more sample apps from the community! 🥳
     ![Sample Contribution Process](https://github.com/OfficeDev/TeamsFx/assets/11220663/9babc3b6-f89f-489a-9988-4ef9cc315e75)
 
 #### Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.3@beta`
@@ -43,6 +43,21 @@ In this beta release of Teams Toolkit CLI, we have implemented a number of usabi
 - **Improved Compatibility**: Color issues for terminals with light-colored backgrounds have been fixed, and suggestions for misspelled commands have been added.
 
 - **Global Config Commands Removal**: The global config commands, `teamsfx config set` and `teamsfx config get` have been removed and are now incorporated into global options.
+
+- **Upload custom applications across Microsoft 365**: We've added the ability to upload custom applications across Microsoft 365, including Teams, Outlook, and the Microsoft 365 app via `teamsfx m365` commands.
+
+#### TeamsFx SDK for .NET ([`Microsoft.TeamsFx`](https://www.nuget.org/packages/Microsoft.TeamsFx)) `v2.2.0`
+
+- Deprecated `MsGraphAuthProviders` with `GraphServiceClient` since token credentials are natively supported in [Microsoft Graph SDK for .NET](https://github.com/microsoftgraph/msgraph-sdk-dotnet/blob/c3baee460e0420f93b151548a07754310447e448/src/Microsoft.Graph/GraphServiceClient.cs#L47).
+- Added `validationEnabled` param to `getPagedInstallationAsync` API for better performance to support the use case of sending notifications in large scale tenants.
+
+#### Bug Fixes
+
+- Fixed an issue where Teams Toolkit CLI always creates new project folder in a different directory than the current one. ([#9586](https://github.com/OfficeDev/TeamsFx/pull/9586))
+- Fixed an issue where Teams Toolkit CLI did not accept region choice in non-interactive mode when provisioning cloud resources to Azure. ([#9604](https://github.com/OfficeDev/TeamsFx/pull/9604))
+- Fixed an issue where the CodeLens `This file is auto-generated, click here to edit the manifest template file` in `aad.local.json` file was not responding properly. ([#9699](https://github.com/OfficeDev/TeamsFx/pull/9699))
+- Fixed an issue with build warnings in `TeamsFx` SDK. ([#9707](https://github.com/OfficeDev/TeamsFx/pull/9707))
+- Fxied an issue where the depency of `@microsoft/microsoft-graph-client` used in the `@microsoft/teamsfx` and `@microsoft/teamsfx-react` SDK were not updated to the latest version. ([#9720](https://github.com/OfficeDev/TeamsFx/pull/9720))
 
 ### Aug 15, 2023
 

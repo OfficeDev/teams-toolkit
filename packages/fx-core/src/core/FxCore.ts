@@ -3,7 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
@@ -77,6 +77,9 @@ import {
   listOperations,
   OpenAIPluginManifestHelper,
   generateScaffoldingSummary,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
@@ -107,7 +110,7 @@ import {
   getTrackingIdFromPath,
   getVersionState,
 } from "./middleware/utils/v3MigrationUtils";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
 
@@ -1093,7 +1096,7 @@ export class FxCore {
     ConcurrentLockerMW,
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    let operations = inputs[QuestionNames.ApiOperation] as string[];
+    const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
 
@@ -1109,16 +1112,23 @@ export class FxCore {
     const specParser = new SpecParser(url);
     const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
     const operationMaps = await specParser.listOperationMap();
-    const existingOperations = existingOperationIds.map((key) =>
-      operationMaps.get(key)
-    ) as string[];
-    operations = operations.concat(existingOperations);
+
+    const existingOperations: string[] = [];
+    for (const id of existingOperationIds) {
+      if (operationMaps.get(id)) {
+        existingOperations.push(operationMaps.get(id)!);
+      }
+    }
+
+    const operations = [...existingOperations, ...newOperations];
 
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
-      AdaptiveFolderName
+      ResponseTemplatesFolderName
     );
+
+    const context = createContextV3();
 
     try {
       const generateResult = await specParser.generate(
@@ -1127,13 +1137,22 @@ export class FxCore {
         outputAPISpecPath,
         adaptiveCardFolder
       );
+
+      // Send SpecParser.generate() warnings
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      });
+
       if (generateResult.warnings && generateResult.warnings.length > 0) {
         const warnSummary = generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
           inputs.projectPath!
         );
-        const context = createContextV3();
         context.logProvider.info(warnSummary);
       }
     } catch (e) {
@@ -1148,12 +1167,13 @@ export class FxCore {
 
     const message = getLocalizedString(
       "core.copilot.addAPI.success",
-      operations,
+      newOperations,
       inputs.projectPath
     );
-    await TOOLS.ui.showMessage("info", message, false);
+    void context.userInteraction.showMessage("info", message, false);
     return ok(undefined);
   }
+
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginLoadOpenAIManifest" }),
     ErrorHandlerMW,

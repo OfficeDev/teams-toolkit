@@ -2,6 +2,7 @@ const { MemoryStorage } = require("botbuilder");
 const path = require("path");
 const config = require("./config");
 
+// See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
 const {
   Application,
   DefaultPromptManager,

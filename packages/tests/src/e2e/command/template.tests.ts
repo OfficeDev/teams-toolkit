@@ -20,7 +20,7 @@ describe("teamsfx new template", function () {
     `${sampleName}`,
     { testPlanCaseId: 24137474, author: "zhiyou@microsoft.com" },
     async function () {
-      await execAsync(`teamsfx new template ${sampleName}`, {
+      await execAsync(`teamsfx new sample ${sampleName} -i false`, {
         cwd: testFolder,
         env: process.env,
         timeout: 0,

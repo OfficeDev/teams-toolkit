@@ -93,7 +93,7 @@ describe("CLI commands", () => {
 
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -120,7 +120,7 @@ describe("CLI commands", () => {
       const res = await getCreateCommand().handler!(ctx);
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -147,7 +147,7 @@ describe("CLI commands", () => {
 
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -342,16 +342,15 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("isWorkspaceSupported: false", async () => {
-      sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
       sandbox.stub(utils, "isWorkspaceSupported").returns(false);
       const ctx: CLIContext = {
-        command: { ...envAddCommand, fullName: "teamsfx" },
+        command: { ...envListCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await envAddCommand.handler!(ctx);
+      const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isErr());
     });
     it("listEnv error", async () => {
@@ -529,7 +528,11 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateAadAppCommand, fullName: "teamsfx" },
-        optionValues: { env: "local" },
+        optionValues: {
+          env: "local",
+          projectPath: "./",
+          "manifest-file-path": "./aad.manifest.json",
+        },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -556,7 +559,7 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-path": "fakePath" },
+        optionValues: { "manifest-path": "fakePath", projectPath: "./" },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -789,11 +792,6 @@ describe("CLI read-only commands", () => {
       };
       const res = await accountShowCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(
-        messages.includes(
-          "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
-        )
-      );
     });
     it("both signedIn and checkIsOnline = true", async () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));

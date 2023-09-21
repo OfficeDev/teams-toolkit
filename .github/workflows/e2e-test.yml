@@ -11,9 +11,10 @@ on:
         description: "target testplan id: 24569079. If not set, will not archive ado testplan"
         required: false
         type: string
+        default: '24569079'
 
-      target-version:
-        description: "target TTK version. Sample: 5.0.2-alpha.2fdf2b99b.0, 5.0.2-rc.0"
+      target-testplan-name:
+        description: "For example: CY230919. Sync test result to this test plan."
         required: false
         type: string
 
@@ -40,7 +41,7 @@ jobs:
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
-      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-name }}
       ADO_TOKEN: ${{ secrets.ADO_PAT }}
     steps:
       - name: Checkout
@@ -86,15 +87,15 @@ jobs:
           npm run test:e2e:clean
 
       - name: Archive Test Plan
-        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         working-directory: ./packages/tests
         run: |
-          npm install
-          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-version }}`
+          pnpm install
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
   
       - name: Upload testplan to artifact
-        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         uses: actions/upload-artifact@v3
         with:
           name: testplan
@@ -245,14 +246,14 @@ jobs:
             ./packages/tests/src/e2e/mochawesome-report/mochawesome.json
       
       - name: Download TestPlan
-        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
+        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         uses: actions/download-artifact@v3
         with:
           name: testplan
           path: ./packages/tests
 
       - name: Sync to Azure DevOps Test Plan
-        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
+        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         working-directory: packages/tests
         run: |
           npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
@@ -441,19 +442,12 @@ jobs:
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
           
-      - name: Send E-mail
-        run: |
-          response=$(curl \
-            --request POST \
-            --header "Content-Type: application/x-www-form-urlencoded" \
-            --data "grant_type=client_credentials&client_id=${{ secrets.TEST_CLEAN_CLIENT_ID }}&client_secret=${{ secrets.TEST_CLEAN_CLIENT_SECRET }}&resource=https://management.core.windows.net" \
-            "https://login.microsoftonline.com/${{ secrets.TEST_CLEAN_TENANT_ID }}/oauth2/token")
-
-          access_token=`echo $response | jq -r '. | select(.access_token) | .access_token'`
-
-          curl \
-            --request POST \
-            --header "Content-Type: application/json" \
-            --header "Authorization: Bearer $access_token" \
-            --data '{"to": "${{ steps.list-jobs.outputs.to }}", "body": "${{ steps.list-jobs.outputs.body }}", "subject": "${{ steps.list-jobs.outputs.subject }}"}' \
-            'https://prod-18.northcentralus.logic.azure.com:443/workflows/b33d7861bfc64832a6f62cc8f2213988/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0'
+      - name: Send E-mail to the whole team
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.list-jobs.outputs.to }}
+          BODY: '"${{ steps.list-jobs.outputs.body }}"'
+          SUBJECT: ${{ steps.list-jobs.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

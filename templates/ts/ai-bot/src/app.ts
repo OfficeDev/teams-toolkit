@@ -1,6 +1,7 @@
 import { MemoryStorage } from "botbuilder";
 import * as path from "path";
 
+// See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
 import {
   Application,
   AzureOpenAIPlanner,

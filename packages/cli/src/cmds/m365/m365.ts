@@ -30,7 +30,7 @@ export async function getTokenAndUpn(): Promise<[string, string]> {
   if (tokenRes.isErr()) {
     CLILogProvider.necessaryLog(
       LogLevel.Error,
-      `Cannot get token. Use 'teamsfx account login m365' to log in the correct account.`
+      `Cannot get token. Use '${process.env.TEAMSFX_CLI_BIN_NAME} account login m365' to log in the correct account.`
     );
     throw tokenRes.error;
   } else {
@@ -46,7 +46,7 @@ export async function getTokenAndUpn(): Promise<[string, string]> {
         throw accountRes.error;
       }
     } catch (error) {
-      await CLILogProvider.debug(`Failed to get upn. Error: ${JSON.stringify(error)}`);
+      CLILogProvider.debug(`Failed to get upn. Error: ${JSON.stringify(error)}`);
     }
     if (upn !== undefined) {
       CLILogProvider.necessaryLog(LogLevel.Info, `Using account ${upn}`);
@@ -70,7 +70,7 @@ class M365Sideloading extends YargsCommand {
         type: "string",
       })
       .example(
-        "teamsfx m365 sideloading --file-path appPackage.zip",
+        `${process.env.TEAMSFX_CLI_BIN_NAME} m365 sideloading --file-path appPackage.zip`,
         "Sideloading the m365 app package"
       );
     return yargs.version(false);
@@ -108,11 +108,11 @@ class M365Unacquire extends YargsCommand {
         type: "string",
       })
       .example(
-        "teamsfx m365 unacquire --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        `${process.env.TEAMSFX_CLI_BIN_NAME} m365 unacquire --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
         "Remove the acquired M365 App by Title ID"
       )
       .example(
-        "teamsfx m365 unacquire --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        `${process.env.TEAMSFX_CLI_BIN_NAME} m365 unacquire --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
         "Remove the acquired M365 App by Manifest ID"
       );
     return yargs.version(false);
@@ -164,11 +164,11 @@ class M365LaunchInfo extends YargsCommand {
         type: "string",
       })
       .example(
-        "teamsfx m365 launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
         "Get launch information of the acquired M365 App by Title ID"
       )
       .example(
-        "teamsfx m365 launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
         "Get launch information of the acquired M365 App by Manifest ID"
       );
     return yargs.version(false);

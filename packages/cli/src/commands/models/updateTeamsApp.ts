@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, InputsWithProjectPath, ok, err, Result } from "@microsoft/teamsfx-api";
-import { SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
+import { CLICommand, Result, err, ok } from "@microsoft/teamsfx-api";
+import { SelectTeamsManifestInputs, SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
+import { MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
-import { MissingRequiredOptionError } from "../../error";
+import * as path from "path";
 
 export const updateTeamsAppCommand: CLICommand = {
   name: "teams-app",
@@ -16,9 +17,13 @@ export const updateTeamsAppCommand: CLICommand = {
   },
   defaultInteractiveOption: false,
   handler: async (ctx) => {
-    const inputs = ctx.optionValues as InputsWithProjectPath;
-
-    const validateInputsRes = validateInputs(inputs);
+    const inputs = ctx.optionValues as SelectTeamsManifestInputs;
+    if (inputs["manifest-path"]) {
+      if (!path.isAbsolute(inputs["manifest-path"])) {
+        inputs["manifest-path"] = path.join(inputs.projectPath!, inputs["manifest-path"]);
+      }
+    }
+    const validateInputsRes = validateInputs(ctx.command.fullName, inputs);
     if (validateInputsRes.isErr()) {
       return err(validateInputsRes.error);
     }
@@ -30,12 +35,11 @@ export const updateTeamsAppCommand: CLICommand = {
 };
 
 function validateInputs(
-  inputs: InputsWithProjectPath
+  fullName: string,
+  inputs: SelectTeamsManifestInputs
 ): Result<undefined, MissingRequiredOptionError> {
   if (inputs["manifest-path"] && !inputs.env) {
-    return err(
-      new MissingRequiredOptionError(`teamsfx update ${updateTeamsAppCommand.name}`, "--env")
-    );
+    return err(new MissingRequiredOptionError(fullName, "--env"));
   }
   return ok(undefined);
 }

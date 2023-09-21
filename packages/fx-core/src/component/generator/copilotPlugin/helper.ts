@@ -21,6 +21,7 @@ import {
   AppPackageFolderName,
   ManifestUtil,
   IComposeExtension,
+  IMessagingExtensionCommand,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
@@ -78,8 +79,11 @@ export interface ErrorResult {
 
 export class OpenAIPluginManifestHelper {
   static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
-    let path =
-      (input.endsWith("/") ? input.substring(0, input.length - 1) : input) + manifestFilePath;
+    input = input.trim();
+    let path = input.endsWith("/") ? input.substring(0, input.length - 1) : input;
+    if (!input.toLowerCase().endsWith(manifestFilePath)) {
+      path = path + manifestFilePath;
+    }
     if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
       path = "https://" + path;
     }
@@ -313,16 +317,24 @@ export function generateScaffoldingSummary(
   teamsManifest: TeamsAppManifest,
   projectPath: string
 ): string {
-  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(warnings);
+  const apiSpecFileName =
+    teamsManifest.composeExtensions?.length &&
+    teamsManifest.composeExtensions[0].apiSpecificationFile
+      ? teamsManifest.composeExtensions[0].apiSpecificationFile
+      : "";
+  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(
+    warnings,
+    path.join(AppPackageFolderName, apiSpecFileName)
+  );
   const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath, warnings);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
 
-  if (apiSpecWarningMessage || manifestWarningMessage.length) {
+  if (apiSpecWarningMessage.length || manifestWarningMessage.length) {
     let details = "";
-    if (apiSpecWarningMessage) {
-      details += EOL + apiSpecWarningMessage;
+    if (apiSpecWarningMessage.length) {
+      details += EOL + apiSpecWarningMessage.join(EOL);
     }
 
     if (manifestWarningMessage.length) {
@@ -335,19 +347,36 @@ export function generateScaffoldingSummary(
   }
 }
 
-function formatApiSpecValidationWarningMessage(specWarnings: Warning[]): string {
-  const apiSpecWarning =
-    specWarnings.length > 0 && specWarnings[0].type === WarningType.OperationIdMissing
-      ? `${SummaryConstant.NotExecuted} ${specWarnings[0].content}`
-      : "";
+function formatApiSpecValidationWarningMessage(
+  specWarnings: Warning[],
+  apiSpecFileName: string
+): string[] {
+  const resultWarnings = [];
+  const operationIdWarning = specWarnings.find((w) => w.type === WarningType.OperationIdMissing);
 
-  return apiSpecWarning
-    ? getLocalizedString(
+  if (operationIdWarning) {
+    resultWarnings.push(
+      getLocalizedString(
         "core.copilotPlugin.scaffold.summary.warning.operationId",
-        apiSpecWarning,
+        `${SummaryConstant.NotExecuted} ${operationIdWarning.content}`,
         ManifestTemplateFileName
       )
-    : "";
+    );
+  }
+
+  const swaggerWarning = specWarnings.find((w) => w.type === WarningType.ConvertSwaggerToOpenAPI);
+
+  if (swaggerWarning) {
+    resultWarnings.push(
+      `${SummaryConstant.NotExecuted} ` +
+        getLocalizedString(
+          "core.copilotPlugin.scaffold.summary.warning.swaggerVersion",
+          apiSpecFileName
+        )
+    );
+  }
+
+  return resultWarnings;
 }
 
 function validateTeamsManifestLength(
@@ -405,27 +434,36 @@ function validateTeamsManifestLength(
       (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
     );
 
+    const commands = teamsManifest.composeExtensions![0].commands;
     if (optionalParamsOnlyWarnings) {
       for (const optionalParamsOnlyWarning of optionalParamsOnlyWarnings) {
-        resultWarnings.push(
-          getLocalizedString(
-            "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters",
-            optionalParamsOnlyWarning.data
-          ) +
-            getLocalizedString(
-              "core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation",
-              optionalParamsOnlyWarning.data,
-              path.join(AppPackageFolderName, ManifestTemplateFileName),
-              path.join(
-                AppPackageFolderName,
-                teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
-              )
-            )
+        const command = commands.find(
+          (o: IMessagingExtensionCommand) => o.id === optionalParamsOnlyWarning.data
         );
+
+        if (command && command.parameters) {
+          const parameterName = command.parameters[0]?.name;
+          resultWarnings.push(
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly",
+              optionalParamsOnlyWarning.data,
+              optionalParamsOnlyWarning.data
+            ) +
+              getLocalizedString(
+                "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation",
+                parameterName,
+                optionalParamsOnlyWarning.data,
+                path.join(AppPackageFolderName, ManifestTemplateFileName),
+                path.join(
+                  AppPackageFolderName,
+                  teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
+                )
+              )
+          );
+        }
       }
     }
 
-    const commands = (teamsManifest.composeExtensions?.[0] as IComposeExtension).commands;
     for (const command of commands) {
       if (command.type === "query") {
         if (!command.apiResponseRenderingTemplateFile) {

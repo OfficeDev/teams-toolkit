@@ -402,7 +402,7 @@ describe("envUtils", () => {
         .stub(fs, "readdir")
         .resolves([".env.dev", ".env.prod", ".env.local", ".env.testtool"] as any);
       const res = await environmentManager.getExistingNonRemoteEnvs(".");
-      assert.deepEqual(res, ["local", "testtool"]);
+      assert.deepEqual(res, ["testtool", "local"]);
     });
     it("environmentManager.getExistingNonRemoteEnvs without testtool env", async () => {
       sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));

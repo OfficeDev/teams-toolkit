@@ -30,7 +30,7 @@ function adjustOptions(options: CLICommandOption[]) {
     //skip copilot plugin options if API copilot plugin is not enabled
     const copilotPluginQuestionNames = [
       QuestionNames.ApiSpecLocation.toString(),
-      QuestionNames.OpenAIPluginDomain.toString(),
+      QuestionNames.OpenAIPluginManifest.toString(),
       QuestionNames.ApiOperation.toString(),
     ];
     options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
@@ -52,11 +52,11 @@ export function getCreateCommand(): CLICommand {
     options: [...adjustOptions(CreateProjectOptions)],
     examples: [
       {
-        command: "teamsfx new -c notification -t timer-functions -l typescript -n myapp -i false",
+        command: `${process.env.TEAMSFX_CLI_BIN_NAME} new -c notification -t timer-functions -l typescript -n myapp -i false`,
         description: "Create a new timer triggered notification bot",
       },
       {
-        command: "teamsfx new -c tab-spfx -s import --spfx-folder <folder-path> -n myapp -i false",
+        command: `${process.env.TEAMSFX_CLI_BIN_NAME} new -c tab-spfx -s import --spfx-folder <folder-path> -n myapp -i false`,
         description: "Import an existing SharePoint Framework solution",
       },
     ],

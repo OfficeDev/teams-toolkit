@@ -74,7 +74,8 @@ describe("Debug V3 command-and-response template", () => {
       chai.assert.isDefined(context.BOT_ID);
       chai.assert.isNotEmpty(context.BOT_ID);
       const aadApp = await getAadAppByClientId(context.BOT_ID);
-      chai.assert.equal(aadApp?.id, context.BOT_ID);
+      chai.assert.isDefined(aadApp);
+      chai.assert.equal(aadApp?.appId, context.BOT_ID);
       const bot = await getBot(context.BOT_ID);
       chai.assert.equal(bot?.botId, context.BOT_ID);
       chai.assert.equal(

@@ -26,17 +26,25 @@
     "composeExtensions": [
         {
             "composeExtensionType": "apiBased",
-            "apiSpecificationFile": "apiSpecFiles/repair.yml",
+            "apiSpecificationFile": "apiSpecificationFiles/repair.yml",
             "commands": [
                 {
                     "id": "repair",
                     "type": "query",
-                    "title": "Returns a repair info",
+                    "title": "Search for repairs info",
                     "context": [
                         "compose",
                         "commandBox"
                     ],
-                    "apiResponseRenderingTemplateFile": "adaptiveCards/repair.json"
+                    "apiResponseRenderingTemplateFile": "responseTemplates/repair.json",
+                    "parameters": [
+                        {
+                            "name": "assignedTo",
+                            "title": "Assigned To",
+                            "description": "Filter repairs by who they're assigned to",
+                            "inputType": "text"
+                        }
+                    ]
                 }
             ]
         }

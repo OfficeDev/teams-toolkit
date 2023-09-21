@@ -37,7 +37,7 @@ export class UpdateAadAppDriver implements StepDriver {
       const state = this.loadCurrentState();
 
       this.validateArgs(args);
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
 
       const manifest = await buildAadManifest(
         context,

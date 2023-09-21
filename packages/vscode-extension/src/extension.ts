@@ -519,6 +519,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(localDebugWithIcon);
 
+  const debugInTestToolWithIcon = vscode.commands.registerCommand(
+    "fx-extension.debugInTestToolWithIcon",
+    () => Correlator.run(handlers.treeViewDebugInTestToolHandler)
+  );
+  context.subscriptions.push(debugInTestToolWithIcon);
+
   const m365AccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.m365AccountSettings",
     () => Correlator.run(handlers.openM365AccountHandler)

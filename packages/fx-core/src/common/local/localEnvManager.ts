@@ -38,4 +38,25 @@ export class LocalEnvManager {
       return undefined;
     }
   }
+
+  // Test Tool log format:
+  //  error Some error happens
+  //  warn Some warning happens
+  public async getTestToolLogInfo(projectPath: string): Promise<string | undefined> {
+    const logPath = path.resolve(projectPath, "devTools", "teamsapptesttool.log");
+    const resultLines: string[] = [];
+    try {
+      const logs = await fs.readFile(logPath, "utf-8");
+      // send only error logs without multi-line stack to minimize GDPR issue
+      for (const line of logs.split(/\r?\n/)) {
+        if (line.match(/^error .*/i)) {
+          resultLines.push(line);
+        }
+      }
+      return resultLines.join("\n");
+    } catch {
+      // ignore telemetry error
+      return undefined;
+    }
+  }
 }

@@ -88,7 +88,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       if (!outputEnvVarNames) {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
       const botAadAppState: CreateBotAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       const isReusingExisting = !(!botAadAppState.botId || !botAadAppState.botPassword);
 

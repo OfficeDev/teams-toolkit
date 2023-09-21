@@ -11,6 +11,7 @@ import {
   sampleProvider,
 } from "../../src/common/samples";
 import sampleConfigV3 from "./samples-config-v3.json";
+import { AccessGithubError } from "../../src/error/common";
 
 const packageJson = require("../../package.json");
 
@@ -28,6 +29,7 @@ describe("Samples", () => {
         tags: ["Tab", "TS", "Azure function"],
         time: "5min to run",
         configuration: "Ready for debug",
+        thumbnailUrl: "",
         suggested: true,
       },
     ],
@@ -68,6 +70,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config of prerelease branch in prerelease(beta) version", async () => {
@@ -91,6 +94,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigBranchForPrerelease}/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config of rc tag in rc version", async () => {
@@ -114,6 +118,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTagForRc}/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config of release tag in stable version", async () => {
@@ -137,6 +142,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download sample config using feature flag if available in stable version", async () => {
@@ -161,6 +167,7 @@ describe("Samples", () => {
         .equal(
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.0.0/hello-world-tab-with-backend`
         );
+      chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
     it("download bundled sample config if feature flag branch is unavailable in stable version", async () => {
@@ -177,14 +184,19 @@ describe("Samples", () => {
         }
       });
 
-      await sampleProvider.fetchSampleConfig();
-      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-      const samples = sampleProvider.SampleCollection.samples;
-      chai
-        .expect(samples[0].downloadUrl)
-        .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
-        );
+      try {
+        await sampleProvider.fetchSampleConfig();
+        chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
+        const samples = sampleProvider.SampleCollection.samples;
+        chai
+          .expect(samples[0].downloadUrl)
+          .equal(
+            `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
+          );
+        chai.expect(samples[0].gifUrl).equal(undefined);
+      } catch (e) {
+        chai.assert.fail("should not reach here");
+      }
     });
 
     it("has empty sample collection if network in disconnected", async () => {
@@ -193,9 +205,12 @@ describe("Samples", () => {
         throw err(undefined);
       });
 
-      await sampleProvider.fetchSampleConfig();
-      const samples = sampleProvider.SampleCollection.samples;
-      chai.expect(samples.length).equal(0);
+      try {
+        await sampleProvider.fetchSampleConfig();
+        chai.assert.fail("should not reach here");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof AccessGithubError);
+      }
     });
   });
 
@@ -229,6 +244,7 @@ describe("Samples", () => {
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
     chai.expect(faked?.downloadUrl).equals(fakedExternalSample.downloadUrl);
+    chai.expect(faked?.gifUrl).equals(undefined);
 
     (sampleProvider as any).sampleCollection = undefined;
     sampleConfigV3.samples.splice(sampleConfigV3.samples.length - 1, 1);
@@ -240,13 +256,16 @@ describe("Samples", () => {
         url ===
         "https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v2.2.0/.config/samples-config-v3.json"
       ) {
-        throw err(undefined);
+        throw new Error("test error");
       }
     });
 
-    await sampleProvider.fetchSampleConfig();
-
-    chai.expect(sampleProvider["samplesConfig"]).equals(undefined);
+    try {
+      await sampleProvider.fetchSampleConfig();
+      chai.assert.fail("should not reach here");
+    } catch (e) {
+      chai.assert.isTrue(e instanceof AccessGithubError);
+    }
   });
 
   it("fetchSampleConfig - online sample config succeeds to obtain", async () => {

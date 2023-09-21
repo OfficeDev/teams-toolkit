@@ -28,6 +28,9 @@ import {
   newResourceGroupOption,
   resourceGroupQuestionNode,
   selectAadAppManifestQuestionNode,
+  selectAadManifestQuestion,
+  selectLocalTeamsAppManifestQuestion,
+  selectTeamsAppManifestQuestion,
   validateResourceGroupName,
 } from "../../src/question/other";
 import { MockTools, MockUserInteraction } from "../core/utils";
@@ -870,5 +873,58 @@ describe("copilotPluginQuestions", async () => {
     const res = questionNodes.copilotPluginAddAPI();
     await traverse(res, inputs, ui, undefined, visitor);
     assert.deepEqual(questionNames, [QuestionNames.ApiSpecLocation, QuestionNames.ApiOperation]);
+  });
+});
+
+describe("selectTeamsAppManifestQuestion", async () => {
+  it("default for CLI_HELP", async () => {
+    const question = selectTeamsAppManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.CLI_HELP });
+      assert.equal(res, "./appPackage/manifest.json");
+    }
+  });
+});
+
+describe("selectLocalTeamsAppManifestQuestion", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("default for CLI_HELP", async () => {
+    const question = selectLocalTeamsAppManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.CLI_HELP });
+      assert.equal(res, "./appPackage/manifest.local.json");
+    }
+  });
+  it("default for vsc, path exists", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    const question = selectLocalTeamsAppManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.VSCode, projectPath: "./" });
+      assert.isDefined(res);
+    }
+  });
+});
+describe("selectAadManifestQuestion", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("default for CLI_HELP", async () => {
+    const question = selectAadManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.CLI_HELP });
+      assert.equal(res, "./aad.manifest.json");
+    }
+  });
+  it("default for VSCode", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+    const question = selectAadManifestQuestion();
+    if (typeof question.default === "function") {
+      const res = await question.default({ platform: Platform.VSCode, projectPath: "./" });
+      assert.isUndefined(res);
+    }
   });
 });

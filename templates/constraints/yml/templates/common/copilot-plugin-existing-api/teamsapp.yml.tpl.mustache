@@ -6,7 +6,6 @@ environmentFolderPath: ./env
 provision:
 {{#teamsAppCreate}} {{/teamsAppCreate}}
 
-{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
@@ -14,7 +13,6 @@ provision:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}

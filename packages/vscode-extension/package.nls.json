@@ -64,6 +64,7 @@
     "teamstoolkit.commands.listAppOwner.title": "List Microsoft 365 Teams App (with AAD App) Owners",
     "teamstoolkit.commands.manageCollaborator.title": "Manage M365 Teams App (with AAD app) Collaborators",
     "teamstoolkit.commands.localDebug.title": "Debug",
+    "teamstoolkit.commands.debugInTestTool.title": "Debug in Test Tool",
     "teamstoolkit.commands.m365AccountSettings.title": "Microsoft 365 Portal",
     "teamstoolkit.commands.migrateApp.title": "Upgrade Teams JS SDK and Code References",
     "teamstoolkit.commands.migrateManifest.title": "Upgrade Teams Manifest",

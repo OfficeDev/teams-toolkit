@@ -31,20 +31,9 @@ describe("featureFlags", () => {
   });
 
   describe("isCliNewUxEnabled()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-
     it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "true" });
       const res = isCliNewUxEnabled();
       chai.assert.isTrue(res);
-    });
-    it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_NEW_UX: "false" });
-      const res = isCliNewUxEnabled();
-      chai.assert.isFalse(res);
     });
   });
 });

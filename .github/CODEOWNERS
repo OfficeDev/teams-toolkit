@@ -188,6 +188,8 @@
 /packages/fx-core/src/index.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/ui/visitor.ts @jayzhang @xzf0587 @LongOddCode
 
+/packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
+/packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/tests/component/coordinator @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/driver/script/scriptDriver.test.ts @jayzhang @LongOddCode
@@ -288,9 +290,6 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/tests/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
 
 /packages/fx-core/src/error @jayzhang @xzf0587 @hund030 @LongOddCode
-
-/packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
-/packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 /packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang

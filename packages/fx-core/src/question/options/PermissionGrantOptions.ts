@@ -18,6 +18,7 @@ export const PermissionGrantOptions: CLICommandOption[] = [
     shortName: "t",
     description:
       "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+    default: "./appPackage/manifest.json",
   },
   {
     name: "env",
@@ -30,7 +31,8 @@ export const PermissionGrantOptions: CLICommandOption[] = [
     type: "string",
     shortName: "a",
     description:
-      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder, defaults to './aad.manifest.json'",
+      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder.",
+    default: "./aad.manifest.json",
   },
   {
     name: "email",

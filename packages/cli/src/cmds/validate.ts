@@ -95,7 +95,7 @@ export class ManifestValidate extends YargsCommand {
     // Throw error when --manifest-path and --app-package-file-path are both provided
     if (args[AppPackageFilePathParamName] && args[ManifestFilePathParamName]) {
       const error = new ArgumentConflictError(
-        "teamsfx validate",
+        `${process.env.TEAMSFX_CLI_BIN_NAME} validate`,
         AppPackageFilePathParamName,
         ManifestFilePathParamName
       );
@@ -104,7 +104,10 @@ export class ManifestValidate extends YargsCommand {
 
     // Throw error if --env not specified
     if (args[ManifestFilePathParamName] && !args.env && !CLIUIInstance.interactive) {
-      const error = new MissingRequiredArgumentError("teamsfx validate", "env");
+      const error = new MissingRequiredArgumentError(
+        `${process.env.TEAMSFX_CLI_BIN_NAME} validate`,
+        "env"
+      );
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, error);
       return err(error);
     }

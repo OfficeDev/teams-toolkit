@@ -6,6 +6,9 @@ import axios from "axios";
 import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
 import { FeatureFlagName } from "./constants";
 import { isVideoFilterEnabled } from "./featureFlags";
+import { AccessGithubError } from "../error/common";
+import { hooks } from "@feathersjs/hooks";
+import { ErrorContextMW } from "../core/globalVars";
 
 const packageJson = require("../../package.json");
 
@@ -29,7 +32,8 @@ export interface SampleConfig {
   time: string;
   configuration: string;
   suggested: boolean;
-  gifUrl: string;
+  thumbnailUrl: string;
+  gifUrl?: string;
   // maximum TTK & CLI version to run sample
   maximumToolkitVersion?: string;
   maximumCliVersion?: string;
@@ -47,7 +51,7 @@ class SampleProvider {
   private sampleCollection: SampleCollection | undefined;
   private samplesConfig: { samples: Array<Record<string, unknown>> } | undefined;
   private branchOrTag = SampleConfigTag;
-
+  @hooks([ErrorContextMW({ component: "SampleProvider" })])
   public async fetchSampleConfig() {
     const version: string = packageJson.version;
     if (version.includes("alpha")) {
@@ -64,11 +68,11 @@ class SampleProvider {
       this.branchOrTag = SampleConfigTag;
       const branch = process.env[FeatureFlagName.SampleConfigBranch];
       if (branch) {
-        const data = await this.fetchRawFileContent(branch);
-        if (data !== undefined) {
+        try {
+          const data = await this.fetchRawFileContent(branch);
           this.branchOrTag = branch;
           this.samplesConfig = data as { samples: Array<Record<string, unknown>> };
-        }
+        } catch (e: unknown) {}
       }
     }
     if (this.samplesConfig === undefined) {
@@ -82,14 +86,26 @@ class SampleProvider {
     const samples =
       this.samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrl"] ? true : false;
-        let gifUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+        let gifUrl =
+          sample["gifPath"] !== undefined
+            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+                this.branchOrTag
+              }/${sample["id"] as string}/${sample["gifPath"] as string}`
+            : undefined;
+        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
           this.branchOrTag
-        }/${sample["id"] as string}/${sample["gifPath"] as string}`;
+        }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
           const info = parseSampleUrl(sample["downloadUrl"] as string);
-          gifUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
+          gifUrl =
+            sample["gifPath"] !== undefined
+              ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
+                  info.dir
+                }/${sample["gifPath"] as string}`
+              : undefined;
+          thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
             info.ref
-          }/${info.dir}/${sample["gifPath"] as string}`;
+          }/${info.dir}/${sample["thumbnailPath"] as string}`;
         }
         return {
           ...sample,
@@ -100,6 +116,7 @@ class SampleProvider {
                 this.branchOrTag
               }/${sample["id"] as string}`,
           gifUrl: gifUrl,
+          thumbnailUrl: thumbnailUrl,
         } as SampleConfig;
       }) || [];
 
@@ -120,13 +137,11 @@ class SampleProvider {
   }
 
   private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {
+    const url = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`;
     try {
       const fileResponse = await sendRequestWithTimeout(
         async () => {
-          return await axios.get(
-            `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`,
-            { responseType: "json" }
-          );
+          return await axios.get(url, { responseType: "json" });
         },
         1000,
         3
@@ -136,7 +151,7 @@ class SampleProvider {
         return fileResponse.data;
       }
     } catch (e) {
-      return undefined;
+      throw new AccessGithubError(url, "SampleProvider", e);
     }
   }
 }

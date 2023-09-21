@@ -7,7 +7,7 @@
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentNameManager } from "@microsoft/teamsfx-core/build/core/environmentName";
 import axios from "axios";
 import * as chai from "chai";
 import fs from "fs-extra";
@@ -38,7 +38,7 @@ describe("Blazor App", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
-  const envName = environmentManager.getDefaultEnvName();
+  const envName = environmentNameManager.getDefaultEnvName();
   const resourceGroupName = `${appName}-rg`;
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CLI_DOTNET"] = "true";

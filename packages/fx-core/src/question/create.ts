@@ -366,21 +366,13 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
-      ? // currently no ai bot for dotnet
-        [
-          CapabilityOptions.basicBot(),
-          CapabilityOptions.notificationBot(),
-          CapabilityOptions.commandBot(),
-          CapabilityOptions.workflowBot(inputs),
-        ]
-      : [
-          CapabilityOptions.basicBot(),
-          CapabilityOptions.aiBot(),
-          CapabilityOptions.notificationBot(),
-          CapabilityOptions.commandBot(),
-          CapabilityOptions.workflowBot(inputs),
-        ];
+    return [
+      CapabilityOptions.basicBot(),
+      CapabilityOptions.aiBot(),
+      CapabilityOptions.notificationBot(),
+      CapabilityOptions.commandBot(),
+      CapabilityOptions.workflowBot(inputs),
+    ];
   }
 
   static tabs(): OptionItem[] {
@@ -558,6 +550,7 @@ export class CapabilityOptions {
       id: "ai-bot",
       label: getLocalizedString("core.aiBotOption.label"),
       detail: getLocalizedString("core.aiBotOption.detail"),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 }
@@ -1334,7 +1327,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       const res = await listOperations(
         context,
         undefined,
-        input,
+        input.trim(),
         inputs![QuestionNames.ManifestPath],
         includeExistingAPIs,
         false
@@ -1413,11 +1406,11 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
   return {
     type: "text",
-    name: QuestionNames.OpenAIPluginDomain,
-    cliShortName: "d",
+    name: QuestionNames.OpenAIPluginManifest,
+    cliShortName: "m",
     title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
     placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
-    cliDescription: "OpenAI plugin website domain.",
+    cliDescription: "OpenAI plugin website domain or manifest URL.",
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): Promise<string | undefined> => {
@@ -1426,7 +1419,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
 
         const result = match
           ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidDomain.message");
+          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
         return Promise.resolve(result);
       },
     },
@@ -1497,8 +1490,15 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     forgetLastValue: true,
     staticOptions: [],
     validation: {
-      minItems: 1,
-      maxItems: 10,
+      validFunc: (input: string[]): string | undefined => {
+        if (input.length < 1 || input.length > 10) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.invalidMessage",
+            input.length,
+            10
+          );
+        }
+      },
     },
     dynamicOptions: (inputs: Inputs) => {
       if (!inputs.supportedApisFromApiSpec) {

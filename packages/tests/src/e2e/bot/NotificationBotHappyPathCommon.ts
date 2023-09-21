@@ -14,7 +14,7 @@ import {
   readContextMultiEnvV3,
   createResourceGroup,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime } from "../../commonlib/constants";
 import { Executor } from "../../utils/executor";
@@ -26,7 +26,7 @@ export function happyPathTest(runtime: Runtime): void {
     const appName = getUniqueAppName();
     const subscription = getSubscriptionId();
     const projectPath = path.resolve(testFolder, appName);
-    const envName = environmentManager.getDefaultEnvName();
+    const envName = environmentNameManager.getDefaultEnvName();
 
     const env = Object.assign({}, process.env);
     env["TEAMSFX_CONFIG_UNIFY"] = "true";
@@ -44,8 +44,8 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: app service hosted notification", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-restify --programming-language typescript`
-          : `teamsfx new --runtime dotnet --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-webapi`;
+          ? `teamsfx new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-restify --programming-language typescript`
+          : `teamsfx new --runtime dotnet --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-webapi`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,

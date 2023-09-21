@@ -61,7 +61,7 @@ export class CreateAadAppDriver implements StepDriver {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
 
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
       const aadAppState: CreateAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       if (!aadAppState.clientId) {
         context.logProvider?.info(

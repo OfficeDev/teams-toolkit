@@ -118,7 +118,7 @@ export class CreateResourceGroupError extends UserError {
  * Check resource group existence error
  */
 export class CheckResourceGroupExistenceError extends UserError {
-  constructor(resourceGroupName: string, subscriptionId: string, message: string) {
+  constructor(resourceGroupName: string, subscriptionId: string, message: string, error?: any) {
     const key = "error.azure.CheckResourceGroupExistenceError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
@@ -126,6 +126,7 @@ export class CheckResourceGroupExistenceError extends UserError {
       message: getDefaultString(key, resourceGroupName, subscriptionId, message),
       displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId, message),
       categories: [ErrorCategory.External],
+      error: error,
     };
     super(errorOptions);
   }

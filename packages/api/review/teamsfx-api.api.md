@@ -13,9 +13,6 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
-export const AdaptiveFolderName = "adaptiveCards";
-
-// @public (undocumented)
 export interface ApiOperation {
     // (undocumented)
     groupName: string;
@@ -611,6 +608,9 @@ export const ProductName = "teamsfx";
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
+
+// @public (undocumented)
+export const ResponseTemplatesFolderName = "responseTemplates";
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {

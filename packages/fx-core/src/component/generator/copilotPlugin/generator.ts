@@ -16,7 +16,7 @@ import {
   Platform,
   Result,
   UserError,
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   AppPackageFolderName,
   Warning,
 } from "@microsoft/teamsfx-api";
@@ -156,6 +156,13 @@ export class CopilotPluginGenerator {
         }
       }
 
+      const specVersionWarning = warnings.find(
+        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      );
+      if (specVersionWarning) {
+        specVersionWarning.content = ""; // We don't care content of this warning
+      }
+
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, warnings, context, true, false, true);
         const errorMessage =
@@ -195,7 +202,7 @@ export class CopilotPluginGenerator {
       const adaptiveCardFolder = path.join(
         destinationPath,
         AppPackageFolderName,
-        AdaptiveFolderName
+        ResponseTemplatesFolderName
       );
       const generateResult = await specParser.generate(
         manifestPath,

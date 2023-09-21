@@ -7,7 +7,6 @@
 
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
-import { Executor } from "../../utils/executor";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";

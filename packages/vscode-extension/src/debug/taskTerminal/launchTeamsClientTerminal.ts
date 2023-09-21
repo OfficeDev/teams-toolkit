@@ -21,7 +21,7 @@ import {
   openTerminalMessage,
 } from "../constants";
 import { core, getSystemInputs } from "../../handlers";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
+import { CoreQuestionNames, environmentNameManager } from "@microsoft/teamsfx-core";
 import { HubOptions } from "@microsoft/teamsfx-core";
 
 interface LaunchTeamsClientArgs {
@@ -74,7 +74,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
       launchingTeamsClientDisplayMessages.launchUrlMessage(launchUrl)
     );
 
-    if (this.args.env == "local") {
+    if (this.args.env && !environmentNameManager.isRemoteEnvironment(this.args.env)) {
       VsCodeLogInstance.outputChannel.appendLine("");
       VsCodeLogInstance.outputChannel.appendLine(
         launchingTeamsClientDisplayMessages.hotReloadingMessage

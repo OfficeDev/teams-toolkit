@@ -61,7 +61,7 @@ export class Executor {
     customized: Record<string, string> = {}
   ) {
     const command =
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${language} ` +
+      `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");
@@ -82,8 +82,8 @@ export class Executor {
   ) {
     const command =
       `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
-      ` --spfx-folder ${spfxFolder} --manifest-path ${manifestPath}` +
-      ` --local-manifest-path ${localManifestPath}`;
+      ` --spfx-folder ${spfxFolder} --teams-manifest-file ${manifestPath}` +
+      ` --local-teams-manifest-file ${localManifestPath}`;
     return this.execute(command, workspace);
   }
 
@@ -118,7 +118,11 @@ export class Executor {
   }
 
   static async validate(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "validate", env);
+    return this.executeCmd(
+      workspace,
+      "validate -t ./appPackage/manifest.json",
+      env
+    );
   }
 
   static async validateWithCustomizedProcessEnv(
@@ -271,6 +275,10 @@ export class Executor {
   }
 
   static async package(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "package", env);
+    return this.executeCmd(
+      workspace,
+      "package -t ./appPackage/manifest.json",
+      env
+    );
   }
 }

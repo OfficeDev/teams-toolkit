@@ -30,6 +30,10 @@ export class ConstantString {
     "core.common.ConvertSwaggerToOpenAPI"
   );
 
+  static readonly WrappedCardVersion = "devPreview";
+  static readonly WrappedCardSchema = "<URL_REFERENCE_TO_SCHEMA>";
+  static readonly WrappedCardResponseLayout = "list";
+
   static readonly GetMethod = "get";
   static readonly PostMethod = "post";
   static readonly AdaptiveCardVersion = "1.5";

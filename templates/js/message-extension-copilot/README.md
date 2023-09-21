@@ -26,6 +26,7 @@ This app template is a search-based [message extension](https://docs.microsoft.c
    2. When Teams launches in the browser, click the `Apps` icon from Teams client left rail to open Teams app store and search for `Copilot`.
    3. Open the `Copilot` app and send a prompt to trigger your plugin.
    4. Send a message to Copilot to find an NPM package information. For example: `Find the npm package info on teamsfx-react`.
+      > Note: This prompt may not always make Copilot include a response from your message extension. If it happens, try some other prompts or leave a feedback to us by thumbing down the Copilot response and leave a message tagged with [MessageExtension].
 
 **Congratulations**! You are running an application that can now search npm registries in Teams and Copilot.
 
@@ -71,4 +72,4 @@ Following documentation will help you to extend the template.
 - [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
 - [Develop with Teams Toolkit CLI](https://aka.ms/teamsfx-cli/debug)
 - [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)
-- [Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot)
+- [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)

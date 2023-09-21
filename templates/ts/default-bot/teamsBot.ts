@@ -23,7 +23,7 @@ export class TeamsBot extends TeamsActivityHandler {
       for (let cnt = 0; cnt < membersAdded.length; cnt++) {
         if (membersAdded[cnt].id) {
           await context.sendActivity(
-            `Hi there! I'm a Teams bot that will echo what you said to me 🫡`
+            `Hi there! I'm a Teams bot that will echo what you said to me.`
           );
           break;
         }

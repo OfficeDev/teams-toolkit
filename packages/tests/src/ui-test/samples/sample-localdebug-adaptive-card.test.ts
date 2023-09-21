@@ -16,6 +16,7 @@ class AdaptiveCardTestCase extends CaseFactory {
     page: Page,
     options?: { context: SampledebugContext; env: "local" | "dev" }
   ): Promise<void> {
+    console.log("onValidate");
     return await validateAdaptiveCard(page, {
       context: options?.context,
       env: options?.env,

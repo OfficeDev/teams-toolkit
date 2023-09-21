@@ -5,6 +5,7 @@ import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as spies from "chai-spies";
 import { ExtensionUpgrade } from "../../../src/utils/upgrade";
 import * as versionUtil from "../../../src/utils/versionUtil";
+import * as globalVariables from "../../../src/globalVariables";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as chai from "chai";
@@ -52,6 +53,7 @@ describe("upgrade show changelog", () => {
       },
     });
     telemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(globalVariables, "context").value({ extensionPath: "" });
   });
   afterEach(() => {
     sandbox.restore();

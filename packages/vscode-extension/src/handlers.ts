@@ -130,7 +130,7 @@ import {
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
-import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
+import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { MetadataV3 } from "@microsoft/teamsfx-core";
 
@@ -346,7 +346,7 @@ export function getSystemInputs(): Inputs {
     projectPath: globalVariables.workspaceUri?.fsPath,
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    locale: parseLocale(),
+    locale: loadedLocale,
   };
   return answers;
 }

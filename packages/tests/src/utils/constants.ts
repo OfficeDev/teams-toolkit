@@ -49,6 +49,7 @@ export enum TemplateProject {
   OutlookTab = "Hello World Teams Tab Outlook add-in",
   OutlookSignature = "Set signature using Outlook add-in",
   ChefBot = "Teams Chef Bot",
+  GraphConnectorBot = "Graph Connector Bot",
 }
 
 export enum TemplateProjectFolder {
@@ -111,6 +112,8 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.AssistDashboard]: TemplateProjectFolder.AssistDashboard,
     [TemplateProject.DiceRoller]: TemplateProjectFolder.DiceRoller,
     [TemplateProject.ChefBot]: TemplateProjectFolder.ChefBot,
+    [TemplateProject.GraphConnectorBot]:
+      TemplateProjectFolder.GraphConnectorBot,
   };
 
 export enum Resource {
@@ -316,6 +319,7 @@ export enum LocalDebugTaskLabel {
   GulpServe = "gulp serve",
   Azurite = "Start Azurite emulator",
   Compile = "Compile typescript",
+  StartWebServer = "Start web server",
 }
 
 export class LocalDebugTaskResult {
@@ -329,6 +333,7 @@ export class LocalDebugTaskResult {
   static readonly Failed = "failed";
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
+  static readonly WebServerSuccess = "press h to show help";
 }
 
 export enum LocalDebugTaskLabel2 {
@@ -383,6 +388,7 @@ export class ValidationContent {
   static readonly Bot = "Your Hello World Bot is Running";
   static readonly BotWelcomeInstruction =
     "Hi there! I'm a Teams bot that will echo what you said to me";
+  static readonly GraphBot = "Your Graph Connector Bot is Running";
 }
 
 export class CliVersion {

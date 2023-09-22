@@ -374,6 +374,7 @@
   "core.M365SsoLaunchPageOptionItem.detail": "A web app that uses Fluent UI React components to get a Teams look and feel",
   "core.M365SearchAppOptionItem.label": "Custom Search Results",
   "core.M365SearchAppOptionItem.detail": "Display data directly in Teams and Outlook search results from search or the chat area",
+  "core.M365SearchAppOptionItem.copilot.detail": "Display data directly in Teams chat, Outlook email and Copilot response from search result",
   "core.SearchAppOptionItem.detail": "Display data directly in Teams search results from search or the chat area",
   "core.M365HostQuestion.title": "Platform",
   "core.M365HostQuestion.placeholder": "Select a platform to preview the app",

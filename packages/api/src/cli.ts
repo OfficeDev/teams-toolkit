@@ -13,6 +13,10 @@ export interface CLICommand {
    */
   name: string;
   /**
+   * @description command aliases
+   */
+  aliases?: string[];
+  /**
    * @description command full name, like "teamsfx new sample", only available after command finding
    */
   fullName?: string;

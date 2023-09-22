@@ -23,7 +23,11 @@ import * as activate from "../../src/activate";
 import { getFxCore, resetFxCore } from "../../src/activate";
 import { engine } from "../../src/commands/engine";
 import { start } from "../../src/commands/index";
-import { listTemplatesCommand, listSamplesCommand } from "../../src/commands/models";
+import {
+  listTemplatesCommand,
+  listSamplesCommand,
+  m365SideloadingCommand,
+} from "../../src/commands/models";
 import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
@@ -53,9 +57,14 @@ describe("CLI Engine", () => {
   });
 
   describe("findCommand", async () => {
-    it("should find new template command", async () => {
+    it("should find new sample command", async () => {
       const result = engine.findCommand(rootCommand, ["new", "sample"]);
       assert.equal(result.cmd.name, createSampleCommand.name);
+      assert.deepEqual(result.remainingArgs, []);
+    });
+    it("should find m365 command alias", async () => {
+      const result = engine.findCommand(rootCommand, ["m365", "sideloading"]);
+      assert.equal(result.cmd.name, m365SideloadingCommand.name);
       assert.deepEqual(result.remainingArgs, []);
     });
   });

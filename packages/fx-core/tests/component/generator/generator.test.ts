@@ -26,7 +26,7 @@ import { createSandbox } from "sinon";
 import {
   GeneratorContext,
   fetchTemplateUrlWithTagAction,
-  fetchTemplateZipFromLocalAction,
+  fetchTemplateFromLocalAction,
   fetchZipFromUrlAction,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
@@ -370,7 +370,7 @@ describe("Generator error", async () => {
 
   it("template fallback error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
+    sandbox.stub(fetchTemplateFromLocalAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
@@ -380,7 +380,7 @@ describe("Generator error", async () => {
   it("unzip error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").resolves();
     sandbox.stub(fetchZipFromUrlAction, "run").resolves();
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").resolves();
+    sandbox.stub(fetchTemplateFromLocalAction, "run").resolves();
     sandbox.stub(unzipAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
@@ -546,8 +546,6 @@ describe("Generator happy path", async () => {
     const language = "ts";
     const inputDir = path.join(tmpDir, "input");
     await fs.ensureDir(path.join(inputDir, foobarTemplateName));
-    const fileData = "{{appName}}";
-    await fs.writeFile(path.join(inputDir, foobarTemplateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "foobar.zip"));

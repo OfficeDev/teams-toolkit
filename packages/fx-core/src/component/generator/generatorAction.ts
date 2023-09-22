@@ -119,7 +119,7 @@ export const fetchZipFromUrlAction: GeneratorAction = {
   },
 };
 
-export const fetchTemplateZipFromLocalAction: GeneratorAction = {
+export const fetchTemplateFromLocalAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateZipFromLocal,
   run: async (context: GeneratorContext) => {
     if (context.outputs?.length !== 0) {
@@ -149,16 +149,17 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
 export const unzipAction: GeneratorAction = {
   name: GeneratorActionName.Unzip,
   run: async (context: GeneratorContext) => {
-    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
-    if (context.zip) {
-      context.outputs = await unzip(
-        context.zip,
-        context.destination,
-        context.fileNameReplaceFn,
-        context.fileDataReplaceFn,
-        context.filterFn
-      );
+    if (!context.zip) {
+      return;
     }
+    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
+    context.outputs = await unzip(
+      context.zip,
+      context.destination,
+      context.fileNameReplaceFn,
+      context.fileDataReplaceFn,
+      context.filterFn
+    );
   },
 };
 
@@ -167,7 +168,7 @@ export const TemplateActionSeq: GeneratorAction[] = [
   fetchTemplateUrlWithTagAction,
   fetchZipFromUrlAction,
   unzipAction,
-  fetchTemplateZipFromLocalAction,
+  fetchTemplateFromLocalAction,
 ];
 
 export const SampleActionSeq: GeneratorAction[] = [fetchZipFromUrlAction, unzipAction];

@@ -64,4 +64,16 @@ export class ConstantString {
     "options",
     "trace",
   ];
+
+  // TODO: update after investigating the usage of these constants.
+  static readonly WellknownResultNames = [
+    "result",
+    "data",
+    "items",
+    "root",
+    "matches",
+    "queries",
+    "list",
+    "output",
+  ];
 }

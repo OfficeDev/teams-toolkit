@@ -339,7 +339,7 @@ export class CapabilityOptions {
     return {
       id: "search-me-copilot",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      detail: getLocalizedString("core.M365SearchAppOptionItem.copilot.detail"),
       description: getLocalizedString(
         "core.createProjectQuestion.option.description.worksInOutlookCopilot"
       ),

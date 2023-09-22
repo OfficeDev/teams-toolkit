@@ -103,7 +103,11 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
+      detail: isCopilotPluginEnabled()
+        ? getLocalizedString(
+            "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
+          )
+        : getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
     };
   }
 

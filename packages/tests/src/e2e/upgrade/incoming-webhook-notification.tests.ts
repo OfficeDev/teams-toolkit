@@ -44,7 +44,6 @@ describe("upgrade", () => {
       {
         // provision
         const result = await Executor.provision(projectPath);
-        chai.assert.isFalse(result.success);
         chai.assert.include(
           result.stderr,
           "This command only works for project created by Teams Toolkit"

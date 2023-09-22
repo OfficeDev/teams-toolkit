@@ -39,15 +39,15 @@ export function initTelemetryReporter(): void {
  */
 export async function start(binName: "teamsfx" | "teamsapp"): Promise<void> {
   initTelemetryReporter();
-  //   if (binName === "teamsfx") {
-  //     logger.warning(
-  //       `
-  // **********************************************************************************
-  // * Warning: command 'teamsfx' is deprecated and will be replaced with 'teamsapp'. *
-  // **********************************************************************************/
-  // `
-  //     );
-  //   }
+  if (binName === "teamsfx") {
+    logger.warning(
+      `
+  **********************************************************************************
+  * Warning: command 'teamsfx' is deprecated and will be replaced with 'teamsapp'. *
+  **********************************************************************************/
+  `
+    );
+  }
   cliTelemetry.reporter?.addSharedProperty(TelemetryProperty.BinName, binName); // trigger binary name for telemetry
   if (isCliNewUxEnabled()) {
     return startNewUX(binName);

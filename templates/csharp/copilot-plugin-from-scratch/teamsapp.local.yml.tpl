@@ -14,6 +14,13 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./env/.env.local
+      envs:
+        OPENAPI_SERVER_URL: https://${{DEV_TUNNEL_URL}}
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:

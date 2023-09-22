@@ -13,7 +13,7 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import {
   Generator,
   templateDefaultOnActionError,
@@ -541,19 +541,15 @@ describe("Generator happy path", async () => {
   });
 
   it("template from fallback", async () => {
-    const foobarTemplateName = "foobarTemplate";
     const realTemplateName = "non-sso-tab";
     const language = "ts";
-    const inputDir = path.join(tmpDir, "input");
-    await fs.ensureDir(path.join(inputDir, foobarTemplateName));
-    const zip = new AdmZip();
-    zip.addLocalFolder(inputDir);
-    zip.writeZip(path.join(tmpDir, "foobar.zip"));
-    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("foobar.zip");
-    sandbox
-      .stub(generatorUtils, "fetchZipFromUrl")
-      .resolves(new AdmZip(path.join(tmpDir, "foobar.zip")));
+    const foobarTemplateZip = new AdmZip();
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
     const result = await Generator.generateTemplate(context, tmpDir, realTemplateName, language);
+    const files = fs.readdirSync(tmpDir);
+    if (files.length === 0) {
+      assert.fail("template creation failure");
+    }
     assert.isTrue(result.isOk());
   });
 });

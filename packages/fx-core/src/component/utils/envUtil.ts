@@ -61,7 +61,9 @@ class EnvUtil {
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
         // .env file does not exist, just ignore
-        process.env.TEAMSFX_ENV = env;
+        if (loadToProcessEnv) {
+          process.env.TEAMSFX_ENV = env;
+        }
         return ok({ TEAMSFX_ENV: env });
       } else {
         return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));

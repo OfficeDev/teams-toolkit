@@ -11,6 +11,7 @@ export const sideloadingServiceEndpoint =
 
 export const m365SideloadingCommand: CLICommand = {
   name: "install",
+  aliases: ["sideloading"],
   description:
     "Sideloading an M365 App with corresponding information specified in the given manifest package.",
   options: [

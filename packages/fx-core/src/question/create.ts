@@ -853,7 +853,7 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
   };
 }
 
-function SPFxFrameworkQuestion(): SingleSelectQuestion {
+export function SPFxFrameworkQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxFramework,

@@ -133,9 +133,6 @@ export const fetchTemplateFromLocalAction: GeneratorAction = {
 
     const data: Buffer = await fs.readFile(zipPath);
     context.zip = new AdmZip(data);
-    if (!context.zip) {
-      throw new MissKeyError("zip");
-    }
     context.outputs = await unzip(
       context.zip,
       context.destination,

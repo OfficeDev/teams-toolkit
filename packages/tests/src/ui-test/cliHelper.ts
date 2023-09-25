@@ -437,15 +437,19 @@ export class CliHelper {
     console.log("isV3Enabled: " + V3);
     if (V3) {
       process.env["TEAMSFX_V3"] = "true";
+      process.env["TEAMSFX_V3_MIGRATION"] = "true";
     } else {
       process.env["TEAMSFX_V3"] = "false";
+      process.env["TEAMSFX_V3_MIGRATION"] = "false";
     }
+    console.log("TEAMSFX_V3: " + process.env["TEAMSFX_V3"]);
+    console.log(execAsync("teamsfx -v", { cwd: testFolder }));
     const command = `teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
         cwd: testFolder,
-        env: process.env ?? processEnv,
+        env: processEnv ? processEnv : process.env,
         timeout: timeout,
       });
 

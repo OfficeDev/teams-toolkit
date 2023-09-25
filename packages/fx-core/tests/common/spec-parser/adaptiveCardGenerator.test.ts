@@ -57,9 +57,74 @@ describe("adaptiveCardGenerator", () => {
         ],
       };
 
-      const actual = generateAdaptiveCard(operationItem);
+      const [actual, jsonPath] = generateAdaptiveCard(operationItem);
 
       expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
+    });
+
+    it("should generate a card from a object schema with well known array property", () => {
+      const operationItem = {
+        responses: {
+          "200": {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                    },
+                    result: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                          age: {
+                            type: "number",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const expected = {
+        type: "AdaptiveCard",
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "Container",
+            $data: "${$root}",
+            items: [
+              {
+                type: "TextBlock",
+                text: "name: ${if(name, name, 'N/A')}",
+                wrap: true,
+              },
+              {
+                type: "TextBlock",
+                text: "age: ${if(age, age, 'N/A')}",
+                wrap: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      const [actual, jsonPath] = generateAdaptiveCard(operationItem);
+
+      expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("result");
     });
 
     it("should generate a card from an example value", () => {
@@ -91,9 +156,10 @@ describe("adaptiveCardGenerator", () => {
         ],
       };
 
-      const actual = generateAdaptiveCard(operationItem);
+      const [actual, jsonPath] = generateAdaptiveCard(operationItem);
 
       expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
     });
 
     it("should generate a card from a default success response", () => {
@@ -117,9 +183,10 @@ describe("adaptiveCardGenerator", () => {
         ],
       };
 
-      const actual = generateAdaptiveCard(operationItem);
+      const [actual, jsonPath] = generateAdaptiveCard(operationItem);
 
       expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
     });
 
     it("should generate a card if no json response", () => {
@@ -146,9 +213,10 @@ describe("adaptiveCardGenerator", () => {
         ],
       };
 
-      const actual = generateAdaptiveCard(operationItem);
+      const [actual, jsonPath] = generateAdaptiveCard(operationItem);
 
       expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
     });
   });
 
@@ -167,9 +235,10 @@ describe("adaptiveCardGenerator", () => {
       ],
     };
 
-    const actual = generateAdaptiveCard(schema);
+    const [actual, jsonPath] = generateAdaptiveCard(schema);
 
     expect(actual).to.deep.equal(expected);
+    expect(jsonPath).to.equal("$");
   });
 
   describe("generateCardFromResponse", () => {

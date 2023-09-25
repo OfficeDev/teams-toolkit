@@ -340,3 +340,12 @@ export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
   }
   return errors;
 }
+
+export function isWellknownResultPropertyName(name: string): boolean {
+  for (let i = 0; i < ConstantString.WellknownResultNames.length; i++) {
+    if (name.toLowerCase().includes(ConstantString.WellknownResultNames[i])) {
+      return true;
+    }
+  }
+  return false;
+}

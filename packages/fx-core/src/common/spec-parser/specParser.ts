@@ -227,10 +227,11 @@ export class SpecParser {
           if (method === ConstantString.GetMethod || method === ConstantString.PostMethod) {
             const operation = newSpec.paths[url]![method] as OpenAPIV3.OperationObject;
             try {
-              const card: AdaptiveCard = generateAdaptiveCard(operation);
+              const [card, jsonPath] = generateAdaptiveCard(operation);
               const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
               const wrappedCard = wrapAdaptiveCard(
                 card,
+                jsonPath,
                 operation.operationId!,
                 method.toUpperCase() + " " + url
               );

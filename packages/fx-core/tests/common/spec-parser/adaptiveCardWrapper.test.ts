@@ -37,6 +37,7 @@ describe("adaptiveCardWrapper", () => {
       const expectedWrappedCard = {
         version: ConstantString.WrappedCardVersion,
         $schema: ConstantString.WrappedCardSchema,
+        jsonPath: "$",
         responseLayout: ConstantString.WrappedCardResponseLayout,
         responseCardTemplate: card,
         previewCardTemplate: {
@@ -45,7 +46,7 @@ describe("adaptiveCardWrapper", () => {
         },
       };
 
-      const wrappedCard = wrapAdaptiveCard(card, "title", "subtitle");
+      const wrappedCard = wrapAdaptiveCard(card, "$", "title", "subtitle");
 
       expect(util.isDeepStrictEqual(wrappedCard, expectedWrappedCard)).to.be.true;
     });

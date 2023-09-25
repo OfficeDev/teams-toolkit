@@ -21,6 +21,7 @@ import {
   updateFirstLetter,
   validateServer,
   resolveServerUrl,
+  isWellknownResultPropertyName,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
@@ -1444,6 +1445,48 @@ describe("utils", () => {
         Error,
         format(ConstantString.ResolveServerUrlFailed, "API_PORT")
       );
+    });
+  });
+
+  describe("isWellknownResultPropertyName", () => {
+    it("should return true for well-known result property names", () => {
+      expect(isWellknownResultPropertyName("result")).to.be.true;
+      expect(isWellknownResultPropertyName("data")).to.be.true;
+      expect(isWellknownResultPropertyName("items")).to.be.true;
+      expect(isWellknownResultPropertyName("root")).to.be.true;
+      expect(isWellknownResultPropertyName("matches")).to.be.true;
+      expect(isWellknownResultPropertyName("queries")).to.be.true;
+      expect(isWellknownResultPropertyName("list")).to.be.true;
+      expect(isWellknownResultPropertyName("output")).to.be.true;
+    });
+
+    it("should return true for well-known result property names with different casing", () => {
+      expect(isWellknownResultPropertyName("Result")).to.be.true;
+      expect(isWellknownResultPropertyName("DaTa")).to.be.true;
+      expect(isWellknownResultPropertyName("ITEMS")).to.be.true;
+      expect(isWellknownResultPropertyName("Root")).to.be.true;
+      expect(isWellknownResultPropertyName("MaTcHeS")).to.be.true;
+      expect(isWellknownResultPropertyName("QuErIeS")).to.be.true;
+      expect(isWellknownResultPropertyName("LiSt")).to.be.true;
+      expect(isWellknownResultPropertyName("OutPut")).to.be.true;
+    });
+
+    it("should return true for name substring is well-known result property names", () => {
+      expect(isWellknownResultPropertyName("testResult")).to.be.true;
+      expect(isWellknownResultPropertyName("carData")).to.be.true;
+      expect(isWellknownResultPropertyName("productItems")).to.be.true;
+      expect(isWellknownResultPropertyName("rootValue")).to.be.true;
+      expect(isWellknownResultPropertyName("matchesResult")).to.be.true;
+      expect(isWellknownResultPropertyName("DataQueries")).to.be.true;
+      expect(isWellknownResultPropertyName("productLists")).to.be.true;
+      expect(isWellknownResultPropertyName("outputData")).to.be.true;
+    });
+
+    it("should return false for non well-known result property names", () => {
+      expect(isWellknownResultPropertyName("foo")).to.be.false;
+      expect(isWellknownResultPropertyName("bar")).to.be.false;
+      expect(isWellknownResultPropertyName("baz")).to.be.false;
+      expect(isWellknownResultPropertyName("qux")).to.be.false;
     });
   });
 });

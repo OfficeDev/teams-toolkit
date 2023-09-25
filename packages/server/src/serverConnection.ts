@@ -276,7 +276,6 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.previewWithManifest(params),

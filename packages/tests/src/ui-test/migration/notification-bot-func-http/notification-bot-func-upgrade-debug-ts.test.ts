@@ -23,7 +23,7 @@ import {
   waitForTerminal,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import { getScreenshotName } from "../../utils/nameUtil";
+import { getScreenshotName } from "../../../utils/nameUtil";
 import { VSBrowser } from "vscode-extension-tester";
 
 describe("Migration Tests", function () {

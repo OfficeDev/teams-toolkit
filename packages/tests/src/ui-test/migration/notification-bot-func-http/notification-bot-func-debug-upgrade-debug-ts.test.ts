@@ -11,7 +11,7 @@ import {
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { getScreenshotName } from "../../utils/nameUtil";
+import { getScreenshotName } from "../../../utils/nameUtil";
 import {
   validateNotificationBot,
   initPage,

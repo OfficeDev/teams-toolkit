@@ -16,7 +16,7 @@ import {
   initPage,
 } from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
-import { getScreenshotName } from "../../utils/nameUtil";
+import { getScreenshotName } from "../../../utils/nameUtil";
 import {
   validateNotification,
   startDebugging,

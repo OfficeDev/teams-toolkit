@@ -434,7 +434,6 @@ export class CliHelper {
     V3: boolean,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + V3);
     if (V3) {
       process.env["TEAMSFX_V3"] = "true";
       process.env["TEAMSFX_V3_MIGRATION"] = "true";
@@ -443,7 +442,7 @@ export class CliHelper {
       process.env["TEAMSFX_V3_MIGRATION"] = "false";
     }
     console.log("TEAMSFX_V3: " + process.env["TEAMSFX_V3"]);
-    console.log(execAsync("teamsfx -v", { cwd: testFolder }));
+    console.log(await Executor.executeCmd(testFolder, "teamsfx -v"));
     const command = `teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {

@@ -545,7 +545,9 @@ describe("Generator happy path", async () => {
     const language = "ts";
     const foobarTemplateZip = new AdmZip();
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
+    const spyCall = sandbox.spy(fetchTemplateFromLocalAction, "run");
     const result = await Generator.generateTemplate(context, tmpDir, realTemplateName, language);
+    assert.isTrue(spyCall.calledOnce);
     const files = fs.readdirSync(tmpDir);
     if (files.length === 0) {
       assert.fail("template creation failure");

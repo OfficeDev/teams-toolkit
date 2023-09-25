@@ -434,19 +434,16 @@ export class CliHelper {
     V3: boolean,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    if (V3) {
-      process.env["TEAMSFX_V3"] = "true";
-      process.env["TEAMSFX_V3_MIGRATION"] = "true";
-    } else {
-      process.env["TEAMSFX_V3"] = "false";
-      process.env["TEAMSFX_V3_MIGRATION"] = "false";
-    }
+    process.env["TEAMSFX_V3"] = V3 ? "true" : "false";
+    process.env["TEAMSFX_V3_MIGRATION"] = V3 ? "true" : "false";
+
     console.log("TEAMSFX_V3: " + process.env["TEAMSFX_V3"]);
-    console.log(await Executor.executeCmd(testFolder, "teamsfx -v"));
+    console.log(await Executor.execute("teamsfx -v", testFolder));
+
     const command = `teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
-      const result = await Executor.executeCmd(testFolder, command);
+      const result = await Executor.execute(command, testFolder);
 
       const message = `scaffold project to ${path.resolve(
         template
@@ -515,9 +512,8 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ) {
-    const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${
-      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-    } ${options}`;
+    const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
+      } ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -553,9 +549,8 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ) {
-    const command = `teamsfx init infra --interactive false --editor ${editor} --capability ${capability} ${
-      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-    } ${options}`;
+    const command = `teamsfx init infra --interactive false --editor ${editor} --capability ${capability} ${capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
+      } ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

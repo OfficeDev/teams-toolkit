@@ -270,7 +270,7 @@ export class Executor {
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx account set --subscription ${subscription}`;
+    const command = `teamsapp auth set --subscription ${subscription}`;
     return this.execute(command, projectPath, processEnv);
   }
 

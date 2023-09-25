@@ -104,7 +104,9 @@ export async function getBotSiteEndpoint(
   const context = dotenvUtil.deserialize(
     await fs.readFile(configFilePath, { encoding: "utf8" })
   );
-  const endpointUrl = context.obj[`${endpoint}`];
+  const endpointUrl =
+    context.obj[`${endpoint}`] ??
+    context.obj["PROVISIONOUTPUT__BOTOUTPUT__ENDPOINT"];
   const result = endpointUrl.includes("https://")
     ? endpointUrl
     : "https://" + endpointUrl;

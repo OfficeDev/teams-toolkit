@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
@@ -54,7 +57,6 @@ describe("Migration Tests", function () {
       // create v2 project using CLI
       await sampledebugContext.createTemplateCLI(false);
       // verify popup
-
       await validateNotification(Notification.Upgrade);
 
       // local debug

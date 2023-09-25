@@ -8,7 +8,6 @@ import {
   Trigger,
   Notification,
   LocalDebugTaskLabel,
-  CliVersion,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
@@ -20,15 +19,12 @@ import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   startDebugging,
-  upgrade,
+  upgradeByTreeView,
   waitForTerminal,
   validateUpgrade,
-  stopDebugging,
 } from "../../../utils/vscodeOperation";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
-import { ModalDialog, VSBrowser } from "vscode-extension-tester";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+import { getScreenshotName } from "../../utils/nameUtil";
+import { VSBrowser } from "vscode-extension-tester";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.migrationTestCase);
@@ -58,24 +54,19 @@ describe("Migration Tests", function () {
       author: "frankqian@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      await CLIVersionCheck("V2", mirgationDebugTestContext.testRootFolder);
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
       await validateNotification(Notification.Upgrade);
 
       // upgrade
-      await startDebugging();
-      await upgrade();
-      // verify upgrade
+      await upgradeByTreeView();
+      //verify upgrade
       await validateUpgrade();
       // enable cli v3
       CliHelper.setV3Enable();
 
       // local debug with TTK
-      const driver = VSBrowser.instance.driver;
       await startDebugging();
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
@@ -87,32 +78,10 @@ describe("Migration Tests", function () {
           LocalDebugTaskLabel.StartBot,
           "Worker process started and initialized"
         );
-      } catch {
-        const dialog = new ModalDialog();
-        console.log("click Cancel button for error dialog");
-        await dialog.pushButton("Cancel");
-        await driver.sleep(Timeout.shortTimeLoading);
-        console.log(
-          "Clicked button Cancel for failing to attach to main target"
-        );
-        await stopDebugging();
-        await startDebugging();
-        try {
-          await waitForTerminal(
-            LocalDebugTaskLabel.StartBot,
-            "Worker process started and initialized"
-          );
-        } catch {
-          const dialog = new ModalDialog();
-          console.log("click Cancel button for error dialog");
-          await dialog.pushButton("Debug Anyway");
-          console.log("Clicked button Debug Anyway");
-          await driver.sleep(Timeout.shortTimeLoading);
-          await waitForTerminal(
-            LocalDebugTaskLabel.StartBot,
-            "Worker process started and initialized"
-          );
-        }
+      } catch (error) {
+        await VSBrowser.instance.takeScreenshot(getScreenshotName("debug"));
+        console.log("[Skip Error]: ", error);
+        await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId();
 

@@ -329,6 +329,10 @@ jobs:
           ref: main
           path: ./packages/tests/resource
 
+      - name: Enable legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
+
       - name: Get VSCode & chromedriver
         working-directory: packages/tests
         run: |

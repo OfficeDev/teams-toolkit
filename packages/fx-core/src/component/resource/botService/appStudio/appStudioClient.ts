@@ -27,8 +27,13 @@ import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
 import { ErrorContextMW } from "../../../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
+import { TelemetryProperty } from "../../../../common/telemetry";
 
-function handleBotFrameworkError(e: any, apiName: string): void | undefined {
+function handleBotFrameworkError(
+  e: any,
+  apiName: string,
+  telemetryProperties?: { [key: string]: string }
+): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {
     return undefined; // Stands for NotFound.
   } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
@@ -39,7 +44,7 @@ function handleBotFrameworkError(e: any, apiName: string): void | undefined {
     throw new BotFrameworkConflictResultError();
   } else {
     e.teamsfxUrlName = TeamsFxUrlNames[apiName];
-    throw AppStudio.wrapException(e, apiName) as SystemError;
+    throw AppStudio.wrapException(e, apiName, telemetryProperties) as SystemError;
   }
 }
 
@@ -79,7 +84,10 @@ export class AppStudioClient {
     token: string,
     botId: string
   ): Promise<IBotRegistration | undefined> {
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.GET_BOT);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryProperty.BotId]: botId,
+    };
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.GET_BOT, telemetryProperties);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -88,14 +96,14 @@ export class AppStudioClient {
       );
       if (isHappyResponse(response)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.GET_BOT);
+        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.GET_BOT, telemetryProperties);
         return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
         throw new Error("Failed to get data");
       }
     } catch (e) {
-      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT, telemetryProperties);
     }
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
@@ -105,14 +113,17 @@ export class AppStudioClient {
     checkExistence = true,
     context?: Context
   ): Promise<void> {
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryProperty.BotId]: registration.botId ?? "",
+    };
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.CREATE_BOT, telemetryProperties);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     if (registration.botId && checkExistence) {
       const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
-        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
+        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT, telemetryProperties);
         return;
       }
     }
@@ -124,9 +135,9 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
       }
-      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
+      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT, telemetryProperties);
     } catch (e) {
-      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.CREATE_BOT);
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.CREATE_BOT, telemetryProperties);
     }
 
     return;
@@ -156,7 +167,10 @@ export class AppStudioClient {
     token: string,
     botReg: IBotRegistration
   ): Promise<void> {
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryProperty.BotId]: botReg.botId ?? "",
+    };
+    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_BOT, telemetryProperties);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -167,9 +181,9 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
       }
-      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
+      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_BOT, telemetryProperties);
     } catch (e) {
-      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT, telemetryProperties);
     }
 
     return;

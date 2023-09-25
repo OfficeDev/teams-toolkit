@@ -12,6 +12,7 @@ export enum TelemetryProperty {
   Feature = "feature",
   Hosting = "hosting",
   AppId = "appid",
+  BotId = "botid",
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",

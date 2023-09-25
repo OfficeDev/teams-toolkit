@@ -314,7 +314,15 @@ jobs:
           npm install @microsoft/teamsfx-cli@${{ needs.setup.outputs.npm-tag }}
 
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: v1.1.0
+          path: ./packages/tests/resource
+
+      - name: Download samples
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -322,7 +330,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples from another repo
-        if: contains(matrix.test-case, 'proactive-message')
+        if: contains(matrix.test-case, 'proactive-message') && contains(matrix.test-case,  'upgrade') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples

@@ -446,11 +446,7 @@ export class CliHelper {
     const command = `teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
+      const result = await Executor.executeCmd(testFolder, command);
 
       const message = `scaffold project to ${path.resolve(
         template

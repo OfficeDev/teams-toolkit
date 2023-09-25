@@ -13,7 +13,7 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import {
   Generator,
   templateDefaultOnActionError,
@@ -38,6 +38,7 @@ import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
+import * as folder from "../../../../fx-core/src/folder";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -541,15 +542,25 @@ describe("Generator happy path", async () => {
   });
 
   it("template from fallback", async () => {
-    const realTemplateName = "non-sso-tab";
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
     const language = "ts";
+    const inputDir = path.join(tmpDir, "input");
+    const fallbackDir = path.join(tmpDir, "fallback");
+    await fs.ensureDir(path.join(inputDir, templateName));
+    await fs.ensureDir(fallbackDir);
+    await fs.writeFile(path.join(inputDir, templateName, mockFileName), mockFileData);
     const foobarTemplateZip = new AdmZip();
+    const templateZip = new AdmZip();
+    templateZip.addLocalFolder(inputDir);
+    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
+    sandbox.stub(folder, "getTemplatesFolder").returns(tmpDir);
     const spyCall = sandbox.spy(fetchTemplateFromLocalAction, "run");
-    const result = await Generator.generateTemplate(context, tmpDir, realTemplateName, language);
+    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(spyCall.calledOnce);
-    const files = fs.readdirSync(tmpDir);
-    if (files.length === 0) {
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
       assert.fail("template creation failure");
     }
     assert.isTrue(result.isOk());

@@ -442,7 +442,7 @@ export class CliHelper {
       process.env["TEAMSFX_V3"] = "false";
       process.env["TEAMSFX_V3_MIGRATION"] = "false";
     }
-    const command = `teamsfx new template ${template} --interactive false `;
+    const command = `teamsfx new sample ${template} --interactive false `;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

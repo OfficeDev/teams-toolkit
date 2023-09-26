@@ -29,7 +29,7 @@ deploy:
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
       REACT_APP_FUNC_NAME: getUserProfile
       REACT_APP_FUNC_ENDPOINT: ${{API_FUNCTION_ENDPOINT}}
-{{#azureStorageDeploy}} artifactFolder: build {{/azureStorageDeploy}}
+{{#azureStorageDeploy}} artifactFolder: build, ignoreFile {{/azureStorageDeploy}}
 {{#cliRunNpmCommand}} install, workingDirectory: api, args: install {{/cliRunNpmCommand}}
 {{#cliRunNpmCommand}} workingDirectory: api, args: run build --if-present, build {{/cliRunNpmCommand}}
 {{#devToolInstall}} dotnet {{/devToolInstall}}

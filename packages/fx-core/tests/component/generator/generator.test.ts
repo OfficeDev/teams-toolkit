@@ -26,7 +26,7 @@ import { createSandbox } from "sinon";
 import {
   GeneratorContext,
   fetchTemplateUrlWithTagAction,
-  fetchTemplateZipFromLocalAction,
+  fetchTemplateFromLocalAction,
   fetchZipFromUrlAction,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
@@ -38,6 +38,7 @@ import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
+import * as folderUtils from "../../../../fx-core/src/folder";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -371,7 +372,7 @@ describe("Generator error", async () => {
 
   it("template fallback error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
+    sandbox.stub(fetchTemplateFromLocalAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
@@ -381,7 +382,7 @@ describe("Generator error", async () => {
   it("unzip error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").resolves();
     sandbox.stub(fetchZipFromUrlAction, "run").resolves();
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").resolves();
+    sandbox.stub(fetchTemplateFromLocalAction, "run").resolves();
     sandbox.stub(unzipAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
@@ -539,6 +540,28 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
+  });
+
+  it("template from fallback", async () => {
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const language = "ts";
+    const fallbackDir = path.join(tmpDir, "fallback");
+    await fs.ensureDir(fallbackDir);
+    const foobarTemplateZip = new AdmZip();
+    const templateZip = new AdmZip();
+    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
+    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+    const spyCall = sandbox.spy(fetchTemplateFromLocalAction, "run");
+    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
+    assert.isTrue(spyCall.calledOnce);
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("template creation failure");
+    }
+    assert.isTrue(result.isOk());
   });
 });
 

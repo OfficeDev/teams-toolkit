@@ -119,10 +119,10 @@ export const fetchZipFromUrlAction: GeneratorAction = {
   },
 };
 
-export const fetchTemplateZipFromLocalAction: GeneratorAction = {
+export const fetchTemplateFromLocalAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateZipFromLocal,
   run: async (context: GeneratorContext) => {
-    if (context.zip) {
+    if (context.outputs?.length !== 0) {
       return;
     }
     context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
@@ -133,16 +133,23 @@ export const fetchTemplateZipFromLocalAction: GeneratorAction = {
 
     const data: Buffer = await fs.readFile(zipPath);
     context.zip = new AdmZip(data);
+    context.outputs = await unzip(
+      context.zip,
+      context.destination,
+      context.fileNameReplaceFn,
+      context.fileDataReplaceFn,
+      context.filterFn
+    );
   },
 };
 
 export const unzipAction: GeneratorAction = {
   name: GeneratorActionName.Unzip,
   run: async (context: GeneratorContext) => {
-    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
     if (!context.zip) {
-      throw new MissKeyError("zip");
+      return;
     }
+    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
     context.outputs = await unzip(
       context.zip,
       context.destination,
@@ -157,8 +164,8 @@ export const TemplateActionSeq: GeneratorAction[] = [
   fetchTemplateZipFromSourceCodeAction,
   fetchTemplateUrlWithTagAction,
   fetchZipFromUrlAction,
-  fetchTemplateZipFromLocalAction,
   unzipAction,
+  fetchTemplateFromLocalAction,
 ];
 
 export const SampleActionSeq: GeneratorAction[] = [fetchZipFromUrlAction, unzipAction];

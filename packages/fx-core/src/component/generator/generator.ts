@@ -73,10 +73,12 @@ export class Generator {
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
-        renderTemplateFileName(fileName, fileData, replaceMap).replace(`${scenario}/`, ""),
+        renderTemplateFileName(fileName, fileData, replaceMap)
+          .replace(/\\/g, "/")
+          .replace(`${scenario}/`, ""),
       fileDataReplaceFn: (fileName, fileData) =>
         renderTemplateFileData(fileName, fileData, replaceMap),
-      filterFn: (fileName) => fileName.startsWith(`${scenario}/`),
+      filterFn: (fileName) => fileName.replace(/\\/g, "/").startsWith(`${scenario}/`),
       onActionError: templateDefaultOnActionError,
     };
     const templateName = `${scenario}-${generatorContext.name}`;

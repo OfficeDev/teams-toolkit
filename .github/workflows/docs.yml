@@ -146,6 +146,7 @@ jobs:
           subject="TeamsFx AKA Link Report ($valid/$total Passed)"
           if [ $invalid -gt 0 ]; then
             subject="[FAILED] $subject"
+            emails="$emails;zhendr@microsoft.com"
           else
             subject="[PASSED] $subject"
           fi

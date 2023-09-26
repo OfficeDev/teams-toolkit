@@ -13,13 +13,7 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import {
-  AuthSvcScopes,
-  Correlator,
-  VersionState,
-  setRegion,
-  isCopilotPluginEnabled,
-} from "@microsoft/teamsfx-core";
+import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,

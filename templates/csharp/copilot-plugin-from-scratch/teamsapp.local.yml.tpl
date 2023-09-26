@@ -14,12 +14,11 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Generate runtime environment variables
-  - uses: file/createOrUpdateEnvironmentFile
+  # Set OPENAPI_SERVER_URL for local launch
+  - uses: script
     with:
-      target: ./env/.env.local
-      envs:
-        OPENAPI_SERVER_URL: https://${{DEV_TUNNEL_URL}}
+      run:
+        echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage

@@ -550,7 +550,7 @@ describe("Generator happy path", async () => {
     await fs.ensureDir(fallbackDir);
     const foobarTemplateZip = new AdmZip();
     const templateZip = new AdmZip();
-    templateZip.addFile(templateName + "/" + mockFileName, Buffer.from(mockFileData));
+    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
     templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);

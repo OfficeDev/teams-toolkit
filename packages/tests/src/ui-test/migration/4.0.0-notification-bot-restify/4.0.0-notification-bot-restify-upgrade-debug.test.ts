@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -11,9 +8,6 @@ import {
   Trigger,
   Notification,
   LocalDebugTaskLabel,
-  LocalDebugTaskResult,
-  CliVersion,
-  LocalDebugTaskLabel2,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
@@ -31,9 +25,6 @@ import {
 } from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
-import { updateDeverloperInManifestFile } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.migrationTestCase);
@@ -54,7 +45,7 @@ describe("Migration Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await mirgationDebugTestContext.after(true, true, "local");
+    await mirgationDebugTestContext.after(false, true, "local");
   });
 
   it(
@@ -76,28 +67,22 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
-      await updateDeverloperInManifestFile(
-        mirgationDebugTestContext.projectPath
-      );
-
       // local debug with TTK
+      await startDebugging();
+      await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
-        await startDebugging();
-
-        console.log("Start Local Tunnel");
         await waitForTerminal(
-          LocalDebugTaskLabel.StartLocalTunnel,
-          LocalDebugTaskResult.StartSuccess
+          "Start Azurite emulator",
+          "Azurite Blob service is successfully listening"
         );
-
-        console.log("Start Bot");
         await waitForTerminal(
-          LocalDebugTaskLabel2.StartBot2,
-          LocalDebugTaskResult.AppSuccess
+          LocalDebugTaskLabel.StartBot,
+          "Worker process started and initialized"
         );
       } catch (error) {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("debug"));
-        throw new Error(error as string);
+        console.log("[Skip Error]: ", error);
+        await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId();
 

@@ -104,7 +104,9 @@ export async function getBotSiteEndpoint(
   const context = dotenvUtil.deserialize(
     await fs.readFile(configFilePath, { encoding: "utf8" })
   );
-  const endpointUrl = context.obj[`${endpoint}`];
+  const endpointUrl =
+    context.obj[`${endpoint}`] ??
+    context.obj["PROVISIONOUTPUT__BOTOUTPUT__ENDPOINT"];
   const result = endpointUrl.includes("https://")
     ? endpointUrl
     : "https://" + endpointUrl;
@@ -153,13 +155,24 @@ export function timeoutPromise(timeout: number) {
 }
 
 export function killPort(port: number): Promise<any> {
-  const command = `kill -9 $(lsof -t -i:${port})`;
-  return execAsync(command);
+  // windows
+  if (process.platform === "win32") {
+    const command = `FOR /F "tokens=5 delims= " %P IN ('netstat -a -n -o ^| findstr :${port}') DO TaskKill.exe /F /PID %P`;
+    return execAsync(command);
+  } else {
+    const command = `kill -9 $(lsof -t -i:${port})`;
+    return execAsync(command);
+  }
 }
 
 export function killNgrok(): Promise<any> {
-  const command = `kill -9 $(lsof -i | grep ngrok | awk '{print $2}')`;
-  return execAsync(command);
+  if (process.platform === "win32") {
+    const command = `taskkill /f /im ngrok.exe`;
+    return execAsync(command);
+  } else {
+    const command = `kill -9 $(lsof -i | grep ngrok | awk '{print $2}')`;
+    return execAsync(command);
+  }
 }
 
 export function editDotEnvFile(

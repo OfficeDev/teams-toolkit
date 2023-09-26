@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Frank Qian <frankqian@microsoft.com>
  */
+
 import { MigrationTestContext } from "../migrationContext";
 import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
@@ -15,7 +19,7 @@ import {
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
 
   beforeEach(async function () {

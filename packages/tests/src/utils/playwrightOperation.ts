@@ -206,9 +206,21 @@ export async function initPage(
       try {
         await page?.waitForSelector(".team-information span:has-text('About')");
       } catch (error) {
-        await page?.waitForSelector(
-          ".ts-messages-header span:has-text('About')"
-        );
+        try {
+          await page?.waitForSelector(
+            ".ts-messages-header span:has-text('About')"
+          );
+        } catch (error) {
+          try {
+            await page?.waitForSelector(
+              ".team-information span:has-text('Chat')"
+            );
+          } catch (error) {
+            await page?.waitForSelector(
+              ".ts-messages-header span:has-text('Chat')"
+            );
+          }
+        }
       }
       console.log("[success] app loaded");
     } catch (error) {
@@ -317,9 +329,15 @@ export async function initTeamsPage(
           "iframe.embedded-page-content"
         );
         const frame = await frameElementHandle?.contentFrame();
-        await frame?.waitForSelector(
-          `h1:has-text('Add ${options?.teamsAppName} to a team')`
-        );
+        try {
+          await frame?.waitForSelector(
+            `h1:has-text('Add ${options?.teamsAppName} to a team')`
+          );
+        } catch (error) {
+          await frame?.waitForSelector(
+            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
+          );
+        }
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");
         return;
@@ -878,7 +896,7 @@ export async function validateEchoBot(
 export async function validateBot(
   page: Page,
   options: { botCommand?: string; expected?: ValidationContent } = {
-    botCommand: "helloWorld",
+    botCommand: "welcome",
     expected: ValidationContent.Bot,
   }
 ) {
@@ -949,7 +967,7 @@ export async function validateBot(
         await executeBotSuggestionCommand(
           page,
           frame,
-          options?.botCommand || "helloWorld"
+          options?.botCommand || "welcome"
         );
         await frame?.click('button[name="send"]');
         await frame?.waitForSelector(

@@ -408,7 +408,12 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv
   ) {
     console.log("isV3Enabled: " + isV3Enabled());
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    let command;
+    if (isV3Enabled()) {
+      command = `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
+    } else {
+      command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    }
     const timeout = 100000;
     try {
       await Executor.execute("teamsfx -v", testFolder);
@@ -434,22 +439,16 @@ export class CliHelper {
     V3: boolean,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + V3);
-    if (V3) {
-      process.env["TEAMSFX_V3"] = "true";
-      process.env["TEAMSFX_V3_MIGRATION"] = "true";
-    } else {
-      process.env["TEAMSFX_V3"] = "false";
-      process.env["TEAMSFX_V3_MIGRATION"] = "false";
-    }
-    const command = `teamsfx new sample ${template} --interactive false `;
+    process.env["TEAMSFX_V3"] = V3 ? "true" : "false";
+    process.env["TEAMSFX_V3_MIGRATION"] = V3 ? "true" : "false";
+
+    console.log("TEAMSFX_V3: " + process.env["TEAMSFX_V3"]);
+    console.log(await Executor.execute("teamsfx -v", testFolder));
+
+    const command = `teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
+      const result = await Executor.execute(command, testFolder);
 
       const message = `scaffold project to ${path.resolve(
         template

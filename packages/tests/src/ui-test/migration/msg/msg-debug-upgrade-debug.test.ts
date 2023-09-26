@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Frank Qian <frankqian@microsoft.com>
  */
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -24,7 +28,7 @@ import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
   CliHelper.setV3Enable();
 

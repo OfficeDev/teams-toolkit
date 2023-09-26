@@ -7,7 +7,6 @@ import {
   Capability,
   Trigger,
   Notification,
-  CliVersion,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
@@ -18,16 +17,13 @@ import {
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
-  startDebugging,
-  upgrade,
+  upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
 import {
   CLIVersionCheck,
   getBotSiteEndpoint,
 } from "../../../utils/commonUtils";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -57,23 +53,17 @@ describe("Migration Tests", function () {
       author: "frankqian@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      await CLIVersionCheck("V2", mirgationDebugTestContext.testRootFolder);
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
-      try {
-        await validateNotification(Notification.Upgrade);
-      } catch (error) {
-        await validateNotification(Notification.Upgrade_dicarded);
-      }
+      await validateNotification(Notification.Upgrade);
 
       // upgrade
-      await startDebugging();
-      await upgrade();
+      await upgradeByTreeView();
       // verify upgrade
       await validateUpgrade();
+      // enable cli v3
+      CliHelper.setV3Enable();
 
       // install test cil in project
       await CliHelper.installCLI(

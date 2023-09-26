@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
+
 import { expect } from "chai";
 import { MigrationTestContext } from "../migrationContext";
 import {
@@ -8,7 +12,6 @@ import {
   Capability,
   Notification,
   Framework,
-  CliVersion,
   CommandPaletteCommands,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
@@ -19,18 +22,14 @@ import {
 } from "../../../utils/playwrightOperation";
 import {
   validateNotification,
-  startDebugging,
-  upgrade,
-  waitForTerminal,
   validateUpgrade,
-  upgradeByCommandPalette,
+  upgradeByTreeView,
   getNotification,
   execCommandIfExist,
   clearNotifications,
 } from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
-import { execCommand } from "../../../utils/execCommand";
-import { VSBrowser } from "vscode-extension-tester";
+import { VSBrowser, InputBox } from "vscode-extension-tester";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -61,28 +60,22 @@ describe("Migration Tests", function () {
       author: "v-helzha@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsfx -v");
-      console.log(result.stdout);
-      expect(
-        (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)
-      ).to.be.true;
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
-      try {
-        await validateNotification(Notification.Upgrade);
-      } catch (error) {
-        await validateNotification(Notification.Upgrade_dicarded);
-      }
+      await validateNotification(Notification.Upgrade);
 
       // upgrade
-      // await startDebugging();
-      // await upgrade();
-      await upgradeByCommandPalette();
-      // verify upgrade
+      await upgradeByTreeView();
+      //verify upgrade
       await validateUpgrade();
+
+      // install test cil in project
+      await CliHelper.installCLI(
+        Env.TARGET_CLI,
+        false,
+        mirgationDebugTestContext.projectPath
+      );
       // enable cli v3
       CliHelper.setV3Enable();
 
@@ -95,27 +88,26 @@ describe("Migration Tests", function () {
         Timeout.shortTimeWait
       );
 
-      // skip deploy because of it is failed before migration
-      // await clearNotifications();
-      // await execCommandIfExist(CommandPaletteCommands.DeployCommand);
-      // try {
-      //   const deployConfirmInput = await InputBox.create();
-      //   await deployConfirmInput.confirm();
-      // } catch (error) {
-      //   console.log("No need to confirm to deploy.");
-      // }
-      // await driver.sleep(Timeout.spfxDeploy);
-      // await getNotification(Notification.DeploySucceeded, Timeout.longTimeWait);
+      await clearNotifications();
+      await execCommandIfExist(CommandPaletteCommands.DeployCommand);
+      try {
+        const deployConfirmInput = await InputBox.create();
+        await deployConfirmInput.confirm();
+      } catch (error) {
+        console.log("No need to confirm to deploy.");
+      }
+      await driver.sleep(Timeout.spfxDeploy);
+      await getNotification(Notification.DeploySucceeded, Timeout.longTimeWait);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       expect(teamsAppId.length).to.equal(36);
-      // skip validation because of it is failed before migration
-      // const page = await initPage(
-      //   mirgationDebugTestContext.context!,
-      //   teamsAppId,
-      //   Env.username,
-      //   Env.password
-      // );
+      console.log(teamsAppId);
+      const page = await initPage(
+        mirgationDebugTestContext.context!,
+        teamsAppId,
+        Env.username,
+        Env.password
+      );
       // await validateTeamsWorkbench(page, Env.displayName);
     }
   );

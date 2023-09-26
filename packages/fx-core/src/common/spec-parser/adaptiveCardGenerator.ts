@@ -4,7 +4,7 @@
 
 import { OpenAPIV3 } from "openapi-types";
 import * as util from "util";
-import { getResponseJson, isWellknownResultPropertyName } from "./utils";
+import { getResponseJson, isWellKnownName } from "./utils";
 import { AdaptiveCard, ArrayElement, ErrorType, TextBlockElement } from "./interfaces";
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
@@ -152,7 +152,10 @@ export function getResponseJsonPathFromSchema(schema: OpenAPIV3.SchemaObject): s
     const { properties } = schema;
     for (const property in properties) {
       const schema = properties[property] as OpenAPIV3.SchemaObject;
-      if (schema.type === "array" && isWellknownResultPropertyName(property)) {
+      if (
+        schema.type === "array" &&
+        isWellKnownName(property, ConstantString.WellknownResultNames)
+      ) {
         return property;
       }
     }

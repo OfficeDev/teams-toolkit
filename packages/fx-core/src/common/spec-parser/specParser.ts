@@ -229,12 +229,7 @@ export class SpecParser {
             try {
               const [card, jsonPath] = generateAdaptiveCard(operation);
               const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
-              const wrappedCard = wrapAdaptiveCard(
-                card,
-                jsonPath,
-                operation.operationId!,
-                method.toUpperCase() + " " + url
-              );
+              const wrappedCard = wrapAdaptiveCard(card, jsonPath);
               await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
             } catch (err) {
               result.allSuccess = false;

@@ -168,6 +168,7 @@ export async function generateCommands(
                 title: operationItem.summary ?? "",
                 id: operationId,
                 parameters: parameters,
+                description: operationItem.description ?? "",
                 apiResponseRenderingTemplateFile: (await fs.pathExists(adaptiveCardPath))
                   ? getRelativePath(manifestPath, adaptiveCardPath)
                   : "",

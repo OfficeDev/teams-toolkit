@@ -660,7 +660,21 @@ describe("SpecParser", () => {
         .resolves([{}, []] as any);
       const generateAdaptiveCardStub = sinon
         .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
-        .returns([] as any);
+        .returns([
+          {
+            type: "AdaptiveCard",
+            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            version: "1.5",
+            body: [
+              {
+                type: "TextBlock",
+                text: "id: ${id}",
+                wrap: true,
+              },
+            ],
+          },
+          "$",
+        ]);
 
       const filter = ["get /hello"];
 

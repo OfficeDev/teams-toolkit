@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export const copilotPluginApiSpecOptionId = "copilot-plugin-existing-api";
-export const copilotPluginOpenAIPluginOptionId = "copilot-plugin-openai-plugin";
-export const copilotPluginExistingApiOptionIds = [
-  copilotPluginApiSpecOptionId,
-  copilotPluginOpenAIPluginOptionId,
+export const apiPluginApiSpecOptionId = "api-plugin-existing-api";
+export const apiPluginOpenAIPluginOptionId = "api-plugin-openai-plugin";
+export const apiPluginExistingApiOptionIds = [
+  apiPluginApiSpecOptionId,
+  apiPluginOpenAIPluginOptionId,
 ];
-export const copilotPluginNewApiOptionId = "copilot-plugin-new-api";
-export const copilotPluginOptionIds = [
-  copilotPluginNewApiOptionId,
-  copilotPluginApiSpecOptionId,
-  copilotPluginOpenAIPluginOptionId,
+export const apiPluginNewApiOptionId = "api-plugin-new-api";
+export const apiPluginOptionIds = [
+  apiPluginNewApiOptionId,
+  apiPluginApiSpecOptionId,
+  apiPluginOpenAIPluginOptionId,
 ];

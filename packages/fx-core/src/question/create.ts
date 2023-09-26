@@ -46,9 +46,9 @@ import { EmptyOptionError, assembleError } from "../error";
 import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
-  copilotPluginApiSpecOptionId,
-  copilotPluginNewApiOptionId,
-  copilotPluginOpenAIPluginOptionId,
+  apiPluginApiSpecOptionId,
+  apiPluginNewApiOptionId,
+  apiPluginOpenAIPluginOptionId,
 } from "./constants";
 import { Correlator } from "../common/correlator";
 
@@ -115,7 +115,7 @@ export class ProjectTypeOptions {
 
   static apiPlugin(platform?: Platform): OptionItem {
     return {
-      id: "copilot-plugin-type",
+      id: "api-plugin-type",
       label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.apiPlugin.label"
       )}`,
@@ -496,7 +496,7 @@ export class CapabilityOptions {
   // API plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: copilotPluginNewApiOptionId,
+      id: apiPluginNewApiOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -508,7 +508,7 @@ export class CapabilityOptions {
 
   static copilotPluginApiSpec(): OptionItem {
     return {
-      id: copilotPluginApiSpecOptionId,
+      id: apiPluginApiSpecOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
@@ -520,7 +520,7 @@ export class CapabilityOptions {
 
   static copilotPluginOpenAIPlugin(): OptionItem {
     return {
-      id: copilotPluginOpenAIPluginOptionId,
+      id: apiPluginOpenAIPluginOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginAIPluginOption.label"
       ),

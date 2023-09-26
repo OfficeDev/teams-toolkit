@@ -31,7 +31,7 @@ export enum QuestionNames {
   RepalceTabUrl = "tdp-tab-url",
   ValidateMethod = "validate-method",
   AppPackagePath = "appPackagePath",
-  CopilotPluginExistingApi = "copilot-plugin-existing-api", // group name for creating a Copilot plugin from existing api
+  apiPluginExistingApi = "api-plugin-existing-api", // group name for creating a Copilot plugin from existing api
   ApiSpecLocation = "openapi-spec-location",
   OpenAIPluginManifest = "openai-plugin-manifest",
   ApiOperation = "api-operation",

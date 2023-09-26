@@ -50,7 +50,6 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
-import { Correlator } from "../../src/common/correlator";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {

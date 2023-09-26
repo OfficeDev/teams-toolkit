@@ -13,8 +13,6 @@ import {
   CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
-  QuestionNames,
-  isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -26,15 +24,6 @@ import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryE
 import { createSampleCommand } from "./createSample";
 
 function adjustOptions(options: CLICommandOption[]) {
-  if (!isApiCopilotPluginEnabled()) {
-    //skip copilot plugin options if API copilot plugin is not enabled
-    const copilotPluginQuestionNames = [
-      QuestionNames.ApiSpecLocation.toString(),
-      QuestionNames.OpenAIPluginManifest.toString(),
-      QuestionNames.ApiOperation.toString(),
-    ];
-    options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
-  }
   for (const option of options) {
     if (option.type === "string" && option.name === CliQuestionName.Capability) {
       // use dynamic options for capability question

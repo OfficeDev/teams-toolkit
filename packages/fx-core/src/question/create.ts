@@ -21,11 +21,7 @@ import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
-import {
-  isCLIDotNetEnabled,
-  isCopilotPluginEnabled,
-  isApiCopilotPluginEnabled,
-} from "../common/featureFlags";
+import { isCLIDotNetEnabled, isCopilotPluginEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
 import { convertToAlphanumericOnly } from "../common/utils";
@@ -117,13 +113,23 @@ export class ProjectTypeOptions {
     };
   }
 
-  static copilotPlugin(platform?: Platform): OptionItem {
+  // static copilotPlugin(platform?: Platform): OptionItem {
+  //   return {
+  //     id: "copilot-plugin-type",
+  //     label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
+  //       "core.createProjectQuestion.projectType.copilotPlugin.label"
+  //     )}`,
+  //     detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
+  //   };
+  // }
+
+  static apiPlugin(platform?: Platform): OptionItem {
     return {
-      id: "copilot-plugin-type",
+      id: "api-plugin-type",
       label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.projectType.copilotPlugin.label"
+        "core.createProjectQuestion.projectType.apiPlugin.label"
       )}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
+      detail: getLocalizedString("core.createProjectQuestion.projectType.apiPlugin.detail"),
     };
   }
 }
@@ -141,22 +147,12 @@ function projectTypeQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
-      let staticOptions: StaticOptions;
-
-      if (isApiCopilotPluginEnabled()) {
-        staticOptions = [
-          ProjectTypeOptions.copilotPlugin(inputs.platform),
-          ProjectTypeOptions.bot(inputs.platform),
-          ProjectTypeOptions.tab(inputs.platform),
-          ProjectTypeOptions.me(inputs.platform),
-        ];
-      } else {
-        staticOptions = [
-          ProjectTypeOptions.bot(inputs.platform),
-          ProjectTypeOptions.tab(inputs.platform),
-          ProjectTypeOptions.me(inputs.platform),
-        ];
-      }
+      const staticOptions = [
+        ProjectTypeOptions.apiPlugin(inputs.platform),
+        ProjectTypeOptions.bot(inputs.platform),
+        ProjectTypeOptions.tab(inputs.platform),
+        ProjectTypeOptions.me(inputs.platform),
+      ];
 
       if (isFromDevPortal(inputs)) {
         const projectType = getProjectTypeAndCapability(inputs.teamsAppFromTdp)?.projectType;
@@ -386,7 +382,7 @@ export class CapabilityOptions {
 
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     return [
-      ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.apiPlugins(),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
@@ -435,11 +431,11 @@ export class CapabilityOptions {
         ];
   }
 
-  static copilotPlugins(): OptionItem[] {
+  static apiPlugins(): OptionItem[] {
     return [
       CapabilityOptions.copilotPluginNewApi(),
       CapabilityOptions.copilotPluginApiSpec(),
-      CapabilityOptions.copilotPluginOpenAIPlugin(),
+      // CapabilityOptions.copilotPluginOpenAIPlugin(),
     ];
   }
 
@@ -451,7 +447,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(false),
-      ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.apiPlugins(),
     ];
 
     return capabilityOptions;
@@ -465,10 +461,9 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(true),
+      ...CapabilityOptions.apiPlugins(),
     ];
-    if (isApiCopilotPluginEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
-    }
+
     return capabilityOptions;
   }
 
@@ -508,7 +503,7 @@ export class CapabilityOptions {
     };
   }
 
-  // copilot plugin
+  // API plugin
   static copilotPluginNewApi(): OptionItem {
     return {
       id: copilotPluginNewApiOptionId,
@@ -571,8 +566,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
           );
         case ProjectTypeOptions.outlookAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
-        case ProjectTypeOptions.copilotPlugin().id:
-          return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
+        case ProjectTypeOptions.apiPlugin().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.apiPlugin.title");
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
@@ -611,14 +606,14 @@ export function capabilityQuestion(): SingleSelectQuestion {
         return CapabilityOptions.mes();
       } else if (projectType === ProjectTypeOptions.outlookAddin().id) {
         return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
-      } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
-        return CapabilityOptions.copilotPlugins();
+      } else if (projectType === ProjectTypeOptions.apiPlugin().id) {
+        return CapabilityOptions.apiPlugins();
       } else {
         return CapabilityOptions.all(inputs);
       }
     },
     placeholder: (inputs: Inputs) => {
-      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.copilotPlugin().id) {
+      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.apiPlugin().id) {
         return getLocalizedString(
           "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
         );
@@ -1579,16 +1574,16 @@ export function capabilitySubTree(): IQTreeNode {
             CapabilityOptions.copilotPluginOpenAIPlugin().id,
           ],
         },
-        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
+        data: { type: "group", name: QuestionNames.apiPluginExistingApi },
         children: [
           {
             condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
             data: apiSpecLocationQuestion(),
           },
-          {
-            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
-            data: openAIPluginManifestLocationQuestion(),
-          },
+          // {
+          //   condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
+          //   data: openAIPluginManifestLocationQuestion(),
+          // },
           {
             data: apiOperationQuestion(),
           },
@@ -1692,9 +1687,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
   if (!isCLIDotNetEnabled()) {
     deleteNames.push(QuestionNames.Runtime);
   }
-  if (!isApiCopilotPluginEnabled()) {
-    deleteNames.push(QuestionNames.CopilotPluginExistingApi);
-  }
+
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;
 }

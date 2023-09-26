@@ -38,7 +38,7 @@ import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
-import * as folder from "../../../../fx-core/src/folder";
+import * as folderUtils from "../../../../fx-core/src/folder";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -553,7 +553,7 @@ describe("Generator happy path", async () => {
     templateZip.addFile(templateName + "/" + mockFileName, Buffer.from(mockFileData));
     templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
-    sandbox.stub(folder, "getTemplatesFolder").returns(tmpDir);
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
     const spyCall = sandbox.spy(fetchTemplateFromLocalAction, "run");
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(spyCall.calledOnce);

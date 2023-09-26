@@ -286,7 +286,7 @@
   "core.createProjectQuestion.title": "New Project",
   "core.createProjectQuestion.capability.copilotPluginNewApiOption.label": "Start with a new API",
   "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail": "Create a plugin with a new API from Azure Functions",
-  "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label": "Start with an OpenAPI Description document",
+  "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label": "Start with an OpenAPI Description Document",
   "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail": "Create a plugin from your existing API",
   "core.createProjectQuestion.capability.copilotPluginAIPluginOption.label": "Start with an OpenAI Plugin",
   "core.createProjectQuestion.capability.copilotPluginAIPluginOption.detail": "Convert an OpenAI Plugin to Microsoft 365 Copilot plugin",

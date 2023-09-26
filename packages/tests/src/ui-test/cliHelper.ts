@@ -408,7 +408,12 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv
   ) {
     console.log("isV3Enabled: " + isV3Enabled());
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    let command;
+    if (isV3Enabled()) {
+      command = `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
+    } else {
+      command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    }
     const timeout = 100000;
     try {
       await Executor.execute("teamsfx -v", testFolder);
@@ -512,8 +517,9 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ) {
-    const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-      } ${options}`;
+    const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${
+      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
+    } ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -549,8 +555,9 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ) {
-    const command = `teamsfx init infra --interactive false --editor ${editor} --capability ${capability} ${capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-      } ${options}`;
+    const command = `teamsfx init infra --interactive false --editor ${editor} --capability ${capability} ${
+      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
+    } ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

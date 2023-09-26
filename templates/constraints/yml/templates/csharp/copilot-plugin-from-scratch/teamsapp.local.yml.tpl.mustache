@@ -3,7 +3,7 @@
 provision:
 {{#teamsAppCreate}} {{/teamsAppCreate}}
 
-{{#fileCreateOrUpdateEnvironmentFile}} target: ./env/.env.local, COPILOT {{/fileCreateOrUpdateEnvironmentFile}}
+{{#script}} COPILOT {{/script}}
 
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
 

@@ -1564,7 +1564,7 @@ export function capabilitySubTree(): IQTreeNode {
             CapabilityOptions.copilotPluginOpenAIPlugin().id,
           ],
         },
-        data: { type: "group", name: QuestionNames.apiPluginExistingApi },
+        data: { type: "group", name: QuestionNames.ApiPluginExistingApi },
         children: [
           {
             condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },

@@ -75,7 +75,7 @@ describe("CLI commands", () => {
     }
   });
 
-  describe.only("getCreateCommand", async () => {
+  describe("getCreateCommand", async () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "false",

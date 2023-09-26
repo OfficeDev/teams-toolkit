@@ -287,7 +287,7 @@
   "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail": "Create a plugin from your existing API",
   "core.createProjectQuestion.capability.copilotPluginAIPluginOption.label": "Start with an OpenAI Plugin",
   "core.createProjectQuestion.capability.copilotPluginAIPluginOption.detail": "Convert an OpenAI Plugin to Microsoft 365 Copilot plugin",
-  "core.createProjectQuestion.apiSpec.title": "OpenAPI Spec",
+  "core.createProjectQuestion.apiSpec.title": "OpenAPI Description Document",
   "core.createProjectQuestion.apiSpec.placeholder": "Enter OpenAPI Description Document URL",
   "core.createProjectQuestion.apiSpecInputUrl.label": "Enter OpenAPI Description Document Location",
   "core.createProjectQuestion.OpenAIPluginDomain": "OpenAI Plugin Manifest",

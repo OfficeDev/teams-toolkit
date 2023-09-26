@@ -261,6 +261,25 @@ describe("OfficeAddinGenerator", function () {
       await fse.rm(testFolder, { recursive: true });
     }
   });
+
+  it(`should generate common template if language is "No Options"`, async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+      "programming-language": "No Options",
+    };
+    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
+    const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(
+      // The forth parameter is the language parameter, which should be undefined so that
+      // common template will be scaffolded.
+      result.isOk() && stub.calledWith(context, testFolder, "office-addin", undefined)
+    );
+  });
 });
 
 describe("helperMethods", async () => {

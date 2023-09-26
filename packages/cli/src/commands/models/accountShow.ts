@@ -11,7 +11,8 @@ import M365TokenProvider from "../../commonlib/m365Login";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const accountShowCommand: CLICommand = {
-  name: "show",
+  name: "list",
+  aliases: ["show"],
   description: "Display all connected Microsoft 365 and Azure accounts.",
   telemetry: {
     event: TelemetryEvent.AccountShow,

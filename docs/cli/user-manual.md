@@ -19,7 +19,7 @@ Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check
 | `teamsfx` Commands  | Descriptions |
 |:----------------  |:-------------|
 | `teamsfx new`       | Create a new Teams application. |
-| `teamsfx account`   | Manage cloud service accounts. The supported cloud services are 'Azure' and 'Microsoft 365'.          |
+| `teamsapp auth`   | Manage cloud service accounts. The supported cloud services are 'Azure' and 'Microsoft 365'.          |
 | `teamsfx env`       | Manage the environments. |
 | `teamsfx capability`| Add new capabilities to the current application.         |
 | `teamsfx resource`  | Manage the resources in the current application.         |
@@ -77,16 +77,16 @@ teamsfx new --interactive false --app-name newtabbotapp --capability tab bot --p
 teamsfx new --interactive false app-name newapp --azure-resources sql function --programming-language typescript
 ```
 
-## `teamsfx account`
+## `teamsapp auth`
 
 Manage cloud service accounts. The supported cloud services are `Azure` and `Microsoft 365`.
 
-| `teamsFx account` Commands  | Descriptions |
+| `teamsapp auth` Commands  | Descriptions |
 |:----------------  |:-------------|
-| `teamsfx account show`       | Display all connected cloud accounts information. |
-| `teamsfx account login <service>`      | Log in to the selected cloud service. |
-| `teamsfx account logout <service>`      | log out of selected cloud service. |
-| `teamsfx account set --subscription`      | Update account settings to set a subscription ID. |
+| `teamsapp auth show`       | Display all connected cloud accounts information. |
+| `teamsapp auth login <service>`      | Log in to the selected cloud service. |
+| `teamsapp auth logout <service>`      | log out of selected cloud service. |
+| `teamsapp auth set --subscription`      | Update account settings to set a subscription ID. |
 
 ## `teamsfx env`
 
@@ -379,8 +379,8 @@ As a project creator:
 - Login Microsoft 365 account and Azure account.
 
   ```bash
-  teamsfx account login azure
-  teamsfx account login Microsoft 365
+  teamsapp auth login azure
+  teamsapp auth login Microsoft 365
   ```
 
 - Provision your project.
@@ -411,13 +411,13 @@ As a Project Collaborator:
 - Login Microsoft 365 account. Note that the Microsoft 365 account should be the same as added above:
 
   ```bash
-  teamsfx account login Microsoft 365
+  teamsapp auth login Microsoft 365
   ```
 
 - Login Azure account which has contributor permission for all the Azure resources.
 
   ```bash
-  teamsfx account login azure
+  teamsapp auth login azure
   ```
 
 - Check permission status. You should find yourself have the owner permission of the project:

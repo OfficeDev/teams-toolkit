@@ -11,10 +11,10 @@ import { execAsync } from "../commonUtils";
 
 describe("teamsfx command help", function () {
   it(
-    `teamsfx account show -h`,
+    `teamsapp auth show -h`,
     { testPlanCaseId: 15685961, author: "zhiyou@microsoft.com" },
     async function () {
-      const result = await execAsync(`teamsfx account show -h`, {
+      const result = await execAsync(`teamsapp auth show -h`, {
         env: process.env,
         timeout: 0,
       });

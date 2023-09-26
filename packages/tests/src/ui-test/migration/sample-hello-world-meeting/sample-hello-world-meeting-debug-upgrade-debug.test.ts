@@ -89,7 +89,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password,
         {
-          teamsAppName: "hello-world-in-meeting-local",
+          teamsAppName: "Hello_World_In_Meeting_App",
           type: "meeting",
         }
       );

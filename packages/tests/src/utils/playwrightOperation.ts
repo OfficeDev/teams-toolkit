@@ -329,9 +329,15 @@ export async function initTeamsPage(
           "iframe.embedded-page-content"
         );
         const frame = await frameElementHandle?.contentFrame();
-        await frame?.waitForSelector(
-          `h1:has-text('Add ${options?.teamsAppName} to a team')`
-        );
+        try {
+          await frame?.waitForSelector(
+            `h1:has-text('Add ${options?.teamsAppName} to a team')`
+          );
+        } catch (error) {
+          await frame?.waitForSelector(
+            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
+          );
+        }
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");
         return;

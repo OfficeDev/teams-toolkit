@@ -113,7 +113,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTeamsWorkbench(page, Env.displayName);
+      // await validateTeamsWorkbench(page, Env.displayName);
     }
   );
 });

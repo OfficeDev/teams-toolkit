@@ -24,7 +24,6 @@ import {
   Result,
   Stage,
   Tools,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
@@ -100,7 +99,7 @@ import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
-import { CoreSource, InvalidInputError } from "./error";
+import { InvalidInputError } from "./error";
 import { ErrorContextMW, setErrorContext, setTools, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";

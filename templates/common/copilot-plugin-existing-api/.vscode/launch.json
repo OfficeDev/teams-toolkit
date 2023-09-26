@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Preview in Copilot (Edge)",
+            "name": "Preview in Teams (Edge)",
             "type": "msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com?${account-hint}",
@@ -13,7 +13,7 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Preview in Copilot (Chrome)",
+            "name": "Preview in Teams (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com?${account-hint}",

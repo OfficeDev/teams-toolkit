@@ -20,7 +20,7 @@ import * as chai from "chai";
 import * as childProcess from "child_process";
 import EventEmitter from "events";
 import fs from "fs";
-import * as fse from "fs-extra";
+import fse from "fs-extra";
 import "mocha";
 import mockfs from "mock-fs";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -350,14 +350,23 @@ describe("helperMethods", async () => {
 
     afterEach(() => {
       sandbox.restore();
+      writePathResult = undefined;
     });
 
     it("should update manifest's extenstions and authorization", async () => {
+      sandbox.stub(fse, "pathExists").resolves(true);
       await HelperMethods.updateManifest("", manifestPath);
 
       chai.assert.isDefined(writePathResult);
       chai.assert.equal(writePathResult?.extensions?.length, 0);
       chai.assert.equal(writePathResult?.authorization?.permissions?.resourceSpecific?.length, 0);
+    });
+
+    it("should early return if there's no appPackage folder", async () => {
+      sandbox.stub(fse, "pathExists").resolves(false);
+      await HelperMethods.updateManifest("", manifestPath);
+
+      chai.assert.isUndefined(writePathResult, "writeToPath should not be called");
     });
   });
 

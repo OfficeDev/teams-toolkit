@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
+
 import { MigrationTestContext } from "../migrationContext";
 import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";

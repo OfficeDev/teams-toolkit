@@ -645,7 +645,7 @@ describe("Office Addin", async () => {
   });
 });
 
-describe("Copilot plugin", async () => {
+describe("API plugin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   tools.ui = new MockedUserInteraction();
@@ -670,7 +670,7 @@ describe("Copilot plugin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.apiPlugin().id,
       [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
@@ -690,7 +690,7 @@ describe("Copilot plugin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.apiPlugin().id,
       [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
@@ -710,7 +710,7 @@ describe("Copilot plugin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.apiPlugin().id,
       [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
@@ -730,7 +730,7 @@ describe("Copilot plugin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.apiPlugin().id,
       [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,

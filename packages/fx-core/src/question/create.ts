@@ -113,19 +113,9 @@ export class ProjectTypeOptions {
     };
   }
 
-  // static copilotPlugin(platform?: Platform): OptionItem {
-  //   return {
-  //     id: "copilot-plugin-type",
-  //     label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
-  //       "core.createProjectQuestion.projectType.copilotPlugin.label"
-  //     )}`,
-  //     detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
-  //   };
-  // }
-
   static apiPlugin(platform?: Platform): OptionItem {
     return {
-      id: "api-plugin-type",
+      id: "copilot-plugin-type",
       label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.apiPlugin.label"
       )}`,
@@ -1359,7 +1349,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
     cliShortName: "a",
-    cliDescription: "OpenAPI specification file location.",
+    cliDescription: "OpenAPI description document location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
@@ -1479,7 +1469,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    cliDescription: "Specifies API(s) to be used in Copilot plugin.",
+    cliDescription: "Select Operation(s) that Teams can interact with.",
     cliShortName: "o",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")

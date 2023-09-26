@@ -32,8 +32,7 @@ export interface CreateProjectInputs extends Inputs {
     | "search-me-copilot"
     | "search-message-extension"
     | "copilot-plugin-new-api"
-    | "copilot-plugin-existing-api"
-    | "copilot-plugin-openai-plugin";
+    | "copilot-plugin-existing-api";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -53,9 +52,7 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-folder"?: string;
   /** @description OpenAPI Spec */
   "openapi-spec-location"?: string;
-  /** @description OpenAI Plugin Manifest */
-  "openai-plugin-manifest"?: string;
-  /** @description Select Operation(s) Copilot Can Interact with */
+  /** @description Select Operation(s) that Teams Can Interact with */
   "api-operation"?: string[];
   /** @description Programming Language. */
   "programming-language"?: "javascript" | "typescript" | "csharp";

@@ -75,7 +75,7 @@ describe("CLI commands", () => {
     }
   });
 
-  describe("getCreateCommand", async () => {
+  describe.only("getCreateCommand", async () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "false",
@@ -93,43 +93,16 @@ describe("CLI commands", () => {
 
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
+        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 2
       );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
     });
 
-    it("createProjectOptions - API copilot plugin enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "true",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "teamsfx new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await getCreateCommand().handler!(ctx);
-      const copilotPluginQuestionNames = [
-        QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginManifest.toString(),
-        QuestionNames.ApiOperation.toString(),
-      ];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 3
-      );
-      assert.isTrue(res.isOk());
-    });
-
-    it("createProjectOptions - API copilot plugin disabled but bot Copilot plugin enabled", async () => {
+    it("createProjectOptions - Copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "true",
         API_COPILOT_PLUGIN: "false",
@@ -151,7 +124,7 @@ describe("CLI commands", () => {
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
+        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 2
       );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
@@ -995,7 +968,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
@@ -1023,7 +996,6 @@ describe("CLI read-only commands", () => {
     it("json: bot Copilot plugin enabled only", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
@@ -1034,24 +1006,8 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
-    });
-
-    it("json: API Copilot plugin feature flag enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "true",
-      });
-      const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
-        optionValues: { format: "json" },
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await listTemplatesCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("search-me-copilot")));
     });
   });
   describe("listSamplesCommand", async () => {

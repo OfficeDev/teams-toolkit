@@ -299,7 +299,6 @@
   "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting": "Methods defined in manifest.json are not listed",
   "core.createProjectQuestion.apiSpec.multipleValidationErrors.message": "Invalid API specification. Check output panel for details.",
   "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message": "Invalid API specification. Check [output panel](command:fx-extension.showOutputChannel) for details.",
-  "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message": "Invalid OpenAI plugin manifest. Check output panel for details.",
   "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message": "Invalid OpenAI plugin manifest. Check [output panel](command:fx-extension.showOutputChannel) for details.",
   "core.createProjectQuestion.openAiPluginManifest.validationError.missingApiUrl": "Missing URL in \"%s\".",
   "core.createProjectQuestion.openAiPluginManifest.validationError.authNotSupported": "Auth type is not supported. Supported auth type: \"%s\".",

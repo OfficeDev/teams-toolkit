@@ -28,6 +28,7 @@ describe("manifestUpdater", () => {
         get: {
           operationId: "getPets",
           summary: "Get all pets",
+          description: "Returns all pets from the system that the user has access to",
           parameters: [
             { name: "limit", description: "Maximum number of pets to return", required: true },
           ],
@@ -35,6 +36,7 @@ describe("manifestUpdater", () => {
         post: {
           operationId: "createPet",
           summary: "Create a pet",
+          description: "Create a new pet in the store",
           requestBody: {
             content: {
               "application/json": {
@@ -82,6 +84,7 @@ describe("manifestUpdater", () => {
               context: ["compose"],
               type: "query",
               title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
@@ -92,6 +95,7 @@ describe("manifestUpdater", () => {
               context: ["compose"],
               type: "query",
               title: "Create a pet",
+              description: "Create a new pet in the store",
               id: "createPet",
               parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
@@ -181,6 +185,7 @@ describe("manifestUpdater", () => {
                 },
               ],
               title: "Create a pet",
+              description: "",
               type: "query",
             },
           ],
@@ -245,6 +250,7 @@ describe("manifestUpdater", () => {
             {
               apiResponseRenderingTemplateFile: "",
               context: ["compose"],
+              description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
                 {
@@ -259,6 +265,7 @@ describe("manifestUpdater", () => {
             {
               apiResponseRenderingTemplateFile: "",
               context: ["compose"],
+              description: "Create a new pet in the store",
               id: "createPet",
               parameters: [
                 {
@@ -314,6 +321,7 @@ describe("manifestUpdater", () => {
               context: ["compose"],
               type: "query",
               title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
                 { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
@@ -324,6 +332,7 @@ describe("manifestUpdater", () => {
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
               context: ["compose"],
               id: "createPet",
+              description: "Create a new pet in the store",
               parameters: [
                 {
                   description: "Name of the pet",
@@ -422,6 +431,7 @@ describe("generateCommands", () => {
         type: "query",
         title: "Get all pets",
         id: "getPets",
+        description: "",
         parameters: [
           { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
         ],
@@ -432,6 +442,7 @@ describe("generateCommands", () => {
         type: "query",
         title: "Create a pet",
         id: "createPet",
+        description: "",
         parameters: [
           {
             description: "Name of the pet",
@@ -445,6 +456,7 @@ describe("generateCommands", () => {
         context: ["compose"],
         type: "query",
         title: "Get a pet by ID",
+        description: "",
         id: "getPetById",
         parameters: [{ name: "id", title: "Id", description: "ID of the pet to retrieve" }],
         apiResponseRenderingTemplateFile: "adaptiveCards/getPetById.json",
@@ -452,6 +464,7 @@ describe("generateCommands", () => {
       {
         context: ["compose"],
         type: "query",
+        description: "",
         title: "Get all pets owned by an owner",
         id: "getOwnerPets",
         parameters: [{ name: "ownerId", title: "OwnerId", description: "ID of the owner" }],
@@ -508,6 +521,7 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
         context: ["compose"],
         id: "getPets",
+        description: "",
         parameters: [
           {
             description: "Maximum number of pets to return",
@@ -522,6 +536,7 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
         context: ["compose"],
         id: "createPet",
+        description: "",
         parameters: [
           {
             description: "ID of the pet",
@@ -583,6 +598,7 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
         context: ["compose"],
         id: "createPet",
+        description: "",
         parameters: [
           {
             description: "Name of the pet",
@@ -636,6 +652,7 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
         context: ["compose"],
         id: "getPets",
+        description: "",
         parameters: [
           {
             description: "ID of the pet",
@@ -650,6 +667,7 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
         context: ["compose"],
         id: "createPet",
+        description: "",
         parameters: [
           {
             description: "Name of the pet",
@@ -686,6 +704,7 @@ describe("generateCommands", () => {
         context: ["compose"],
         type: "query",
         title: "Get all pets",
+        description: "",
         id: "getPets",
         parameters: [{ name: "id", title: "Id", description: "ID of the pet" }],
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
@@ -733,6 +752,7 @@ describe("generateCommands", () => {
       {
         context: ["compose"],
         type: "query",
+        description: "",
         title: "Get all pets",
         id: "getPets",
         parameters: [
@@ -784,6 +804,7 @@ describe("generateCommands", () => {
         type: "query",
         title: "Create a pet",
         id: "createPet",
+        description: "",
         parameters: [
           {
             description: "Name of the pet",

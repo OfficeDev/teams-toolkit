@@ -153,7 +153,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
 import { environmentNameManager } from "@microsoft/teamsfx-core";
 
-describe("teamsfx new template", function () {
+describe("teamsfx new sample", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
@@ -229,7 +229,7 @@ describe("teamsfx new template", function () {
 #### setSubscription
 
 ```bash
-teamsfx account set --subscription ${subscription}
+teamsapp auth set --subscription ${subscription}
 ```
 
 #### addEnv
@@ -344,7 +344,7 @@ enum TemplateProject {
 ```
 
 ```bash
-teamsfx new template ${template} --interactive false 
+teamsfx new sample ${template} --interactive false 
 ```
 
 #### addCapabilityToProject

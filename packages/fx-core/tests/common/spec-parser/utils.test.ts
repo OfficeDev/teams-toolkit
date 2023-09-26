@@ -21,6 +21,7 @@ import {
   updateFirstLetter,
   validateServer,
   resolveServerUrl,
+  isWellKnownName,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
@@ -117,6 +118,20 @@ describe("utils", () => {
     it("should return the same string for a path with no slashes", () => {
       const path = "test";
       const expected = "Test";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
+    it("should return correct result for string with {} and .", () => {
+      const path = "/{section}.json";
+      const expected = "SectionJson";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
+    it("should return correct result for complex string", () => {
+      const path = "/{section}.{test1}/{test2}.json";
+      const expected = "SectionTest1Test2Json";
       const result = convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
@@ -1444,6 +1459,48 @@ describe("utils", () => {
         Error,
         format(ConstantString.ResolveServerUrlFailed, "API_PORT")
       );
+    });
+  });
+
+  describe("isWellKnownName", () => {
+    it("should return true for well-known result property names", () => {
+      expect(isWellKnownName("result", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("data", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("items", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("root", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("matches", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("queries", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("list", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("output", ConstantString.WellknownResultNames)).to.be.true;
+    });
+
+    it("should return true for well-known result property names with different casing", () => {
+      expect(isWellKnownName("Result", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("DaTa", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("ITEMS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("Root", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("MaTcHeS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("QuErIeS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("LiSt", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("OutPut", ConstantString.WellknownResultNames)).to.be.true;
+    });
+
+    it("should return true for name substring is well-known result property names", () => {
+      expect(isWellKnownName("testResult", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("carData", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("productItems", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("rootValue", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("matchesResult", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("DataQueries", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("productLists", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("outputData", ConstantString.WellknownResultNames)).to.be.true;
+    });
+
+    it("should return false for non well-known result property names", () => {
+      expect(isWellKnownName("foo", ConstantString.WellknownResultNames)).to.be.false;
+      expect(isWellKnownName("bar", ConstantString.WellknownResultNames)).to.be.false;
+      expect(isWellKnownName("baz", ConstantString.WellknownResultNames)).to.be.false;
+      expect(isWellKnownName("qux", ConstantString.WellknownResultNames)).to.be.false;
     });
   });
 });

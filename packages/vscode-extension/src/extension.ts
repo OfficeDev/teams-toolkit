@@ -473,6 +473,12 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
   );
   context.subscriptions.push(checkSideloading);
+
+  const checkCopilotCallback = vscode.commands.registerCommand(
+    "fx-extension.checkCopilotCallback",
+    (...args) => Correlator.run(handlers.checkCopilotCallback, args)
+  );
+  context.subscriptions.push(checkCopilotCallback);
 }
 
 /**
@@ -636,6 +642,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.refreshSideloadingCallback, args)
   );
   context.subscriptions.push(refreshSideloading);
+
+  const refreshCopilot = vscode.commands.registerCommand("fx-extension.refreshCopilot", (...args) =>
+    Correlator.run(handlers.refreshCopilotCallback, args)
+  );
+  context.subscriptions.push(refreshCopilot);
 
   // Register local debug run icon
   const runIconCmd = vscode.commands.registerCommand("fx-extension.selectAndDebug", (...args) =>

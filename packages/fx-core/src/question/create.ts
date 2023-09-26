@@ -51,10 +51,10 @@ import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
-  copilotPluginExistingApiOptionIds,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";
+import { Correlator } from "../common/correlator";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -1318,25 +1318,30 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
 export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs
   ): Promise<string | undefined> => {
     try {
+      if (!inputs) {
+        throw new Error("inputs is undefined"); // should never happen
+      }
       const context = createContextV3();
       const res = await listOperations(
         context,
         undefined,
         input.trim(),
-        inputs![QuestionNames.ManifestPath],
+        inputs[QuestionNames.ManifestPath],
         includeExistingAPIs,
-        false
+        false,
+        inputs.platform === Platform.VSCode ? correlationId : undefined
       );
       if (res.isOk()) {
-        inputs!.supportedApisFromApiSpec = res.value;
+        inputs.supportedApisFromApiSpec = res.value;
       } else {
         const errors = res.error;
-        if (inputs?.platform === Platform.CLI) {
+        if (inputs.platform === Platform.CLI) {
           return errors.map((e) => e.content).join("\n");
         }
         if (
@@ -1345,13 +1350,9 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         ) {
           return errors[0].content;
         } else {
-          return inputs!.platform === Platform.VSCode
-            ? getLocalizedString(
-                "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
-              )
-            : getLocalizedString(
-                "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
-              );
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+          );
         }
       }
     } catch (e) {
@@ -1404,6 +1405,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
 
 export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginManifest,
@@ -1425,11 +1427,14 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     },
     additionalValidationOnAccept: {
       validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
         let manifest;
 
         try {
           manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(input);
-          inputs!.openAIPluginManifest = manifest;
+          inputs.openAIPluginManifest = manifest;
         } catch (e) {
           const error = assembleError(e);
           return error.message;
@@ -1440,16 +1445,17 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
           const res = await listOperations(
             context,
             manifest,
-            inputs![QuestionNames.ApiSpecLocation],
+            inputs[QuestionNames.ApiSpecLocation],
             undefined,
             true,
-            true
+            true,
+            inputs.platform === Platform.VSCode ? correlationId : undefined
           );
           if (res.isOk()) {
-            inputs!.supportedApisFromApiSpec = res.value;
+            inputs.supportedApisFromApiSpec = res.value;
           } else {
             const errors = res.error;
-            if (inputs?.platform === Platform.CLI) {
+            if (inputs.platform === Platform.CLI) {
               return errors.map((e) => e.content).join("\n");
             }
             if (
@@ -1458,13 +1464,9 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             ) {
               return errors[0].content;
             } else {
-              return inputs!.platform === Platform.VSCode
-                ? getLocalizedString(
-                    "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
-                  )
-                : getLocalizedString(
-                    "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
-                  );
+              return getLocalizedString(
+                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
+              );
             }
           }
         } catch (e) {

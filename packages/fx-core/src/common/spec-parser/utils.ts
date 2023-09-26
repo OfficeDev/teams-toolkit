@@ -224,11 +224,9 @@ export function getResponseJson(
 }
 
 export function convertPathToCamelCase(path: string): string {
-  const pathSegments = path.split("/");
+  const pathSegments = path.split(/[./{]/);
   const camelCaseSegments = pathSegments.map((segment) => {
-    if (segment.startsWith("{")) {
-      segment = segment.substring(1, segment.length - 1);
-    }
+    segment = segment.replace(/}/g, "");
     return segment.charAt(0).toUpperCase() + segment.slice(1);
   });
   const camelCasePath = camelCaseSegments.join("");
@@ -339,4 +337,13 @@ export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
     });
   }
   return errors;
+}
+
+export function isWellKnownName(name: string, wellknownNameList: string[]): boolean {
+  for (let i = 0; i < wellknownNameList.length; i++) {
+    if (name.toLowerCase().includes(wellknownNameList[i])) {
+      return true;
+    }
+  }
+  return false;
 }

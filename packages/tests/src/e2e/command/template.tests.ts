@@ -11,7 +11,7 @@ import fs from "fs-extra";
 import path from "path";
 import { cleanUpLocalProject, execAsync, getTestFolder } from "../commonUtils";
 
-describe("teamsfx new template", function () {
+describe("teamsfx new sample", function () {
   const testFolder = getTestFolder();
   const sampleName = "todo-list-with-Azure-backend";
   const projectPath = path.resolve(testFolder, sampleName);

@@ -133,20 +133,22 @@ export interface AdaptiveCard {
   body: Array<TextBlockElement | ArrayElement>;
 }
 
+export interface PreviewCardTemplate {
+  title: string;
+  subtitle?: string;
+  image?: {
+    url: string;
+    alt?: string;
+  };
+}
+
 export interface WrappedAdaptiveCard {
   version: string;
   $schema?: string;
   jsonPath?: string;
   responseLayout: string;
   responseCardTemplate: AdaptiveCard;
-  previewCardTemplate: {
-    title: string;
-    subtitle?: string;
-    image?: {
-      url: string;
-      alt?: string;
-    };
-  };
+  previewCardTemplate: PreviewCardTemplate;
 }
 
 export interface Parameter {

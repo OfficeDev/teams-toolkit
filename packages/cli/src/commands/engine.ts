@@ -255,7 +255,9 @@ class CLIEngine {
     let token: string | undefined;
     for (; i < args.length; i++) {
       token = args[i];
-      const command = cmd.commands?.find((c) => c.name === token);
+      const command = cmd.commands?.find(
+        (c) => c.name === token || (token && c.aliases?.includes(token))
+      );
       if (command) {
         cmd = command;
       } else {

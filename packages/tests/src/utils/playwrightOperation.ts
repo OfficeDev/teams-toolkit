@@ -889,7 +889,7 @@ export async function validateEchoBot(
 export async function validateBot(
   page: Page,
   options: { botCommand?: string; expected?: ValidationContent } = {
-    botCommand: "helloWorld",
+    botCommand: "welcome",
     expected: ValidationContent.Bot,
   }
 ) {
@@ -960,7 +960,7 @@ export async function validateBot(
         await executeBotSuggestionCommand(
           page,
           frame,
-          options?.botCommand || "helloWorld"
+          options?.botCommand || "welcome"
         );
         await frame?.click('button[name="send"]');
         await frame?.waitForSelector(

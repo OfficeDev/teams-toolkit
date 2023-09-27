@@ -187,7 +187,9 @@ describe("adaptiveCardWrapper", () => {
       expect(result.title).to.equal("${if(product, product, 'N/A')}");
       expect(result.subtitle).to.be.undefined;
       expect(result.image).to.be.deep.equal({
-        url: "${if(photoUrl, photoUrl, 'N/A')}",
+        url: "${photoUrl}",
+        alt: "${if(photoUrl, photoUrl, 'N/A')}",
+        $when: "${photoUrl != null}",
       });
     });
   });
@@ -262,8 +264,50 @@ describe("adaptiveCardWrapper", () => {
           title: "${if(name, name, 'N/A')}",
           subtitle: "${if(petId, petId, 'N/A')}",
           image: {
-            url: "${if(imageUrl, imageUrl, 'N/A')}",
+            url: "${imageUrl}",
+            $when: "${imageUrl != null}",
+            alt: "${if(imageUrl, imageUrl, 'N/A')}",
           },
+        },
+      };
+
+      const wrappedCard = wrapAdaptiveCard(card, "$");
+      expect(wrappedCard).to.deep.equal(expectedWrappedCard);
+    });
+
+    it("should not generate image property if text is not expected", () => {
+      const card: AdaptiveCard = {
+        type: "AdaptiveCard",
+        version: "1.5",
+        body: [
+          {
+            type: "TextBlock",
+            text: "name: ${if(name, name, 'N/A')}",
+            wrap: true,
+          },
+          {
+            type: "TextBlock",
+            text: "petId: ${if(petId, petId, 'N/A')}",
+            wrap: true,
+          },
+          {
+            type: "TextBlock",
+            text: "invalid: ${if(imageUrl",
+            wrap: true,
+          },
+        ],
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      };
+
+      const expectedWrappedCard = {
+        version: ConstantString.WrappedCardVersion,
+        $schema: ConstantString.WrappedCardSchema,
+        jsonPath: "$",
+        responseLayout: ConstantString.WrappedCardResponseLayout,
+        responseCardTemplate: card,
+        previewCardTemplate: {
+          title: "${if(name, name, 'N/A')}",
+          subtitle: "${if(petId, petId, 'N/A')}",
         },
       };
 

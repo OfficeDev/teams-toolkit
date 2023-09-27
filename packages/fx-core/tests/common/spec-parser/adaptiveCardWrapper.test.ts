@@ -274,5 +274,45 @@ describe("adaptiveCardWrapper", () => {
       const wrappedCard = wrapAdaptiveCard(card, "$");
       expect(wrappedCard).to.deep.equal(expectedWrappedCard);
     });
+
+    it("should not generate image property if text is not expected", () => {
+      const card: AdaptiveCard = {
+        type: "AdaptiveCard",
+        version: "1.5",
+        body: [
+          {
+            type: "TextBlock",
+            text: "name: ${if(name, name, 'N/A')}",
+            wrap: true,
+          },
+          {
+            type: "TextBlock",
+            text: "petId: ${if(petId, petId, 'N/A')}",
+            wrap: true,
+          },
+          {
+            type: "TextBlock",
+            text: "${imageUrl}",
+            wrap: true,
+          },
+        ],
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      };
+
+      const expectedWrappedCard = {
+        version: ConstantString.WrappedCardVersion,
+        $schema: ConstantString.WrappedCardSchema,
+        jsonPath: "$",
+        responseLayout: ConstantString.WrappedCardResponseLayout,
+        responseCardTemplate: card,
+        previewCardTemplate: {
+          title: "${if(name, name, 'N/A')}",
+          subtitle: "${if(petId, petId, 'N/A')}",
+        },
+      };
+
+      const wrappedCard = wrapAdaptiveCard(card, "$");
+      expect(wrappedCard).to.deep.equal(expectedWrappedCard);
+    });
   });
 });

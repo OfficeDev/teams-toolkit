@@ -771,6 +771,7 @@ export class FxCore {
     ErrorContextMW({ component: "FxCore", stage: "checkPermission", reset: true }),
     ErrorHandlerMW,
     ProjectMigratorMWV3,
+    QuestionMW("listCollaborator"),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,

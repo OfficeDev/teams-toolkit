@@ -107,7 +107,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "openapi-spec-location",
     type: "string",
     shortName: "a",
-    description: "OpenAPI specification file location.",
+    description: "OpenAPI description document location.",
   },
   {
     name: "openai-plugin-manifest",

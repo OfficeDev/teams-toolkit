@@ -54,7 +54,7 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-folder"?: string;
   /** @description Plugin for Microsoft Teams */
   "api-me-type"?: "new-api" | "api-spec";
-  /** @description OpenAPI Spec */
+  /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */
   "openai-plugin-manifest"?: string;

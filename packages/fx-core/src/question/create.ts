@@ -1421,7 +1421,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
     cliShortName: "a",
-    cliDescription: "OpenAPI specification file location.",
+    cliDescription: "OpenAPI description document location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {

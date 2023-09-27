@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Frank Qian <frankqian@microsoft.com>
+ */
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
   Capability,
   Trigger,
   Notification,
-  CliVersion,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
@@ -18,8 +21,7 @@ import {
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
-  startDebugging,
-  upgrade,
+  upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
 import {
@@ -49,31 +51,23 @@ describe("Migration Tests", function () {
   });
 
   it(
-    "[auto] [P0] V2 notification bot template upgrade test - js",
+    "[auto] [P0] V2 notification bot template upgrade test",
     {
       testPlanCaseId: 17184124,
       author: "frankqian@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      await CLIVersionCheck("V2", mirgationDebugTestContext.testRootFolder);
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
-      try {
-        await validateNotification(Notification.Upgrade);
-      } catch (error) {
-        await validateNotification(Notification.Upgrade_dicarded);
-      }
+      await validateNotification(Notification.Upgrade);
 
       // v2 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
       // upgrade
-      await startDebugging();
-      await upgrade();
-      // verify upgrade
+      await upgradeByTreeView();
+      //verify upgrade
       await validateUpgrade();
 
       // install test cil in project

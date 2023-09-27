@@ -78,13 +78,10 @@ describe("AccountTreeViewProvider", () => {
     chai.assert.isTrue(m365SignedOutStub.calledOnce);
 
     const m365SignedInStub = sandbox.stub(AccountTreeViewProvider.m365AccountNode, "setSignedIn");
-    const updateSideloadingStub = sandbox.stub(
-      AccountTreeViewProvider.m365AccountNode,
-      "updateSideloading"
-    );
+    const updateChecksStub = sandbox.stub(AccountTreeViewProvider.m365AccountNode, "updateChecks");
     await m365StatusChange("SignedIn", "token", { upn: "upn" });
     chai.assert.isTrue(m365SignedInStub.calledOnce);
-    chai.assert.isTrue(updateSideloadingStub.calledOnce);
+    chai.assert.isTrue(updateChecksStub.calledOnce);
 
     const m365SwitchingStub = sandbox.stub(AccountTreeViewProvider.m365AccountNode, "setSwitching");
     await m365StatusChange("Switching");

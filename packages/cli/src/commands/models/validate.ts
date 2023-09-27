@@ -6,6 +6,7 @@ import { getFxCore } from "../../activate";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
+import * as path from "path";
 
 export const validateCommand: CLICommand = {
   name: "validate",
@@ -57,8 +58,9 @@ function validateInputs(
     );
     return err(error);
   } else if (!inputs["manifest-path"] && !inputs["app-package-file-path"]) {
-    return err(
-      new MissingRequiredOptionError(fullName, "--teams-manifest-file or --app-package-file-path")
+    inputs["manifest-path"] = path.join(
+      path.resolve(inputs.projectPath! || "./"),
+      "./appPackage/manifest.json"
     );
   }
   if (!inputs["app-package-file-path"] && !inputs.env) {

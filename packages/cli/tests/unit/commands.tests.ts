@@ -93,7 +93,7 @@ describe("CLI commands", () => {
 
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -120,7 +120,7 @@ describe("CLI commands", () => {
       const res = await getCreateCommand().handler!(ctx);
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -147,7 +147,7 @@ describe("CLI commands", () => {
 
       const copilotPluginQuestionNames = [
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -219,7 +219,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -232,7 +232,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": true },
         globalOptionValues: {},
         argumentValues: [],
@@ -245,7 +245,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": false, username: "abc" },
         globalOptionValues: {},
         argumentValues: [],
@@ -260,7 +260,7 @@ describe("CLI commands", () => {
       sandbox.stub(M365TokenProvider, "signout");
       sandbox.stub(accountUtils, "outputM365Info").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginM365Command, fullName: "teamsfx account login m365" },
+        command: { ...accountLoginM365Command, fullName: "teamsapp auth login m365" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -528,7 +528,11 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateAadAppCommand, fullName: "teamsfx" },
-        optionValues: { env: "local" },
+        optionValues: {
+          env: "local",
+          projectPath: "./",
+          "manifest-file-path": "./aad.manifest.json",
+        },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -555,7 +559,7 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-path": "fakePath" },
+        optionValues: { "manifest-path": "fakePath", projectPath: "./" },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -780,7 +784,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedOut });
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -797,7 +801,7 @@ describe("CLI read-only commands", () => {
       const outputAzureInfo = sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -819,7 +823,7 @@ describe("CLI read-only commands", () => {
       const outputAccountInfoOffline = sandbox.stub(accountUtils, "outputAccountInfoOffline");
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -833,7 +837,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -848,7 +852,7 @@ describe("CLI read-only commands", () => {
     it("azure success", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -861,7 +865,7 @@ describe("CLI read-only commands", () => {
     it("azure fail", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -874,7 +878,7 @@ describe("CLI read-only commands", () => {
     it("m365 success", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],
@@ -886,7 +890,7 @@ describe("CLI read-only commands", () => {
     it("m365 fail", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],

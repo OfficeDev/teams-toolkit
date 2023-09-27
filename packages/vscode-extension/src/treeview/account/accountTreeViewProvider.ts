@@ -76,7 +76,7 @@ async function m365AccountStatusChangeHandler(
         (accountInfo.upn as string) ? (accountInfo.upn as string) : ""
       );
       if (token && source === "appStudio") {
-        instance.m365AccountNode.updateSideloading(token);
+        instance.m365AccountNode.updateChecks(token, true, true);
       }
     }
   } else if (status === "SigningIn") {

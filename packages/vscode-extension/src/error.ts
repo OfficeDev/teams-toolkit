@@ -17,6 +17,7 @@ export enum ExtensionErrors {
   PrerequisitesSideloadingDisabledError = "PrerequisitesSideloadingDisabledError",
   PrerequisitesInstallPackagesError = "PrerequisitesPackageInstallError",
   DebugServiceFailedBeforeStartError = "DebugServiceFailedBeforeStartError",
+  DebugTestToolFailedToStartError = "DebugTestToolFailedToStartError",
   DebugNpmInstallError = "DebugNpmInstallError",
   OpenExternalFailed = "OpenExternalFailed",
   FolderAlreadyExist = "FolderAlreadyExist",

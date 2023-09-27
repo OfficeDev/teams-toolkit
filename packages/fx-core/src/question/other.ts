@@ -179,8 +179,16 @@ function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
   return (
     inputs.platform === Platform.VSCode && // confirm question only works for VSC
     inputs.projectPath &&
-    inputs[QuestionNames.TeamsAppManifestFilePath] &&
-    path.resolve(inputs[QuestionNames.TeamsAppManifestFilePath]) !==
+    inputs[
+      isLocal ? QuestionNames.LocalTeamsAppManifestFilePath : QuestionNames.TeamsAppManifestFilePath
+    ] &&
+    path.resolve(
+      inputs[
+        isLocal
+          ? QuestionNames.LocalTeamsAppManifestFilePath
+          : QuestionNames.TeamsAppManifestFilePath
+      ]
+    ) !==
       path.join(
         inputs.projectPath,
         AppPackageFolderName,
@@ -244,7 +252,7 @@ export function addWebPartQuestionNode(): IQTreeNode {
   };
 }
 
-function selectTeamsAppManifestQuestion(): SingleFileQuestion {
+export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.TeamsAppManifestFilePath,
     cliName: "teams-manifest-file",
@@ -254,37 +262,45 @@ function selectTeamsAppManifestQuestion(): SingleFileQuestion {
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      if (!inputs.projectPath) return undefined;
-      const manifestPath = path.join(inputs.projectPath, AppPackageFolderName, "manifest.json");
-      if (fs.pathExistsSync(manifestPath)) {
-        return manifestPath;
+      if (inputs.platform === Platform.CLI_HELP) {
+        return "./appPackage/manifest.json";
       } else {
-        return undefined;
+        if (!inputs.projectPath) return undefined;
+        const manifestPath = path.join(inputs.projectPath, AppPackageFolderName, "manifest.json");
+        if (fs.pathExistsSync(manifestPath)) {
+          return manifestPath;
+        } else {
+          return undefined;
+        }
       }
     },
   };
 }
 
-function selectLocalTeamsAppManifestQuestion(): SingleFileQuestion {
+export function selectLocalTeamsAppManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.LocalTeamsAppManifestFilePath,
     cliName: "local-teams-manifest-file",
     cliShortName: "l",
     cliDescription:
-      "Specifies the Microsoft Teams app manifest template file path for local environment, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.local.json'",
+      "Specifies the Microsoft Teams app manifest template file path for local environment, it can be either absolute path or relative path to project root folder.",
     title: getLocalizedString("core.selectLocalTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      if (!inputs.projectPath) return undefined;
-      const manifestPath = path.join(
-        inputs.projectPath,
-        AppPackageFolderName,
-        "manifest.local.json"
-      );
-      if (fs.pathExistsSync(manifestPath)) {
-        return manifestPath;
+      if (inputs.platform === Platform.CLI_HELP) {
+        return "./appPackage/manifest.local.json";
       } else {
-        return undefined;
+        if (!inputs.projectPath) return undefined;
+        const manifestPath = path.join(
+          inputs.projectPath,
+          AppPackageFolderName,
+          "manifest.local.json"
+        );
+        if (fs.pathExistsSync(manifestPath)) {
+          return manifestPath;
+        } else {
+          return undefined;
+        }
       }
     },
   };
@@ -564,16 +580,20 @@ export function selectAadManifestQuestion(): SingleFileQuestion {
     cliName: "aad-manifest-file",
     cliShortName: "a",
     cliDescription:
-      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder, defaults to './aad.manifest.json'",
+      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder.",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      if (!inputs.projectPath) return undefined;
-      const manifestPath: string = path.join(inputs.projectPath, "aad.manifest.json");
-      if (fs.pathExistsSync(manifestPath)) {
-        return manifestPath;
+      if (inputs.platform === Platform.CLI_HELP) {
+        return "./aad.manifest.json";
       } else {
-        return undefined;
+        if (!inputs.projectPath) return undefined;
+        const manifestPath: string = path.join(inputs.projectPath, "aad.manifest.json");
+        if (fs.pathExistsSync(manifestPath)) {
+          return manifestPath;
+        } else {
+          return undefined;
+        }
       }
     },
   };

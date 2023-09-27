@@ -73,7 +73,7 @@ export class MigrationTestContext extends TestContext {
       process.env["TEAMSFX_V3"] = "false";
     }
     if (this.trigger) {
-      await CliHelper.createProjectWithCapability(
+      await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
@@ -81,7 +81,7 @@ export class MigrationTestContext extends TestContext {
         `--bot-host-type-trigger ${this.trigger}`
       );
     } else if (this.framework) {
-      await CliHelper.createProjectWithCapability(
+      await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
@@ -89,7 +89,7 @@ export class MigrationTestContext extends TestContext {
         `--spfx-framework-type ${this.framework}`
       );
     } else {
-      await CliHelper.createProjectWithCapability(
+      await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,

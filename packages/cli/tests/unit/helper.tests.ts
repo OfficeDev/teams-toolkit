@@ -278,7 +278,7 @@ describe("CLI helper", () => {
       assert.include(res, "Commands:");
       assert.include(res, "Examples:");
     });
-    it("happy path for 'teamsfx new template -h'", async () => {
+    it("happy path for 'teamsfx new sample -h'", async () => {
       const command = createSampleCommand;
       const res = helper.formatHelp(command, rootCommand);
       assert.include(res, "<sample-name>");

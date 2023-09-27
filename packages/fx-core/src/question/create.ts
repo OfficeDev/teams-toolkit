@@ -51,10 +51,10 @@ import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
-  copilotPluginExistingApiOptionIds,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";
+import { Correlator } from "../common/correlator";
 
 export class ScratchOptions {
   static yes(): OptionItem {
@@ -406,14 +406,15 @@ export class CapabilityOptions {
   static collectMECaps(filterByFeatureFlag: boolean): OptionItem[] {
     return filterByFeatureFlag
       ? [
+          CapabilityOptions.apiMe(),
           CapabilityOptions.linkUnfurling(),
-          isCopilotPluginEnabled()
-            ? CapabilityOptions.copilotM365SearchMe()
-            : CapabilityOptions.m365SearchMe(),
+          ...(isCopilotPluginEnabled()
+            ? [CapabilityOptions.copilotM365SearchMe()]
+            : [CapabilityOptions.m365SearchMe(), CapabilityOptions.SearchMe()]),
           CapabilityOptions.collectFormMe(),
-          CapabilityOptions.SearchMe(),
         ]
       : [
+          CapabilityOptions.apiMe(),
           CapabilityOptions.linkUnfurling(),
           CapabilityOptions.m365SearchMe(),
           CapabilityOptions.collectFormMe(),
@@ -426,10 +427,13 @@ export class CapabilityOptions {
     return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
       ? [
           CapabilityOptions.linkUnfurling(),
-          CapabilityOptions.SearchMe(),
+          isCopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.SearchMe(),
           CapabilityOptions.collectFormMe(),
         ]
       : [
+          CapabilityOptions.apiMe(),
           CapabilityOptions.linkUnfurling(),
           isCopilotPluginEnabled()
             ? CapabilityOptions.copilotM365SearchMe()
@@ -548,6 +552,15 @@ export class CapabilityOptions {
     };
   }
 
+  //API ME
+  static apiMe(): OptionItem {
+    return {
+      id: "api-me",
+      label: getLocalizedString("core.createProjectQuestion.capability.apiMe.label"),
+      detail: getLocalizedString("core.createProjectQuestion.capability.apiMe.detail"),
+    };
+  }
+
   static aiBot(): OptionItem {
     return {
       id: "ai-bot",
@@ -628,6 +641,51 @@ export function capabilityQuestion(): SingleSelectQuestion {
       }
       return getLocalizedString("core.createCapabilityQuestion.placeholder");
     },
+    forgetLastValue: true,
+    skipSingleOption: true,
+  };
+}
+
+export class ApiMeOptions {
+  static newApi(): OptionItem {
+    return {
+      id: "new-api",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail"
+      ),
+    };
+  }
+
+  static apiSpec(): OptionItem {
+    return {
+      id: "api-spec",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
+      ),
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [ApiMeOptions.newApi(), ApiMeOptions.apiSpec()];
+  }
+}
+
+export function apiMeQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.ApiMeType,
+    title: getLocalizedString("core.createProjectQuestion.apiMeQuestion.title"),
+    type: "singleSelect",
+    staticOptions: ApiMeOptions.all(),
+    default: ApiMeOptions.newApi().id,
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
+    ),
     forgetLastValue: true,
     skipSingleOption: true,
   };
@@ -1321,25 +1379,30 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
 export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs
   ): Promise<string | undefined> => {
     try {
+      if (!inputs) {
+        throw new Error("inputs is undefined"); // should never happen
+      }
       const context = createContextV3();
       const res = await listOperations(
         context,
         undefined,
         input.trim(),
-        inputs![QuestionNames.ManifestPath],
+        inputs[QuestionNames.ManifestPath],
         includeExistingAPIs,
-        false
+        false,
+        inputs.platform === Platform.VSCode ? correlationId : undefined
       );
       if (res.isOk()) {
-        inputs!.supportedApisFromApiSpec = res.value;
+        inputs.supportedApisFromApiSpec = res.value;
       } else {
         const errors = res.error;
-        if (inputs?.platform === Platform.CLI) {
+        if (inputs.platform === Platform.CLI) {
           return errors.map((e) => e.content).join("\n");
         }
         if (
@@ -1348,13 +1411,9 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         ) {
           return errors[0].content;
         } else {
-          return inputs!.platform === Platform.VSCode
-            ? getLocalizedString(
-                "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
-              )
-            : getLocalizedString(
-                "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
-              );
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+          );
         }
       }
     } catch (e) {
@@ -1366,7 +1425,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
     cliShortName: "a",
-    cliDescription: "OpenAPI specification file location.",
+    cliDescription: "OpenAPI description document location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
@@ -1407,13 +1466,14 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
 
 export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
   return {
     type: "text",
-    name: QuestionNames.OpenAIPluginDomain,
-    cliShortName: "d",
+    name: QuestionNames.OpenAIPluginManifest,
+    cliShortName: "m",
     title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
     placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
-    cliDescription: "OpenAI plugin website domain.",
+    cliDescription: "OpenAI plugin website domain or manifest URL.",
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): Promise<string | undefined> => {
@@ -1428,11 +1488,14 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
     },
     additionalValidationOnAccept: {
       validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
         let manifest;
 
         try {
           manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(input);
-          inputs!.openAIPluginManifest = manifest;
+          inputs.openAIPluginManifest = manifest;
         } catch (e) {
           const error = assembleError(e);
           return error.message;
@@ -1443,16 +1506,17 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
           const res = await listOperations(
             context,
             manifest,
-            inputs![QuestionNames.ApiSpecLocation],
+            inputs[QuestionNames.ApiSpecLocation],
             undefined,
             true,
-            true
+            true,
+            inputs.platform === Platform.VSCode ? correlationId : undefined
           );
           if (res.isOk()) {
-            inputs!.supportedApisFromApiSpec = res.value;
+            inputs.supportedApisFromApiSpec = res.value;
           } else {
             const errors = res.error;
-            if (inputs?.platform === Platform.CLI) {
+            if (inputs.platform === Platform.CLI) {
               return errors.map((e) => e.content).join("\n");
             }
             if (
@@ -1461,13 +1525,9 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             ) {
               return errors[0].content;
             } else {
-              return inputs!.platform === Platform.VSCode
-                ? getLocalizedString(
-                    "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
-                  )
-                : getLocalizedString(
-                    "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.message"
-                  );
+              return getLocalizedString(
+                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
+              );
             }
           }
         } catch (e) {
@@ -1573,17 +1633,30 @@ export function capabilitySubTree(): IQTreeNode {
         data: officeAddinHostingQuestion(),
       },
       {
-        // Copilot plugin from API spec or AI Plugin
-        condition: {
-          enum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        // API ME sub-tree
+        condition: { equals: CapabilityOptions.apiMe().id },
+        data: apiMeQuestion(),
+      },
+      {
+        // API ME from API Spec or Copilot plugin from API spec or AI Plugin
+        condition: (inputs: Inputs) => {
+          return (
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+            inputs[QuestionNames.Capabilities] ===
+              CapabilityOptions.copilotPluginOpenAIPlugin().id ||
+            inputs[QuestionNames.ApiMeType] === ApiMeOptions.apiSpec().id
+          );
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
+            condition: (inputs: Inputs) => {
+              return (
+                inputs[QuestionNames.Capabilities] ===
+                  CapabilityOptions.copilotPluginApiSpec().id ||
+                inputs[QuestionNames.ApiMeType] === ApiMeOptions.apiSpec().id
+              );
+            },
             data: apiSpecLocationQuestion(),
           },
           {
@@ -1598,11 +1671,14 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // programming language
         data: programmingLanguageQuestion(),
-        condition: {
-          excludesEnum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        condition: (inputs: Inputs) => {
+          return (
+            !!inputs[QuestionNames.Capabilities] &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
+            inputs[QuestionNames.Capabilities] !==
+              CapabilityOptions.copilotPluginOpenAIPlugin().id &&
+            inputs[QuestionNames.ApiMeType] !== ApiMeOptions.apiSpec().id
+          );
         },
       },
       {

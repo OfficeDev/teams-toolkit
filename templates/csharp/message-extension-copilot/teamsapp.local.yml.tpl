@@ -42,6 +42,7 @@ provision:
       description: ""
       channels:
         - name: msteams
+        - name: m365extensions
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
@@ -102,6 +103,15 @@ provision:
             dotnetRunMessages: true
             launchBrowser: true
             launchUrl: "https://teams.microsoft.com?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+            applicationUrl: "https://localhost:7130;http://localhost:5130"
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+            hotReloadProfile: "aspnetcore"
+          Outlook (browser):
+            commandName: "Project"
+            dotnetRunMessages: true
+            launchBrowser: true
+            launchUrl: "https://outlook.office.com/mail?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
             applicationUrl: "https://localhost:7130;http://localhost:5130"
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"

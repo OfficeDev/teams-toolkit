@@ -57,12 +57,10 @@
       ],
       "matchPaths": [
         "packages/sdk/package.json",
-        "packages/sdk/package-lock.json",
         "packages/sdk-react/package.json",
-        "packages/sdk-react/package-lock.json",
         "templates/**/package.json.tpl"
       ],
-      "rangeStrategy": "bump"
+      "rangeStrategy": "auto"
     }
   ]
 }

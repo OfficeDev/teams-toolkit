@@ -9,7 +9,10 @@ import {
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { validateTab, initPage } from "../../../utils/playwrightOperation";
+import {
+  validateProactiveMessaging,
+  initPage,
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
@@ -60,7 +63,6 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
 
       await updateFunctionAuthorizationPolicy("4.0.0", projectPath);
-
       // v2 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
@@ -92,10 +94,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, {
-        displayName: Env.displayName,
-        includeFunction: false,
-      });
+      await validateProactiveMessaging(page);
     }
   );
 });

@@ -51,7 +51,7 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await sampledebugContext.createTemplateCLI(false);
+      await sampledebugContext.openResourceFolder();
       // verify popup
 
       await validateNotification(Notification.Upgrade);
@@ -89,7 +89,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password,
         {
-          teamsAppName: "hello-world-in-meeting-local",
+          teamsAppName: "Hello_World_In_Meeting_App",
           type: "meeting",
         }
       );

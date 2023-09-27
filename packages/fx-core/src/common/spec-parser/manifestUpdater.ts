@@ -67,7 +67,7 @@ export function generateParametersFromSchema(
       title: updateFirstLetter(name),
       description: schema.description ?? "",
     };
-    if (isRequired) {
+    if (isRequired && schema.default === undefined) {
       requiredParams.push(parameter);
     } else {
       optionalParams.push(parameter);
@@ -123,10 +123,14 @@ export async function generateCommands(
                     title: updateFirstLetter(param.name),
                     description: param.description ?? "",
                   };
-                  if (param.required) {
-                    requiredParams.push(parameter);
-                  } else {
-                    optionalParams.push(parameter);
+
+                  const schema = param.schema as OpenAPIV3.SchemaObject;
+                  if (param.in !== "header" && param.in !== "cookie") {
+                    if (param.required && schema?.default === undefined) {
+                      requiredParams.push(parameter);
+                    } else {
+                      optionalParams.push(parameter);
+                    }
                   }
                 });
               }
@@ -164,6 +168,7 @@ export async function generateCommands(
                 title: operationItem.summary ?? "",
                 id: operationId,
                 parameters: parameters,
+                description: operationItem.description ?? "",
                 apiResponseRenderingTemplateFile: (await fs.pathExists(adaptiveCardPath))
                   ? getRelativePath(manifestPath, adaptiveCardPath)
                   : "",

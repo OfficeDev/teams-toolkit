@@ -39,7 +39,7 @@ describe("upgrade", () => {
           Capability.TabNonSso,
           env,
           "",
-          true
+          false
         );
       }
 

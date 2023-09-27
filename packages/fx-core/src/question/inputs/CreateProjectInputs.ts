@@ -58,7 +58,7 @@ export interface CreateProjectInputs extends Inputs {
   "openapi-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */
   "openai-plugin-manifest"?: string;
-  /** @description Select Operation(s) Copilot Can Interact with */
+  /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
   /** @description Programming Language. */
   "programming-language"?: "javascript" | "typescript" | "csharp";

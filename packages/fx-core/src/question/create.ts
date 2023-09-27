@@ -1671,7 +1671,8 @@ export function capabilitySubTree(): IQTreeNode {
           return (
             !!inputs[QuestionNames.Capabilities] &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginNewApi().id &&
+            inputs[QuestionNames.Capabilities] !==
+              CapabilityOptions.copilotPluginOpenAIPlugin().id &&
             inputs[QuestionNames.ApiMeType] !== ApiMeOptions.apiSpec().id
           );
         },

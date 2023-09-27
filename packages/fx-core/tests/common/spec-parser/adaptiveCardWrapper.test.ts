@@ -292,7 +292,7 @@ describe("adaptiveCardWrapper", () => {
           },
           {
             type: "TextBlock",
-            text: "${imageUrl}",
+            text: "invalid: ${if(imageUrl",
             wrap: true,
           },
         ],

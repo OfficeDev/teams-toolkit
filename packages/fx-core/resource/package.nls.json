@@ -304,6 +304,7 @@
   "core.createProjectQuestion.openAiPluginManifest.validationError.authNotSupported": "Auth type is not supported. Supported auth type: \"%s\".",
   "core.createProjectQuestion.capability.apiMe.label": "API Based Search Message Extension",
   "core.createProjectQuestion.capability.apiMe.detail": "Display data directly in Teams search results from search or the chat area",
+  "core.createProjectQuestion.apiMeQuestion.title": "Plugin for Microsoft Teams",
   "core.aiBotOption.label": "AI Chat Bot",
   "core.aiBotOption.detail": "A chat bot using Teams AI library",
   "core.spfxFolder.title": "SPFx solution folder",

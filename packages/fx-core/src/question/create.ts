@@ -675,7 +675,7 @@ export class ApiMeOptions {
 export function apiMeQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.ApiMeType,
-    title: "Plugin for Microsoft Teams",
+    title: getLocalizedString("core.createProjectQuestion.apiMeQuestion.title"),
     type: "singleSelect",
     staticOptions: ApiMeOptions.all(),
     default: ApiMeOptions.newApi().id,

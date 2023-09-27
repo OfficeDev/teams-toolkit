@@ -7,7 +7,6 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
-import { isCopilotPluginEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorContextMW } from "../../../core/globalVars";
 import {
@@ -154,7 +153,6 @@ export class CreateAppPackageDriver implements StepDriver {
 
     // M365 Copilot plugin, API specification and Adaptive card templates
     if (
-      isCopilotPluginEnabled() &&
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
       manifest.composeExtensions[0].composeExtensionType == "apiBased" &&

@@ -38,6 +38,7 @@ import {
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
+  ApiMeOptions,
   AppNamePattern,
   CapabilityOptions,
   NotificationTriggerOptions,
@@ -126,6 +127,8 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
     TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.apiMe().id}:undefined:${ApiMeOptions.newApi().id}`]:
+    TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
 };
 
@@ -209,6 +212,7 @@ class Coordinator {
       const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
+      const apiMeType = inputs[QuestionNames.ApiMeType] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -224,7 +228,10 @@ class Coordinator {
         if (res.isErr()) {
           return err(res.error);
         }
-      } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+      } else if (
+        capability === CapabilityOptions.copilotPluginApiSpec().id ||
+        (capability === CapabilityOptions.apiMe().id && apiMeType === ApiMeOptions.apiSpec().id)
+      ) {
         const res = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
@@ -251,7 +258,14 @@ class Coordinator {
           inputs.isM365 = true;
         }
         const trigger = inputs[QuestionNames.BotTrigger] as string;
-        const templateName = Feature2TemplateName[`${capability}:${trigger}`];
+        let feature = `${capability}:${trigger}`;
+
+        if (apiMeType) {
+          feature = `${feature}:${apiMeType}`;
+        }
+
+        const templateName = Feature2TemplateName[feature];
+
         if (templateName) {
           const langKey = convertToLangKey(language);
           const safeProjectNameFromVS =

@@ -402,6 +402,7 @@ export class CapabilityOptions {
   static collectMECaps(filterByFeatureFlag: boolean): OptionItem[] {
     return filterByFeatureFlag
       ? [
+          CapabilityOptions.apiMe(),
           CapabilityOptions.linkUnfurling(),
           ...(isCopilotPluginEnabled()
             ? [CapabilityOptions.copilotM365SearchMe()]
@@ -409,6 +410,7 @@ export class CapabilityOptions {
           CapabilityOptions.collectFormMe(),
         ]
       : [
+          CapabilityOptions.apiMe(),
           CapabilityOptions.linkUnfurling(),
           CapabilityOptions.m365SearchMe(),
           CapabilityOptions.collectFormMe(),
@@ -427,6 +429,7 @@ export class CapabilityOptions {
           CapabilityOptions.collectFormMe(),
         ]
       : [
+          CapabilityOptions.apiMe(),
           CapabilityOptions.linkUnfurling(),
           isCopilotPluginEnabled()
             ? CapabilityOptions.copilotM365SearchMe()
@@ -545,6 +548,15 @@ export class CapabilityOptions {
     };
   }
 
+  //API ME
+  static apiMe(): OptionItem {
+    return {
+      id: "api-me",
+      label: getLocalizedString("core.createProjectQuestion.capability.apiMe.label"),
+      detail: getLocalizedString("core.createProjectQuestion.capability.apiMe.detail"),
+    };
+  }
+
   static aiBot(): OptionItem {
     return {
       id: "ai-bot",
@@ -625,6 +637,51 @@ export function capabilityQuestion(): SingleSelectQuestion {
       }
       return getLocalizedString("core.createCapabilityQuestion.placeholder");
     },
+    forgetLastValue: true,
+    skipSingleOption: true,
+  };
+}
+
+export class ApiMeOptions {
+  static newApi(): OptionItem {
+    return {
+      id: "new-api",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail"
+      ),
+    };
+  }
+
+  static apiSpec(): OptionItem {
+    return {
+      id: "api-spec",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
+      ),
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [ApiMeOptions.newApi(), ApiMeOptions.apiSpec()];
+  }
+}
+
+export function apiMeQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.ApiMeType,
+    title: getLocalizedString("core.createProjectQuestion.apiMeQuestion.title"),
+    type: "singleSelect",
+    staticOptions: ApiMeOptions.all(),
+    default: ApiMeOptions.newApi().id,
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
+    ),
     forgetLastValue: true,
     skipSingleOption: true,
   };
@@ -1364,7 +1421,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     type: "singleFileOrText",
     name: QuestionNames.ApiSpecLocation,
     cliShortName: "a",
-    cliDescription: "OpenAPI specification file location.",
+    cliDescription: "OpenAPI description document location.",
     title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
     forgetLastValue: true,
     inputBoxConfig: {
@@ -1572,17 +1629,30 @@ export function capabilitySubTree(): IQTreeNode {
         data: officeAddinHostingQuestion(),
       },
       {
-        // Copilot plugin from API spec or AI Plugin
-        condition: {
-          enum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        // API ME sub-tree
+        condition: { equals: CapabilityOptions.apiMe().id },
+        data: apiMeQuestion(),
+      },
+      {
+        // API ME from API Spec or Copilot plugin from API spec or AI Plugin
+        condition: (inputs: Inputs) => {
+          return (
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+            inputs[QuestionNames.Capabilities] ===
+              CapabilityOptions.copilotPluginOpenAIPlugin().id ||
+            inputs[QuestionNames.ApiMeType] === ApiMeOptions.apiSpec().id
+          );
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: { equals: CapabilityOptions.copilotPluginApiSpec().id },
+            condition: (inputs: Inputs) => {
+              return (
+                inputs[QuestionNames.Capabilities] ===
+                  CapabilityOptions.copilotPluginApiSpec().id ||
+                inputs[QuestionNames.ApiMeType] === ApiMeOptions.apiSpec().id
+              );
+            },
             data: apiSpecLocationQuestion(),
           },
           {
@@ -1597,11 +1667,14 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // programming language
         data: programmingLanguageQuestion(),
-        condition: {
-          excludesEnum: [
-            CapabilityOptions.copilotPluginApiSpec().id,
-            CapabilityOptions.copilotPluginOpenAIPlugin().id,
-          ],
+        condition: (inputs: Inputs) => {
+          return (
+            !!inputs[QuestionNames.Capabilities] &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
+            inputs[QuestionNames.Capabilities] !==
+              CapabilityOptions.copilotPluginOpenAIPlugin().id &&
+            inputs[QuestionNames.ApiMeType] !== ApiMeOptions.apiSpec().id
+          );
         },
       },
       {

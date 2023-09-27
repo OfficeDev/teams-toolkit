@@ -177,8 +177,16 @@ function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
   return (
     inputs.platform === Platform.VSCode && // confirm question only works for VSC
     inputs.projectPath &&
-    inputs[QuestionNames.TeamsAppManifestFilePath] &&
-    path.resolve(inputs[QuestionNames.TeamsAppManifestFilePath]) !==
+    inputs[
+      isLocal ? QuestionNames.LocalTeamsAppManifestFilePath : QuestionNames.TeamsAppManifestFilePath
+    ] &&
+    path.resolve(
+      inputs[
+        isLocal
+          ? QuestionNames.LocalTeamsAppManifestFilePath
+          : QuestionNames.TeamsAppManifestFilePath
+      ]
+    ) !==
       path.join(
         inputs.projectPath,
         AppPackageFolderName,

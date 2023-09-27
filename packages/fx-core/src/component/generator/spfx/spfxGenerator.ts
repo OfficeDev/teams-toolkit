@@ -159,7 +159,7 @@ export class SPFxGenerator {
       const templateRes = await Generator.generateTemplate(
         context,
         destinationPath,
-        Constants.IMPORT_TEMPLATE_NAME,
+        Constants.TEMPLATE_NAME,
         "ts"
       );
       if (templateRes.isErr()) {
@@ -185,7 +185,7 @@ export class SPFxGenerator {
       if (error instanceof UserError || error instanceof SystemError) {
         return err(error);
       }
-      return err(ImportSPFxSolutionError(error as any));
+      return err(ImportSPFxSolutionError(error));
     }
 
     await importProgress.end(true);
@@ -329,8 +329,8 @@ export class SPFxGenerator {
           ...args
         );
       } catch (yoError) {
-        if ((yoError as any).message) {
-          void context.logProvider.error((yoError as any).message);
+        if (yoError.message) {
+          void context.logProvider.error(yoError.message);
         }
         throw YoGeneratorScaffoldError();
       }
@@ -415,7 +415,7 @@ export class SPFxGenerator {
         },
       });
     } catch (e) {
-      throw CopyExistingSPFxSolutionError(e as any);
+      throw CopyExistingSPFxSolutionError(e);
     }
   }
 
@@ -612,7 +612,7 @@ export class SPFxGenerator {
         }
       }
     } catch (e) {
-      throw UpdateSPFxTemplateError(e as any);
+      throw UpdateSPFxTemplateError(e);
     }
   }
 }

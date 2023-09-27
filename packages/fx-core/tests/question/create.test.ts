@@ -28,6 +28,7 @@ import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/ap
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { setTools } from "../../src/core/globalVars";
 import {
+  ApiMeOptions,
   CapabilityOptions,
   NotificationTriggerOptions,
   ProjectTypeOptions,
@@ -224,7 +225,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode me", async () => {
+    it("traverse in vscode me from new api", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -255,13 +256,22 @@ describe("scaffold question", () => {
             title,
             getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
           );
-          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+          return ok({ type: "success", result: CapabilityOptions.apiMe().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
         } else if (question.name === QuestionNames.AppName) {
           return ok({ type: "success", result: "test001" });
         } else if (question.name === QuestionNames.Folder) {
           return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.ApiMeType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.staticOptions;
+          // Assert
+          assert.equal(options.length, 2);
+          // Assert
+          assert.equal(options.length, 2);
+          assert.deepEqual(options, [ApiMeOptions.newApi(), ApiMeOptions.apiSpec()]);
+          return ok({ type: "success", result: ApiMeOptions.newApi().id });
         }
         return ok({ type: "success", result: undefined });
       };
@@ -269,7 +279,68 @@ describe("scaffold question", () => {
       assert.deepEqual(questions, [
         QuestionNames.ProjectType,
         QuestionNames.Capabilities,
+        QuestionNames.ApiMeType,
         QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+    });
+
+    it("traverse in vscode api me from existing api", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: ProjectTypeOptions.me().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: CapabilityOptions.apiMe().id });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.ApiMeType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.staticOptions;
+          // Assert
+          assert.equal(options.length, 2);
+          return ok({ type: "success", result: ApiMeOptions.apiSpec().id });
+        } else if (question.name === QuestionNames.ApiSpecLocation) {
+          inputs.supportedApisFromApiSpec = [
+            { id: "operation1", label: "operation1", groupName: "1" },
+            { id: "operation2", label: "operation2", groupName: "2" },
+          ];
+          return ok({ type: "success", result: "https://test.com" });
+        } else if (question.name === QuestionNames.ApiOperation) {
+          console.log("operatoin");
+          return ok({ type: "success", result: ["operation1"] });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.ApiMeType,
+        QuestionNames.ApiSpecLocation,
+        QuestionNames.ApiOperation,
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);

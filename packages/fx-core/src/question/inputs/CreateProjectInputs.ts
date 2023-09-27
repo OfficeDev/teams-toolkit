@@ -26,6 +26,7 @@ export interface CreateProjectInputs extends Inputs {
     | "sso-launch-page"
     | "dashboard-tab"
     | "tab-spfx"
+    | "api-me"
     | "link-unfurling"
     | "search-app"
     | "collect-form-message-extension"
@@ -51,6 +52,8 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
+  /** @description Plugin for Microsoft Teams */
+  "api-me-type"?: "new-api" | "api-spec";
   /** @description OpenAPI Spec */
   "openapi-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */

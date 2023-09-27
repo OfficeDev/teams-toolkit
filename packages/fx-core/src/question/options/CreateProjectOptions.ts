@@ -36,6 +36,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "sso-launch-page",
       "dashboard-tab",
       "tab-spfx",
+      "api-me",
       "link-unfurling",
       "search-app",
       "collect-form-message-extension",
@@ -94,6 +95,13 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "spfx-folder",
     type: "string",
     description: "Directory or Path that contains the existing SharePoint Framework solution.",
+  },
+  {
+    name: "api-me-type",
+    type: "string",
+    description: "Plugin for Microsoft Teams",
+    default: "new-api",
+    choices: ["new-api", "api-spec"],
   },
   {
     name: "openapi-spec-location",

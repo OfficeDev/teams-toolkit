@@ -13,14 +13,7 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import {
-  AuthSvcScopes,
-  Correlator,
-  VersionState,
-  setRegion,
-  isCopilotPluginEnabled,
-  isApiCopilotPluginEnabled,
-} from "@microsoft/teamsfx-core";
+import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -603,15 +596,13 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openManifestSchemaCmd);
 
-  if (isApiCopilotPluginEnabled()) {
-    const addAPICmd = vscode.commands.registerCommand(
-      "fx-extension.copilotPluginAddAPI",
-      async (...args) => {
-        await Correlator.run(handlers.copilotPluginAddAPIHandler, args);
-      }
-    );
-    context.subscriptions.push(addAPICmd);
-  }
+  const addAPICmd = vscode.commands.registerCommand(
+    "fx-extension.copilotPluginAddAPI",
+    async (...args) => {
+      await Correlator.run(handlers.copilotPluginAddAPIHandler, args);
+    }
+  );
+  context.subscriptions.push(addAPICmd);
 
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
@@ -787,15 +778,14 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       manifestTemplateCodeLensProvider
     )
   );
-  if (isCopilotPluginEnabled()) {
-    const copilotPluginCodeLensProvider = new CopilotPluginCodeLensProvider();
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        manifestTemplateSelector,
-        copilotPluginCodeLensProvider
-      )
-    );
-  }
+  const copilotPluginCodeLensProvider = new CopilotPluginCodeLensProvider();
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      manifestTemplateSelector,
+      copilotPluginCodeLensProvider
+    )
+  );
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       localManifestTemplateSelector,

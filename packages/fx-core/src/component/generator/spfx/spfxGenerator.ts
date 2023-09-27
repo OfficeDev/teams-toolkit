@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
@@ -185,7 +186,7 @@ export class SPFxGenerator {
       if (error instanceof UserError || error instanceof SystemError) {
         return err(error);
       }
-      return err(ImportSPFxSolutionError(error));
+      return err(ImportSPFxSolutionError(error as any));
     }
 
     await importProgress.end(true);
@@ -329,8 +330,8 @@ export class SPFxGenerator {
           ...args
         );
       } catch (yoError) {
-        if (yoError.message) {
-          void context.logProvider.error(yoError.message);
+        if ((yoError as any).message) {
+          void context.logProvider.error((yoError as any).message);
         }
         throw YoGeneratorScaffoldError();
       }
@@ -415,7 +416,7 @@ export class SPFxGenerator {
         },
       });
     } catch (e) {
-      throw CopyExistingSPFxSolutionError(e);
+      throw CopyExistingSPFxSolutionError(e as any);
     }
   }
 
@@ -612,7 +613,7 @@ export class SPFxGenerator {
         }
       }
     } catch (e) {
-      throw UpdateSPFxTemplateError(e);
+      throw UpdateSPFxTemplateError(e as any);
     }
   }
 }

@@ -139,6 +139,7 @@ export interface PreviewCardTemplate {
   image?: {
     url: string;
     alt?: string;
+    $when?: string;
   };
 }
 

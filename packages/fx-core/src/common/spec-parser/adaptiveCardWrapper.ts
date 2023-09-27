@@ -69,9 +69,15 @@ export function inferPreviewCardTemplate(card: AdaptiveCard): PreviewCardTemplat
       result.subtitle = text;
       textBlockElements.delete(element);
     } else if (!result.image && isWellKnownName(text, ConstantString.WellknownImageName)) {
-      result.image = {
-        url: text,
-      };
+      const match = text.match(/\${if\(([^,]+),/);
+      const property = match ? match[1] : "";
+      if (property) {
+        result.image = {
+          url: `\${${property}}`,
+          alt: text,
+          $when: `\${${property} != null}`,
+        };
+      }
       textBlockElements.delete(element);
     }
   }

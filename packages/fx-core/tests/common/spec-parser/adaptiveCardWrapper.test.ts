@@ -187,7 +187,9 @@ describe("adaptiveCardWrapper", () => {
       expect(result.title).to.equal("${if(product, product, 'N/A')}");
       expect(result.subtitle).to.be.undefined;
       expect(result.image).to.be.deep.equal({
-        url: "${if(photoUrl, photoUrl, 'N/A')}",
+        url: "${photoUrl}",
+        alt: "${if(photoUrl, photoUrl, 'N/A')}",
+        $when: "${photoUrl != null}",
       });
     });
   });
@@ -262,7 +264,9 @@ describe("adaptiveCardWrapper", () => {
           title: "${if(name, name, 'N/A')}",
           subtitle: "${if(petId, petId, 'N/A')}",
           image: {
-            url: "${if(imageUrl, imageUrl, 'N/A')}",
+            url: "${imageUrl}",
+            $when: "${imageUrl != null}",
+            alt: "${if(imageUrl, imageUrl, 'N/A')}",
           },
         },
       };

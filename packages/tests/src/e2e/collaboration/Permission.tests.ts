@@ -99,7 +99,7 @@ describe("Collaboration", function () {
       console.log("[Successfully] grant permission");
 
       const listCollaboratorResult = await execAsync(
-        `teamsapp collaborator status --list-all-collaborators --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
+        `teamsapp collaborator status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,

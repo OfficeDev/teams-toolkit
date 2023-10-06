@@ -1794,7 +1794,7 @@ export async function showError(e: UserError | SystemError) {
       },
     };
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       issue,

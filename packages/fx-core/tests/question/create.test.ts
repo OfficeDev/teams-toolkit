@@ -22,12 +22,13 @@ import * as path from "path";
 import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
-import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { setTools } from "../../src/core/globalVars";
 import {
+  ApiMeOptions,
   CapabilityOptions,
   NotificationTriggerOptions,
   ProjectTypeOptions,
@@ -197,7 +198,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 3);
+          assert.isTrue(options.length === 4);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
@@ -223,6 +224,128 @@ describe("scaffold question", () => {
         QuestionNames.AppName,
       ]);
     });
+
+    it("traverse in vscode me from new api", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: ProjectTypeOptions.me().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
+          );
+          return ok({ type: "success", result: CapabilityOptions.apiMe().id });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          return ok({ type: "success", result: "javascript" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.ApiMeType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.staticOptions;
+          // Assert
+          assert.equal(options.length, 2);
+          // Assert
+          assert.equal(options.length, 2);
+          assert.deepEqual(options, [ApiMeOptions.newApi(), ApiMeOptions.apiSpec()]);
+          return ok({ type: "success", result: ApiMeOptions.newApi().id });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.ApiMeType,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+    });
+
+    it("traverse in vscode api me from existing api", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: ProjectTypeOptions.me().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: CapabilityOptions.apiMe().id });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.ApiMeType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.staticOptions;
+          // Assert
+          assert.equal(options.length, 2);
+          return ok({ type: "success", result: ApiMeOptions.apiSpec().id });
+        } else if (question.name === QuestionNames.ApiSpecLocation) {
+          inputs.supportedApisFromApiSpec = [
+            { id: "operation1", label: "operation1", groupName: "1" },
+            { id: "operation2", label: "operation2", groupName: "2" },
+          ];
+          return ok({ type: "success", result: "https://test.com" });
+        } else if (question.name === QuestionNames.ApiOperation) {
+          console.log("operatoin");
+          return ok({ type: "success", result: ["operation1"] });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.ApiMeType,
+        QuestionNames.ApiSpecLocation,
+        QuestionNames.ApiOperation,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+    });
+
     it("traverse in vscode Office addin", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -808,7 +931,7 @@ describe("scaffold question", () => {
               type: "success",
               result: CapabilityOptions.copilotPluginOpenAIPlugin().id,
             });
-          } else if (question.name === QuestionNames.OpenAIPluginDomain) {
+          } else if (question.name === QuestionNames.OpenAIPluginManifest) {
             return ok({ type: "success", result: "https://test.com" });
           } else if (question.name === QuestionNames.ApiOperation) {
             return ok({ type: "success", result: ["testOperation1"] });
@@ -828,7 +951,7 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.OpenAIPluginDomain,
+          QuestionNames.OpenAIPluginManifest,
           QuestionNames.ApiOperation,
           QuestionNames.Folder,
           QuestionNames.AppName,
@@ -922,15 +1045,17 @@ describe("scaffold question", () => {
           assert.isNotEmpty(res);
         });
 
-        it("valid API spec selecting from local file", async () => {
+        it("valid API spec selecting from local file with warning", async () => {
           const question = apiSpecLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
           };
 
-          sandbox
-            .stub(SpecParser.prototype, "validate")
-            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "validate").resolves({
+            status: ValidationStatus.Warning,
+            errors: [],
+            warnings: [{ content: "warn", type: WarningType.Unknown }],
+          });
           sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
           sandbox.stub(fs, "pathExists").resolves(true);
 
@@ -962,6 +1087,27 @@ describe("scaffold question", () => {
           ]);
           assert.isUndefined(res);
         });
+
+        it("throw error if missing inputs", async () => {
+          const question = apiSpecLocationQuestion();
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+
+          let err: Error | undefined = undefined;
+          try {
+            const validationSchema = question.validation as FuncValidation<string>;
+
+            await validationSchema.validFunc!("https://www.test.com", undefined);
+          } catch (e) {
+            err = e as Error;
+          }
+
+          assert.isTrue(err?.message.includes("inputs is undefined"));
+        });
+
         it("invalid api spec", async () => {
           const question = apiSpecLocationQuestion();
           const inputs: Inputs = {
@@ -1168,7 +1314,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1196,7 +1342,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1212,7 +1358,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1238,7 +1384,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1272,7 +1418,7 @@ describe("scaffold question", () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
             platform: Platform.CLI,
-            [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
           };
           const manifest = {
             schema_version: "1.0.0",
@@ -1299,12 +1445,30 @@ describe("scaffold question", () => {
           assert.equal(res, "error\nerror2");
         });
 
+        it("throw error if missing inputs", async () => {
+          const question = openAIPluginManifestLocationQuestion();
+
+          const manifest = {
+            schema_version: "1.0.0",
+          };
+          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
+
+          let err: Error | undefined = undefined;
+          try {
+            await (question.additionalValidationOnAccept as any).validFunc("url", undefined);
+          } catch (e) {
+            err = e as Error;
+          }
+
+          assert.equal(err?.message, "inputs is undefined");
+        });
+
         describe("validate when changing value", async () => {
           it("valid input - case 1", async () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
             };
             const input = "test.com";
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
@@ -1317,7 +1481,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1329,7 +1493,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1341,7 +1505,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1353,7 +1517,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1365,7 +1529,7 @@ describe("scaffold question", () => {
             const question = openAIPluginManifestLocationQuestion();
             const inputs: Inputs = {
               platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginDomain]: "openAIPluginManifest",
+              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
             };
             const validationRes = await (question.validation as any).validFunc!(input, inputs);
 
@@ -1561,12 +1725,13 @@ describe("scaffold question", () => {
     afterEach(() => {
       mockedEnvRestore();
     });
-    it("has 3 options in message extension type", () => {
+    it("has 4 options in message extension type", () => {
       // Act
       const options = CapabilityOptions.mes();
       // Assert
-      assert.equal(options.length, 3);
+      assert.equal(options.length, 4);
       assert.deepEqual(options, [
+        CapabilityOptions.apiMe(),
         CapabilityOptions.linkUnfurling(),
         CapabilityOptions.m365SearchMe(),
         CapabilityOptions.collectFormMe(),
@@ -1591,12 +1756,13 @@ describe("scaffold question", () => {
     afterEach(() => {
       mockedEnvRestore();
     });
-    it("has 3 options in message extension type", () => {
+    it("has 4 options in message extension type", () => {
       // Act
       const options = CapabilityOptions.mes();
       // Assert
-      assert.equal(options.length, 3);
+      assert.equal(options.length, 4);
       assert.deepEqual(options, [
+        CapabilityOptions.apiMe(),
         CapabilityOptions.linkUnfurling(),
         CapabilityOptions.copilotM365SearchMe(),
         CapabilityOptions.collectFormMe(),
@@ -1605,7 +1771,27 @@ describe("scaffold question", () => {
     it("cli non-interactive", () => {
       const question = capabilityQuestion();
       const options = question.staticOptions;
-      assert.equal(options.length, 17);
+      assert.equal(options.length, 18);
+    });
+    it("csharp message extension capabilities", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VS,
+      };
+      const options = CapabilityOptions.mes(inputs);
+      assert.deepEqual(options, [
+        CapabilityOptions.linkUnfurling(),
+        CapabilityOptions.copilotM365SearchMe(),
+        CapabilityOptions.collectFormMe(),
+      ]);
+    });
+    it("collect message extension capabilites filtered by feature flag", async () => {
+      const options = CapabilityOptions.collectMECaps(true);
+      assert.deepEqual(options, [
+        CapabilityOptions.apiMe(),
+        CapabilityOptions.linkUnfurling(),
+        CapabilityOptions.copilotM365SearchMe(),
+        CapabilityOptions.collectFormMe(),
+      ]);
     });
   });
   describe("ME copilot plugin template only", () => {
@@ -1647,7 +1833,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 3);
+          assert.isTrue(options.length === 4);
           assert.deepEqual(options, CapabilityOptions.mes());
           return ok({ type: "success", result: CapabilityOptions.copilotM365SearchMe().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {

@@ -64,4 +64,36 @@ export class ConstantString {
     "options",
     "trace",
   ];
+
+  // TODO: update after investigating the usage of these constants.
+  static readonly WellknownResultNames = [
+    "result",
+    "data",
+    "items",
+    "root",
+    "matches",
+    "queries",
+    "list",
+    "output",
+  ];
+  static readonly WellknownTitleName = ["title", "name", "summary", "caption", "subject", "label"];
+  static readonly WellknownSubtitleName = [
+    "subtitle",
+    "id",
+    "uid",
+    "description",
+    "desc",
+    "detail",
+  ];
+  static readonly WellknownImageName = [
+    "image",
+    "icon",
+    "avatar",
+    "picture",
+    "photo",
+    "logo",
+    "pic",
+    "thumbnail",
+    "img",
+  ];
 }

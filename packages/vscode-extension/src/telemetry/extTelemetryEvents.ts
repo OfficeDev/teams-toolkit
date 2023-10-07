@@ -174,6 +174,7 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
+  OpenCopilotEnroll = "open-copilot-enroll",
   OpenSideloadingLearnMore = "open-sideloading-learn-more",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
@@ -296,6 +297,8 @@ export enum TelemetryProperty {
   DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",
   DebugDevTunnelNum = "debug-dev-tunnel-num",
+  DebugTestTool = "debug-test-tool",
+  DebugTestToolLog = "debug-test-tool-log",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

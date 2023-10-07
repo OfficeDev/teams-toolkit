@@ -11,7 +11,10 @@ import {
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { validateTab, initPage } from "../../../utils/playwrightOperation";
+import {
+  validateProactiveMessaging,
+  initPage,
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
@@ -98,7 +101,7 @@ describe("Migration Tests", function () {
         await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
 
-      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId();
+      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("local");
       // UI verify
       const page = await initPage(
         mirgationDebugTestContext.context!,
@@ -106,10 +109,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, {
-        displayName: Env.displayName,
-        includeFunction: false,
-      });
+      await validateProactiveMessaging(page);
     }
   );
 });

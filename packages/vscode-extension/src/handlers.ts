@@ -130,7 +130,7 @@ import {
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
-import { getDefaultString, localize, parseLocale } from "./utils/localizeUtils";
+import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { MetadataV3 } from "@microsoft/teamsfx-core";
 
@@ -346,7 +346,7 @@ export function getSystemInputs(): Inputs {
     projectPath: globalVariables.workspaceUri?.fsPath,
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    locale: parseLocale(),
+    locale: loadedLocale,
   };
   return answers;
 }
@@ -1794,7 +1794,7 @@ export async function showError(e: UserError | SystemError) {
       },
     };
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}\nstack: ${e.stack}`);
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       issue,
@@ -2801,7 +2801,16 @@ export async function signinM365Callback(args?: any[]): Promise<Result<null, FxE
 export async function refreshSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
   const status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
   if (status.isOk() && status.value.token !== undefined) {
-    accountTreeViewProviderInstance.m365AccountNode.updateSideloading(status.value.token);
+    accountTreeViewProviderInstance.m365AccountNode.updateChecks(status.value.token, true, false);
+  }
+
+  return ok(null);
+}
+
+export async function refreshCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
+  const status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+  if (status.isOk() && status.value.token !== undefined) {
+    accountTreeViewProviderInstance.m365AccountNode.updateChecks(status.value.token, false, true);
   }
 
   return ok(null);
@@ -2828,6 +2837,23 @@ export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxE
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideloadingDisabled,
   });
+  return Promise.resolve(ok(null));
+}
+
+export function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
+  VS_CODE_UI.showMessage(
+    "warn",
+    localize("teamstoolkit.accountTree.copilotMessage"),
+    false,
+    localize("teamstoolkit.accountTree.copilotEnroll")
+  )
+    .then(async (result) => {
+      if (result.isOk() && result.value === localize("teamstoolkit.accountTree.copilotEnroll")) {
+        await VS_CODE_UI.openUrl("https://aka.ms/PluginsEarlyAccess");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenCopilotEnroll);
+      }
+    })
+    .catch((_error) => {});
   return Promise.resolve(ok(null));
 }
 

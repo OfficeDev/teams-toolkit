@@ -118,7 +118,11 @@ export class Executor {
   }
 
   static async validate(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "validate", env);
+    return this.executeCmd(
+      workspace,
+      "validate -t ./appPackage/manifest.json",
+      env
+    );
   }
 
   static async validateWithCustomizedProcessEnv(
@@ -185,7 +189,7 @@ export class Executor {
     template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx new template ${template} --interactive false `;
+    const command = `teamsfx new sample ${template} --interactive false `;
     const timeout = 100000;
     try {
       await this.execute(command, testFolder, processEnv, timeout);
@@ -266,11 +270,15 @@ export class Executor {
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx account set --subscription ${subscription}`;
+    const command = `teamsapp auth set --subscription ${subscription}`;
     return this.execute(command, projectPath, processEnv);
   }
 
   static async package(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "package", env);
+    return this.executeCmd(
+      workspace,
+      "package -t ./appPackage/manifest.json",
+      env
+    );
   }
 }

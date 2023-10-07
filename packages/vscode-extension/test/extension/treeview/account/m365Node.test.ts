@@ -2,6 +2,8 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
+import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
+
 import { M365AccountNode } from "../../../../src/treeview/account/m365Node";
 import { AccountItemStatus, loadingIcon, m365Icon } from "../../../../src/treeview/account/common";
 import { DynamicNode } from "../../../../src/treeview/dynamicNode";
@@ -60,5 +62,24 @@ describe("m365Node", () => {
   it("getChildren", () => {
     const m365Node = new M365AccountNode(eventEmitter);
     chai.assert.isDefined(m365Node.getChildren());
+  });
+
+  it("updateChecks", () => {
+    const m365Node = new M365AccountNode(eventEmitter);
+    m365Node.updateChecks("test token", false, false);
+    chai.assert.isDefined(m365Node.getChildren());
+    chai.assert.equal(1, (m365Node.getChildren() as any).length);
+    m365Node.updateChecks("test token", true, false);
+    chai.assert.isDefined(m365Node.getChildren());
+    chai.assert.equal(1, (m365Node.getChildren() as any).length);
+
+    sandbox.stub(featureFlags, "isCopilotPluginEnabled").returns(true);
+    const m365NodeWithCopilot = new M365AccountNode(eventEmitter);
+    m365NodeWithCopilot.updateChecks("test token", false, true);
+    chai.assert.isDefined(m365NodeWithCopilot.getChildren());
+    chai.assert.equal(2, (m365NodeWithCopilot.getChildren() as any).length);
+    m365NodeWithCopilot.updateChecks("test token", true, true);
+    chai.assert.isDefined(m365NodeWithCopilot.getChildren());
+    chai.assert.equal(2, (m365NodeWithCopilot.getChildren() as any).length);
   });
 });

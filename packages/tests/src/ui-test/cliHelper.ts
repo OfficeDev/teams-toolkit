@@ -26,7 +26,7 @@ export class CliHelper {
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx account set --subscription ${subscription}`;
+    const command = `teamsapp auth set --subscription ${subscription}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -399,28 +399,56 @@ export class CliHelper {
     }
   }
 
+  static async createProjectWithCapabilityMigration(
+    appName: string,
+    testFolder: string,
+    capability: Capability,
+    lang: "javascript" | "typescript" = "javascript",
+    options = "",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    console.log("isV3Enabled: " + isV3Enabled());
+    let command;
+    if (isV3Enabled()) {
+      command = `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
+    } else {
+      command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    }
+    const timeout = 100000;
+    try {
+      await Executor.execute("teamsfx -v", testFolder);
+      await Executor.execute(command, testFolder);
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with capability ${capability}`;
+      console.log(`[Successfully] ${message}`);
+    } catch (e: any) {
+      console.log(
+        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
+      );
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
+
   static async createTemplateProject(
     testFolder: string,
     template: TemplateProjectFolder,
     V3: boolean,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + V3);
-    if (V3) {
-      process.env["TEAMSFX_V3"] = "true";
-      process.env["TEAMSFX_V3_MIGRATION"] = "true";
-    } else {
-      process.env["TEAMSFX_V3"] = "false";
-      process.env["TEAMSFX_V3_MIGRATION"] = "false";
-    }
+    process.env["TEAMSFX_V3"] = V3 ? "true" : "false";
+    process.env["TEAMSFX_V3_MIGRATION"] = V3 ? "true" : "false";
+
+    console.log("TEAMSFX_V3: " + process.env["TEAMSFX_V3"]);
+    console.log(await Executor.execute("teamsfx -v", testFolder));
+
     const command = `teamsfx new template ${template} --interactive false `;
     const timeout = 100000;
     try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
+      const result = await Executor.execute(command, testFolder);
 
       const message = `scaffold project to ${path.resolve(
         template

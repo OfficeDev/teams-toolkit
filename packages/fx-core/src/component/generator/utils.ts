@@ -21,6 +21,7 @@ import semver from "semver";
 import { CancelDownloading, ParseUrlError } from "./error";
 import { deepCopy } from "../../common/tools";
 import { InvalidInputError } from "../../core/error";
+import { ProgrammingLanguage } from "../../question";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -337,13 +338,13 @@ export async function runWithLimitedConcurrency<T>(
 
 export function convertToLangKey(programmingLanguage: string): string {
   switch (programmingLanguage) {
-    case "javascript": {
+    case ProgrammingLanguage.JS: {
       return "js";
     }
-    case "typescript": {
+    case ProgrammingLanguage.TS: {
       return "ts";
     }
-    case "csharp": {
+    case ProgrammingLanguage.CSharp: {
       return "csharp";
     }
   }

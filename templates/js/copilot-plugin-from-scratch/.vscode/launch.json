@@ -30,7 +30,7 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Preview in Copilot (Edge)",
+            "name": "Preview in Teams (Edge)",
             "type": "msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com?${account-hint}",
@@ -41,7 +41,7 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Preview in Copilot (Chrome)",
+            "name": "Preview in Teams (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com?${account-hint}",
@@ -66,7 +66,7 @@
     ],
     "compounds": [
         {
-            "name": "Debug in Copilot (Edge)",
+            "name": "Debug in Teams (Edge)",
             "configurations": [
                 "Launch App in Teams (Edge)",
                 "Attach to Backend"
@@ -79,7 +79,7 @@
             "stopAll": true
         },
         {
-            "name": "Debug in Copilot (Chrome)",
+            "name": "Debug in Teams (Chrome)",
             "configurations": [
                 "Launch App in Teams (Chrome)",
                 "Attach to Backend"

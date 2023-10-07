@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
+
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
@@ -36,7 +40,7 @@ describe("Migration Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await sampledebugContext.after();
+    await sampledebugContext.after(true, true, "dev");
   });
 
   it(
@@ -47,7 +51,7 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await sampledebugContext.createTemplateCLI(false);
+      await sampledebugContext.openResourceFolder();
       // verify popup
       await validateNotification(Notification.Upgrade);
 

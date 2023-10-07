@@ -14,11 +14,11 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Validate using manifest schema
-  - uses: teamsApp/validateManifest
+  # Set OPENAPI_SERVER_URL for local launch
+  - uses: script
     with:
-      # Path to manifest template
-      manifestPath: ./appPackage/manifest.json
+      run:
+        echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage

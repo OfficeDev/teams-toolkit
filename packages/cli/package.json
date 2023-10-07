@@ -37,13 +37,14 @@
   ],
   "preferGlobal": true,
   "bin": {
-    "teamsfx": "./cliold.js"
+    "teamsfx": "./cliold.js",
+    "teamsapp": "./cli.js"
   },
   "aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
   "devDependencies": {
     "@inquirer/testing": "^2.1.2",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@microsoft/metrics-ts": "0.0.4",
+    "@microsoft/metrics-ts": "workspace:*",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/express": "^4.17.14",
@@ -98,8 +99,8 @@
     "@inquirer/core": "^4.0.0",
     "@inquirer/prompts": "^3.0.4",
     "@inquirer/type": "^1.1.2",
-    "@microsoft/teamsfx-api": "^0.22.5",
-    "@microsoft/teamsfx-core": "^2.0.5",
+    "@microsoft/teamsfx-api": "workspace:*",
+    "@microsoft/teamsfx-core": "workspace:*",
     "ansi-escapes": "^4.3.2",
     "applicationinsights": "^1.8.10",
     "async-mutex": "^0.3.1",

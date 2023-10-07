@@ -4,19 +4,27 @@
 
 import { OpenAPIV3 } from "openapi-types";
 import * as util from "util";
-import { getResponseJson } from "./utils";
+import { getResponseJson, isWellKnownName } from "./utils";
 import { AdaptiveCard, ArrayElement, ErrorType, TextBlockElement } from "./interfaces";
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
 
-export function generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): AdaptiveCard {
+export function generateAdaptiveCard(
+  operationItem: OpenAPIV3.OperationObject
+): [AdaptiveCard, string] {
   try {
     const json = getResponseJson(operationItem);
 
     let cardBody: Array<TextBlockElement | ArrayElement> = [];
 
-    const schema = json.schema as OpenAPIV3.SchemaObject;
+    let schema = json.schema as OpenAPIV3.SchemaObject;
+    let jsonPath = "$";
     if (schema && Object.keys(schema).length > 0) {
+      jsonPath = getResponseJsonPathFromSchema(schema);
+      if (jsonPath !== "$") {
+        schema = schema.properties![jsonPath] as OpenAPIV3.SchemaObject;
+      }
+
       cardBody = generateCardFromResponse(schema, "");
     }
 
@@ -49,7 +57,7 @@ export function generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): 
       body: cardBody,
     };
 
-    return fullCard;
+    return [fullCard, jsonPath];
   } catch (err) {
     throw new SpecParserError((err as Error).toString(), ErrorType.GenerateAdaptiveCardFailed);
   }
@@ -136,4 +144,22 @@ export function generateCardFromResponse(
   }
 
   throw new Error(util.format(ConstantString.UnknownSchema, JSON.stringify(schema)));
+}
+
+// Find the first array property in the response schema object with the well-known name
+export function getResponseJsonPathFromSchema(schema: OpenAPIV3.SchemaObject): string {
+  if (schema.type === "object" || (!schema.type && schema.properties)) {
+    const { properties } = schema;
+    for (const property in properties) {
+      const schema = properties[property] as OpenAPIV3.SchemaObject;
+      if (
+        schema.type === "array" &&
+        isWellKnownName(property, ConstantString.WellknownResultNames)
+      ) {
+        return property;
+      }
+    }
+  }
+
+  return "$";
 }

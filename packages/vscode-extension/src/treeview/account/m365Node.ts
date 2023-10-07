@@ -3,21 +3,27 @@
 
 import * as vscode from "vscode";
 
+import { isCopilotPluginEnabled } from "@microsoft/teamsfx-core";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
 import { AccountItemStatus, loadingIcon, m365Icon } from "./common";
 import { SideloadingNode } from "./sideloadingNode";
+import { CopilotNode } from "./copilotNode";
 
 export class M365AccountNode extends DynamicNode {
   public status: AccountItemStatus;
   private sideloadingNode: SideloadingNode;
+  private copilotNode: CopilotNode | undefined;
 
   constructor(private eventEmitter: vscode.EventEmitter<DynamicNode | undefined | void>) {
     super("", vscode.TreeItemCollapsibleState.None);
     this.status = AccountItemStatus.SignedOut;
     this.contextValue = "signinM365";
     this.sideloadingNode = new SideloadingNode(this.eventEmitter, "");
+    if (isCopilotPluginEnabled()) {
+      this.copilotNode = new CopilotNode(this.eventEmitter, "");
+    }
   }
 
   public setSignedIn(upn: string) {
@@ -61,13 +67,32 @@ export class M365AccountNode extends DynamicNode {
     this.eventEmitter.fire(this);
   }
 
-  public updateSideloading(token: string) {
-    this.sideloadingNode.token = token;
-    this.eventEmitter.fire(this);
+  public updateChecks(token: string, sideloading: boolean, copilot: boolean) {
+    let refreshSideloading = false;
+    let refreshCopilot = false;
+    if (sideloading) {
+      this.sideloadingNode.token = token;
+      refreshSideloading = true;
+    }
+    if (isCopilotPluginEnabled() && copilot && this.copilotNode !== undefined) {
+      this.copilotNode.token = token;
+      refreshCopilot = true;
+    }
+
+    // partial refresh
+    if (refreshSideloading && refreshCopilot) {
+      this.eventEmitter.fire(this);
+    } else if (refreshSideloading && !refreshCopilot) {
+      this.eventEmitter.fire(this.sideloadingNode);
+    } else if (!refreshSideloading && refreshCopilot) {
+      this.eventEmitter.fire(this.copilotNode);
+    }
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
-    return [this.sideloadingNode];
+    return isCopilotPluginEnabled() && this.copilotNode !== undefined
+      ? [this.sideloadingNode, this.copilotNode]
+      : [this.sideloadingNode];
   }
 
   public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {

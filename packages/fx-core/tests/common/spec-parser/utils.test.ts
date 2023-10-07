@@ -21,6 +21,7 @@ import {
   updateFirstLetter,
   validateServer,
   resolveServerUrl,
+  isWellKnownName,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
@@ -117,6 +118,20 @@ describe("utils", () => {
     it("should return the same string for a path with no slashes", () => {
       const path = "test";
       const expected = "Test";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
+    it("should return correct result for string with {} and .", () => {
+      const path = "/{section}.json";
+      const expected = "SectionJson";
+      const result = convertPathToCamelCase(path);
+      assert.strictEqual(result, expected);
+    });
+
+    it("should return correct result for complex string", () => {
+      const path = "/{section}.{test1}/{test2}.json";
+      const expected = "SectionTest1Test2Json";
       const result = convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
@@ -375,6 +390,63 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
+    it("should return true if method is POST, but requestBody contains unsupported parameter and required but has default value", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "array",
+                          default: ["item"],
+                          items: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, true);
+    });
+
     it("should return true if method is POST, path is valid, parameter is supported and only one required param in postBody", () => {
       const method = "POST";
       const path = "/users";
@@ -525,7 +597,7 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
-    it("should return false if parameter is not supported", () => {
+    it("should return false if parameter is not supported and required", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
@@ -535,7 +607,46 @@ describe("utils", () => {
               parameters: [
                 {
                   in: "query",
+                  required: true,
                   schema: { type: "object" },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any);
+      assert.strictEqual(result, false);
+    });
+
+    it("should ignore unsupported schema type with default value", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "object", default: { name: "test" } },
                 },
               ],
               responses: {
@@ -743,6 +854,43 @@ describe("utils", () => {
       assert.strictEqual(result.isValid, false);
     });
 
+    it("should valid if parameter in header or cookie is required but have default value", () => {
+      const paramObject = [
+        { in: "query", required: true, schema: { type: "string" } },
+        { in: "path", required: false, schema: { type: "string" } },
+        { in: "header", required: true, schema: { type: "string", default: "value" } },
+      ];
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, true);
+      // header param is ignored
+      assert.strictEqual(result.requiredNum, 1);
+      assert.strictEqual(result.optionalNum, 1);
+    });
+
+    it("should treat required param with default value as optional param", () => {
+      const paramObject = [
+        { in: "query", required: true, schema: { type: "string", default: "value" } },
+        { in: "path", required: false, schema: { type: "string" } },
+        { in: "query", required: true, schema: { type: "string" } },
+      ];
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, true);
+      assert.strictEqual(result.requiredNum, 1);
+      assert.strictEqual(result.optionalNum, 2);
+    });
+
+    it("should ignore required query param with default value and array type", () => {
+      const paramObject = [
+        { in: "query", required: true, schema: { type: "string" } },
+        { in: "path", required: false, schema: { type: "string" } },
+        { in: "query", required: true, schema: { type: "array", default: ["item"] } },
+      ];
+      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      assert.strictEqual(result.isValid, true);
+      assert.strictEqual(result.requiredNum, 1);
+      assert.strictEqual(result.optionalNum, 1);
+    });
+
     it("should ignore in header or cookie if is not required", () => {
       const paramObject = [
         { in: "query", required: true, schema: { type: "string" } },
@@ -791,6 +939,23 @@ describe("utils", () => {
       const result = checkPostBody(schema as any);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 0);
+    });
+
+    it("should treat required schema with default value as optional param", () => {
+      const schema = {
+        type: "object",
+        required: ["name"],
+        properties: {
+          name: {
+            type: "string",
+            default: "value",
+          },
+        },
+      };
+      const result = checkPostBody(schema as any);
+      assert.strictEqual(result.requiredNum, 0);
+      assert.strictEqual(result.optionalNum, 1);
+      assert.strictEqual(result.isValid, true);
     });
 
     it("should return 1 if the schema has a required string property", () => {
@@ -867,6 +1032,26 @@ describe("utils", () => {
       };
       const result = checkPostBody(schema as any);
       assert.strictEqual(result.isValid, false);
+    });
+
+    it("should return valid for an unsupported schema type but it is required with default value", () => {
+      const schema = {
+        type: "object",
+        required: ["name"],
+        properties: {
+          name: {
+            type: "array",
+            default: ["item"],
+            items: {
+              type: "string",
+            },
+          },
+        },
+      };
+      const result = checkPostBody(schema as any);
+      assert.strictEqual(result.isValid, true);
+      assert.strictEqual(result.requiredNum, 0);
+      assert.strictEqual(result.optionalNum, 0);
     });
   });
 
@@ -1274,6 +1459,48 @@ describe("utils", () => {
         Error,
         format(ConstantString.ResolveServerUrlFailed, "API_PORT")
       );
+    });
+  });
+
+  describe("isWellKnownName", () => {
+    it("should return true for well-known result property names", () => {
+      expect(isWellKnownName("result", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("data", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("items", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("root", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("matches", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("queries", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("list", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("output", ConstantString.WellknownResultNames)).to.be.true;
+    });
+
+    it("should return true for well-known result property names with different casing", () => {
+      expect(isWellKnownName("Result", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("DaTa", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("ITEMS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("Root", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("MaTcHeS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("QuErIeS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("LiSt", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("OutPut", ConstantString.WellknownResultNames)).to.be.true;
+    });
+
+    it("should return true for name substring is well-known result property names", () => {
+      expect(isWellKnownName("testResult", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("carData", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("productItems", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("rootValue", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("matchesResult", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("DataQueries", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("productLists", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("outputData", ConstantString.WellknownResultNames)).to.be.true;
+    });
+
+    it("should return false for non well-known result property names", () => {
+      expect(isWellKnownName("foo", ConstantString.WellknownResultNames)).to.be.false;
+      expect(isWellKnownName("bar", ConstantString.WellknownResultNames)).to.be.false;
+      expect(isWellKnownName("baz", ConstantString.WellknownResultNames)).to.be.false;
+      expect(isWellKnownName("qux", ConstantString.WellknownResultNames)).to.be.false;
     });
   });
 });

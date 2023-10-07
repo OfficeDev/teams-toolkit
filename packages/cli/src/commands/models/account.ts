@@ -7,7 +7,8 @@ import { accountLogoutCommand } from "./accountLogout";
 import { accountShowCommand } from "./accountShow";
 
 export const accountCommand: CLICommand = {
-  name: "account",
+  name: "auth",
+  aliases: ["account"],
   description: "Manage Microsoft 365 and Azure accounts.",
   commands: [accountShowCommand, accountLoginCommand, accountLogoutCommand],
 };

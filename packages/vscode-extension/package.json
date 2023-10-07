@@ -260,6 +260,16 @@
           "group": "inline@2"
         },
         {
+          "command": "fx-extension.refreshCopilot",
+          "when": "view == teamsfx-accounts && viewItem =~ /^checkCopilot$|^checkCopilot-info$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.checkCopilotCallback",
+          "when": "view == teamsfx-accounts && viewItem == checkCopilot-info",
+          "group": "inline@2"
+        },
+        {
           "command": "fx-extension.azureAccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline@2"
@@ -440,6 +450,14 @@
         },
         {
           "command": "fx-extension.checkSideloading",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshCopilot",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.checkCopilotCallback",
           "when": "false"
         },
         {
@@ -732,6 +750,16 @@
       {
         "command": "fx-extension.checkSideloading",
         "title": "%teamstoolkit.accountTree.sideloadingWarningTooltip%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.refreshCopilot",
+        "title": "%teamstoolkit.commands.refresh.title%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fx-extension.checkCopilotCallback",
+        "title": "%teamstoolkit.accountTree.copilotWarningTooltip%",
         "icon": "$(info)"
       },
       {
@@ -1320,8 +1348,8 @@
     "@microsoft/dev-tunnels-contracts": "~1.0.7360",
     "@microsoft/dev-tunnels-management": "~1.0.7360",
     "@microsoft/dev-tunnels-ssh": "~3.11.1",
-    "@microsoft/teamsfx-api": "^0.22.5",
-    "@microsoft/teamsfx-core": "^2.0.5",
+    "@microsoft/teamsfx-api": "workspace:*",
+    "@microsoft/teamsfx-core": "workspace:*",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",

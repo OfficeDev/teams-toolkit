@@ -5,22 +5,43 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "fs-extra";
 
-import { LogProvider } from "@microsoft/teamsfx-api";
+import { LogProvider, SystemError } from "@microsoft/teamsfx-api";
 
 import { waitSeconds } from "../tools";
 import { NotExtendedToM365Error } from "./errors";
+import { serviceEndpoint } from "./serviceConstant";
 import { assembleError } from "../../error/common";
-import { ErrorContextMW } from "../../core/globalVars";
+import { ErrorCategory } from "../../error/types";
+import { ErrorContextMW, TOOLS } from "../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
+import {
+  Component,
+  TelemetryEvent,
+  TelemetryProperty,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+} from "../telemetry";
 
 const M365ErrorSource = "M365";
 const M365ErrorComponent = "PackageService";
 
 // Call m365 service for package CRUD
 export class PackageService {
+  private static sharedInstance: PackageService;
+
   private readonly axiosInstance;
   private readonly initEndpoint;
   private readonly logger: LogProvider | undefined;
+
+  public static GetSharedInstance(): PackageService {
+    if (!PackageService.sharedInstance) {
+      PackageService.sharedInstance = new PackageService(
+        process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint,
+        TOOLS.logProvider
+      );
+    }
+    return PackageService.sharedInstance;
+  }
 
   public constructor(endpoint: string, logger?: LogProvider) {
     this.axiosInstance = axios.create({
@@ -248,6 +269,66 @@ export class PackageService {
       }
 
       throw assembleError(error, M365ErrorSource);
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
+  public async getActiveExperiences(token: string): Promise<string[] | undefined> {
+    try {
+      const serviceUrl = await this.getTitleServiceUrl(token);
+      this.logger?.debug(`Get active experiences from service URL ${serviceUrl} ...`);
+      const response = await this.axiosInstance.get("/catalog/v1/users/experiences", {
+        baseURL: serviceUrl,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const status = response.status;
+      const activeExperiences = response.data?.activeExperiences as string[];
+      this.logger?.debug(`(${status}) Active experiences: ${JSON.stringify(activeExperiences)}`);
+      return activeExperiences;
+    } catch (error: any) {
+      this.logger?.error("Fail to get active experiences.");
+      if (error.response) {
+        this.logger?.error(JSON.stringify(error.response.data));
+        this.traceError(error);
+      } else {
+        this.logger?.error(error.message);
+      }
+
+      throw assembleError(error, M365ErrorSource);
+    }
+  }
+
+  public async getCopilotStatus(token: string): Promise<boolean | undefined> {
+    try {
+      const activeExperiences = await this.getActiveExperiences(token);
+      const copilotAllowed =
+        activeExperiences == undefined ? undefined : activeExperiences.includes("CopilotTeams");
+      sendTelemetryEvent(Component.core, TelemetryEvent.CheckCopilot, {
+        [TelemetryProperty.IsCopilotAllowed]: copilotAllowed?.toString() ?? "undefined",
+      });
+      return copilotAllowed;
+    } catch (error: any) {
+      sendTelemetryErrorEvent(
+        Component.core,
+        TelemetryEvent.CheckCopilot,
+        new SystemError({
+          error,
+          source: M365ErrorSource,
+          message: error.message ?? "Failed to get copilot status.",
+          categories: [ErrorCategory.External],
+        }),
+        {
+          [TelemetryProperty.CheckCopilotTracingId]: `${
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            error.response?.headers?.traceresponse ??
+            error.innerError?.response?.headers?.traceresponse ??
+            ""
+          }`,
+        }
+      );
+      return undefined;
     }
   }
 

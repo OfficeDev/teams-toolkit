@@ -30,7 +30,7 @@ function adjustOptions(options: CLICommandOption[]) {
     //skip copilot plugin options if API copilot plugin is not enabled
     const copilotPluginQuestionNames = [
       QuestionNames.ApiSpecLocation.toString(),
-      QuestionNames.OpenAIPluginDomain.toString(),
+      QuestionNames.OpenAIPluginManifest.toString(),
       QuestionNames.ApiOperation.toString(),
     ];
     options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));

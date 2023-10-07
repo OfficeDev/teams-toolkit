@@ -1,6 +1,9 @@
  {{^noComment}}
   # Generate runtime environment variables
  {{/noComment}}
+ {{#BOT_DEV_TUNNEL}}
+  # Add BOT_ENDPOINT, BOT_DOMAIN to local environment file
+ {{/BOT_DEV_TUNNEL}}
   - uses: file/createOrUpdateEnvironmentFile
     with:
   {{#target}}
@@ -24,3 +27,7 @@
   {{#COPILOT}}
         OPENAPI_SERVER_URL: https://${{DEV_TUNNEL_URL}}
   {{/COPILOT}}
+  {{#BOT_DEV_TUNNEL}}
+        BOT_ENDPOINT: https://${{DEV_TUNNEL_URL}}
+        BOT_DOMAIN: ${{DEV_TUNNEL_URL}}
+  {{/BOT_DEV_TUNNEL}}

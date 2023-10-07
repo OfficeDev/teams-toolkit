@@ -3,6 +3,8 @@
 provision:
 {{#teamsAppCreate}} {{/teamsAppCreate}}
 
+{{#fileCreateOrUpdateEnvironmentFile}} target: ./env/.env.local, noComment, BOT_DEV_TUNNEL {{/fileCreateOrUpdateEnvironmentFile}}
+
 {{#botAadAppCreate}} {{/botAadAppCreate}}
 
 {{#fileCreateOrUpdateJsonFile}} appsettings, BOT {{/fileCreateOrUpdateJsonFile}}

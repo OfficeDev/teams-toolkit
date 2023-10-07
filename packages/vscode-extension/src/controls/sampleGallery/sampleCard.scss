@@ -99,7 +99,7 @@
     .estimation-time {
       padding-left: 8px;
       height: 24px;
-      color: var(--vscode-editor-foreground);
+      color: var(--vscode-debugConsoleInputIcon-foreground);
       display: flex;
       font-size: 11px;
       margin-top: 8px;
@@ -127,7 +127,7 @@
     .configuration {
       padding-left: 8px;
       height: auto;
-      color: var(--vscode-editor-foreground);
+      color: var(--vscode-debugConsoleInputIcon-foreground);
       display: flex;
       font-size: 11px;
       height: 24px;
@@ -229,6 +229,11 @@ body.vscode-light {
   .sample-card:not(.unavailable):hover {
     background-color: #F0F0F0;
   }
+
+  .tag::part(control) {
+    background-color: #E5E5E5;
+    color: #606060;
+  }
 }
 
 body.vscode-dark {
@@ -239,6 +244,11 @@ body.vscode-dark {
 
   .sample-card:not(.unavailable):hover {
     background-color: #303031;
+  }
+
+  .tag::part(control) {
+    background-color: #4D4D4D;
+    color: #FFFFFF;
   }
 }
 

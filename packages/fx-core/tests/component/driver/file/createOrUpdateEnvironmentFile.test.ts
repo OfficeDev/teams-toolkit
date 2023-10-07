@@ -151,7 +151,7 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
         const result = await driver.run(args, mockedDriverContext);
         chai.assert(result.isOk());
         if (result.isOk()) {
-          chai.assert.equal(result.value.size, 0);
+          chai.assert.equal(result.value.size, 3);
           const expectedEnvs = { ...existingEnvs, ...args.envs };
           const expectedContent = Object.entries(expectedEnvs)
             .map(([key, value]) => `${key}=${value}`)
@@ -208,7 +208,7 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
         const executionResult = await driver.execute(args, mockedDriverContext);
         chai.assert(executionResult.result.isOk());
         if (executionResult.result.isOk()) {
-          chai.assert.equal(executionResult.result.value.size, 0);
+          chai.assert.equal(executionResult.result.value.size, 3);
           const expectedEnvs = { ...existingEnvs, ...args.envs };
           const expectedContent = Object.entries(expectedEnvs)
             .map(([key, value]) => `${key}=${value}`)

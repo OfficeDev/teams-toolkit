@@ -39,6 +39,7 @@ describe("upgrade", () => {
           testFolder,
           TemplateProjectFolder.HelloWorldBotSSO,
           env,
+          true,
           true
         );
       }

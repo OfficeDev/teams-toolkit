@@ -37,6 +37,7 @@ describe("upgrade", () => {
           testFolder,
           TemplateProjectFolder.IncomingWebhook,
           env,
+          true,
           true
         );
       }

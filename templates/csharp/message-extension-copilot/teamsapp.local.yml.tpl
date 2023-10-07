@@ -14,6 +14,14 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  # Add BOT_ENDPOINT, BOT_DOMAIN to local environment file
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./env/.env.local
+      envs:
+        BOT_ENDPOINT: https://${{DEV_TUNNEL_URL}}
+        BOT_DOMAIN: ${{DEV_TUNNEL_URL}}
+
   # Create or reuse an existing Azure Active Directory application for bot.
   - uses: botAadApp/create
     with:

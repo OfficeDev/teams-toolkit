@@ -25,6 +25,14 @@ provision:
       # The Azure Active Directory application's client secret created for bot.
       botPassword: SECRET_BOT_PASSWORD
 
+  # Add BOT_ENDPOINT, BOT_DOMAIN to local environment file
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./env/.env.local
+      envs:
+        BOT_ENDPOINT: https://${{DEV_TUNNEL_URL}}
+        BOT_DOMAIN: ${{DEV_TUNNEL_URL}}
+        
   # Generate runtime appsettings to JSON file
   - uses: file/createOrUpdateJsonFile
     with:

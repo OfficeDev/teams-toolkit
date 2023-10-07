@@ -70,8 +70,12 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
       );
       context.logProvider?.debug(`Updated envs: ${JSON.stringify(updatedEnvs)}`);
       await fs.writeFile(target, updatedEnvs.join(os.EOL));
+      const output = new Map<string, string>();
+      for (const [key, value] of Object.entries(args.envs)) {
+        output.set(key, value);
+      }
       return {
-        output: new Map<string, string>(),
+        output: output,
         summaries: [
           getLocalizedString(
             "driver.file.createOrUpdateEnvironmentFile.summary",

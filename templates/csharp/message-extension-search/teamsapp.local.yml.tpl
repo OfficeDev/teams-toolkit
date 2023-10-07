@@ -33,6 +33,13 @@ provision:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./env/.env.local
+      envs:
+        BOT_ENDPOINT: https://${{DEV_TUNNEL_URL}}
+        BOT_DOMAIN: ${{DEV_TUNNEL_URL}}
+
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
     with:

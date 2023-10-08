@@ -38,7 +38,7 @@ import {
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
-  ApiMeOptions,
+  MeArchitectureOptions,
   AppNamePattern,
   CapabilityOptions,
   NotificationTriggerOptions,
@@ -114,8 +114,9 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
   [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
   [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined`]: TemplateNames.M365MessageExtension,
-  [`${CapabilityOptions.copilotM365SearchMe().id}:undefined`]:
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botMe().id}`]:
+    TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botPlugin().id}`]:
     TemplateNames.MessageExtensionCopilot,
   [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
@@ -127,7 +128,7 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
     TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.apiMe().id}:undefined:${ApiMeOptions.newApi().id}`]:
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}`]:
     TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
 };
@@ -212,7 +213,7 @@ class Coordinator {
       const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
-      const apiMeType = inputs[QuestionNames.ApiMeType] as string;
+      const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -230,7 +231,7 @@ class Coordinator {
         }
       } else if (
         capability === CapabilityOptions.copilotPluginApiSpec().id ||
-        (capability === CapabilityOptions.apiMe().id && apiMeType === ApiMeOptions.apiSpec().id)
+        meArchitecture === MeArchitectureOptions.apiSpec().id
       ) {
         const res = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, projectPath);
         if (res.isErr()) {
@@ -252,16 +253,15 @@ class Coordinator {
       } else {
         if (
           capability === CapabilityOptions.m365SsoLaunchPage().id ||
-          capability === CapabilityOptions.m365SearchMe().id ||
-          capability === CapabilityOptions.copilotM365SearchMe().id
+          capability === CapabilityOptions.m365SearchMe().id
         ) {
           inputs.isM365 = true;
         }
         const trigger = inputs[QuestionNames.BotTrigger] as string;
         let feature = `${capability}:${trigger}`;
 
-        if (apiMeType) {
-          feature = `${feature}:${apiMeType}`;
+        if (meArchitecture) {
+          feature = `${feature}:${meArchitecture}`;
         }
 
         const templateName = Feature2TemplateName[feature];

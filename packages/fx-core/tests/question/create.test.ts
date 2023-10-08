@@ -28,7 +28,7 @@ import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/ap
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { setTools } from "../../src/core/globalVars";
 import {
-  ApiMeOptions,
+  MeArchitectureOptions,
   CapabilityOptions,
   NotificationTriggerOptions,
   ProjectTypeOptions,
@@ -174,7 +174,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode me", async () => {
+    it("traverse in vscode bot me", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -199,7 +199,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 3);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
@@ -207,6 +207,10 @@ describe("scaffold question", () => {
             getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
           );
           return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+        } else if (question.name === QuestionNames.MeArchitectureType) {
+          const options = await (question as SingleSelectQuestion).dynamicOptions!(inputs);
+          assert.deepEqual(options, MeArchitectureOptions.all());
+          return ok({ type: "success", result: MeArchitectureOptions.botMe().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
         } else if (question.name === QuestionNames.AppName) {
@@ -220,6 +224,7 @@ describe("scaffold question", () => {
       assert.deepEqual(questions, [
         QuestionNames.ProjectType,
         QuestionNames.Capabilities,
+        QuestionNames.MeArchitectureType,
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,
@@ -250,29 +255,37 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 3);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
             title,
             getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
           );
-          return ok({ type: "success", result: CapabilityOptions.apiMe().id });
+          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+        } else if (question.name === QuestionNames.MeArchitectureType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
         } else if (question.name === QuestionNames.AppName) {
           return ok({ type: "success", result: "test001" });
         } else if (question.name === QuestionNames.Folder) {
           return ok({ type: "success", result: "./" });
-        } else if (question.name === QuestionNames.ApiMeType) {
+        } else if (question.name === QuestionNames.MeArchitectureType) {
           const select = question as SingleSelectQuestion;
           const options = await select.staticOptions;
           // Assert
           assert.equal(options.length, 2);
           // Assert
           assert.equal(options.length, 2);
-          assert.deepEqual(options, [ApiMeOptions.newApi(), ApiMeOptions.apiSpec()]);
-          return ok({ type: "success", result: ApiMeOptions.newApi().id });
+          assert.deepEqual(options, [
+            MeArchitectureOptions.newApi(),
+            MeArchitectureOptions.apiSpec(),
+          ]);
+          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
         }
         return ok({ type: "success", result: undefined });
       };
@@ -280,7 +293,7 @@ describe("scaffold question", () => {
       assert.deepEqual(questions, [
         QuestionNames.ProjectType,
         QuestionNames.Capabilities,
-        QuestionNames.ApiMeType,
+        QuestionNames.MeArchitectureType,
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,
@@ -311,18 +324,23 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
-          return ok({ type: "success", result: CapabilityOptions.apiMe().id });
+          assert.isTrue(options.length === 3);
+          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+        } else if (question.name === QuestionNames.MeArchitectureType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          return ok({ type: "success", result: MeArchitectureOptions.apiSpec().id });
         } else if (question.name === QuestionNames.AppName) {
           return ok({ type: "success", result: "test001" });
         } else if (question.name === QuestionNames.Folder) {
           return ok({ type: "success", result: "./" });
-        } else if (question.name === QuestionNames.ApiMeType) {
+        } else if (question.name === QuestionNames.MeArchitectureType) {
           const select = question as SingleSelectQuestion;
           const options = await select.staticOptions;
           // Assert
           assert.equal(options.length, 2);
-          return ok({ type: "success", result: ApiMeOptions.apiSpec().id });
+          return ok({ type: "success", result: MeArchitectureOptions.apiSpec().id });
         } else if (question.name === QuestionNames.ApiSpecLocation) {
           inputs.supportedApisFromApiSpec = [
             { id: "operation1", label: "operation1", groupName: "1" },
@@ -330,7 +348,6 @@ describe("scaffold question", () => {
           ];
           return ok({ type: "success", result: "https://test.com" });
         } else if (question.name === QuestionNames.ApiOperation) {
-          console.log("operatoin");
           return ok({ type: "success", result: ["operation1"] });
         }
         return ok({ type: "success", result: undefined });
@@ -339,7 +356,7 @@ describe("scaffold question", () => {
       assert.deepEqual(questions, [
         QuestionNames.ProjectType,
         QuestionNames.Capabilities,
-        QuestionNames.ApiMeType,
+        QuestionNames.MeArchitectureType,
         QuestionNames.ApiSpecLocation,
         QuestionNames.ApiOperation,
         QuestionNames.Folder,
@@ -1726,16 +1743,15 @@ describe("scaffold question", () => {
     afterEach(() => {
       mockedEnvRestore();
     });
-    it("has 4 options in message extension type", () => {
+    it("has 3 options in message extension type", () => {
       // Act
       const options = CapabilityOptions.mes();
       // Assert
-      assert.equal(options.length, 4);
+      assert.equal(options.length, 3);
       assert.deepEqual(options, [
-        CapabilityOptions.apiMe(),
-        CapabilityOptions.linkUnfurling(),
         CapabilityOptions.m365SearchMe(),
         CapabilityOptions.collectFormMe(),
+        CapabilityOptions.linkUnfurling(),
       ]);
     });
     it("cli non-interactive", () => {
@@ -1745,54 +1761,6 @@ describe("scaffold question", () => {
         options,
         CapabilityOptions.all({ platform: Platform.CLI, nonInteractive: true })
       );
-    });
-  });
-  describe("message extension copilot capability options", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotPlugin]: "true",
-      });
-    });
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("has 4 options in message extension type", () => {
-      // Act
-      const options = CapabilityOptions.mes();
-      // Assert
-      assert.equal(options.length, 4);
-      assert.deepEqual(options, [
-        CapabilityOptions.apiMe(),
-        CapabilityOptions.linkUnfurling(),
-        CapabilityOptions.copilotM365SearchMe(),
-        CapabilityOptions.collectFormMe(),
-      ]);
-    });
-    it("cli non-interactive", () => {
-      const question = capabilityQuestion();
-      const options = question.staticOptions;
-      assert.equal(options.length, 18);
-    });
-    it("csharp message extension capabilities", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VS,
-      };
-      const options = CapabilityOptions.mes(inputs);
-      assert.deepEqual(options, [
-        CapabilityOptions.linkUnfurling(),
-        CapabilityOptions.copilotM365SearchMe(),
-        CapabilityOptions.collectFormMe(),
-      ]);
-    });
-    it("collect message extension capabilites filtered by feature flag", async () => {
-      const options = CapabilityOptions.collectMECaps(true);
-      assert.deepEqual(options, [
-        CapabilityOptions.apiMe(),
-        CapabilityOptions.linkUnfurling(),
-        CapabilityOptions.copilotM365SearchMe(),
-        CapabilityOptions.collectFormMe(),
-      ]);
     });
   });
   describe("ME copilot plugin template only", () => {
@@ -1835,9 +1803,14 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 3);
           assert.deepEqual(options, CapabilityOptions.mes());
-          return ok({ type: "success", result: CapabilityOptions.copilotM365SearchMe().id });
+          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+        } else if (question.name === QuestionNames.MeArchitectureType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          return ok({ type: "success", result: MeArchitectureOptions.botPlugin().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
@@ -1854,6 +1827,7 @@ describe("scaffold question", () => {
       assert.deepEqual(questions, [
         QuestionNames.ProjectType,
         QuestionNames.Capabilities,
+        QuestionNames.MeArchitectureType,
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,

@@ -27,6 +27,12 @@
     display: flex;
     flex-direction: column;
 
+    .thumbnail {
+      img {
+        aspect-ratio: 40 / 23;
+      }
+    }
+
     .infoBox {
       padding-top: 8px;
       padding-bottom: 16px;

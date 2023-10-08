@@ -33,7 +33,7 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
             <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
           </div>
         )}
-        <Image src={sample.thumbnailUrl} />
+        <Image className="thumbnail" src={sample.thumbnailUrl} />
       </>
     );
     const legacySampleImage = (

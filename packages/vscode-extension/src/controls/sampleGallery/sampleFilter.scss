@@ -1,12 +1,22 @@
 .sample-filter {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   padding-bottom: 8px;
   margin-bottom: 24px;
 
   .search-box {
     width: 426px;
     margin-bottom: 16px;
+  }
+
+  .filter-bar {
+    flex-grow: 1;
+  }
+
+  .view-button {
+    height: 24px;
+    width: 24px;
+    margin-left: 8px;
   }
 
   .type-dropdown {

@@ -14,6 +14,7 @@ import OfflinePage from "./offlinePage";
 import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
 import SampleFilter from "./sampleFilter";
+import SampleListItem from "./sampleListItem";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   constructor(props: unknown) {
@@ -23,21 +24,18 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       loading: true,
       query: "",
       fuse: new Fuse([]),
+      layout: "grid",
     };
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     window.addEventListener("message", this.receiveMessage, false);
-    this.loadSampleCollection();
-  }
-
-  loadSampleCollection() {
     vscode.postMessage({
       command: Commands.LoadSampleCollection,
     });
   }
 
-  render() {
+  public render() {
     const titleSection = (
       <div className="section" id="title">
         <div className="logo">
@@ -77,14 +75,36 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                 onQueryChange={(newQuery: string) => {
                   this.setState({ query: newQuery });
                 }}
+                onLayoutChange={(newLayout: "grid" | "list") => {
+                  console.log(newLayout);
+                  this.setState({ layout: newLayout });
+                }}
               ></SampleFilter>
-              <div className="sample-stack">
-                {filteredSamples.map((sample: SampleInfo) => {
-                  return (
-                    <SampleCard key={sample.id} sample={sample} selectSample={this.selectSample} />
-                  );
-                })}
-              </div>
+              {this.state.layout === "grid" ? (
+                <div className="sample-stack">
+                  {filteredSamples.map((sample: SampleInfo) => {
+                    return (
+                      <SampleCard
+                        key={sample.id}
+                        sample={sample}
+                        selectSample={this.selectSample}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="sample-list">
+                  {filteredSamples.map((sample: SampleInfo) => {
+                    return (
+                      <SampleListItem
+                        key={sample.id}
+                        sample={sample}
+                        selectSample={this.selectSample}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -112,7 +132,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     }
   };
 
-  selectSample = (id: string) => {
+  private selectSample = (id: string) => {
     this.setState({
       selectedSampleId: id,
     });

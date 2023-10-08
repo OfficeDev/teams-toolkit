@@ -43,3 +43,14 @@ export function ExternalLink() {
     </svg>
   );
 }
+
+export function Grid() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path
+        d="m1,3.78l0,-2.78l2.78,0l0,2.78l-2.78,0zm5.56,0l0,-2.78l2.78,0l0,2.78l-2.78,0zm5.56,-2.78l2.78,0l0,2.78l-2.78,0l0,-2.78zm-11.12,8.34l0,-2.78l2.78,0l0,2.78l-2.78,0zm5.56,0l0,-2.78l2.78,0l0,2.78l-2.78,0zm5.56,0l0,-2.78l2.78,0l0,2.78l-2.78,0zm-11.12,5.56l0,-2.78l2.78,0l0,2.78l-2.78,0zm5.56,0l0,-2.78l2.78,0l0,2.78l-2.78,0zm5.56,0l0,-2.78l2.78,0l0,2.78l-2.78,0z"
+        fill="var(--vscode-debugConsoleInputIcon-foreground, #CCCCCC)"
+      />
+    </svg>
+  );
+}

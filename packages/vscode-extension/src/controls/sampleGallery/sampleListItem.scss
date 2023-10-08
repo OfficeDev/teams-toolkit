@@ -1,0 +1,47 @@
+.sample-gallery {
+  .sample-list-item {
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-bottom: 1px solid;
+    border-color: #454545;
+
+    .hidden-label {
+      position: absolute;
+      top: auto;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    h3 {
+      font-size: 15px;
+      color: var(--vscode-debugConsole-sourceForeground);
+      font-weight: 600;
+      text-align: left;
+      line-height: 18px;
+    }
+
+    .padding {
+      flex-grow: 1;
+    }
+
+    .tagSection {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-left: 22px;
+
+      .tag {
+        margin-left: 8px;
+      }
+    }
+
+    vscode-button {
+      border-radius: 0;
+      margin-left: 7.5px;
+    }
+  }
+}

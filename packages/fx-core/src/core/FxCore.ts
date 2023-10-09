@@ -900,6 +900,7 @@ export class FxCore {
       });
 
     writeStream.end();
+    TOOLS.logProvider.info(`env file created: ${targetDotEnvFile}`);
     return ok(undefined);
   }
 

@@ -306,7 +306,7 @@ export class VsCodeUI implements UserInteraction {
         disposables.push(quickPick);
 
         if (typeof config.options === "function" || typeof config.default === "function") {
-          // try to load dynamic data n a very short time
+          // try to load dynamic data in a very short time
           const timeoutPromise = new Promise((resolve) => {
             setTimeout(resolve, 500, "loading options timeout");
           });
@@ -483,7 +483,7 @@ export class VsCodeUI implements UserInteraction {
         disposables.push(quickPick);
 
         if (typeof config.options === "function" || typeof config.default === "function") {
-          // try to load dynamic data n a very short time
+          // try to load dynamic data in a very short time
           const timeoutPromise = new Promise((resolve) => {
             setTimeout(resolve, 500, "loading options timeout");
           });

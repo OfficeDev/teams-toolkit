@@ -562,6 +562,27 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(result.isOk());
   });
+
+  it("use local template", async () => {
+    sandbox.replace(templateConfig, "useLocalTemplate", true);
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const language = "ts";
+    const fallbackDir = path.join(tmpDir, "fallback");
+    await fs.ensureDir(fallbackDir);
+    const foobarTemplateZip = new AdmZip();
+    const templateZip = new AdmZip();
+    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
+    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("local template creation failure");
+    }
+    assert.isTrue(result.isOk());
+  });
 });
 
 describe("Generate sample using download directory", () => {

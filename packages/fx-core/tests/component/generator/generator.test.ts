@@ -466,6 +466,15 @@ describe("Generator happy path", async () => {
   const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
 
+  async function buildFakeTemplateZip(templateName: string, mockFileName: string) {
+    const mockFileData = "test data";
+    const fallbackDir = path.join(tmpDir, "fallback");
+    await fs.ensureDir(fallbackDir);
+    const templateZip = new AdmZip();
+    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
+    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+  }
+
   beforeEach(async () => {
     sampleProvider["samplesConfig"] = sampleConfigV3;
   });
@@ -544,17 +553,14 @@ describe("Generator happy path", async () => {
   it("template from fallback", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
-    const mockFileData = "test data";
     const language = "ts";
-    const fallbackDir = path.join(tmpDir, "fallback");
-    await fs.ensureDir(fallbackDir);
     const foobarTemplateZip = new AdmZip();
-    const templateZip = new AdmZip();
-    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
-    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+    await buildFakeTemplateZip(templateName, mockFileName);
+
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
     const spyCall = sandbox.spy(fetchTemplateFromLocalAction, "run");
+
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(spyCall.calledOnce);
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
@@ -567,14 +573,11 @@ describe("Generator happy path", async () => {
     sandbox.replace(templateConfig, "useLocalTemplate", true);
     const templateName = "test";
     const mockFileName = "test.txt";
-    const mockFileData = "test data";
     const language = "ts";
-    const fallbackDir = path.join(tmpDir, "fallback");
-    await fs.ensureDir(fallbackDir);
-    const templateZip = new AdmZip();
-    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
-    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+    await buildFakeTemplateZip(templateName, mockFileName);
+
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
       assert.fail("local template creation failure");

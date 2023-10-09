@@ -69,7 +69,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
@@ -90,8 +90,6 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
-        env:
-          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: Setup git
         run: |
@@ -134,14 +132,12 @@ jobs:
               git push -d origin $TEMPLATE_VERSION
           fi
 
-      - name: generate templates v3
+      - name: generate templates
         run: |
-          .github/scripts/template-zip-autogen-v3.sh $TEMPLATE_PATH
-          cd ./packages/fx-core
-          rm -rf ./templates/fallback
-          node ./scripts/download-templates-zip.js
+          cd ./templates
+          npm run build
         env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
+          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates
 
       - name: update templates beta tag
         uses: richardsimko/update-tag@v1
@@ -158,7 +154,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates-0.0.0-beta"
-          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -177,7 +173,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -185,7 +181,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.10.0
         with:
-          artifacts: ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           name: "Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
@@ -243,29 +239,21 @@ jobs:
         if: ${{ github.ref == 'refs/heads/dev'}}
         run: |
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
-        env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish beta release to npm org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta' }}
         run: |
           npx lerna publish from-package --dist-tag=beta --yes
-        env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
           npx lerna publish from-package --dist-tag=rc --yes
-        env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: publish stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna publish from-package --yes
-        env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: pack server bits
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') }}
@@ -283,7 +271,6 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') }}
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
@@ -328,4 +315,3 @@ jobs:
             versions.json
             *.vsix
             *.exe
-

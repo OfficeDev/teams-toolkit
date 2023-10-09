@@ -29,14 +29,18 @@ if (!semver.prerelease(templateVersion)) {
       "================== template config version is not match with template latest release version, need bump up config version ^${templateVersion} =================="
     );
     templateConfigFile.version = `${result.major}.${result.minor}.x`;
-    fse.writeFileSync(
-      templateConfig,
-      JSON.stringify(templateConfigFile, null, 4)
-    );
   }
+  templateConfigFile.useLocalTemplate = false;
+  templateConfigFile.tagPrefix = "templates@";
+  fse.writeFileSync(
+    templateConfig,
+    JSON.stringify(templateConfigFile, null, 4)
+  );
 } else if (templateVersion.includes("rc")) {
   console.log("sync up template in fx-core as 0.0.0-rc");
   templateConfigFile.version = "0.0.0-rc";
+  templateConfigFile.useLocalTemplate = false;
+  templateConfigFile.tagPrefix = "templates@";
   fse.writeFileSync(
     templateConfig,
     JSON.stringify(templateConfigFile, null, 4)
@@ -44,8 +48,8 @@ if (!semver.prerelease(templateVersion)) {
 } else if (templateVersion.includes("alpha")) {
   console.log("sync up template in fx-core as 0.0.0-alpha");
   templateConfigFile.version = "0.0.0-alpha";
-  templateConfigFile.tagPrefix = "templates-";
   templateConfigFile.useLocalTemplate = true;
+  templateConfigFile.tagPrefix = "templates-";
   fse.writeFileSync(
     templateConfig,
     JSON.stringify(templateConfigFile, null, 4)
@@ -53,8 +57,8 @@ if (!semver.prerelease(templateVersion)) {
 } else if (templateVersion.includes("beta")) {
   console.log("sync up template in fx-core as 0.0.0-beta");
   templateConfigFile.version = "0.0.0-beta";
-  templateConfigFile.tagPrefix = "templates-";
   templateConfigFile.useLocalTemplate = true;
+  templateConfigFile.tagPrefix = "templates-";
   fse.writeFileSync(
     templateConfig,
     JSON.stringify(templateConfigFile, null, 4)

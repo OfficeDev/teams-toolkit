@@ -23,7 +23,7 @@
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
         "start": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register src/app.ts",
-        "build": "tsc --build & shx cp -r ./src/views ./src/static ./lib/",
+        "build": "tsc --build && shx cp -r ./src/views ./src/static ./lib/",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "homepage": "."

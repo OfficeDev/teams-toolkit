@@ -483,7 +483,14 @@ describe("UI Unit Tests", async () => {
       timer.restore();
     });
   });
+
   describe("single select", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("select success with validation", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
       let hasRun = false;
@@ -577,6 +584,190 @@ describe("UI Unit Tests", async () => {
       expect(result.isErr()).is.true;
 
       sinon.restore();
+    });
+
+    it("loads dynamic options in a short time", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleSelectConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        options: async () => {
+          return Promise.resolve([{ id: "1", label: "label1" }]);
+        },
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerItemButton.callsFake((listener: (e: any) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectOption(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("1");
+      }
+    });
+
+    it("loads dynamic option in a short time and auto select", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleSelectConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        options: async () => {
+          return Promise.resolve([{ id: "1", label: "label1" }]);
+        },
+        skipSingleOption: true,
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerItemButton.callsFake((listener: (e: any) => unknown) => {
+        return mockDisposable;
+      });
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectOption(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("1");
+      }
+      sandbox.restore();
+    });
+
+    it("loads dynamic options in a short time and shows", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleSelectConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        options: async () => {
+          return Promise.resolve([
+            { id: "1", label: "label1" },
+            { id: "2", label: "label2" },
+          ]);
+        },
+        skipSingleOption: true,
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerItemButton.callsFake((listener: (e: any) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectOption(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("1");
+        expect(mockQuickPick.show.called).is.true;
+      }
+      sandbox.restore();
+    });
+
+    it("loads dynamic option in a long time and shows", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SingleSelectConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        options: async () => {
+          await sleep(1000);
+          return Promise.resolve([{ id: "1", label: "label1" }]);
+        },
+        skipSingleOption: true,
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerItemButton.callsFake((listener: (e: any) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectOption(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("1");
+        expect(mockQuickPick.show.called).is.true;
+      }
+      sandbox.restore();
     });
   });
 

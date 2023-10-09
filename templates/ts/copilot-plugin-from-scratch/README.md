@@ -24,13 +24,13 @@ The plugin allows Teams to interact directly with third-party data, apps, and se
 
 ## What's included in the template
 
-| Folder       | Contents                                                                                                |
-| ------------ | ------------------------------------------------------------------------------------------------------- |
-| `.vscode`    | VSCode files for debugging                                                                              |
-| `appPackage` | Templates for the Teams application manifest, the API specification and Adaptive Card for API responses |
-| `env`        | Environment files                                                                                       |
-| `infra`      | Templates for provisioning Azure resources                                                              |
-| `repair`     | The source code for the repair API                                                                      |
+| Folder       | Contents                                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `.vscode`    | VSCode files for debugging                                                                                  |
+| `appPackage` | Templates for the Teams application manifest, the API specification and response template for API responses |
+| `env`        | Environment files                                                                                           |
+| `infra`      | Templates for provisioning Azure resources                                                                  |
+| `repair`     | The source code for the repair API                                                                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 

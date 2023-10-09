@@ -680,6 +680,7 @@ export function apiMeQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.ApiMeType,
     title: getLocalizedString("core.createProjectQuestion.apiMeQuestion.title"),
+    cliDescription: "Plugin for Microsoft Teams.",
     type: "singleSelect",
     staticOptions: ApiMeOptions.all(),
     default: ApiMeOptions.newApi().id,
@@ -1545,7 +1546,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    cliDescription: "Specifies API(s) to be used in Copilot plugin.",
+    cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")

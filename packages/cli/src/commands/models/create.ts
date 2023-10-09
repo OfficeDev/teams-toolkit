@@ -28,11 +28,7 @@ import { createSampleCommand } from "./createSample";
 function adjustOptions(options: CLICommandOption[]) {
   if (!isApiCopilotPluginEnabled()) {
     //skip copilot plugin options if API copilot plugin is not enabled
-    const copilotPluginQuestionNames = [
-      QuestionNames.ApiSpecLocation.toString(),
-      QuestionNames.OpenAIPluginManifest.toString(),
-      QuestionNames.ApiOperation.toString(),
-    ];
+    const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
     options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
   }
   for (const option of options) {

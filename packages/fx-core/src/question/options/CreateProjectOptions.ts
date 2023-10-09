@@ -99,7 +99,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "api-me-type",
     type: "string",
-    description: "Plugin for Microsoft Teams",
+    description: "Plugin for Microsoft Teams.",
     default: "new-api",
     choices: ["new-api", "api-spec"],
   },
@@ -119,7 +119,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "api-operation",
     type: "array",
     shortName: "o",
-    description: "Specifies API(s) to be used in Copilot plugin.",
+    description: "Select Operation(s) Teams Can Interact with.",
   },
   {
     name: "programming-language",

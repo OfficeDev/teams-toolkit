@@ -122,7 +122,7 @@ export const fetchZipFromUrlAction: GeneratorAction = {
 export const fetchTemplateFromLocalAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateZipFromLocal,
   run: async (context: GeneratorContext) => {
-    if (context.zip && context.outputs && context.outputs.length > 0) {
+    if (context.outputs?.length) {
       return;
     }
     context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);

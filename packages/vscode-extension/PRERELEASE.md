@@ -2,15 +2,18 @@
 
 ## Changelog
 
-### September 26, 2023
+### October 10, 2023
 
 #### New Features
+
+- **API-Based Message Extension**: We have introduced a whole new way to build search-based message extension - from a new API with Azure Functions or from your existing API with an OpenAPI description document. This is a great starting point for building a message extension that requires a backend to fetch data from a third-party API or a database.
+    ![API-Based Message Extension](https://aka.ms/changelog-img-api-me)
 
 - **Sample App Gallery Search**: We have introduced the ability to search for sample apps within the Sample App Gallery.
     ![Sample Gallery](https://github.com/OfficeDev/TeamsFx/assets/11220663/87a705e2-aa79-46dc-87ba-204f20fd3771)
 
-- **Custom Search Results Template Optimization**: We've optimized the `Custom Search Results` project template to seamlessly integrate with Microsoft 365 Copilot. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and enroll in the Microsoft 365 Copilot [Early Access Program](https://aka.ms/PluginsEarlyAccess).
-    ![Copilot Plugin](https://github.com/OfficeDev/TeamsFx/assets/11220663/7fba4a92-f912-4021-b048-9f72de1267d8)
+- **Custom Search Results Template Optimization**: We've optimized the `Custom Search Results` (Using Bot Framework) project template to seamlessly integrate with Microsoft 365 Copilot. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and enroll in the Microsoft 365 Copilot [Early Access Program](https://aka.ms/PluginsEarlyAccess).
+    ![Copilot Plugin](https://aka.ms/changelog-img-bot-plugin)
 
 #### New Additions to the Sample App Gallery
 

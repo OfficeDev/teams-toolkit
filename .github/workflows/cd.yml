@@ -132,7 +132,7 @@ jobs:
               git push -d origin $TEMPLATE_VERSION
           fi
 
-      - name: generate templates
+      - name: rebuild templates after versioning
         run: |
           cd ./templates
           npm run build

@@ -1,6 +1,6 @@
 const AdmZip = require("adm-zip");
-const path = require("path");
 const { readdirSync, rmSync } = require("node:fs");
+const path = require("path");
 
 const BUILD_PATH = path.join(__dirname, "..", "build");
 const TEMPLATE_NAMES = ["common", "csharp", "js", "ts"];

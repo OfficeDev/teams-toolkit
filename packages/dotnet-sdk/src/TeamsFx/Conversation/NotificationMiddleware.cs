@@ -110,7 +110,7 @@ namespace Microsoft.TeamsFx.Conversation
                     var options = new ConversationReferenceStoreAddOptions {
                         Overwrite = false
                     };
-                    var isUpdated = await _store.Add(reference.GetKey(), reference, options, cancellationToken).ConfigureAwait(false);
+                    var isUpdated = await _store.Add(channelReference.GetKey(), channelReference, options, cancellationToken).ConfigureAwait(false);
                     return isUpdated;
                 }
                 else

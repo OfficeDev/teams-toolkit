@@ -14,6 +14,7 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
 import { SampleProps } from "./ISamples";
+import { Setting } from "../resources";
 
 export default class SampleListItem extends React.Component<SampleProps, unknown> {
   constructor(props: SampleProps) {
@@ -22,6 +23,15 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
 
   public render() {
     const sample = this.props.sample;
+    let tooltipText = "";
+    let needUpgrade = false;
+    if (sample.versionComparisonResult < 0) {
+      tooltipText = `Available after upgrading`;
+      needUpgrade = true;
+    } else if (sample.versionComparisonResult > 0) {
+      tooltipText = "Coming soon";
+    }
+
     return (
       <div
         className={`sample-list-item`}
@@ -49,8 +59,26 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
               );
             })}
         </div>
+        {sample.configuration != "Ready for debug" && (
+          <div className="setting">
+            <Setting></Setting>
+            <span className="tooltip">{sample.configuration}</span>
+          </div>
+        )}
         <div className="padding" />
-        <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
+        {sample.versionComparisonResult != 0 && (
+          <div className="info">
+            <span className="info codicon codicon-info"></span>
+            <div className="tooltip">{tooltipText}</div>
+          </div>
+        )}
+        {sample.versionComparisonResult == 0 ? (
+          <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
+        ) : needUpgrade ? (
+          <VSCodeButton onClick={this.onUpgradeToolkit}>Upgrade Teams Toolkit</VSCodeButton>
+        ) : (
+          <VSCodeButton disabled>Create</VSCodeButton>
+        )}
         <VSCodeButton appearance="secondary" onClick={this.onViewGithub}>
           View on GitHub
         </VSCodeButton>
@@ -81,6 +109,15 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
       data: {
         appName: this.props.sample.title,
         appFolder: this.props.sample.id,
+      },
+    });
+  };
+
+  private onUpgradeToolkit = () => {
+    vscode.postMessage({
+      command: Commands.UpgradeToolkit,
+      data: {
+        version: this.props.sample.minimumToolkitVersion,
       },
     });
   };

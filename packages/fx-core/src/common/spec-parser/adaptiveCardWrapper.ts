@@ -6,6 +6,7 @@ import { ConstantString } from "./constants";
 import {
   AdaptiveCard,
   ArrayElement,
+  ImageElement,
   PreviewCardTemplate,
   TextBlockElement,
   WrappedAdaptiveCard,
@@ -42,7 +43,7 @@ export function inferPreviewCardTemplate(card: AdaptiveCard): PreviewCardTemplat
   };
   const textBlockElements = new Set<TextBlockElement>();
 
-  let rootObject: (TextBlockElement | ArrayElement)[];
+  let rootObject: (TextBlockElement | ArrayElement | ImageElement)[];
   if (card.body[0]?.type === ConstantString.ContainerType) {
     rootObject = (card.body[0] as ArrayElement).items;
   } else {

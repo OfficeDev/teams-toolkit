@@ -341,6 +341,7 @@ export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
 
 export function isWellKnownName(name: string, wellknownNameList: string[]): boolean {
   for (let i = 0; i < wellknownNameList.length; i++) {
+    name = name.replace(/_/g, "").replace(/-/g, "");
     if (name.toLowerCase().includes(wellknownNameList[i])) {
       return true;
     }

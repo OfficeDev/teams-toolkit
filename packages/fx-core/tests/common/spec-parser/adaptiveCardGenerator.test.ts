@@ -5,6 +5,7 @@ import sinon from "sinon";
 import {
   generateAdaptiveCard,
   generateCardFromResponse,
+  isImageUrlProperty,
 } from "../../../src/common/spec-parser/adaptiveCardGenerator";
 import * as utils from "../../../src/common/spec-parser/utils";
 import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
@@ -53,6 +54,143 @@ describe("adaptiveCardGenerator", () => {
             type: "TextBlock",
             text: "age: ${if(age, age, 'N/A')}",
             wrap: true,
+          },
+        ],
+      };
+
+      const [actual, jsonPath] = generateAdaptiveCard(operationItem);
+
+      expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
+    });
+
+    it("should generate a card from a schema object with image url property", () => {
+      const operationItem = {
+        responses: {
+          "200": {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    photo_url: {
+                      type: "string",
+                    },
+                    age: {
+                      type: "number",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const expected = {
+        type: "AdaptiveCard",
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "Image",
+            url: "${photo_url}",
+            $when: "${photo_url != null}",
+          },
+          {
+            type: "TextBlock",
+            text: "age: ${if(age, age, 'N/A')}",
+            wrap: true,
+          },
+        ],
+      };
+
+      const [actual, jsonPath] = generateAdaptiveCard(operationItem);
+
+      expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
+    });
+
+    it("should generate a card from a schema object with image name and uri format", () => {
+      const operationItem = {
+        responses: {
+          "200": {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: {
+                        type: "integer",
+                      },
+                      title: {
+                        type: "string",
+                      },
+                      description: {
+                        type: "string",
+                      },
+                      assignedTo: {
+                        type: "string",
+                      },
+                      date: {
+                        type: "string",
+                        format: "date-time",
+                      },
+                      image: {
+                        type: "string",
+                        format: "uri",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const expected = {
+        type: "AdaptiveCard",
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "Container",
+            $data: "${$root}",
+            items: [
+              {
+                type: "TextBlock",
+                text: "id: ${if(id, id, 'N/A')}",
+                wrap: true,
+              },
+              {
+                type: "TextBlock",
+                text: "title: ${if(title, title, 'N/A')}",
+                wrap: true,
+              },
+              {
+                type: "TextBlock",
+                text: "description: ${if(description, description, 'N/A')}",
+                wrap: true,
+              },
+              {
+                type: "TextBlock",
+                text: "assignedTo: ${if(assignedTo, assignedTo, 'N/A')}",
+                wrap: true,
+              },
+              {
+                type: "TextBlock",
+                text: "date: ${if(date, date, 'N/A')}",
+                wrap: true,
+              },
+              {
+                type: "Image",
+                url: `\${image}`,
+                $when: `\${image != null}`,
+              },
+            ],
           },
         ],
       };
@@ -302,6 +440,34 @@ describe("adaptiveCardGenerator", () => {
       expect(actual).to.deep.equal(expected);
     });
 
+    it("should generate a card from an array schema object with image url property", () => {
+      const schema = {
+        type: "array",
+        items: {
+          type: "string",
+        },
+      };
+      const name = "photoUrls";
+      const parentArrayName = "";
+      const expected = [
+        {
+          type: "Container",
+          $data: "${photoUrls}",
+          items: [
+            {
+              type: "Image",
+              url: "${$data}",
+              $when: "${$data != null}",
+            },
+          ],
+        },
+      ];
+
+      const actual = generateCardFromResponse(schema as any, name, parentArrayName);
+
+      expect(actual).to.deep.equal(expected);
+    });
+
     it("should generate a card from an empty array schema object", () => {
       const schema = {
         type: "array",
@@ -482,6 +648,69 @@ describe("adaptiveCardGenerator", () => {
                   type: "TextBlock",
                   text: "people.age: ${if(age, age, 'N/A')}",
                   wrap: true,
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const actual = generateCardFromResponse(schema as any, name, parentArrayName);
+
+      expect(actual).to.deep.equal(expected);
+    });
+
+    it("should generate a card from a schema object with nested arrays of array with image url property", () => {
+      const schema = {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+            },
+            people: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: {
+                    type: "string",
+                  },
+                  iconUrl: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const name = "company";
+      const parentArrayName = "";
+      const expected = [
+        {
+          type: "Container",
+          $data: "${company}",
+          items: [
+            {
+              type: "TextBlock",
+              text: "company.name: ${if(name, name, 'N/A')}",
+              wrap: true,
+            },
+            {
+              type: "Container",
+              $data: "${people}",
+              items: [
+                {
+                  type: "TextBlock",
+                  text: "people.name: ${if(name, name, 'N/A')}",
+                  wrap: true,
+                },
+                {
+                  type: "Image",
+                  url: `\${iconUrl}`,
+                  $when: `\${iconUrl != null}`,
                 },
               ],
             },
@@ -686,6 +915,103 @@ describe("adaptiveCardGenerator", () => {
       }
 
       getResponseJsonStub.restore();
+    });
+  });
+
+  describe("isImageUrlProperty", () => {
+    it("should return true for well-known image URL property", () => {
+      const schema = {
+        type: "string",
+      } as any;
+      const name = "imageUrl";
+      const parentArrayName = "";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.true;
+    });
+
+    it("should return true for well-known image URL property with _", () => {
+      const schema = {
+        type: "string",
+      } as any;
+      const name = "logo_url";
+      const parentArrayName = "";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.true;
+    });
+
+    it("should return true for well-known image name with uri format", () => {
+      const schema = {
+        type: "string",
+        format: "uri",
+      } as any;
+      const name = "icon";
+      const parentArrayName = "";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.true;
+    });
+
+    it("should return true for well-known image property with URL in name", () => {
+      const schema = {
+        type: "string",
+      } as any;
+      const name = "imageURL";
+      const parentArrayName = "";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.true;
+    });
+
+    it("should return false for non-string property", () => {
+      const schema = {
+        type: "integer",
+      } as any;
+      const name = "imageUrl";
+      const parentArrayName = "";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.false;
+    });
+
+    it("should return false for non-image property", () => {
+      const schema = {
+        type: "string",
+      } as any;
+      const name = "text";
+      const parentArrayName = "";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.false;
+    });
+
+    it("should return false for empty property name", () => {
+      const schema = {
+        type: "string",
+      } as any;
+      const name = "";
+      const parentArrayName = "items";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.false;
+    });
+
+    it("should return false for empty schema", () => {
+      const schema = {};
+      const name = "imageUrl";
+      const parentArrayName = "";
+
+      const result = isImageUrlProperty(schema, name, parentArrayName);
+
+      expect(result).to.be.false;
     });
   });
 });

@@ -1465,6 +1465,8 @@ describe("utils", () => {
   describe("isWellKnownName", () => {
     it("should return true for well-known result property names", () => {
       expect(isWellKnownName("result", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("r_e_s_u_l_t", ConstantString.WellknownResultNames)).to.be.true;
+      expect(isWellKnownName("r-e-s-u-l-t", ConstantString.WellknownResultNames)).to.be.true;
       expect(isWellKnownName("data", ConstantString.WellknownResultNames)).to.be.true;
       expect(isWellKnownName("items", ConstantString.WellknownResultNames)).to.be.true;
       expect(isWellKnownName("root", ConstantString.WellknownResultNames)).to.be.true;

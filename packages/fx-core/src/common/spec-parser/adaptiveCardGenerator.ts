@@ -5,7 +5,13 @@
 import { OpenAPIV3 } from "openapi-types";
 import * as util from "util";
 import { getResponseJson, isWellKnownName } from "./utils";
-import { AdaptiveCard, ArrayElement, ErrorType, TextBlockElement } from "./interfaces";
+import {
+  AdaptiveCard,
+  ArrayElement,
+  ErrorType,
+  ImageElement,
+  TextBlockElement,
+} from "./interfaces";
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
 
@@ -15,7 +21,7 @@ export function generateAdaptiveCard(
   try {
     const json = getResponseJson(operationItem);
 
-    let cardBody: Array<TextBlockElement | ArrayElement> = [];
+    let cardBody: Array<TextBlockElement | ImageElement | ArrayElement> = [];
 
     let schema = json.schema as OpenAPIV3.SchemaObject;
     let jsonPath = "$";
@@ -67,7 +73,7 @@ export function generateCardFromResponse(
   schema: OpenAPIV3.SchemaObject,
   name: string,
   parentArrayName = ""
-): Array<TextBlockElement | ArrayElement> {
+): Array<TextBlockElement | ImageElement | ArrayElement> {
   if (schema.type === "array") {
     // schema.items can be arbitrary object: schema { type: array, items: {} }
     if (Object.keys(schema.items).length === 0) {
@@ -84,7 +90,7 @@ export function generateCardFromResponse(
     const template = {
       type: ConstantString.ContainerType,
       $data: name ? `\${${name}}` : "${$root}",
-      items: Array<TextBlockElement | ArrayElement>(),
+      items: Array<TextBlockElement | ImageElement | ArrayElement>(),
     };
 
     template.items.push(...obj);
@@ -93,7 +99,7 @@ export function generateCardFromResponse(
   // some schema may not contain type but contain properties
   if (schema.type === "object" || (!schema.type && schema.properties)) {
     const { properties } = schema;
-    const result: Array<TextBlockElement | ArrayElement> = [];
+    const result: Array<TextBlockElement | ImageElement | ArrayElement> = [];
     for (const property in properties) {
       const obj = generateCardFromResponse(
         properties[property] as OpenAPIV3.SchemaObject,
@@ -116,27 +122,47 @@ export function generateCardFromResponse(
     schema.type === "boolean" ||
     schema.type === "number"
   ) {
-    // string in root: "ddd"
-    let text = "result: ${$root}";
-    if (name) {
-      // object { id: "1" }
-      text = `${name}: \${if(${name}, ${name}, 'N/A')}`;
-      if (parentArrayName) {
-        // object types inside array: { tags: ["id": 1, "name": "name"] }
-        text = `${parentArrayName}.${text}`;
+    if (!isImageUrlProperty(schema, name, parentArrayName)) {
+      // string in root: "ddd"
+      let text = "result: ${$root}";
+      if (name) {
+        // object { id: "1" }
+        text = `${name}: \${if(${name}, ${name}, 'N/A')}`;
+        if (parentArrayName) {
+          // object types inside array: { tags: ["id": 1, "name": "name"] }
+          text = `${parentArrayName}.${text}`;
+        }
+      } else if (parentArrayName) {
+        // string array: photoUrls: ["1", "2"]
+        text = `${parentArrayName}: ` + "${$data}";
       }
-    } else if (parentArrayName) {
-      // string array: photoUrls: ["1", "2"]
-      text = `${parentArrayName}: ` + "${$data}";
-    }
 
-    return [
-      {
-        type: ConstantString.TextBlockType,
-        text,
-        wrap: true,
-      },
-    ];
+      return [
+        {
+          type: ConstantString.TextBlockType,
+          text,
+          wrap: true,
+        },
+      ];
+    } else {
+      if (name) {
+        return [
+          {
+            type: "Image",
+            url: `\${${name}}`,
+            $when: `\${${name} != null}`,
+          },
+        ];
+      } else {
+        return [
+          {
+            type: "Image",
+            url: "${$data}",
+            $when: "${$data != null}",
+          },
+        ];
+      }
+    }
   }
 
   if (schema.oneOf || schema.anyOf || schema.not || schema.allOf) {
@@ -162,4 +188,18 @@ export function getResponseJsonPathFromSchema(schema: OpenAPIV3.SchemaObject): s
   }
 
   return "$";
+}
+
+export function isImageUrlProperty(
+  schema: OpenAPIV3.NonArraySchemaObject,
+  name: string,
+  parentArrayName: string
+): boolean {
+  const propertyName = name ? name : parentArrayName;
+  return (
+    !!propertyName &&
+    schema.type === "string" &&
+    isWellKnownName(propertyName, ConstantString.WellknownImageName) &&
+    (propertyName.toLocaleLowerCase().indexOf("url") >= 0 || schema.format === "uri")
+  );
 }

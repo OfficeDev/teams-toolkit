@@ -12,7 +12,8 @@
       "localdebug-obo-tab",
       "localdebug-command-and-response",
       "localdebug-notification-func",
-      "localdebug-notification-restify"
+      "localdebug-notification-restify",
+      "localdebug-tab-regen-appid"
     ],
     "node-18": [
       "treeview-newproject-outlook-add-in",
@@ -62,8 +63,7 @@
       "localdebug-obo-tab",
       "localdebug-command-and-response",
       "localdebug-notification-func",
-      "localdebug-notification-restify",
-      "localdebug-tab-regen-appid"
+      "localdebug-notification-restify"
     ],
     "node-18": [
       "treeview-content",

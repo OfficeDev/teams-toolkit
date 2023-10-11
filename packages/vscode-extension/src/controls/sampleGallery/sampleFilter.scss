@@ -23,4 +23,9 @@
     width: 150px;
     z-index: 2;
   }
+
+  .selected {
+    border-radius: 4px;
+    background: var(--vscode-checkbox-border, #3c3c3c);
+  }
 }

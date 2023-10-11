@@ -68,7 +68,7 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
         <div className="padding" />
         {sample.versionComparisonResult != 0 && (
           <div className="info">
-            <span className="info codicon codicon-info"></span>
+            <span className="codicon codicon-info"></span>
             <div className="tooltip">{tooltipText}</div>
           </div>
         )}

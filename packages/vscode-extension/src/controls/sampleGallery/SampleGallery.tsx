@@ -72,6 +72,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
             <>
               <SampleFilter
                 query={this.state.query}
+                layout={this.state.layout}
                 onQueryChange={(newQuery: string) => {
                   this.setState({ query: newQuery });
                 }}

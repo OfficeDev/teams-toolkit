@@ -38,6 +38,7 @@ export type SampleProps = {
 
 export type SampleFilterProps = {
   query: string;
+  layout: "grid" | "list";
   onQueryChange: (query: string) => void;
   onLayoutChange: (layout: "grid" | "list") => void;
 };

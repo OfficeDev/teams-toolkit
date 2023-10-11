@@ -31,20 +31,20 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         </VSCodeTextField>
         <div className="filter-bar"></div>
         <VSCodeButton
-          onClick={() => this.props.onLayoutChange("list")}
-          appearance="icon"
-          aria-label="list view"
-          className="view-button"
-        >
-          <span className="codicon codicon-list-unordered"></span>
-        </VSCodeButton>
-        <VSCodeButton
           onClick={() => this.props.onLayoutChange("grid")}
           appearance="icon"
           aria-label="gallary view"
-          className="view-button"
+          className={`view-button ${this.props.layout === "grid" ? "selected" : ""}`}
         >
           <Grid />
+        </VSCodeButton>
+        <VSCodeButton
+          onClick={() => this.props.onLayoutChange("list")}
+          appearance="icon"
+          aria-label="list view"
+          className={`view-button ${this.props.layout === "list" ? "selected" : ""}`}
+        >
+          <span className="codicon codicon-list-unordered"></span>
         </VSCodeButton>
       </div>
     );

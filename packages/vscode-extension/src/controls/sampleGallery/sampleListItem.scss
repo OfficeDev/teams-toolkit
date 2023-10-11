@@ -64,6 +64,10 @@
       display: block;
     }
 
+    .info .codicon {
+      color: var(--vscode-symbolIcon-interfaceForeground);
+    }
+
     .info:hover .tooltip {
       display: block;
     }

@@ -1,0 +1,80 @@
+.sample-gallery {
+  .sample-list-item {
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-bottom: 1px solid;
+    border-color: #454545;
+
+    .hidden-label {
+      position: absolute;
+      top: auto;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    h3 {
+      font-size: 15px;
+      color: var(--vscode-debugConsole-sourceForeground);
+      font-weight: 600;
+      text-align: left;
+      line-height: 18px;
+      cursor: pointer;
+    }
+
+    .padding {
+      flex-grow: 1;
+    }
+
+    .tagSection {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-left: 22px;
+
+      .tag {
+        margin-left: 8px;
+      }
+    }
+
+    .tooltip {
+      display: none;
+      width: auto;
+      background-color: #E5E5E5;
+      color: #606060;
+      text-align: center;
+      border-radius: 4px;
+      padding: 1px 4px;
+      margin-left: 10px;
+      margin-top: 10px;
+
+      position: absolute;
+      z-index: 1;
+    }
+
+    .setting {
+      height: 16px;
+      margin-left: 13px;
+    }
+
+    .setting:hover .tooltip {
+      display: block;
+    }
+
+    .info .codicon {
+      color: var(--vscode-symbolIcon-interfaceForeground);
+    }
+
+    .info:hover .tooltip {
+      display: block;
+    }
+
+    vscode-button {
+      border-radius: 0;
+      margin-left: 7.5px;
+    }
+  }
+}

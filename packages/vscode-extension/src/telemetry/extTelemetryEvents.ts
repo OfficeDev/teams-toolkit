@@ -85,6 +85,7 @@ export enum TelemetryEvent {
   DownloadSample = "download-sample",
 
   ViewSampleInGitHub = "view-sample-in-github",
+  UpgradeToolkitForSample = "upgrade-toolkit-for-sample",
 
   WatchVideo = "watch-video",
   PauseVideo = "pause-video",

@@ -115,6 +115,16 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
 
   private onUpgradeToolkit = () => {
     vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.UpgradeToolkitForSample,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.SampleAppName]: this.props.sample.id,
+        },
+      },
+    });
+    vscode.postMessage({
       command: Commands.UpgradeToolkit,
       data: {
         version: this.props.sample.minimumToolkitVersion,

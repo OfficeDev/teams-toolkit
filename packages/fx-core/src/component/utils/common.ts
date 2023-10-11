@@ -125,7 +125,7 @@ export function expandEnvironmentVariable(content: string, acceptEmptyString = f
       const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
       const envValue = process.env[envName];
       if (acceptEmptyString) {
-        if (envValue !== undefined && envValue !== null && acceptEmptyString) {
+        if (envValue !== undefined && envValue !== null) {
           content = content.replace(placeholder, envValue);
         }
       } else {

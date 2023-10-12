@@ -3,7 +3,6 @@
 
 import "./SampleGallery.scss";
 
-import Fuse from "fuse.js";
 import * as React from "react";
 
 import { Icon } from "@fluentui/react";
@@ -17,13 +16,12 @@ import SampleFilter from "./sampleFilter";
 import SampleListItem from "./sampleListItem";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
+  private samples: SampleInfo[] = [];
+
   constructor(props: unknown) {
     super(props);
     this.state = {
-      samples: [],
       loading: true,
-      query: "",
-      fuse: new Fuse([]),
       layout: "grid",
     };
   }
@@ -53,16 +51,11 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     if (this.state.loading) {
       return <div className="sample-gallery">{titleSection}</div>;
     } else if (this.state.selectedSampleId) {
-      const selectedSample = this.state.samples.filter(
+      const selectedSample = this.samples.filter(
         (sample: SampleInfo) => sample.id == this.state.selectedSampleId
       )[0];
       return <SampleDetailPage sample={selectedSample} selectSample={this.selectSample} />;
     } else {
-      const query = this.state.query.trim();
-      const filteredSamples =
-        query === ""
-          ? this.state.samples
-          : this.state.fuse.search(query).map((result: { item: SampleInfo }) => result.item);
       return (
         <div className="sample-gallery">
           {titleSection}
@@ -71,19 +64,18 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           ) : (
             <>
               <SampleFilter
-                query={this.state.query}
                 layout={this.state.layout}
-                onQueryChange={(newQuery: string) => {
-                  this.setState({ query: newQuery });
+                samples={this.samples}
+                onFilteredSamplesChange={(filteredSamples: SampleInfo[]) => {
+                  this.setState({ filteredSamples });
                 }}
                 onLayoutChange={(newLayout: "grid" | "list") => {
-                  console.log(newLayout);
                   this.setState({ layout: newLayout });
                 }}
               ></SampleFilter>
               {this.state.layout === "grid" ? (
                 <div className="sample-stack">
-                  {filteredSamples.map((sample: SampleInfo) => {
+                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
                     return (
                       <SampleCard
                         key={sample.id}
@@ -95,7 +87,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                 </div>
               ) : (
                 <div className="sample-list">
-                  {filteredSamples.map((sample: SampleInfo) => {
+                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
                     return (
                       <SampleListItem
                         key={sample.id}
@@ -118,14 +110,10 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     switch (message) {
       case Commands.LoadSampleCollection:
         const error = event.data.error;
-        const samples = event.data.data as SampleInfo[];
+        this.samples = event.data.data as SampleInfo[];
         this.setState({
           loading: false,
-          samples,
           error,
-          fuse: new Fuse(samples, {
-            keys: ["title", "shortDescription", "fullDescription", "tags"],
-          }),
         });
         break;
       default:

@@ -1,12 +1,16 @@
 .sample-filter {
   display: flex;
+  flex-direction: column;
+}
+
+.sample-filter-bar {
+  display: flex;
   flex-direction: row;
-  padding-bottom: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 
   .search-box {
-    width: 426px;
-    margin-bottom: 16px;
+    width: 200px;
+    border-radius: 2px;
   }
 
   .filter-bar {
@@ -19,13 +23,27 @@
     margin-left: 8px;
   }
 
-  .type-dropdown {
-    width: 150px;
-    z-index: 2;
-  }
-
-  .selected {
+  .view-selected {
     border-radius: 4px;
     background: var(--vscode-checkbox-border, #3c3c3c);
+  }
+
+  .filter-dropdown {
+    margin-left: 16px;
+    border-radius: 5px;
+    z-index: 3;
+  }
+
+  .filter-dropdown::part(control) {
+    border-radius: 5px;
+  }
+}
+
+.filter-tag-bar {
+  display: flex;
+  margin-bottom: 39px;
+
+  .filter-tag {
+    margin-right: 16px;
   }
 }

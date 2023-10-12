@@ -67,14 +67,6 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
               );
             })}
         </div>
-        {sample.configuration != "Ready for debug" && (
-          <div className="configuration">
-            <div className="setting">
-              <Setting></Setting>
-            </div>
-            <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
-          </div>
-        )}
       </div>
     );
     let sampleImage = previewImage;

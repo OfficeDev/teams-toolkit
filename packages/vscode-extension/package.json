@@ -833,6 +833,10 @@
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle%"
                         },
                         {
+                          "const": "copilotAccess",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.copilotAccessTitle%"
+                        },
+                        {
                           "const": "portOccupancy",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
                         }

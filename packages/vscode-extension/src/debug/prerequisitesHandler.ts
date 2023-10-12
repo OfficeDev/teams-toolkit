@@ -28,6 +28,8 @@ import {
   TelemetryContext,
   V3NodeNotSupportedError,
   assembleError,
+  serviceScope,
+  getCopilotStatus,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
@@ -61,6 +63,7 @@ import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teams
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
+  CopilotAccess = "Copilot Access",
   Ports = "ports occupancy",
 }
 
@@ -86,6 +89,7 @@ enum ResultStatus {
 
 const ProgressMessage = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
+  [Checker.CopilotAccess]: `Checking ${Checker.CopilotAccess}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.LtsNode]: `Checking ${DepsDisplayName[DepsType.LtsNode]}`,
   [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
@@ -93,7 +97,13 @@ const ProgressMessage = Object.freeze({
 
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
 type PrerequisiteCheckerInfo = {
-  checker: Checker | Checker.M365Account | Checker.Ports | DepsType.LtsNode | DepsType.ProjectNode;
+  checker:
+    | Checker
+    | Checker.M365Account
+    | Checker.CopilotAccess
+    | Checker.Ports
+    | DepsType.LtsNode
+    | DepsType.ProjectNode;
   [key: string]: any;
 };
 
@@ -308,6 +318,7 @@ async function _checkAndInstall(
         localEnvManager,
         step,
         additionalTelemetryProperties
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
       ).finally(async () => await progressHelper?.end(orderedCheckerInfo.checker));
       checkResults.push(checkResult);
       if (orderedChecker.fastFail) {
@@ -341,6 +352,8 @@ function getCheckPromise(
       );
     case Checker.M365Account:
       return checkM365Account(step.getPrefix(), true, additionalTelemetryProperties);
+    case Checker.CopilotAccess:
+      return checkM365AccountCopilot(step.getPrefix(), true, additionalTelemetryProperties);
     case Checker.Ports:
       return checkPort(
         localEnvManager,
@@ -359,11 +372,11 @@ function parseCheckers(orderedCheckers: PrerequisiteOrderedChecker[]): Prerequis
   return parsedCheckers;
 }
 
-async function ensureM365Account(
+function ensureM365Account(
   showLoginPage: boolean
 ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> {
   // Check M365 account token
-  const m365Result = await localTelemetryReporter.runWithTelemetry(
+  return localTelemetryReporter.runWithTelemetry(
     TelemetryEvent.DebugPrereqsCheckM365AccountSignIn,
     async (
       ctx: TelemetryContext
@@ -410,6 +423,59 @@ async function ensureM365Account(
       return ok({ token, tenantId, loginHint });
     }
   );
+}
+
+const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+async function ensureCopilotAccess(
+  showLoginPage: boolean
+): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> {
+  const m365Result = await ensureM365Account(showLoginPage);
+  if (m365Result.isErr()) {
+    return err(m365Result.error);
+  }
+
+  // Check copilot access
+  const copilotResult = await localTelemetryReporter.runWithTelemetry(
+    TelemetryEvent.DebugPrereqsCheckM365Copilot,
+    async (ctx: TelemetryContext) => {
+      const m365Login: M365TokenProvider = M365TokenInstance;
+      const copilotTokenRes = await m365Login.getAccessToken({
+        scopes: [copilotCheckServiceScope],
+        showDialog: false,
+      });
+      let hasCopilotAccess: boolean | undefined = undefined;
+      if (copilotTokenRes.isOk()) {
+        hasCopilotAccess = await getCopilotStatus(copilotTokenRes.value);
+      }
+
+      // true, false or undefined for error
+      ctx.properties[TelemetryProperty.DebugHasCopilotAccess] = String(!!hasCopilotAccess);
+      if (hasCopilotAccess === false) {
+        // copilot disabled
+        return err(
+          new UserError(
+            ExtensionSource,
+            ExtensionErrors.PrerequisitesNoCopilotAccessError,
+            getDefaultString("teamstoolkit.accountTree.copilotWarningTooltip"),
+            localize("teamstoolkit.accountTree.copilotWarningTooltip")
+          )
+        );
+      }
+
+      return ok(undefined);
+    }
+  );
+  if (copilotResult.isErr()) {
+    return err(copilotResult.error);
+  }
+
+  return m365Result;
+}
+
+async function ensureSideloding(
+  showLoginPage: boolean
+): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> {
+  const m365Result = await ensureM365Account(showLoginPage);
   if (m365Result.isErr()) {
     return err(m365Result.error);
   }
@@ -461,7 +527,7 @@ function checkM365Account(
           `${prefix} ${ProgressMessage[Checker.M365Account]} ...`
         );
 
-        const accountResult = await ensureM365Account(showLoginPage);
+        const accountResult = await ensureSideloding(showLoginPage);
         if (accountResult.isErr()) {
           result = ResultStatus.failed;
           error = accountResult.error;
@@ -484,6 +550,52 @@ function checkM365Account(
             ? doctorConstant.SignInSuccess.split("@account").join(`${loginHint}`)
             : Checker.M365Account,
         failureMsg: failureMsg,
+        error: error,
+      };
+    }
+  );
+}
+
+function checkM365AccountCopilot(
+  prefix: string,
+  showLoginPage: boolean,
+  additionalTelemetryProperties: { [key: string]: string }
+): Promise<CheckResult> {
+  return runWithCheckResultTelemetryProperties(
+    TelemetryEvent.DebugPrereqsCheckM365Copilot,
+    additionalTelemetryProperties,
+    async (): Promise<CheckResult> => {
+      let result = ResultStatus.success;
+      let error = undefined;
+      let loginHint = undefined;
+      const warnMsg = Checker.CopilotAccess;
+      try {
+        VsCodeLogInstance.outputChannel.appendLine(
+          `${prefix} ${ProgressMessage[Checker.CopilotAccess]} ...`
+        );
+
+        const accountResult = await ensureCopilotAccess(showLoginPage);
+        if (accountResult.isErr()) {
+          result = ResultStatus.warn;
+          error = accountResult.error;
+        } else {
+          loginHint = accountResult.value.loginHint;
+        }
+      } catch (err: unknown) {
+        result = ResultStatus.warn;
+        if (!error) {
+          error = assembleError(err);
+        }
+      }
+
+      return {
+        checker: Checker.CopilotAccess,
+        result: result,
+        successMsg:
+          result && loginHint
+            ? doctorConstant.SignInCopilotSuccess.split("@account").join(`${loginHint}`)
+            : Checker.CopilotAccess,
+        warnMsg: warnMsg,
         error: error,
       };
     }
@@ -687,7 +799,9 @@ function getOrderedCheckersForTask(
   if (prerequisites.includes(Prerequisite.m365Account)) {
     checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });
   }
-
+  if (prerequisites.includes(Prerequisite.copilotAccess)) {
+    checkers.push({ info: { checker: Checker.CopilotAccess }, fastFail: false });
+  }
   if (prerequisites.includes(Prerequisite.portOccupancy)) {
     checkers.push({ info: { checker: Checker.Ports, ports: ports }, fastFail: false });
   }

@@ -74,6 +74,7 @@ import {
   pathUtils,
   setRegion,
   manifestUtils,
+  JSONSyntaxError,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -1218,7 +1219,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const isOpenWalkThrough = (await globalStateGet(GlobalKey.OpenWalkThrough, false)) as boolean;
   const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
   const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
-  const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, [])) as string;
+  const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
@@ -1383,7 +1384,7 @@ async function ShowScaffoldingWarningSummary(
       try {
         createWarnings = JSON.parse(warning) as Warning[];
       } catch (e) {
-        const error = assembleError(e);
+        const error = new JSONSyntaxError(warning, e, "vscode");
         ExtTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.ShowScaffoldingWarningSummaryError,
           error

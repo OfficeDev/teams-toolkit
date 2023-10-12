@@ -75,6 +75,64 @@ export class PackageService {
   }
 
   @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
+  public async sideLoadXmlManifest(token: string, manifestPath: string): Promise<[string, string]> {
+    try {
+      const data = await fs.readFile(manifestPath);
+      const serviceUrl = await this.getTitleServiceUrl(token);
+      const uploadResponse = await this.axiosInstance.post("/dev/v1/users/packages/addins", data, {
+        baseURL: serviceUrl,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/xml",
+        },
+      });
+      if (uploadResponse.status === 200) {
+        const titleId: string = uploadResponse.data.titleId;
+        const appId: string = uploadResponse.data.appId;
+        this.logger?.info(`TitleId: ${titleId}`);
+        this.logger?.info(`AppId: ${appId}`);
+        this.logger?.verbose("Sideloading done.");
+        return [titleId, appId];
+      } else if (uploadResponse.status === 202) {
+        const statusId = uploadResponse.data.statusId;
+        this.logger?.debug(`Acquiring package with statusId: ${statusId as string} ...`);
+        do {
+          const statusResponse = await this.axiosInstance.get(
+            `/dev/v1/users/packages/status/${statusId as string}`,
+            {
+              baseURL: serviceUrl,
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const resCode = statusResponse.status;
+          this.logger?.debug(`Package status: ${resCode} ...`);
+          if (resCode === 200) {
+            const titleId: string = statusResponse.data.titleId;
+            const appId: string = statusResponse.data.appId;
+            this.logger?.info(`TitleId: ${titleId}`);
+            this.logger?.info(`AppId: ${appId}`);
+            this.logger?.verbose("Sideloading done.");
+            return [titleId, appId];
+          } else {
+            await waitSeconds(2);
+          }
+        } while (true);
+      } else {
+        throw new Error(`Unknown response code: ${uploadResponse.status}}`);
+      }
+    } catch (error: any) {
+      this.logger?.error("Sideloading failed.");
+      if (error.response) {
+        this.logger?.error(JSON.stringify(error.response.data));
+        this.traceError(error);
+      } else {
+        this.logger?.error(error.message);
+      }
+      throw assembleError(error, M365ErrorSource);
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   public async sideLoading(token: string, manifestPath: string): Promise<[string, string]> {
     try {
       const data = await fs.readFile(manifestPath);

@@ -41,11 +41,16 @@ on:
         required: false
         type: string
 
-      target-testplan-id:
-        description: "target testplan id: 24569079. If not set, will not archive ado testplan"
+      source-testplan-id:
+        description: "source testplan id: 24569079."
         required: false
         type: string
+        default: "24569079"
 
+      target-testplan-name:
+          description: "For example: CY230919. Sync test result to this test plan."
+          required: false
+          type: string
   schedule:
     - cron: "0 18 * * *"
 
@@ -54,7 +59,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ADO_TOKEN: ${{ secrets.ADO_PAT }}
-      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
+      TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
 
     steps:
       - name: Init GitHub CLI
@@ -141,15 +147,15 @@ jobs:
             ./${{ steps.ttk.outputs.package }}
 
       - name: Archive Test Plan
-        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         working-directory: ./packages/tests
         run: |
-          npm install
-          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
+          pnpm install
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
-        if: ${{ github.event.inputs.target-testplan-id != '' }}
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         uses: actions/upload-artifact@v3
         with:
           name: testplan
@@ -272,6 +278,11 @@ jobs:
         run: |
           npm install
 
+      - name: Download browsers for playwright
+        working-directory: packages/tests
+        run: |
+          npx playwright install
+
       - name: Download TTK
         uses: actions/download-artifact@v3
         with:
@@ -302,8 +313,16 @@ jobs:
         run: |
           npm install @microsoft/teamsfx-cli@${{ needs.setup.outputs.npm-tag }}
 
+      - name: Download samples (migration use v1.1.0)
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: v1.1.0
+          path: ./packages/tests/resource
+
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -311,7 +330,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples from another repo
-        if: contains(matrix.test-case, 'proactive-message')
+        if: contains(matrix.test-case, 'proactive-message') && contains(matrix.test-case,  'upgrade') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
@@ -323,6 +342,26 @@ jobs:
         run: |
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
           npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
+
+      - name: Extract VSCode & chromedriver(unix)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
+          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
+
+      - name: Extract VSCode & chromedriver(mac)
+        if: matrix.os == 'macos-latest' 
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+
+      - name: Extract VSCode & chromedriver(win)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
+          7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
 
       - name: M365 Login
         working-directory: packages/tests
@@ -401,14 +440,14 @@ jobs:
             ~/.fx/telemetryTest.log
 
       - name: Download TestPlan
-        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
+        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         uses: actions/download-artifact@v3
         with:
           name: testplan
           path: ./packages/tests
 
       - name: Sync to Azure DevOps Test Plan
-        if: ${{ always() && github.event.inputs.target-testplan-id != '' }}
+        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         working-directory: packages/tests
         run: |
           npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json
@@ -488,7 +527,7 @@ jobs:
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
-              emails="$emails;$email"
+              emails="$emails;$email;zhendr@microsoft.com"
             fi
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`
@@ -539,3 +578,13 @@ jobs:
           echo "body=$body" >> $GITHUB_OUTPUT
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
+
+      - name: Send E-mail
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.list-jobs.outputs.to }}
+          BODY: '"${{ steps.list-jobs.outputs.body }}"'
+          SUBJECT: ${{ steps.list-jobs.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

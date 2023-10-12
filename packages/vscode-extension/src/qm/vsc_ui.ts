@@ -213,6 +213,8 @@ export class VsCodeUI implements UserInteraction {
         };
 
         const loadDynamicData = async () => {
+          quickPick.busy = true;
+          quickPick.placeholder = loadingOptionsPlaceholder();
           try {
             if (typeof config.options === "function") {
               options = await config.options();
@@ -229,14 +231,15 @@ export class VsCodeUI implements UserInteraction {
           }
         };
 
-        const onDataLoaded = async () => {
+        const onDataLoaded = () => {
           quickPick.busy = false;
           quickPick.placeholder = config.placeholder;
           quickPick.items = convertToFxQuickPickItems(options);
           if (config.skipSingleOption && options.length === 1) {
             quickPick.selectedItems = [quickPick.items[0]];
             isSkip = true;
-            await onDidAccept();
+            void onDidAccept();
+            return;
           }
           if (defaultValue) {
             if (options && options.length > 0 && typeof options[0] === "string") {
@@ -256,18 +259,7 @@ export class VsCodeUI implements UserInteraction {
             }
           }
         };
-        if (typeof config.options === "function" || typeof config.default === "function") {
-          // load dynamic data (options or default)
-          quickPick.busy = true;
-          quickPick.placeholder = loadingOptionsPlaceholder();
-          loadDynamicData()
-            .then(onDataLoaded)
-            .catch((e) => resolve(err(assembleError(e))));
-        } else {
-          options = config.options;
-          defaultValue = config.default;
-          onDataLoaded().catch((e) => resolve(err(assembleError(e))));
-        }
+
         disposables.push(
           quickPick.onDidAccept(onDidAccept),
           quickPick.onDidHide(() => {
@@ -312,7 +304,39 @@ export class VsCodeUI implements UserInteraction {
           })
         );
         disposables.push(quickPick);
-        quickPick.show();
+
+        if (typeof config.options === "function" || typeof config.default === "function") {
+          // try to load dynamic data in a very short time
+          const timeoutPromise = new Promise((resolve) => {
+            setTimeout(resolve, 500, "loading options timeout");
+          });
+          Promise.race([loadDynamicData(), timeoutPromise])
+            .then((value) => {
+              if (value != "loading options timeout") {
+                if (config.skipSingleOption && options.length === 1) {
+                  quickPick.items = convertToFxQuickPickItems(options);
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  isSkip = true;
+                  void onDidAccept();
+                  return;
+                } else {
+                  onDataLoaded();
+                  quickPick.show();
+                }
+              } else {
+                quickPick.show();
+                loadDynamicData()
+                  .then(onDataLoaded)
+                  .catch((e) => resolve(err(assembleError(e))));
+              }
+            })
+            .catch((e) => resolve(err(assembleError(e))));
+        } else {
+          options = config.options;
+          defaultValue = config.default;
+          onDataLoaded();
+          quickPick.show();
+        }
       });
     } finally {
       disposables.forEach((d) => {
@@ -353,6 +377,8 @@ export class VsCodeUI implements UserInteraction {
         let defaultValue: string[] = [];
         const optionMap = new Map<string, FxQuickPickItem>();
         const loadDynamicData = async () => {
+          quickPick.busy = true;
+          quickPick.placeholder = loadingOptionsPlaceholder();
           try {
             if (typeof config.options === "function") {
               options = await config.options();
@@ -368,11 +394,13 @@ export class VsCodeUI implements UserInteraction {
             resolve(err(assembleError(e)));
           }
         };
+
         const onDidAccept = async () => {
           const strArray = Array.from(quickPick.selectedItems.map((i) => i.id));
           if (config.validation) {
             const validateRes = await config.validation(strArray);
             if (validateRes) {
+              void this.showMessage("error", validateRes, false);
               return;
             }
           }
@@ -387,7 +415,7 @@ export class VsCodeUI implements UserInteraction {
           resolve(ok({ type: isSkip ? "skip" : "success", result: result }));
         };
 
-        const onDataLoaded = async () => {
+        const onDataLoaded = () => {
           quickPick.busy = false;
           quickPick.placeholder = config.placeholder;
           quickPick.items = convertToFxQuickPickItems(options);
@@ -397,7 +425,8 @@ export class VsCodeUI implements UserInteraction {
           if (config.skipSingleOption && options.length === 1) {
             quickPick.selectedItems = [quickPick.items[0]];
             isSkip = true;
-            await onDidAccept();
+            void onDidAccept();
+            return;
           }
           if (defaultValue) {
             const selectedItems: FxQuickPickItem[] = [];
@@ -412,19 +441,6 @@ export class VsCodeUI implements UserInteraction {
             quickPick.selectedItems = selectedItems;
           }
         };
-
-        if (typeof config.options === "function" || typeof config.default === "function") {
-          //load dynamic data
-          quickPick.busy = true;
-          quickPick.placeholder = loadingOptionsPlaceholder();
-          loadDynamicData()
-            .then(onDataLoaded)
-            .catch((e) => resolve(err(assembleError(e))));
-        } else {
-          options = config.options;
-          defaultValue = config.default as string[] | [];
-          onDataLoaded().catch((e) => resolve(err(assembleError(e))));
-        }
 
         disposables.push(
           quickPick.onDidAccept(onDidAccept),
@@ -465,7 +481,39 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(quickPick.onDidChangeSelection(changeHandler));
         }
         disposables.push(quickPick);
-        quickPick.show();
+
+        if (typeof config.options === "function" || typeof config.default === "function") {
+          // try to load dynamic data in a very short time
+          const timeoutPromise = new Promise((resolve) => {
+            setTimeout(resolve, 500, "loading options timeout");
+          });
+          Promise.race([loadDynamicData(), timeoutPromise])
+            .then((value) => {
+              if (value != "loading options timeout") {
+                if (config.skipSingleOption && options.length === 1) {
+                  quickPick.items = convertToFxQuickPickItems(options);
+                  quickPick.selectedItems = [quickPick.items[0]];
+                  isSkip = true;
+                  void onDidAccept();
+                  return;
+                } else {
+                  onDataLoaded();
+                  quickPick.show();
+                }
+              } else {
+                quickPick.show();
+                loadDynamicData()
+                  .then(onDataLoaded)
+                  .catch((e) => resolve(err(assembleError(e))));
+              }
+            })
+            .catch((e) => resolve(err(assembleError(e))));
+        } else {
+          options = config.options;
+          defaultValue = config.default as string[] | [];
+          onDataLoaded();
+          quickPick.show();
+        }
       });
     } finally {
       disposables.forEach((d) => {

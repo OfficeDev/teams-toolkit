@@ -11,6 +11,7 @@ import {
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { DeployConstant } from "../constant/deployConstant";
 import { HttpStatusCode } from "../constant/commonConstant";
+import { camelCase } from "lodash";
 
 /**
  * component error
@@ -67,7 +68,7 @@ export class BaseComponentInnerError extends Error {
   toFxError(): FxError {
     if (this.errorType === "UserError") {
       return new UserError({
-        source: this.source,
+        source: camelCase(this.source),
         // if innerError is set, send innerError to telemetry
         error: this.innerError ?? this,
         helpLink: this.helpLink,
@@ -77,7 +78,7 @@ export class BaseComponentInnerError extends Error {
       } as UserErrorOptions);
     } else {
       return new SystemError({
-        source: this.source,
+        source: camelCase(this.source),
         name: this.name,
         message: this.message,
         // if innerError is set, send innerError to telemetry
@@ -108,9 +109,10 @@ export class BaseComponentInnerError extends Error {
     return new BaseComponentInnerError(
       source,
       "SystemError",
-      "UnhandledError",
+      // use inner error name instead of "UnhandledError"
+      error instanceof Error ? error.name : "UnhandledError",
       "error.common.UnhandledError",
-      [source, JSON.stringify(error)],
+      [source, JSON.stringify(error, Object.getOwnPropertyNames(error))],
       undefined,
       undefined,
       undefined,

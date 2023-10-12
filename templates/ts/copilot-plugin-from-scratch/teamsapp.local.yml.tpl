@@ -1,28 +1,26 @@
 # yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-provision:  
+provision:
   # Creates a Teams app
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
-      teamsAppId: TEAMS_APP_ID  
+      teamsAppId: TEAMS_APP_ID
 
-  - uses: script # Set required variables for local launch
+  # Set required variables for local launch
+  - uses: script
     with:
       run:
         echo "::set-teamsfx-env FUNC_NAME=repair";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
-        
-  # Validate using manifest schema
-  - uses: teamsApp/validateManifest
-    with:
-      # Path to manifest template
-      manifestPath: ./appPackage/manifest.json
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -30,11 +28,13 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
   # Will use the app id in manifest file to determine which Teams app to update.
@@ -64,11 +64,10 @@ deploy:
     # Write the information of installed development tool(s) into environment
     # file for the specified environment variable(s).
     writeToEnvironmentFile:
-      dotnetPath: DOTNET_PATH
       funcPath: FUNC_PATH
-
 
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install --no-audit

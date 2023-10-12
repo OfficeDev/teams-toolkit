@@ -6,16 +6,14 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, Correlator, sampleProvider } from "@microsoft/teamsfx-core";
+import { Correlator, sampleProvider } from "@microsoft/teamsfx-core";
 
-import AzureAccountManager from "../commonlib/azureLogin";
-import M365TokenInstance from "../commonlib/m365Login";
+import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs, openFolder } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
-  AccountType,
   InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
@@ -23,6 +21,7 @@ import {
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
+import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
 import { PanelType } from "./PanelType";
 
@@ -135,8 +134,12 @@ export class WebviewPanel {
             break;
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
+            break;
           case Commands.LoadSampleCollection:
             await this.LoadSampleCollection();
+            break;
+          case Commands.UpgradeToolkit:
+            await this.OpenToolkitInExtensionView(msg.data.version);
             break;
           default:
             break;
@@ -176,13 +179,51 @@ export class WebviewPanel {
   }
 
   private async LoadSampleCollection() {
-    await sampleProvider.fetchSampleConfig();
+    try {
+      await sampleProvider.fetchSampleConfig();
+    } catch (e: unknown) {
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleCollection,
+        data: [],
+        error: e,
+      });
+      return;
+    }
+    const sampleCollection = sampleProvider.SampleCollection;
+    const sampleData = sampleCollection.samples.map((sample) => {
+      const extensionVersion = extensionPackage.version;
+      let versionComparisonResult = 0;
+      if (
+        sample.maximumToolkitVersion &&
+        compare(extensionVersion, sample.maximumToolkitVersion) > 0
+      ) {
+        versionComparisonResult = 1;
+      }
+      if (
+        sample.minimumToolkitVersion &&
+        compare(extensionVersion, sample.minimumToolkitVersion) < 0
+      ) {
+        versionComparisonResult = -1;
+      }
+      return {
+        ...sample,
+        versionComparisonResult,
+      };
+    });
     if (this.panel && this.panel.webview) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
-        data: sampleProvider.SampleCollection,
+        data: sampleData,
       });
     }
+  }
+
+  private async OpenToolkitInExtensionView(version: string) {
+    // await vscode.commands.executeCommand(
+    //   "workbench.extensions.installExtension",
+    //   `teamsdevapp.ms-teams-vscode-extension@${version}`
+    // );
+    await vscode.commands.executeCommand("workbench.extensions.action.checkForUpdates");
   }
 
   private getWebpageTitle(panelType: PanelType): string {
@@ -212,6 +253,9 @@ export class WebviewPanel {
       path.join(globalVariables.context.extensionPath, "out/src", "client.js")
     );
     const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
+    const codiconsUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "codicon.css")
+    );
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
@@ -222,6 +266,7 @@ export class WebviewPanel {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ms-teams</title>
             <base href='${scriptBaseUri.toString()}' />
+            <link href="${codiconsUri.toString()}" rel="stylesheet" />
           </head>
           <body>
             <div id="root"></div>

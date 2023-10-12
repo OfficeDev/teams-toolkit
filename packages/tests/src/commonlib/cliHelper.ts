@@ -17,7 +17,7 @@ export class CliHelper {
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx account set --subscription ${subscription}`;
+    const command = `teamsapp auth set --subscription ${subscription}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -241,7 +241,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ): Promise<void> {
-    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}`;
+    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -277,7 +277,7 @@ export class CliHelper {
     npx = false
   ) {
     const npxCommand = npx ? "npx" : "";
-    const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
+    const command = `${npxCommand} teamsfx new --interactive false --app-name ${appName} --capability ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -332,10 +332,12 @@ export class CliHelper {
     testFolder: string,
     template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv,
-    npx = false
+    npx = false,
+    oldNewCommand = false
   ) {
     const npxCommand = npx ? "npx" : "";
-    const command = `${npxCommand} teamsfx new template ${template} --interactive false `;
+    const newCommand = oldNewCommand ? "template" : "sample";
+    const command = `${npxCommand} teamsfx new ${newCommand} ${template} --interactive false `;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

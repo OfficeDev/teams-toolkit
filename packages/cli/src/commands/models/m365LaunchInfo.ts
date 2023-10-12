@@ -25,11 +25,11 @@ export const m365LaunchInfoCommand: CLICommand = {
   ],
   examples: [
     {
-      command: "teamsfx m365 launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Get launch information of the acquired M365 App by Title ID",
     },
     {
-      command: "teamsfx m365 launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Get launch information of the acquired M365 App by Manifest ID",
     },
   ],
@@ -46,7 +46,7 @@ export const m365LaunchInfoCommand: CLICommand = {
     const manifestId = ctx.optionValues["manifest-id"] as string;
     if (titleId === undefined && manifestId === undefined) {
       return err(
-        new MissingRequiredOptionError("teamsfx m365 launchinfo", `--title-id or --manifest-id`)
+        new MissingRequiredOptionError(ctx.command.fullName, `--title-id or --manifest-id`)
       );
     }
     const tokenAndUpn = await getTokenAndUpn();

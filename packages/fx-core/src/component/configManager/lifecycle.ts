@@ -93,7 +93,7 @@ function resolveString(
   while (matches != null) {
     const envVar = matches[1];
     const envVal = process.env[envVar];
-    if (!envVal) {
+    if (envVal === undefined || envVal === null) {
       unresolved.push(envVar);
     } else {
       resolved.push(envVar);
@@ -134,7 +134,9 @@ export class Lifecycle implements ILifecycle {
   }
 
   async execute(ctx: DriverContext): Promise<ExecutionResult> {
-    const actions = JSON.stringify(this.driverDefs.map((def) => this.stringifyDriverDef(def)));
+    const actions = JSON.stringify(
+      this.driverDefs.map((def) => camelCase(this.stringifyDriverDef(def)))
+    );
     const telemetryReporter = new TeamsFxTelemetryReporter(ctx.telemetryReporter, {
       componentName: component,
     });
@@ -195,7 +197,7 @@ export class Lifecycle implements ILifecycle {
           [TelemetryProperty.Actions]: actions,
           [TelemetryProperty.ResolvedPlaceholders]: JSON.stringify(resolved),
           [TelemetryProperty.UnresolvedPlaceholders]: JSON.stringify(unresolved),
-          [TelemetryProperty.FailedAction]: failedAction ?? "",
+          [TelemetryProperty.FailedAction]: camelCase(failedAction) ?? "",
         },
       },
       e

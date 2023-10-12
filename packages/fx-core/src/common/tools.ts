@@ -33,6 +33,7 @@ import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { PackageService } from "./m365/packageService";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -228,6 +229,10 @@ export function getAllowedAppMaps(): Record<string, string> {
   };
 }
 
+export function getCopilotStatus(token: string): Promise<boolean | undefined> {
+  return PackageService.GetSharedInstance().getCopilotStatus(token);
+}
+
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   return AppStudioClient.getSideloadingStatus(token);
 }
@@ -274,6 +279,11 @@ export async function getSPFxToken(
 export async function setRegion(authSvcToken: string) {
   const region = await AuthSvcClient.getRegion(authSvcToken);
   if (region) {
+    // Do not set region for INT env
+    const appStudioEndpoint = getAppStudioEndpoint();
+    if (appStudioEndpoint.includes("dev-int")) {
+      return;
+    }
     AppStudioClient.setRegion(region);
     BotAppStudioClient.setRegion(region);
   }
@@ -324,6 +334,6 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
     const tunnels = await tunnelManagementClientImpl.listTunnels(undefined, undefined, options);
     return ok(tunnels);
   } catch (error) {
-    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", (error as any).message));
+    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", error.message));
   }
 }

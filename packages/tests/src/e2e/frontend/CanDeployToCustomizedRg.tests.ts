@@ -8,7 +8,7 @@
 import path from "path";
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { describe } from "mocha";
 import M365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
 import { AadValidator, FrontendValidator } from "../../commonlib";
@@ -28,7 +28,7 @@ describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  const env = environmentManager.getDefaultEnvName();
+  const env = environmentNameManager.getDefaultEnvName();
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false);

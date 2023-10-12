@@ -12,6 +12,7 @@ import {
   ok,
   OpenAIManifestAuthType,
   Platform,
+  ResponseTemplatesFolderName,
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
@@ -138,14 +139,21 @@ describe("copilotPluginGenerator", function () {
           content: "warning",
           data: ["operation1", " operation2"],
         },
+        {
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: "",
+        },
       ],
     });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
     sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
-    sandbox.stub(SpecParser.prototype, "generate").resolves({
+    const generateParser = sandbox.stub(SpecParser.prototype, "generate").resolves({
       allSuccess: true,
-      warnings: [{ type: WarningType.GenerateCardFailed, content: "test", data: "getPets" }],
+      warnings: [
+        { type: WarningType.GenerateCardFailed, content: "test", data: "getPets" },
+        { type: WarningType.OperationOnlyContainsOptionalParam, content: "test", data: "getPets" },
+      ],
     });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -154,10 +162,14 @@ describe("copilotPluginGenerator", function () {
 
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      assert.isTrue(result.value.warnings!.length === 2);
+      assert.isTrue(result.value.warnings!.length === 4);
       assert.isFalse(result.value.warnings![0].content.includes("operation2"));
       assert.isUndefined(result.value.warnings![0].data);
-      assert.equal(result.value.warnings![1].type, WarningType.GenerateCardFailed);
+      assert.equal(result.value.warnings![1].type, WarningType.ConvertSwaggerToOpenAPI);
+      assert.equal(result.value.warnings![2].type, WarningType.GenerateCardFailed);
+      assert.equal(result.value.warnings![3].type, WarningType.OperationOnlyContainsOptionalParam);
+      assert.equal(result.value.warnings![3].content, "");
+      assert.isTrue(generateParser.args[0][3].includes(ResponseTemplatesFolderName));
     }
   });
 
@@ -505,6 +517,20 @@ describe("generateScaffoldingSummary", () => {
     assert.isTrue(res.includes("name/short"));
   });
 
+  it("no warnings if exceeding length with placeholder in short name", () => {
+    const shortName = "testdebug09051-${{TEAMSFX_ENV}}";
+    const res = generateScaffoldingSummary(
+      [],
+      {
+        ...teamsManifest,
+        name: { short: shortName, full: "full" },
+        description: { short: "short", full: "full" },
+      },
+      "path"
+    );
+    assert.equal(res.length, 0);
+  });
+
   it("warnings about API spec", () => {
     const res = generateScaffoldingSummary(
       [{ type: WarningType.OperationIdMissing, content: "content" }],
@@ -551,5 +577,61 @@ describe("generateScaffoldingSummary", () => {
 
     assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
     assert.isTrue(res.includes("test"));
+  });
+
+  it("warnings about command parameters", () => {
+    const composeExtension: IComposeExtension = {
+      composeExtensionType: "apiBased",
+      apiSpecificationFile: "testApiFile",
+      commands: [
+        {
+          id: "getAll",
+          type: "query",
+          title: "",
+          apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [
+            {
+              name: "test",
+              title: "test",
+            },
+          ],
+        },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isTrue(res.includes("testApiFile"));
+  });
+
+  it("warnings about command parameters with some properties missing", () => {
+    const composeExtension: IComposeExtension = {
+      composeExtensionType: "apiBased",
+      commands: [
+        {
+          id: "getAll",
+          type: "query",
+          title: "",
+          apiResponseRenderingTemplateFile: "apiResponseRenderingTemplateFile",
+          parameters: [],
+        },
+      ],
+    };
+    const res = generateScaffoldingSummary(
+      [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        composeExtensions: [composeExtension],
+      },
+      "path"
+    );
+
+    assert.isFalse(res.includes("testApiFile"));
   });
 });

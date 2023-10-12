@@ -37,13 +37,14 @@ import {
   MissingRequiredArgumentError,
   MissingRequiredOptionError,
   UnknownArgumentError,
+  UnknownCommandError,
   UnknownOptionError,
 } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
-import { CliConfigOptions, UserSettings } from "../userSetttings";
-import { getSystemInputs } from "../utils";
+import { CliConfigOptions } from "../userSetttings";
+import { editDistance, getSystemInputs } from "../utils";
 import { helper } from "./helper";
 
 class CLIEngine {
@@ -89,6 +90,7 @@ class CLIEngine {
         [TelemetryProperty.CommandName]: foundCommand.fullName,
         [TelemetryProperty.Component]: TelemetryComponentType,
         [CliConfigOptions.RunFrom]: tryDetectCICDPlatform(),
+        [TelemetryProperty.BinName]: rootCmd.name,
       },
     };
 
@@ -98,22 +100,14 @@ class CLIEngine {
     } else {
       this.processResult(context);
     }
-    if (context.command.name !== "preview") {
+    if (context.command.name !== "preview" || context.globalOptionValues.help) {
       // TODO: consider to remove the hardcode
       process.exit();
     }
   }
 
-  isUserSettingsTelemetryEnable(): boolean {
-    const res = UserSettings.getTelemetrySetting();
-    if (res.isOk()) return res.value;
-    return true;
-  }
-
-  isUserSettingsInteractive(): boolean {
-    const res = UserSettings.getInteractiveSetting();
-    if (res.isOk()) return res.value;
-    return true;
+  isTelemetryEnabled(context?: CLIContext) {
+    return context?.globalOptionValues.telemetry === false ? false : true;
   }
 
   async execute(
@@ -148,11 +142,12 @@ class CLIEngine {
       )}`
     );
 
-    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
-
     // send start event
-    if (telemetryEnabled && context.command.telemetry) {
-      CliTelemetry.sendTelemetryEvent(context.command.telemetry.event, context.telemetryProperties);
+    if (context.command.telemetry) {
+      CliTelemetry.sendTelemetryEvent(
+        context.command.telemetry.event + "-start",
+        context.telemetryProperties
+      );
     }
 
     if (parseRes.isErr()) {
@@ -160,13 +155,13 @@ class CLIEngine {
     }
 
     // 3. --version
-    if (context.optionValues.version === true || context.globalOptionValues.version === true) {
+    if (context.globalOptionValues.version === true) {
       logger.info(root.version ?? "1.0.0");
       return ok(undefined);
     }
 
     // 4. --help
-    if (context.optionValues.help === true || context.globalOptionValues.help === true) {
+    if (context.globalOptionValues.help === true) {
       const helpText = helper.formatHelp(
         context.command,
         context.command.fullName !== root.fullName ? root : undefined
@@ -194,7 +189,7 @@ class CLIEngine {
         logger.info(
           `Some arguments/options are useless because the interactive mode is opened.` +
             ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-            ` or set the global setting by 'teamsfx config set interactive false'.`
+            ` or set the global setting by '${process.env.TEAMSFX_CLI_BIN_NAME} config set interactive false'.`
         );
         context.optionValues = trimOptionValues;
         context.argumentValues = [];
@@ -211,8 +206,8 @@ class CLIEngine {
     // 6. version check
     const inputs = getSystemInputs(context.optionValues.projectPath as string);
     inputs.ignoreEnvInfo = true;
-    const skipCommands = ["teamsfx new", "teamsfx new sample", "teamsfx upgrade"];
-    if (!skipCommands.includes(context.command.fullName) && context.optionValues.projectPath) {
+    const skipCommands = ["new", "sample", "upgrade"];
+    if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
       const core = getFxCore();
       const res = await core.projectVersionCheck(inputs);
       if (res.isErr()) {
@@ -260,7 +255,9 @@ class CLIEngine {
     let token: string | undefined;
     for (; i < args.length; i++) {
       token = args[i];
-      const command = cmd.commands?.find((c) => c.name === token);
+      const command = cmd.commands?.find(
+        (c) => c.name === token || (token && c.aliases?.includes(token))
+      );
       if (command) {
         cmd = command;
       } else {
@@ -276,6 +273,19 @@ class CLIEngine {
 
   optionInputKey(option: CLICommandOption | CLICommandArgument) {
     return option.questionName || option.name;
+  }
+
+  findMostSimilarCommand(context: CLIContext, token: string): CLICommand | undefined {
+    let mini = token.length;
+    let mostSimilarCommand: CLICommand | undefined = undefined;
+    for (const cmd of context.command.commands || []) {
+      const d = editDistance(token, cmd.name);
+      if (d < mini && d <= 2) {
+        mini = d;
+        mostSimilarCommand = cmd;
+      }
+    }
+    return mostSimilarCommand;
   }
 
   parseArgs(
@@ -370,7 +380,10 @@ class CLIEngine {
               }
             }
           }
-          const isCommandOption = command.options?.includes(option);
+          const isCommandOption =
+            command.options?.includes(option) &&
+            command.fullName !== "teamsfx" &&
+            command.fullName !== "teamsapp";
           const inputValues = isCommandOption ? context.optionValues : context.globalOptionValues;
           const inputKey = this.optionInputKey(option);
           const logObject = {
@@ -397,7 +410,12 @@ class CLIEngine {
           context.argumentValues.push(argument.value);
           argumentIndex++;
         } else {
-          return err(new UnknownArgumentError(command.fullName, token));
+          if (!command.arguments || command.arguments.length === 0) {
+            const mostSimilarCommand = this.findMostSimilarCommand(context, token);
+            return err(new UnknownCommandError(token, command.fullName, mostSimilarCommand?.name));
+          } else {
+            return err(new UnknownArgumentError(command.fullName, token));
+          }
         }
       }
     }
@@ -446,6 +464,10 @@ class CLIEngine {
     }
     this.debugLogs = [];
 
+    // disable telemetry of turned off
+    const telemetryEnabled = this.isTelemetryEnabled(context);
+    CliTelemetry.enable = telemetryEnabled;
+
     // special process for global options
     // interactive
     // if user not input "--interactive" option value explicitly, toolkit will use default value defined by `defaultInteractiveOption`
@@ -457,8 +479,8 @@ class CLIEngine {
         );
         context.globalOptionValues.interactive = context.command.defaultInteractiveOption;
       } else {
-        const configValue = this.isUserSettingsInteractive();
-        logger.debug(`set interactive from user settings (value=${configValue})`);
+        const configValue = true;
+        logger.debug(`set interactive from default (value=${configValue})`);
         context.globalOptionValues.interactive = configValue;
       }
     }
@@ -562,8 +584,7 @@ class CLIEngine {
     return ok(undefined);
   }
   processResult(context?: CLIContext, fxError?: FxError): void {
-    const telemetryEnabled = this.isUserSettingsTelemetryEnable();
-    if (context && context.command.telemetry && telemetryEnabled) {
+    if (context && context.command.telemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
           context.optionValues.env as string

@@ -15,28 +15,36 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "short": "{{appName}}${{APP_NAME_SUFFIX}}",
         "full": "Full name for {{appName}}"
     },
     "description": {
-        "short": "Easily track and monitor car repair records for stress-free maintenance management.",
-        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your vehicle repair records a breeze. With the power of Copilot, you can effortlessly stay informed about your car's maintenance timeline."
+        "short": "Track and monitor car repair records for stress-free maintenance management.",
+        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze."
     },
     "accentColor": "#FFFFFF",
     "composeExtensions": [
         {
-            "type": "apiBased",
-            "apiSpecificationFile": "apiSpecFiles/repair.yaml",
+            "composeExtensionType": "apiBased",
+            "apiSpecificationFile": "apiSpecificationFiles/repair.yml",
             "commands": [
                 {
                     "id": "repair",
                     "type": "query",
-                    "title": "Returns a repair info",
+                    "title": "Search for repairs info",
                     "context": [
                         "compose",
                         "commandBox"
                     ],
-                    "apiResponseRenderingTemplateFile": "adaptiveCards/repair.json"
+                    "apiResponseRenderingTemplateFile": "responseTemplates/repair.json",
+                    "parameters": [
+                        {
+                            "name": "assignedTo",
+                            "title": "Assigned To",
+                            "description": "Filter repairs by who they're assigned to",
+                            "inputType": "text"
+                        }
+                    ]
                 }
             ]
         }

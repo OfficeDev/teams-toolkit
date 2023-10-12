@@ -19,10 +19,13 @@ import {
   cleanUp,
   readContextMultiEnv,
   readContextMultiEnvV3,
+  createResourceGroup,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { it } from "../../commonlib/it";
 import { Runtime } from "../../commonlib/constants";
+import { Executor } from "../../utils/executor";
+import { expect } from "chai";
 
 export function happyPathTest(runtime: Runtime): void {
   describe("Provision", function () {
@@ -30,7 +33,7 @@ export function happyPathTest(runtime: Runtime): void {
     const appName = getUniqueAppName();
     const subscription = getSubscriptionId();
     const projectPath = path.resolve(testFolder, appName);
-    const envName = environmentManager.getDefaultEnvName();
+    const envName = environmentNameManager.getDefaultEnvName();
 
     const env = Object.assign({}, process.env);
     env["TEAMSFX_CONFIG_UNIFY"] = "true";
@@ -43,8 +46,8 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: workflow bot", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsfx new --interactive false --app-name ${appName} --capabilities workflow-bot --programming-language typescript`
-          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capabilities workflow-bot`;
+          ? `teamsfx new --interactive false --app-name ${appName} --capability workflow-bot --programming-language typescript`
+          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capability workflow-bot`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,
@@ -53,12 +56,11 @@ export function happyPathTest(runtime: Runtime): void {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       // provision
-      await execAsyncWithRetry(`teamsfx provision`, {
-        cwd: projectPath,
-        env: env,
-        timeout: 0,
-      });
-
+      const result = await createResourceGroup(appName + "-rg", "eastus");
+      expect(result).to.be.true;
+      process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+      const { success } = await Executor.provision(projectPath, envName);
+      expect(success).to.be.true;
       console.log(`[Successfully] provision for ${projectPath}`);
 
       {

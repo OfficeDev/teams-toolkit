@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { M365TokenProvider } from "@microsoft/teamsfx-api";
+import { LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosError, AxiosInstance } from "axios";
-import axiosRetry from "axios-retry";
+import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
 import { AadOwner } from "../../../../common/permissionInterface";
 import { GraphScopes } from "../../../../common/tools";
 import { ErrorContextMW } from "../../../../core/globalVars";
@@ -15,20 +15,36 @@ import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadManifestHelper } from "./aadManifestHelper";
 import { aadErrorCode, constants } from "./constants";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
+
+// Missing this part will cause build failure when adding 'axios-retry' in AxiosRequestConfig
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    "axios-retry"?: IAxiosRetryConfig;
+  }
+}
+
 export class AadAppClient {
   private readonly retryNumber: number = 5;
   private readonly tokenProvider: M365TokenProvider;
+  private readonly logProvider: LogProvider | undefined;
   private readonly axios: AxiosInstance;
+  private readonly baseUrl: string = "https://graph.microsoft.com/v1.0";
 
-  constructor(m365TokenProvider: M365TokenProvider) {
+  constructor(m365TokenProvider: M365TokenProvider, logProvider?: LogProvider) {
     this.tokenProvider = m365TokenProvider;
+    this.logProvider = logProvider;
     // Create axios instance which sets authorization header automatically before each MS Graph request
     this.axios = axios.create({
-      baseURL: "https://graph.microsoft.com/v1.0",
+      baseURL: this.baseUrl,
     });
     this.axios.interceptors.request.use(async (config) => {
+      this.logProvider?.info(
+        getLocalizedString("core.common.SendingApiRequest", config.url, JSON.stringify(config.data))
+      );
+
       const tokenResponse = await this.tokenProvider.getAccessToken({ scopes: GraphScopes });
       if (tokenResponse.isErr()) {
         throw tokenResponse.error;
@@ -41,6 +57,12 @@ export class AadAppClient {
       config.headers["Authorization"] = `Bearer ${token}`;
 
       return config;
+    });
+    this.axios.interceptors.response.use((response) => {
+      this.logProvider?.info(
+        getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
+      );
+      return response;
     });
     // Add retry logic. Retry post request may result in creating additional resources but should be fine in AAD driver.
     axiosRetry(this.axios, {

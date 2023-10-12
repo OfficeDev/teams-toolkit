@@ -8,7 +8,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
@@ -18,7 +18,7 @@ provision:
   - uses: botAadApp/create
     with:
       # The Azure Active Directory application's display name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     writeToEnvironmentFile:
       # The Azure Active Directory application's client id created for bot.
       botId: BOT_ID
@@ -77,5 +77,5 @@ deploy:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
         OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
-        # AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
-        # AZURE_OPENAI_ENDPOINT: ${{SECRET_AZURE_OPENAI_ENDPOINT}}
+        AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
+        AZURE_OPENAI_ENDPOINT: ${{SECRET_AZURE_OPENAI_ENDPOINT}}

@@ -126,6 +126,6 @@ describe("New Command Tests", function () {
     expect(result.isOk()).equals(true);
     expect(logs.length).equals(3);
     expect(logs[1]).includes(JSON.stringify(await utils.getTemplates(), undefined, 4));
-    expect(logs[2]).includes("teamsfx new template <sampleAppName>");
+    expect(logs[2]).includes(" new template <sampleAppName>");
   });
 });

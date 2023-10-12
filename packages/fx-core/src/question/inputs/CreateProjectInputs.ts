@@ -26,10 +26,15 @@ export interface CreateProjectInputs extends Inputs {
     | "sso-launch-page"
     | "dashboard-tab"
     | "tab-spfx"
+    | "api-me"
     | "link-unfurling"
     | "search-app"
     | "collect-form-message-extension"
-    | "copilot-plugin-capability";
+    | "search-me-copilot"
+    | "search-message-extension"
+    | "copilot-plugin-new-api"
+    | "copilot-plugin-existing-api"
+    | "copilot-plugin-openai-plugin";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -43,17 +48,17 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-install-latest-package"?: boolean;
   /** @description Framework */
   "spfx-framework-type"?: "react" | "minimal" | "none";
-  /** @description Name for SharePoint Framework Web Part. */
+  /** @description Name for SharePoint Framework Web Part */
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
-  /** @description Plugin for Copilot */
-  "copilot-plugin-option"?: "new-api" | "existing-api" | "openai-plugin";
-  /** @description OpenAPI Spec */
+  /** @description Plugin for Microsoft Teams */
+  "api-me-type"?: "new-api" | "api-spec";
+  /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */
-  "openai-plugin-domain"?: string;
-  /** @description Select an Operation */
+  "openai-plugin-manifest"?: string;
+  /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
   /** @description Programming Language. */
   "programming-language"?: "javascript" | "typescript" | "csharp";

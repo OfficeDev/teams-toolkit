@@ -4,21 +4,20 @@
 
 > **Prerequisites**
 >
-> To run the copilot plugin app template in your local dev machine, you will need:
+> To run the API plugin app template in your local dev machine, you will need:
 >
-> - [Node.js](https://nodejs.org/), supported versions: 16, 18
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
-> - A Teams account with access to the Copilot app.
+> - [Visual Studio 2022](https://aka.ms/vs) 17.8 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 
-1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
-1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
-1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)`.
-1. When Teams launches in the browser, open the Copilot app to test your plugin.
+1. In the debug dropdown menu, select `Dev Tunnels > Create a Tunnel` (set authentication type to Public) or select an existing public dev tunnel.
+2. Right-click your project and select `Teams Toolkit > Prepare Teams App Dependencies`.
+3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
+4. Press F5, or select the `Debug > Start Debugging` menu in Visual Studio
+5. When Teams launches in the browser, you can navigate to a chat message and [trigger your search commands from compose message area](https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=dotnet#search-commands).
 
 ## Learn more
 
-- [Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot)
+- [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)
 
 ## Report an issue
 

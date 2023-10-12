@@ -38,6 +38,7 @@ import {
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
+  ApiMeOptions,
   AppNamePattern,
   CapabilityOptions,
   NotificationTriggerOptions,
@@ -66,6 +67,7 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
+import { convertToAlphanumericOnly } from "../../common/utils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -83,6 +85,7 @@ export enum TemplateNames {
   MessageExtension = "message-extension",
   MessageExtensionAction = "message-extension-action",
   MessageExtensionSearch = "message-extension-search",
+  MessageExtensionCopilot = "message-extension-copilot",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
@@ -112,6 +115,8 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
   [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
   [`${CapabilityOptions.m365SearchMe().id}:undefined`]: TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.copilotM365SearchMe().id}:undefined`]:
+    TemplateNames.MessageExtensionCopilot,
   [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
   [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
@@ -121,6 +126,8 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
+    TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.apiMe().id}:undefined:${ApiMeOptions.newApi().id}`]:
     TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
 };
@@ -204,13 +211,8 @@ class Coordinator {
       // set isVS global var when creating project
       const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
-      let capability = inputs.capabilities as string;
-      if (
-        inputs.platform === Platform.CLI &&
-        capability === CapabilityOptions.copilotPluginCli().id
-      ) {
-        capability = inputs[QuestionNames.CopilotPluginDevelopment] as string;
-      }
+      const capability = inputs.capabilities as string;
+      const apiMeType = inputs[QuestionNames.ApiMeType] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -226,7 +228,10 @@ class Coordinator {
         if (res.isErr()) {
           return err(res.error);
         }
-      } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+      } else if (
+        capability === CapabilityOptions.copilotPluginApiSpec().id ||
+        (capability === CapabilityOptions.apiMe().id && apiMeType === ApiMeOptions.apiSpec().id)
+      ) {
         const res = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
@@ -247,12 +252,20 @@ class Coordinator {
       } else {
         if (
           capability === CapabilityOptions.m365SsoLaunchPage().id ||
-          capability === CapabilityOptions.m365SearchMe().id
+          capability === CapabilityOptions.m365SearchMe().id ||
+          capability === CapabilityOptions.copilotM365SearchMe().id
         ) {
           inputs.isM365 = true;
         }
         const trigger = inputs[QuestionNames.BotTrigger] as string;
-        const templateName = Feature2TemplateName[`${capability}:${trigger}`];
+        let feature = `${capability}:${trigger}`;
+
+        if (apiMeType) {
+          feature = `${feature}:${apiMeType}`;
+        }
+
+        const templateName = Feature2TemplateName[feature];
+
         if (templateName) {
           const langKey = convertToLangKey(language);
           const safeProjectNameFromVS =
@@ -440,6 +453,10 @@ class Coordinator {
     inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
+    if (process.env.APP_NAME_SUFFIX === undefined && process.env.TEAMSFX_ENV) {
+      process.env.APP_NAME_SUFFIX = process.env.TEAMSFX_ENV;
+      output.APP_NAME_SUFFIX = process.env.TEAMSFX_ENV;
+    }
     const folderName = path.parse(ctx.projectPath).name;
 
     // 1. parse yml
@@ -566,9 +583,9 @@ class Coordinator {
           targetResourceGroupInfo.location = inputLocation;
           targetResourceGroupInfo.createNewResourceGroup = true; // create resource group if not exists
         } else {
-          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${
-            inputs.env as string
-          }`;
+          const defaultRg = `rg-${convertToAlphanumericOnly(folderName)}${
+            process.env.RESOURCE_SUFFIX
+          }-${inputs.env as string}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             inputs,
             ctx.azureAccountProvider,

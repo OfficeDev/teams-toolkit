@@ -84,7 +84,7 @@ jobs:
 
     # Test samples
     - run: npm install -g @microsoft/teamsfx-cli@${{ matrix.cli-version }}
-    - run: teamsfx new template ${{ matrix.sample-capabilities }} --interactive false
+    - run: teamsfx new sample ${{ matrix.sample-capabilities }} --interactive false
       working-directory: ./
     - run: npm install -D @microsoft/teamsfx-cli@alpha
       working-directory: ./${{ matrix.sample-capabilities }}
@@ -176,7 +176,7 @@ jobs:
 
     # Test templates
     - run: npm install -g @microsoft/teamsfx-cli@${{ matrix.cli-version }}
-    - run: teamsfx new --app-name migrationtest --capabilities ${{ matrix.template-capabilities }} --programming-language ${{ matrix.language }} --interactive false
+    - run: teamsfx new --app-name migrationtest --capability ${{ matrix.template-capabilities }} --programming-language ${{ matrix.language }} --interactive false
       working-directory: ./
     - run: npm install -D @microsoft/teamsfx-cli@alpha
       working-directory: ./migrationtest

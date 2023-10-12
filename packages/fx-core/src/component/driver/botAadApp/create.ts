@@ -26,6 +26,7 @@ import {
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { AadAppClient } from "../aad/utility/aadAppClient";
 import { SignInAudience } from "../aad/interface/signInAudience";
+import { AadAppNameTooLongError } from "../aad/error/aadAppNameTooLongError";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -87,7 +88,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       if (!outputEnvVarNames) {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
       const botAadAppState: CreateBotAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       const isReusingExisting = !(!botAadAppState.botId || !botAadAppState.botPassword);
 
@@ -148,14 +149,14 @@ export class CreateBotAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new HttpClientError(actionName, message, helpLink);
+          throw new HttpClientError(error, actionName, message, helpLink);
         } else {
-          throw new HttpServerError(actionName, message);
+          throw new HttpServerError(error, actionName, message);
         }
       }
 
       if (error.name === "AadCreateAppError") {
-        throw new UnhandledUserError(new Error(error.details[0]), actionName);
+        throw new UnhandledUserError(error, actionName);
       }
 
       const message = JSON.stringify(error);
@@ -166,7 +167,7 @@ export class CreateBotAadAppDriver implements StepDriver {
     }
   }
 
-  private validateArgs(args: CreateBotAadAppArgs): void {
+  public validateArgs(args: CreateBotAadAppArgs): void {
     const invalidParameters: string[] = [];
     if (typeof args.name !== "string" || !args.name) {
       invalidParameters.push("name");
@@ -174,6 +175,10 @@ export class CreateBotAadAppDriver implements StepDriver {
 
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
+    }
+
+    if (args.name.length > 120) {
+      throw new AadAppNameTooLongError(actionName);
     }
   }
 }

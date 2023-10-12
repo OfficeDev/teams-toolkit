@@ -7,7 +7,7 @@
 
 import { it } from "@microsoft/extra-shot-mocha";
 import {
-  environmentManager,
+  environmentNameManager,
   ProgrammingLanguage,
 } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
@@ -50,13 +50,13 @@ describe("Debug V3 m365-tab template", () => {
         // provision
         const result = await Executor.provision(
           projectPath,
-          environmentManager.getLocalEnvName()
+          environmentNameManager.getLocalEnvName()
         );
         expect(result.success).to.be.true;
 
         const context = await ProjectEnvReader.readEnvFile(
           projectPath,
-          environmentManager.getLocalEnvName()
+          environmentNameManager.getLocalEnvName()
         );
         chai.assert.isDefined(context);
 
@@ -82,13 +82,13 @@ describe("Debug V3 m365-tab template", () => {
         // deploy
         const result = await Executor.deploy(
           projectPath,
-          environmentManager.getLocalEnvName()
+          environmentNameManager.getLocalEnvName()
         );
         expect(result.success).to.be.true;
 
         const context = await ProjectEnvReader.readEnvFile(
           projectPath,
-          environmentManager.getLocalEnvName()
+          environmentNameManager.getLocalEnvName()
         );
         chai.assert.isDefined(context);
 

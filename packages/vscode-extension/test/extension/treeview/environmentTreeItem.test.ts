@@ -30,6 +30,17 @@ describe("EnvironmentNode", () => {
     chai.assert.equal(treeItem.contextValue, "local");
   });
 
+  it("getTreeItem for local", async () => {
+    const environmentNode = new EnvironmentNode("testtool");
+    sandbox.stub(environmentNode, "getChildren").returns(Promise.resolve([]));
+
+    const treeItem = await environmentNode.getTreeItem();
+
+    chai.assert.deepEqual(treeItem.iconPath, new vscode.ThemeIcon("symbol-folder"));
+    chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
+    chai.assert.equal(treeItem.contextValue, "testtool");
+  });
+
   it("getChildren returns warning for SPFx project", async () => {
     const environmentNode = new EnvironmentNode("test");
     sandbox.stub(M365Login.getInstance(), "getStatus").returns(

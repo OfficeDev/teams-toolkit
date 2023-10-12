@@ -1,6 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import Fuse from "fuse.js";
+
+export type SampleGalleryState = {
+  loading: boolean;
+  samples: Array<SampleInfo>;
+  error?: Error;
+  selectedSampleId?: string;
+  query: string;
+  fuse: Fuse<SampleInfo>;
+  layout: "grid" | "list";
+};
+
 export interface SampleInfo {
   id: string;
   title: string;
@@ -11,26 +23,22 @@ export interface SampleInfo {
   configuration: string;
   suggested: boolean;
   downloadUrl: string;
-  gifUrl: string;
+  thumbnailUrl: string;
+  gifUrl?: string;
+  // -1 means TTK is lower than required.
+  versionComparisonResult: -1 | 0 | 1;
+  minimumToolkitVersion?: string;
+  maximumToolkitVersion?: string;
 }
 
-export interface SampleCollection {
-  samples: SampleInfo[];
-}
-
-export type SampleCardProps = SampleDetailProps & {
-  suggested: boolean;
-  order: number;
+export type SampleProps = {
+  sample: SampleInfo;
+  selectSample: (id: string) => void;
 };
 
-export type SampleDetailProps = {
-  url: string;
-  image: any;
-  tags: string[];
-  time: string;
-  configuration: string;
-  title: string;
-  description: string;
-  sampleAppFolder: string;
-  selectSample: (id: string) => void;
+export type SampleFilterProps = {
+  query: string;
+  layout: "grid" | "list";
+  onQueryChange: (query: string) => void;
+  onLayoutChange: (layout: "grid" | "list") => void;
 };

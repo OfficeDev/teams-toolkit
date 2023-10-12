@@ -4,7 +4,7 @@
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { LocalEnvironmentName, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import { M365Login } from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
@@ -18,10 +18,11 @@ import {
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes, environmentNameManager } from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",
+  TestTool = "testtool",
   LocalForExistingApp = "local-existing-app",
   RemoteEnv = "environment",
   ProvisionedRemoteEnv = "environment-provisioned",
@@ -55,7 +56,7 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     const children: DynamicNode[] = [];
-    if (this.identifier !== LocalEnvironmentName) {
+    if (environmentNameManager.isRemoteEnvironment(this.identifier)) {
       // check account status
       const accountStatus = await this.checkAccountForEnvironment(this.identifier);
       if (!accountStatus.isM365AccountLogin || accountStatus.isAzureAccountLogin === false) {
@@ -151,8 +152,10 @@ export class EnvironmentNode extends DynamicNode {
 
   // Get the environment info for the given environment name.
   private async getCurrentEnvInfo(envName: string): Promise<EnvInfo> {
-    if (envName === LocalEnvironmentName) {
+    if (envName === environmentNameManager.getLocalEnvName()) {
       return EnvInfo.Local;
+    } else if (envName === environmentNameManager.getTestToolEnvName()) {
+      return EnvInfo.TestTool;
     } else {
       const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
       return provisionSucceeded ? EnvInfo.ProvisionedRemoteEnv : EnvInfo.RemoteEnv;

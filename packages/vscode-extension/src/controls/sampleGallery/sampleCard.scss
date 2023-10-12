@@ -23,13 +23,51 @@
     height: auto;
     position: relative;
     cursor: pointer;
-    padding-bottom: 8px;
     box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
+    display: flex;
+    flex-direction: column;
 
-    .section {
+    .thumbnail {
+      img {
+        aspect-ratio: 40 / 23;
+      }
+    }
+
+    .infoBox {
+      padding-top: 8px;
+      padding-bottom: 16px;
+    }
+
+    .hidden-label {
+      position: absolute;
+      top: auto;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    .unavailableSampleImage {
       display: flex;
-      margin-bottom: 0px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 40/23; // 1600:920 ratio
+
+      .turtle {
+        margin-top: 25px;
+      }
+
+      h3 {
+        color: #BBB;
+        margin-top: 12px;
+      }
+    }
+
+    .tagSection {
+      display: flex;
       flex-wrap: wrap;
+      padding: 0px 10px 0px 10px;
     }
 
     .triangle {
@@ -42,7 +80,7 @@
       position: absolute;
       top: 0px;
       border-radius: 6px 0px 0px 0px;
-      z-index: 2;
+      z-index: 1;
     }
 
     .star {
@@ -65,44 +103,16 @@
     }
 
     .tag {
-      margin: 8px 0px 0px 8px;
-    }
-
-    .estimation-time {
-      padding-left: 8px;
-      height: 24px;
-      color: var(--vscode-editor-foreground);
-      display: flex;
-      font-size: 11px;
-      margin-top: 8px;
-      margin-bottom: 2px;
-
-      .watch {
-        width: 16px;
-        height: 16px;
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      .ms-Image {
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      label {
-        margin-top: auto;
-        margin-bottom: auto;
-        cursor: pointer;
-      }
+      margin: 4px 8px 0px 0px;
     }
 
     .configuration {
-      padding-left: 8px;
-      height: auto;
-      color: var(--vscode-editor-foreground);
+      padding-left: 10px;
+      color: var(--vscode-debugConsoleInputIcon-foreground);
       display: flex;
       font-size: 11px;
       height: 24px;
+      margin-top: 4px;
 
       .setting {
         width: 16px;
@@ -127,10 +137,10 @@
     h3 {
       font-size: 13px;
       text-align: center;
-      color: var(--vscode-editor-foreground);
+      color: var(--vscode-debugConsole-sourceForeground);
       font-weight: 800;
       text-align: left;
-      margin: 8px 12px 0px 12px;
+      margin: 8px 10px 4px 10px;
       line-height: 16px;
     }
 
@@ -158,6 +168,69 @@
       margin-left: 10px;
       width: auto;
     }
+  }
+
+  .sample-card.unavailable {
+    cursor: default;
+
+    .infoBox {
+      opacity: 0.3;
+    }
+
+    .tooltip {
+      visibility: hidden;
+      width: 90px;
+      background-color: #E5E5E5;
+      color: #606060;
+      text-align: center;
+      border-radius: 4px;
+      padding: 4px 1px;
+
+      position: absolute;
+      z-index: 1;
+      top: 75%;
+      left: 60%;
+    }
+
+    .tooltip.upgrade {
+      width: 180px;
+    }
+  }
+
+  .sample-card.unavailable:hover .tooltip {
+    visibility: visible;
+  }
+}
+
+body.vscode-light {
+  .sample-card {
+    background-color: #FFF;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 16%);
+  }
+
+  .sample-card:not(.unavailable):hover {
+    background-color: #F0F0F0;
+  }
+
+  .tag::part(control) {
+    background-color: #E5E5E5;
+    color: #606060;
+  }
+}
+
+body.vscode-dark {
+  .sample-card {
+    background-color: #252526;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
+  }
+
+  .sample-card:not(.unavailable):hover {
+    background-color: #303031;
+  }
+
+  .tag::part(control) {
+    background-color: #4D4D4D;
+    color: #FFFFFF;
   }
 }
 
@@ -194,7 +267,7 @@
 @media only screen and (max-width: 480px) {
   .sample-gallery {
 
-    .sample-stack > .sample-card {
+    .sample-stack>.sample-card {
       grid-column: 1/13;
     }
   }

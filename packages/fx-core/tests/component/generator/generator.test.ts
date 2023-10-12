@@ -51,6 +51,7 @@ const mockedSampleInfo: SampleConfig = {
   time: "",
   configuration: "test-configuration",
   suggested: false,
+  thumbnailUrl: "",
   gifUrl: "",
   downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
 };

@@ -28,7 +28,7 @@ import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
-import { ErrorType, ValidationStatus } from "../../src/common/spec-parser/interfaces";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
 import { SpecParser } from "../../src/common/spec-parser/specParser";
 import { SpecParserError } from "../../src/common/spec-parser/specParserError";
 import {
@@ -107,7 +107,7 @@ describe("Core basic APIs", () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
 
-    const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "run");
+    const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "execute");
     await core.deployAadManifest(inputs);
     sandbox.assert.calledOnce(runSpy);
     assert.isNotNull(runSpy.getCall(0).args[0]);
@@ -152,7 +152,9 @@ describe("Core basic APIs", () => {
     >;
     const openUrl = sandbox.spy(tools.ui, "openUrl");
     const appName = await mockV3Project();
-    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "execute")
+      .resolves({ result: new Ok(new Map()), summaries: [] });
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.AppName]: appName,
@@ -181,7 +183,9 @@ describe("Core basic APIs", () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Learn more"));
     sandbox.stub(tools.ui, "openUrl").resolves(ok(true));
     const appName = await mockV3Project();
-    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "execute")
+      .resolves({ result: new Ok(new Map()), summaries: [] });
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [QuestionNames.AppName]: appName,
@@ -207,7 +211,9 @@ describe("Core basic APIs", () => {
       Promise<Result<string | undefined, FxError>>
     >;
     const appName = await mockV3Project();
-    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "execute")
+      .resolves({ result: new Ok(new Map()), summaries: [] });
     const inputs: Inputs = {
       platform: Platform.CLI,
       [QuestionNames.AppName]: appName,
@@ -250,7 +256,7 @@ describe("Core basic APIs", () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     sandbox
-      .stub(UpdateAadAppDriver.prototype, "run")
+      .stub(UpdateAadAppDriver.prototype, "execute")
       .throws(new UserError("error name", "fake_error", "fake_err_msg"));
     const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
     const res = await core.deployAadManifest(inputs);
@@ -277,18 +283,17 @@ describe("Core basic APIs", () => {
       stage: Stage.deployAad,
       projectPath: path.join(os.tmpdir(), appName),
     };
-    sandbox
-      .stub(UpdateAadAppDriver.prototype, "run")
-      .resolves(
-        err(
-          new MissingEnvironmentVariablesError(
-            "aadApp/update",
-            "AAD_APP_OBJECT_ID",
-            "fake path",
-            "https://fake-help-link"
-          )
+    sandbox.stub(UpdateAadAppDriver.prototype, "execute").resolves({
+      result: err(
+        new MissingEnvironmentVariablesError(
+          "aadApp/update",
+          "AAD_APP_OBJECT_ID",
+          "fake path",
+          "https://fake-help-link"
         )
-      );
+      ),
+      summaries: [],
+    });
     const res = await core.deployAadManifest(inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {
@@ -1268,6 +1273,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
+          "api-me-type",
           "programming-language",
           "folder",
           "app-name",
@@ -1295,6 +1301,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
+          "api-me-type",
           "programming-language",
           "folder",
           "app-name",
@@ -1302,9 +1309,10 @@ describe("isEnvFile", async () => {
       }
     });
 
-    it("happy path: copilot feature flag", async () => {
+    it("happy path: API Copilot plugin enabled", async () => {
       const restore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "true",
+        [FeatureFlagName.ApiCopilotPlugin]: "true",
       });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -1321,10 +1329,39 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "copilot-plugin-option",
+          "api-me-type",
           "openapi-spec-location",
-          "openai-plugin-domain",
+          "openai-plugin-manifest",
           "api-operation",
+          "programming-language",
+          "folder",
+          "app-name",
+        ]);
+      }
+      restore();
+    });
+
+    it("happy path: copilot feature enabled but not API Copilot plugin", async () => {
+      const restore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "true",
+        [FeatureFlagName.ApiCopilotPlugin]: "false",
+      });
+      const core = new FxCore(tools);
+      const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const node = res.value;
+        const names: string[] = [];
+        collectNodeNames(node!, names);
+        assert.deepEqual(names, [
+          "capabilities",
+          "bot-host-type-trigger",
+          "spfx-solution",
+          "spfx-install-latest-package",
+          "spfx-framework-type",
+          "spfx-webpart-name",
+          "spfx-folder",
+          "api-me-type",
           "programming-language",
           "folder",
           "app-name",
@@ -1374,7 +1411,54 @@ describe("copilotPlugin", async () => {
       ["getStoreOrder", "GET /store/order"],
     ]);
     const core = new FxCore(tools);
-    sinon.stub(SpecParser.prototype, "generate").resolves();
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    const result = await core.copilotPluginAddAPI(inputs);
+    console.log(result);
+    assert.isTrue(result.isOk());
+  });
+
+  it("add API - warnings", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [
+          {
+            id: "getUserById",
+            title: "Get User By Id",
+          },
+          {
+            id: "notexist",
+            title: "Get User By Id",
+          },
+        ],
+      },
+    ];
+    const operationMap = new Map<string, string>([
+      ["getUserById", "GET /user/{userId}"],
+      ["getStoreOrder", "GET /store/order"],
+    ]);
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" }],
+      allSuccess: false,
+    });
     sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);

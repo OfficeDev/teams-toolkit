@@ -3,7 +3,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { Inputs, err } from "@microsoft/teamsfx-api";
 import _ from "lodash";
-import { environmentManager } from "../../core/environment";
+import { environmentNameManager } from "../../core/environmentName";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
@@ -50,7 +50,7 @@ const envLoaderMWImpl = async (
     return;
   }
   if (inputs.ignoreEnvInfo) {
-    inputs.env = environmentManager.getDefaultEnvName();
+    inputs.env = environmentNameManager.getDefaultEnvName();
   }
   if (!inputs.env) {
     if (skipLoadIfNoEnvInput) {

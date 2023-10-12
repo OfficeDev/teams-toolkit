@@ -8,6 +8,7 @@ import {
   UserErrorOptions,
 } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { ErrorCategory } from "./types";
 
 /**
  * Azure token/credential is invalid (usually not happen because TTK will ask user to login)
@@ -20,6 +21,7 @@ export class InvalidAzureCredentialError extends SystemError {
       name: "InvalidAzureCredentialError",
       message: getDefaultString(key),
       displayMessage: getLocalizedString(key),
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }
@@ -37,6 +39,7 @@ export class InvalidAzureSubscriptionError extends UserError {
       name: "InvalidAzureSubscriptionError",
       message: getDefaultString(key, subscriptionId),
       displayMessage: getLocalizedString(key, subscriptionId),
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }
@@ -53,6 +56,7 @@ export class SelectSubscriptionError extends UserError {
       name: "SelectSubscriptionError",
       message: getDefaultString(key),
       displayMessage: getLocalizedString(key),
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }
@@ -69,6 +73,7 @@ export class ResourceGroupConflictError extends UserError {
       name: "ResourceGroupConflictError",
       message: getDefaultString(key, resourceGroupName, subscriptionId),
       displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId),
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }
@@ -85,6 +90,7 @@ export class ResourceGroupNotExistError extends UserError {
       name: "ResourceGroupNotExistError",
       message: getDefaultString(key, resourceGroupName, subscriptionId),
       displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId),
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }
@@ -94,13 +100,15 @@ export class ResourceGroupNotExistError extends UserError {
  * Create resource group error
  */
 export class CreateResourceGroupError extends UserError {
-  constructor(resourceGroupName: string, subscriptionId: string, message: string) {
+  constructor(resourceGroupName: string, subscriptionId: string, message: string, error?: any) {
     const key = "error.azure.CreateResourceGroupError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "CreateResourceGroupError",
       message: getDefaultString(key, resourceGroupName, subscriptionId, message),
       displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId, message),
+      categories: [ErrorCategory.External],
+      error: error,
     };
     super(errorOptions);
   }
@@ -110,13 +118,15 @@ export class CreateResourceGroupError extends UserError {
  * Check resource group existence error
  */
 export class CheckResourceGroupExistenceError extends UserError {
-  constructor(resourceGroupName: string, subscriptionId: string, message: string) {
+  constructor(resourceGroupName: string, subscriptionId: string, message: string, error?: any) {
     const key = "error.azure.CheckResourceGroupExistenceError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "CheckResourceGroupExistenceError",
       message: getDefaultString(key, resourceGroupName, subscriptionId, message),
       displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId, message),
+      categories: [ErrorCategory.External],
+      error: error,
     };
     super(errorOptions);
   }
@@ -126,13 +136,15 @@ export class CheckResourceGroupExistenceError extends UserError {
  * List resource groups error
  */
 export class ListResourceGroupsError extends UserError {
-  constructor(subscriptionId: string, message: string) {
+  constructor(subscriptionId: string, message: string, error?: any) {
     const key = "error.azure.ListResourceGroupsError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "ListResourceGroupsError",
       message: getDefaultString(key, subscriptionId, message),
       displayMessage: getLocalizedString(key, subscriptionId, message),
+      categories: [ErrorCategory.External],
+      error: error,
     };
     super(errorOptions);
   }
@@ -142,13 +154,15 @@ export class ListResourceGroupsError extends UserError {
  * Get resource group error
  */
 export class GetResourceGroupError extends UserError {
-  constructor(resourceGroupName: string, subscriptionId: string, message: string) {
+  constructor(resourceGroupName: string, subscriptionId: string, message: string, error?: any) {
     const key = "error.azure.GetResourceGroupError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "GetResourceGroupError",
       message: getDefaultString(key, resourceGroupName, subscriptionId, message),
       displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId, message),
+      categories: [ErrorCategory.External],
+      error: error,
     };
     super(errorOptions);
   }
@@ -158,13 +172,15 @@ export class GetResourceGroupError extends UserError {
  * List resource group locations error
  */
 export class ListResourceGroupLocationsError extends UserError {
-  constructor(subscriptionId: string, message: string) {
+  constructor(subscriptionId: string, message: string, error?: any) {
     const key = "error.azure.ListResourceGroupLocationsError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "ListResourceGroupLocationsError",
       message: getDefaultString(key, subscriptionId, message),
       displayMessage: getLocalizedString(key, subscriptionId, message),
+      categories: [ErrorCategory.External],
+      error: error,
     };
     super(errorOptions);
   }

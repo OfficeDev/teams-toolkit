@@ -51,7 +51,7 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await sampledebugContext.createTemplateCLI(false);
+      await sampledebugContext.openResourceFolder();
       // verify popup
       await validateNotification(Notification.Upgrade);
 

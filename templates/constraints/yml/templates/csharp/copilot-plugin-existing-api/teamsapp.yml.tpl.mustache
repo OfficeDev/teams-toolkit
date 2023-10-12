@@ -4,9 +4,12 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsfx provision' is executed
 provision:
-{{#teamsAppCreate}} {{/teamsAppCreate}}
+{{#teamsAppCreate}}  {{/teamsAppCreate}}
 
-{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
-{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
-{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
-{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
+
+{{#teamsAppValidateAppPackage}}  {{/teamsAppValidateAppPackage}}
+
+{{#teamsAppUpdate}}  {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}}  {{/teamsAppExtendToM365}}

@@ -38,7 +38,7 @@ describe("Collaboration", function () {
 
       // new a project
       await execAsync(
-        `teamsfx new --interactive false --capabilities sso-launch-page --app-name ${appName}`,
+        `teamsfx new --interactive false --capability sso-launch-page --app-name ${appName}`,
         {
           cwd: testFolder,
           env: process.env,
@@ -66,7 +66,7 @@ describe("Collaboration", function () {
 
       // Check Permission
       const checkPermissionResult = await execAsyncWithRetry(
-        `teamsfx permission status --env dev --interactive false --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json`,
+        `teamsapp collaborator status --env dev --interactive false --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json`,
         {
           cwd: projectPath,
           env: process.env,
@@ -82,7 +82,7 @@ describe("Collaboration", function () {
 
       // Grant Permission
       const grantCollaboratorResult = await execAsyncWithRetry(
-        `teamsfx permission grant --email ${collaborator} --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
+        `teamsapp collaborator grant --email ${collaborator} --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,
@@ -99,7 +99,7 @@ describe("Collaboration", function () {
       console.log("[Successfully] grant permission");
 
       const listCollaboratorResult = await execAsync(
-        `teamsfx permission status --list-all-collaborators --env dev --teams-app-manifest ${projectPath}/appPackage/manifest.json --aad-app-manifest ${projectPath}/aad.manifest.json --interactive false`,
+        `teamsapp collaborator status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,

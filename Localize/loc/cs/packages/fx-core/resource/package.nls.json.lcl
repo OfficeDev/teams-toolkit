@@ -931,6 +931,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.ConvertSwaggerToOpenAPI" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Swagger 2.0 file has been converted to OpenAPI 3.0.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Soubor Swagger 2.0 byl převeden na OpenAPI 3.0.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.LifecycleComplete.deploy" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully executed %s/%s actions in deploy stage.]]></Val>
@@ -976,15 +985,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.common.MultipleServerInformation" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Multiple server information is found in the OpenAPI specification file.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[V souboru specifikace OpenAPI se nachází několik informací o serveru.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.common.NoServerInformation" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No server information is found in the OpenAPI specification file.]]></Val>
@@ -996,10 +996,13 @@
       </Item>
       <Item ItemId=";core.common.NoSupportedApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[No supported API is found in the OpenAPI specification file.]]></Val>
+          <Val><![CDATA[No supported API is found in the OpenAPI specification file: only GET and POST methods are supported, additionally, there can be at most one required parameter, and no auth is allowed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[V souboru specifikace OpenAPI se nenašlo žádné podporované rozhraní API.]]></Val>
+            <Val><![CDATA[V souboru specifikace OpenAPI se nenašlo žádné podporované rozhraní API: podporují se jen metody GET a POST. Kromě toho může existovat maximálně jeden povinný parametr a není povolené žádné ověřování.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No supported API is found in the OpenAPI specification file.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1039,6 +1042,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.OperationOnlyContainsOptionalParam" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Operation %s only contains optional parameters which are not supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Operace %s obsahuje pouze volitelné parametry, které nejsou podporovány.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.OutlookDesktopClientName" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Outlook desktop client id]]></Val>
@@ -1066,6 +1078,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.RelativeServerUrlNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Server url is not correct: relative server url is not supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Adresa URL serveru není správná: relativní adresa URL serveru není podporována.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.RemoteRefNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Remote reference is not supported: %s.]]></Val>
@@ -1075,20 +1096,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.ResolveServerUrlFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve the server URL: please make sure that the environment variable %s is defined.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nelze přeložit adresu URL serveru: Zkontrolujte, zda je definována proměnná prostředí %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.SchemaNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA['oneOf', 'anyOf', and 'not' schema are not supported: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Schéma oneOf, anyOf a not se nepodporuje: %s.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.common.SpecVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[OpenAPI version lower than 3.0.0 is not supported.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[OpenAPI verze nižší než 3.0.0 se nepodporuje.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1116,6 +1137,15 @@
           <Val><![CDATA[Unknown schema: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Neznámé schéma: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.UrlProtocolNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Server url is not correct: protocol %s is not supported, you should use https protocol instead.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Adresa URL serveru není správná: protokol %s není podporovaný. Měli byste místo toho použít protokol https.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1156,20 +1186,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.swaggerVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Missing "%s" in "%s".]]></Val>
+          <Val><![CDATA[The API specification is on Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in "%s".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[V %s chybí %s.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard.mitigation" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[ Mitigation: please create Adaptive Card template "%s" in "%s".]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ Zmírnění: Vytvořte prosím šablonu adaptivní karty %s v %s.]]></Val>
+            <Val><![CDATA[Specifikace rozhraní API je ve Swaggeru verze 2.0. Zmírnění: Nevyžaduje se. Obsah byl převeden na OpenAPI 3.0 a uložen v %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1197,6 +1218,24 @@
           <Val><![CDATA[ Mitigation: create Adaptive Card template in "%s" and then update "%s" field to the relative path in "%s".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[ Zmírnění: Vytvořte šablonu adaptivní karty v %s a pak aktualizujte pole %s na relativní cestu v %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Missing parameters in command "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[V příkazu %s chybí parametry.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ Mitigation: add at least one parameter for command "%s" in "%s". The parameter name should match what's defined in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ Zmírnění rizik: Přidejte alespoň jeden parametr pro příkaz %s v %s. Název parametru by se měl shodovat s tím, co je definováno v %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1276,20 +1315,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.createProjectQuestion.AIPluginManifest.placeholder" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.createProjectQuestion.OpenAIPluginDomain" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Enter your website domain]]></Val>
+          <Val><![CDATA[OpenAI Plugin Domain]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Zadejte doménu svého webu.]]></Val>
+            <Val><![CDATA[Doména modulu plug-in OpenAI]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.createProjectQuestion.AIPluginManifest.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.createProjectQuestion.OpenAIPluginDomain.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[OpenAI Plugin Manifest]]></Val>
+          <Val><![CDATA[Enter your website domain]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Manifest modulu plug-in OpenAI]]></Val>
+            <Val><![CDATA[Zadejte doménu svého webu.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1314,10 +1353,13 @@
       </Item>
       <Item ItemId=";core.createProjectQuestion.apiSpec.operation.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Only GET methods with single parameter and no auth are listed]]></Val>
+          <Val><![CDATA[GET/POST methods with at most one required parameter and no auth are listed]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Uvedené jsou jenom metody GET s jedním parametrem a bez ověřování.]]></Val>
+            <Val><![CDATA[Vypisují se metody GET/POST s maximálně jedním povinným parametrem a žádným ověřováním.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Only GET and POST methods with single parameter and no auth are listed]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1488,6 +1530,15 @@
           <Val><![CDATA[Works in Teams and Outlook]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Funguje v Teams a Outlooku]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.option.description.worksInOutlookCopilot" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Works in Teams, Outlook and Copilot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Funguje v Teams, Outlooku a Copilotu]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2776,6 +2827,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";depChecker.failedToValidateTestTool" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to validate Teams App Test Tool after installation. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Po instalaci se nepovedlo ověřit nástroj Teams App Test Tool. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";depChecker.finishInstallBicep" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
@@ -2881,6 +2941,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";depChecker.testToolVersionNotMatch" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The version of Teams App Test Tool (%s) is not compatible with the specified version range (%s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Verze Teams App Test Tool (%s) není kompatibilní se zadaným rozsahem verzí (%s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";depChecker.useGlobalDotnet" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Using dotnet from PATH:]]></Val>
@@ -2911,6 +2980,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Apply AAD app manifest to an existing AAD app]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.error.appNameTooLong" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The name for this Azure Active Directory app is too long. The maximum length is 120.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Název této Azure Active Directory aplikace je příliš dlouhý. Maximální délka je 120.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3276,10 +3354,13 @@
       </Item>
       <Item ItemId=";driver.deploy.deployToAzureAppServiceDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          <Val><![CDATA[deploy the project to the Azure App Service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[nasadit projekt do služby Azure APP Service.]]></Val>
+            <Val><![CDATA[nasadit projekt do služby Azure App Service.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3487,6 +3568,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.prerequisite.error.testToolInstallationError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to check and install Teams App Test Tool.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se zkontrolovat a nainstalovat nástroj Teams App Test Tool.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.prerequisite.progressBar" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Checking and installing development tool(s).]]></Val>
@@ -3555,6 +3645,24 @@
           <Val><![CDATA[Azure Functions Core Tools is installed at %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Sada Azure Functions Core Tools je nainstalována v %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.prerequisite.summary.testTool.installed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams App Test Tool is installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nástroj Teams App Test Tool je nainstalovaný.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.prerequisite.summary.testTool.installedWithPath" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams App Test Tool is installed at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nástroj Teams App Test Tool je nainstalovaný v %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4771,6 +4879,18 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.copilotPlugin.noExtraAPICanBeAdded" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No API can be added. Only GET and POST methods with at most one required parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nelze přidat žádné rozhraní API. Podporují se jen metody GET a POST s maximálně jedním povinným parametrem a bez ověřování. Metody definované v souboru manifest.json nejsou uvedeny.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No API can be added. Only GET and POST methods with single parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.copilotPlugin.openAiPluginManifest.CannotGetManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to get OpenAI plugin manifest from '%s'.]]></Val>
@@ -5025,6 +5145,24 @@
           <Val><![CDATA[Unable to parse url %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nepovedlo se parsovat adresu URL %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.generator.SampleNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find sample: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vzorek %s se nepodařilo najít. ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.generator.TemplateNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find template: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Šablonu %s se nepodařilo najít. ]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6165,6 +6303,15 @@
           <Val><![CDATA[SharePoint Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Řešení pro SharePoint]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Name for SharePoint Framework Web Part]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Název webové části SharePoint Framework]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

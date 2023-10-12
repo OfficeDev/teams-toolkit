@@ -93,10 +93,7 @@ enum TestPlanType {
 const AutoTeamsfxPlanPrefix = "[auto] teamsfx@";
 
 function TestPlanName(version: string): string {
-  const tag = `${semver.major(version)}.${semver.minor(version)}.${semver.patch(
-    version
-  )}`;
-  return AutoTeamsfxPlanPrefix + tag;
+  return AutoTeamsfxPlanPrefix + version;
 }
 
 /**
@@ -447,12 +444,8 @@ async function main() {
       if (process.argv.length !== 5) {
         throw new Error("invalid param length");
       }
-
-      const tpt = process.argv[3] as TestPlanType;
       const version = process.argv[4];
-
       const tpn = TestPlanName(version); // [AUTO] teamsfx@X.X.X
-
       const allTestPlans = await ADOTestPlanClient.AllTestPlans();
 
       for (const i in allTestPlans) {

@@ -10,4 +10,5 @@ export enum Commands {
   SendTelemetryEvent = "send-telemetry-event",
   ExecuteCommand = "execute-command",
   LoadSampleCollection = "get-sample-collection",
+  UpgradeToolkit = "upgrade-toolkit",
 }

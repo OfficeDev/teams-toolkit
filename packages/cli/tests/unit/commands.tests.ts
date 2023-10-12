@@ -46,6 +46,7 @@ import {
   updateTeamsAppCommand,
   upgradeCommand,
   validateCommand,
+  helpCommand,
 } from "../../src/commands/models";
 import AzureTokenProvider from "../../src/commonlib/azureLogin";
 import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
@@ -91,9 +92,8 @@ describe("CLI commands", () => {
       };
 
       const copilotPluginQuestionNames = [
-        QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
@@ -103,9 +103,10 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("createProjectOptions - copilot plugin enabled", async () => {
+    it("createProjectOptions - API copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "true",
+        API_COPILOT_PLUGIN: "true",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -118,16 +119,44 @@ describe("CLI commands", () => {
       };
       const res = await getCreateCommand().handler!(ctx);
       const copilotPluginQuestionNames = [
-        QuestionNames.CopilotPluginDevelopment.toString(),
         QuestionNames.ApiSpecLocation.toString(),
-        QuestionNames.OpenAIPluginDomain.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
         QuestionNames.ApiOperation.toString(),
       ];
       assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 4
+        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 3
       );
       assert.isTrue(res.isOk());
     });
+
+    it("createProjectOptions - API copilot plugin disabled but bot Copilot plugin enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        COPILOT_PLUGIN: "true",
+        API_COPILOT_PLUGIN: "false",
+      });
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
+
+      const ctx: CLIContext = {
+        command: { ...getCreateCommand(), fullName: "teamsfx new" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+
+      const copilotPluginQuestionNames = [
+        QuestionNames.ApiSpecLocation.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
+        QuestionNames.ApiOperation.toString(),
+      ];
+      assert.isTrue(
+        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
+      );
+      const res = await getCreateCommand().handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+
     it("core return error", async () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));
@@ -190,7 +219,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -203,7 +232,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": true },
         globalOptionValues: {},
         argumentValues: [],
@@ -216,7 +245,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": false, username: "abc" },
         globalOptionValues: {},
         argumentValues: [],
@@ -231,7 +260,7 @@ describe("CLI commands", () => {
       sandbox.stub(M365TokenProvider, "signout");
       sandbox.stub(accountUtils, "outputM365Info").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginM365Command, fullName: "teamsfx account login m365" },
+        command: { ...accountLoginM365Command, fullName: "teamsapp auth login m365" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -313,16 +342,15 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("isWorkspaceSupported: false", async () => {
-      sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
       sandbox.stub(utils, "isWorkspaceSupported").returns(false);
       const ctx: CLIContext = {
-        command: { ...envAddCommand, fullName: "teamsfx" },
+        command: { ...envListCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
       };
-      const res = await envAddCommand.handler!(ctx);
+      const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isErr());
     });
     it("listEnv error", async () => {
@@ -500,7 +528,11 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
       const ctx: CLIContext = {
         command: { ...updateAadAppCommand, fullName: "teamsfx" },
-        optionValues: { env: "local" },
+        optionValues: {
+          env: "local",
+          projectPath: "./",
+          "manifest-file-path": "./aad.manifest.json",
+        },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -521,6 +553,22 @@ describe("CLI commands", () => {
       };
       const res = await updateTeamsAppCommand.handler!(ctx);
       assert.isTrue(res.isOk());
+    });
+
+    it("MissingRequiredOptionError", async () => {
+      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-path": "fakePath", projectPath: "./" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await updateTeamsAppCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.equal(res.error.name, MissingRequiredOptionError.name);
+      }
     });
   });
   describe("upgradeCommand", async () => {
@@ -736,7 +784,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedOut });
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -744,11 +792,6 @@ describe("CLI read-only commands", () => {
       };
       const res = await accountShowCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(
-        messages.includes(
-          "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
-        )
-      );
     });
     it("both signedIn and checkIsOnline = true", async () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));
@@ -758,7 +801,7 @@ describe("CLI read-only commands", () => {
       const outputAzureInfo = sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -780,7 +823,7 @@ describe("CLI read-only commands", () => {
       const outputAccountInfoOffline = sandbox.stub(accountUtils, "outputAccountInfoOffline");
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -794,7 +837,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth show" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -809,7 +852,7 @@ describe("CLI read-only commands", () => {
     it("azure success", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -822,7 +865,7 @@ describe("CLI read-only commands", () => {
     it("azure fail", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -835,7 +878,7 @@ describe("CLI read-only commands", () => {
     it("m365 success", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],
@@ -847,7 +890,7 @@ describe("CLI read-only commands", () => {
     it("m365 fail", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],
@@ -952,7 +995,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
+      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
@@ -976,9 +1019,11 @@ describe("CLI read-only commands", () => {
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("json copilot plugin feature flag enabled", async () => {
+
+    it("json: bot Copilot plugin enabled only", async () => {
       mockedEnvRestore = mockedEnv({
         COPILOT_PLUGIN: "true",
+        API_COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
@@ -989,7 +1034,24 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-capability")));
+      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+    });
+
+    it("json: API Copilot plugin feature flag enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        COPILOT_PLUGIN: "true",
+        API_COPILOT_PLUGIN: "true",
+      });
+      const ctx: CLIContext = {
+        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
+        optionValues: { format: "json" },
+        globalOptionValues: {},
+        argumentValues: ["key", "value"],
+        telemetryProperties: {},
+      };
+      const res = await listTemplatesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
     });
   });
   describe("listSamplesCommand", async () => {
@@ -1027,6 +1089,19 @@ describe("CLI read-only commands", () => {
         telemetryProperties: {},
       };
       const res = await listSamplesCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("helpCommand", async () => {
+    it("happy", async () => {
+      const ctx: CLIContext = {
+        command: { ...helpCommand, fullName: "teamsfx ..." },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await helpCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

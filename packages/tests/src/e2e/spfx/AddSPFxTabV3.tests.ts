@@ -19,7 +19,7 @@ import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
 import { AppPackageFolderName } from "@microsoft/teamsfx-api";
 import {
-  environmentManager,
+  environmentNameManager,
   ProgrammingLanguage,
 } from "@microsoft/teamsfx-core";
 import { Capability } from "../../utils/constants";
@@ -87,7 +87,7 @@ describe("Start a new project", function () {
         // validation succeed without provision
         const result = await Executor.validate(
           projectPath,
-          environmentManager.getDefaultEnvName()
+          environmentNameManager.getDefaultEnvName()
         );
         expect(result.success).to.be.true;
       }
@@ -96,7 +96,7 @@ describe("Start a new project", function () {
         // validation local env succeed without local debug
         const result = await Executor.validate(
           projectPath,
-          environmentManager.getLocalEnvName()
+          environmentNameManager.getLocalEnvName()
         );
         expect(result.success).to.be.true;
       }
@@ -105,7 +105,7 @@ describe("Start a new project", function () {
         // provision
         const result = await Executor.provision(
           projectPath,
-          environmentManager.getDefaultEnvName()
+          environmentNameManager.getDefaultEnvName()
         );
         expect(result.success).to.be.true;
       }
@@ -114,7 +114,7 @@ describe("Start a new project", function () {
         // Get context
         const context = await readContextMultiEnvV3(
           projectPath,
-          environmentManager.getDefaultEnvName()
+          environmentNameManager.getDefaultEnvName()
         );
 
         assert.exists(context.TEAMS_APP_ID);
@@ -126,7 +126,7 @@ describe("Start a new project", function () {
         // deploy
         const result = await Executor.deploy(
           projectPath,
-          environmentManager.getDefaultEnvName()
+          environmentNameManager.getDefaultEnvName()
         );
         expect(result.success).to.be.true;
       }

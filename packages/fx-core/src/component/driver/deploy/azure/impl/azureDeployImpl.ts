@@ -32,6 +32,8 @@ import {
   CheckDeploymentStatusTimeoutError,
   GetPublishingCredentialsError,
 } from "../../../../../error";
+import { hooks } from "@feathersjs/hooks";
+import { ErrorContextMW } from "../../../../../core/globalVars";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -104,6 +106,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * @param logger log provider
    * @protected
    */
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureZipDeployImpl" })])
   public async checkDeployStatus(
     location: string,
     config: AzureUploadConfig,
@@ -133,12 +136,11 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           );
           throw new CheckDeploymentStatusError(
             location,
-            new Error(
-              `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
-                e.response?.data
-              )}`
-            ),
-            this.helpLink
+            e,
+            this.helpLink,
+            `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+              e.response?.data
+            )}`
           );
         }
         throw new CheckDeploymentStatusError(location, e as Error, this.helpLink);

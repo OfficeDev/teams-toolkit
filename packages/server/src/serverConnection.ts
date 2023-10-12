@@ -27,6 +27,7 @@ import {
   setRegion,
   listDevTunnels,
   HubOptions,
+  environmentNameManager,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
@@ -275,7 +276,6 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.previewWithManifest(params),
@@ -334,7 +334,7 @@ export default class ServerConnection implements IServerConnection {
       namespace: "fx-solution-azure",
       method: "addSso",
       params: {
-        envName: environmentManager.getDefaultEnvName(),
+        envName: environmentNameManager.getDefaultEnvName(),
       },
     };
     const res = await Correlator.runWithId(

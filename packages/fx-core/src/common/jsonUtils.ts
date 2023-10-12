@@ -11,11 +11,7 @@ class JSONUtils {
       const obj = JSON.parse(content);
       return ok(obj);
     } catch (e: any) {
-      if (e.name === "SyntaxError") {
-        const error = new JSONSyntaxError(content, e);
-        return err(error);
-      }
-      return err(new UnhandledError(e, "common"));
+      return err(new JSONSyntaxError(content, e));
     }
   }
   async readJSONFile(filePath: string): Promise<Result<any, FxError>> {

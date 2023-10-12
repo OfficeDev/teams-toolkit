@@ -49,6 +49,13 @@
     grid-template-rows: auto;
     grid-gap: 20px;
   }
+
+  .sample-list {
+    display: flex;
+    flex-direction: column;
+    max-width: 1164px;
+    margin: 0 auto;
+  }
 }
 
 @media only screen and (max-width: 640px){

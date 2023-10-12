@@ -21,3 +21,6 @@
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
   {{/TAB}}
+  {{#COPILOT}}
+        OPENAPI_SERVER_URL: https://${{DEV_TUNNEL_URL}}
+  {{/COPILOT}}

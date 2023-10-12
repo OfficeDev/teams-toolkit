@@ -13,9 +13,6 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
-export const AdaptiveFolderName = "adaptiveCards";
-
-// @public (undocumented)
 export interface ApiOperation {
     // (undocumented)
     groupName: string;
@@ -121,6 +118,7 @@ export interface CLIBooleanOption extends CLICommandOptionBase {
 
 // @public (undocumented)
 export interface CLICommand {
+    aliases?: string[];
     arguments?: CLICommandArgument[];
     commands?: CLICommand[];
     defaultInteractiveOption?: boolean;
@@ -413,9 +411,6 @@ export interface IQTreeNode {
     inputsDisabled?: "self" | "children" | "all";
 }
 
-// @public (undocumented)
-export const LocalEnvironmentName = "local";
-
 // @public
 export type LocalFunc<T> = (inputs: Inputs) => T | Promise<T>;
 
@@ -614,6 +609,9 @@ export const ProductName = "teamsfx";
 
 // @public (undocumented)
 export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
+
+// @public (undocumented)
+export const ResponseTemplatesFolderName = "responseTemplates";
 
 // @public
 export type SelectFileConfig = UIConfig<string> & {

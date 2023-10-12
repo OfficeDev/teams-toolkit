@@ -8,110 +8,121 @@ import * as React from "react";
 import { FontIcon, Image } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
+import Turtle from "../../../img/webview/sample/turtle.svg";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { Setting, Watch } from "../resources";
-import { SampleCardProps } from "./ISamples";
+import { Setting } from "../resources";
+import { SampleProps } from "./ISamples";
 
-export default class SampleCard extends React.Component<SampleCardProps, any> {
-  constructor(props: SampleCardProps) {
+export default class SampleCard extends React.Component<SampleProps, unknown> {
+  constructor(props: SampleProps) {
     super(props);
   }
 
   render() {
-    return (
-      <div
-        className={`sample-card box${this.props.order}`}
-        tabIndex={0}
-        onClick={this.onSampleCard}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            this.onSampleCard();
-          }
-        }}
-      >
-        {this.props.suggested && (
+    const sample = this.props.sample;
+    const unavailable = sample.versionComparisonResult != 0;
+    const previewImage = (
+      <>
+        {sample.suggested && (
           <div className="triangle">
             <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
           </div>
         )}
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-        >
-          sample app card
-        </label>
-        <Image src={this.props.image} />
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="tagLabel"
-        >
-          sample app tags:
-        </label>
-        <div className="section" aria-labelledby="tagLabel">
-          {this.props.tags &&
-            this.props.tags.map((value: string) => {
-              return <VSCodeTag className="tag">{value}</VSCodeTag>;
-            })}
-        </div>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="titleLabel"
-        >
+        <Image className="thumbnail" src={sample.thumbnailUrl} />
+      </>
+    );
+    const legacySampleImage = (
+      <div className="unavailableSampleImage">
+        <Turtle className="turtle" />
+        <h3>Available in newer version</h3>
+      </div>
+    );
+    const upgradingSampleImage = (
+      <div className="unavailableSampleImage">
+        <Turtle className="turtle" />
+        <h3>Upgrading...</h3>
+      </div>
+    );
+    const cardInformation = (
+      <div className="infoBox">
+        <label className="hidden-label" id="titleLabel">
           sample app title:
         </label>
-        <h3>{this.props.title}</h3>
-        <div className="estimation-time">
-          <div className="watch">
-            <Watch></Watch>
-          </div>
-          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
+        <h3>{sample.title}</h3>
+        <label className="hidden-label" id="tagLabel">
+          sample app tags:
+        </label>
+        <div className="tagSection" aria-labelledby="tagLabel">
+          {sample.tags &&
+            sample.tags.map((value: string) => {
+              return (
+                <VSCodeTag className="tag" key={value}>
+                  {value}
+                </VSCodeTag>
+              );
+            })}
         </div>
-        <div className="configuration">
-          <div className="setting">
-            <Setting></Setting>
+        {sample.configuration != "Ready for debug" && (
+          <div className="configuration">
+            <div className="setting">
+              <Setting></Setting>
+            </div>
+            <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
           </div>
-          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
-        </div>
+        )}
+      </div>
+    );
+    let sampleImage = previewImage;
+    let tooltipText = "";
+    let upgrade = false;
+    if (sample.versionComparisonResult < 0) {
+      sampleImage = legacySampleImage;
+      tooltipText = `This sample is upgraded to only work with newer version of Teams Toolkit, please install v${sample.minimumToolkitVersion} to run it.`;
+      upgrade = true;
+    } else if (sample.versionComparisonResult > 0) {
+      sampleImage = upgradingSampleImage;
+      tooltipText = "Coming soon";
+    }
+    return (
+      <div
+        className={`sample-card ${unavailable ? "unavailable" : ""}`}
+        tabIndex={0}
+        onClick={this.onSampleCardClicked}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            this.onSampleCardClicked();
+          }
+        }}
+      >
+        <label className="hidden-label">sample app card</label>
+        {unavailable && (
+          <span className={`tooltip ${upgrade ? "upgrade" : ""}`}>{tooltipText}</span>
+        )}
+        {sampleImage}
+        {cardInformation}
       </div>
     );
   }
 
-  onSampleCard = () => {
+  onSampleCardClicked = () => {
+    if (this.props.sample.versionComparisonResult != 0) {
+      return;
+    }
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.ClickSampleCard,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sampleAppFolder,
+          [TelemetryProperty.SampleAppName]: this.props.sample.id,
         },
       },
     });
-    this.props.selectSample(this.props.sampleAppFolder);
+    this.props.selectSample(this.props.sample.id);
   };
 }

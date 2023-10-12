@@ -2,7 +2,12 @@
   # Set required variables for local launch
 {{/FUNC}}
 {{^FUNC}}
+  {{#COPILOT}}
+  # Set OPENAPI_SERVER_URL for local launch
+  {{/COPILOT}}
+  {{^COPILOT}}
   # Set TAB_DOMAIN and TAB_ENDPOINT for local launch
+  {{/COPILOT}}
 {{/FUNC}}
   - uses: script
     with:
@@ -18,6 +23,14 @@
   {{/DOTNET}}
 {{/TAB}}
 {{#FUNC}}
+  {{#FUNC_NAME}}
+        echo "::set-teamsfx-env FUNC_NAME={{{FUNC_NAME}}}";
+  {{/FUNC_NAME}}
+  {{^FUNC_NAME}}
         echo "::set-teamsfx-env FUNC_NAME=getUserProfile";
+  {{/FUNC_NAME}}
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
 {{/FUNC}}
+{{#COPILOT}}
+        echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
+{{/COPILOT}}

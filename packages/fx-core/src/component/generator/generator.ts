@@ -34,6 +34,7 @@ import {
   TemplateActionSeq,
 } from "./generatorAction";
 import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
+import { sampleProvider } from "../../common/samples";
 
 export class Generator {
   public static getDefaultVariables(
@@ -119,6 +120,7 @@ export class Generator {
       [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
+    await sampleProvider.fetchSampleConfig();
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generatorContext: GeneratorContext = {

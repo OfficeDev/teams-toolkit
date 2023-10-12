@@ -10,7 +10,8 @@ export const sideloadingServiceEndpoint =
   process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
 
 export const m365SideloadingCommand: CLICommand = {
-  name: "sideloading",
+  name: "install",
+  aliases: ["sideloading"],
   description:
     "Sideloading an M365 App with corresponding information specified in the given manifest package.",
   options: [
@@ -23,7 +24,7 @@ export const m365SideloadingCommand: CLICommand = {
   ],
   examples: [
     {
-      command: "teamsfx m365 sideloading --file-path appPackage.zip",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 sideloading --file-path appPackage.zip`,
       description: "Sideloading the m365 app package",
     },
   ],

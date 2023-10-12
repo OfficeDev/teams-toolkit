@@ -4,14 +4,14 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     required: true
-  milestone-prefix:
-    description: 'the specific milestones prefix to create work item'
+  devops-token:
+    description: 'the token to create work item'
     required: true
-  milestone-days:
-    description: 'the due days of sprint milestone'
+  devops-org:
+    description: 'the org to create work item'
     required: true
-  advanced-days:
-    description: 'advanced days before creating new one'
+  devops-projectId:
+    description: 'the project to create work item'
     required: true
 
 runs:

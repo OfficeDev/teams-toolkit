@@ -67,7 +67,9 @@ export async function getResponseWithErrorHandling<T>(
   });
 }
 
-export function convertUIConfigToJson<T>(config: UIConfig<T>): UIConfig<T> {
+export async function convertUIConfigToJson<T extends string | string[]>(
+  config: UIConfig<T>
+): Promise<UIConfig<T>> {
   const newConfig = deepCopy(config);
   if ("options" in newConfig) {
     let options: StaticOptions = (newConfig as any).options;
@@ -75,6 +77,9 @@ export function convertUIConfigToJson<T>(config: UIConfig<T>): UIConfig<T> {
       options = options.map((op) => <OptionItem>{ id: op, label: op });
       (newConfig as any).options = options;
     }
+  }
+  if (typeof config.default === "function") {
+    newConfig.default = await config.default();
   }
   if (config.validation) {
     const funcId = setFunc(config.validation);

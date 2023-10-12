@@ -72,12 +72,13 @@ export interface GenerateResult {
  */
 export enum ErrorType {
   SpecNotValid = "spec-not-valid",
-  VersionNotSupported = "version-not-supported",
   RemoteRefNotSupported = "remote-ref-not-supported",
   NoServerInformation = "no-server-information",
   UrlProtocolNotSupported = "url-protocol-not-supported",
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
+  NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
+  ResolveServerUrlFailed = "resolve-server-url-failed",
 
   ListFailed = "list-failed",
   ListOperationMapFailed = "list-operation-map-failed",
@@ -99,6 +100,8 @@ export enum WarningType {
   MethodNotSupported = "method-not-supported",
   OperationIdMissing = "operationid-missing",
   GenerateCardFailed = "generate-card-failed",
+  OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
+  ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
   Unknown = "unknown",
 }
 
@@ -117,47 +120,52 @@ export interface TextBlockElement {
   wrap: boolean;
 }
 
+export interface ImageElement {
+  type: string;
+  url: string;
+  $when: string;
+}
+
 export interface ArrayElement {
   type: string;
   $data: string;
-  items: Array<TextBlockElement | ArrayElement>;
+  items: Array<TextBlockElement | ImageElement | ArrayElement>;
 }
 
 export interface AdaptiveCard {
   type: string;
   $schema: string;
   version: string;
-  body: Array<TextBlockElement | ArrayElement>;
+  body: Array<TextBlockElement | ImageElement | ArrayElement>;
 }
 
-export interface PartialManifest {
-  description: Description;
-  composeExtensions: ComposeExtension[];
-}
-
-export interface Description {
-  short: string;
-  full: string;
-}
-
-export interface ComposeExtension {
-  composeExtensionType: string;
-  apiSpecificationFile: string;
-  commands: Command[];
-}
-
-export interface Command {
-  id: string;
-  type: string;
-  context: string[];
+export interface PreviewCardTemplate {
   title: string;
-  description?: string;
-  parameters: Parameter[];
-  apiResponseRenderingTemplateFile?: string;
+  subtitle?: string;
+  image?: {
+    url: string;
+    alt?: string;
+    $when?: string;
+  };
+}
+
+export interface WrappedAdaptiveCard {
+  version: string;
+  $schema?: string;
+  jsonPath?: string;
+  responseLayout: string;
+  responseCardTemplate: AdaptiveCard;
+  previewCardTemplate: PreviewCardTemplate;
 }
 
 export interface Parameter {
   name: string;
   title: string;
   description: string;
+}
+
+export interface CheckParamResult {
+  requiredNum: number;
+  optionalNum: number;
+  isValid: boolean;
 }

@@ -3,7 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
@@ -76,6 +76,10 @@ import {
   ErrorResult,
   listOperations,
   OpenAIPluginManifestHelper,
+  generateScaffoldingSummary,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
@@ -94,7 +98,7 @@ import { QuestionNames } from "../question/questionNames";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
-import { environmentManager } from "./environment";
+import { environmentNameManager } from "./environmentName";
 import { InvalidInputError } from "./error";
 import { ErrorContextMW, setErrorContext, setTools, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -106,7 +110,7 @@ import {
   getTrackingIdFromPath,
   getVersionState,
 } from "./middleware/utils/v3MigrationUtils";
-import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
 
@@ -231,7 +235,7 @@ export class FxCore {
   }
   @hooks([ErrorContextMW({ component: "FxCore", stage: "localDebug", reset: true })])
   async localDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    inputs.env = environmentManager.getLocalEnvName();
+    inputs.env = environmentNameManager.getLocalEnvName();
     return this.provisionResources(inputs);
   }
 
@@ -270,9 +274,9 @@ export class FxCore {
     };
     const Context: DriverContext = createDriverContext(inputs);
     setErrorContext({ component: "aadAppUpdate" });
-    const res = await updateAadClient.run(inputArgs, Context);
-    if (res.isErr()) {
-      return err(res.error);
+    const res = await updateAadClient.execute(inputArgs, Context);
+    if (res.result.isErr()) {
+      return err(res.result.error);
     }
     if (Context.platform === Platform.CLI) {
       const msg = getLocalizedString("core.deploy.aadManifestOnCLISuccessNotice");
@@ -552,7 +556,7 @@ export class FxCore {
     const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, false);
+    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, undefined, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -767,6 +771,7 @@ export class FxCore {
     ErrorContextMW({ component: "FxCore", stage: "checkPermission", reset: true }),
     ErrorHandlerMW,
     ProjectMigratorMWV3,
+    QuestionMW("listCollaborator"),
     EnvLoaderMW(false, true),
     ConcurrentLockerMW,
     EnvWriterMW,
@@ -895,6 +900,7 @@ export class FxCore {
       });
 
     writeStream.end();
+    TOOLS.logProvider.info(`env file created: ${targetDotEnvFile}`);
     return ok(undefined);
   }
 
@@ -1092,7 +1098,7 @@ export class FxCore {
     ConcurrentLockerMW,
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    let operations = inputs[QuestionNames.ApiOperation] as string[];
+    const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
 
@@ -1108,20 +1114,49 @@ export class FxCore {
     const specParser = new SpecParser(url);
     const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
     const operationMaps = await specParser.listOperationMap();
-    const existingOperations = existingOperationIds.map((key) =>
-      operationMaps.get(key)
-    ) as string[];
-    operations = operations.concat(existingOperations);
+
+    const existingOperations: string[] = [];
+    for (const id of existingOperationIds) {
+      if (operationMaps.get(id)) {
+        existingOperations.push(operationMaps.get(id)!);
+      }
+    }
+
+    const operations = [...existingOperations, ...newOperations];
 
     const adaptiveCardFolder = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
-      AdaptiveFolderName
+      ResponseTemplatesFolderName
     );
 
+    const context = createContextV3();
+
     try {
-      const specParser = new SpecParser(url);
-      await specParser.generate(manifestPath, operations, outputAPISpecPath, adaptiveCardFolder);
+      const generateResult = await specParser.generate(
+        manifestPath,
+        operations,
+        outputAPISpecPath,
+        adaptiveCardFolder
+      );
+
+      // Send SpecParser.generate() warnings
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      });
+
+      if (generateResult.warnings && generateResult.warnings.length > 0) {
+        const warnSummary = generateScaffoldingSummary(
+          generateResult.warnings,
+          manifestRes.value,
+          inputs.projectPath!
+        );
+        context.logProvider.info(warnSummary);
+      }
     } catch (e) {
       let error: FxError;
       if (e instanceof SpecParserError) {
@@ -1134,12 +1169,13 @@ export class FxCore {
 
     const message = getLocalizedString(
       "core.copilot.addAPI.success",
-      operations,
+      newOperations,
       inputs.projectPath
     );
-    await TOOLS.ui.showMessage("info", message, false);
+    void context.userInteraction.showMessage("info", message, false);
     return ok(undefined);
   }
+
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginLoadOpenAIManifest" }),
     ErrorHandlerMW,

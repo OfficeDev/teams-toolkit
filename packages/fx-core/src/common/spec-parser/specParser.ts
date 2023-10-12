@@ -6,6 +6,7 @@ import * as util from "util";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import { SpecParserError } from "./specParserError";
+import converter from "swagger2openapi";
 import {
   AdaptiveCard,
   ErrorResult,
@@ -24,6 +25,7 @@ import { convertPathToCamelCase, isSupportedApi, validateServer } from "./utils"
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";
+import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -35,6 +37,7 @@ export class SpecParser {
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
+  private isSwaggerFile: boolean | undefined;
 
   /**
    * Creates a new instance of the SpecParser class.
@@ -67,18 +70,11 @@ export class SpecParser {
         };
       }
 
-      // TODO: we will support swagger 2.0
-      if (!this.spec!.openapi || this.spec!.openapi < "3.0.0") {
-        errors.push({
-          type: ErrorType.VersionNotSupported,
-          content: ConstantString.SpecVersionNotSupported,
-          data: this.spec!.openapi,
+      if (this.isSwaggerFile) {
+        warnings.push({
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: ConstantString.ConvertSwaggerToOpenAPI,
         });
-        return {
-          status: ValidationStatus.Error,
-          warnings,
-          errors,
-        };
       }
 
       // Server validation
@@ -231,9 +227,10 @@ export class SpecParser {
           if (method === ConstantString.GetMethod || method === ConstantString.PostMethod) {
             const operation = newSpec.paths[url]![method] as OpenAPIV3.OperationObject;
             try {
-              const card: AdaptiveCard = generateAdaptiveCard(operation);
+              const [card, jsonPath] = generateAdaptiveCard(operation);
               const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
-              await fs.outputJSON(fileName, card, { spaces: 2 });
+              const wrappedCard = wrapAdaptiveCard(card, jsonPath);
+              await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
             } catch (err) {
               result.allSuccess = false;
               result.warnings.push({
@@ -250,7 +247,7 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const updatedManifest = await updateManifest(
+      const [updatedManifest, warnings] = await updateManifest(
         manifestPath,
         outputSpecPath,
         adaptiveCardFolder,
@@ -258,6 +255,8 @@ export class SpecParser {
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
+
+      result.warnings.push(...warnings);
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;
@@ -271,6 +270,13 @@ export class SpecParser {
   private async loadSpec(): Promise<void> {
     if (!this.spec) {
       this.unResolveSpec = (await this.parser.parse(this.specPath)) as OpenAPIV3.Document;
+      // Convert swagger 2.0 to openapi 3.0
+      if (!this.unResolveSpec.openapi && (this.unResolveSpec as any).swagger === "2.0") {
+        const specObj = await converter.convert(this.unResolveSpec as any, {});
+        this.unResolveSpec = specObj.openapi as OpenAPIV3.Document;
+        this.isSwaggerFile = true;
+      }
+
       const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
       this.spec = (await this.parser.dereference(clonedUnResolveSpec)) as OpenAPIV3.Document;
     }

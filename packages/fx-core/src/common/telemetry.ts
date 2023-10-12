@@ -12,6 +12,7 @@ export enum TelemetryProperty {
   Feature = "feature",
   Hosting = "hosting",
   AppId = "appid",
+  BotId = "botid",
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",
@@ -28,8 +29,10 @@ export enum TelemetryProperty {
   AzureResources = "azure-resources",
   Capabilities = "capabilities",
   ActivePlugins = "active-plugins",
+  IsCopilotAllowed = "is-copilot-allowed",
   IsSideloadingAllowed = "is-sideloading-allowed",
   NeedMigrateAadManifest = "need-migrate-aad-manifest",
+  CheckCopilotTracingId = "copilot-trace-id",
   CheckSideloadingStatusCode = "status-code",
   CheckSideloadingMethod = "method",
   CheckSideloadingUrl = "url",
@@ -66,6 +69,7 @@ export enum TelemetryEvent {
   ProjectUpgradeStart = "project-upgrade-start",
   ReadJson = "read-json",
   DecryptUserdata = "decrypt-userdata",
+  CheckCopilot = "check-copilot",
   CheckResourceGroupStart = "check-resource-group-start",
   CheckResourceGroup = "check-resource-group",
   CheckSubscriptionStart = "check-subscription-start",
@@ -228,6 +232,7 @@ export function fillInTelemetryPropsForFxError(
   }
 
   if (error.categories) {
+    props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
     props[TelemetryConstants.properties.errorCat1] = error.categories[0];
     props[TelemetryConstants.properties.errorCat2] = error.categories[1];
     props[TelemetryConstants.properties.errorCat3] = error.categories[2];

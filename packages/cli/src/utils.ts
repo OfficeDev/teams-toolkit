@@ -1,23 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Colors,
-  IQTreeNode,
-  Inputs,
-  MultiSelectQuestion,
-  OptionItem,
-  Platform,
-  Question,
-  SingleSelectQuestion,
-} from "@microsoft/teamsfx-api";
-import { getSingleOption, sampleProvider } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
 import { parse } from "yaml";
 import { Options } from "yargs";
+import semver from "semver";
+
+import {
+  Colors,
+  Inputs,
+  IQTreeNode,
+  MultiSelectQuestion,
+  OptionItem,
+  Platform,
+  Question,
+  SingleSelectQuestion,
+} from "@microsoft/teamsfx-api";
+import {
+  CapabilityOptions,
+  CoreQuestionNames,
+  getSingleOption,
+  SampleConfig,
+  sampleProvider,
+} from "@microsoft/teamsfx-core";
+
 import { teamsAppFileName } from "./constants";
 import CLIUIInstance from "./userInteraction";
 
@@ -50,7 +59,11 @@ export function getSingleOptionString(
 }
 
 export async function toYargsOptions(data: Question): Promise<Options> {
-  const choices = getChoicesFromQTNodeQuestion(data);
+  let choices = getChoicesFromQTNodeQuestion(data);
+  if (data.type === "singleSelect" && data.name === CoreQuestionNames.Capabilities) {
+    const options = CapabilityOptions.all({ platform: Platform.CLI });
+    choices = options.map((op) => op.id);
+  }
   let defaultValue = data.default;
   if (typeof data.default === "function") {
     defaultValue = await data.default({ platform: Platform.CLI_HELP });
@@ -178,8 +191,7 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
 }
 
 /**
- * Shows in `teamsfx -v`.
- * @returns the version of teamsfx-cli.
+ * @returns the version of cli.
  */
 let version: string;
 export function getVersion(): string {
@@ -200,7 +212,19 @@ export interface Sample {
 
 export async function getTemplates(): Promise<Sample[]> {
   await sampleProvider.fetchSampleConfig();
-  const samples = sampleProvider.SampleCollection.samples.map((sample) => {
+  const version = getVersion();
+  const availableSamples = sampleProvider.SampleCollection.samples.filter(
+    (sample: SampleConfig) => {
+      if (sample.minimumCliVersion !== undefined) {
+        return semver.gte(version, sample.minimumCliVersion);
+      }
+      if (sample.maximumCliVersion !== undefined) {
+        return semver.lte(version, sample.maximumCliVersion);
+      }
+      return true;
+    }
+  );
+  const samples = availableSamples.map((sample: SampleConfig) => {
     return {
       tags: sample.tags,
       name: sample.title,
@@ -210,4 +234,34 @@ export async function getTemplates(): Promise<Sample[]> {
     };
   });
   return samples;
+}
+
+export function editDistance(s1: string, s2: string): number {
+  const len1 = s1.length;
+  const len2 = s2.length;
+
+  // Create a 2D array to store the edit distances
+  const dp: number[][] = new Array(len1 + 1).fill(0).map(() => new Array(len2 + 1).fill(0));
+
+  // Initialize the first row and column
+  for (let i = 0; i <= len1; i++) {
+    dp[i][0] = i;
+  }
+  for (let j = 0; j <= len2; j++) {
+    dp[0][j] = j;
+  }
+
+  // Calculate the edit distance using dynamic programming
+  for (let i = 1; i <= len1; i++) {
+    for (let j = 1; j <= len2; j++) {
+      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1, // Deletion
+        dp[i][j - 1] + 1, // Insertion
+        dp[i - 1][j - 1] + cost // Substitution
+      );
+    }
+  }
+
+  return dp[len1][len2];
 }

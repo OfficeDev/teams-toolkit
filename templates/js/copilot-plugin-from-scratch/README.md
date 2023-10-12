@@ -1,28 +1,26 @@
-# Overview of Copilot Plugin app template
+# Overview of API Plugin app template
 
-## Build Copilot Plugin from a new API with Azure Functions
+## Build API Plugin from a new API with Azure Functions
 
-The plugin allows Copilot to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. Plugins allow Copilot to:
+The plugin allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. Plugins allow Teams to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.
-- Perform actions on behalf of the user, for example, create a Jira ticket.
 
-## Get started with Copilot Plugin template
+## Get started with API Plugin template
 
 > **Prerequisites**
 >
-> To run the copilot plugin app template in your local dev machine, you will need:
+> To run the API plugin app template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
-> - A Teams account with access to the Copilot app.
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
-1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
-1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)`.
-1. When Teams launches in the browser, open the Copilot app to test your plugin.
+2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+3. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)` from the launch configuration dropdown.
+4. When Teams launches in the browser, you can navigate to a chat message and [trigger your search commands from compose message area](https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=dotnet#search-commands).
 
 ## What's included in the template
 
@@ -36,12 +34,12 @@ The plugin allows Copilot to interact directly with third-party data, apps, and 
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                   | Contents                                                                     |
-| -------------------------------------- | ---------------------------------------------------------------------------- |
-| `repair/function.json`                 | A configuration file that defines the function’s trigger and other settings. |
-| `src/index.js`                         | The main file of a function in Azure Functions.                              |
-| `appPackage/adaptiveCards/repair.json` | A generated Adaptive Card that is sent to Teams.                             |
-| `appPackage/apiSpecFiles/repair.yml`   | A file that describes the structure and behavior of the repair API.          |
+| File                                          | Contents                                                                     |
+| --------------------------------------------- | ---------------------------------------------------------------------------- |
+| `repair/function.json`                        | A configuration file that defines the function’s trigger and other settings. |
+| `src/index.js`                                | The main file of a function in Azure Functions.                              |
+| `appPackage/apiSpecificationFiles/repair.yml` | A file that describes the structure and behavior of the repair API.          |
+| `appPackage/responseTemplates/repair.json`    | A generated Adaptive Card that used to render API response.                  |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -52,4 +50,4 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Addition information and references
 
-- [Extend Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoftteams/platform/copilot/how-to-extend-copilot)
+- [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)

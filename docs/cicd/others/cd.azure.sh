@@ -41,7 +41,7 @@ npm install @microsoft/teamsfx-cli@${TEAMSFX_CLI_VERSION}
 # npm run test
 
 # Login Azure by service principal
-npx teamsfx account login azure --service-principal --username ${AZURE_SERVICE_PRINCIPAL_NAME} --password ${AZURE_SERVICE_PRINCIPAL_PASSWORD} --tenant ${AZURE_TENANT_ID}
+npx teamsapp auth login azure --service-principal --username ${AZURE_SERVICE_PRINCIPAL_NAME} --password ${AZURE_SERVICE_PRINCIPAL_PASSWORD} --tenant ${AZURE_TENANT_ID}
 
 # Deploy to hosting environment.
 npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}

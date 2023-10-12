@@ -18,6 +18,7 @@ import { Messages } from "./messages";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
 import { AppStudioClient as AppStudio } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { DeveloperPortalAPIFailedError } from "../../../../src/error/teamsApp";
 
 describe("AppStudio Client", () => {
   const tools = new MockTools();
@@ -119,7 +120,7 @@ describe("AppStudio Client", () => {
         await AppStudioClient.getBotRegistration("anything", "anything");
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
+        assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
         expect(startStub.calledOnce).to.be.true;
         expect(successStub.calledOnce).to.be.false;
       }
@@ -261,7 +262,7 @@ describe("AppStudio Client", () => {
         await AppStudioClient.createBotRegistration("anything", sampleBot);
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
+        assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
         expect(startStub.calledOnce).to.be.true;
         expect(successStub.calledOnce).to.be.false;
       }
@@ -382,7 +383,7 @@ describe("AppStudio Client", () => {
         await AppStudioClient.updateBotRegistration("anything", sampleBot);
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        assert.isTrue(e.name === AppStudioError.DeveloperPortalAPIFailedError.name);
+        assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
         expect(startStub.calledOnce).to.be.true;
         expect(successStub.calledOnce).to.be.false;
       }

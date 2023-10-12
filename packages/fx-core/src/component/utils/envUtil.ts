@@ -14,6 +14,7 @@ import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
 import { FileNotFoundError } from "../../error/common";
 import { internalOutputNames as UpdateTeamsAppOutputNames } from "../driver/teamsApp/configure";
+import { environmentNameManager } from "../../core/environmentName";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -60,7 +61,9 @@ class EnvUtil {
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
         // .env file does not exist, just ignore
-        process.env.TEAMSFX_ENV = env;
+        if (loadToProcessEnv) {
+          process.env.TEAMSFX_ENV = env;
+        }
         return ok({ TEAMSFX_ENV: env });
       } else {
         return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
@@ -227,7 +230,9 @@ class EnvUtil {
     let envs = list
       .map((fileName) => this.extractEnvNameFromFileName(fileName))
       .filter((env) => env !== undefined) as string[];
-    if (remoteOnly) envs = envs.filter((env) => env !== "local");
+    if (remoteOnly) {
+      envs = envs.filter((env) => environmentNameManager.isRemoteEnvironment(env));
+    }
     return ok(envs);
   }
   object2map(obj: DotenvOutput): Map<string, string> {

@@ -931,6 +931,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.ConvertSwaggerToOpenAPI" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The Swagger 2.0 file has been converted to OpenAPI 3.0.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Swagger 2.0 檔案已轉換為 OpenAPI 3.0。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.LifecycleComplete.deploy" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully executed %s/%s actions in deploy stage.]]></Val>
@@ -976,15 +985,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.common.MultipleServerInformation" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Multiple server information is found in the OpenAPI specification file.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[OpenAPI 規格檔案中找到多個伺服器資訊。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";core.common.NoServerInformation" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No server information is found in the OpenAPI specification file.]]></Val>
@@ -996,10 +996,13 @@
       </Item>
       <Item ItemId=";core.common.NoSupportedApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[No supported API is found in the OpenAPI specification file.]]></Val>
+          <Val><![CDATA[No supported API is found in the OpenAPI specification file: only GET and POST methods are supported, additionally, there can be at most one required parameter, and no auth is allowed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[OpenAPI 規格檔案中找不到支援的 API。]]></Val>
+            <Val><![CDATA[在 OpenAPI 規格檔案中找不到支援的 API: 只支援 GET 和 POST 方法，此外，最多只可有一個必要參數，而且不允許驗證。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No supported API is found in the OpenAPI specification file.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1039,6 +1042,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.OperationOnlyContainsOptionalParam" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Operation %s only contains optional parameters which are not supported]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[作業 %s 只包含不支援的選用參數]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.OutlookDesktopClientName" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Outlook desktop client id]]></Val>
@@ -1066,6 +1078,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.RelativeServerUrlNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Server url is not correct: relative server url is not supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[伺服器 URL 不正確: 不支援相對伺服器 URL。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.RemoteRefNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Remote reference is not supported: %s.]]></Val>
@@ -1075,20 +1096,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.common.ResolveServerUrlFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to resolve the server URL: please make sure that the environment variable %s is defined.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[無法解析伺服器 URL: 請確定已定義環境變數 %s。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.common.SchemaNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA['oneOf', 'anyOf', and 'not' schema are not supported: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[不支援 'oneOf'、'anyOf' 和 'not' 結構描述: %s。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.common.SpecVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[OpenAPI version lower than 3.0.0 is not supported.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[不支援低於 3.0.0 的 OpenAPI 版本。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1116,6 +1137,15 @@
           <Val><![CDATA[Unknown schema: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[未知的結構描述: %s。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.UrlProtocolNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Server url is not correct: protocol %s is not supported, you should use https protocol instead.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[伺服器 URL 不正確: 不支援通訊協定 %s，請改為使用 HTTPs 通訊協定。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1156,20 +1186,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.swaggerVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Missing "%s" in "%s".]]></Val>
+          <Val><![CDATA[The API specification is on Swagger version 2.0. Mitigation: Not required. The content has been converted to OpenAPI 3.0 and saved in "%s".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA["%s" 中遺漏 "%s"。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsAppPackagePackage.cannotFindCard.mitigation" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[ Mitigation: please create Adaptive Card template "%s" in "%s".]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ 風險降低: 請在 "%s" 中建立調適型卡片範本 "%s"。]]></Val>
+            <Val><![CDATA[API 規格為 Swagger 2.0 版。風險降低: 不需要。內容已轉換為 OpenAPI 3.0，並儲存在 "%s" 中。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1197,6 +1218,24 @@
           <Val><![CDATA[ Mitigation: create Adaptive Card template in "%s" and then update "%s" field to the relative path in "%s".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[ 風險降低: 在 "%s" 中建立調適型卡片範本，然後將 "%s" 欄位更新為 "%s" 中的相對路徑。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Missing parameters in command "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[命令 "%s" 中遺漏參數。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.copilotPlugin.scaffold.summary.warning.teamsManifest.missingCommandParameters.mitigation" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[ Mitigation: add at least one parameter for command "%s" in "%s". The parameter name should match what's defined in "%s".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ 風險降低: 為 "%s" 中的命令 "%s" 新增至少一個參數。參數名稱應符合 "%s" 中定義的內容。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1276,20 +1315,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.createProjectQuestion.AIPluginManifest.placeholder" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.createProjectQuestion.OpenAIPluginDomain" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Enter your website domain]]></Val>
+          <Val><![CDATA[OpenAI Plugin Domain]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[輸入您的網站網域]]></Val>
+            <Val><![CDATA[OpenAI 外掛程式網域]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.createProjectQuestion.AIPluginManifest.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.createProjectQuestion.OpenAIPluginDomain.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[OpenAI Plugin Manifest]]></Val>
+          <Val><![CDATA[Enter your website domain]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[OpenAI 外掛程式資訊清單]]></Val>
+            <Val><![CDATA[輸入您的網站網域]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1314,10 +1353,13 @@
       </Item>
       <Item ItemId=";core.createProjectQuestion.apiSpec.operation.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Only GET methods with single parameter and no auth are listed]]></Val>
+          <Val><![CDATA[GET/POST methods with at most one required parameter and no auth are listed]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[只會列出具有單一參數且沒有驗證的 GET 方法]]></Val>
+            <Val><![CDATA[列出最多一個必要參數且沒有驗證的 GET/POST 方法]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Only GET and POST methods with single parameter and no auth are listed]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1488,6 +1530,15 @@
           <Val><![CDATA[Works in Teams and Outlook]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[在 Teams 和 Outlook 中運作]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createProjectQuestion.option.description.worksInOutlookCopilot" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Works in Teams, Outlook and Copilot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用 Teams、Outlook 和 Copilot 工作]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2776,6 +2827,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";depChecker.failedToValidateTestTool" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to validate Teams App Test Tool after installation. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[安裝後無法驗證 Teams 應用程式測試工具。%s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";depChecker.finishInstallBicep" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
@@ -2881,6 +2941,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";depChecker.testToolVersionNotMatch" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The version of Teams App Test Tool (%s) is not compatible with the specified version range (%s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams App 測試工具的版本 (%s) 與指定的版本範圍 (%s) 不相容。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";depChecker.useGlobalDotnet" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Using dotnet from PATH:]]></Val>
@@ -2911,6 +2980,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Apply AAD app manifest to an existing AAD app]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.error.appNameTooLong" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The name for this Azure Active Directory app is too long. The maximum length is 120.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[此 Azure Active Directory 應用程式的名稱太長。最大長度為 120。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3276,10 +3354,13 @@
       </Item>
       <Item ItemId=";driver.deploy.deployToAzureAppServiceDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          <Val><![CDATA[deploy the project to the Azure App Service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[將專案部署到 Azure App Service。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[deploy the project to the Azure APP Service.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3487,6 +3568,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.prerequisite.error.testToolInstallationError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to check and install Teams App Test Tool.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[無法檢查並安裝 Teams 應用程式測試工具。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.prerequisite.progressBar" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Checking and installing development tool(s).]]></Val>
@@ -3555,6 +3645,24 @@
           <Val><![CDATA[Azure Functions Core Tools is installed at %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[在 %s 安裝 Azure Functions Core Tools。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.prerequisite.summary.testTool.installed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams App Test Tool is installed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已安裝 Teams 應用程式測試工具。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.prerequisite.summary.testTool.installedWithPath" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams App Test Tool is installed at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已於 %s 安裝 Teams 應用程式測試工具。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4771,6 +4879,18 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.copilotPlugin.noExtraAPICanBeAdded" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No API can be added. Only GET and POST methods with at most one required parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[無法新增任何 API。僅支援具有最多一個必要參數且未驗證的 GET 和 POST 方法。未列出 manifest.json 中定義的方法。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No API can be added. Only GET and POST methods with single parameter and no auth are supported. Methods defined in manifest.json are not listed.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.copilotPlugin.openAiPluginManifest.CannotGetManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unable to get OpenAI plugin manifest from '%s'.]]></Val>
@@ -5025,6 +5145,24 @@
           <Val><![CDATA[Unable to parse url %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[無法剖析 URL %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.generator.SampleNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find sample: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到範例: %s。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.generator.TemplateNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to find template: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到範本: %s。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6165,6 +6303,15 @@
           <Val><![CDATA[SharePoint Solution]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[SharePoint 解決方案]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Name for SharePoint Framework Web Part]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint 架構網頁組件的名稱]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

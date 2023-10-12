@@ -9,7 +9,8 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { sideloadingServiceEndpoint } from "./m365Sideloading";
 
 export const m365UnacquireCommand: CLICommand = {
-  name: "unacquire",
+  name: "uninstall",
+  aliases: ["unacquire"],
   description: "Remove an acquired M365 App.",
   options: [
     {
@@ -25,11 +26,11 @@ export const m365UnacquireCommand: CLICommand = {
   ],
   examples: [
     {
-      command: "teamsfx m365 unacquire --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 unacquire --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Remove the acquired M365 App by Title ID",
     },
     {
-      command: "teamsfx m365 unacquire --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 unacquire --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Remove the acquired M365 App by Manifest ID",
     },
   ],
@@ -46,7 +47,7 @@ export const m365UnacquireCommand: CLICommand = {
     const manifestId = ctx.optionValues["manifest-id"] as string;
     if (titleId === undefined && manifestId === undefined) {
       return err(
-        new MissingRequiredOptionError("teamsfx m365 unacquire", `--title-id or --manifest-id`)
+        new MissingRequiredOptionError(ctx.command.fullName, `--title-id or --manifest-id`)
       );
     }
     const tokenAndUpn = await getTokenAndUpn();

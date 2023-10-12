@@ -11,17 +11,12 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Validate using manifest schema
-  - uses: teamsApp/validateManifest
-    with:
-      # Path to manifest template
-      manifestPath: ./appPackage/manifest.json
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -54,11 +49,6 @@ provision:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
-  # Validate using manifest schema
-  - uses: teamsApp/validateManifest
-    with:
-      # Path to manifest template
-      manifestPath: ./appPackage/manifest.json
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:

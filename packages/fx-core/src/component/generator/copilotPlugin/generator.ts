@@ -16,7 +16,7 @@ import {
   Platform,
   Result,
   UserError,
-  AdaptiveFolderName,
+  ResponseTemplatesFolderName,
   AppPackageFolderName,
   Warning,
 } from "@microsoft/teamsfx-api";
@@ -31,6 +31,9 @@ import {
   generateScaffoldingSummary,
   logValidationResults,
   OpenAIPluginManifestHelper,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
 } from "./helper";
 import { ValidationStatus, WarningType } from "../../../common/spec-parser/interfaces";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -42,6 +45,7 @@ import { isYamlSpecFile } from "../../../common/spec-parser/utils";
 import { ConstantString } from "../../../common/spec-parser/constants";
 import * as util from "util";
 import { SpecParserError } from "../../../common/spec-parser/specParserError";
+import { isValidHttpUrl } from "../../../question/util";
 
 const fromApiSpeccomponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
@@ -52,6 +56,8 @@ const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 
 const invalidApiSpecErrorName = "invalid-api-spec";
+const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
+const isRemoteUrlTelemetryProperty = "remote-url";
 
 export interface CopilotPluginGeneratorResult {
   warnings?: Warning[];
@@ -126,6 +132,9 @@ export class CopilotPluginGenerator {
       if (templateRes.isErr()) return err(templateRes.error);
 
       const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
+        [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+      });
 
       // validate API spec
       const specParser = new SpecParser(url);
@@ -145,6 +154,13 @@ export class CopilotPluginGenerator {
         } else {
           warnings.splice(warnings.indexOf(operationIdWarning), 1);
         }
+      }
+
+      const specVersionWarning = warnings.find(
+        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      );
+      if (specVersionWarning) {
+        specVersionWarning.content = ""; // We don't care content of this warning
       }
 
       if (validationRes.status === ValidationStatus.Error) {
@@ -186,7 +202,7 @@ export class CopilotPluginGenerator {
       const adaptiveCardFolder = path.join(
         destinationPath,
         AppPackageFolderName,
-        AdaptiveFolderName
+        ResponseTemplatesFolderName
       );
       const generateResult = await specParser.generate(
         manifestPath,
@@ -195,7 +211,19 @@ export class CopilotPluginGenerator {
         adaptiveCardFolder
       );
 
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+      });
+
       if (generateResult.warnings.length > 0) {
+        generateResult.warnings.find((o) => {
+          if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
+            o.content = ""; // We don't care content of this warning
+          }
+        });
         warnings.push(...generateResult.warnings);
       }
 

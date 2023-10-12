@@ -13,13 +13,7 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import {
-  AuthSvcScopes,
-  Correlator,
-  VersionState,
-  setRegion,
-  isCopilotPluginEnabled,
-} from "@microsoft/teamsfx-core";
+import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -472,6 +466,12 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
   );
   context.subscriptions.push(checkSideloading);
+
+  const checkCopilotCallback = vscode.commands.registerCommand(
+    "fx-extension.checkCopilotCallback",
+    (...args) => Correlator.run(handlers.checkCopilotCallback, args)
+  );
+  context.subscriptions.push(checkCopilotCallback);
 }
 
 /**
@@ -517,6 +517,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     () => Correlator.run(handlers.treeViewLocalDebugHandler)
   );
   context.subscriptions.push(localDebugWithIcon);
+
+  const debugInTestToolWithIcon = vscode.commands.registerCommand(
+    "fx-extension.debugInTestToolWithIcon",
+    () => Correlator.run(handlers.treeViewDebugInTestToolHandler)
+  );
+  context.subscriptions.push(debugInTestToolWithIcon);
 
   const m365AccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.m365AccountSettings",
@@ -590,15 +596,13 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openManifestSchemaCmd);
 
-  if (isCopilotPluginEnabled()) {
-    const addAPICmd = vscode.commands.registerCommand(
-      "fx-extension.copilotPluginAddAPI",
-      async (...args) => {
-        await Correlator.run(handlers.copilotPluginAddAPIHandler, args);
-      }
-    );
-    context.subscriptions.push(addAPICmd);
-  }
+  const addAPICmd = vscode.commands.registerCommand(
+    "fx-extension.copilotPluginAddAPI",
+    async (...args) => {
+      await Correlator.run(handlers.copilotPluginAddAPIHandler, args);
+    }
+  );
+  context.subscriptions.push(addAPICmd);
 
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
@@ -629,6 +633,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.refreshSideloadingCallback, args)
   );
   context.subscriptions.push(refreshSideloading);
+
+  const refreshCopilot = vscode.commands.registerCommand("fx-extension.refreshCopilot", (...args) =>
+    Correlator.run(handlers.refreshCopilotCallback, args)
+  );
+  context.subscriptions.push(refreshCopilot);
 
   // Register local debug run icon
   const runIconCmd = vscode.commands.registerCommand("fx-extension.selectAndDebug", (...args) =>
@@ -727,6 +736,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: `**/${BuildFolderName}/${AppPackageFolderName}/manifest.*.json`,
   };
 
+  const smeOpenapiSpecSelector = {
+    language: "yaml",
+    scheme: "file",
+    pattern: `**/${AppPackageFolderName}/apiSpecFiles/*.{yml,yaml}`,
+  };
+
   const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
 
   const aadAppTemplateSelectorV3 = {
@@ -763,15 +778,14 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       manifestTemplateCodeLensProvider
     )
   );
-  if (isCopilotPluginEnabled()) {
-    const copilotPluginCodeLensProvider = new CopilotPluginCodeLensProvider();
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        manifestTemplateSelector,
-        copilotPluginCodeLensProvider
-      )
-    );
-  }
+  const copilotPluginCodeLensProvider = new CopilotPluginCodeLensProvider();
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      manifestTemplateSelector,
+      copilotPluginCodeLensProvider
+    )
+  );
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       localManifestTemplateSelector,
@@ -781,6 +795,12 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
+      manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      smeOpenapiSpecSelector,
       manifestTemplateCodeLensProvider
     )
   );

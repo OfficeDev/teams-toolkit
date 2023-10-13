@@ -7,6 +7,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
+import * as mockfs from "mock-fs";
 
 import {
   ConfigFolderName,
@@ -2553,6 +2554,75 @@ describe("autoOpenProjectHandler", () => {
     await handlers.installAdaptiveCardExt();
 
     chai.assert.isTrue(executeCommandStub.calledOnce);
+  });
+
+  describe("hasAdaptiveCardInWorkspace()", () => {
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("no workspace", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "More Info",
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isTrue(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() no adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({ hello: "world" }),
+      });
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() very large adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "a".repeat(65 * 1024),
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
   });
 
   it("signInAzure()", async () => {

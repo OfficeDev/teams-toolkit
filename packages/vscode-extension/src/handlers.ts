@@ -1965,7 +1965,7 @@ export async function installAdaptiveCardExt(
 
 function isAdaptiveCard(content: string): boolean {
   const pattern = /"type"\s*:\s*"AdaptiveCard"/;
-  return content !== null && pattern.test(content);
+  return pattern.test(content);
 }
 
 export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
@@ -1973,8 +1973,8 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
   // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
   const fileSizeLimit = (28 + 10) * 1024;
 
-  if (workspace.workspaceFolders) {
-    const files = await glob(workspace.workspaceFolders[0].uri.path + "/**/*.json", {
+  if (globalVariables.workspaceUri) {
+    const files = await glob(path.join(globalVariables.workspaceUri.path, "**/*.json"), {
       ignore: ["**/node_modules/**", "./node_modules/**"],
     });
     for (const file of files) {

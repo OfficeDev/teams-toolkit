@@ -677,9 +677,7 @@ export class FxCore {
       if (teamsAppCreate) {
         const name = teamsAppCreate.with.name as string;
         if (name) {
-          const appName = name.replace("-${{TEAMSFX_ENV}}", "").replace("${{APP_NAME_SUFFIX}}", "");
-          TOOLS.logProvider.info(`getTeamsAppName: ${appName}`);
-          return ok(appName);
+          return ok(name.replace("-${{TEAMSFX_ENV}}", "").replace("${{APP_NAME_SUFFIX}}", ""));
         }
       }
     }

@@ -1394,7 +1394,7 @@ async function ShowScaffoldingWarningSummary(
       path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
     );
     if (manifestRes.isOk()) {
-      if (ManifestUtil.parseCommonProperties(manifestRes.value).isCopilotPlugin) {
+      if (ManifestUtil.parseCommonProperties(manifestRes.value).isApiME) {
         const message = generateScaffoldingSummary(
           createWarnings,
           manifestRes.value,

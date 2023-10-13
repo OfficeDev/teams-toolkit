@@ -445,7 +445,7 @@ function validateTeamsManifestLength(
   }
 
   // validate command
-  if (ManifestUtil.parseCommonProperties(teamsManifest).isCopilotPlugin) {
+  if (ManifestUtil.parseCommonProperties(teamsManifest).isApiME) {
     const optionalParamsOnlyWarnings = warnings.filter(
       (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
     );

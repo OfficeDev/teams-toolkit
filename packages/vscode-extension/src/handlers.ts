@@ -12,6 +12,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import * as uuid from "uuid";
+import { glob } from "glob";
 import * as vscode from "vscode";
 
 import {
@@ -1931,11 +1932,14 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
-export async function openAdaptiveCardExt(
+export async function installAdaptiveCardExt(
   args: any[] = [TelemetryTriggerFrom.TreeView]
 ): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
-  const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.AdaptiveCardPreviewerInstall,
+    getTriggerFromProperty(args)
+  );
+  const acExtId = "TeamsDevApp.vscode-adaptive-cards";
   const extension = vscode.extensions.getExtension(acExtId);
   if (!extension) {
     const selection = await vscode.window.showInformationMessage(
@@ -1944,13 +1948,55 @@ export async function openAdaptiveCardExt(
       "Cancel"
     );
     if (selection === "Install") {
+      ExtTelemetry.sendTelemetryEvent(
+        TelemetryEvent.AdaptiveCardPreviewerInstallConfirm,
+        getTriggerFromProperty(args)
+      );
       await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
-      await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+    } else {
+      ExtTelemetry.sendTelemetryEvent(
+        TelemetryEvent.AdaptiveCardPreviewerInstallCancel,
+        getTriggerFromProperty(args)
+      );
     }
-  } else {
-    await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
   return Promise.resolve(ok(null));
+}
+
+function isAdaptiveCard(content: string): boolean {
+  const pattern = /"type"\s*:\s*"AdaptiveCard"/;
+  return content !== null && pattern.test(content);
+}
+
+export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
+  // Teams message limit is 28K.
+  // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
+  const fileSizeLimit = (28 + 10) * 1024;
+
+  if (workspace.workspaceFolders) {
+    const files = await glob(workspace.workspaceFolders[0].uri.path + "/**/*.json", {
+      ignore: ["**/node_modules/**", "./node_modules/**"],
+    });
+    for (const file of files) {
+      try {
+        const stat = fs.statSync(file);
+        // skip large files to prevent performance impact
+        if (!stat.isFile() || stat.size > fileSizeLimit) {
+          continue;
+        }
+      } catch (e) {
+        // skip invalid files
+        continue;
+      }
+
+      const content = await fs.readFile(file, "utf8");
+      if (isAdaptiveCard(content)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxError>> {

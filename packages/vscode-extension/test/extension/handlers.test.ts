@@ -2540,7 +2540,7 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandStub.notCalled);
   });
 
-  it("openAdaptiveCardExt()", async () => {
+  it("installAdaptiveCardExt()", async () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
@@ -2550,9 +2550,9 @@ describe("autoOpenProjectHandler", () => {
       .stub(vscode.window, "showInformationMessage")
       .resolves("Install" as unknown as vscode.MessageItem);
 
-    await handlers.openAdaptiveCardExt();
+    await handlers.installAdaptiveCardExt();
 
-    chai.assert.isTrue(executeCommandStub.calledTwice);
+    chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
   it("signInAzure()", async () => {

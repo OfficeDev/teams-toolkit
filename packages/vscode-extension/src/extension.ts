@@ -343,7 +343,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   registerInCommandController(
     context,
     "fx-extension.OpenAdaptiveCardExt",
-    handlers.openAdaptiveCardExt
+    handlers.installAdaptiveCardExt
   );
 
   registerInCommandController(
@@ -911,6 +911,8 @@ async function runBackgroundAsyncTasks(
 
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
+
+  await recommendACPExtension();
 }
 
 async function runTeamsFxBackgroundTasks() {
@@ -971,5 +973,11 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   if (isTeamsFxProject) {
     await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+  }
+}
+
+async function recommendACPExtension(): Promise<void> {
+  if (await handlers.hasAdaptiveCardInWorkspace()) {
+    await handlers.installAdaptiveCardExt([TelemetryTriggerFrom.Auto]);
   }
 }

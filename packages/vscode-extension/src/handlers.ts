@@ -1978,8 +1978,10 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
       ignore: ["**/node_modules/**", "./node_modules/**"],
     });
     for (const file of files) {
+      let fd;
       try {
-        const stat = fs.statSync(file);
+        fd = await fs.open(file, "r");
+        const stat = await fs.fstat(fd);
         // skip large files to prevent performance impact
         if (!stat.isFile() || stat.size > fileSizeLimit) {
           continue;
@@ -1989,7 +1991,7 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
         continue;
       }
 
-      const content = await fs.readFile(file, "utf8");
+      const content = await fs.readFile(fd, "utf8");
       if (isAdaptiveCard(content)) {
         return true;
       }

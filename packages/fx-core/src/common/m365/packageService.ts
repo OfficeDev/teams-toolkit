@@ -78,14 +78,21 @@ export class PackageService {
   public async sideLoadXmlManifest(token: string, manifestPath: string): Promise<[string, string]> {
     try {
       const data = await fs.readFile(manifestPath);
+      const content = new FormData();
+      content.append("package", data);
+      content.append("culture", "en-us");
       const serviceUrl = await this.getTitleServiceUrl(token);
-      const uploadResponse = await this.axiosInstance.post("/dev/v1/users/packages/addins", data, {
-        baseURL: serviceUrl,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/xml",
-        },
-      });
+      const uploadResponse = await this.axiosInstance.post(
+        "/dev/v1/users/packages/addins",
+        content.getBuffer(),
+        {
+          baseURL: serviceUrl,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/xml",
+          },
+        }
+      );
       if (uploadResponse.status === 200) {
         const titleId: string = uploadResponse.data.titleId;
         const appId: string = uploadResponse.data.appId;

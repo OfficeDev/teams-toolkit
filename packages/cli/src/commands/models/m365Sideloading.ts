@@ -58,8 +58,7 @@ export const m365SideloadingCommand: CLICommand = {
     }
 
     const packageService = new PackageService(sideloadingServiceEndpoint, logger);
-    const manifestPath =
-      (ctx.optionValues["file-path"] as string) || (ctx.optionValues["xml-path"] as string);
+    const manifestPath = zipAppPackagePath ?? xmlPath;
     const tokenAndUpn = await getTokenAndUpn();
     if (ctx.optionValues["file-path"] !== undefined) {
       await packageService.sideLoading(tokenAndUpn[0], manifestPath);

@@ -24,6 +24,7 @@ import {
   Result,
   Stage,
   Tools,
+  TeamsAppInputs,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
@@ -112,6 +113,11 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import {
+  packageTeamsApp,
+  updateTeamsApp,
+  validateTeamsApp,
+} from "../component/driver/teamsApp/teamsappCLI";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -426,6 +432,44 @@ export class FxCore {
       return ok(undefined);
     }
     return err(res.error);
+  }
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "updateTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async updateTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await updateTeamsApp(inputs);
+    return res;
+  }
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "validateTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async validateTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await validateTeamsApp(inputs);
+    return res;
+  }
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "packageTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async packageTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await packageTeamsApp(inputs);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return ok(undefined);
+  }
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "publishTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async publishTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await packageTeamsApp(inputs);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return ok(undefined);
   }
   /**
    * v3 only none lifecycle command

@@ -21,7 +21,7 @@ import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError, UserCancelError } from "../../../error/common";
 
-const actionName = "teamsApp/publishAppPackage";
+export const actionName = "teamsApp/publishAppPackage";
 
 const defaultOutputNames = {
   publishedAppId: "TEAMS_APP_PUBLISHED_APP_ID",

@@ -1,0 +1,55 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+import { CLICommand, Result, TeamsAppInputs, err, ok } from "@microsoft/teamsfx-api";
+import { SelectTeamsManifestInputs } from "@microsoft/teamsfx-core";
+import { getFxCore } from "../../../activate";
+import { ArgumentConflictError } from "../../../error";
+import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
+import {
+  EnvFileOption,
+  EnvOption,
+  ProjectFolderOption,
+  TeamsAppManifestFileOption,
+  TeamsAppOuputPackageOption,
+  TeamsAppOutputManifestFileOption,
+  TeamsAppPackageOption,
+} from "../../common";
+
+export const teamsappUpdateCommand: CLICommand = {
+  name: "update_v3",
+  description: "Update the Microsoft Teams App manifest to Teams Developer Portal.",
+  options: [
+    TeamsAppManifestFileOption,
+    TeamsAppPackageOption,
+    TeamsAppOuputPackageOption,
+    TeamsAppOutputManifestFileOption,
+    EnvOption,
+    EnvFileOption,
+    ProjectFolderOption,
+  ],
+  telemetry: {
+    event: TelemetryEvent.UpdateTeamsApp,
+  },
+  defaultInteractiveOption: false,
+  handler: async (ctx) => {
+    const inputs = ctx.optionValues as TeamsAppInputs;
+    const validateInputsRes = validateInputs(ctx.command.fullName, inputs);
+    if (validateInputsRes.isErr()) {
+      return err(validateInputsRes.error);
+    }
+
+    const core = getFxCore();
+    const res = await core.updateTeamsAppCLIV3(inputs);
+    return res;
+  },
+};
+
+function validateInputs(
+  fullName: string,
+  inputs: SelectTeamsManifestInputs
+): Result<undefined, ArgumentConflictError> {
+  if (inputs["manifest-file"] && inputs["package-file"]) {
+    return err(new ArgumentConflictError(fullName, "--manifest-file", "--package-file"));
+  }
+  return ok(undefined);
+}

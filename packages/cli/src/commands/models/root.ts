@@ -21,6 +21,7 @@ import { listCommand } from "./list";
 import { helper } from "../helper";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { teamsappUpdateCommand } from "./teamsapp/update";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -54,6 +55,7 @@ export const rootCommand: CLICommand = {
     m365Command,
     listCommand,
     helpCommand,
+    teamsappUpdateCommand,
   ],
   sortCommands: true,
   options: [

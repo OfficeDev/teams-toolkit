@@ -60,39 +60,19 @@ class M365Sideloading extends YargsCommand {
   public readonly commandHead = "sideloading";
   public readonly command = this.commandHead;
   public readonly description =
-    "Sideloading an M365 App with corresponding information specified in the given manifest package or xml manifest";
+    "Sideloading an M365 App with corresponding information specified in the given manifest package";
 
   builder(yargs: Argv): Argv<any> {
     yargs
       .option("file-path", {
+        require: true,
         description: "Path to the App manifest zip package",
         type: "string",
       })
       .example(
         `${process.env.TEAMSFX_CLI_BIN_NAME} m365 sideloading --file-path appPackage.zip`,
         "Sideloading the m365 app package"
-      )
-      .option("xml-path", {
-        description: "Path to the XML manifest file",
-        type: "string",
-      })
-      .example(
-        `${process.env.TEAMSFX_CLI_BIN_NAME} m365 sideloading --xml-path manifest.xml`,
-        "Sideloading the m365 app based on the XML manifest file"
-      )
-      .check((argv) => {
-        if (argv["file-path"] === undefined && argv["xml-path"] === undefined) {
-          throw new Error(
-            "Either `file-path` or `xml-path` should be provided. Use --help for more information."
-          );
-        }
-        if (argv["file-path"] !== undefined && argv["xml-path"] !== undefined) {
-          throw new Error(
-            "Only one of `file-path` and `xml-path` should be provided. Use --help for more information."
-          );
-        }
-        return true;
-      });
+      );
     return yargs.version(false);
   }
 
@@ -103,13 +83,9 @@ class M365Sideloading extends YargsCommand {
     CLILogProvider.necessaryLog(LogLevel.Warning, "This command is in preview.");
 
     const packageService = new PackageService(sideloadingServiceEndpoint, CLILogProvider);
-    const manifestPath = args["file-path"] || args["xml-path"];
+    const manifestPath = args["file-path"];
     const tokenAndUpn = await getTokenAndUpn();
-    if (args["file-path"] !== undefined) {
-      await packageService.sideLoading(tokenAndUpn[0], manifestPath);
-    } else {
-      await packageService.sideLoadXmlManifest(tokenAndUpn[0], manifestPath);
-    }
+    await packageService.sideLoading(tokenAndUpn[0], manifestPath);
     return ok(Void);
   }
 }

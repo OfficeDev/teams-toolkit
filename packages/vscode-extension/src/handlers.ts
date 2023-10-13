@@ -1974,24 +1974,34 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
   const fileSizeLimit = (28 + 10) * 1024;
 
   if (globalVariables.workspaceUri) {
-    const files = await glob(path.join(globalVariables.workspaceUri.path, "**/*.json"), {
+    const files = await glob(globalVariables.workspaceUri.path + "/**/*.json", {
       ignore: ["**/node_modules/**", "./node_modules/**"],
     });
     for (const file of files) {
-      let fd;
+      let content = "";
+      let fd = -1;
       try {
         fd = await fs.open(file, "r");
         const stat = await fs.fstat(fd);
-        // skip large files to prevent performance impact
-        if (!stat.isFile() || stat.size > fileSizeLimit) {
+        // limit file size to prevent performance impact
+        if (stat.size > fileSizeLimit) {
           continue;
         }
+
+        // avoid security issue
+        // https://github.com/OfficeDev/TeamsFx/security/code-scanning/2664
+        const buffer = new Uint8Array(fileSizeLimit);
+        const { bytesRead } = await fs.read(fd, buffer, 0, buffer.byteLength, 0);
+        content = new TextDecoder().decode(buffer.slice(0, bytesRead));
       } catch (e) {
         // skip invalid files
         continue;
+      } finally {
+        if (fd >= 0) {
+          fs.close(fd);
+        }
       }
 
-      const content = await fs.readFile(fd, "utf8");
       if (isAdaptiveCard(content)) {
         return true;
       }

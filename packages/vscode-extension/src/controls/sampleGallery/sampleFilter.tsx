@@ -28,6 +28,11 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
           }}
         >
           <span slot="start" className="codicon codicon-search"></span>
+          <span
+            slot="end"
+            className={`codicon codicon-close ${this.props.query === "" ? "hide" : ""}`}
+            onClick={() => this.props.onQueryChange("")}
+          ></span>
         </VSCodeTextField>
         <div className="filter-bar"></div>
         <VSCodeButton

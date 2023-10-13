@@ -1,6 +1,11 @@
 .sample-gallery {
+  .sample-list-item:first-child {
+    border-top: 1px solid;
+    border-color: #454545;
+  }
+
   .sample-list-item {
-    height: auto;
+    height: 44px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -23,20 +28,39 @@
       text-align: left;
       line-height: 18px;
       cursor: pointer;
+      margin: 0;
+      min-width: 50px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    h3:hover {
+      flex-shrink: 0;
+    }
+
+    h3:hover ~ .tagSection {
+      flex-shrink: 1;
+      overflow: hidden;
+      flex-wrap: nowrap;
     }
 
     .padding {
       flex-grow: 1;
+      flex-shrink: 2;
+      min-width: 4.5px;
     }
 
     .tagSection {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      margin-left: 22px;
+      flex-shrink: 0;
+      margin-left: 4px;
 
       .tag {
         margin-left: 8px;
+        flex-shrink: 0;
       }
     }
 
@@ -49,23 +73,18 @@
       border-radius: 4px;
       padding: 1px 4px;
       margin-left: 10px;
-      margin-top: 10px;
 
       position: absolute;
       z-index: 1;
     }
 
-    .setting {
-      height: 16px;
-      margin-left: 13px;
-    }
+    .info {
+      flex-shrink: 0;
 
-    .setting:hover .tooltip {
-      display: block;
-    }
-
-    .info .codicon {
-      color: var(--vscode-symbolIcon-interfaceForeground);
+      .codicon {
+        margin-left: 7.5px;
+        color: var(--vscode-symbolIcon-interfaceForeground);
+      }
     }
 
     .info:hover .tooltip {
@@ -73,8 +92,10 @@
     }
 
     vscode-button {
+      flex-shrink: 0;
       border-radius: 0;
       margin-left: 7.5px;
+      height: 28px;
     }
   }
 }

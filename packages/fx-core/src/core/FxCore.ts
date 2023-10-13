@@ -112,7 +112,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import "../component/feature/sso";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -676,9 +675,9 @@ export class FxCore {
         (d: any) => d.uses === "teamsApp/create"
       );
       if (teamsAppCreate) {
-        const name = teamsAppCreate.with.name;
+        const name = teamsAppCreate.with.name as string;
         if (name) {
-          return ok(name.replace("-${{TEAMSFX_ENV}}", "") || "");
+          return ok(name.replace("-${{TEAMSFX_ENV}}", "").replace("${{APP_NAME_SUFFIX}}", ""));
         }
       }
     }

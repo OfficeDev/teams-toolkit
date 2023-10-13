@@ -1932,6 +1932,8 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
+const acExtId = "TeamsDevApp.vscode-adaptive-cards";
+
 export async function installAdaptiveCardExt(
   args: any[] = [TelemetryTriggerFrom.TreeView]
 ): Promise<Result<unknown, FxError>> {
@@ -1939,9 +1941,11 @@ export async function installAdaptiveCardExt(
     TelemetryEvent.AdaptiveCardPreviewerInstall,
     getTriggerFromProperty(args)
   );
-  const acExtId = "TeamsDevApp.vscode-adaptive-cards";
-  const extension = vscode.extensions.getExtension(acExtId);
-  if (!extension) {
+  if (acpInstalled()) {
+    await vscode.window.showInformationMessage(
+      localize("teamstoolkit.handlers.adaptiveCardExtUsage")
+    );
+  } else {
     const selection = await vscode.window.showInformationMessage(
       localize("teamstoolkit.handlers.installAdaptiveCardExt"),
       "Install",
@@ -1966,6 +1970,11 @@ export async function installAdaptiveCardExt(
 function isAdaptiveCard(content: string): boolean {
   const pattern = /"type"\s*:\s*"AdaptiveCard"/;
   return pattern.test(content);
+}
+
+export function acpInstalled(): boolean {
+  const extension = vscode.extensions.getExtension(acExtId);
+  return !!extension;
 }
 
 export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {

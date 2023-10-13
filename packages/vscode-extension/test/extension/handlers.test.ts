@@ -2625,6 +2625,30 @@ describe("autoOpenProjectHandler", () => {
     });
   });
 
+  describe("acpInstalled()", () => {
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("already installed", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.extensions, "getExtension").returns({} as any);
+
+      const installed = handlers.acpInstalled();
+
+      chai.assert.isTrue(installed);
+    });
+
+    it("not installed", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+
+      const installed = handlers.acpInstalled();
+
+      chai.assert.isFalse(installed);
+    });
+  });
+
   it("signInAzure()", async () => {
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
 

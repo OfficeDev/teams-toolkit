@@ -188,6 +188,7 @@
     "teamstoolkit.handlers.grantPermissionWarning": "If added user cannot access Azure resources, you need to manually setup access policy via Azure portal. ",
     "teamstoolkit.handlers.grantPermissionWarningSpfx": "If added user is not a SharePoint App Catalog site admin, you need to manually setup access policy via SharePoint admin center. ",
     "teamstoolkit.handlers.installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Previewer\" extension.",
+    "teamstoolkit.handlers.adaptiveCardExtUsage": "Type \"Adaptive Card: Open Preview\" in command pallete to start previewing current Adaptive Card file.",
     "teamstoolkit.handlers.invalidProject": "Failed to debug Teams App. The project is not a valid Teams project.",
     "teamstoolkit.handlers.localDebugDescription": "[%s] is successfully created at [local address](%s). You can continue to debug your app.",
     "teamstoolkit.handlers.localDebugDescription.fallback": "[%s] is successfully created at %s. You can continue to debug your app.",

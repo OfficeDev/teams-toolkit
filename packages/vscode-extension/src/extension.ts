@@ -977,7 +977,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
 }
 
 async function recommendACPExtension(): Promise<void> {
-  if (await handlers.hasAdaptiveCardInWorkspace()) {
+  if (!handlers.acpInstalled() && (await handlers.hasAdaptiveCardInWorkspace())) {
     await handlers.installAdaptiveCardExt([TelemetryTriggerFrom.Auto]);
   }
 }

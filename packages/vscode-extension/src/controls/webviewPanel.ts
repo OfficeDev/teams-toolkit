@@ -141,6 +141,18 @@ export class WebviewPanel {
           case Commands.UpgradeToolkit:
             await this.OpenToolkitInExtensionView(msg.data.version);
             break;
+          case Commands.StoreData:
+            await globalVariables.context.globalState.update(msg.data.key, msg.data.value);
+            break;
+          case Commands.GetData:
+            await this.panel.webview.postMessage({
+              message: Commands.GetData,
+              data: {
+                key: msg.data.key,
+                value: globalVariables.context.globalState.get(msg.data.key),
+              },
+            });
+            break;
           default:
             break;
         }

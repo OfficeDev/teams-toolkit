@@ -86,6 +86,7 @@ export enum TelemetryEvent {
 
   ViewSampleInGitHub = "view-sample-in-github",
   UpgradeToolkitForSample = "upgrade-toolkit-for-sample",
+  SearchSample = "search-sample",
 
   WatchVideo = "watch-video",
   PauseVideo = "pause-video",
@@ -339,6 +340,9 @@ export enum TelemetryProperty {
   Interaction = "interaction",
   Identifier = "identifier",
   ValidateMethod = "validate-method",
+  // Used in Sample Gallery
+  SearchText = "search-text",
+  Layout = "layout",
 }
 
 export enum TelemetryMeasurements {

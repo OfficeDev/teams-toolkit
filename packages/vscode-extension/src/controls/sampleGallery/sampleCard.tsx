@@ -15,7 +15,6 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { Setting } from "../resources";
 import { SampleProps } from "./ISamples";
 
 export default class SampleCard extends React.Component<SampleProps, unknown> {
@@ -67,14 +66,6 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
               );
             })}
         </div>
-        {sample.configuration != "Ready for debug" && (
-          <div className="configuration">
-            <div className="setting">
-              <Setting></Setting>
-            </div>
-            <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
-          </div>
-        )}
       </div>
     );
     let sampleImage = previewImage;

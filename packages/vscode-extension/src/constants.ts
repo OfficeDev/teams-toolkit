@@ -26,6 +26,7 @@ export enum GlobalKey {
   OpenSampleReadMe = "fx-extension.openSampleReadMe",
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   CreateWarnings = "CreateWarnings",
+  SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;

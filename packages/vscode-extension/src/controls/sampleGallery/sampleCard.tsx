@@ -15,7 +15,6 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { Setting } from "../resources";
 import { SampleProps } from "./ISamples";
 
 export default class SampleCard extends React.Component<SampleProps, unknown> {

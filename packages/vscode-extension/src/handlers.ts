@@ -1969,9 +1969,8 @@ function isAdaptiveCard(content: string): boolean {
 }
 
 export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
-  // Teams message limit is 28K.
   // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
-  const fileSizeLimit = (28 + 10) * 1024;
+  const fileSizeLimit = 1024 * 1024;
 
   if (globalVariables.workspaceUri) {
     const files = await glob(globalVariables.workspaceUri.path + "/**/*.json", {

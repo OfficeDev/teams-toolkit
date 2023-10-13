@@ -2612,7 +2612,7 @@ describe("autoOpenProjectHandler", () => {
           actions: [
             {
               type: "Action.OpenUrl",
-              title: "a".repeat(65 * 1024),
+              title: "a".repeat(1024 * 1024 + 10),
               url: "https://example.com",
             },
           ],

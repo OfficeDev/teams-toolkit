@@ -82,7 +82,7 @@ function resolve(
   }
 }
 
-function resolveString(
+export function resolveString(
   val: string,
   resolved: ResolvedPlaceholders,
   unresolved: UnresolvedPlaceholders

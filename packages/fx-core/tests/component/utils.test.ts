@@ -20,6 +20,7 @@ import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelem
 import { setTools } from "../../src/core/globalVars";
 import { MockTools } from "../core/utils";
 import { MockedTelemetryReporter } from "../plugins/solution/util";
+import { resolveString } from "../../src/component/configManager/lifecycle";
 
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
@@ -123,6 +124,17 @@ describe("expandEnvironmentVariable", () => {
       APP_NAME_SUFFIX: "",
     });
     const result = expandEnvironmentVariable(template);
+    expect(result).to.equal("myapp");
+  });
+
+  it("resolveString", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "",
+    });
+    const resolved = [];
+    const unresolved = [];
+    const result = resolveString(template, resolved, unresolved);
     expect(result).to.equal("myapp");
   });
 });

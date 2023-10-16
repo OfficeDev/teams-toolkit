@@ -3,10 +3,14 @@
 
 export type SampleGalleryState = {
   loading: boolean;
-  layout: "grid" | "list";
   filteredSamples?: Array<SampleInfo>;
   error?: Error;
   selectedSampleId?: string;
+
+  // keep filtering state here to recover after navigating back from detail page
+  layout: "grid" | "list";
+  query: string;
+  filterTags: string[];
 };
 
 export interface SampleInfo {
@@ -36,17 +40,9 @@ export type SampleProps = {
 export type SampleFilterProps = {
   samples: Array<SampleInfo>;
   layout: "grid" | "list";
-
-  onFilteredSamplesChange: (samples: SampleInfo[]) => void;
-  onLayoutChange: (layout: "grid" | "list") => void;
-};
-
-export type SampleFilterState = {
-  // Filter states
-  selectedTypes: string[];
-  selectedLanguages: string[];
-  selectedTechniques: string[];
-
-  // Search state
   query: string;
+  filterTags: string[];
+
+  onLayoutChanged: (layout: "grid" | "list") => void;
+  onFilterConditionChanged: (query: string, filterTags: string[]) => void;
 };

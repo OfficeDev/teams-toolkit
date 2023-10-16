@@ -3,6 +3,7 @@
 
 import "./SampleGallery.scss";
 
+import Fuse from "fuse.js";
 import * as React from "react";
 
 import { Icon } from "@fluentui/react";
@@ -29,6 +30,8 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     this.state = {
       loading: true,
       layout: "grid",
+      query: "",
+      filterTags: [],
     };
   }
 
@@ -76,12 +79,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           ) : (
             <>
               <SampleFilter
-                layout={this.state.layout}
                 samples={this.samples}
-                onFilteredSamplesChange={(filteredSamples: SampleInfo[]) => {
-                  this.setState({ filteredSamples });
-                }}
-                onLayoutChange={this.onLayoutChanged}
+                layout={this.state.layout}
+                query={this.state.query}
+                filterTags={this.state.filterTags}
+                onLayoutChanged={this.onLayoutChanged}
+                onFilterConditionChanged={this.onFilterConditionChanged}
               ></SampleFilter>
               {this.state.layout === "grid" ? (
                 <div className="sample-stack">
@@ -165,5 +168,25 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       },
     });
     this.setState({ layout: newLayout });
+  };
+
+  private onFilterConditionChanged = (query: string, filterTags: string[]) => {
+    let filteredSamples = this.samples.filter((sample: SampleInfo) => {
+      for (const tag of filterTags) {
+        if (sample.tags.indexOf(tag) < 0) {
+          return false;
+        }
+      }
+      return true;
+    });
+    if (this.state.query !== "") {
+      const fuse = new Fuse(filteredSamples, {
+        keys: ["title", "shortDescription", "fullDescription", "tags"],
+      });
+      filteredSamples = fuse
+        .search(this.state.query)
+        .map((result: { item: SampleInfo }) => result.item);
+    }
+    this.setState({ query, filterTags, filteredSamples });
   };
 }

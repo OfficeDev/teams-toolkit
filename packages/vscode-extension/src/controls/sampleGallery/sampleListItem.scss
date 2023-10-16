@@ -61,6 +61,10 @@
       .tag {
         margin-left: 8px;
         flex-shrink: 0;
+
+        &::part(control) {
+          border: 0;
+        }
       }
     }
 

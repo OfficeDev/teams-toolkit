@@ -6,11 +6,9 @@
 .sample-filter-bar {
   display: flex;
   flex-direction: row;
-  margin-bottom: 18px;
 
   .search-box {
     width: 200px;
-    margin-bottom: 16px;
 
     .codicon-close {
       width: 20px;
@@ -43,6 +41,7 @@
   }
 
   .filter-dropdown {
+    width: 146px;
     margin-left: 16px;
     border-radius: 5px;
     z-index: 3;
@@ -55,9 +54,37 @@
 
 .filter-tag-bar {
   display: flex;
-  margin-bottom: 39px;
+  margin-top: 18px;
+  margin-bottom: 15px;
 
   .filter-tag {
     margin-right: 16px;
+
+    &::part(control) {
+      font-size: 14px;
+      padding: 1px 8px 3px 8px;
+      background-color: var(--vscode-keybindingLabel-border, #333333);
+      color: var(--vscode-editor-foreground, #cccccc);
+      border: 0;
+    }
+
+    .codicon-close {
+      padding-left: 8px;
+      position: relative;
+      top: 2.5px;
+    }
+  }
+
+  button {
+    height: 24px;
+    margin-left: 8px;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+    color: var(--vscode-textLink-foreground);
+
+    :active {
+      color: var(--vscode-textLink-foreground);
+    }
   }
 }

@@ -104,6 +104,10 @@
 
     .tag {
       margin: 4px 8px 0px 0px;
+
+      &::part(control) {
+        border: 0;
+      }
     }
 
     h3 {

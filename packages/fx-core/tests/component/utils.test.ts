@@ -116,6 +116,15 @@ describe("expandEnvironmentVariable", () => {
 
     expect(result).to.equal("placeholder: A");
   });
+
+  it("should allow leading empty string for app name suffix", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "",
+    });
+    const result = expandEnvironmentVariable(template);
+    expect(result).to.equal("myapp");
+  });
 });
 
 describe("TeamsFxTelemetryReporter", () => {

@@ -132,13 +132,6 @@ jobs:
               git push -d origin $TEMPLATE_VERSION
           fi
 
-      - name: rebuild templates after versioning
-        run: |
-          cd ./templates
-          npm run build
-        env:
-          TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates
-
       - name: update templates beta tag
         uses: richardsimko/update-tag@v1
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
@@ -154,7 +147,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates-0.0.0-beta"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          artifacts: ./templates/build/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -173,7 +166,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          artifacts: ./templates/build/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -181,7 +174,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.10.0
         with:
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          artifacts: ./templates/build/*.zip
           name: "Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}

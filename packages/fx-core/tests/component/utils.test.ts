@@ -144,6 +144,16 @@ describe("expandEnvironmentVariable", () => {
     resolveString(template, resolved, unresolved);
     expect(resolved.length).to.equal(1);
   });
+  it("resolveString for undefined APP_NAME_SUFFIX", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: undefined,
+    });
+    const resolved: string[] = [];
+    const unresolved: string[] = [];
+    resolveString(template, resolved, unresolved);
+    expect(unresolved.length).to.equal(1);
+  });
   it("resolveString for none empty APP_NAME_SUFFIX", () => {
     const template = "myapp${{ APP_NAME_SUFFIX }}";
     envRestore = mockedEnv({

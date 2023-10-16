@@ -93,7 +93,7 @@ function resolveString(
   while (matches != null) {
     const envVar = matches[1];
     const envVal = process.env[envVar];
-    if (envVal === undefined || envVal === null) {
+    if ((envVar === "APP_NAME_SUFFIX" && (envVal === undefined || envVal === null)) || !envVal) {
       unresolved.push(envVar);
     } else {
       resolved.push(envVar);

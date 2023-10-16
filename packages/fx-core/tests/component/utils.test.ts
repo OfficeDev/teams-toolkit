@@ -139,8 +139,8 @@ describe("expandEnvironmentVariable", () => {
     envRestore = mockedEnv({
       APP_NAME_SUFFIX: "",
     });
-    const resolved = [];
-    const unresolved = [];
+    const resolved: string[] = [];
+    const unresolved: string[] = [];
     const result = resolveString(template, resolved, unresolved);
     expect(result).to.equal("myapp");
   });
@@ -149,8 +149,8 @@ describe("expandEnvironmentVariable", () => {
     envRestore = mockedEnv({
       APP_NAME_SUFFIX: "abc",
     });
-    const resolved = [];
-    const unresolved = [];
+    const resolved: string[] = [];
+    const unresolved: string[] = [];
     const result = resolveString(template, resolved, unresolved);
     expect(result).to.equal("myappabc");
   });

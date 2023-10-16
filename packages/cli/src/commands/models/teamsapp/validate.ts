@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, Result, TeamsAppInputs, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, TeamsAppInputs, err } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../../activate";
-import { ArgumentConflictError } from "../../../error";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
 import {
   EnvFileOption,
@@ -13,10 +12,11 @@ import {
   TeamsAppOutputManifestFileOption,
   TeamsAppPackageOption,
 } from "../../common";
+import { validateArgumentConflict } from "./update";
 
-export const teamsappUpdateCommand: CLICommand = {
-  name: "updatev3",
-  description: "Update the Microsoft Teams App manifest to Teams Developer Portal.",
+export const teamsappValidateCommand: CLICommand = {
+  name: "validatev3",
+  description: "Validate the Microsoft Teams app using manifest schema or validation rules.",
   options: [
     TeamsAppManifestFileOption,
     TeamsAppPackageOption,
@@ -27,7 +27,7 @@ export const teamsappUpdateCommand: CLICommand = {
     ProjectFolderOption,
   ],
   telemetry: {
-    event: TelemetryEvent.UpdateTeamsApp,
+    event: TelemetryEvent.ValidateManifest,
   },
   defaultInteractiveOption: false,
   handler: async (ctx) => {
@@ -36,19 +36,8 @@ export const teamsappUpdateCommand: CLICommand = {
     if (validateInputsRes.isErr()) {
       return err(validateInputsRes.error);
     }
-
     const core = getFxCore();
-    const res = await core.updateTeamsAppCLIV3(inputs);
+    const res = await core.validateTeamsAppCLIV3(inputs);
     return res;
   },
 };
-
-export function validateArgumentConflict(
-  fullName: string,
-  inputs: TeamsAppInputs
-): Result<undefined, ArgumentConflictError> {
-  if (inputs["manifest-file"] && inputs["package-file"]) {
-    return err(new ArgumentConflictError(fullName, "--manifest-file", "--package-file"));
-  }
-  return ok(undefined);
-}

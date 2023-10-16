@@ -2,9 +2,7 @@
 // Licensed under the MIT license.
 import {
   Colors,
-  Context,
   FxError,
-  InputsWithProjectPath,
   Result,
   TeamsAppInputs,
   TeamsAppManifest,
@@ -19,7 +17,7 @@ import * as util from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { AppStudioScopes } from "../../../common/tools";
 import { FileNotFoundError, MissingRequiredInputError } from "../../../error/common";
-import { createContextV3, createDriverContext } from "../../utils";
+import { createDriverContext } from "../../utils";
 import { envUtil } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
@@ -30,16 +28,16 @@ import {
 } from "./createAppPackage";
 import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
-import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
-import { manifestUtils } from "./utils/ManifestUtils";
-import { ValidateAppPackageDriver } from "./validateAppPackage";
-import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
-import { ValidateManifestDriver } from "./validate";
-import {
-  PublishAppPackageDriver,
-  actionName as PublishAppPackageActionName,
-} from "./publishAppPackage";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
+import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
+import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
+import {
+  actionName as PublishAppPackageActionName,
+  PublishAppPackageDriver,
+} from "./publishAppPackage";
+import { manifestUtils } from "./utils/ManifestUtils";
+import { ValidateManifestDriver } from "./validate";
+import { ValidateAppPackageDriver } from "./validateAppPackage";
 
 export async function ensureAppPackageFile(
   inputs: TeamsAppInputs
@@ -109,7 +107,7 @@ export async function packageTeamsApp(
     outputJsonPath: inputs["output-manifest-file"],
   };
   const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
-  const driverContext: DriverContext = generateDriverContext(createContextV3(), inputs);
+  const driverContext: DriverContext = createDriverContext(inputs);
 
   const res = (await buildDriver.execute(packageArgs, driverContext)).result;
   if (res.isErr()) {
@@ -166,13 +164,11 @@ export async function updateTeamsApp(inputs: TeamsAppInputs): Promise<Result<und
 
   const appPackageFile = inputs["package-file"] as string;
 
-  const ctx = createContextV3();
-  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
+  const driverContext: DriverContext = createDriverContext(inputs);
 
   // 2. validate against app package
-  const teamsAppPackageFilePath = inputs["app-package-file-path"] as string;
   const args: ValidateAppPackageArgs = {
-    appPackagePath: teamsAppPackageFilePath,
+    appPackagePath: appPackageFile,
     showMessage: true,
   };
   const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
@@ -214,7 +210,7 @@ export async function updateTeamsApp(inputs: TeamsAppInputs): Promise<Result<und
     },
     { content: url, color: Colors.BRIGHT_CYAN },
   ];
-  void ctx.userInteraction.showMessage("info", message, false);
+  void driverContext.ui?.showMessage("info", message, false);
   return ok(undefined);
 }
 
@@ -227,13 +223,11 @@ async function publishTeamsApp(inputs: TeamsAppInputs): Promise<Result<undefined
 
   const appPackageFile = inputs["package-file"] as string;
 
-  const ctx = createContextV3();
-  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
+  const driverContext: DriverContext = createDriverContext(inputs);
 
   // 2. validate against app package
-  const teamsAppPackageFilePath = inputs["app-package-file-path"] as string;
   const args: ValidateAppPackageArgs = {
-    appPackagePath: teamsAppPackageFilePath,
+    appPackagePath: appPackageFile,
     showMessage: true,
   };
   const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
@@ -252,23 +246,10 @@ async function publishTeamsApp(inputs: TeamsAppInputs): Promise<Result<undefined
   if (updateRes.isErr()) {
     return err(updateRes.error);
   }
-  void ctx.userInteraction.showMessage(
+  void driverContext.ui?.showMessage(
     "info",
     `publish successfully, Go to admin portal: ${Constants.TEAMS_ADMIN_PORTAL}`,
     false
   );
   return ok(undefined);
-}
-
-function generateDriverContext(ctx: Context, inputs: InputsWithProjectPath): DriverContext {
-  return {
-    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
-    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
-    ui: ctx.userInteraction,
-    progressBar: undefined,
-    logProvider: ctx.logProvider,
-    telemetryReporter: ctx.telemetryReporter,
-    projectPath: ctx.projectPath!,
-    platform: inputs.platform,
-  };
 }

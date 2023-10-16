@@ -22,6 +22,9 @@ import { helper } from "../helper";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { teamsappUpdateCommand } from "./teamsapp/update";
+import { teamsappValidateCommand } from "./teamsapp/validate";
+import { teamsappPackageCommand } from "./teamsapp/package";
+import { teamsappPublishCommand } from "./teamsapp/publish";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -56,6 +59,9 @@ export const rootCommand: CLICommand = {
     listCommand,
     helpCommand,
     teamsappUpdateCommand,
+    teamsappValidateCommand,
+    teamsappPackageCommand,
+    teamsappPublishCommand,
   ],
   sortCommands: true,
   options: [

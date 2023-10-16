@@ -5,10 +5,18 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { validateBot } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class BotSSOTestCase extends CaseFactory {}
+class BotSSOTestCase extends CaseFactory {
+  override async onValidate(page: Page): Promise<void> {
+    return await validateBot(page, {
+      botCommand: "show",
+    });
+  }
+}
 
 new BotSSOTestCase(
   TemplateProject.HelloWorldBotSSO,

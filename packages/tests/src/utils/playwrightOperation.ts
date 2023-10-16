@@ -10,7 +10,7 @@ import { SampledebugContext } from "../ui-test/samples/sampledebugContext";
 import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./envUtil";
-import { startDebugging } from "./vscodeOperation";
+import { startDebugging, startDebuggingAzure } from "./vscodeOperation";
 
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
@@ -84,6 +84,15 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   },
   [TemplateProject.GraphConnectorBot]: async () => {
     await startDebugging();
+  },
+  [TemplateProject.SpfxProductivity]: async () => {
+    await startDebugging("Teams workbench (Chrome)");
+  },
+  [TemplateProject.RetailDashboard]: async () => {
+    await startDebugging("Teams workbench (Chrome)");
+  },
+  [TemplateProject.TabSSOApimProxy]: async () => {
+    await startDebuggingAzure("Debug (Chrome)", "local", `TabSSOApimProxy`);
   },
 };
 
@@ -206,21 +215,9 @@ export async function initPage(
       try {
         await page?.waitForSelector(".team-information span:has-text('About')");
       } catch (error) {
-        try {
-          await page?.waitForSelector(
-            ".ts-messages-header span:has-text('About')"
-          );
-        } catch (error) {
-          try {
-            await page?.waitForSelector(
-              ".team-information span:has-text('Chat')"
-            );
-          } catch (error) {
-            await page?.waitForSelector(
-              ".ts-messages-header span:has-text('Chat')"
-            );
-          }
-        }
+        await page?.waitForSelector(
+          ".ts-messages-header span:has-text('About')"
+        );
       }
       console.log("[success] app loaded");
     } catch (error) {
@@ -329,15 +326,9 @@ export async function initTeamsPage(
           "iframe.embedded-page-content"
         );
         const frame = await frameElementHandle?.contentFrame();
-        try {
-          await frame?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a team')`
-          );
-        } catch (error) {
-          await frame?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
-          );
-        }
+        await frame?.waitForSelector(
+          `h1:has-text('Add ${options?.teamsAppName} to a team')`
+        );
         // TODO: need to add more logic
         console.log("successful to add teams app!!!");
         return;
@@ -896,7 +887,7 @@ export async function validateEchoBot(
 export async function validateBot(
   page: Page,
   options: { botCommand?: string; expected?: ValidationContent } = {
-    botCommand: "welcome",
+    botCommand: "helloWorld",
     expected: ValidationContent.Bot,
   }
 ) {
@@ -967,7 +958,7 @@ export async function validateBot(
         await executeBotSuggestionCommand(
           page,
           frame,
-          options?.botCommand || "welcome"
+          options?.botCommand || "helloWorld"
         );
         await frame?.click('button[name="send"]');
         await frame?.waitForSelector(

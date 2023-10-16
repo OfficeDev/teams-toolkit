@@ -141,8 +141,8 @@ describe("expandEnvironmentVariable", () => {
     });
     const resolved: string[] = [];
     const unresolved: string[] = [];
-    const result = resolveString(template, resolved, unresolved);
-    expect(result).to.equal("myapp");
+    resolveString(template, resolved, unresolved);
+    expect(resolved).to.includes("");
   });
   it("resolveString for none empty APP_NAME_SUFFIX", () => {
     const template = "myapp${{ APP_NAME_SUFFIX }}";

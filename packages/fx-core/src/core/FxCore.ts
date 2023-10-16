@@ -569,7 +569,7 @@ export class FxCore {
       teamsAppId,
       properties.capabilities,
       true,
-      properties.isCopilotPlugin
+      properties.isApiME
     );
     return result;
   }

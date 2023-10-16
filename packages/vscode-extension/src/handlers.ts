@@ -12,6 +12,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import * as uuid from "uuid";
+import { glob } from "glob";
 import * as vscode from "vscode";
 
 import {
@@ -1395,7 +1396,7 @@ async function ShowScaffoldingWarningSummary(
       path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
     );
     if (manifestRes.isOk()) {
-      if (ManifestUtil.parseCommonProperties(manifestRes.value).isCopilotPlugin) {
+      if (ManifestUtil.parseCommonProperties(manifestRes.value).isApiME) {
         const message = generateScaffoldingSummary(
           createWarnings,
           manifestRes.value,
@@ -1931,26 +1932,91 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
-export async function openAdaptiveCardExt(
+const acExtId = "TeamsDevApp.vscode-adaptive-cards";
+
+export async function installAdaptiveCardExt(
   args: any[] = [TelemetryTriggerFrom.TreeView]
 ): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
-  const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
-  const extension = vscode.extensions.getExtension(acExtId);
-  if (!extension) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.AdaptiveCardPreviewerInstall,
+    getTriggerFromProperty(args)
+  );
+  if (acpInstalled()) {
+    await vscode.window.showInformationMessage(
+      localize("teamstoolkit.handlers.adaptiveCardExtUsage")
+    );
+  } else {
     const selection = await vscode.window.showInformationMessage(
       localize("teamstoolkit.handlers.installAdaptiveCardExt"),
       "Install",
       "Cancel"
     );
     if (selection === "Install") {
+      ExtTelemetry.sendTelemetryEvent(
+        TelemetryEvent.AdaptiveCardPreviewerInstallConfirm,
+        getTriggerFromProperty(args)
+      );
       await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
-      await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+    } else {
+      ExtTelemetry.sendTelemetryEvent(
+        TelemetryEvent.AdaptiveCardPreviewerInstallCancel,
+        getTriggerFromProperty(args)
+      );
     }
-  } else {
-    await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
   return Promise.resolve(ok(null));
+}
+
+function isAdaptiveCard(content: string): boolean {
+  const pattern = /"type"\s*:\s*"AdaptiveCard"/;
+  return pattern.test(content);
+}
+
+export function acpInstalled(): boolean {
+  const extension = vscode.extensions.getExtension(acExtId);
+  return !!extension;
+}
+
+export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
+  // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
+  const fileSizeLimit = 1024 * 1024;
+
+  if (globalVariables.workspaceUri) {
+    const files = await glob(globalVariables.workspaceUri.path + "/**/*.json", {
+      ignore: ["**/node_modules/**", "./node_modules/**"],
+    });
+    for (const file of files) {
+      let content = "";
+      let fd = -1;
+      try {
+        fd = await fs.open(file, "r");
+        const stat = await fs.fstat(fd);
+        // limit file size to prevent performance impact
+        if (stat.size > fileSizeLimit) {
+          continue;
+        }
+
+        // avoid security issue
+        // https://github.com/OfficeDev/TeamsFx/security/code-scanning/2664
+        const buffer = new Uint8Array(fileSizeLimit);
+        const { bytesRead } = await fs.read(fd, buffer, 0, buffer.byteLength, 0);
+        content = new TextDecoder().decode(buffer.slice(0, bytesRead));
+      } catch (e) {
+        // skip invalid files
+        continue;
+      } finally {
+        if (fd >= 0) {
+          fs.close(fd);
+        }
+      }
+
+      if (isAdaptiveCard(content)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxError>> {

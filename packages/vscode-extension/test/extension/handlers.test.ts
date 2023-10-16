@@ -7,6 +7,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
+import * as mockfs from "mock-fs";
 
 import {
   ConfigFolderName,
@@ -2334,7 +2335,7 @@ describe("autoOpenProjectHandler", () => {
       version: "",
       capabilities: [""],
       manifestVersion: "",
-      isCopilotPlugin: true,
+      isApiME: true,
       isSPFx: false,
       isApiBasedMe: true,
     };
@@ -2540,7 +2541,7 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandStub.notCalled);
   });
 
-  it("openAdaptiveCardExt()", async () => {
+  it("installAdaptiveCardExt()", async () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
@@ -2550,9 +2551,102 @@ describe("autoOpenProjectHandler", () => {
       .stub(vscode.window, "showInformationMessage")
       .resolves("Install" as unknown as vscode.MessageItem);
 
-    await handlers.openAdaptiveCardExt();
+    await handlers.installAdaptiveCardExt();
 
-    chai.assert.isTrue(executeCommandStub.calledTwice);
+    chai.assert.isTrue(executeCommandStub.calledOnce);
+  });
+
+  describe("hasAdaptiveCardInWorkspace()", () => {
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("no workspace", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "More Info",
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isTrue(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() no adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({ hello: "world" }),
+      });
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() very large adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "a".repeat(1024 * 1024 + 10),
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await handlers.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+  });
+
+  describe("acpInstalled()", () => {
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("already installed", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.extensions, "getExtension").returns({} as any);
+
+      const installed = handlers.acpInstalled();
+
+      chai.assert.isTrue(installed);
+    });
+
+    it("not installed", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+
+      const installed = handlers.acpInstalled();
+
+      chai.assert.isFalse(installed);
+    });
   });
 
   it("signInAzure()", async () => {

@@ -106,34 +106,6 @@
       margin: 4px 8px 0px 0px;
     }
 
-    .configuration {
-      padding-left: 10px;
-      color: var(--vscode-debugConsoleInputIcon-foreground);
-      display: flex;
-      font-size: 11px;
-      height: 24px;
-      margin-top: 4px;
-
-      .setting {
-        width: 16px;
-        height: 16px;
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      .ms-Image {
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      label {
-        width: 242px;
-        margin-top: auto;
-        margin-bottom: auto;
-        cursor: pointer;
-      }
-    }
-
     h3 {
       font-size: 13px;
       text-align: center;
@@ -171,12 +143,6 @@
   }
 
   .sample-card.unavailable {
-    cursor: default;
-
-    .infoBox {
-      opacity: 0.3;
-    }
-
     .tooltip {
       visibility: hidden;
       width: 90px;

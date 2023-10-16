@@ -19,9 +19,9 @@ export interface ManifestCommonProperties {
    */
   manifestVersion: string;
   /**
-   * Whether it's copilot plugin app
+   * Whether it's an API ME
    */
-  isCopilotPlugin: boolean;
+  isApiME: boolean;
   /**
    * Whether it's SPFx Teams app
    */

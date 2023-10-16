@@ -15,6 +15,12 @@ import {
   VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react";
 
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../../telemetry/extTelemetryEvents";
+import { Commands } from "../Commands";
 import { Grid } from "../resources";
 import { SampleFilterProps, SampleFilterState, SampleInfo } from "./ISamples";
 
@@ -99,6 +105,16 @@ export default class SampleFilter extends React.Component<SampleFilterProps, Sam
 
   private onSearchTextChanged = (e: { target: { value: string } }) => {
     debounce(() => {
+      vscode.postMessage({
+        command: Commands.SendTelemetryEvent,
+        data: {
+          eventName: TelemetryEvent.SearchSample,
+          properties: {
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+            [TelemetryProperty.SearchText]: e.target.value,
+          },
+        },
+      });
       this.setState({ query: e.target.value });
       this.filterSamples();
     }, 500)();

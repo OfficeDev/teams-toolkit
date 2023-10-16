@@ -26,6 +26,9 @@ configuration:
                   - isActivitySender:
                       user: microsoft-github-policy-service[bot]
                       issueAuthor: False
+                  - isActivitySender:
+                      user: github-actions[bot]
+                      issueAuthor: False
         then:
           - addLabel:
               label: needs attention

@@ -2334,7 +2334,7 @@ describe("autoOpenProjectHandler", () => {
       version: "",
       capabilities: [""],
       manifestVersion: "",
-      isCopilotPlugin: true,
+      isApiME: true,
       isSPFx: false,
       isApiBasedMe: true,
     };

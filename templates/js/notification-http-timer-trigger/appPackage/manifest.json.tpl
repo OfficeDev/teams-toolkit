@@ -15,7 +15,7 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "short": "{{appName}}${{APP_NAME_SUFFIX}}",
         "full": "ful name for {{appName}}"
     },
     "description": {

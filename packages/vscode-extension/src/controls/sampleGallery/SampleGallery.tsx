@@ -7,6 +7,12 @@ import * as React from "react";
 
 import { Icon } from "@fluentui/react";
 
+import { GlobalKey } from "../../constants";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
 import { SampleGalleryState, SampleInfo } from "./ISamples";
 import OfflinePage from "./offlinePage";
@@ -30,6 +36,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     window.addEventListener("message", this.receiveMessage, false);
     vscode.postMessage({
       command: Commands.LoadSampleCollection,
+    });
+    vscode.postMessage({
+      command: Commands.GetData,
+      data: {
+        key: GlobalKey.SampleGalleryLayout,
+      },
     });
   }
 
@@ -69,9 +81,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                 onFilteredSamplesChange={(filteredSamples: SampleInfo[]) => {
                   this.setState({ filteredSamples });
                 }}
-                onLayoutChange={(newLayout: "grid" | "list") => {
-                  this.setState({ layout: newLayout });
-                }}
+                onLayoutChange={this.onLayoutChanged}
               ></SampleFilter>
               {this.state.layout === "grid" ? (
                 <div className="sample-stack">
@@ -116,6 +126,15 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           error,
         });
         break;
+      case Commands.GetData:
+        const key = event.data.data.key;
+        const value = event.data.data.value;
+        if (key === GlobalKey.SampleGalleryLayout) {
+          this.setState({
+            layout: value,
+          });
+        }
+        break;
       default:
         break;
     }
@@ -125,5 +144,26 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     this.setState({
       selectedSampleId: id,
     });
+  };
+
+  private onLayoutChanged = (newLayout: "grid" | "list") => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.SearchSample,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.Layout]: newLayout,
+        },
+      },
+    });
+    vscode.postMessage({
+      command: Commands.StoreData,
+      data: {
+        key: GlobalKey.SampleGalleryLayout,
+        value: newLayout,
+      },
+    });
+    this.setState({ layout: newLayout });
   };
 }

@@ -17,7 +17,6 @@ import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/t
 
 import {
   AadAppTemplateCodeLensProvider,
-  AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   CopilotPluginCodeLensProvider,
   ManifestTemplateCodeLensProvider,
@@ -703,14 +702,6 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: "**/.env.*",
   };
 
-  const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
-  const adaptiveCardFilePattern = `**/*.json`;
-  const adaptiveCardFileSelector = {
-    language: "json",
-    scheme: "file",
-    pattern: adaptiveCardFilePattern,
-  };
-
   const projectSettingsCodeLensProvider = new ProjectSettingsCodeLensProvider();
   const projectSettingsSelector = {
     language: "json",
@@ -759,12 +750,6 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(envDataSelector, codelensProvider)
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      adaptiveCardFileSelector,
-      adaptiveCardCodeLensProvider
-    )
   );
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(

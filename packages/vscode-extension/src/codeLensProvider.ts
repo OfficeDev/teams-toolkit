@@ -147,6 +147,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
   }
 }
 
+// Only used to detect adaptive cards in project. Codelens for ac is not used.
 export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
   private static SEARCH_TERM = "adaptivecards.io/schemas/adaptive-card.json";
 

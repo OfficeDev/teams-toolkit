@@ -147,7 +147,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates-0.0.0-beta"
-          artifacts: ./templates/build/*.zip
+          artifacts: ${{ github.workspace }}/templates/build/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -166,7 +166,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ./templates/build/*.zip
+          artifacts: ${{ github.workspace }}/templates/build/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -174,7 +174,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.10.0
         with:
-          artifacts: ./templates/build/*.zip
+          artifacts: ${{ github.workspace }}/templates/build/*.zip
           name: "Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}

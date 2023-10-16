@@ -22,45 +22,23 @@ const templateConfigFile = fse.readJsonSync(templateConfig);
 console.log(
   `================== template version in fx-core configurate as ${templateConfigFile.version} ==================`
 );
-const result = semver.minVersion(templateVersion);
 if (!semver.prerelease(templateVersion)) {
   if (!semver.intersects(templateConfigFile.version, templateVersion)) {
+    const parsedTemplateVersion = semver.parse(templateVersion);
+    const templateVersionRange = `~${parsedTemplateVersion.major}.${parsedTemplateVersion.minor}`;
     console.log(
-      "================== template config version is not match with template latest release version, need bump up config version ^${templateVersion} =================="
+      `================== template config version is not match with template latest release version, need bump up config version ${templateVersionRange} ==================`
     );
-    templateConfigFile.version = `${result.major}.${result.minor}.x`;
+    templateConfigFile.version = templateVersionRange;
   }
   templateConfigFile.useLocalTemplate = false;
-  templateConfigFile.tagPrefix = "templates@";
-  fse.writeFileSync(
-    templateConfig,
-    JSON.stringify(templateConfigFile, null, 4)
-  );
 } else if (templateVersion.includes("rc")) {
   console.log("sync up template in fx-core as 0.0.0-rc");
   templateConfigFile.version = "0.0.0-rc";
   templateConfigFile.useLocalTemplate = false;
-  templateConfigFile.tagPrefix = "templates@";
-  fse.writeFileSync(
-    templateConfig,
-    JSON.stringify(templateConfigFile, null, 4)
-  );
-} else if (templateVersion.includes("alpha")) {
-  console.log("sync up template in fx-core as 0.0.0-alpha");
-  templateConfigFile.version = "0.0.0-alpha";
+} else {
+  console.log("configure fx-core useLocalTemplate as true");
   templateConfigFile.useLocalTemplate = true;
-  templateConfigFile.tagPrefix = "templates-";
-  fse.writeFileSync(
-    templateConfig,
-    JSON.stringify(templateConfigFile, null, 4)
-  );
-} else if (templateVersion.includes("beta")) {
-  console.log("sync up template in fx-core as 0.0.0-beta");
-  templateConfigFile.version = "0.0.0-beta";
-  templateConfigFile.useLocalTemplate = true;
-  templateConfigFile.tagPrefix = "templates-";
-  fse.writeFileSync(
-    templateConfig,
-    JSON.stringify(templateConfigFile, null, 4)
-  );
 }
+
+fse.writeFileSync(templateConfig, JSON.stringify(templateConfigFile, null, 4));

@@ -132,25 +132,6 @@ jobs:
               git push -d origin $TEMPLATE_VERSION
           fi
 
-      - name: update templates beta tag
-        uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
-        with:
-          tag_name: "templates-0.0.0-beta"
-        env:
-          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
-
-      - name: release templates' beta version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          token: ${{ secrets.CD_PAT }}
-          prerelease: true
-          tag: "templates-0.0.0-beta"
-          artifacts: ${{ github.workspace }}/templates/build/*.zip
-          allowUpdates: true
-          removeArtifacts: true
-
       - name: update template rc tag
         uses: richardsimko/update-tag@v1
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}

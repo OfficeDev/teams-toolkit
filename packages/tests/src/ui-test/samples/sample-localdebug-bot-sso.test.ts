@@ -9,11 +9,13 @@ import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { validateBot } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
 
 class BotSSOTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
     return await validateBot(page, {
       botCommand: "show",
+      expected: Env.displayName,
     });
   }
 }

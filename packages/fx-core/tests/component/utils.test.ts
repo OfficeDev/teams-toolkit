@@ -129,12 +129,12 @@ describe("expandEnvironmentVariable", () => {
   it("should replace for none-empty app name suffix", () => {
     const template = "myapp${{ APP_NAME_SUFFIX }}";
     envRestore = mockedEnv({
-      APP_NAME_SUFFIX: "",
+      APP_NAME_SUFFIX: "abc",
     });
     const result = expandEnvironmentVariable(template);
-    expect(result).to.equal("myapp");
+    expect(result).to.equal("myappabc");
   });
-  it("resolveString", () => {
+  it("resolveString for empty APP_NAME_SUFFIX", () => {
     const template = "myapp${{ APP_NAME_SUFFIX }}";
     envRestore = mockedEnv({
       APP_NAME_SUFFIX: "",
@@ -143,6 +143,16 @@ describe("expandEnvironmentVariable", () => {
     const unresolved = [];
     const result = resolveString(template, resolved, unresolved);
     expect(result).to.equal("myapp");
+  });
+  it("resolveString for none empty APP_NAME_SUFFIX", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "abc",
+    });
+    const resolved = [];
+    const unresolved = [];
+    const result = resolveString(template, resolved, unresolved);
+    expect(result).to.equal("myappabc");
   });
 });
 

@@ -126,7 +126,14 @@ describe("expandEnvironmentVariable", () => {
     const result = expandEnvironmentVariable(template);
     expect(result).to.equal("myapp");
   });
-
+  it("should replace for none-empty app name suffix", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "",
+    });
+    const result = expandEnvironmentVariable(template);
+    expect(result).to.equal("myapp");
+  });
   it("resolveString", () => {
     const template = "myapp${{ APP_NAME_SUFFIX }}";
     envRestore = mockedEnv({

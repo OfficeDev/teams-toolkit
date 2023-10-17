@@ -781,6 +781,19 @@ describe("CLI commands", () => {
       const res = await teamsappUpdateCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
+    it("update conflict", async () => {
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "updateTeamsAppCLIV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...teamsappUpdateCommand, fullName: "teamsapp update" },
+        optionValues: { "manifest-file": "manifest.json", "package-file": "package.zip" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await teamsappUpdateCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
     it("package", async () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "packageTeamsAppCLIV3").resolves(ok(undefined));
@@ -807,6 +820,19 @@ describe("CLI commands", () => {
       const res = await teamsappValidateCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
+    it("validate conflict", async () => {
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "validateTeamsAppCLIV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...teamsappValidateCommand, fullName: "teamsapp validate" },
+        optionValues: { "manifest-file": "manifest.json", "package-file": "package.zip" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await teamsappValidateCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
     it("publish", async () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "publishTeamsAppCLIV3").resolves(ok(undefined));
@@ -819,6 +845,19 @@ describe("CLI commands", () => {
       };
       const res = await teamsappPublishCommand.handler!(ctx);
       assert.isTrue(res.isOk());
+    });
+    it("publish conflict", async () => {
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "publishTeamsAppCLIV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...teamsappPublishCommand, fullName: "teamsapp publish" },
+        optionValues: { "manifest-file": "manifest.json", "package-file": "package.zip" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await teamsappPublishCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
     });
   });
 });

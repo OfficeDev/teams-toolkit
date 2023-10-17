@@ -42,7 +42,7 @@ import M365TokenInstance from "../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { openAccountHelpHandler, tools } from "../handlers";
+import { checkCopilotCallback, openAccountHelpHandler, tools } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -578,6 +578,7 @@ function checkM365AccountCopilot(
         if (accountResult.isErr()) {
           result = ResultStatus.warn;
           error = accountResult.error;
+          await checkCopilotCallback();
         } else {
           loginHint = accountResult.value.loginHint;
         }

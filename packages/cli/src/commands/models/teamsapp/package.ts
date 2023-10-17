@@ -13,7 +13,7 @@ import {
 } from "../../common";
 
 export const teamsappPackageCommand: CLICommand = {
-  name: "packagev3",
+  name: "package",
   description: "Build your Microsoft Teams app into a package for publishing.",
   options: [
     TeamsAppManifestFileOption,

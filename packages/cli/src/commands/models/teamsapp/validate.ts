@@ -15,7 +15,7 @@ import {
 import { validateArgumentConflict } from "./update";
 
 export const teamsappValidateCommand: CLICommand = {
-  name: "validatev3",
+  name: "validate",
   description: "Validate the Microsoft Teams app using manifest schema or validation rules.",
   options: [
     TeamsAppManifestFileOption,

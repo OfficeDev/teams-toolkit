@@ -16,7 +16,7 @@ import {
 import { validateArgumentConflict } from "./update";
 
 export const teamsappPublishCommand: CLICommand = {
-  name: "publishv3",
+  name: "publish",
   description: strings.command.publish.description,
   options: [
     TeamsAppManifestFileOption,

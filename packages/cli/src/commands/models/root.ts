@@ -48,13 +48,9 @@ export const rootCommand: CLICommand = {
     addCommand,
     provisionCommand,
     deployCommand,
-    packageCommand,
-    validateCommand,
-    publishCommand,
     previewCommand,
     envCommand,
     permissionCommand,
-    updateCommand,
     upgradeCommand,
     m365Command,
     listCommand,
@@ -66,7 +62,7 @@ export const rootCommand: CLICommand = {
           teamsappPackageCommand,
           teamsappPublishCommand,
         ]
-      : []),
+      : [packageCommand, updateCommand, validateCommand, publishCommand]),
   ],
   sortCommands: true,
   options: [

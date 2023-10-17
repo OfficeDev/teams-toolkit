@@ -15,7 +15,7 @@ import {
 } from "../../common";
 
 export const teamsappUpdateCommand: CLICommand = {
-  name: "updatev3",
+  name: "update",
   description: "Update the Microsoft Teams App manifest to Teams Developer Portal.",
   options: [
     TeamsAppManifestFileOption,

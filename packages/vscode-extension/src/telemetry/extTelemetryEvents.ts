@@ -192,6 +192,10 @@ export enum TelemetryEvent {
   ClickLocalPreview = "click-local-preview",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
+  AdaptiveCardPreviewerInstall = "acp-install",
+  AdaptiveCardPreviewerInstallConfirm = "acp-install-confirm",
+  AdaptiveCardPreviewerInstallCancel = "acp-install-cancel",
+
   PreviewManifestFile = "preview-manifest",
   PreviewAadManifestFile = "preview-aad-manifest",
 

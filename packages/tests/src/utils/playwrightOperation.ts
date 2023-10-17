@@ -1951,3 +1951,28 @@ export async function validateCreatedCard(page: Page) {
     throw error;
   }
 }
+
+export async function validateUnfurlCard(page: Page) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    console.log("start to validate unfurl an adaptive card");
+    const unfurlurl = "https://www.botframework.com/";
+    await frame?.press("div.ui-box input.ui-box", "Escape");
+    const msgTxtbox = await frame?.waitForSelector("div[data-tid='ckeditor']");
+    await msgTxtbox?.focus();
+    await msgTxtbox?.fill(unfurlurl);
+    await msgTxtbox?.press("Space");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await frame?.waitForSelector('p:has-text("Link Unfurling card")');
+    console.log("verify unfurl card successfully!");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

@@ -770,6 +770,18 @@ export async function createNewProject(
       await input.confirm();
       break;
     }
+    case "linkunfurl": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Link Unfurling");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
     default:
       break;
   }

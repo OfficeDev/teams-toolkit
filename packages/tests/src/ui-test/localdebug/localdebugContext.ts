@@ -28,7 +28,8 @@ export type LocalDebugTestName =
   | "workflow"
   | "dashboard"
   | "timeNoti" // timer functions notification bot
-  | "ftNoti"; // http and timer trigger notification bot
+  | "ftNoti" // http and timer trigger notification bot
+  | "linkunfurl";
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
@@ -200,6 +201,12 @@ export class LocalDebugTestContext extends TestContext {
         await execCommand(
           this.testRootFolder,
           `teamsfx new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-and-timer-functions --programming-language ${this.lang}`
+        );
+        break;
+      case "linkunfurl":
+        await execCommand(
+          this.testRootFolder,
+          `teamsfx new --app-name ${this.appName} --interactive false --capability link-unfurling  --programming-language ${this.lang}`
         );
     }
     if (this.needMigrate) {

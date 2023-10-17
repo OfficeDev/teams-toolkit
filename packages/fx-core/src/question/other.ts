@@ -30,9 +30,11 @@ import {
   SPFxWebpartNameQuestion,
   apiOperationQuestion,
   apiSpecLocationQuestion,
+  SPFxFrameworkQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
 import { environmentNameManager } from "../core/environmentName";
+import { Constants } from "../component/driver/add/utility/constants";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -195,6 +197,20 @@ function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
   );
 }
 
+async function spfxFrameworkExist(inputs: Inputs): Promise<boolean> {
+  const yorcPath = path.join(inputs[QuestionNames.SPFxFolder], Constants.YO_RC_FILE);
+  if (!(await fs.pathExists(yorcPath))) {
+    return false;
+  }
+
+  const yorcJson = (await fs.readJson(yorcPath)) as Record<string, any>;
+  if (!yorcJson["@microsoft/generator-sharepoint"]) {
+    return false;
+  }
+
+  return yorcJson["@microsoft/generator-sharepoint"]["template"];
+}
+
 export function addWebPartQuestionNode(): IQTreeNode {
   return {
     data: SPFxImportFolderQuestion(true),
@@ -202,6 +218,12 @@ export function addWebPartQuestionNode(): IQTreeNode {
       {
         data: SPFxWebpartNameQuestion(),
         children: [
+          {
+            data: SPFxFrameworkQuestion(),
+            condition: async (inputs: Inputs) => {
+              return !(await spfxFrameworkExist(inputs));
+            },
+          },
           {
             data: selectTeamsAppManifestQuestion(),
             children: [

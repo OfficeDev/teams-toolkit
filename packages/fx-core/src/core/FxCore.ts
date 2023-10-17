@@ -313,6 +313,7 @@ export class FxCore {
       localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
       spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
       webpartName: inputs[SPFxQuestionNames.WebPartName],
+      framework: inputs[QuestionNames.SPFxFramework],
       spfxPackage: SPFxVersionOptionIds.installLocally,
     };
     const Context: DriverContext = createDriverContext(inputs);

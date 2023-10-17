@@ -4,6 +4,7 @@ import {
   CLICommand,
   CLICommandOption,
   CLIContext,
+  OptionItem,
   Platform,
   err,
   ok,
@@ -13,6 +14,7 @@ import {
   CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
+  MeArchitectureOptions,
   QuestionNames,
   isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
@@ -28,17 +30,21 @@ import { createSampleCommand } from "./createSample";
 function adjustOptions(options: CLICommandOption[]) {
   if (!isApiCopilotPluginEnabled()) {
     //skip copilot plugin options if API copilot plugin is not enabled
-    const copilotPluginQuestionNames = [
-      QuestionNames.ApiSpecLocation.toString(),
-      QuestionNames.OpenAIPluginManifest.toString(),
-      QuestionNames.ApiOperation.toString(),
-    ];
+    const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
     options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
   }
   for (const option of options) {
     if (option.type === "string" && option.name === CliQuestionName.Capability) {
       // use dynamic options for capability question
       option.choices = CapabilityOptions.all({ platform: Platform.CLI }).map((o) => o.id);
+      break;
+    }
+  }
+
+  for (const option of options) {
+    if (option.type === "string" && option.name === QuestionNames.MeArchitectureType.toString()) {
+      // use dynamic options for ME architecture question
+      option.choices = MeArchitectureOptions.all().map((o: OptionItem) => o.id);
       break;
     }
   }

@@ -7,7 +7,11 @@ import fs from "fs-extra";
 import "mocha";
 import * as sinon from "sinon";
 import { teamsappMgr } from "../../../../src/component/driver/teamsApp/teamsappMgr";
-import { FileNotFoundError, UserCancelError } from "../../../../src/error";
+import {
+  FileNotFoundError,
+  MissingRequiredInputError,
+  UserCancelError,
+} from "../../../../src/error";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { pathUtils } from "../../../../src/component/utils/pathUtils";
 
@@ -145,6 +149,55 @@ describe("TeamsAppMgr", async () => {
         env: "dev",
       });
       chai.assert(result.isOk() && result.value === "dev");
+    });
+
+    it("has env input, but not target env file not found", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("abc"));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+        env: "dev2",
+      });
+      chai.assert(result.isErr() && result.error instanceof FileNotFoundError);
+    });
+
+    it("no env input, more than one env available", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "dev2"]));
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("abc"));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+      });
+      chai.assert(result.isErr() && result.error instanceof MissingRequiredInputError);
+    });
+
+    it("no env input, only one env available, just use it", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("abc"));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+      });
+      chai.assert(result.isOk() && result.value === "dev");
+    });
+
+    it("no env input, no env file found in default location, do nothing", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(ok([]));
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("abc"));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+      });
+      chai.assert(result.isOk() && result.value === undefined);
     });
   });
 });

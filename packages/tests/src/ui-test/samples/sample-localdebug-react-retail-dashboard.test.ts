@@ -36,7 +36,7 @@ class RetailDashboardTestCase extends CaseFactory {
 
 new RetailDashboardTestCase(
   TemplateProject.RetailDashboard,
-  25051148, 
+  25051148,
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.GulpServe],

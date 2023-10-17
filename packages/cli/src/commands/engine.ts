@@ -22,6 +22,7 @@ import {
   VersionState,
   assembleError,
   getHashedEnv,
+  isCliV3Enabled,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
 import { cloneDeep, pick } from "lodash";
@@ -206,7 +207,12 @@ class CLIEngine {
     // 6. version check
     const inputs = getSystemInputs(context.optionValues.projectPath as string);
     inputs.ignoreEnvInfo = true;
-    const skipCommands = ["new", "sample", "upgrade", "update_v3"];
+    const skipCommands = [
+      "new",
+      "sample",
+      "upgrade",
+      ...(isCliV3Enabled() ? ["update", "package", "publish", "validate"] : []),
+    ];
     if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
       const core = getFxCore();
       const res = await core.projectVersionCheck(inputs);
@@ -424,11 +430,12 @@ class CLIEngine {
       for (const option of command.options) {
         if (option.required && option.value === undefined) {
           if (option.default !== undefined) {
-            const value = this.resolveDefaultValue(context, option.default);
-            option.value = value;
-            context.optionValues[this.optionInputKey(option)] = value;
+            option.value = option.default;
+            context.optionValues[this.optionInputKey(option)] = option.default;
             this.debugLogs.push(
-              `set required option with default value, ${option.name}=${JSON.stringify(value)}`
+              `set required option with default value, ${option.name}=${JSON.stringify(
+                option.default
+              )}`
             );
           }
         }
@@ -439,11 +446,12 @@ class CLIEngine {
         const argument = command.arguments[i];
         if (argument.required && argument.value === undefined) {
           if (argument.default !== undefined) {
-            const value = this.resolveDefaultValue(context, argument.default);
-            argument.value = value;
-            context.argumentValues[i] = value;
+            argument.value = argument.default;
+            context.argumentValues[i] = argument.default as string;
             this.debugLogs.push(
-              `set required argument with default value, ${argument.name}=${JSON.stringify(value)}`
+              `set required argument with default value, ${argument.name}=${JSON.stringify(
+                argument.default
+              )}`
             );
           }
         }
@@ -518,30 +526,6 @@ class CLIEngine {
       context.optionValues.correlationId;
 
     return ok(undefined);
-  }
-
-  /**
-   * resolve possible placeholders in default string value
-   */
-  resolveDefaultValue(context: CLIContext, origin: string | boolean | string[]) {
-    if (typeof origin !== "string") {
-      return origin;
-    }
-    const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
-    const placeholders = origin.match(placeholderRegex);
-    if (placeholders) {
-      for (const placeholder of placeholders) {
-        const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
-        const option = context.command.options?.find((o) => o.name === envName);
-        if (option) {
-          const envValue = `${option.value}`;
-          if (envValue !== undefined && envValue !== null) {
-            origin = origin.replace(placeholder, envValue);
-          }
-        }
-      }
-    }
-    return origin;
   }
 
   validateOptionsAndArguments(

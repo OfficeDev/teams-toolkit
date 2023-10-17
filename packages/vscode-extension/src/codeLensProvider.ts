@@ -147,36 +147,6 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
   }
 }
 
-// Only used to detect adaptive cards in project. Codelens for ac is not used.
-export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
-  private static SEARCH_TERM = "adaptivecards.io/schemas/adaptive-card.json";
-
-  public static async detectedAdaptiveCards(): Promise<boolean> {
-    const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/*.json`, "**/node_modules/**");
-    for (const file of files) {
-      const content = await fs.readFile(file.fsPath, "utf8");
-      if (content.includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  provideCodeLenses(document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (!document.getText().includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {
-      return [];
-    }
-    const codeLenses: vscode.CodeLens[] = [];
-    const topOfFile = new vscode.Range(0, 0, 0, 0);
-    const command = {
-      title: `👀${localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard")}`,
-      command: "fx-extension.OpenAdaptiveCardExt",
-      arguments: [TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(topOfFile, command));
-    return codeLenses;
-  }
-}
-
 export class ProjectSettingsCodeLensProvider implements vscode.CodeLensProvider {
   public provideCodeLenses(
     document: vscode.TextDocument

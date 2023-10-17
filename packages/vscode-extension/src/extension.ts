@@ -53,7 +53,12 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import { delay, isM365Project, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  delay,
+  hasAdaptiveCardInWorkspace,
+  isM365Project,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
@@ -962,7 +967,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
 }
 
 async function recommendACPExtension(): Promise<void> {
-  if (!handlers.acpInstalled() && (await handlers.hasAdaptiveCardInWorkspace())) {
+  if (!handlers.acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
     await handlers.installAdaptiveCardExt([TelemetryTriggerFrom.Auto]);
   }
 }

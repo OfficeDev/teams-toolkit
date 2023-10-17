@@ -187,12 +187,12 @@
             await _middleware.OnTurnAsync(mockContext.Object, (ctx) => Task.CompletedTask, CancellationToken.None);
 
             Assert.AreEqual(1, _storage.Items.Count);
-            var reference = _storage.Items.GetValueOrDefault($"_a_{conversationId}", null);
+            var reference = _storage.Items.GetValueOrDefault($"_a_{teamId}", null);
             Assert.IsNotNull(reference);
             Assert.AreEqual(activityId, reference.ActivityId);
             Assert.AreEqual("x", reference.ChannelId);
             Assert.AreEqual("a", reference.Conversation.TenantId);
-            Assert.AreEqual(conversationId, reference.Conversation.Id);
+            Assert.AreEqual(teamId, reference.Conversation.Id);
         }
 
         [TestMethod]

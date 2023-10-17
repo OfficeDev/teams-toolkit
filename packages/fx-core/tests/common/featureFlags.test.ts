@@ -36,4 +36,21 @@ describe("featureFlags", () => {
       chai.assert.isTrue(res);
     });
   });
+
+  describe("isCliV3Enabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_V3: "true" });
+      const res = isCliNewUxEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_V3: "false" });
+      const res = isCliNewUxEnabled();
+      chai.assert.isFalse(res);
+    });
+  });
 });

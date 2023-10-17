@@ -67,9 +67,10 @@ import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/Va
 import {
   packageTeamsApp,
   publishTeamsApp,
+  teamsappMgr,
   updateTeamsApp,
   validateTeamsApp,
-} from "../component/driver/teamsApp/teamsappCLI";
+} from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import {
   containsUnsupportedFeature,
@@ -443,7 +444,7 @@ export class FxCore {
     ErrorHandlerMW,
   ])
   async updateTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
-    const res = await updateTeamsApp(inputs);
+    const res = await teamsappMgr.updateTeamsApp(inputs);
     return res;
   }
   /******
@@ -454,7 +455,7 @@ export class FxCore {
     ErrorHandlerMW,
   ])
   async validateTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
-    const res = await validateTeamsApp(inputs);
+    const res = await teamsappMgr.validateTeamsApp(inputs);
     return res;
   }
   /******
@@ -465,7 +466,7 @@ export class FxCore {
     ErrorHandlerMW,
   ])
   async packageTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
-    const res = await packageTeamsApp(inputs);
+    const res = await teamsappMgr.packageTeamsApp(inputs);
     if (res.isErr()) {
       return err(res.error);
     }
@@ -479,7 +480,7 @@ export class FxCore {
     ErrorHandlerMW,
   ])
   async publishTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
-    const res = await publishTeamsApp(inputs);
+    const res = await teamsappMgr.publishTeamsApp(inputs);
     return res;
   }
 

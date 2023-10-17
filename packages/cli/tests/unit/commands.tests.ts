@@ -57,6 +57,10 @@ import { UserSettings } from "../../src/userSetttings";
 import * as utils from "../../src/utils";
 import { MissingRequiredOptionError } from "../../src/error";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { teamsappUpdateCommand } from "../../src/commands/models/teamsapp/update";
+import { teamsappPackageCommand } from "../../src/commands/models/teamsapp/package";
+import { teamsappValidateCommand } from "../../src/commands/models/teamsapp/validate";
+import { teamsappPublishCommand } from "../../src/commands/models/teamsapp/publish";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -753,6 +757,67 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
       const res = await m365UnacquireCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("v3 commands", async () => {
+    beforeEach(() => {
+      sandbox.stub(logger, "warning");
+    });
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("update", async () => {
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "updateTeamsAppCLIV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...teamsappUpdateCommand, fullName: "teamsapp update" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await teamsappUpdateCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("package", async () => {
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "packageTeamsAppCLIV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...teamsappPackageCommand, fullName: "teamsapp package" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await teamsappPackageCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("validate", async () => {
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "validateTeamsAppCLIV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...teamsappValidateCommand, fullName: "teamsapp validate" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await teamsappValidateCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("publish", async () => {
+      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
+      sandbox.stub(FxCore.prototype, "publishTeamsAppCLIV3").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...teamsappPublishCommand, fullName: "teamsapp publish" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await teamsappPublishCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

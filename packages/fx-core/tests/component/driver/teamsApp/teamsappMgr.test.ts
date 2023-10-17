@@ -8,6 +8,8 @@ import "mocha";
 import * as sinon from "sinon";
 import { teamsappMgr } from "../../../../src/component/driver/teamsApp/teamsappMgr";
 import { FileNotFoundError, UserCancelError } from "../../../../src/error";
+import { envUtil } from "../../../../src/component/utils/envUtil";
+import { pathUtils } from "../../../../src/component/utils/pathUtils";
 
 describe("TeamsAppMgr", async () => {
   const sandbox = sinon.createSandbox();
@@ -54,11 +56,95 @@ describe("TeamsAppMgr", async () => {
       );
       chai.assert(result.isOk());
     });
-    it("sucess", async () => {
+    it("fail", async () => {
       const result = await teamsappMgr.readManifestFromAppPackage(
         "./tests/component/driver/teamsApp/fail.zip"
       );
       chai.assert(result.isErr());
+    });
+  });
+
+  describe("checkAndTryToLoadEnv", async () => {
+    it("no need to resolve", async () => {
+      sandbox.stub(fs, "readFile").resolves("abc" as any);
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+      });
+      chai.assert(result.isOk() && result.value === undefined);
+    });
+
+    it("with env-file", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "loadEnvFile").resolves(ok({}));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+        "env-file": "xxx",
+      });
+      chai.assert(result.isOk() && result.value === undefined);
+    });
+
+    it("with env-file but load fail", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "loadEnvFile").resolves(err(new UserCancelError()));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+        "env-file": "xxx",
+      });
+      chai.assert(result.isErr() && result.error instanceof UserCancelError);
+    });
+
+    it("no env-file and list default envs fail", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(err(new UserCancelError()));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+      });
+      chai.assert(result.isErr() && result.error instanceof UserCancelError);
+    });
+
+    it("no env-file and get default env folder fail", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(err(new UserCancelError()));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+      });
+      chai.assert(result.isErr() && result.error instanceof UserCancelError);
+    });
+
+    it("no env-file and get default env folder returns undefined", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(undefined));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+      });
+      chai.assert(result.isOk() && result.value === undefined);
+    });
+
+    it("has env input, success load target env file", async () => {
+      sandbox.stub(fs, "readFile").resolves("${{APP_NAME}}" as any);
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("abc"));
+      const result = await teamsappMgr.checkAndTryToLoadEnv({
+        projectPath: "xxx",
+        platform: Platform.CLI,
+        "manifest-file": "xxx",
+        env: "dev",
+      });
+      chai.assert(result.isOk() && result.value === "dev");
     });
   });
 });

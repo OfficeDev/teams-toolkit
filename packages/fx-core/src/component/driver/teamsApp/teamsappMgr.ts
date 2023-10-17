@@ -87,43 +87,47 @@ class TeamsAppMgr {
     if (unresolved.length > 0) {
       if (!inputs["env-file"]) {
         const envRes = await envUtil.listEnv(inputs.projectPath);
-        if (envRes.isOk()) {
-          const envs = envRes.value;
-          const envFolderPathRes = await pathUtils.getEnvFolderPath(inputs.projectPath);
-          if (envFolderPathRes.isOk() && envFolderPathRes.value) {
-            if (inputs.env) {
-              // env provided
-              if (envs.includes(inputs.env)) {
-                //env provided and found
-                inputs["env-file"] = path.join(envFolderPathRes.value, `.env.${inputs.env}`);
-                env = inputs.env;
-              } else {
-                // env provided but not found
-                return err(
-                  new FileNotFoundError(
-                    "updateTeamsApp",
-                    path.join(envFolderPathRes.value, `.env.${inputs.env}`)
-                  )
-                );
-              }
-            } else {
-              //env not provided
-              if (envs.length > 1) {
-                //need provide
-                return err(new MissingRequiredInputError("env", "updateTeamsApp"));
-              } else if (envs.length === 1) {
-                // no need provide
-                env = envs[0];
-                inputs["env-file"] = path.join(envFolderPathRes.value, `.env.${env}`);
-              } else {
-                // no env file found
-              }
-            }
+        if (envRes.isErr()) {
+          return err(envRes.error);
+        }
+        const envs = envRes.value;
+        const envFolderPathRes = await pathUtils.getEnvFolderPath(inputs.projectPath);
+        if (envFolderPathRes.isErr()) {
+          return err(envFolderPathRes.error);
+        }
+        const envFolder = envFolderPathRes.value;
+        if (!envFolder) return ok(env);
+        if (inputs.env) {
+          // env provided
+          if (envs.includes(inputs.env)) {
+            //env provided and found
+            inputs["env-file"] = path.join(envFolder, `.env.${inputs.env}`);
+            env = inputs.env;
+          } else {
+            // env provided but not found
+            return err(
+              new FileNotFoundError("updateTeamsApp", path.join(envFolder, `.env.${inputs.env}`))
+            );
+          }
+        } else {
+          //env not provided
+          if (envs.length > 1) {
+            //need provide
+            return err(new MissingRequiredInputError("env", "updateTeamsApp"));
+          } else if (envs.length === 1) {
+            // no need provide
+            env = envs[0];
+            inputs["env-file"] = path.join(envFolder, `.env.${env}`);
+          } else {
+            // no env file found
           }
         }
       }
       if (inputs["env-file"]) {
-        await envUtil.loadEnvFile(inputs["env-file"]);
+        const res = await envUtil.loadEnvFile(inputs["env-file"]);
+        if (res.isErr()) {
+          return err(res.error);
+        }
       }
     }
     return ok(env);

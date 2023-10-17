@@ -17,8 +17,10 @@ import * as util from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { AppStudioScopes } from "../../../common/tools";
 import { FileNotFoundError, MissingRequiredInputError } from "../../../error/common";
+import { resolveString } from "../../configManager/lifecycle";
 import { createDriverContext } from "../../utils";
 import { envUtil } from "../../utils/envUtil";
+import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
 import { Constants } from "./constants";
@@ -75,6 +77,61 @@ export async function readManifestFromAppPackage(
   );
 }
 
+export async function checkAndTryToLoadEnv(
+  inputs: TeamsAppInputs
+): Promise<Result<string | undefined, FxError>> {
+  //check placeholders in manifest file, if there are unresolved placeholders in manifest file, try to load env file
+  const manifestFile = inputs["manifest-file"] as string;
+  const manifestString = await fs.readFile(manifestFile, { encoding: "utf-8" });
+  const unresolved: string[] = [];
+  const resovled: string[] = [];
+  resolveString(manifestString, resovled, unresolved);
+  let env: string | undefined = undefined;
+  if (unresolved.length > 0) {
+    if (!inputs["env-file"]) {
+      const envRes = await envUtil.listEnv(inputs.projectPath);
+      if (envRes.isOk()) {
+        const envs = envRes.value;
+        const envFolderPathRes = await pathUtils.getEnvFolderPath(inputs.projectPath);
+        if (envFolderPathRes.isOk() && envFolderPathRes.value) {
+          if (inputs.env) {
+            // env provided
+            if (envs.includes(inputs.env)) {
+              //env provided and found
+              inputs["env-file"] = path.join(envFolderPathRes.value, `.env.${inputs.env}`);
+              env = inputs.env;
+            } else {
+              // env provided but not found
+              return err(
+                new FileNotFoundError(
+                  "updateTeamsApp",
+                  path.join(envFolderPathRes.value, `.env.${inputs.env}`)
+                )
+              );
+            }
+          } else {
+            //env not provided
+            if (envs.length > 1) {
+              //need provide
+              return err(new MissingRequiredInputError("env", "updateTeamsApp"));
+            } else if (envs.length === 1) {
+              // no need provide
+              env = envs[0];
+              inputs["env-file"] = path.join(envFolderPathRes.value, `.env.${env}`);
+            } else {
+              // no env file found
+            }
+          }
+        }
+      }
+    }
+    if (inputs["env-file"]) {
+      await envUtil.loadEnvFile(inputs["env-file"]);
+    }
+  }
+  return ok(env);
+}
+
 export async function packageTeamsApp(
   inputs: TeamsAppInputs
 ): Promise<Result<CreateAppPackageArgs, FxError>> {
@@ -89,17 +146,28 @@ export async function packageTeamsApp(
       return err(new FileNotFoundError("updateTeamsApp", inputs["manifest-file"]));
     }
   }
+
+  const loadEnvRes = await checkAndTryToLoadEnv(inputs);
+  if (loadEnvRes.isErr()) return err(loadEnvRes.error);
+  const env = loadEnvRes.value;
+
   // reach here means manifes-file is provided and exists
   inputs["output-package-file"] =
     inputs["output-package-file"] ||
-    path.join(inputs.projectPath, "appPackage", "build", "appPackage.zip");
+    path.join(
+      inputs.projectPath,
+      "appPackage",
+      "build",
+      env ? `appPackage.${env}.zip` : "appPackage.zip"
+    );
   inputs["output-manifest-file"] =
     inputs["output-manifest-file"] ||
-    path.join(inputs.projectPath, "appPackage", "build", "manifest.json");
-
-  if (inputs["env-file"]) {
-    await envUtil.loadEnvFile(inputs["env-file"]);
-  }
+    path.join(
+      inputs.projectPath,
+      "appPackage",
+      "build",
+      env ? `manifest.${env}.json` : "manifest.json"
+    );
 
   const packageArgs: CreateAppPackageArgs = {
     manifestPath: inputs["manifest-file"],
@@ -123,6 +191,16 @@ export async function validateTeamsApp(
   inputs: TeamsAppInputs
 ): Promise<Result<undefined, FxError>> {
   const context: DriverContext = createDriverContext(inputs);
+  if (!inputs["manifest-file"] && !inputs["package-file"]) {
+    // neither manifest-file nore package-file provided, use default manifest file
+    const defaultManifestPath = manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
+    if (!(await fs.pathExists(defaultManifestPath))) {
+      return err(new MissingRequiredInputError("package-file/manifest-file", "updateTeamsApp"));
+    }
+    inputs["manifest-file"] = defaultManifestPath;
+    const loadEnvRes = await checkAndTryToLoadEnv(inputs);
+    if (loadEnvRes.isErr()) return err(loadEnvRes.error);
+  }
   if (inputs["manifest-file"]) {
     if (inputs["env-file"]) {
       await envUtil.loadEnvFile(inputs["env-file"]);
@@ -214,7 +292,7 @@ export async function updateTeamsApp(inputs: TeamsAppInputs): Promise<Result<und
   return ok(undefined);
 }
 
-async function publishTeamsApp(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+export async function publishTeamsApp(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
   // 1. zip package if necessary
   const packageRes = await ensureAppPackageFile(inputs);
   if (packageRes.isErr()) {

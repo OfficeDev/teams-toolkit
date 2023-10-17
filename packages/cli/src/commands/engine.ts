@@ -424,12 +424,11 @@ class CLIEngine {
       for (const option of command.options) {
         if (option.required && option.value === undefined) {
           if (option.default !== undefined) {
-            option.value = option.default;
-            context.optionValues[this.optionInputKey(option)] = option.default;
+            const value = this.resolveDefaultValue(context, option.default);
+            option.value = value;
+            context.optionValues[this.optionInputKey(option)] = value;
             this.debugLogs.push(
-              `set required option with default value, ${option.name}=${JSON.stringify(
-                option.default
-              )}`
+              `set required option with default value, ${option.name}=${JSON.stringify(value)}`
             );
           }
         }
@@ -440,12 +439,11 @@ class CLIEngine {
         const argument = command.arguments[i];
         if (argument.required && argument.value === undefined) {
           if (argument.default !== undefined) {
-            argument.value = argument.default;
-            context.argumentValues[i] = argument.default as string;
+            const value = this.resolveDefaultValue(context, argument.default);
+            argument.value = value;
+            context.argumentValues[i] = value;
             this.debugLogs.push(
-              `set required argument with default value, ${argument.name}=${JSON.stringify(
-                argument.default
-              )}`
+              `set required argument with default value, ${argument.name}=${JSON.stringify(value)}`
             );
           }
         }
@@ -520,6 +518,30 @@ class CLIEngine {
       context.optionValues.correlationId;
 
     return ok(undefined);
+  }
+
+  /**
+   * resolve possible placeholders in default string value
+   */
+  resolveDefaultValue(context: CLIContext, origin: string | boolean | string[]) {
+    if (typeof origin !== "string") {
+      return origin;
+    }
+    const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
+    const placeholders = origin.match(placeholderRegex);
+    if (placeholders) {
+      for (const placeholder of placeholders) {
+        const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
+        const option = context.command.options?.find((o) => o.name === envName);
+        if (option) {
+          const envValue = `${option.value}`;
+          if (envValue !== undefined && envValue !== null) {
+            origin = origin.replace(placeholder, envValue);
+          }
+        }
+      }
+    }
+    return origin;
   }
 
   validateOptionsAndArguments(

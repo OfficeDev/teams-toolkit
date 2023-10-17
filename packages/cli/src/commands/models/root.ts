@@ -25,6 +25,7 @@ import { teamsappUpdateCommand } from "./teamsapp/update";
 import { teamsappValidateCommand } from "./teamsapp/validate";
 import { teamsappPackageCommand } from "./teamsapp/package";
 import { teamsappPublishCommand } from "./teamsapp/publish";
+import { isCliV3Enabled } from "@microsoft/teamsfx-core";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -58,10 +59,14 @@ export const rootCommand: CLICommand = {
     m365Command,
     listCommand,
     helpCommand,
-    teamsappUpdateCommand,
-    teamsappValidateCommand,
-    teamsappPackageCommand,
-    teamsappPublishCommand,
+    ...(isCliV3Enabled()
+      ? [
+          teamsappUpdateCommand,
+          teamsappValidateCommand,
+          teamsappPackageCommand,
+          teamsappPublishCommand,
+        ]
+      : []),
   ],
   sortCommands: true,
   options: [

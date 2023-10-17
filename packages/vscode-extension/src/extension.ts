@@ -17,7 +17,6 @@ import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/t
 
 import {
   AadAppTemplateCodeLensProvider,
-  AdaptiveCardCodeLensProvider,
   CryptoCodeLensProvider,
   CopilotPluginCodeLensProvider,
   ManifestTemplateCodeLensProvider,
@@ -54,7 +53,12 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import { delay, isM365Project, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  delay,
+  hasAdaptiveCardInWorkspace,
+  isM365Project,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
@@ -343,7 +347,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   registerInCommandController(
     context,
     "fx-extension.OpenAdaptiveCardExt",
-    handlers.openAdaptiveCardExt
+    handlers.installAdaptiveCardExt
   );
 
   registerInCommandController(
@@ -703,14 +707,6 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: "**/.env.*",
   };
 
-  const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
-  const adaptiveCardFilePattern = `**/*.json`;
-  const adaptiveCardFileSelector = {
-    language: "json",
-    scheme: "file",
-    pattern: adaptiveCardFilePattern,
-  };
-
   const projectSettingsCodeLensProvider = new ProjectSettingsCodeLensProvider();
   const projectSettingsSelector = {
     language: "json",
@@ -759,12 +755,6 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(envDataSelector, codelensProvider)
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      adaptiveCardFileSelector,
-      adaptiveCardCodeLensProvider
-    )
   );
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
@@ -911,6 +901,8 @@ async function runBackgroundAsyncTasks(
 
   const survey = ExtensionSurvey.getInstance();
   survey.activate();
+
+  await recommendACPExtension();
 }
 
 async function runTeamsFxBackgroundTasks() {
@@ -971,5 +963,11 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   if (isTeamsFxProject) {
     await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+  }
+}
+
+async function recommendACPExtension(): Promise<void> {
+  if (!handlers.acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
+    await handlers.installAdaptiveCardExt([TelemetryTriggerFrom.Auto]);
   }
 }

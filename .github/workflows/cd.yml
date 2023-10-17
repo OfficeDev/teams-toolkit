@@ -144,7 +144,7 @@ jobs:
           TEMPLATE_PATH: ${{ runner.temp }}/teamsfx_templates_v3
 
       - name: update templates beta tag
-        uses: richardsimko/update-tag@v1
+        uses: richardsimko/update-tag@v1.0.7
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event.inputs.preid == 'beta' }}
         with:
           tag_name: "templates-0.0.0-beta"
@@ -163,7 +163,7 @@ jobs:
           removeArtifacts: true
 
       - name: update template rc tag
-        uses: richardsimko/update-tag@v1
+        uses: richardsimko/update-tag@v1.0.7
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         with:
           tag_name: "templates@0.0.0-rc"

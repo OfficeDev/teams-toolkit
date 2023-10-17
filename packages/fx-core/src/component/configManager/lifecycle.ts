@@ -82,7 +82,7 @@ function resolve(
   }
 }
 
-function resolveString(
+export function resolveString(
   val: string,
   resolved: ResolvedPlaceholders,
   unresolved: UnresolvedPlaceholders
@@ -93,11 +93,20 @@ function resolveString(
   while (matches != null) {
     const envVar = matches[1];
     const envVal = process.env[envVar];
-    if (!envVal) {
-      unresolved.push(envVar);
+    if (envVar === "APP_NAME_SUFFIX") {
+      if (envVal === undefined || envVal === null) {
+        unresolved.push(envVar);
+      } else {
+        resolved.push(envVar);
+        newVal = newVal.replace(matches[0], envVal);
+      }
     } else {
-      resolved.push(envVar);
-      newVal = newVal.replace(matches[0], envVal);
+      if (!envVal) {
+        unresolved.push(envVar);
+      } else {
+        resolved.push(envVar);
+        newVal = newVal.replace(matches[0], envVal);
+      }
     }
     matches = placeHolderReg.exec(val);
   }

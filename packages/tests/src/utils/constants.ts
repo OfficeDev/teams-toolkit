@@ -296,7 +296,8 @@ export type OptionType =
   | "timenoti"
   | "functimernoti"
   | "addin"
-  | "importaddin";
+  | "importaddin"
+  | "linkunfurl";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

@@ -37,6 +37,7 @@ import {
 import { UserCancelError } from "../../../src/error/common";
 import { MockTools, randomAppName } from "../../core/utils";
 import { mockedResolveDriverInstances } from "./coordinator.test";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 const versionInfo: VersionInfo = {
   version: MetadataV3.projectVersion,
@@ -44,11 +45,13 @@ const versionInfo: VersionInfo = {
 };
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator provision", () => {
+  let envRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
   afterEach(() => {
     sandbox.restore();
+    envRestore?.();
   });
 
   beforeEach(() => {
@@ -292,6 +295,9 @@ describe("coordinator provision", () => {
     assert.isTrue(res.isOk());
   });
   it("provision happy path: validate multi-env", async () => {
+    envRestore = mockedEnv({
+      TEAMSFX_ENV: "dev",
+    });
     const mockProjectModel: ProjectModel = {
       version: "1.0.0",
       provision: {

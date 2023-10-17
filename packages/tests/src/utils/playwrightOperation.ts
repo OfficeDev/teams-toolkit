@@ -965,6 +965,11 @@ export async function validateBot(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          await popup
+            .click('button:has-text("Continue")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         await RetryHandler.retry(async () => {

@@ -381,8 +381,11 @@ export async function initTeamsPage(
             'button span:has-text("Set up a tab")'
           );
           await setUpBtn?.click();
-          console.log("click set up a tab button");
+          console.log("click 'set up a tab' button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
+          await frame?.waitForSelector('button span:has-text("Set up a tab")', {
+            state: "detached",
+          });
         } catch (error) {
           console.log(error);
           await page.screenshot({
@@ -396,6 +399,7 @@ export async function initTeamsPage(
       }
 
       {
+        console.log('[start] click "save" button');
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-iframe"
         );
@@ -415,6 +419,7 @@ export async function initTeamsPage(
           await page.waitForSelector(`button:has-text("Save")`, {
             state: "detached",
           });
+          console.log('[success] click "save" button');
         } catch (error) {
           console.log("No save button to click");
         }

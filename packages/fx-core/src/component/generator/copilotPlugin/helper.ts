@@ -561,21 +561,25 @@ export function formatValidationErrors(
   return errors.map((error) => {
     return {
       type: error.type,
-      content: formateValidationErrorContent(error, isCli),
+      content: formatValidationErrorContent(error, isCli),
       data: error.data,
     };
   });
 }
 
-function formateValidationErrorContent(error: ApiSpecErrorResult, isCli: boolean): string {
+function formatValidationErrorContent(error: ApiSpecErrorResult, isCli: boolean): string {
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {
         let content = error.content;
         if (error.content.startsWith("ResolverError: Error downloading")) {
+          content = error.content
+            .split("\n")
+            .map((o) => o.trim())
+            .join(". ");
           content =
-            error.content.replace(/\n/g, ".") +
-            "." +
+            content +
+            ". " +
             (isCli
               ? getLocalizedString("core.common.cli.ErrorFetchApiSpec")
               : getLocalizedString("core.common.ErrorFetchApiSpec"));

@@ -95,6 +95,7 @@ export class AadValidator {
       : undefined;
 
     let retries = 10;
+    console.log(`objectId: ${objectId}`);
     while (retries > 0) {
       try {
         retries = retries - 1;
@@ -104,12 +105,12 @@ export class AadValidator {
         const aadGetResponse = await axios.get(
           `${baseUrl}/applications/${objectId}`
         );
+        console.log(aadGetResponse);
         if (
           aadGetResponse &&
           aadGetResponse.data &&
           aadGetResponse.data["identifierUris"][0]
         ) {
-          console.log(aadGetResponse);
           return <IAADDefinition>aadGetResponse.data;
         }
       } catch (error) {

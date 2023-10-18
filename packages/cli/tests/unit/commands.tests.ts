@@ -685,9 +685,44 @@ describe("CLI commands", () => {
     beforeEach(() => {
       sandbox.stub(logger, "warning");
     });
-    it("success", async () => {
+    it("should success with zip package", async () => {
       sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "sideLoading").resolves();
+      const ctx: CLIContext = {
+        command: { ...m365SideloadingCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-id": "aaa", "file-path": "./" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365SideloadingCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("should success with xml", async () => {
+      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(PackageService.prototype, "sideLoadXmlManifest").resolves();
+      const ctx: CLIContext = {
+        command: { ...m365SideloadingCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-id": "aaa", "xml-path": "./" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365SideloadingCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("should fail if both zip and xml are provided", async () => {
+      const ctx: CLIContext = {
+        command: { ...m365SideloadingCommand, fullName: "teamsfx" },
+        optionValues: { "manifest-id": "aaa", "xml-path": "./", "file-path": "./" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365SideloadingCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
+    it("should fail if non of zip and xml are provided", async () => {
       const ctx: CLIContext = {
         command: { ...m365SideloadingCommand, fullName: "teamsfx" },
         optionValues: { "manifest-id": "aaa" },
@@ -696,7 +731,7 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
       const res = await m365SideloadingCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
+      assert.isTrue(res.isErr());
     });
   });
 

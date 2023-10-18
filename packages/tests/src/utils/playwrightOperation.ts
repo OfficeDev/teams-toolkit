@@ -372,8 +372,8 @@ export async function initTeamsPage(
               "div.ui-dropdown__toggle-indicator"
             );
             await searchBtn?.click();
-            await page.waitForTimeout(Timeout.shortTimeLoading); .
-            
+            await page.waitForTimeout(Timeout.shortTimeLoading);
+
             const items = await frame?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");

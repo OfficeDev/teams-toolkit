@@ -26,10 +26,12 @@ export interface CreateProjectInputs extends Inputs {
     | "sso-launch-page"
     | "dashboard-tab"
     | "tab-spfx"
+    | "api-me"
+    | "link-unfurling"
     | "search-app"
     | "collect-form-message-extension"
+    | "search-me-copilot"
     | "search-message-extension"
-    | "link-unfurling"
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
     | "copilot-plugin-openai-plugin";
@@ -50,15 +52,15 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
-  /** @description Architecture of Search Based Message Extension */
-  "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
+  /** @description Plugin for Microsoft Teams */
+  "api-me-type"?: "new-api" | "api-spec";
   /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */
   "openai-plugin-manifest"?: string;
   /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
-  /** @description Programming Language */
+  /** @description Programming Language. */
   "programming-language"?: "javascript" | "typescript" | "csharp";
   /** @description Application name */
   "app-name"?: string;

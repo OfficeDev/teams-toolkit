@@ -10,11 +10,3 @@ tsconfig.json
 .deployment
 node_modules/.bin
 node_modules/azure-functions-core-tools
-README.md
-tsconfig.json
-teamsapp.yml
-teamsapp.*.yml
-/env/
-/appPackage/
-/infra/
-/devTools/

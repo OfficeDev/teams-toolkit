@@ -61,7 +61,7 @@ export class OfficeAddinGenerator {
       context,
       destinationPath,
       templateName,
-      lang != "No Options" ? (lang === "TypeScript" ? "ts" : "js") : undefined
+      lang ? (lang === "TypeScript" ? "ts" : "js") : undefined
     );
     if (templateRes.isErr()) return err(templateRes.error);
 

@@ -8,10 +8,3 @@ test
 .deployment
 node_modules/.bin
 node_modules/azure-functions-core-tools
-README.md
-teamsapp.yml
-teamsapp.*.yml
-/env/
-/appPackage/
-/infra/
-/devTools/

@@ -5,10 +5,11 @@
 import * as util from "util";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
-import { SpecParserError } from "./specParserError";
 import converter from "swagger2openapi";
+import jsyaml from "js-yaml";
+import fs from "fs-extra";
+import path from "path";
 import {
-  AdaptiveCard,
   ErrorResult,
   ErrorType,
   GenerateResult,
@@ -18,13 +19,11 @@ import {
   WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
-import jsyaml from "js-yaml";
-import fs from "fs-extra";
+import { SpecParserError } from "./specParserError";
 import { specFilter } from "./specFilter";
 import { convertPathToCamelCase, isSupportedApi, validateServer } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
-import path from "path";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 
 /**

@@ -24,7 +24,6 @@ import { Generator } from "../generator";
 import path from "path";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
-import { SpecParser } from "../../../common/spec-parser/specParser";
 import { QuestionNames } from "../../../question/questionNames";
 import {
   convertSpecParserErrorToFxError,
@@ -34,17 +33,21 @@ import {
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
+  isYamlSpecFile,
 } from "./helper";
-import { ValidationStatus, WarningType } from "../../../common/spec-parser/interfaces";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
-import { isYamlSpecFile } from "../../../common/spec-parser/utils";
-import { ConstantString } from "../../../common/spec-parser/constants";
+import {
+  ConstantString,
+  SpecParserError,
+  SpecParser,
+  ValidationStatus,
+  WarningType,
+} from "../../../common/spec-parser";
 import * as util from "util";
-import { SpecParserError } from "../../../common/spec-parser/specParserError";
 import { isValidHttpUrl } from "../../../question/util";
 
 const fromApiSpeccomponentName = "copilot-plugin-existing-api";

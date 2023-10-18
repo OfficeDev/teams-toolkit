@@ -28,9 +28,13 @@ import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
-import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
-import { SpecParser } from "../../src/common/spec-parser/specParser";
-import { SpecParserError } from "../../src/common/spec-parser/specParserError";
+import {
+  ErrorType,
+  ValidationStatus,
+  WarningType,
+  SpecParser,
+  SpecParserError,
+} from "../../src/common/spec-parser";
 import {
   DriverDefinition,
   DriverInstance,

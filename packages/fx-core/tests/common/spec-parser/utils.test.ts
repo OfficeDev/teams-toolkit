@@ -2,9 +2,6 @@
 // Licensed under the MIT license.
 
 import { assert, expect } from "chai";
-import sinon from "sinon";
-import axios from "axios";
-import fs from "fs-extra";
 import os from "os";
 import * as util from "util";
 import "mocha";
@@ -17,7 +14,6 @@ import {
   getResponseJson,
   getUrlProtocol,
   isSupportedApi,
-  isYamlSpecFile,
   updateFirstLetter,
   validateServer,
   resolveServerUrl,
@@ -29,33 +25,6 @@ import { ErrorType } from "../../../src/common/spec-parser/interfaces";
 import { format } from "util";
 
 describe("utils", () => {
-  describe("isYamlSpecFile", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-    it("should return false for a valid JSON file", async () => {
-      const result = await isYamlSpecFile("test.json");
-      expect(result).to.be.false;
-    });
-
-    it("should return true for an yaml file", async () => {
-      const result = await isYamlSpecFile("test.yaml");
-      expect(result).to.be.true;
-    });
-
-    it("should handle local json files", async () => {
-      const readFileStub = sinon.stub(fs, "readFile").resolves('{"name": "test"}' as any);
-      const result = await isYamlSpecFile("path/to/localfile");
-      expect(result).to.be.false;
-    });
-
-    it("should handle remote files", async () => {
-      const axiosStub = sinon.stub(axios, "get").resolves({ data: '{"name": "test"}' });
-      const result = await isYamlSpecFile("http://example.com/remotefile");
-      expect(result).to.be.false;
-    });
-  });
-
   describe("updateFirstLetter", () => {
     it("should return the string with the first letter capitalized", () => {
       const result = updateFirstLetter("hello");

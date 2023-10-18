@@ -37,11 +37,13 @@ import {
   generateScaffoldingSummary,
   OpenAIPluginManifestHelper,
   isYamlSpecFile,
+  formatValidationErrors,
 } from "../../../src/component/generator/copilotPlugin/helper";
 import * as CopilotPluginHelper from "../../../src/component/generator/copilotPlugin/helper";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { ErrorResult } from "../../../src/common/spec-parser/interfaces";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -668,5 +670,70 @@ describe("isYamlSpecFile", () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.0" as any);
     const result = await isYamlSpecFile("path/to/localfile");
     expect(result).to.be.true;
+  });
+});
+
+describe("formatValidationErrors", () => {
+  it("format validation errors from spec parser", () => {
+    const errors: ErrorResult[] = [
+      {
+        type: ErrorType.SpecNotValid,
+        content: "test",
+      },
+      {
+        type: ErrorType.SpecNotValid,
+        content: "ResolverError: Error downloading",
+      },
+      {
+        type: ErrorType.RemoteRefNotSupported,
+        content: "test",
+      },
+      {
+        type: ErrorType.NoServerInformation,
+        content: "test",
+      },
+      {
+        type: ErrorType.UrlProtocolNotSupported,
+        content: "protocol",
+      },
+      {
+        type: ErrorType.RelativeServerUrlNotSupported,
+        content: "test",
+      },
+      {
+        type: ErrorType.NoSupportedApi,
+        content: "test",
+      },
+      {
+        type: ErrorType.NoExtraAPICanBeAdded,
+        content: "test",
+      },
+      {
+        type: ErrorType.ResolveServerUrlFailed,
+        content: "resolveurl",
+      },
+      {
+        type: ErrorType.Cancelled,
+        content: "test",
+      },
+      {
+        type: ErrorType.Unknown,
+        content: "unknown",
+      },
+    ];
+
+    const res = formatValidationErrors(errors, false);
+
+    expect(res[0].content).equals("test");
+    expect(res[1].content).includes(getLocalizedString("core.common.ErrorFetchApiSpec"));
+    expect(res[2].content).equals("test");
+    expect(res[3].content).equals(getLocalizedString("core.common.NoServerInformation"));
+    expect(res[4].content).equals("protocol");
+    expect(res[5].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
+    expect(res[6].content).equals(getLocalizedString("core.common.NoSupportedApi"));
+    expect(res[7].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));
+    expect(res[8].content).equals("resolveurl");
+    expect(res[9].content).equals(getLocalizedString("core.common.CancelledMessage"));
+    expect(res[10].content).equals("unknown");
   });
 });

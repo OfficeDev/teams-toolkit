@@ -1207,7 +1207,10 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
 
-          assert.equal(res, "error\nerror2");
+          assert.equal(
+            res,
+            `error\n${getLocalizedString("core.common.RelativeServerUrlNotSupported")}`
+          );
         });
 
         it("list operations without existing APIs", async () => {
@@ -1374,7 +1377,7 @@ describe("scaffold question", () => {
         it("invalid openAI plugin manifest spec -single error", async () => {
           const question = openAIPluginManifestLocationQuestion();
           const inputs: Inputs = {
-            platform: Platform.VSCode,
+            platform: Platform.CLI,
             [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
           };
           const manifest = {
@@ -1394,7 +1397,7 @@ describe("scaffold question", () => {
 
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
 
-          assert.equal(res, "error");
+          assert.equal(res, getLocalizedString("core.common.NoSupportedApi"));
         });
 
         it("invalid openAI plugin manifest spec - multiple errors", async () => {
@@ -1456,10 +1459,12 @@ describe("scaffold question", () => {
           });
 
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
-
-          console.log(res);
-
-          assert.equal(res, "error\nerror2");
+          assert.equal(
+            res,
+            `${getLocalizedString("core.common.NoSupportedApi")}\n${getLocalizedString(
+              "core.common.RelativeServerUrlNotSupported"
+            )}`
+          );
         });
 
         it("throw error if missing inputs", async () => {

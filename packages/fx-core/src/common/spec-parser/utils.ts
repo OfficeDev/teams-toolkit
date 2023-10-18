@@ -138,6 +138,68 @@ export function checkPostBody(
  * 5. response body should be “application/json” and not empty, and response code should be 20X
  * 6. only support request body with “application/json” content type
  */
+export function isSupportedApiForGraphConnectors(
+  method: string,
+  path: string,
+  spec: OpenAPIV3.Document
+): boolean {
+  const pathObj = spec.paths[path];
+  method = method.toLocaleLowerCase();
+  if (pathObj) {
+    if (method === ConstantString.GetMethod && pathObj[method] && !pathObj[method]?.security) {
+      const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
+      const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
+
+      const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
+      const requestJsonBody = requestBody?.content["application/json"];
+
+      const responseJson = getResponseJson(operationObject);
+      if (Object.keys(responseJson).length === 0) {
+        return false;
+      }
+
+      let requestBodyParamResult = {
+        requiredNum: 0,
+        optionalNum: 0,
+        isValid: true,
+      };
+
+      if (requestJsonBody) {
+        const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+        requestBodyParamResult = checkPostBody(requestBodySchema, requestBody.required);
+      }
+
+      if (!requestBodyParamResult.isValid) {
+        return false;
+      }
+
+      const paramResult = checkParameters(paramObject);
+
+      if (!paramResult.isValid) {
+        return false;
+      }
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Checks if the given API is supported.
+ * @param {string} method - The HTTP method of the API.
+ * @param {string} path - The path of the API.
+ * @param {OpenAPIV3.Document} spec - The OpenAPI specification document.
+ * @returns {boolean} - Returns true if the API is supported, false otherwise.
+ * @description The following APIs are supported:
+ * 1. only support Get/Post operation without auth property
+ * 2. parameter inside query or path only support string, number, boolean and integer
+ * 3. parameter inside post body only support string, number, boolean, integer and object
+ * 4. request body + required parameters <= 1
+ * 5. response body should be “application/json” and not empty, and response code should be 20X
+ * 6. only support request body with “application/json” content type
+ */
 export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Document): boolean {
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
@@ -321,7 +383,7 @@ export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
 
     for (const method in methods) {
       const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-      if (isSupportedApi(method, path, spec)) {
+      if (isSupportedApiForGraphConnectors(method, path, spec)) {
         if (operationObject?.servers && operationObject.servers.length >= 1) {
           hasOperationLevelServers = true;
           const serverErrors = checkServerUrl(operationObject.servers);

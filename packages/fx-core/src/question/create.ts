@@ -440,9 +440,9 @@ export class CapabilityOptions {
 
   static copilotPlugins(): OptionItem[] {
     return [
-      CapabilityOptions.copilotPluginNewApi(),
+      //CapabilityOptions.copilotPluginNewApi(),
       CapabilityOptions.copilotPluginApiSpec(),
-      CapabilityOptions.copilotPluginOpenAIPlugin(),
+      //CapabilityOptions.copilotPluginOpenAIPlugin(),
     ];
   }
 

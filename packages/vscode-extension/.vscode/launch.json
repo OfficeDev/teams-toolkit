@@ -16,7 +16,8 @@
         "${workspaceFolder}/../api/build/**/*.js"
       ],
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "TEAMSFX_DEBUG_TEMPLATE": "true", 
       },
       "preLaunchTask": "npm: build"
     },
@@ -31,7 +32,9 @@
         "${workspaceFolder}/../api/build/**/*.js"
       ],
       "env": {
-        "TEAMSFX_FAILPOINTS": "NoSubsription=true"
+        "TEAMSFX_FAILPOINTS": "NoSubsription=true",
+        "NODE_ENV": "development",
+        "TEAMSFX_DEBUG_TEMPLATE": "true", 
       },
       "preLaunchTask": "npm: build-failpoint"
     },

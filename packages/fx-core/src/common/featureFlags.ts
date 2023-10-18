@@ -41,12 +41,12 @@ export function isImportSPFxEnabled(): boolean {
 }
 
 export function isCopilotPluginEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
+  return true;
 }
 
 export function isApiCopilotPluginEnabled(): boolean {
   // return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, true) && isCopilotPluginEnabled();
-  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
+  return true;
 }
 
 export function isCliNewUxEnabled(): boolean {

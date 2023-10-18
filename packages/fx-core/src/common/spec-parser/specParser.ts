@@ -21,7 +21,7 @@ import { ConstantString } from "./constants";
 import jsyaml from "js-yaml";
 import fs from "fs-extra";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, isSupportedApi, validateServer } from "./utils";
+import { convertPathToCamelCase, isSupportedApiForGraphConnectors, validateServer } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import path from "path";
@@ -294,7 +294,7 @@ export class SpecParser {
       const methods = paths[path];
       for (const method in methods) {
         // For developer preview, only support GET operation with only 1 parameter without auth
-        if (isSupportedApi(method, path, spec)) {
+        if (isSupportedApiForGraphConnectors(method, path, spec)) {
           const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
           result[`${method.toUpperCase()} ${path}`] = operationObject;
         }

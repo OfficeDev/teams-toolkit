@@ -3,7 +3,7 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import { convertPathToCamelCase, isSupportedApi } from "./utils";
+import { convertPathToCamelCase, isSupportedApiForGraphConnectors } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ErrorType } from "./interfaces";
 import { ConstantString } from "./constants";
@@ -20,7 +20,7 @@ export function specFilter(
       const [method, path] = filterItem.split(" ");
       const methodName = method.toLowerCase();
 
-      if (!isSupportedApi(methodName, path, resolvedSpec)) {
+      if (!isSupportedApiForGraphConnectors(methodName, path, resolvedSpec)) {
         continue;
       }
 

@@ -366,20 +366,24 @@ export async function initTeamsPage(
           try {
             const items = await frame?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
+            console.log("selected a team.");
           } catch (error) {
             const searchBtn = await frame?.waitForSelector(
               "div.ui-dropdown__toggle-indicator"
             );
             await searchBtn?.click();
-            await page.waitForTimeout(Timeout.shortTimeLoading);
+            await page.waitForTimeout(Timeout.shortTimeLoading); .
+            
             const items = await frame?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
+            console.log("[catch] selected a team.");
           }
 
           const setUpBtn = await frame?.waitForSelector(
             'button span:has-text("Set up a tab")'
           );
           await setUpBtn?.click();
+          console.log("click set up a tab button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
         } catch (error) {
           await page.screenshot({

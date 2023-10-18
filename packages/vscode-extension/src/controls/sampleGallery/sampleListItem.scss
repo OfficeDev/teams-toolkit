@@ -12,6 +12,12 @@
     border-bottom: 1px solid;
     border-color: #454545;
 
+    .title-tag {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
     .hidden-label {
       position: absolute;
       top: auto;
@@ -27,7 +33,6 @@
       font-weight: 600;
       text-align: left;
       line-height: 18px;
-      cursor: pointer;
       margin: 0;
       min-width: 50px;
       text-overflow: ellipsis;

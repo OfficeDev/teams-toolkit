@@ -20,19 +20,19 @@ import {
   Warning,
   AppPackageFolderName,
   ManifestUtil,
-  IComposeExtension,
   IMessagingExtensionCommand,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
 import {
+  SpecParser,
   ErrorType as ApiSpecErrorType,
   ValidationStatus,
   WarningResult,
   WarningType,
-} from "../../../common/spec-parser/interfaces";
-import { SpecParser } from "../../../common/spec-parser/specParser";
+  SpecParserError,
+} from "../../../common/spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { MissingRequiredInputError } from "../../../error";
@@ -40,7 +40,6 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
-import { SpecParserError } from "../../../common/spec-parser/specParserError";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -525,4 +524,23 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
 
 export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
   return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
+}
+
+export async function isYamlSpecFile(specPath: string): Promise<boolean> {
+  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
+    return true;
+  } else if (specPath.endsWith(".json")) {
+    return false;
+  }
+  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
+  const fileContent = isRemoteFile
+    ? (await axios.get(specPath)).data
+    : await fs.readFile(specPath, "utf-8");
+
+  try {
+    JSON.parse(fileContent);
+    return false;
+  } catch (error) {
+    return true;
+  }
 }

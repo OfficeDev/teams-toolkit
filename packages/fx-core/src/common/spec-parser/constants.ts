@@ -31,8 +31,7 @@ export class ConstantString {
   );
 
   static readonly WrappedCardVersion = "devPreview";
-  static readonly WrappedCardSchema =
-    "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.ResponseRenderingTemplate.schema.json";
+  static readonly WrappedCardSchema = "<URL_REFERENCE_TO_SCHEMA>";
   static readonly WrappedCardResponseLayout = "list";
 
   static readonly GetMethod = "get";

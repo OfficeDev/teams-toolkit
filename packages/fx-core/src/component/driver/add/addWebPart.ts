@@ -46,7 +46,6 @@ export class AddWebPartDriver implements StepDriver {
 
   public async add(args: AddWebPartArgs, context: WrapDriverContext): Promise<Map<string, string>> {
     const webpartName = args.webpartName;
-    const framework = args.framework;
     const spfxFolder = args.spfxFolder;
     const manifestPath = args.manifestPath;
     const localManifestPath = args.localManifestPath;
@@ -61,7 +60,6 @@ export class AddWebPartDriver implements StepDriver {
 
     const inputs: Inputs = { platform: context.platform, stage: Stage.addWebpart };
     inputs[QuestionNames.SPFxWebpartName] = webpartName;
-    inputs[QuestionNames.SPFxFramework] = framework;
     inputs[QuestionNames.SPFxFolder] = spfxFolder;
     inputs[QuestionNames.ManifestPath] = manifestPath;
     inputs[QuestionNames.LocalTeamsAppManifestFilePath] = localManifestPath;

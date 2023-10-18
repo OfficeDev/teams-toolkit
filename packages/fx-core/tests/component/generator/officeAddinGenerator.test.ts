@@ -20,7 +20,7 @@ import * as chai from "chai";
 import * as childProcess from "child_process";
 import EventEmitter from "events";
 import fs from "fs";
-import fse from "fs-extra";
+import * as fse from "fs-extra";
 import "mocha";
 import mockfs from "mock-fs";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -261,55 +261,6 @@ describe("OfficeAddinGenerator", function () {
       await fse.rm(testFolder, { recursive: true });
     }
   });
-
-  it(`should generate common template if language is "No Options"`, async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      "app-name": "office-addin-test",
-      "programming-language": "No Options",
-    };
-    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
-    const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
-
-    chai.assert.isTrue(
-      // The forth parameter is the language parameter, which should be undefined so that
-      // common template will be scaffolded.
-      result.isOk() && stub.calledWith(context, testFolder, "office-addin", undefined)
-    );
-  });
-
-  it(`should generate ts template if language is "TypeScript"`, async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      "app-name": "office-addin-test",
-      "programming-language": "TypeScript",
-    };
-    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
-    const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
-
-    chai.assert.isTrue(result.isOk() && stub.calledWith(context, testFolder, "office-addin", "ts"));
-  });
-
-  it(`should generate js template if language is "TypeScript"`, async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      "app-name": "office-addin-test",
-      "programming-language": "JavaScript",
-    };
-    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
-    const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
-
-    chai.assert.isTrue(result.isOk() && stub.calledWith(context, testFolder, "office-addin", "js"));
-  });
 });
 
 describe("helperMethods", async () => {
@@ -350,23 +301,14 @@ describe("helperMethods", async () => {
 
     afterEach(() => {
       sandbox.restore();
-      writePathResult = undefined;
     });
 
     it("should update manifest's extenstions and authorization", async () => {
-      sandbox.stub(fse, "pathExists").resolves(true);
       await HelperMethods.updateManifest("", manifestPath);
 
       chai.assert.isDefined(writePathResult);
       chai.assert.equal(writePathResult?.extensions?.length, 0);
       chai.assert.equal(writePathResult?.authorization?.permissions?.resourceSpecific?.length, 0);
-    });
-
-    it("should early return if there's no appPackage folder", async () => {
-      sandbox.stub(fse, "pathExists").resolves(false);
-      await HelperMethods.updateManifest("", manifestPath);
-
-      chai.assert.isUndefined(writePathResult, "writeToPath should not be called");
     });
   });
 

@@ -35,7 +35,8 @@ export enum QuestionNames {
   ApiSpecLocation = "openapi-spec-location",
   OpenAIPluginManifest = "openai-plugin-manifest",
   ApiOperation = "api-operation",
-  MeArchitectureType = "me-architecture",
+  ApiMeType = "api-me-type",
+  ApiMeExistingApi = "api-me-existing-api", // group name for creating a API ME from existing api
 
   Features = "features",
   Env = "env",

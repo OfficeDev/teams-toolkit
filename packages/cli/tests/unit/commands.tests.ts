@@ -91,7 +91,11 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
+      const copilotPluginQuestionNames = [
+        QuestionNames.ApiSpecLocation.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
+        QuestionNames.ApiOperation.toString(),
+      ];
       assert.isTrue(
         ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
       );
@@ -114,9 +118,13 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
       const res = await getCreateCommand().handler!(ctx);
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
+      const copilotPluginQuestionNames = [
+        QuestionNames.ApiSpecLocation.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
+        QuestionNames.ApiOperation.toString(),
+      ];
       assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 1
+        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 3
       );
       assert.isTrue(res.isOk());
     });
@@ -137,7 +145,11 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
+      const copilotPluginQuestionNames = [
+        QuestionNames.ApiSpecLocation.toString(),
+        QuestionNames.OpenAIPluginManifest.toString(),
+        QuestionNames.ApiOperation.toString(),
+      ];
       assert.isTrue(
         ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
       );

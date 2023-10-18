@@ -15,10 +15,6 @@ export interface AddWebPartArgs {
    */
   webpartName: string;
   /**
-   * Newly added web part framework, only needed for projects that're initially created by SPFx generator interactively
-   */
-  framework?: string;
-  /**
    * SPFx solution directory
    */
   spfxFolder: string;

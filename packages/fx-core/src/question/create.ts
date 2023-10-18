@@ -103,11 +103,7 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: isCopilotPluginEnabled()
-        ? getLocalizedString(
-            "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
-          )
-        : getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
+      detail: getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
     };
   }
 
@@ -328,9 +324,21 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: isCopilotPluginEnabled()
-        ? getLocalizedString("core.M365SearchAppOptionItem.copilot.detail")
-        : getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.worksInOutlook"
+      ),
+    };
+  }
+
+  static copilotM365SearchMe(): OptionItem {
+    return {
+      id: "search-me-copilot",
+      label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
+      detail: getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.worksInOutlookCopilot"
+      ),
     };
   }
 
@@ -388,28 +396,45 @@ export class CapabilityOptions {
 
   /**
    * Collect all capabilities for message extension, including dotnet and nodejs.
+   * @param filterByFeatureFlag true: filter capabilities by feature flag, false: return all capabilities
    * @returns OptionItem[] capability list
    */
-  static collectMECaps(): OptionItem[] {
-    return [
-      CapabilityOptions.m365SearchMe(),
-      CapabilityOptions.collectFormMe(),
-      CapabilityOptions.SearchMe(),
-      CapabilityOptions.linkUnfurling(),
-    ];
+  static collectMECaps(filterByFeatureFlag: boolean): OptionItem[] {
+    return filterByFeatureFlag
+      ? [
+          CapabilityOptions.apiMe(),
+          CapabilityOptions.linkUnfurling(),
+          ...(isCopilotPluginEnabled()
+            ? [CapabilityOptions.copilotM365SearchMe()]
+            : [CapabilityOptions.m365SearchMe(), CapabilityOptions.SearchMe()]),
+          CapabilityOptions.collectFormMe(),
+        ]
+      : [
+          CapabilityOptions.apiMe(),
+          CapabilityOptions.linkUnfurling(),
+          CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.copilotM365SearchMe(),
+          CapabilityOptions.SearchMe(),
+        ];
   }
 
   static mes(inputs?: Inputs): OptionItem[] {
     return inputs !== undefined && getRuntime(inputs) === RuntimeOptions.DotNet().id
       ? [
-          CapabilityOptions.SearchMe(),
-          CapabilityOptions.collectFormMe(),
           CapabilityOptions.linkUnfurling(),
+          isCopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.SearchMe(),
+          CapabilityOptions.collectFormMe(),
         ]
       : [
-          CapabilityOptions.m365SearchMe(),
-          CapabilityOptions.collectFormMe(),
+          CapabilityOptions.apiMe(),
           CapabilityOptions.linkUnfurling(),
+          isCopilotPluginEnabled()
+            ? CapabilityOptions.copilotM365SearchMe()
+            : CapabilityOptions.m365SearchMe(),
+          CapabilityOptions.collectFormMe(),
         ];
   }
 
@@ -428,7 +453,7 @@ export class CapabilityOptions {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.collectMECaps(),
+      ...CapabilityOptions.collectMECaps(false),
       ...CapabilityOptions.copilotPlugins(),
     ];
 
@@ -442,7 +467,7 @@ export class CapabilityOptions {
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
-      ...CapabilityOptions.collectMECaps(),
+      ...CapabilityOptions.collectMECaps(true),
     ];
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
@@ -520,6 +545,15 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginAIPluginOption.detail"
       ),
+    };
+  }
+
+  //API ME
+  static apiMe(): OptionItem {
+    return {
+      id: "api-me",
+      label: getLocalizedString("core.createProjectQuestion.capability.apiMe.label"),
+      detail: getLocalizedString("core.createProjectQuestion.capability.apiMe.detail"),
     };
   }
 
@@ -608,33 +642,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
   };
 }
 
-export class MeArchitectureOptions {
-  static botMe(): OptionItem {
-    return {
-      id: "bot",
-      label: getLocalizedString("core.createProjectQuestion.capability.botMessageExtension.label"),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.capability.botMessageExtension.detail"
-      ),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.worksInOutlook"
-      ),
-    };
-  }
-
-  static botPlugin(): OptionItem {
-    return {
-      id: "bot-plugin",
-      label: getLocalizedString("core.createProjectQuestion.capability.botMessageExtension.label"),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.capability.botMessageExtension.detail"
-      ),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.worksInOutlookCopilot"
-      ),
-    };
-  }
-
+export class ApiMeOptions {
   static newApi(): OptionItem {
     return {
       id: "new-api",
@@ -660,35 +668,17 @@ export class MeArchitectureOptions {
   }
 
   static all(): OptionItem[] {
-    return [
-      MeArchitectureOptions.newApi(),
-      MeArchitectureOptions.apiSpec(),
-      isCopilotPluginEnabled() ? MeArchitectureOptions.botPlugin() : MeArchitectureOptions.botMe(),
-    ];
-  }
-
-  static staticAll(): OptionItem[] {
-    return [
-      MeArchitectureOptions.newApi(),
-      MeArchitectureOptions.apiSpec(),
-      MeArchitectureOptions.botPlugin(),
-      MeArchitectureOptions.botMe(),
-    ];
+    return [ApiMeOptions.newApi(), ApiMeOptions.apiSpec()];
   }
 }
 
-export function meArchitectureQuestion(): SingleSelectQuestion {
+export function apiMeQuestion(): SingleSelectQuestion {
   return {
-    name: QuestionNames.MeArchitectureType,
-    title: getLocalizedString("core.createProjectQuestion.meArchitecture.title"),
-    cliDescription: "Architecture of Search Based Message Extension.",
-    cliShortName: "m",
+    name: QuestionNames.ApiMeType,
+    title: getLocalizedString("core.createProjectQuestion.apiMeQuestion.title"),
     type: "singleSelect",
-    staticOptions: MeArchitectureOptions.staticAll(),
-    dynamicOptions: (inputs: Inputs) => {
-      return MeArchitectureOptions.all();
-    },
-    default: MeArchitectureOptions.newApi().id,
+    staticOptions: ApiMeOptions.all(),
+    default: ApiMeOptions.newApi().id,
     placeholder: getLocalizedString(
       "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
     ),
@@ -917,7 +907,7 @@ export function SPFxPackageSelectQuestion(): SingleSelectQuestion {
   };
 }
 
-export function SPFxFrameworkQuestion(): SingleSelectQuestion {
+function SPFxFrameworkQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SPFxFramework,
@@ -1072,7 +1062,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
   const programmingLanguageQuestion: SingleSelectQuestion = {
     name: QuestionNames.ProgrammingLanguage,
     cliShortName: "l",
-    title: "Programming Language",
+    title: "Programming Language.",
     type: "singleSelect",
     staticOptions: [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
@@ -1551,7 +1541,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    cliDescription: "Select Operation(s) Teams Can Interact with.",
+    cliDescription: "Specifies API(s) to be used in Copilot plugin.",
     cliShortName: "o",
     placeholder: includeExistingAPIs
       ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
@@ -1639,9 +1629,9 @@ export function capabilitySubTree(): IQTreeNode {
         data: officeAddinHostingQuestion(),
       },
       {
-        // Search ME sub-tree
-        condition: { equals: CapabilityOptions.m365SearchMe().id },
-        data: meArchitectureQuestion(),
+        // API ME sub-tree
+        condition: { equals: CapabilityOptions.apiMe().id },
+        data: apiMeQuestion(),
       },
       {
         // API ME from API Spec or Copilot plugin from API spec or AI Plugin
@@ -1650,7 +1640,7 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
             inputs[QuestionNames.Capabilities] ===
               CapabilityOptions.copilotPluginOpenAIPlugin().id ||
-            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
+            inputs[QuestionNames.ApiMeType] === ApiMeOptions.apiSpec().id
           );
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
@@ -1660,7 +1650,7 @@ export function capabilitySubTree(): IQTreeNode {
               return (
                 inputs[QuestionNames.Capabilities] ===
                   CapabilityOptions.copilotPluginApiSpec().id ||
-                inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
+                inputs[QuestionNames.ApiMeType] === ApiMeOptions.apiSpec().id
               );
             },
             data: apiSpecLocationQuestion(),
@@ -1683,7 +1673,7 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.Capabilities] !==
               CapabilityOptions.copilotPluginOpenAIPlugin().id &&
-            inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id
+            inputs[QuestionNames.ApiMeType] !== ApiMeOptions.apiSpec().id
           );
         },
       },

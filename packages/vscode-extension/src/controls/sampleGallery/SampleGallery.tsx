@@ -172,12 +172,15 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
 
   private onFilterConditionChanged = (query: string, filterTags: string[]) => {
     let filteredSamples = this.samples.filter((sample: SampleInfo) => {
+      if (filterTags.length === 0) {
+        return true;
+      }
       for (const tag of filterTags) {
-        if (sample.tags.indexOf(tag) < 0) {
-          return false;
+        if (sample.tags.indexOf(tag) >= 0) {
+          return true;
         }
       }
-      return true;
+      return false;
     });
     if (this.state.query !== "") {
       const fuse = new Fuse(filteredSamples, {

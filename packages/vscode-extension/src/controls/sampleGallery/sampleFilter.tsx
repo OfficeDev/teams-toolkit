@@ -6,14 +6,8 @@ import "./sampleFilter.scss";
 import { debounce } from "lodash";
 import * as React from "react";
 
-import { ActionButton } from "@fluentui/react";
-import {
-  VSCodeButton,
-  VSCodeDropdown,
-  VSCodeOption,
-  VSCodeTag,
-  VSCodeTextField,
-} from "@vscode/webview-ui-toolkit/react";
+import { ActionButton, Dropdown, IDropdownOption, IDropdownStyles, IStyle } from "@fluentui/react";
+import { VSCodeButton, VSCodeTag, VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 
 import {
   TelemetryEvent,
@@ -25,7 +19,7 @@ import { Grid } from "../resources";
 import { SampleFilterProps } from "./ISamples";
 
 export default class SampleFilter extends React.Component<SampleFilterProps, unknown> {
-  private sampleTypes = ["Tab", "Bot", "Messaging extension"];
+  private sampleTypes = ["Tab", "Bot", "Message extension"];
   private sampleLanguages = ["TS", "JS"];
   private sampleTechniques = ["Azure", "Adaptive Cards", "SSO", "SPFx", "Outlook", "Graph"];
 
@@ -34,6 +28,19 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
   }
 
   render() {
+    const typeOptions: IDropdownOption[] = this.sampleTypes.map((type) => {
+      const selected = this.props.filterTags.indexOf(type) >= 0;
+      return { key: type, text: type, selected };
+    });
+    const languageOptions: IDropdownOption[] = this.sampleLanguages.map((type) => {
+      const selected = this.props.filterTags.indexOf(type) >= 0;
+      return { key: type, text: type, selected };
+    });
+    const techniqueOptions: IDropdownOption[] = this.sampleTechniques.map((type) => {
+      const selected = this.props.filterTags.indexOf(type) >= 0;
+      return { key: type, text: type, selected };
+    });
+    const dropdownStyles = this.getDropdownStyles();
     return (
       <div className="sample-filter">
         <div className="sample-filter-bar">
@@ -45,30 +52,27 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
           >
             <span slot="start" className="codicon codicon-search"></span>
           </VSCodeTextField>
-          <VSCodeDropdown className="filter-dropdown" onChange={this.onFilterTagChanged}>
-            <VSCodeOption selected>type</VSCodeOption>
-            {this.sampleTypes
-              .filter((type) => this.props.filterTags.indexOf(type) < 0)
-              .map((type) => (
-                <VSCodeOption>{type}</VSCodeOption>
-              ))}
-          </VSCodeDropdown>
-          <VSCodeDropdown className="filter-dropdown" onChange={this.onFilterTagChanged}>
-            <VSCodeOption selected>languages</VSCodeOption>
-            {this.sampleLanguages
-              .filter((type) => this.props.filterTags.indexOf(type) < 0)
-              .map((type) => (
-                <VSCodeOption>{type}</VSCodeOption>
-              ))}
-          </VSCodeDropdown>
-          <VSCodeDropdown className="filter-dropdown" onChange={this.onFilterTagChanged}>
-            <VSCodeOption selected>techniques</VSCodeOption>
-            {this.sampleTechniques
-              .filter((type) => this.props.filterTags.indexOf(type) < 0)
-              .map((type) => (
-                <VSCodeOption>{type}</VSCodeOption>
-              ))}
-          </VSCodeDropdown>
+          <Dropdown
+            placeholder="type"
+            multiSelect
+            options={typeOptions}
+            styles={dropdownStyles}
+            onChange={this.onFilterTagChanged}
+          />
+          <Dropdown
+            placeholder="language"
+            multiSelect
+            options={languageOptions}
+            styles={dropdownStyles}
+            onChange={this.onFilterTagChanged}
+          />
+          <Dropdown
+            placeholder="technique"
+            multiSelect
+            options={techniqueOptions}
+            styles={dropdownStyles}
+            onChange={this.onFilterTagChanged}
+          />
           <div className="filter-bar"></div>
           <VSCodeButton
             onClick={() => this.props.onLayoutChanged("grid")}
@@ -118,11 +122,15 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
     }, 500)();
   };
 
-  private onFilterTagChanged = (e: { target: { value: string } }) => {
-    const choice = e.target.value;
-    if (choice !== "type" && choice !== "language" && choice !== "technique") {
-      this.props.onFilterConditionChanged(this.props.query, [...this.props.filterTags, choice]);
-    }
+  private onFilterTagChanged = (
+    _event: React.FormEvent<HTMLDivElement>,
+    option?: IDropdownOption
+  ) => {
+    const choice = option?.key as string;
+    const newTags = option?.selected
+      ? [...this.props.filterTags, choice]
+      : this.props.filterTags.filter((tag) => tag !== choice);
+    this.props.onFilterConditionChanged(this.props.query, newTags);
   };
 
   private onTagRemoved = (removedTag: string) => {
@@ -132,5 +140,124 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
 
   private onAllTagsRemoved = () => {
     this.props.onFilterConditionChanged(this.props.query, []);
+  };
+
+  private getDropdownStyles = (): Partial<IDropdownStyles> => {
+    const dropDownStyle: IStyle = {
+      "span:first-child": {
+        borderRadius: 5,
+        height: 24,
+        lineHeight: 24,
+        backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
+        color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+        fontSize: 13,
+        border: 0,
+      },
+    };
+    const caretStyle: IStyle = {
+      backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
+      color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+      fontSize: 11,
+      lineHeight: 16,
+    };
+    const checkboxStyle: IStyle = {
+      ".ms-Checkbox-checkbox": {
+        backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
+        border: "1px solid var(--vscode-inputValidation-infoBorder, #007ACC)",
+      },
+    };
+    const dropdownStyles: Partial<IDropdownStyles> = {
+      dropdown: {
+        ...dropDownStyle,
+        ":hover": {
+          ...dropDownStyle,
+          ".ms-Dropdown-caretDown": {
+            color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+          },
+        },
+        ":focus": {
+          ...dropDownStyle,
+          ".ms-Dropdown-caretDown": {
+            color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+          },
+        },
+        ":active": {
+          ".ms-Dropdown-caretDown": {
+            color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+          },
+        },
+        width: 146,
+        marginLeft: 16,
+      },
+      caretDown: {
+        ...caretStyle,
+      },
+      caretDownWrapper: {
+        height: 24,
+        lineHeight: 24,
+        color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+      },
+      callout: {
+        ".ms-Callout-main": {
+          borderRadius: 5,
+          border: "1px solid var(--vscode-inputValidation-infoBorder, #007ACC)",
+        },
+      },
+      dropdownItemsWrapper: {
+        padding: "4px 0",
+        backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526)",
+      },
+      dropdownItem: {
+        backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526)",
+        color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+        minHeight: 22,
+        height: 22,
+        ".ms-Checkbox-checkbox": {
+          backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
+          border: 0,
+        },
+        ":active": {
+          backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
+          ".ms-Checkbox-checkmark": {
+            color: "var(--vscode-button-foreground, #FFFFFF)",
+          },
+        },
+        "input:focus + .ms-Checkbox-label": {
+          ...checkboxStyle,
+        },
+        ":hover": {
+          ".ms-Checkbox-checkmark": {
+            color: "var(--vscode-button-foreground, #FFFFFF)",
+          },
+        },
+      },
+      dropdownItemSelected: {
+        minHeight: 22,
+        height: 22,
+        backgroundColor: "var(--vscode-dropdown-background, #303031)",
+        ".ms-Checkbox-checkbox": {
+          backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
+          border: 0,
+        },
+        ":active": {
+          backgroundColor: "var(--vscode-dropdown-background, #303031) !important",
+        },
+        "input:focus + .ms-Checkbox-label": {
+          ...checkboxStyle,
+        },
+        ":focus": {
+          ...checkboxStyle,
+        },
+        ":hover": {
+          backgroundColor: "var(--vscode-dropdown-background, #303031) !important",
+          ...checkboxStyle,
+        },
+      },
+      dropdownOptionText: {
+        fontSize: "13px",
+        color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+      },
+    };
+    return dropdownStyles;
   };
 }

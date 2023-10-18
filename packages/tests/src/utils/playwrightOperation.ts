@@ -354,9 +354,7 @@ export async function initTeamsPage(
 
       try {
         // verify add page is closed
-        await frame?.waitForSelector(
-          `h1:has-text('Add ${options?.teamsAppName} to a team')`
-        );
+        await frame?.waitForSelector(`h1:has-text('to a team')`);
         try {
           const frameElementHandle = await page.waitForSelector(
             "iframe.embedded-page-content"
@@ -386,6 +384,7 @@ export async function initTeamsPage(
           console.log("click set up a tab button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
         } catch (error) {
+          console.log(error);
           await page.screenshot({
             path: getPlaywrightScreenshotPath("error"),
             fullPage: true,

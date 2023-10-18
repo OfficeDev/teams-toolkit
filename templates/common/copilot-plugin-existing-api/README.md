@@ -2,7 +2,7 @@
 
 ## Build a message extension from OpenAPI description document
 
-This app template allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allow Teams to:
+This app template allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.

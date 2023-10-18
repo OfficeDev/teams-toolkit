@@ -107,7 +107,7 @@ describe("Package Service", () => {
     axiosPostResponses["/dev/v1/users/packages/addins"] = {
       status: 202,
       data: {
-        statusId: "testistatus-id",
+        statusId: "test-status-id",
       },
     };
 

@@ -310,7 +310,7 @@ export class ManifestUtils {
       context.addTelemetryProperties(telemetryProps);
     }
 
-    const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString, true);
+    const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
 
     const tokens = getEnvironmentVariables(resolvedManifestString);
     if (tokens.length > 0) {

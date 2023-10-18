@@ -141,6 +141,70 @@ describe("Core basic APIs", () => {
     runSpy.restore();
   });
 
+  it("add web part to SPFx with empty .yo-rc.json", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appPath = path.join(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      "spfx-folder": ".\\src",
+      "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+      "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
+      "spfx-webpart-name": "helloworld",
+      "spfx-install-latest-package": "true",
+      "spfx-load-package-version": "loaded",
+      stage: Stage.addWebpart,
+      projectPath: appPath,
+    };
+
+    sandbox.stub(fs, "pathExists").callsFake(async (directory: string) => {
+      if (directory.includes(path.join("webparts", "helloworld"))) {
+        return false;
+      }
+      return true;
+    });
+    sandbox.stub(fs, "readJson").resolves({});
+    const runSpy = sandbox.stub(AddWebPartDriver.prototype, "run");
+    await core.addWebpart(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    runSpy.restore();
+  });
+
+  it("add web part to SPFx with framework", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appPath = path.join(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      "spfx-folder": ".\\src",
+      "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+      "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
+      "spfx-webpart-name": "helloworld",
+      "spfx-install-latest-package": "true",
+      "spfx-load-package-version": "loaded",
+      stage: Stage.addWebpart,
+      projectPath: appPath,
+    };
+
+    sandbox.stub(fs, "pathExists").callsFake(async (directory: string) => {
+      if (directory.includes(path.join("webparts", "helloworld"))) {
+        return false;
+      }
+      return true;
+    });
+    sandbox.stub(fs, "readJson").resolves({
+      "@microsoft/generator-sharepoint": {
+        template: "react",
+      },
+    });
+    const runSpy = sandbox.stub(AddWebPartDriver.prototype, "run");
+    await core.addWebpart(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    runSpy.restore();
+  });
+
   it("deploy aad manifest happy path", async () => {
     const promtionOnVSC =
       'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
@@ -1273,7 +1337,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "programming-language",
           "folder",
           "app-name",
@@ -1301,7 +1365,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "programming-language",
           "folder",
           "app-name",
@@ -1329,7 +1393,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "openapi-spec-location",
           "openai-plugin-manifest",
           "api-operation",
@@ -1361,7 +1425,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "programming-language",
           "folder",
           "app-name",

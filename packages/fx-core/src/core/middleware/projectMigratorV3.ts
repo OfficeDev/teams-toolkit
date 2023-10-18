@@ -696,7 +696,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               .toString()
               .includes("TEAMSFX_ENV=")
               ? ""
-              : "TEAMSFX_ENV=" + envName + EOL;
+              : "TEAMSFX_ENV=" + envName + EOL + "APP_NAME_SUFFIX=" + envName + EOL;
             // convert every name and add the env name at the first line
             const envData =
               teamsfx_env +

@@ -10,7 +10,9 @@
         "apply": "node ./scripts/yamlSolver.js apply",
         "watch": "node ./scripts/watch.js",
         "init": "node ./scripts/yamlSolver init",
-        "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
+        "build": "node ./scripts/generateZip.js && node ./scripts/distributeZip.js",
+        "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template",
+        "postversion": "npm run build"
     },
     "templates": [
         "common",
@@ -46,6 +48,7 @@
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",
         "@typescript-eslint/parser": "^4.19.0",
+        "adm-zip": "^0.5.10",
         "eslint": "^7.22.0",
         "eslint-config-react-app": "^7.0.0",
         "eslint-plugin-header": "^3.1.1",

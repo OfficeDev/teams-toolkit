@@ -117,14 +117,13 @@ export async function wrapSummary(
 }
 
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
-export function expandEnvironmentVariable(content: string, acceptEmptyString = false): string {
+export function expandEnvironmentVariable(content: string): string {
   const placeholders = content.match(placeholderRegex);
-
   if (placeholders) {
     for (const placeholder of placeholders) {
       const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
       const envValue = process.env[envName];
-      if (acceptEmptyString) {
+      if (envName === "APP_NAME_SUFFIX") {
         if (envValue !== undefined && envValue !== null) {
           content = content.replace(placeholder, envValue);
         }

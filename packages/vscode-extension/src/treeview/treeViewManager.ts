@@ -5,13 +5,13 @@ import * as vscode from "vscode";
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { manifestUtils } from "@microsoft/teamsfx-core";
 
-import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
 import { isSPFxProject, workspaceUri } from "../globalVariables";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { hasAdaptiveCardInWorkspace } from "../utils/commonUtils";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -78,8 +78,7 @@ class TreeViewManager {
       }
       utilityTreeviewProvider.refresh();
     }
-    const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
-    if (hasAdaptiveCard) {
+    if (await hasAdaptiveCardInWorkspace()) {
       // after "Validate application" command, the adaptive card will be shown
       const utilityTreeviewProvider = this.getTreeView(
         "teamsfx-utility"

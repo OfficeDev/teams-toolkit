@@ -18,8 +18,8 @@ import { FxCore } from "../../../src/core/FxCore";
 import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
 import {
-  ApiMeOptions,
   CapabilityOptions,
+  MeArchitectureOptions,
   ProjectTypeOptions,
   ScratchOptions,
 } from "../../../src/question/create";
@@ -569,8 +569,8 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.apiMe().id,
-      [QuestionNames.ApiMeType]: ApiMeOptions.newApi().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
@@ -591,8 +591,8 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.apiMe().id,
-      [QuestionNames.ApiMeType]: ApiMeOptions.apiSpec().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.apiSpec().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };

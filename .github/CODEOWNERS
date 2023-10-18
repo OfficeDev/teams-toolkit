@@ -148,7 +148,6 @@
 /packages/fx-core/README.md @jayzhang  @LongOddCode @wenytang-ms
 /packages/fx-core/package-lock.json @LongOddCode @wenytang-ms
 /packages/fx-core/package.json @LongOddCode @wenytang-ms
-/packages/fx-core/scripts/download-templates-zip.js @hund030 @eriolchan @huimiu
 /packages/fx-core/scripts/delete-unused-strings.js @jayzhang
 /packages/fx-core/scripts/find-unused-strings.js @jayzhang
 /packages/fx-core/scripts/generate-appdef.ps1 @nliu-ms

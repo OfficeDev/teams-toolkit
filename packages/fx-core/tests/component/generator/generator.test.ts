@@ -94,6 +94,7 @@ describe("Generator utils", () => {
       TEAMSFX_TEMPLATE_PRERELEASE: "rc",
     });
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     const url = await generatorUtils.fetchTemplateZipUrl("templateName");
     assert.isTrue(url.includes("0.0.0-rc"));
@@ -121,6 +122,7 @@ describe("Generator utils", () => {
     });
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     const tag = "2.1.0";
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     sandbox.stub(templateConfig, "version").value("^2.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");

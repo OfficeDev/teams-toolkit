@@ -96,8 +96,6 @@ export enum ErrorType {
  * An enum that represents the types of warnings that can occur during validation.
  */
 export enum WarningType {
-  AuthNotSupported = "auth-not-supported",
-  MethodNotSupported = "method-not-supported",
   OperationIdMissing = "operationid-missing",
   GenerateCardFailed = "generate-card-failed",
   OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",

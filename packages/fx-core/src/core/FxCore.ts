@@ -1248,6 +1248,7 @@ export class FxCore {
   ): Promise<Result<ApiOperation[], ErrorResult[]>> {
     return await listOperations(
       createContextV3(),
+      inputs.platform,
       inputs.manifest,
       inputs.apiSpecUrl,
       inputs[QuestionNames.ManifestPath],

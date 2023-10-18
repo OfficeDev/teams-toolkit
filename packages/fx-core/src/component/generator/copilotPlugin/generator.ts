@@ -151,7 +151,7 @@ export class CopilotPluginGenerator {
         );
         if (apisMissingOperationId.length > 0) {
           operationIdWarning.content = util.format(
-            ConstantString.MissingOperationId,
+            getLocalizedString("core.common.MissingOperationId"),
             apisMissingOperationId.join(", ")
           );
           delete operationIdWarning.data;

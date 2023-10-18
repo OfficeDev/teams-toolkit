@@ -1397,6 +1397,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       const context = createContextV3();
       const res = await listOperations(
         context,
+        inputs.platform,
         undefined,
         input.trim(),
         inputs[QuestionNames.ManifestPath],
@@ -1511,6 +1512,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
         try {
           const res = await listOperations(
             context,
+            inputs.platform,
             manifest,
             inputs[QuestionNames.ApiSpecLocation],
             undefined,

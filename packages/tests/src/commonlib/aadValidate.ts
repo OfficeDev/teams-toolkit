@@ -104,12 +104,8 @@ export class AadValidator {
         const aadGetResponse = await axios.get(
           `${baseUrl}/applications/${objectId}`
         );
-        if (
-          aadGetResponse &&
-          aadGetResponse.data &&
-          aadGetResponse.data["identifierUris"][0]
-        ) {
-          return <IAADDefinition>aadGetResponse.data;
+        if (aadGetResponse && aadGetResponse["identifierUris"][0]) {
+          return <IAADDefinition>aadGetResponse;
         }
       } catch (error) {
         console.log("Azure AD app get failed. Retry.");

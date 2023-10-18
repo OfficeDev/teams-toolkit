@@ -663,4 +663,10 @@ describe("isYamlSpecFile", () => {
     const result = await isYamlSpecFile("http://example.com/remotefile");
     expect(result).to.be.false;
   });
+
+  it("should return true if it is a yaml file", async () => {
+    const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.0" as any);
+    const result = await isYamlSpecFile("path/to/localfile");
+    expect(result).to.be.true;
+  });
 });
